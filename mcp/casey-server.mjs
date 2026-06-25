@@ -49,13 +49,13 @@ const TOOLS = [
   },
   {
     name: 'casey_verdict',
-    description: '多态裁定（零 LLM 判定树）：对某条用例出 PASS/SUT_DEFECT/HARNESS_ERROR/NEEDS_HUMAN。',
+    description: '多态裁定（零 LLM 判定树）：对某条用例出 PASS/SUT_DEFECT/HARNESS_ERROR/NEEDS_HUMAN。注意：当前为诚实桩，exitCode=3 表示该阶段未实现（见 plan P5）。',
     inputSchema: { type: 'object', required: ['caseId'], properties: { caseId: { type: 'string' } } },
     toArgs: (a) => ['verdict', a.caseId],
   },
   {
     name: 'casey_report',
-    description: '出自包含测试报告（操作说明 + 录屏 + 文本输出 + 裁定徽章 + 缺陷单 + trace）。',
+    description: '出自包含测试报告（操作说明 + 录屏 + 文本输出 + 裁定徽章 + 缺陷单 + trace）。注意：当前为诚实桩，exitCode=3 表示该阶段未实现（见 plan P7）。',
     inputSchema: { type: 'object', required: ['caseId'], properties: { caseId: { type: 'string' } } },
     toArgs: (a) => ['report', a.caseId],
   },

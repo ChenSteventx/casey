@@ -24,7 +24,8 @@
 | Fixture | 固定语料 | 测试使用的固定输入数据；golden test 只能测到语料中出现过的模式（xUnit 术语） | — |
 | Test Ratchet | 测试棘轮 | 测试只许加严不许放松；实现者改动验收测试文件 = 质量门禁直接判红（checksum 校验） | — |
 | Toil | 事务性工作 | 需要读懂但不需要做决定的有界重复工作：模板化、错误廉价、判断不外溢（Google SRE 术语） | 流水活 |
-| Lane | 车道 | 按职责与模型分层划分的工作通道：`toil` / `implementation` / `review` | — |
+| Lane | 车道 | 按职责与模型分层划分的模型道（config.json `lanes`）：`toil` / `implementation` / `review`；story 的 lane 取其子集 `toil`/`implementation`。与「入口分流」正交 | — |
+| 入口分流 | Entry-Triage Lane | contract.mjs 的 `--lane`：按需求成本把任务分到 `direct`（仅契约+一行理由）/ `light`（加 plan 门）/ `full`（全链）；与模型道 Lane 正交 | — |
 | Dissimilar Redundancy | 异构冗余 | 用不同实现/不同模型家族的组件互相校验，避免共享盲区（容错工程术语）；本仓库指 Codex 评审 Claude 产出 | 跨族评审, 异族评审 |
 | Circuit Breaker | 熔断器 | 连续异常达到阈值就自动停机的保护装置：迭代上限/连续零进展/同错重复（Nygard《Release It!》） | — |
 | Escalation Path | 升级路径 | 机器搞不定的事项移交给人的固定通道：写 Inbox + 通知（ITIL 术语） | 升级通道 |
@@ -95,3 +96,7 @@
 | `helper` | 辅助件 | 被复用为底层工具而非主逻辑的代码件（如报告自包含机制保留当 helper） | — |
 | `tier-1` | 第一层自检 | hermetic 自检：假 SUT、零外部依赖，验编译→回放→报告管线 + 给分类器喂合成四元组逐一触发四态 | — |
 | `tier-2` | 第二层自检 | live smoke：需 site.json + creds，覆盖 SUT_DEFECT/取证/流式分支，gated route:human | — |
+| 只读漂移探针 | Read-only Drift Probe | findEquivalentAffordance：无 spec 变更、无重跑地探明「同稳定签名唯一元素是否仍在」，供 verdict.mjs 判 `HARNESS_ERROR`；与自愈写回（相5）严格分离（拆 P5/P6 循环依赖） | — |
+| route:human | 路由人 | 把某项判断/动作显式移交人裁的标注（落 Inbox + 通知，Escalation Path 的标记形态）；Observability 测不到的维度必申报为 route:human | — |
+| 静默点 | Quiet Point | 编译期落观测现状/做后检查前必达的确定性等待条件（networkidle + 无动画 + DOM 稳定 K ms），替代固定睡眠保可复现 | — |
+| LLM-judge | LLM 评分员 | 独立异构家族的语义评分器；判 FAIL 可信、判 PASS 仍人抽检；严格踢出确定性裁判（verdict.mjs）之外，绝不写 passes/verdict | — |

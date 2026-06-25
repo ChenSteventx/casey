@@ -245,7 +245,7 @@ elif actionPerformed===false:                                     # 这步没做
 
 | autotester 构件 | 角色 | 复用方式（v0.2 校正） |
 |---|---|---|
-| `GUARDRAILS.md` | 12 护栏 **+ #13 自愈准入门**（只对确证 `HARNESS_ERROR` 自愈）**+ #14 fail-safe 默认**（未知→NEEDS_HUMAN） | 改写迁移 |
+| `GUARDRAILS.md` | 12 护栏 **+ #13 自愈准入门**（只对确证 `HARNESS_ERROR` 自愈）**+ #14 fail-safe 默认**（未知→NEEDS_HUMAN）；落地另含 #15 裁判零 LLM 分进程 + #16 人签门（gate 绿≠完成） | 改写迁移 |
 | `prd-<caseId>.json` + `prd.schema.json` | 冻结断言契约 | **改造**：`acceptance` 仍是命令数组（每条=一次 check 调用）；**新增 schemaVersion 2 的 `verdict` 枚举 + `signedAgainstBuild`**；lane 枚举对齐 `direct/light/full` |
 | `gate.mjs` | **二值、唯一写 `passes`** | 几乎照搬（check 命令喂进来） |
 | `bin/verdict.mjs` | **多态裁定写者** | **全新建** |

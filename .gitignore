@@ -6,26 +6,12 @@ playwright-report/
 .auth/
 site.json
 
-# 运行产物：每条用例的回放产物（事件/录屏/截图/观测现状/裁定档/报告）。契约不在此——扁平在 loop/。
-cases/**/events.json
-cases/**/observed-*.json
-cases/**/verdict.json
-cases/**/*.mp4
-cases/**/*.webm
-cases/**/*.report.html
-cases/**/*.report.json
-cases/**/*.report.pdf
-cases/**/trace/
+# 运行产物：每条用例目录整体不入库（编译件 spec.ts/events、录屏/截图/观测现状/裁定档/报告/steps/PII 全文）。
+# deny-by-default：冻结契约不在此——扁平在 loop/prd-<caseId>.json；脱敏 fixture 如需入库另行 force-add。
+cases/
 
 # 非就地自愈的漂移补丁（人签前的旁文件提案）
 drift/
-
-# 含 PII 或不脱敏全文的产物：一律本地不入库
-cases/**/*.results.json
-cases/**/*.results.html
-
-# 自检临时产物
-cases/_selftest/
 
 # 临时探针/脚本
 tmp/
