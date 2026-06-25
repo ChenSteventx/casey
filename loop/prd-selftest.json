@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "task": "P0 引导 loop 机制自检：证明 gate 可消费契约、可执行规格 exit 0 即由确定性裁判翻绿（schema minItems:1，故用 1-story 而非 0-story）。",
+  "stories": [
+    {
+      "id": "loop-bootstrap",
+      "desc": "loop 机制就位：单条可运行验收命令 exit 0，gate 据此把 passes 翻绿（gate 是 passes 的唯一写入者）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node -e \"process.exit(0)\""
+      ],
+      "passes": true,
+      "evidence": "gate@2026-06-25T10:46:14.355Z 全部 acceptance exit 0"
+    }
+  ],
+  "testChecksums": {}
+}

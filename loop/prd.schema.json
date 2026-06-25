@@ -1,0 +1,52 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "loop-kit PRD（任务契约实例）",
+  "description": "由 acceptance-gate 工序生成与冻结。passes 字段只由 gate.mjs（确定性裁判）写入，任何模型无权翻绿。Casey 域的多态 verdict 枚举在 P4/P5 经 schemaVersion 2 扩展（见 docs/design/txt2testreport-design.md §8）。",
+  "type": "object",
+  "required": ["schemaVersion", "task", "stories"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "task": { "type": "string", "description": "任务名" },
+    "specPath": { "type": "string", "description": "阶段1产物（to-plan 的 plan.md）路径" },
+    "testChecksums": {
+      "type": "object",
+      "description": "Test Ratchet：acceptance-gate 冻结的验收测试/golden 存档文件 sha256；gate 每轮校验，不符即红",
+      "additionalProperties": { "type": "string" }
+    },
+    "observability": {
+      "type": "array",
+      "description": "可观测性申报：质量门禁测不到的维度及去向（route=human 走升级路径 / waived 明确豁免）",
+      "items": {
+        "type": "object",
+        "required": ["dimension", "route"],
+        "properties": {
+          "dimension": { "type": "string" },
+          "route": { "enum": ["human", "waived"] },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "stories": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "desc", "lane", "acceptance", "passes"],
+        "properties": {
+          "id": { "type": "string" },
+          "desc": { "type": "string" },
+          "lane": { "enum": ["toil", "implementation"] },
+          "acceptance": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" },
+            "description": "可执行规格：每条都是可运行命令，全部 exit 0 才算过"
+          },
+          "passes": { "type": "boolean" },
+          "evidence": { "type": "string", "description": "gate 翻绿时写入的证据指向（时间戳+命令结果摘要）" },
+          "reviewed": { "type": "boolean", "description": "异构冗余评审是否通过（review 道结论，独立于 passes）" }
+        }
+      }
+    }
+  }
+}

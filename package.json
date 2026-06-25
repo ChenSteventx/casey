@@ -1,0 +1,21 @@
+{
+  "name": "casey",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Casey（测易）—— LLM 驱动的文本用例→测试报告自动化测试：编译成确定性可回放 spec、确定性回放、零 LLM 多态裁定、自包含报告。复用 autotester loop-kit。",
+  "bin": {
+    "casey": "bin/casey.mjs"
+  },
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "selftest": "node bin/casey.mjs selftest --tier1",
+    "term-lint": "node loop-kit/bin/term-lint.mjs --registry",
+    "gate": "node loop-kit/bin/gate.mjs",
+    "breaker": "node loop-kit/bin/breaker.mjs"
+  },
+  "dependencies": {},
+  "_dependenciesNote": "P3 起引入 @playwright/test（回放/录屏）与 ffmpeg-static（mp4 转码）；当前 P0/P1 仅用 node 内置模块，无需 npm install 即可跑 loop 机制与 selftest --tier1。"
+}

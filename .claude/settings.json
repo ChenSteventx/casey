@@ -1,0 +1,54 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/loop-kit/bin/hook-loop-triage.mjs\"",
+            "timeout": 10,
+            "statusMessage": "loop 入口分流检查单"
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Write|Edit|Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/loop-kit/bin/hook-loop-guard.mjs\"",
+            "timeout": 15,
+            "statusMessage": "loop 阶段互锁"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/loop-kit/bin/hook-stop.mjs\"",
+            "timeout": 30,
+            "statusMessage": "term-lint 扫描回合输出"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/loop-kit/bin/hook-posttool.mjs\"",
+            "timeout": 30,
+            "statusMessage": "term-lint 扫描写入文件"
+          }
+        ]
+      }
+    ]
+  }
+}

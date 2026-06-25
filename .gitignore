@@ -1,0 +1,46 @@
+node_modules/
+test-results/
+playwright-report/
+
+# 凭据 & 站点配置（绝不入库）
+.auth/
+site.json
+
+# 运行产物：每条用例的回放产物（事件/录屏/截图/观测现状/裁定档/报告）。契约不在此——扁平在 loop/。
+cases/**/events.json
+cases/**/observed-*.json
+cases/**/verdict.json
+cases/**/*.mp4
+cases/**/*.webm
+cases/**/*.report.html
+cases/**/*.report.json
+cases/**/*.report.pdf
+cases/**/trace/
+
+# 非就地自愈的漂移补丁（人签前的旁文件提案）
+drift/
+
+# 含 PII 或不脱敏全文的产物：一律本地不入库
+cases/**/*.results.json
+cases/**/*.results.html
+
+# 自检临时产物
+cases/_selftest/
+
+# 临时探针/脚本
+tmp/
+
+# loop-kit 运行产物（证据流/收件箱/熔断状态/活动契约——只活在本机；契约 prd-*.json / GUARDRAILS / config 照常入库）
+loop/audit.jsonl
+loop/inbox.md
+loop/.breaker-state.json
+loop/active-contract.json
+loop/contracts/
+
+# Claude Code 个人本地设置
+.claude/settings.local.json
+
+# 凭据兜底：真凭据在 ~/.loop-kit/（仓库外）；以下防误把 key 放进仓库内
+.loop-kit/
+*.key
+*.deepseek-key

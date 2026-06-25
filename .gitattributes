@@ -1,0 +1,7 @@
+# 统一行尾为 LF：Test Ratchet 的 checksum 依赖稳定字节，CRLF 污染会让冻结跨平台失配。
+* text=auto eol=lf
+*.mjs text eol=lf
+*.ts text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.gitignore text eol=lf
