@@ -1,0 +1,33 @@
+{
+  "_note": "冻结：意图到 atomId 编译门(Casey 复制并参数化 regress _flow-authoring)的双闸黄金标准。registry 是合成迷你注册表(够测闸一闸二即可)。prefix 参数化：同一门按注入前缀强制实体名(atl_ 或 ctxtest_)。改本文件=Test Ratchet 判红。",
+  "registry": {
+    "states": {
+      "已登录": "登录态建立",
+      "在工作流管理页": "工作流列表页",
+      "画布已开": "工作流画布编辑器已开"
+    },
+    "exclusiveGroups": [ ["在工作流管理页", "画布已开"] ],
+    "atoms": {
+      "login": { "params": {}, "provides": ["已登录"] },
+      "nav.wf": { "params": {}, "requires": ["已登录"], "provides": ["在工作流管理页"] },
+      "wf.create": { "params": { "name": { "type": "string", "required": true } }, "requires": ["在工作流管理页"], "provides": ["画布已开"], "destructive": true, "entityNameParam": "name" }
+    }
+  },
+  "cases": [
+    { "name": "valid_injected_prefix", "prefix": "atl_", "okWant": true, "why": "合规：序对、参数全、实体名带注入前缀",
+      "draft": { "id": "t1", "name": "建工作流", "category": "normal", "steps": [
+        { "atom": "login" }, { "atom": "nav.wf" }, { "atom": "wf.create", "params": { "name": "atl_目录CRUD" } } ] } },
+    { "name": "unknown_atom", "prefix": "atl_", "okWant": false, "why": "闸一：未知 atomId",
+      "draft": { "id": "t2", "name": "x", "category": "normal", "steps": [ { "atom": "login" }, { "atom": "bogus.atom" } ] } },
+    { "name": "missing_required", "prefix": "atl_", "okWant": false, "why": "闸一：缺必填参数 name",
+      "draft": { "id": "t3", "name": "x", "category": "normal", "steps": [ { "atom": "login" }, { "atom": "nav.wf" }, { "atom": "wf.create", "params": {} } ] } },
+    { "name": "type_error", "prefix": "atl_", "okWant": false, "why": "闸一：name 类型应为 string",
+      "draft": { "id": "t4", "name": "x", "category": "normal", "steps": [ { "atom": "login" }, { "atom": "nav.wf" }, { "atom": "wf.create", "params": { "name": 123 } } ] } },
+    { "name": "state_machine_order", "prefix": "atl_", "okWant": false, "why": "闸二：wf.create 需要〈在工作流管理页〉但前序无原子提供",
+      "draft": { "id": "t5", "name": "x", "category": "normal", "steps": [ { "atom": "login" }, { "atom": "wf.create", "params": { "name": "atl_x" } } ] } },
+    { "name": "bare_name_wrong_prefix", "prefix": "atl_", "okWant": false, "why": "闸二：实体名裸名、不带注入前缀 atl_",
+      "draft": { "id": "t6", "name": "x", "category": "normal", "steps": [ { "atom": "login" }, { "atom": "nav.wf" }, { "atom": "wf.create", "params": { "name": "目录CRUD" } } ] } },
+    { "name": "prefix_parameterized_ctxtest", "prefix": "ctxtest_", "okWant": true, "why": "前缀参数化：注入 ctxtest_ 时该前缀实体名合规(证明前缀非写死)",
+      "draft": { "id": "t7", "name": "x", "category": "normal", "steps": [ { "atom": "login" }, { "atom": "nav.wf" }, { "atom": "wf.create", "params": { "name": "ctxtest_目录CRUD" } } ] } }
+  ]
+}

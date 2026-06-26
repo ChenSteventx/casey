@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "task": "P2 重定义：意图到 atomId 编译门（复用并参数化 regress _flow-authoring）+ catalog_wf_crud 贯通 spike（三轴 → 多态裁定 → 四态报告，含合成故障打通 SUT_DEFECT）+ plan/design/ADR 对账。验收点切命令化（hermetic 冻结）与 route:human（tier-2 真机）两层；本契约只冻命令化层。",
+  "specPath": "docs/plans/p2-intent-compile/plan.md",
+  "testChecksums": {
+    "tests/_golden/p2-verdict.golden.mjs": "2daecc6b000c8bba168b944028b4ed4ae3e6b8e5e2808b2ec35e2a5d13735ea1",
+    "tests/_golden/p2-forensics.golden.mjs": "2e3d208e3738cf7a217a1155efc0367baf7edec066e145670909c789c164306e",
+    "tests/_golden/p2-check-vocab.golden.mjs": "d718f27b4d7f993cb7aac3613b8fca2237541a21ecc5a1294e97f1157c0d3ec4",
+    "tests/_golden/p2-compile-gate.golden.mjs": "43c947b3f08b54517a4977473bf473026632bd12f868ca323209ea1c9a58e83e",
+    "tests/_golden/p2-reconcile.golden.mjs": "48cea36ee04bbd5024054d7ee79b095fb6ab8fe21c7832d56a095bb09779a00c",
+    "tests/_golden/fixtures/p2/verdict-cases.json": "a3e66a80a1cfc5b69d95c00875dd73d3cdab1a112b8b00b17d6a3f1c46975585",
+    "tests/_golden/fixtures/p2/compile-cases.json": "85b1a3f0382977d759411ff1728a662e899f00918a279f6fcf8dac85b02ed55c"
+  },
+  "observability": [
+    { "dimension": "catalog_wf_crud 真机回放真绿、verdict.json 全 PASS（tier-2，需 site.json 加登录态）", "route": "human" },
+    { "dimension": "对 save 的 POST 注入 HTTP500 后 save 步判 SUT_DEFECT 而非 HARNESS_ERROR（最关键真机验收，tier-2）", "route": "human" },
+    { "dimension": "LLM 把平台无关意图编成 atom 序列的映射保真（语义抽检）", "route": "human" },
+    { "dimension": "前缀参数化在 _flow-authoring.mjs 与 _flow-runner.ts 两份镜像行为一致（跨运行时集成，非 hermetic）", "route": "human" },
+    { "dimension": "对账后 plan/design/ADR 自洽、无与 ADR-0006 冲突的遗留表述", "route": "human" },
+    { "dimension": "端态运行时 A/B/C 拍板待 spike 证据（ADR-0006 推翻条件保持开放）", "route": "human" }
+  ],
+  "stories": [
+    {
+      "id": "s1-spike-verdict",
+      "desc": "S1 贯通 spike 的裁判内核（hermetic）：verdict.mjs 喂合成三轴出四态各一（含 ambiguous 子类、按发起方归因不被背景 401 翻、soft 断言不进裁定树、stepId/intentId 卷回）；forensics 信封成功字段按 channel 参数化；check.mjs 词表 op 越界硬闸（新增 noErrorToast、countChange 绝对归 0）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p2-verdict.golden.mjs",
+        "node tests/_golden/p2-forensics.golden.mjs",
+        "node tests/_golden/p2-check-vocab.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s2-compile-gate",
+      "desc": "S2 意图到 atomId 编译门：Casey 复制并参数化 regress _flow-authoring 的双闸（validateDraft 合规过 / 畸形红：未知 atomId、缺必填、类型错、状态机顺序错）；前缀从注入参数强制（atl_ 或 ctxtest_ 皆可，证明非写死）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p2-compile-gate.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s3-reconcile",
+      "desc": "S3 plan/design/ADR 对账 + 词表：design §2.1 新增 noErrorToast 与参数化信封、补登断言续跑执行模型；bootstrap plan 把 P3 recorder 降级为陌生站点孵化支线；term-lint 全绿（回归保护）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node loop-kit/bin/term-lint.mjs --file docs/design/txt2testreport-design.md docs/plans/bootstrap/plan.md",
+        "node tests/_golden/p2-reconcile.golden.mjs"
+      ],
+      "passes": false
+    }
+  ]
+}

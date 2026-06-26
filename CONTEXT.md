@@ -58,7 +58,7 @@
 | 断言词汇表 | Assertion Vocabulary | 带类型的断言枚举（urlPathname/textVisible/countChange/streamReplyReceived/...）+ 每种允许的 op；LLM 不准发明自由断言 | — |
 | 断言草拟 | Assertion Drafting | 相2：LLM 从 intent + 观测现状 推导带类型 `expected[]`（只用断言词汇表 + op 约束，默认结构式、易变值模板化） | — |
 | 冻结断言契约 | Frozen Assertion Contract | 人签后写入 `loop/prd-<caseId>.json` 并 checksum 冻结的断言；只冻断言文件，不冻 spec（自愈改 locator 合法、改断言触棘轮） | — |
-| 多态裁定 | Polymorphic Verdict | 零 LLM 的 `verdict.mjs` 按判定树给每步四态之一的分类；区别于 gate 的二值 `passes` | — |
+| 多态裁定 | Polymorphic Verdict | 零 LLM 的 `verdict.mjs` 按判定树给每步四态之一的分类；区别于 gate 的二值 `passes` | 判官 |
 | `PASS` | 通过 | 机器终判：动作执行成功且全部冻结断言满足 | — |
 | `SUT_DEFECT` | 被测缺陷 | 机器终判（需取证背书）：用例已人签 + 工装做了对的动作 + 可观测响应违反期望 + 取证背书；禁止自愈、自动出缺陷单 | — |
 | `HARNESS_ERROR` | 过程错误 | 可自愈：正向确证的工装定位漂移（录制 locator 不再命中，但同稳定签名的唯一元素仍在） | — |
@@ -68,9 +68,11 @@
 | `AMBIGUOUS_ACTION` | 动作歧义 | `NEEDS_HUMAN` 子类：多匹配/坐标兜底点击，点没点对存疑；收紧用例 locator 后重编译 | — |
 | `AFFORDANCE_ABSENT` | 入口缺席 | `NEEDS_HUMAN` 子类（人签后）：编译时够到的入口回归时没了，又无漂移信号无取证；走缺陷-或-过程错误分诊 | — |
 | `INDETERMINATE` | 未定 | `NEEDS_HUMAN` 子类：纯未知失败，看证据人判；catch-all 的 fail-safe 默认落点 | — |
-| 点击身份门 | Click Identity Gate | 仅当解析目标唯一（过滤后 count===1）或点击后身份回读成立才置 `actionPerformed=true`；多匹配/坐标兜底 → ambiguous | — |
+| 点击身份门 | Click Identity Gate | 仅当解析目标唯一（过滤后 count===1）或点击后身份回读成立才置 `actionPerformed=true`；多匹配/坐标兜底 → ambiguous |
+| 语义定位器 | Semantic Locator | 按 ARIA 角色/可访问名/标签/文本定位（getByRole/getByText/getByLabel），对照 CSS 选择器与坐标兜底；回放定位与点击身份门的基础（迁自 autotester 核心域） | — | — |
 | 网络取证 | Network Forensics | `watchNetworkForensics`：记 response/requestfailed 的 {url,status,initiator} + error-envelope，按请求发起方归因（非时间窗） | — |
-| 错误信封 | Error Envelope | HTTP 200 但 body `{code:!=0}` 的软失败；`noErrorEnvelope` 断言据此取证 | — |
+| 错误信封 | Error Envelope | HTTP 200 但 body `{code:!=0}` 的软失败；`noErrorEnvelope` 断言据此取证；成功字段按 channel 参数化（Heren 实测为 `status===200`，落 site.json，非写死 `code`） | — |
+| 三轴 | Three-Axis | 回放期每个原子步吐的三组事实——动作（过点击身份门判 true/ambiguous/false）/ 逐条断言（typed kind 各一条，断言续跑、不首错即停）/ 取证（网络取证 + 生命周期）；零 LLM 的 `verdict.mjs` 据此跑判定树出四态，是裁判·桥·报告共吃的数据契约 | — |
 | 自愈 | Self-heal | 相5：仅对确证 `HARNESS_ERROR` 的有界重锚；是裁定的下游消费者，绝不反向进入裁判进程 | — |
 | 自愈准入门 | Self-heal Admission Gate | 护栏：自愈只对确证 `HARNESS_ERROR` 开闸；`SUT_DEFECT`/`NEEDS_HUMAN` 一律拒绝自愈 | — |
 | 非就地自愈 | Out-of-place Self-heal | 自愈重锚写 `drift/<caseId>.<ts>.patch` 旁文件，原 spec 不变照常回放，人签后才应用 | — |
@@ -88,6 +90,7 @@
 | `fail-closed` | 故障关闭 | 故障时拒绝：校验不过/缺数据时报红拒绝（用于 `parseTestCase` 等准入） | — |
 | `loop engineering` | 循环工程 | 以确定性退出码为唯一真相的闭环工程方法：契约/质量门禁/熔断器/统一语言/异构冗余评审；Casey 复用 autotester loop-kit | — |
 | `DDD` | 领域驱动设计 | Domain-Driven Design：按业务域建模 + 统一语言 + 限界上下文 + 聚合根的设计方法 | — |
+| `ADR` | 架构决策记录 | Architecture Decision Record：记录难逆转架构决策的短文档（背景/决策/后果），存 docs/adr/ | — |
 | `determinism` | 确定性 | 同输入同输出、可复现、可做 golden；Casey 内核「确定性是默认」的名词形态 | — |
 | `verdict-logic` | 裁判逻辑 | 红队评审维度之一：多态裁定判定树是否 fail-safe、会不会把真 bug 误判成可自愈 | — |
 | `loop-fidelity` | 循环保真 | 红队评审维度之一：loop-kit 构件复用是否名实相符、有无阻抗失配 | — |

@@ -2,38 +2,61 @@
 
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 
-## 现状（2026-06-25）
+## 现状（2026-06-26，本次会话）
 
-**P0 引导 loop 机制 + P1 DDD 词表/ADR 已落地并验证全绿。** 三交付面（skill·MCP·CLI）脚手架到位，生命周期命令为诚实桩（exit 3）。git 三分支 `master`/`dev`/`test` 同源于已评审的引导基线，当前在 `dev`。
+**P2 已重定义并走完 grill → plan → accept（full lane，新 slug `p2-intent-compile`，旧 `p2-testcase` 作废被取代）**，停在 **loop 前**（用户要求先把记录落档再开实现）。本次做了：6 路并行深读 `regress_autotest` 原子流系统、把 ADR-0006 的 14 风险落到代码层核验并修正、锁定一组承重决策、冻结一套红 golden 与 prd。
 
-### 已落地（live + 验证方式）
+### 已落地（P0/P1，live，不变）
 
 | 模块 | 文件 | 验证 |
 |---|---|---|
-| loop-kit 引擎 | `loop-kit/bin/*`（与 autotester 字节一致，ADR-0001） | 评审确认 9 个脚本逐一 diff 无偏差 |
-| 护栏 | `loop/GUARDRAILS.md`（12 迁移 + 13–16 Casey 安全不变量） | term-lint exit 0；评审确认 13–16 忠于设计 §0.1/§4/§10 |
+| loop-kit 引擎 | `loop-kit/bin/*`（与 autotester 字节一致，ADR-0001） | 9 脚本逐一 diff 无偏差 |
+| 护栏 | `loop/GUARDRAILS.md`（12 迁移 + 13–16 新增） | term-lint exit 0 |
 | 统一语言 | `CONTEXT.md`（两限界上下文） | `term-lint --registry` exit 0 |
-| 决策档案 | `docs/adr/0001–0005` | term-lint exit 0 |
-| 质量门禁 | `loop/config.json` + `prd.schema.json` + `prd-selftest.json` | `gate --prd loop/prd-selftest.json` GREEN（passes 翻 true） |
-| 双 hook | `.claude/settings.json` | 实跑：缺契约时 PreToolUse 拦截、未登记术语时 PostToolUse 拦截 |
-| CLI | `bin/casey.mjs` | `casey selftest --tier1` 全链路 GREEN |
-| MCP | `mcp/casey-server.mjs` | initialize/tools/list/tools/call 握手通过 |
-| skill | `.claude/skills/casey` + `acceptance-gate` | term-lint exit 0 |
+| 决策档案 | `docs/adr/0001–0006` | 0006 = 融合决策 + 本次风险修正 |
+| 自检 | `casey selftest --tier1` | 全链路 GREEN |
 
-### 对抗评审结论（5 维度，7 agent）
+### 本次产物（p2-intent-compile）
 
-无确认的 critical/high（两条 high 经核验降为 low/medium）。已修：① `Lane` 词条歧义（拆出「入口分流」=direct/light/full，区别于模型道 toil/implementation/review）；② 补登 `只读漂移探针`/`route:human`/`静默点`/`LLM-judge`；③ 设计 §8 护栏行补 #15/#16；④ `.gitignore` 改 `cases/` 整目录 deny-by-default；⑤ MCP verdict/report 描述补桩告示。
-未修（有意）：loop-kit 引擎脚本（含 gate.mjs 冗余三元、breaker git-HEAD 进展信号）保持与 autotester 字节一致，按 ADR-0001 不在 casey 私自分叉；breaker 进展信号改造属 P5/P6（config.json 已记）。
+| 产物 | 文件 | 状态 |
+|---|---|---|
+| grill 决策记录 | `docs/plans/p2-intent-compile/grill.md` | 契约 grill 交付物 |
+| 落地计划 | `docs/plans/p2-intent-compile/plan.md` | 三 story + 验收点，term-lint 绿 |
+| 冻结契约 | `loop/prd-p2-intent-compile.json` | 三 story、7 文件 sha256 冻结、gate --dry 绿 |
+| 红 golden | `tests/_golden/p2-*.golden.mjs`（5 个）+ `fixtures/p2/*.json`（2 个） | 全红（实现/对账缺失），已冻 |
+| 词表 | `CONTEXT.md`：新增 `三轴`；更新 `错误信封`（信封成功字段按 channel 参数化） | term-lint 绿 |
+| 契约阶段 | grill / plan / accept 全 done（`loop/active-contract.json`） | edit-impl 已解锁 |
 
-## 下一步（MVP 第一刀：P0→P5+P7 web 单用例，串行）
+## 锁定的决策（全文见 `docs/plans/p2-intent-compile/grill.md`）
 
-按 `docs/plans/bootstrap/plan.md`：
-1. **P2 规范 TestCase + 输入归一**（lane: full）：`parseTestCase` 确定性校验（fail-closed）+ L1 归一适配器；golden fixtures。
-2. **P3 编译期 recorder-as-library + authoring agent**（红队点名最重，硬门：events.json 不触 authored 拒绝）。
-3. **P4 断言草拟 + 冻结 + 人签**；**P5 确定性回放 + 取证 + verdict.mjs 分类器 + 只读漂移探针**（核心，含 breaker `--progress` 改造）；**P7 报告 + 裁定徽章 + 缺陷单**。
+- 顶层三岔：spike 底座 = regress `@playwright/test`(TS) 原地验概念（端态 A/B/C 待证据）；前缀 = 参数化从 `TestCase.uniquePrefix` 注入；裁定面 = 含合成故障（注入 HTTP500 打通 SUT_DEFECT）。
+- 三轴改造落点 = 锐化版路二：不改 regress 共享原子，把 5 个原子行为在 autotester L1 原语（`robust-actions`/`replay-guards`）上重表达成纯 mjs、吐三轴的函数；spike spec 是薄 TS 壳调 Casey 纯 mjs runner。证据：autotester lib 零 `@playwright/test` 依赖、可 golden、三轴原生拆开。
+- 三轴 `StepAxes` schema（spike 草案、可改）+ 三子决定：A 四态分类只在 `verdict.mjs`（护栏 #15）；B soft 断言不进裁定树；C 取证按活动步归因、信封成功字段按 channel 参数化。
 
-开 P2 前：`node loop-kit/bin/contract.mjs init <slug> --lane full --reason "..."`，走 grill→plan→accept→loop→review→learn。
+## 冻结的接口契约（被 golden 钉死，loop 须实现到位）
+
+- `bin/verdict.mjs --axes <in> --out <out>`：读 `{caseId,steps:[StepAxes]}`，跑 §4.2 出 `{steps:[{stepId,intentId,atom,verdict,reason}]}`，零 LLM。
+- `lib/forensics.mjs` 导出 `checkErrorEnvelope(body,{successField,successValue})→{field,expected,actual,ok}`。
+- `bin/check.mjs --kind --op [--value] --validate-only`：词表/op 合法 exit 0、越界 exit≠0。
+- `lib/compile-gate.mjs` 导出 `validateDraft(draft,{prefix,registry})→{ok,problems}`（复制并参数化 regress `_flow-authoring` 双闸）。
+
+## 下一步（新会话）
+
+1. 阶段3 loop（S1 优先，一个 story 绿了再下一个）：loop 开始先 `breaker --reset`。
+   - S1：建 `bin/verdict.mjs` + `lib/forensics.mjs` + `bin/check.mjs`。
+   - S2：建 `lib/compile-gate.mjs`（搬 `atoms.registry` 数据、前缀参数化）。
+   - S3：改 `design §2.1`（noErrorToast + 参数化信封 + 断言续跑）、`bootstrap plan`（P3 recorder 降级为陌生站点孵化支线）。
+   - 每轮 `gate --prd loop/prd-p2-intent-compile.json` 直到 3/3 绿。
+2. tier-2 真机（route:human）：`catalog_wf_crud` 真绿全 PASS + 注入 HTTP500 出 SUT_DEFECT；gate 绿 ≠ 完成（护栏 #16）。
+3. 阶段4 异构评审（输入只给 spec+diff+证据）→ 阶段5 沉淀。
 
 ## 待裁决（route:human）
 
-见设计 §11：人签门形态（先 CLI `--sign`）、网络取证归因（已定按发起方）、CASE_DEFECT 判别（只编译期）、并发（MVP 串行）。
+- 端态运行时 A/B/C 拍板：待 spike 证据，ADR-0006 推翻条件保持开放。
+- 其余（两镜像一致、LLM 编译保真、对账自洽、真机两态）见 `loop/prd-p2-intent-compile.json` 的 observability。
+
+## 运维
+
+- `loop/active-contract.json` = `p2-intent-compile`（lane full），grill/plan/accept done，loop pending。
+- 旧 `p2-testcase` 契约已被取代作废（其 grill 在本次重定义里被吸收）。
+- 本次全程过 `term-lint`；逮到两处 Windows ESM 坑（动态 import 绝对路径要 `file://` URL）已修，保证 golden 实现后能转绿。

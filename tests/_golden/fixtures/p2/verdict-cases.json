@@ -1,0 +1,96 @@
+{
+  "_note": "冻结：verdict.mjs 的 §4.2 判定树合成黄金标准。每 case = 喂一步合成三轴(StepAxes 输入态) + 期望四态。verdict.mjs 据 action 原始信号(resolution/identityReadback/driftProbe)按点击身份门推 actionPerformed，再跑判定树。hermetic 零外部依赖。改本文件=Test Ratchet 判红。",
+  "cases": [
+    {
+      "name": "pass",
+      "why": "动作唯一 + 全硬断言过 + 取证干净 → PASS",
+      "input": { "caseId": "tc_synth", "steps": [
+        { "stepId": "atstep_0", "intentId": "intent_0", "atom": "workflow.save",
+          "action": { "kind": "click", "resolution": "unique", "identityReadback": null, "driftProbe": null },
+          "postAssertions": [ { "kind": "noErrorEnvelope", "op": "envelopeOk", "value": "status==200", "actual": "status==200", "ok": true, "soft": false } ],
+          "forensics": { "lifecycle": { "pageerror": [], "crashed": false }, "network": [ { "url": "/ai-manager/process/saveOrModifyProcessData", "status": 200, "initiator": "atstep_0", "attributedStepId": "atstep_0", "errorEnvelope": { "field": "status", "expected": 200, "actual": 200, "ok": true } } ] } }
+      ] },
+      "expect": { "verdict": "PASS", "reason": null }
+    },
+    {
+      "name": "sut_defect",
+      "why": "动作唯一 + 硬断言失败 + 5xx 归因本步 → SUT_DEFECT（终判，需取证背书）",
+      "input": { "caseId": "tc_synth", "steps": [
+        { "stepId": "atstep_0", "intentId": "intent_0", "atom": "workflow.save",
+          "action": { "kind": "click", "resolution": "unique", "identityReadback": null, "driftProbe": null },
+          "postAssertions": [ { "kind": "noErrorEnvelope", "op": "envelopeOk", "value": "status==200", "actual": "status==500", "ok": false, "soft": false } ],
+          "forensics": { "lifecycle": { "pageerror": [], "crashed": false }, "network": [ { "url": "/ai-manager/process/saveOrModifyProcessData", "status": 500, "initiator": "atstep_0", "attributedStepId": "atstep_0", "errorEnvelope": { "field": "status", "expected": 200, "actual": 500, "ok": false } } ] } }
+      ] },
+      "expect": { "verdict": "SUT_DEFECT", "reason": null }
+    },
+    {
+      "name": "sut_defect_or_stale",
+      "why": "动作唯一 + 硬断言失败 + 取证干净 → NEEDS_HUMAN(SUT_DEFECT_OR_STALE)，人裁回归或改版",
+      "input": { "caseId": "tc_synth", "steps": [
+        { "stepId": "atstep_0", "intentId": "intent_0", "atom": "assert.onPage",
+          "action": { "kind": "none", "resolution": "none", "identityReadback": null, "driftProbe": null },
+          "postAssertions": [ { "kind": "urlPathname", "op": "startsWith", "value": "/process/detail", "actual": "/process/list", "ok": false, "soft": false } ],
+          "forensics": { "lifecycle": { "pageerror": [], "crashed": false }, "network": [] } }
+      ] },
+      "expect": { "verdict": "NEEDS_HUMAN", "reason": "SUT_DEFECT_OR_STALE" }
+    },
+    {
+      "name": "ambiguous_action",
+      "why": "多匹配 .first() 兜底点击 → actionPerformed=ambiguous → NEEDS_HUMAN(AMBIGUOUS_ACTION)，不记缺陷",
+      "input": { "caseId": "tc_synth", "steps": [
+        { "stepId": "atstep_0", "intentId": "intent_0", "atom": "workflow.create",
+          "action": { "kind": "click", "resolution": "fallback_first", "identityReadback": null, "driftProbe": null },
+          "postAssertions": [ { "kind": "urlPathname", "op": "startsWith", "value": "/process/detail", "actual": "/process/detail", "ok": true, "soft": false } ],
+          "forensics": { "lifecycle": { "pageerror": [], "crashed": false }, "network": [] } }
+      ] },
+      "expect": { "verdict": "NEEDS_HUMAN", "reason": "AMBIGUOUS_ACTION" }
+    },
+    {
+      "name": "harness_error",
+      "why": "动作没做成 + 同稳定签名唯一元素仍在(只读漂移探针正命中) + 仅 locator 漂移 → HARNESS_ERROR（可自愈）",
+      "input": { "caseId": "tc_synth", "steps": [
+        { "stepId": "atstep_0", "intentId": "intent_0", "atom": "workflow.deleteByName",
+          "action": { "kind": "click", "resolution": "none", "identityReadback": { "ok": false }, "driftProbe": { "sameSignatureUniquePresent": true } },
+          "postAssertions": [ { "kind": "countChange", "op": "equals", "value": 0, "actual": 1, "ok": false, "soft": false } ],
+          "forensics": { "lifecycle": { "pageerror": [], "crashed": false }, "network": [] } }
+      ] },
+      "expect": { "verdict": "HARNESS_ERROR", "reason": null }
+    },
+    {
+      "name": "indeterminate",
+      "why": "动作没做成 + 无漂移信号 + 无取证 → NEEDS_HUMAN(INDETERMINATE)，catch-all fail-safe",
+      "input": { "caseId": "tc_synth", "steps": [
+        { "stepId": "atstep_0", "intentId": "intent_0", "atom": "workflow.save",
+          "action": { "kind": "click", "resolution": "none", "identityReadback": { "ok": false }, "driftProbe": { "sameSignatureUniquePresent": false } },
+          "postAssertions": [ { "kind": "noErrorEnvelope", "op": "envelopeOk", "value": "status==200", "actual": "missing", "ok": false, "soft": false } ],
+          "forensics": { "lifecycle": { "pageerror": [], "crashed": false }, "network": [] } }
+      ] },
+      "expect": { "verdict": "NEEDS_HUMAN", "reason": "INDETERMINATE" }
+    },
+    {
+      "name": "background_401_not_attributed",
+      "why": "动作唯一 + 硬断言过 + 取证里有 401 但归因到别的步(背景轮询，非本步发起) → PASS，不翻 verdict（按发起方归因非时间窗）",
+      "input": { "caseId": "tc_synth", "steps": [
+        { "stepId": "atstep_1", "intentId": "intent_1", "atom": "workflow.save",
+          "action": { "kind": "click", "resolution": "unique", "identityReadback": null, "driftProbe": null },
+          "postAssertions": [ { "kind": "noErrorEnvelope", "op": "envelopeOk", "value": "status==200", "actual": "status==200", "ok": true, "soft": false } ],
+          "forensics": { "lifecycle": { "pageerror": [], "crashed": false }, "network": [ { "url": "/ai-manager/auths/poll", "status": 401, "initiator": "background", "attributedStepId": "atstep_0", "errorEnvelope": { "field": "status", "expected": 200, "actual": 401, "ok": false } } ] } }
+      ] },
+      "expect": { "verdict": "PASS", "reason": null }
+    },
+    {
+      "name": "soft_assertion_not_gating",
+      "why": "动作唯一 + 唯一失败的是 soft 断言 + 硬断言过 + 取证干净 → PASS（soft 只进报告不进裁定树，防假绿口子反向也成立：soft 红不拖垮）",
+      "input": { "caseId": "tc_synth", "steps": [
+        { "stepId": "atstep_0", "intentId": "intent_0", "atom": "workflow.save",
+          "action": { "kind": "click", "resolution": "unique", "identityReadback": null, "driftProbe": null },
+          "postAssertions": [
+            { "kind": "noErrorEnvelope", "op": "envelopeOk", "value": "status==200", "actual": "status==200", "ok": true, "soft": false },
+            { "kind": "countChange", "op": "up", "value": 1, "actual": 0, "ok": false, "soft": true }
+          ],
+          "forensics": { "lifecycle": { "pageerror": [], "crashed": false }, "network": [] } }
+      ] },
+      "expect": { "verdict": "PASS", "reason": null }
+    }
+  ]
+}
