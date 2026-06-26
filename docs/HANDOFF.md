@@ -50,6 +50,10 @@
 2. tier-2 真机（route:human）：`catalog_wf_crud` 真绿全 PASS + 注入 HTTP500 出 SUT_DEFECT；gate 绿 ≠ 完成（护栏 #16）。
 3. 阶段4 异构评审（输入只给 spec+diff+证据）→ 阶段5 沉淀。
 
+## 后续方向：数据飞轮（按维度扩条）
+
+第一条真绿后按维度扩 flow（chat → 发布 → 画布最后），骑 regress 现成语料；排期、复利项、与纪律的加法式关系见 `docs/FLYWHEEL.md`。现在不动手，但 S1 抽象按「喂多种形状」设计。
+
 ## 待裁决（route:human）
 
 - 端态运行时 A/B/C 拍板：待 spike 证据，ADR-0006 推翻条件保持开放。
