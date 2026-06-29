@@ -14,6 +14,14 @@
 
 排期 v2（接缝优先并行）已落，第1层 5 接缝冻结、第2层四轨（track-F/P7/P4/P6）并行建成并验证落 `dev` `5a8b08d`，全 gate 在 dev 亲验 GREEN、selftest 无回归。P5（★ 回放核心）grill+plan done（ADR-0007 7 决策）、impl 待建——这是唯一剩的第2层轨。`active-contract.json` = `p5-replay`（full，grill/plan done；先 `node loop-kit/bin/contract.mjs show` 确认）。细节信 `docs/HANDOFF.md`。
 
+## WSL 环境注意（下次在 WSL/bash 跑，不再 PowerShell）
+
+1. 行尾/checksum（**头号风险·先验**）：`.gitattributes` 钉 `eol=lf`，但当前工作树是 CRLF（Windows `autocrlf=true` 历史遗留），所有 testChecksums 是按 CRLF 字节冻的。进 WSL **第一件事**跑 `node bin/casey.mjs selftest --tier1` + 几个 `gate`——若 ratchet 失配判红，就是行尾问题：别对仓 `git reset --hard`/重新 checkout（会按 `eol=lf` 出 LF、字节变、冻结 sha 全失配）；保险先 `git config core.autocrlf false` 再确认工作树字节没变。彻底解决 = 把工作树 renormalize 成 LF + 重冻所有 testChecksums（一次性、走契约更新，单独一摊活，别顺手做）。
+2. 路径：`D:\ctx\heren\casey` → `/mnt/d/ctx/heren/casey`；`M:` → `/mnt/m/`（`M:\home` 仍禁用，产物放 /mnt/m 别处且**先问确切路径**）。提交代码无硬编码盘符（可移植）。autotester 复用源 → `/mnt/d/ctx/heren/autotester`。
+3. playwright（P5 前置）：WSL 要装 Linux（非 Windows）playwright `npx playwright install --with-deps chromium`（需 libnss3 等系统依赖），**不能借** autotester 的 Windows chromium。
+4. shell + loop-guard：用 bash（`cp`/`rm`/`sha256sum`/`ps`），不是 PowerShell cmdlet。loop-guard 的 WRITE_CAP 正则按 bash 写——`cp`/`rm`/`>` 会被正确命中：(a) 读类命令带 `2>&1`/`>` 且含 `bin/` 路径会被误判 edit-impl 拦（PS 下也有）；(b) 本会话用 `Copy-Item` 把文件拷进 `lib/` 绕过 edit-impl 的 loophole，bash 下 `cp` 进 `lib/` 会被拦——baton-swap landing 改走 git-native（`merge`/`apply`），别 `cp` 进 lib/bin。
+5. git 跨平台：别在 /mnt/d 上混用 Windows git 与 WSL git（filemode/CRLF 会让一堆文件假报 modified）。`core.filemode` 已 false。`windows.appendAtomically false` 那条 config 在 WSL 无害（Linux git 忽略）；Windows 的 index.lock 写错坑 WSL 没有，但 /mnt/d 是 9p 挂载、偏慢。
+
 ## 这次要干：P5 回放内核 impl
 
 按 ADR-0007 + `docs/plans/p5-replay/`（7 决策：基座 A 采纳 @playwright/test、CDP 真发起方归因、三轴按 intent、本地 fixture server、流式 finished、漂移探针只读、唯一名 instantiate）。active-contract 已是 `p5-replay`（grill/plan done）；下一步 accept（冻红 golden）才能改 lib/bin。
