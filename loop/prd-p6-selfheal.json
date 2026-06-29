@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "task": "P6 自愈准入门 + 非就地漂移补丁（确定性骨架）：消费已冻接缝 verdict.json 的 HARNESS_ERROR 步 + drift-patch（schema + fixture），出纯函数 admitForHeal/buildDriftPatch/canApply/nextStatus。内核不让：裁判零 LLM（自愈只消费裁定）、fail-safe 不 fail-open（只对确证 HARNESS_ERROR 开闸）、非就地（人签后才应用）。判据 docs/design/txt2testreport-design.md §9.5 + 护栏 #5/#13/#14。真 L3 语义梯子重锚/真人签写回 events/签后同一 verdict.mjs 复核闭环/熔断器每步进展哈希 为后续 route:human。",
+  "specPath": "docs/plans/p6-selfheal/plan.md",
+  "testChecksums": {
+    "tests/_golden/p6-selfheal.golden.mjs": "48c28e47dd757977e9a40a203c63975ff0a274ee6a368639e1d1b81547129cbb",
+    "tests/_golden/fixtures/seams/drift-patch.fixture.json": "a862362286e27c87988199ad2b0365d5c4107c50c0c766e24bb1dcefec704e70"
+  },
+  "observability": [
+    {
+      "dimension": "真 L3 语义梯子重锚（locatorAfter 真实生成）与真实浏览器 agent",
+      "route": "human"
+    },
+    {
+      "dimension": "真人签门（CLI/webui）与签后写回 events.json（非就地应用）",
+      "route": "human"
+    },
+    {
+      "dimension": "应用后由同一冻结 verdict.mjs/check.mjs 复核闭环（postApplyRecheck 回 PASS），非 PASS 即回退升级",
+      "route": "human"
+    },
+    {
+      "dimension": "熔断器每步进展哈希、同一步 N 次漂移升级 inbox（flaky locator 非一次性漂移）",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-heal-gate",
+      "desc": "S1 自愈准入门 + 非就地漂移补丁骨架：lib/heal-gate.mjs 纯函数 admitForHeal(verdictStep)->{admit,reason} 只对 HARNESS_ERROR 开闸、其余三态与畸形入参 fail-closed（护栏 #13/#14）；lib/drift-patch.mjs 纯函数 buildDriftPatch 出符合 drift-patch.schema 的 proposed 补丁（签名 before===after、引 verdict=HARNESS_ERROR + driftProbe.sameSignatureUniquePresent、humanSignoff:null/status:proposed/appliedAt:null），canApply 仅人签 apply 且 status=signed 才 true（人签后才应用，护栏 #5），nextStatus 校 proposed→signed→applied 合法迁移、非法跳变抛错。自愈是 verdict 下游消费者、不进裁判进程（护栏 #15），不碰已冻内核。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p6-selfheal.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-06-29T09:10:02.343Z 全部 acceptance exit 0"
+    }
+  ]
+}
