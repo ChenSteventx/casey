@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "task": "P7 报告渲染器（第一 hermetic 增量）：消费已冻 report-model 接缝，把报告数据源渲染成自包含测试报告三形态（HTML/Markdown/json 旁车）。判据 docs/design/report-spec.md + 已冻 fixture report-model.fixture.json。report-model.json 是唯一 golden 对象；HTML/录屏/时间戳不做字节 golden、只校结构不变量。本契约只冻命令化层（结构不变量）；真机自包含目检与语义质量为 route:human。",
+  "specPath": "docs/plans/p7-report/plan.md",
+  "testChecksums": {
+    "tests/_golden/p7-report.golden.mjs": "1e6b7955dd654f05bec2ea085f93873422dbb317a3a1bb884038fc614b158b76",
+    "tests/_golden/fixtures/seams/report-model.fixture.json": "1a9e08871c8e8b756c42daa91c4207b31f520eee784894c0c3cdc9d28b61d32e"
+  },
+  "observability": [
+    {
+      "dimension": "真机生成报告在浏览器自包含、双击可看、录屏内联可播（tier-2 目检）",
+      "route": "human"
+    },
+    {
+      "dimension": "报告文字对人读得懂、信得过（语义质量，gate 测不到，护栏 #16）",
+      "route": "human"
+    },
+    {
+      "dimension": "多用例总目录聚合维度（按 flow / 按裁定态），待第二条 flow 接入再定",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-render",
+      "desc": "S1 报告渲染器：lib/report.mjs 纯函数 renderReport(model)->{html,markdown,json} 消费已冻 report-model，出多态裁定徽章 + 缺陷单（仅 SUT_DEFECT 步）+ 期望对实际字面量 + soft 黄标置顶 + Markdown/json 旁车 + HTML 自包含无外链；薄壳 bin/report.mjs 读 report-model.json 落盘，落盘前过凭据兜底门（护栏 #7）。渲染器是 report-model 纯下游消费者，不二次推断裁定、不改冻结契约（护栏 #15）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p7-report.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-06-29T08:45:46.295Z 全部 acceptance exit 0"
+    }
+  ]
+}
