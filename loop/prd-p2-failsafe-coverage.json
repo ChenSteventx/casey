@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "task": "track-F 回归锁定：把真异构评审(codex gpt-5.5)引出的 C1-C4 覆盖缺口 + B1-B6/A1 新 fail-safe 行为(impl 已在 commit 7923088 修好)锁成自包含 golden。green-from-start 回归锁——只新增 tests + prd、不碰任何已冻内核 impl。红基线已对 594ecf4 旧版逐条核对(B1/B2/B3/B4/B5/B6/A1 系列红、C1/C2 系列已绿属特征化补钉)，对 7923088 当前 impl 三 golden 全绿。",
+  "specPath": "docs/plans/p2-failsafe-coverage/plan.md",
+  "testChecksums": {
+    "tests/_golden/p2-verdict-coverage.golden.mjs": "99acd6e569803f897e83acd23fa5240a9cf288bada62bf84cbdbb79c0ccacaad",
+    "tests/_golden/p2-compile-coverage.golden.mjs": "9b080ce245fe1bb85e5f36c2c18003bd92612865053caa4b1221aa5386beda14",
+    "tests/_golden/p2-forensics-coverage.golden.mjs": "2f4d6e10b68e15b0da17269703e3c3b8d3f77b4f060d7b9bbe80fcc7097dc189"
+  },
+  "stories": [
+    {
+      "id": "f1-verdict-coverage",
+      "desc": "verdict.mjs(CLI)fail-safe 覆盖：C1 归因辨别(硬断言失败 + 5xx 归别步 → SUT_DEFECT_OR_STALE 非 SUT_DEFECT)、C2 取证背书边界(crash 归本步 → SUT_DEFECT；pageerror 归别步不背书；缺 stepId 不背书)、B1 非布尔 truthy soft 不静默降级(verdict ≠ PASS)、B2 漂移正向证据(无 resolution===none 但 driftProbe → INDETERMINATE；有 resolution===none + 探针 → HARNESS_ERROR)、B3 入参 fail-closed(steps 非数组/空 → exit 65)。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p2-verdict-coverage.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-06-29T08:47:21.068Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "f2-compile-coverage",
+      "desc": "compile-gate.mjs 的 validateDraft 破坏性硬闸覆盖：B4 无 states 旁路(registry 无 states + entityNameParam 裸名 → ok:false；带正确前缀 → ok:true)、B5 空/缺实体名(→ ok:false)、C3 前缀硬闸边界(prefix='' → ok:false；prefix 缺失 undefined → ok:false)。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p2-compile-coverage.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-06-29T08:47:21.460Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "f3-forensics-coverage",
+      "desc": "forensics.mjs 的 checkErrorEnvelope 覆盖：B6 信封 fail-closed(缺 successValue / body 缺字段 / 空白 successField → ok:false；正常 → ok:true)、A1 凭据红线(successField 命中敏感字段名如 token → ok:false 且 actual===undefined，绝不读取/回传凭据值)。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p2-forensics-coverage.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-06-29T08:47:21.850Z 全部 acceptance exit 0"
+    }
+  ]
+}
