@@ -12,6 +12,8 @@
 //
 // 异构评审加固（2026-06-29）：取证按本步归因（生命周期同 network 规矩）、缺失 action 不当 true、
 //   无硬断言不静默 PASS、缺 stepId 不假命中、入参畸形 fail-closed。
+// 真异构评审续（2026-06-29 codex gpt-5.5）：soft 仅 ===true 才算（防非布尔 truthy 静默降级失败硬断言）、
+//   HARNESS_ERROR 须 resolution==='none' 正向 miss 证据（缺则落 fail-safe）、steps 非数组/空 fail-closed。
 
 import { readFileSync, writeFileSync } from 'node:fs';
 
@@ -56,14 +58,22 @@ function forensicsBacksSutError(forensics, stepId) {
 }
 
 // 只读漂移探针信号：同稳定签名的唯一元素仍在（仅 locator 漂移）。
+// 自愈门只对正向确证的漂移开闸（护栏 #13）：须同时有「录制 locator 未命中」(resolution==='none')
+// 与「同稳定签名唯一元素仍在」。只凭 driftProbe、缺 miss 证据不足证 —— 缺则落 fail-safe(INDETERMINATE)，
+// 绝不把可能的真缺陷误当可自愈抹平。
 function driftHolds(action) {
-  return !!(action && action.driftProbe && action.driftProbe.sameSignatureUniquePresent === true);
+  return !!(
+    action &&
+    action.resolution === 'none' &&
+    action.driftProbe &&
+    action.driftProbe.sameSignatureUniquePresent === true
+  );
 }
 
 // §4.2 确定性判定树。
 function decide(step) {
   const ap = deriveActionPerformed(step.action);
-  const hard = (step.postAssertions || []).filter((a) => a && !a.soft); // soft 不进裁定树
+  const hard = (step.postAssertions || []).filter((a) => a && a.soft !== true); // 仅 soft===true 不进裁定树；非布尔 soft 当硬断言（防静默降级）
   const backed = forensicsBacksSutError(step.forensics, step.stepId);
 
   if (ap === 'ambiguous') return { verdict: 'NEEDS_HUMAN', reason: 'AMBIGUOUS_ACTION' };
@@ -104,8 +114,12 @@ function main() {
     console.error('verdict: axes 须为对象 { caseId, steps:[...] }');
     process.exit(65);
   }
-  const inSteps = Array.isArray(input.steps) ? input.steps : [];
-  const steps = inSteps.map((s) => {
+  if (!Array.isArray(input.steps) || input.steps.length === 0) {
+    // steps 缺失/非数组/空 = 坏数据 fail-closed，绝不静默写空 verdict（把丢轴伪装成无裁定结果）。
+    console.error('verdict: axes.steps 须为非空数组 { caseId, steps:[...] }');
+    process.exit(65);
+  }
+  const steps = input.steps.map((s) => {
     if (!s || typeof s !== 'object') {
       // 畸形步 fail-safe：不静默丢、不假 PASS。
       return { stepId: null, intentId: null, atom: null, verdict: 'NEEDS_HUMAN', reason: 'INDETERMINATE' };

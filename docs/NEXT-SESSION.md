@@ -12,19 +12,21 @@
 
 ## 一句话现状
 
-P2（slug `p2-intent-compile`，full lane）的 loop 已绿并提交（`dev` `594ecf4`）：S1/S2/S3 实现 live、`gate` GREEN 3/3、Claude 侧异构评审已收口。契约 grill/plan/accept/loop done，剩 review/learn。下一步是真异构（Codex）评审 / P7 报告渲染器 / tier-2 真机——细节见 `docs/HANDOFF.md`「下一步」。`active-contract.json` 仍是 `p2-intent-compile`（先 `node loop-kit/bin/contract.mjs show` 确认）。
+P2（slug `p2-intent-compile`，full lane）的 loop 已绿并提交（`dev` `594ecf4`），review 阶段也已收口：真异构（codex gpt-5.5、非同族）评审 + 7 条 fail-safe 修复 + 三镜头对抗核验全 sound、gate 仍 GREEN 3/3。契约 grill/plan/accept/loop/review done，仅剩 learn。下一步是 learn 收尾 / 经人确认 push / P7 报告渲染器 / tier-2 真机——细节见 `docs/HANDOFF.md`「下一步」「真异构评审」。`active-contract.json` 仍是 `p2-intent-compile`（先 `node loop-kit/bin/contract.mjs show` 确认）。
 
-## 这次要干（loop 已绿之后）
+## 这次要干（review 已收口之后）
 
-p2 的实现 loop 已完成并提交（`594ecf4`）。三件套 + 编译门接口已 live、被 golden 钉死：`bin/verdict.mjs`、`lib/forensics.mjs`、`bin/check.mjs`、`lib/compile-gate.mjs`。要动它们先 `node loop-kit/bin/contract.mjs show` 确认 active-contract，再改 impl 去满足测试（改测试文件 = Test Ratchet 判红）。
+p2 的实现 loop + review 都已收口。三件套 + 编译门接口 live、被 golden 钉死：`bin/verdict.mjs`、`lib/forensics.mjs`、`bin/check.mjs`、`lib/compile-gate.mjs`（review 又落了 7 条 fail-safe 修复，仍不动冻结 golden）。要动它们先 `node loop-kit/bin/contract.mjs show` 确认 active-contract，再改 impl 去满足测试（改测试文件 = Test Ratchet 判红）。
 
-三选一推进（细节见 `docs/HANDOFF.md`「下一步」）：
+推进选项（细节见 `docs/HANDOFF.md`「下一步」「真异构评审」）：
 
-- **真异构（Codex 非同族）评审**：输入只给 spec+diff+证据（护栏 #9）。`omc ask` 未装，走 `codex review` 只读模式或人工跑；本机是零信任工作区，往外发代码先确认合规。
-- **P7 报告渲染器**：按 `docs/design/report-spec.md`（拆分布局 + 多态徽章 + Markdown，反向约束 `verdict.json` 字段）。需起独立契约 `contract init <p7-slug> --lane <...>`，走 grill/plan/accept→loop；单活契约下等 p2 review/learn 收口或显式切。
+- learn 收尾：本契约最后一阶段 `contract advance learn`；learn 产物见 `docs/plans/p2-intent-compile/learn.md`。
+- push（review 已 done、已解锁）：经人确认后推 `dev`；本机零信任，push 前确认合规。
+- 下轮 acceptance-gate：把真异构评审延后项 C1-C4 + 新 fail-safe 行为补成冻结 golden（改冻结 golden 须走契约更新，不能在 loop 里改）。
+- **P7 报告渲染器**：按 `docs/design/report-spec.md`（拆分布局 + 多态徽章 + Markdown，反向约束 `verdict.json` 字段）。需起独立契约 `contract init <p7-slug> --lane <...>`，走 grill/plan/accept→loop；单活契约下等 p2 learn 收口或显式切。
 - **tier-2 真机**（route:human）：`catalog_wf_crud` 真绿全 PASS + 注 HTTP500 出 `SUT_DEFECT`。依赖尚未建的回放管线（P3 编译 + P5 回放），现阶段不可达。
 
-裁判判据细节以 `tests/_golden/fixtures/p2/verdict-cases.json`（8 case）+ `grill.md` 为准；评审已加固的 fail-safe 收口见 `HANDOFF.md`「异构评审」节。
+裁判判据细节以 `tests/_golden/fixtures/p2/verdict-cases.json`（8 case）+ `grill.md` 为准；评审加固的 fail-safe 收口见 `HANDOFF.md`「异构评审」「真异构评审」节。
 
 ## 纪律硬约束（反复栽的，务必守）
 

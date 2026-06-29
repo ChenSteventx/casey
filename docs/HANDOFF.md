@@ -5,11 +5,11 @@
 
 ## 当前状态（2026-06-29）
 
-P2（slug `p2-intent-compile`，full lane）的 loop **已绿并提交**。契约阶段：grill / plan / accept / loop 全 done，剩 review / learn。
+P2（slug `p2-intent-compile`，full lane）：loop 已绿并提交，review 阶段本会话已收口。契约阶段 grill / plan / accept / loop / review 全 done，仅剩 learn。
 
 - `gate --prd loop/prd-p2-intent-compile.json` = GREEN 3/3；`casey selftest --tier1` 全绿、无回归。
-- 已提交：`dev` 分支 `594ecf4`（14 文件，含实现 + 文档 + 契约 prd 翻绿）。**未 push**（push 需 review done）。
-- 异构评审 Claude 侧已跑并按 fail-safe 收口（见下节）。
+- 真异构评审（codex gpt-5.5，非同族）已跑：11 条发现 → 7 条 fail-safe 修复落 impl（不动冻结 golden）→ 三镜头对抗核验全 sound、0 真问题（见「真异构评审」节）。
+- 已提交：`dev` `594ecf4`（loop 绿）+ 本会话 review 修复一笔。未 push（push 需 review done，现已满足，待人确认）。
 
 ## 实现产物（live）
 
@@ -40,6 +40,26 @@ P2（slug `p2-intent-compile`，full lane）的 loop **已绿并提交**。契�
 - 冻结 golden 边界覆盖缺口：`atom` 卷回未断言、空 prefix 无 case、CASE_DEFECT 分支无 case —— 改 golden 触 ratchet，须走契约更新补冻。
 - design §6 把「带期望对实际」的 `verdict.json` 与 `verdict.mjs` 最小输出混名、`passes` 归属错挂；§4.2/§9.1 取证记录缺 `attributedStepId` —— 留 design 对账（`report-spec` §7 已记）。
 
+## 真异构评审（codex 侧，2026-06-29）
+
+补上「非同族」这一环（护栏 #9：只喂 spec+diff+门禁证据，不喂实现者叙事）。codex 实际模型 gpt-5.5、xhigh 推理、只读。Windows 只读沙箱起不了进程（CreateProcessWithLogonW 267、七次重试全败、首轮交白卷），改把评审包 inline 进 stdin、明令不跑 shell 绕过；评审包在 `scratchpad/codex-review/`。11 条发现，分诊后 7 条落 impl（fail-safe hardening，不动冻结 golden、gate 仍 GREEN）：
+
+- B4/B5（最关键）：破坏性前缀硬闸原裹在 `checkStateMachine` 里、只在 `registry.states` 存在时跑 —— 无 states 注册表会整条绕过，空/缺实体名旧版静默放行。抽成独立 `checkDestructivePrefix`，不依赖 states、空名 fail-closed。
+- B1：`soft` 仅 `=== true` 才不进裁定树（非布尔 truthy 不再静默降级失败硬断言）。
+- B2：`HARNESS_ERROR` 须 `resolution==='none'` 正向 miss 证据 + 漂移探针，缺则落 fail-safe（护栏 #13，防真缺陷被误当可自愈）。
+- B3：`verdict` 入参 `steps` 非数组/空 → exit 65（不再静默写空 verdict）。
+- B6：信封缺 `successValue`、body 缺字段、空白字段名 → 一律 `ok:false`（堵 `undefined===undefined` 假判）。
+- A1：`successField` 命中凭据字段名 denylist → 不读不回传值（护栏 #7 落到代码）。
+
+经验证：13 探针全过（含反向不误伤：真漂移仍 `HARNESS_ERROR`、合法前缀仍放行、正常信封仍 `ok:true`）；三镜头对抗核验（回归 / 新 fail-open / 护栏，run `wf_317cbbc4-fb6`）全 sound、0 真问题。评审取证留 `loop/audit.jsonl`（review/pass 记录）。
+
+延后项（codex C1-C4 + 本轮新 fail-safe 行为，留下轮 acceptance-gate 契约更新补冻结 golden；改冻结 golden 触 ratchet）：
+- C1：现有 `background_401` golden 无辨别力（硬断言全过先 PASS、根本没走归因分支）—— 需「硬断言失败 + SUT 错误归因别步 → 非 SUT_DEFECT」的辨别 case。
+- C2：crash / pageerror 背书分支、缺 stepId 不背书 防护，均无 case。
+- C3：空 / 缺 prefix + 空实体名破坏性硬闸，无 case。
+- C4：信封坏配置（缺 successValue / 空白字段名）+ 敏感字段 denylist，无 case。
+- 另：B1（非布尔 soft）、B2（缺 miss 证据不自愈）、B3（steps 非数组/空 fail-closed）三条新分支同样待钉。
+
 ## 锁定的决策（2026-06-29）
 
 - **岔一**（已锁）：轴通用 = 实现纪律，不是预留字段。`verdict.mjs` 按断言种类不可知、kind 枚举只在 `check.mjs`，新维度纯加法；流式回复对机器裁判 = 「一条网络记录 + 一个断言」，`StepAxes` 不重做。已落护栏第十七条。
@@ -50,13 +70,13 @@ P2（slug `p2-intent-compile`，full lane）的 loop **已绿并提交**。契�
 
 ## 下一步
 
-1. **真异构（Codex 非同族）评审**：输入只给 spec+diff+证据（护栏 #9）。注意 `omc ask` 未装、本机是零信任工作区往外发代码有合规考量；走 `codex review` 只读模式或人工跑。
-2. **P7 报告渲染器**（拆分 + 多态 + Markdown，按 `report-spec`）：需起独立契约（grill/plan/accept→loop）；单活契约下要等 p2 review/learn 收口或显式切换。
-3. **tier-2 真机**（route:human，护栏 #16 gate 绿≠完成）：`catalog_wf_crud` 真绿全 PASS + 注 HTTP500 出 `SUT_DEFECT`。**依赖尚未建的回放管线（P3 编译 + P5 回放）**——现在 Casey 只有 hermetic 裁判内核、没有真站回放路径，故 tier-2 暂不可达。
+1. **P7 报告渲染器**（拆分 + 多态 + Markdown，按 `report-spec`）：需起独立契约（grill/plan/accept→loop）；单活契约下要等 p2 learn 收口或显式切换。
+2. **tier-2 真机**（route:human，护栏 #16 gate 绿≠完成）：`catalog_wf_crud` 真绿全 PASS + 注 HTTP500 出 `SUT_DEFECT`。**依赖尚未建的回放管线（P3 编译 + P5 回放）**——现在 Casey 只有 hermetic 裁判内核、没有真站回放路径，故 tier-2 暂不可达。
+3. 收尾：本契约 learn 阶段；经人确认后 push（review 已 done、push 已解锁）。下轮 acceptance-gate 把上面真异构评审「延后项」C1-C4 + 新 fail-safe 行为补成冻结 golden。
 
 ## 契约 / 运维
 
-- `loop/active-contract.json` = `p2-intent-compile`（full lane）；grill/plan/accept/loop done，review/learn pending。
+- `loop/active-contract.json` = `p2-intent-compile`（full lane）；grill/plan/accept/loop/review done，learn pending。
 - 旧 `p2-testcase` 契约已被取代作废。
 - 全程过 `term-lint`；本会话新登记词条：`三轴`/`chat`/`移植`/`CSS`/`trace`/`commit`/`push`/`PowerShell`。
 
