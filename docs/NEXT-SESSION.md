@@ -1,4 +1,4 @@
-# 下个 session 接续提示词（Casey / p2-intent-compile loop）
+# 下个 session 接续提示词（Casey / 排期 v2 第2层，P5 回放内核 next）
 
 > 用法：下次只需说「读 `docs/NEXT-SESSION.md` 接着干」。本文件是给接续 Claude 的执行指令；状态事实以 `docs/HANDOFF.md` 为准，二者冲突时信 HANDOFF。
 
@@ -12,26 +12,28 @@
 
 ## 一句话现状
 
-P2（slug `p2-intent-compile`，full lane）的 loop 已绿并提交（`dev` `594ecf4`），review 阶段也已收口：真异构（codex gpt-5.5、非同族）评审 + 7 条 fail-safe 修复 + 三镜头对抗核验全 sound、gate 仍 GREEN 3/3。契约 grill/plan/accept/loop/review done，仅剩 learn。下一步是 learn 收尾 / 经人确认 push / P7 报告渲染器 / tier-2 真机——细节见 `docs/HANDOFF.md`「下一步」「真异构评审」。`active-contract.json` 仍是 `p2-intent-compile`（先 `node loop-kit/bin/contract.mjs show` 确认）。
+排期 v2（接缝优先并行）已落，第1层 5 接缝冻结、第2层四轨（track-F/P7/P4/P6）并行建成并验证落 `dev` `5a8b08d`，全 gate 在 dev 亲验 GREEN、selftest 无回归。P5（★ 回放核心）grill+plan done（ADR-0007 7 决策）、impl 待建——这是唯一剩的第2层轨。`active-contract.json` = `p5-replay`（full，grill/plan done；先 `node loop-kit/bin/contract.mjs show` 确认）。细节信 `docs/HANDOFF.md`。
 
-## 这次要干（review 已收口之后）
+## 这次要干：P5 回放内核 impl
 
-p2 的实现 loop + review 都已收口。三件套 + 编译门接口 live、被 golden 钉死：`bin/verdict.mjs`、`lib/forensics.mjs`、`bin/check.mjs`、`lib/compile-gate.mjs`（review 又落了 7 条 fail-safe 修复，仍不动冻结 golden）。要动它们先 `node loop-kit/bin/contract.mjs show` 确认 active-contract，再改 impl 去满足测试（改测试文件 = Test Ratchet 判红）。
+按 ADR-0007 + `docs/plans/p5-replay/`（7 决策：基座 A 采纳 @playwright/test、CDP 真发起方归因、三轴按 intent、本地 fixture server、流式 finished、漂移探针只读、唯一名 instantiate）。active-contract 已是 `p5-replay`（grill/plan done）；下一步 accept（冻红 golden）才能改 lib/bin。
 
-推进选项（细节见 `docs/HANDOFF.md`「下一步」「真异构评审」）：
+前置硬阻塞：casey 未装 playwright（autotester 有 `@playwright/test` 可借/装）—— 回放基座 A 先补环境。
 
-- learn 收尾：本契约最后一阶段 `contract advance learn`；learn 产物见 `docs/plans/p2-intent-compile/learn.md`。
-- push（review 已 done、已解锁）：经人确认后推 `dev`；本机零信任，push 前确认合规。
-- 下轮 acceptance-gate：把真异构评审延后项 C1-C4 + 新 fail-safe 行为补成冻结 golden（改冻结 golden 须走契约更新，不能在 loop 里改）。
-- **P7 报告渲染器**：按 `docs/design/report-spec.md`（拆分布局 + 多态徽章 + Markdown，反向约束 `verdict.json` 字段）。需起独立契约 `contract init <p7-slug> --lane <...>`，走 grill/plan/accept→loop；单活契约下等 p2 learn 收口或显式切。
-- **tier-2 真机**（route:human）：`catalog_wf_crud` 真绿全 PASS + 注 HTTP500 出 `SUT_DEFECT`。依赖尚未建的回放管线（P3 编译 + P5 回放），现阶段不可达。
+组件（accept→loop）：
+- fixture server（新建假 SUT，借 autotester `web/server.mjs` 的 http 骨架；它是控制台不是 SUT mock、非照搬）：静态假 SUT HTML（含 events 所指 role/accessibleName 元素）+ 可脚本化路由（save 200/500+信封、背景 poll 401、SSE 流、触 pageerror）。
+- 回放 runner：移植 autotester `robust-actions`/`_fixtures`，消费已冻 `tests/_golden/fixtures/seams/events.fixture.json`、按 intentId 聚合 N 个 event 依序回放、`instantiate` 填 `{{uniqueName}}`（atl_ 由 compile-gate 注入）。
+- `watchNetworkForensics`（新建）：CDP `Network.initiator` 真发起方 + site.json 背景 denylist + 证不出归 null（背景 401 不翻 verdict 的命门）；`watchPageLifecycle` 移植。
+- 三轴产出：按 intent 出 `axes.json`（形态对齐已冻 `tests/_golden/fixtures/p2/verdict-cases.json` 的 StepAxes）→ 喂已冻 `bin/verdict.mjs`。
+- 只读漂移探针 `findEquivalentAffordance`：同稳定签名 count===1（不点、不改 spec）。
+- 红 golden 对 fixture server：replay→axes→verdict happy path + 注 500 出 SUT_DEFECT + 背景 401 不背书 + 漂移出 HARNESS_ERROR + 流式 finished；accept(--red-verified)→loop 绿。
 
-裁判判据细节以 `tests/_golden/fixtures/p2/verdict-cases.json`（8 case）+ `grill.md` 为准；评审加固的 fail-safe 收口见 `HANDOFF.md`「异构评审」「真异构评审」节。
+第2层产物已 live、被各 golden 钉死（勿改测试）：`lib/report.mjs`(P7)、`lib/expected-compile.mjs`+`lib/sign-gate.mjs`(P4)、`lib/heal-gate.mjs`+`lib/drift-patch.mjs`(P6)、`tests/_golden/p2-*-coverage.golden.mjs`(track-F)。已冻接缝在 `tests/_golden/schemas/` + `tests/_golden/fixtures/seams/`。
 
 ## 纪律硬约束（反复栽的，务必守）
 
 - 统一语言（ADR-0005）：动任何词先查 `CONTEXT.md`，有现成用现成、造词先登记。**绝不在回合输出里发加粗英文**——连散文标题加粗拉丁字母都会被 Stop hook 当场拦；每条要发的话先过 `node loop-kit/bin/term-lint.mjs`（检的是含加粗的最终形态），code 用反引号是安全的、不会被扫。裁判义用 裁定/裁判/多态裁定，路由义用 路由人。
-- 阶段互锁：`edit-impl` 已解锁（accept done）；但 `commit-impl` 需 loop done、`push` 需 review done；动 `lib`/`bin` 前确认 active-contract 还是本 slug。
+- 阶段互锁：active-contract = `p5-replay`（full）；P5 accept 未走 → 先 accept 冻红 golden 才能改 `lib`/`bin`，`commit-impl` 需 loop done。单活契约 baton：并行多契约会撞主树共享槽（教训见 HANDOFF「契约/运维」），别再盲目并行起多 full 契约。
 - 裁判零 LLM（护栏 #15）：`verdict.mjs` 纯确定性，自愈是其下游消费者、本期不做。fail-safe 不 fail-open（#14）：机器证不出一律 `NEEDS_HUMAN`。冻结测试只读（#1）。`.auth/`、`site.json` 凭据不进任何输出/日志/报告（#7）。
 - **裁判按种类不可知（岔一，2026-06-29 锁）**：`verdict.mjs` 消费已判好的 `StepAxes`，对 `postAssertions` 只把硬断言 `ok` 与上、忽略 `soft`，**绝不按种类分支**（不 switch on `kind`）；取证缺失子字段当「本步无此特征」、不报解析错；断言 `kind` 只在 `check.mjs` 枚举。这样对话/发布等新维度是纯加法、`verdict.mjs` 不动。背景与岔二/岔三倾向见 `docs/FLYWHEEL.md` 开 loop 前细化（2026-06-29）条。
 - Bash 小坑：含 `2>&1` 或 `>` 重定向、且命令里带 `bin/` 路径，会被 loop-guard 误判 edit-impl 拦——读类命令别带重定向。
@@ -43,7 +45,7 @@ p2 的实现 loop + review 都已收口。三件套 + 编译门接口 live、被
 
 ## 待裁决（route:human）
 
-端态运行时 A/B/C（采纳 @playwright/test / 解耦纯 mjs / 桥接）待 spike 证据拍板，ADR-0006 推翻条件保持开放；其余见 `loop/prd-p2-intent-compile.json` 的 observability。
+端态运行时 A/B/C 已拍 A（ADR-0007）。剩 route:human：CDP initiator 真发起方栈分类在真 Heren 流量下的可靠度（ADR-0007 推翻条件——不可靠则退「denylist + 活动步窗 + 仍证不出归 null」，绝不退纯时间窗）；tier-2 真机注 HTTP500 出 SUT_DEFECT；其余见各 prd observability。
 
 ## 文风
 

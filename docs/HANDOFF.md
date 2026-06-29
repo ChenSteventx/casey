@@ -3,13 +3,21 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 当前状态（2026-06-29）
+## 当前状态（2026-06-29 晚续）
 
-P2（slug `p2-intent-compile`，full lane）：loop 已绿并提交，review 阶段本会话已收口。契约阶段 grill / plan / accept / loop / review 全 done，仅剩 learn。
+排期 v2（接缝优先并行）落地 → 第1层接缝冻结完成 → 第2层四轨并行建成并验证落 `dev`；P5（★ 回放核心）grill+plan done、impl 待建。dev `5a8b08d`，全部契约 gate 在 dev 亲验 GREEN、`casey selftest --tier1` 无回归。
 
-- `gate --prd loop/prd-p2-intent-compile.json` = GREEN 3/3；`casey selftest --tier1` 全绿、无回归。
-- 真异构评审（codex gpt-5.5，非同族）已跑：11 条发现 → 7 条 fail-safe 修复落 impl（不动冻结 golden）→ 三镜头对抗核验全 sound、0 真问题（见「真异构评审」节）。
-- 已提交：`dev` `594ecf4`（loop 绿）+ 本会话 review 修复一笔。未 push（push 需 review done，现已满足，待人确认）。
+里程碑进度：
+
+- P2 裁判内核（`p2-intent-compile`）：loop 绿 + review 收口（真异构 codex 评审 7 修复 + 三镜头核验，见下「异构评审」「真异构评审」节）。learn 未走。
+- 排期 v2：`docs/plans/roadmap-parallel.md` —— 接缝优先、运行时依赖 != 开发顺序、P3 不在关键路径、冻接缝后 P4/P5/P6/P7 全可并行（机理同 P2 对合成 fixture 跑 hermetic）。
+- 第1层接缝冻结（契约 `seams-freeze`，gate 1/1）：5 条接缝 schema + 合成 fixture（events / observed-reality / report-model / drift-patch / expected-frozen）+ `prd.schema` v2（向后兼容 v1），落 `tests/_golden/schemas/` + `tests/_golden/fixtures/seams/`，golden `tests/_golden/seams-freeze.golden.mjs`。3 决定：冻结 expected[] 走旁车 `expected.frozen.json`（护栏 #5）、`expectedVerdict` 命名、`assertionOp` 封闭 enum。
+- 第2层（并行 worktree 建 → 合并 dev → 各 gate 亲验绿）：
+  - track-F（`p2-failsafe-coverage`）：C1-C4 + B1-B6/A1 回归锁 golden 3 个（`tests/_golden/p2-*-coverage.golden.mjs`），把真异构评审延后项锁死。
+  - P7（`p7-report`）：`lib/report.mjs` + `bin/report.mjs` 报告渲染器（report-model → HTML/Markdown/json，多态徽章 + 缺陷单仅 SUT_DEFECT + 期望对实际 + 凭据兜底门）。
+  - P4（`p4-freeze`）：`lib/expected-compile.mjs`（expected.frozen → check 命令）+ `lib/sign-gate.mjs`（人签字段校验）确定性骨架。
+  - P6（`p6-selfheal`）：`lib/heal-gate.mjs`（准入门只对 HARNESS_ERROR）+ `lib/drift-patch.mjs`（非就地补丁、签名 before===after 等值、人签后才 apply）。
+- P5（`p5-replay`，full lane）：grill+plan done（ADR-0007 + `docs/plans/p5-replay/`，7 决策）。impl 未建。
 
 ## 实现产物（live）
 
@@ -70,18 +78,21 @@ P2（slug `p2-intent-compile`，full lane）：loop 已绿并提交，review 阶
 
 ## 下一步
 
-1. **P7 报告渲染器**（拆分 + 多态 + Markdown，按 `report-spec`）：需起独立契约（grill/plan/accept→loop）；单活契约下要等 p2 learn 收口或显式切换。
-2. **tier-2 真机**（route:human，护栏 #16 gate 绿≠完成）：`catalog_wf_crud` 真绿全 PASS + 注 HTTP500 出 `SUT_DEFECT`。**依赖尚未建的回放管线（P3 编译 + P5 回放）**——现在 Casey 只有 hermetic 裁判内核、没有真站回放路径，故 tier-2 暂不可达。
-3. 收尾：本契约 learn 阶段；经人确认后 push（review 已 done、push 已解锁）。下轮 acceptance-gate 把上面真异构评审「延后项」C1-C4 + 新 fail-safe 行为补成冻结 golden。
+1. P5 回放内核 impl（★ 唯一剩的第2层轨）：按 ADR-0007 + `docs/plans/p5-replay/`（7 决策）。前置：casey 未装 playwright（autotester 有 `@playwright/test` 可借/装），回放基座 A 需先补环境。组件：fixture server（新建假 SUT，借 autotester `web/server.mjs` 的 http 骨架——它是控制台不是 SUT mock，非照搬）+ 回放 runner（移植 `robust-actions`/`_fixtures`）+ CDP `watchNetworkForensics`（真发起方 + denylist + 证不出归 null）+ 三轴产出（按 intent）+ 只读漂移探针。流程 accept（红 golden 对 fixture server）→ loop（绿）。
+2. tier-2 真机（route:human，护栏 #16 gate 绿 != 完成）：`catalog_wf_crud` 真绿全 PASS + 注 HTTP500 出 `SUT_DEFECT`。依赖 P3 编译 + P5 回放，P5 绿后可达。
+3. 收尾项：P2 learn 阶段；push（review done 已解锁，但本仓无 git 远端、待定 GitHub 目标仓）；下轮 design §6 命名/归属对账（真异构延后项 C1-C4 已由 track-F 补冻）。
 
 ## 契约 / 运维
 
-- `loop/active-contract.json` = `p2-intent-compile`（full lane）；grill/plan/accept/loop/review done，learn pending。
-- 旧 `p2-testcase` 契约已被取代作废。
-- 全程过 `term-lint`；本会话新登记词条：`三轴`/`chat`/`移植`/`CSS`/`trace`/`commit`/`push`/`PowerShell`。
+- `loop/active-contract.json` = `p5-replay`（full lane）；grill/plan done、accept/loop pending。其余契约（p2-intent-compile / seams-freeze / p2-failsafe-coverage / p7-report / p4-freeze / p6-selfheal）均 loop done、产物落 dev。
+- 单活契约 baton 教训（重要）：loop-kit 是单活契约（hook 读主树共享 `active-contract.json`）。本会话并行起多契约（worktree 隔离）撞了这个单 baton 槽——worktree 子代理 commit 受主树 baton 互锁：P6 子代理曾临时翻主 baton（已还原）、P4 子代理被拦只暂存未提交。landing 办法：已 committed 的分支用 `git merge`（不被 commit 互锁拦）；未提交的（P4）把文件拷进 dev、把主 baton 临时切到其真实 loop-done 契约提交、再还原。未来真并行须按 design §3.1：`LOOP_CONTRACT_FILE` 参数化 + `breaker --state`（未建）。
+- push：本仓无 git 远端（`git remote` 空），待定 GitHub 目标仓（参考 autotester = 私有 `ChenSteventx/autotester`）。
+- 删不动的残留：`docs/plans/seams-freeze/proposed/`（评审副本，破坏性删除被权限层拦，待人 `! Remove-Item -Recurse -Force` 清）。
+- 旧 `p2-testcase` 契约已被取代作废。term-lint 全程过；Windows git 需 `git config windows.appendAtomically false`（已设，否则 merge 报 index.lock 写错）。
 
 ## 历史层（溯源用，非现状）
 
 - **P0/P1**（live，不变）：loop-kit 引擎（与 autotester 字节一致，ADR-0001）、护栏（12 迁移 + 13–17 新增）、`CONTEXT.md` 两限界上下文、ADR 0001–0006、`casey selftest --tier1`。
 - **2026-06-26**：P2 重定义走完 grill→plan→accept，6 路深读 `regress_autotest`、ADR-0006 的 14 风险落代码核验、冻结 5 红 golden + 2 fixture + prd，停在 loop 前。详见 `docs/plans/p2-intent-compile/grill.md`。
 - **2026-06-29**：开 loop 前的岔一/二/三 + 质量接口讨论 → 落档（FLYWHEEL/design/report-spec/flywheel-schedule）→ 实现 loop（S1/S2/S3 绿）→ 提交 `594ecf4` → Claude 侧异构评审 → 收口。
+- **2026-06-29 晚续**：codex 真异构评审收口（7 修复，`7923088`）→ omc 列禁言禁用 → 排期 v2（接缝优先并行，`roadmap-parallel.md`）→ 第1层 5 接缝冻结（`4d184f6`）→ 第2层并行 worktree：track-F/P7（`b00b7c7`/`0832ed3`，合并 `e06e309`/`9d92892`）+ P6（`8734307`，合并 `1a37eba`）+ P4（`5a8b08d`）→ P5 grill+plan（ADR-0007）。第2层四轨全在 dev 亲验绿。单活契约 baton 撞并行的教训见「契约/运维」。
