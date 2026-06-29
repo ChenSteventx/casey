@@ -112,3 +112,4 @@
 | `CLI` | 命令行接口 | Command-Line Interface：Casey 的确定性引擎入口 `bin/casey.mjs`；skill 与 MCP 都是它的薄壳 | — |
 | `MCP` | 模型上下文协议 | Model Context Protocol：编辑器/agent 驱动工具的协议；`mcp/casey-server.mjs` 是 CLI 的 MCP 薄壳 | — |
 | `skill` | 技能 | Claude Code 的能力封装；`.claude/skills/casey` 是把自然语言意图映射到 CLI 命令的薄壳 | — |
+| `PowerShell` | （Windows 主壳） | Casey 在 win32 主机上的主命令行壳（与 Bash 工具并存、各自语法）；运维/卸载脚本用它 | — |

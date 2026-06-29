@@ -12,22 +12,19 @@
 
 ## 一句话现状
 
-P2 已重定义（slug `p2-intent-compile`，full lane），grill/plan/accept 全 done，5 个红 golden + 2 fixture sha256 冻结、prd 生成，停在 loop 前。`edit-impl` 已解锁；`active-contract.json` 应仍是 `p2-intent-compile`（先 `node loop-kit/bin/contract.mjs show` 确认）。
+P2（slug `p2-intent-compile`，full lane）的 loop 已绿并提交（`dev` `594ecf4`）：S1/S2/S3 实现 live、`gate` GREEN 3/3、Claude 侧异构评审已收口。契约 grill/plan/accept/loop done，剩 review/learn。下一步是真异构（Codex）评审 / P7 报告渲染器 / tier-2 真机——细节见 `docs/HANDOFF.md`「下一步」。`active-contract.json` 仍是 `p2-intent-compile`（先 `node loop-kit/bin/contract.mjs show` 确认）。
 
-## 这次要干：阶段3 loop（S1 优先，一个 story 绿了再下一个）
+## 这次要干（loop 已绿之后）
 
-开 loop 先 `node loop-kit/bin/breaker.mjs --reset`。按下列冻结接口实现——这些签名被 golden 钉死，改测试文件 = Test Ratchet 判红，只能改 impl 去满足测试：
+p2 的实现 loop 已完成并提交（`594ecf4`）。三件套 + 编译门接口已 live、被 golden 钉死：`bin/verdict.mjs`、`lib/forensics.mjs`、`bin/check.mjs`、`lib/compile-gate.mjs`。要动它们先 `node loop-kit/bin/contract.mjs show` 确认 active-contract，再改 impl 去满足测试（改测试文件 = Test Ratchet 判红）。
 
-- S1（裁判内核）：
-  - `bin/verdict.mjs --axes <in> --out <out>`：读 `{caseId,steps:[StepAxes]}`，跑 design §4.2 判定树出 `{steps:[{stepId,intentId,atom,verdict,reason}]}`，零 LLM、断言续跑（不 fail-fast）。
-  - `lib/forensics.mjs` 导出 `checkErrorEnvelope(body,{successField,successValue}) -> {field,expected,actual,ok}`。
-  - `bin/check.mjs --kind --op [--value] --validate-only`：词表/op 合法 exit 0、越界 exit≠0；含新增 kind `noErrorToast`、`countChange` 绝对归 0。
-  - 验：`node tests/_golden/p2-verdict.golden.mjs` / `p2-forensics.golden.mjs` / `p2-check-vocab.golden.mjs`。
-- S2（编译门）：`lib/compile-gate.mjs` 导出 `validateDraft(draft,{prefix,registry}) -> {ok,problems}`：复制并参数化 regress `_flow-authoring` 的双闸（结构 + 状态机），搬 `atoms.registry` 数据，前缀从参数注入（非写死）。验：`p2-compile-gate.golden.mjs`。
-- S3（对账）：改 `design §2.1`（加 `noErrorToast`、信封成功字段参数化、补登断言续跑执行模型）、`bootstrap plan`（P3 recorder 降级为陌生站点孵化支线）。验：`p2-reconcile.golden.mjs`（查标记）+ term-lint 绿。
-- 每轮：`node loop-kit/bin/gate.mjs --prd loop/prd-p2-intent-compile.json`（或 `--story <id>` 单跑），到 3/3 绿。
+三选一推进（细节见 `docs/HANDOFF.md`「下一步」）：
 
-StepAxes 三轴形态与四态判据以 `grill.md` 加 `tests/_golden/fixtures/p2/verdict-cases.json`（8 个 case）为准：动作轴吐原始信号（resolution / identityReadback / driftProbe），由 `verdict.mjs` 推 actionPerformed（解析唯一或回读成立才 true，多匹配/坐标兜底才 ambiguous）；soft 断言不进裁定树；取证按 attributedStepId 归因、非时间窗。
+- **真异构（Codex 非同族）评审**：输入只给 spec+diff+证据（护栏 #9）。`omc ask` 未装，走 `codex review` 只读模式或人工跑；本机是零信任工作区，往外发代码先确认合规。
+- **P7 报告渲染器**：按 `docs/design/report-spec.md`（拆分布局 + 多态徽章 + Markdown，反向约束 `verdict.json` 字段）。需起独立契约 `contract init <p7-slug> --lane <...>`，走 grill/plan/accept→loop；单活契约下等 p2 review/learn 收口或显式切。
+- **tier-2 真机**（route:human）：`catalog_wf_crud` 真绿全 PASS + 注 HTTP500 出 `SUT_DEFECT`。依赖尚未建的回放管线（P3 编译 + P5 回放），现阶段不可达。
+
+裁判判据细节以 `tests/_golden/fixtures/p2/verdict-cases.json`（8 case）+ `grill.md` 为准；评审已加固的 fail-safe 收口见 `HANDOFF.md`「异构评审」节。
 
 ## 纪律硬约束（反复栽的，务必守）
 
