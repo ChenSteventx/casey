@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "task": "P4 断言冻结 + 人签确定性骨架：把已冻 expected.frozen 旁车逐条 typed 断言确定性编译成可运行 check 命令（保持 prd.acceptance 形状、design §5/§8 gate 主循环原样，含 globalAssertions 无 intent 维度与 soft 标记），并对人签门做确定性字段校验（signedAt/signedAgainstBuild/signerId 齐全且非空才算数，未签拒算）。LLM 草拟语义质量、真人签 UX、checkFingerprint 守 spec 指纹为 route:human / 后续项，不在本 hermetic 增量。",
+  "specPath": "docs/plans/p4-freeze/plan.md",
+  "testChecksums": {
+    "tests/_golden/p4-freeze.golden.mjs": "5894ad657c6de55e1120a76e0fd9a6f0212783ac5c3e27056d84f9731eb899ef",
+    "tests/_golden/fixtures/seams/expected-frozen.fixture.json": "f8e5666374eb50050c713ad6787b48c318ec5ce7c3354b11ec8dabccda9f02f8"
+  },
+  "observability": [
+    {
+      "dimension": "LLM 草拟 expected[] 的语义质量与覆盖度（断言选得对不对、够不够）",
+      "route": "human"
+    },
+    {
+      "dimension": "真人签 UX（CLI --sign 形态、签署人身份核验）—— design §11 待裁决项 1",
+      "route": "human"
+    },
+    {
+      "dimension": "checkFingerprint 守 spec 指纹（pin recordedAt+length），自愈改 locator 不触棘轮的另一半",
+      "route": "human"
+    },
+    {
+      "dimension": "per-kind op 约束加固 + 冻结期 equals 含 atl_/ID 字面量 lint（design §2.1 留 P4 后续加固）",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-freeze-skeleton",
+      "desc": "S1 expected.frozen → check 命令编译（compileExpectedToChecks，纯函数）+ S2 人签门确定性字段校验（isSigned/assertSignedContract，纯函数）。一道 hermetic golden 验：① 编译条数/形状正确、逐 intent 卷回 intentId、global 无 intent、kind 在已冻 schema 词表内、带 op 的命令 spawn check --validate-only 抽验合法；② 完整签名 → 全 isSigned true / assertSignedContract ok:true，删一条 signedAt → ok:false 且 problems 非空（未签拒算数）；③ soft 断言被编译且带 --soft 标记。零外部依赖、不碰已冻内核与已冻 seams。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p4-freeze.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-06-29T09:11:58.563Z 全部 acceptance exit 0"
+    }
+  ]
+}
