@@ -36,3 +36,5 @@
     假设：让 LLM 进裁判进程会把真 bug「重锚」成绿；按时间窗归因会让背景轮询 401 翻 verdict。
 16. **[prose]** gate 绿 ≠ 完成：冻结断言须经人签门才算数，需求完成以人签真机 UAT 为准（gate 是必要非充分）。
     假设：可命令化的验收测不到语义正确性（用例是否真表达意图、真站是否真 bug），这些必须人裁。
+17. **[prose→待enforced]** 裁判按断言种类不可知：`verdict.mjs` 消费已判好的 `StepAxes`，对 `postAssertions` 只 AND 硬断言的 `ok`、忽略 `soft`，绝不按 `kind` 分支；取证缺失子字段当「本步无此特征」、不报解析错；断言 `kind` 的枚举只在 `check.mjs` 一处。
+    假设：若 `verdict.mjs` 按 kind 分支，每加一个新维度（对话/发布/画布）都要改裁判内核、重开 accept，飞轮的加法式复利失效；新 kind 应只加 `check.mjs` + 加 golden（岔一，2026-06-29 锁）。

@@ -29,6 +29,8 @@
 | Dissimilar Redundancy | 异构冗余 | 用不同实现/不同模型家族的组件互相校验，避免共享盲区（容错工程术语）；本仓库指 Codex 评审 Claude 产出 | 跨族评审, 异族评审 |
 | Circuit Breaker | 熔断器 | 连续异常达到阈值就自动停机的保护装置：迭代上限/连续零进展/同错重复（Nygard《Release It!》） | — |
 | Escalation Path | 升级路径 | 机器搞不定的事项移交给人的固定通道：写 Inbox + 通知（ITIL 术语） | 升级通道 |
+| `commit` | 提交 | git 提交；阶段互锁中 `commit-impl` 需 loop done 才放行（护栏 #11，only when user asks） | — |
+| `push` | 推送 | git 推送远端；阶段互锁中 `push` 需 review done 才放行（护栏 #11） | — |
 | Inbox | 收件箱 | 等待人裁决事项的落点文件 `loop/inbox.md`（GTD 术语） | — |
 | Guardrail | 护栏 | 永不可违反的约束清单 `loop/GUARDRAILS.md`；每条标注 [enforced]/[prose] 与它编码的假设 | — |
 | Reserved Prefix | 保留前缀 | loop 在真实环境创建的一切实体必须以 `atl_` 开头；Teardown 清扫按前缀识别（命名空间隔离） | — |
@@ -82,7 +84,11 @@
 | 重签 | Re-sign | 系统有意改版导致期望过时时，人重签新基线（新 checksum + signedAgainstBuild，旧期望归档） | — |
 | 裁定徽章 | Verdict Badge | 报告里每步的四态标记（通过/被测缺陷/过程错误/待人裁决+子类）+ 具名理由 | — |
 | 缺陷单 | Defect Ticket | 仅 `SUT_DEFECT` 生成：步号 + 期望对实际 + 取证 + 录屏时间点 + trace 引用 | — |
+| `CSS` | 层叠样式表 | Cascading Style Sheets：报告自包含靠内联 CSS、零外部依赖（autotester report.ts 把样式内联进 HTML，Casey 报告照搬此法） | — |
+| `trace` | 回放追踪档 | Playwright 逐帧追踪归档（.zip）；报告里不内嵌、复制到 `trace/` 加下载链接与 show-trace 提示 | — |
 | `channel` | 通道 | 回放目标类型：`web`（Heren 中台）/`cef`（Hi小助）/`arbitrary`（任意站点）；裁定/报告/熔断/契约层 channel 无关 | — |
+| `chat` | 对话流 | 飞轮排期第二维度：覆盖 catalog 维度碰不到的流式回复取证（`streamReplyReceived`、`waitForReplyByStream` 底座）与 `replyContains`；骑 regress `chiefcomplaint_smoke`/`echo_default_on` 语料 | — |
+| 移植 | — | 把 regress 现成 flow 用到的原子在 autotester L1 原语上重表达成吐三轴的纯 mjs、再配观测现状与 verdict golden 的工作；飞轮的主要人力成本。弃用口语简写见别名列（2026-06-29 清零并登记） | 港 |
 | `verdict.json` | 裁定档 | 可复现的机读产物：caseId + 逐步四态 + passes + 期望对实际字面量 + 取证引用；golden 唯一校验对象 | — |
 | recorder-as-library | 录制器库化 | 把 autotester 人操作录制器重构成 LLM agent 拥有 context 的库（关人抖动去噪、避导航竞态）；编译期捕获 agent 动作→events.json | — |
 | `fail-safe` | 故障安全 | 失败时退到安全态：机器证不出就路由人（`NEEDS_HUMAN`），绝不默认成可自愈（fail-open 的反面） | — |

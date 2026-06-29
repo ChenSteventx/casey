@@ -79,6 +79,8 @@ P0 引导 loop 机制(direct)  →  P1 DDD 词表 + ADR(plan)  →  P2 TestCase 
 
 **目标**：L3 agent 真机跑一遍，intent→稳健动作 落 `events.json`/`spec.ts` + `observed-<caseId>.json`。**这是红队点名最重的新建**（设计 §9.2/§9.3）。
 
+> 此节在 P2 重定义后降级（2026-06-29，见 `docs/plans/p2-intent-compile/` 与 `ADR-0006`）：P3 recorder 移出 MVP 关键路径，降为「**陌生站点孵化**新原子」支线——MVP 改走 NL→atomId→flow.json 编译门（复用 regress 双闸 `lib/compile-gate.mjs`），不靠 recorder 录 `events.json`。
+
 **流程**：把 autotester 录制器**重构成 library**（agent 拥有 context、initScript 注入 agent 页、`__atRec` 绑 agent collector、**关人抖动去噪**、避 enrichL0 导航竞态）；复用 `robust-actions`/`describe-action`/`buildSpecFromEvents`；落 `observedReality`（成功 URL/提示/回复/请求日志）；**禁纯坐标步**；记 determinism 契约（静默点后再快照）。
 
 **逻辑/兜底**：指不到→响亮报红；受熔断器约束；编译期才标 `CASE_DEFECT` 候选。

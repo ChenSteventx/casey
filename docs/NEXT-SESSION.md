@@ -34,12 +34,13 @@ StepAxes 三轴形态与四态判据以 `grill.md` 加 `tests/_golden/fixtures/p
 - 统一语言（ADR-0005）：动任何词先查 `CONTEXT.md`，有现成用现成、造词先登记。**绝不在回合输出里发加粗英文**——连散文标题加粗拉丁字母都会被 Stop hook 当场拦；每条要发的话先过 `node loop-kit/bin/term-lint.mjs`（检的是含加粗的最终形态），code 用反引号是安全的、不会被扫。裁判义用 裁定/裁判/多态裁定，路由义用 路由人。
 - 阶段互锁：`edit-impl` 已解锁（accept done）；但 `commit-impl` 需 loop done、`push` 需 review done；动 `lib`/`bin` 前确认 active-contract 还是本 slug。
 - 裁判零 LLM（护栏 #15）：`verdict.mjs` 纯确定性，自愈是其下游消费者、本期不做。fail-safe 不 fail-open（#14）：机器证不出一律 `NEEDS_HUMAN`。冻结测试只读（#1）。`.auth/`、`site.json` 凭据不进任何输出/日志/报告（#7）。
+- **裁判按种类不可知（岔一，2026-06-29 锁）**：`verdict.mjs` 消费已判好的 `StepAxes`，对 `postAssertions` 只把硬断言 `ok` 与上、忽略 `soft`，**绝不按种类分支**（不 switch on `kind`）；取证缺失子字段当「本步无此特征」、不报解析错；断言 `kind` 只在 `check.mjs` 枚举。这样对话/发布等新维度是纯加法、`verdict.mjs` 不动。背景与岔二/岔三倾向见 `docs/FLYWHEEL.md` 开 loop 前细化（2026-06-29）条。
 - Bash 小坑：含 `2>&1` 或 `>` 重定向、且命令里带 `bin/` 路径，会被 loop-guard 误判 edit-impl 拦——读类命令别带重定向。
 - gate 绿 ≠ 完成（#16）：真机三轴回放（`@playwright/test` 薄壳跑 Heren）与注入故障出 SUT_DEFECT 是 route:human 的 tier-2，不在 loop 绿范围；它们在 prd 的 observability 里。
 
 ## 后续方向：数据飞轮（第一条绿后）
 
-第一条 flow 真绿后，按维度扩 flow 是 roadmap（chat → 发布 → 画布最后），骑 regress 现成语料；排期、复利项、与 ratchet 的加法式关系见 `docs/FLYWHEEL.md`。对本次 loop 的直接影响：S1 的 `verdict`/`forensics`/`StepAxes` 抽象要按「将来喂三四种 flow 形状」设计，别只对着 `catalog_wf_crud` 长——第一条绿时飞轮的轴得已经通用，第二条接上去是港原子、不是重做内核。
+第一条 flow 真绿后，按维度扩 flow 是 roadmap（chat → 发布 → 画布最后），骑 regress 现成语料；排期、复利项、与 ratchet 的加法式关系见 `docs/FLYWHEEL.md`。对本次 loop 的直接影响：S1 的 `verdict`/`forensics`/`StepAxes` 抽象要按「将来喂三四种 flow 形状」设计，别只对着 `catalog_wf_crud` 长——第一条绿时飞轮的轴得已经通用，第二条接上去是移植原子、不是重做内核。
 
 ## 待裁决（route:human）
 

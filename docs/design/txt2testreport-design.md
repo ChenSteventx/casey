@@ -84,14 +84,15 @@ excel / json / txt / 自由文本全部归一到一个内部 `TestCase`（推广
 |---|---|---|---|---|
 | `urlPathname` | 路径变化 | **默认 `startsWith`/`matches`(正则)**；**`equals` 仅人工显式批准** | 硬 | `waitForURL` 谓词式（非 equals） |
 | `textVisible` | 干净提示/标题出现 | **只允许 `appears`（子串可见）**；**取消 `equals`** | 硬（结构式） | `expectTextVisible`（子串 + 标题主体兜底） |
-| `countChange` | 弹窗/抽屉方向增减 | `up`/`down`；**baseline 回放期实时采，绝不冻绝对值** | 软 | `expectCountChange(liveBaseline, dir)` |
+| `countChange` | 弹窗/抽屉方向增减 | `up`/`down`；**baseline 回放期实时采，绝不冻绝对值**；例外 `equals 0`（删后绝对归零——空集与基线无关、确定性安全；canonical 名 = `countChange`+op，非 `countEquals`） | 软（`equals 0` 为取证类硬判） | `expectCountChange(liveBaseline, dir)` |
 | `inputReadback` | 填写回读 | `equals`，**但值含 uniqueName 必模板化**（check 期实例化再比） | 硬 | `robustFill` 回读 |
 | `dropdownReadback` | 下拉回读 | 同上 | 硬 | `expectDropdownValue` |
 | `requiredFilled` | 提交前必填已填 | 前置 | 硬 | `expectRequiredFilled` |
 | `streamReplyReceived` | LLM 流式吐完 | **只判「匹配 urlPattern 的响应回了 expectedStatus 且 finished()」**；**禁用 bodyText/durationMs 入裁定** | 硬 | `waitForReplyByStream` |
 | `replyContains`/`replyMatches` | 回复正文含关键词/正则 | 显式谓词，绝不「语义相似」 | 硬 | 新建 check |
 | `noPageError` | 全程无 crash/pageerror | 取证 | 硬 | `watchPageLifecycle` |
-| `noErrorEnvelope` | **新增**：无「HTTP200 但 body `{code:!=0}`」软失败 | 取证 | 硬 | **新建** `watchNetworkForensics` |
+| `noErrorEnvelope` | **新增**：无「HTTP200 但 body 成功字段不符」软失败（成功字段按 channel 参数化，Heren=`status===200`，非写死 `code`） | 取证 | 硬 | **新建** `watchNetworkForensics` |
+| `noErrorToast` | **新增**：DOM 错误弹窗缺席（扫 `.hr-message`/`[role=alert]` 找「操作失败/系统异常」，ABSENCE 断言；逐条断言续跑、不首错即停） | 取证 | 硬 | **新建** DOM 探针 |
 
 **determinism 铁律（v0.2，红队 C1/C2）**：
 - **不准把易变片段冻成字面量**：URL 里的实体 ID/uuid/时间戳、`atl_<ts>` 名字、query 串 —— 一律用 `startsWith`/`matches`/模板，不用 `equals`。冻结期有 lint：`equals` 字面量含 `atl_`+数字串或像 ID 的数字段 → 报红。
@@ -193,6 +194,7 @@ elif actionPerformed===false:                                     # 这步没做
 - `passes`（gate 写、二值）只看流程断言；`verdict`（verdict.mjs 写、多态）是更细的分类。**回复内容质量不是流程裁定。**
 - `streamReplyReceived` 只判「匹配响应回 200 且 finished()」，**禁用 body/duration 入裁定**（它们天生每次变，进报告/judge 道，不进流程裁判）。
 - 要语义评分：独立异构家族 LLM-judge，**FAIL 可信、PASS 仍人抽检**，踢出确定性裁判。
+- **「内容好不好」走独立下游线，现在人工、将来自动**：回复质量的评分读抓取的回复正文，现阶段人工抽查，将来接 `LLM-judge` 顶上——**同一个下游接口，将来替换时裁判侧一行不动**；它只进报告或转人裁，**永不接进** `verdict.mjs`、绝不写 `passes`/`verdict`。机器裁判对流式永远只判「回来了且传完」，内容质量不进它那张表。
 
 ---
 

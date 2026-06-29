@@ -12,12 +12,30 @@
     "tests/_golden/fixtures/p2/compile-cases.json": "85b1a3f0382977d759411ff1728a662e899f00918a279f6fcf8dac85b02ed55c"
   },
   "observability": [
-    { "dimension": "catalog_wf_crud 真机回放真绿、verdict.json 全 PASS（tier-2，需 site.json 加登录态）", "route": "human" },
-    { "dimension": "对 save 的 POST 注入 HTTP500 后 save 步判 SUT_DEFECT 而非 HARNESS_ERROR（最关键真机验收，tier-2）", "route": "human" },
-    { "dimension": "LLM 把平台无关意图编成 atom 序列的映射保真（语义抽检）", "route": "human" },
-    { "dimension": "前缀参数化在 _flow-authoring.mjs 与 _flow-runner.ts 两份镜像行为一致（跨运行时集成，非 hermetic）", "route": "human" },
-    { "dimension": "对账后 plan/design/ADR 自洽、无与 ADR-0006 冲突的遗留表述", "route": "human" },
-    { "dimension": "端态运行时 A/B/C 拍板待 spike 证据（ADR-0006 推翻条件保持开放）", "route": "human" }
+    {
+      "dimension": "catalog_wf_crud 真机回放真绿、verdict.json 全 PASS（tier-2，需 site.json 加登录态）",
+      "route": "human"
+    },
+    {
+      "dimension": "对 save 的 POST 注入 HTTP500 后 save 步判 SUT_DEFECT 而非 HARNESS_ERROR（最关键真机验收，tier-2）",
+      "route": "human"
+    },
+    {
+      "dimension": "LLM 把平台无关意图编成 atom 序列的映射保真（语义抽检）",
+      "route": "human"
+    },
+    {
+      "dimension": "前缀参数化在 _flow-authoring.mjs 与 _flow-runner.ts 两份镜像行为一致（跨运行时集成，非 hermetic）",
+      "route": "human"
+    },
+    {
+      "dimension": "对账后 plan/design/ADR 自洽、无与 ADR-0006 冲突的遗留表述",
+      "route": "human"
+    },
+    {
+      "dimension": "端态运行时 A/B/C 拍板待 spike 证据（ADR-0006 推翻条件保持开放）",
+      "route": "human"
+    }
   ],
   "stories": [
     {
@@ -29,7 +47,8 @@
         "node tests/_golden/p2-forensics.golden.mjs",
         "node tests/_golden/p2-check-vocab.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-06-29T05:08:49.441Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-compile-gate",
@@ -38,7 +57,8 @@
       "acceptance": [
         "node tests/_golden/p2-compile-gate.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-06-29T05:08:49.894Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-reconcile",
@@ -49,7 +69,8 @@
         "node loop-kit/bin/term-lint.mjs --file docs/design/txt2testreport-design.md docs/plans/bootstrap/plan.md",
         "node tests/_golden/p2-reconcile.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-06-29T05:08:51.473Z 全部 acceptance exit 0"
     }
   ]
 }
