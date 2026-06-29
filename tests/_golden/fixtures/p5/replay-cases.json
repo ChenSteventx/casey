@@ -1,0 +1,84 @@
+{
+  "_note": "P5 回放 golden（黄金标准测试）的场景表。原则：复现已冻接缝、不另立预期。verdict（多态裁定）四态一律映射到 verdict-cases.json 的已冻八案；drift（locator 漂移）场景照 drift-patch.fixture.json 复刻其 canonical（规范稳定签名）。每条 case 标 groundedIn（事实源）。runner（回放器）真回放假 SUT 产 axes（三轴），喂已冻 verdict.mjs，golden 断言其四态与所映射的冻结案一致。改本文件=Test Ratchet（测试棘轮）判红。",
+  "anchorNote": "anchor（锚点）= 本 case 要断言裁定的那条 intent（意图步）；其余 intent 是到达锚点的铺垫、不断言。expected（期望断言）只给锚点 intent；globalAssertions（全局断言）跨步生效。",
+  "cases": [
+    {
+      "name": "happy",
+      "groundedIn": "verdict-cases.json#pass",
+      "scenario": "happy",
+      "eventsRef": "tests/_golden/fixtures/seams/events.fixture.json",
+      "anchor": { "intentId": "intent_2", "wantVerdict": "PASS", "wantReason": null },
+      "expected": [
+        { "intentId": "intent_2", "kind": "noErrorEnvelope", "op": "envelopeOk", "value": "status==200", "soft": false }
+      ],
+      "globalAssertions": [ { "kind": "noPageError", "op": "absent", "soft": false } ]
+    },
+    {
+      "name": "inject500",
+      "groundedIn": "verdict-cases.json#sut_defect",
+      "scenario": "inject500",
+      "eventsRef": "tests/_golden/fixtures/seams/events.fixture.json",
+      "anchor": { "intentId": "intent_2", "wantVerdict": "SUT_DEFECT", "wantReason": null },
+      "expected": [
+        { "intentId": "intent_2", "kind": "noErrorEnvelope", "op": "envelopeOk", "value": "status==200", "soft": false }
+      ],
+      "globalAssertions": [ { "kind": "noPageError", "op": "absent", "soft": false } ]
+    },
+    {
+      "name": "background401",
+      "groundedIn": "verdict-cases.json#background_401_not_attributed",
+      "scenario": "background401",
+      "eventsRef": "tests/_golden/fixtures/seams/events.fixture.json",
+      "anchor": { "intentId": "intent_2", "wantVerdict": "PASS", "wantReason": null },
+      "expected": [
+        { "intentId": "intent_2", "kind": "noErrorEnvelope", "op": "envelopeOk", "value": "status==200", "soft": false }
+      ],
+      "globalAssertions": [ { "kind": "noPageError", "op": "absent", "soft": false } ],
+      "wantForensics": { "note": "/api/auths/poll 的 401 由 setInterval（定时器）发起 → CDP initiator=timer + denylist → attributedStepId:null（background，不归本步），故不背书、不翻 verdict" }
+    },
+    {
+      "name": "stream",
+      "groundedIn": "verdict-cases.json#pass（流式 = 一条硬断言过的 PASS，verdict-cases 无独立流式案）",
+      "scenario": "stream",
+      "eventsRef": "tests/_golden/fixtures/seams/events.fixture.json",
+      "anchor": { "intentId": "intent_2", "wantVerdict": "PASS", "wantReason": null },
+      "expected": [
+        { "intentId": "intent_2", "kind": "noErrorEnvelope", "op": "envelopeOk", "value": "status==200", "soft": false },
+        { "intentId": "intent_2", "kind": "streamReplyReceived", "op": "finished", "value": "200", "soft": false }
+      ],
+      "globalAssertions": [ { "kind": "noPageError", "op": "absent", "soft": false } ]
+    },
+    {
+      "name": "drift",
+      "groundedIn": "drift-patch.fixture.json（canonical=role=button|name=删除|withinRow=atl_wf_5fa1）+ verdict-cases.json#harness_error",
+      "scenario": "drift",
+      "events": [
+        {
+          "stepId": "atstep_0", "intentId": "intent_0", "atom": "nav.wf", "action": "nav",
+          "url": "http://sut.invalid/ai-manager/process/list",
+          "pre": { "path": "/", "dlg": 0, "drw": 0, "top": "" },
+          "after": { "path": "/ai-manager/process/list", "dlg": 0, "drw": 0, "top": "" }
+        },
+        {
+          "stepId": "atstep_3", "intentId": "intent_2", "atom": "workflow.deleteByName", "action": "click",
+          "_locatorNote": "录制脆性定位器（recorded brittle locator）照 drift-patch.fixture.locatorBefore 复刻：纯 css positional（位置式）、无可解析语义 → 回放期失配（miss）→ resolution=none。targetName 供漂移探针构造 withinRow 签名。",
+          "fallbackCss": ".hr-table-row:nth-child(2) .hr-action-delete",
+          "nth": 1,
+          "targetName": "atl_wf_5fa1",
+          "pre": { "path": "/ai-manager/process/list", "dlg": 0, "drw": 0, "top": "" },
+          "after": { "path": "/ai-manager/process/list", "dlg": 0, "drw": 0, "top": "" }
+        }
+      ],
+      "anchor": { "intentId": "intent_2", "wantVerdict": "HARNESS_ERROR", "wantReason": null },
+      "expected": [
+        { "intentId": "intent_2", "kind": "countChange", "op": "equals", "value": 0, "soft": false }
+      ],
+      "globalAssertions": [ { "kind": "noPageError", "op": "absent", "soft": false } ],
+      "wantDriftSignal": {
+        "sameSignatureUniquePresent": true,
+        "candidateCount": 1,
+        "matchedSignature": "role=button|name=删除|withinRow=atl_wf_5fa1"
+      }
+    }
+  ]
+}

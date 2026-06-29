@@ -12,7 +12,7 @@
 
 ## 一句话现状
 
-排期 v2（接缝优先并行）已落，第1层 5 接缝冻结、第2层四轨（track-F/P7/P4/P6）并行建成并验证落 `dev` `5a8b08d`，全 gate 在 dev 亲验 GREEN、selftest 无回归。P5（★ 回放核心）grill+plan done（ADR-0007 7 决策）、impl 待建——这是唯一剩的第2层轨。`active-contract.json` = `p5-replay`（full，grill/plan done；先 `node loop-kit/bin/contract.mjs show` 确认）。细节信 `docs/HANDOFF.md`。
+排期 v2 已落；P5（★ 回放核心，唯一剩的第2层轨）grill+plan done + Phase 0+1 落地（2026-06-29）：环境补齐（`@playwright/test` 1.60.0 + chromium + 系统库，headless 实起验过）、假 SUT 建成（`tests/fixtures/fake-sut/`，漂移靶子照 `drift-patch.fixture` 复现）、红 golden + 场景表 + prd 备齐（5 场景红基线，复现已冻接缝——verdict 映射 `verdict-cases` 八案、drift 复刻 `drift-patch` canonical）。accept 已备未冻——下一步先人审 4 处承诺（见 `docs/HANDOFF.md`「下一步」的「P5 accept 待审」）再 advance accept，然后 Phase 2 起 runner。`active-contract.json` = `p5-replay`（full，accept pending；先 `node loop-kit/bin/contract.mjs show` 确认）。细节信 `docs/HANDOFF.md`、内部排期信 `docs/plans/p5-replay/exec-plan.md`。
 
 ## WSL 环境注意（下次在 WSL/bash 跑，不再 PowerShell）
 
@@ -22,11 +22,13 @@
 4. shell + loop-guard：用 bash（`cp`/`rm`/`sha256sum`/`ps`），不是 PowerShell cmdlet。loop-guard 的 WRITE_CAP 正则按 bash 写——`cp`/`rm`/`>` 会被正确命中：(a) 读类命令带 `2>&1`/`>` 且含 `bin/` 路径会被误判 edit-impl 拦（PS 下也有）；(b) 本会话用 `Copy-Item` 把文件拷进 `lib/` 绕过 edit-impl 的 loophole，bash 下 `cp` 进 `lib/` 会被拦——baton-swap landing 改走 git-native（`merge`/`apply`），别 `cp` 进 lib/bin。
 5. git 跨平台：别在 /mnt/d 上混用 Windows git 与 WSL git（filemode/CRLF 会让一堆文件假报 modified）。`core.filemode` 已 false。`windows.appendAtomically false` 那条 config 在 WSL 无害（Linux git 忽略）；Windows 的 index.lock 写错坑 WSL 没有，但 /mnt/d 是 9p 挂载、偏慢。
 
-## 这次要干：P5 回放内核 impl
+## 这次要干：先审 accept 4 处承诺 → 冻 → Phase 2 起 runner
 
-按 ADR-0007 + `docs/plans/p5-replay/`（7 决策：基座 A 采纳 @playwright/test、CDP 真发起方归因、三轴按 intent、本地 fixture server、流式 finished、漂移探针只读、唯一名 instantiate）。active-contract 已是 `p5-replay`（grill/plan done）；下一步 accept（冻红 golden）才能改 lib/bin。
+Phase 0+1 已落（环境 + 假 SUT + 红 golden + prd），accept 已备未冻。第一步是**人审 accept 4 处承诺**（细节在 `docs/HANDOFF.md`「下一步」）：① runner CLI 形态 `node bin/replay.mjs --events --sut --expected --denylist --out`；② 漂移探针契约（探针从 atom+targetName 构造 `drift-patch` canonical）；③ expected 是对着假 SUT 自写的（已冻 expected-frozen 与 events.fixture 对不上）；④ 假 SUT `server.mjs` 进 testChecksums。审过 → `node loop-kit/bin/contract.mjs advance accept --artifact loop/prd-p5-replay.json` 冻、解锁 `lib`/`bin`。
 
-前置硬阻塞：casey 未装 playwright（autotester 有 `@playwright/test` 可借/装）—— 回放基座 A 先补环境。
+Phase 2 实现（按 `docs/plans/p5-replay/exec-plan.md` 的并行/串行排期）：先 `robust-actions` 三轴埋点（主干入口），再串 runner→StepAxes 合并→喂已冻 verdict，叶子模块（replay-guards/instantiate/watchPageLifecycle/waitForReplyByStream/watchNetworkForensics/漂移探针）fan-out 起草。不开 worktree、不起第二契约（单活契约 baton 教训）。决策仍按 ADR-0007 7 条（基座 A、CDP 真发起方归因、三轴按 intent、本地 fixture server、流式 finished、漂移探针只读、唯一名 instantiate）。
+
+环境前置已清：playwright 1.60.0 + chromium + 系统库装齐、headless 实起验过（不必再补环境）。
 
 组件（accept→loop）：
 - fixture server（新建假 SUT，借 autotester `web/server.mjs` 的 http 骨架；它是控制台不是 SUT mock、非照搬）：静态假 SUT HTML（含 events 所指 role/accessibleName 元素）+ 可脚本化路由（save 200/500+信封、背景 poll 401、SSE 流、触 pageerror）。

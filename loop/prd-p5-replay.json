@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "task": "P5 回放内核（★核心）：确定性回放假 SUT（被测系统）→ 产 axes（三轴：动作/逐条断言/取证）→ 喂已冻 verdict.mjs（多态裁定，零 LLM）→ 出四态。组件：回放 runner（回放器，移植 robust-actions/replay-guards/instantiate）+ watchNetworkForensics（网络取证，新建，CDP 真发起方归因 + 背景 denylist + 证不出归 null）+ StepAxes 产出（按 intent）+ 只读漂移探针 findEquivalentAffordance（同稳定签名 count===1）。判据 docs/plans/p5-replay/plan.md + exec-plan.md。本契约只冻命令化层（hermetic 假 SUT，零外部依赖）：复现已冻接缝——verdict 四态映射 verdict-cases.json 八案、drift（漂移）复刻 drift-patch.fixture.json 的 canonical（规范稳定签名）。真机三轴回放与真注故障为 route:human（路由人）tier-2。",
+  "specPath": "docs/plans/p5-replay/plan.md",
+  "testChecksums": {
+    "tests/_golden/p5-replay.golden.mjs": "8b5e9a74c1a4202ba3b4b2020370f7b7271820cbc3eb229cc17726685e05de47",
+    "tests/_golden/fixtures/p5/replay-cases.json": "30054ac01dea9bf412ca9123e89d7e8b4aefde3fb2fe88566744365cd5a954e2",
+    "tests/fixtures/fake-sut/server.mjs": "29c8d83ee40f5a9f74caff3a7f6da34dea953173457cff7c65ec9889cae9c7f2",
+    "tests/_golden/fixtures/seams/events.fixture.json": "49545e6efe597c33d9eeaaff65e9f8f9e268e125509533ccf54026a70023dd14"
+  },
+  "observability": [
+    {
+      "dimension": "真 Heren 中台回放 catalog_wf_crud 全 PASS（需 site.json + 登录态，tier-2 真机目检）",
+      "route": "human"
+    },
+    {
+      "dimension": "对真 save POST 注 HTTP500 → 真站 verdict 出 SUT_DEFECT 而非 HARNESS_ERROR（最关键真机验收）",
+      "route": "human"
+    },
+    {
+      "dimension": "CDP initiator（发起方）栈分类在真 Heren 流量下的可靠度（ADR-0007 推翻条件：不可靠则退 denylist + 活动步窗 + 仍证不出归 null）",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-replay",
+      "desc": "回放 runner + watchNetworkForensics + StepAxes 产出 + 只读漂移探针。bin/replay.mjs 真回放假 SUT，按 intentId 聚合事件依序回放、过点击身份门出动作轴、CDP 真发起方归因出取证轴（背景 401 归 null 不背书）、按 expected 评估出断言轴，三轴写 axes.json 喂已冻 verdict.mjs。漂移探针只读查同稳定签名 count===1、不点不改 spec。runner 是 verdict.mjs 的上游产出者，绝不在回放进程内做裁定（护栏 #15）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": false
+    }
+  ]
+}

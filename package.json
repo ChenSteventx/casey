@@ -16,6 +16,8 @@
     "gate": "node loop-kit/bin/gate.mjs",
     "breaker": "node loop-kit/bin/breaker.mjs"
   },
-  "dependencies": {},
-  "_dependenciesNote": "P3 起引入 @playwright/test（回放/录屏）与 ffmpeg-static（mp4 转码）；当前 P0/P1 仅用 node 内置模块，无需 npm install 即可跑 loop 机制与 selftest --tier1。"
+  "_dependenciesNote": "P5 起装 @playwright/test（回放基座，精确 pin 1.60.0 与 autotester 字节对齐，ADR-0001）；其自带 ffmpeg 录 webm，mp4 转码用的 ffmpeg-static 留 P7 报告再引；pinyin-pro 仅录制端用、casey 输入端走 LLM 编译不需要。loop 机制与 selftest --tier1 仍只用 node 内置模块、无需 npm install。",
+  "devDependencies": {
+    "@playwright/test": "1.60.0"
+  }
 }
