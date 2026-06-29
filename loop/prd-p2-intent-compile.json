@@ -48,7 +48,7 @@
         "node tests/_golden/p2-check-vocab.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-06-29T06:49:52.737Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-06-29T08:13:37.138Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-compile-gate",
@@ -58,7 +58,7 @@
         "node tests/_golden/p2-compile-gate.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-06-29T06:49:53.191Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-06-29T08:13:37.610Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-reconcile",
@@ -70,7 +70,7 @@
         "node tests/_golden/p2-reconcile.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-06-29T06:49:54.281Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-06-29T08:13:38.853Z 全部 acceptance exit 0"
     }
   ]
 }

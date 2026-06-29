@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "task": "第1层接缝冻结（排期 v2 总钥匙）：events/observed-reality/report-model/drift-patch/expected-frozen 五条接缝 schema+合成 fixture + prd.schema v2（向后兼容）。冻结解锁第2层 P4/P5/P6/P7 对 fixture 并行开发。",
+  "specPath": "docs/plans/seams-freeze/plan.md",
+  "testChecksums": {
+    "tests/_golden/seams-freeze.golden.mjs": "70beb9ea74de3ea059b106068d2cc438baac39bad2cad94384d750ba95313766",
+    "tests/_golden/schemas/events.schema.json": "8d1b478326f1c02186b98d4e68513ec79cbbacb63e54bf4373e888b81b783d46",
+    "tests/_golden/schemas/observed-reality.schema.json": "1c85bbeb8513927f0b5c8584530091dade318d53588c389e119debe7be9b5495",
+    "tests/_golden/schemas/report-model.schema.json": "d8fdc5187e9eccbb4c2d4be5966eac41fe24ae83c1564c1435137eb3347e0efd",
+    "tests/_golden/schemas/drift-patch.schema.json": "f6070a6d8e8729cf9841d2e137f5cc055ee5489dc215ee00ca2e45d6e4a956c2",
+    "tests/_golden/schemas/expected-frozen.schema.json": "d3cff8329a880373ec6f1d410438e696c2c7744373ed812916b9bc59e4941354",
+    "loop/prd.schema.json": "d98f08032c1b140958e5315a16de31db3c8f1a4fd9728709b1f6b342babd0926",
+    "tests/_golden/fixtures/seams/events.fixture.json": "49545e6efe597c33d9eeaaff65e9f8f9e268e125509533ccf54026a70023dd14",
+    "tests/_golden/fixtures/seams/observed-reality.fixture.json": "5e7559b328e3ebb334342fa19a8d574494e97f1e24db1de0d24ed140ca60fbed",
+    "tests/_golden/fixtures/seams/report-model.fixture.json": "1a9e08871c8e8b756c42daa91c4207b31f520eee784894c0c3cdc9d28b61d32e",
+    "tests/_golden/fixtures/seams/drift-patch.fixture.json": "a862362286e27c87988199ad2b0365d5c4107c50c0c766e24bb1dcefec704e70",
+    "tests/_golden/fixtures/seams/expected-frozen.fixture.json": "f8e5666374eb50050c713ad6787b48c318ec5ce7c3354b11ec8dabccda9f02f8",
+    "tests/_golden/fixtures/seams/prd-v2.fixture.json": "ee1732f7ea1c9c846e231c9e81b41501f8680865d6af0d3677c3c385d22e4135"
+  },
+  "observability": [
+    {
+      "dimension": "events.json 须能被 autotester runner 真加载且不触 authored 拒绝（P3 真机集成验，非 hermetic）",
+      "route": "human"
+    },
+    {
+      "dimension": "接缝随真 P3/P5/P6/P7 落地若需字段修订，走契约更新（acceptance-gate 重冻），不在下游里就地改",
+      "route": "human"
+    },
+    {
+      "dimension": "observed-reality 凭据红线（禁 body/headers/凭据）真站采集时由凭据兜底门再兜一道",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-seams-freeze",
+      "desc": "五条接缝 schema + 合成 fixture 解析与关键不变量全过（禁纯坐标步/凭据红线/签名等值/人签词表/v2 向后兼容）",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/seams-freeze.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-06-29T08:13:07.062Z 全部 acceptance exit 0"
+    }
+  ]
+}

@@ -1,0 +1,408 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "casey/events.json",
+  "title": "Casey events.json — 编译→回放确定性可回放 spec（web channel）",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "channel",
+    "caseId",
+    "url",
+    "recordedAt",
+    "events"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 2,
+      "description": "钉死 2：与 autotester L0 录制补采契约(l0_schema)、checkFingerprint、buildSpecFromEvents 的 v2 分流一致；Casey 字段为加性扩展，runner 忽略未知顶层键"
+    },
+    "channel": {
+      "const": "web",
+      "description": "events.json 管线只对 web 成立；assertWebKind 对 cef/his 抛错（§7）"
+    },
+    "caseId": {
+      "type": "string",
+      "pattern": "^tc_[a-z0-9_]+$",
+      "description": "回链 TestCase 聚合根与 loop/prd-<caseId>.json"
+    },
+    "url": {
+      "type": "string",
+      "description": "起始 URL；调用方读 doc.url 传给 buildSpecFromEvents({startUrl})。凭据/site.json 不得出现于此"
+    },
+    "recordedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "编译落盘时刻；checkFingerprint 对 (recordedAt + events.length) 取指纹守 spec 完整性（断言冻结另走 testChecksums，spec 不进棘轮）"
+    },
+    "compiledBy": {
+      "type": "string",
+      "description": "编译来源标识（agent/模型族），仅 provenance，不进裁定"
+    },
+    "authored": {
+      "const": false,
+      "description": "必为 false 或缺省：LLM 编译产物须是干净 v2 events；含 authored 人工补丁则 overlayRow 拒绝参数化注入(D2)。P3 硬门：不得触发 authored 拒绝"
+    },
+    "events": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/event"
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/node"
+      },
+      "description": "工作流节点上下文(未交互字段 scaffold 用)；非交互动作，不入 stepCount/回放序列"
+    }
+  },
+  "definitions": {
+    "event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stepId",
+        "intentId",
+        "action"
+      ],
+      "properties": {
+        "stepId": {
+          "type": "string",
+          "pattern": "^atstep_[0-9]+$",
+          "description": "位置式只读步标识；findEvent 首选定位键，内容无关，buildSpecFromEvents 忽略它(带/不带字节等价)"
+        },
+        "intentId": {
+          "type": "string",
+          "pattern": "^intent_[0-9]+$",
+          "description": "回填的用例语义步 id；一条 intent 可裂成 N 个 event，verdict/取证/报告据此卷回"
+        },
+        "atom": {
+          "type": "string",
+          "description": "可选：产出本 event 的编译门原子 id（如 wf.create/workflow.save），供 flow→events→verdict 对账追溯"
+        },
+        "action": {
+          "enum": [
+            "click",
+            "dblclick",
+            "fill",
+            "selectOption",
+            "press",
+            "nav",
+            "newpage"
+          ],
+          "description": "确定性可回放动作集；画布 drag/connect 等本质不可复现步走 route:human、不入此 spec；nodeConfigFill 是 overlay 运行期注入产物、非冻结 event"
+        },
+        "tagName": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "description": "CDP accessibility 算出的 ARIA 角色"
+        },
+        "accessibleName": {
+          "type": "string",
+          "description": "始终为 string（role=none/generic 时为空串），不为 null"
+        },
+        "semantic": {
+          "$ref": "#/definitions/semantic"
+        },
+        "text": {
+          "type": "string",
+          "description": "可见文本(click)"
+        },
+        "fieldLabel": {
+          "type": "string",
+          "description": "表单项标签(fill/selectOption)；overlay 参数 bindKey.locatorRef 回落键之一"
+        },
+        "fallbackCss": {
+          "type": "string",
+          "description": "CSS 兜底定位器(语义指不到时回落)；不得作唯一定位依据"
+        },
+        "nth": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "fallbackCss 命中多个时的下标消歧"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "填写项是否必填(fill)"
+        },
+        "value": {
+          "type": "string",
+          "description": "填写值(fill)；易变值必模板化：{{uniqueName}}/{{ts}}/{{rowName}}，绝不冻字面量"
+        },
+        "uniqueGuard": {
+          "type": "boolean",
+          "description": "实体名建名查重开关；填确切固定名时置 true 走唯一性保障"
+        },
+        "dropdownUnit": {
+          "$ref": "#/definitions/dropdownUnit"
+        },
+        "optionScope": {
+          "type": "string"
+        },
+        "textOverride": {
+          "type": "boolean",
+          "description": "可编辑选项 click 文本覆盖重锚标记"
+        },
+        "key": {
+          "type": "string",
+          "description": "按键名(press)，如 Enter"
+        },
+        "url": {
+          "type": "string",
+          "description": "目标 URL(nav/newpage)"
+        },
+        "nodeName": {
+          "type": "string"
+        },
+        "nodeId": {
+          "type": "string"
+        },
+        "x": {
+          "type": "number",
+          "description": "录制坐标，仅非定位兜底元数据(报告/trace)，禁作唯一定位"
+        },
+        "y": {
+          "type": "number"
+        },
+        "ox": {
+          "type": "number"
+        },
+        "oy": {
+          "type": "number"
+        },
+        "pre": {
+          "$ref": "#/definitions/snap"
+        },
+        "after": {
+          "$ref": "#/definitions/snap"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "fill"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "value"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "selectOption"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "dropdownUnit"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "const": "press"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "key"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "nav",
+                  "newpage"
+                ]
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "url"
+            ]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "click",
+                  "dblclick",
+                  "fill",
+                  "selectOption"
+                ]
+              }
+            }
+          },
+          "then": {
+            "anyOf": [
+              {
+                "required": [
+                  "semantic"
+                ]
+              },
+              {
+                "required": [
+                  "dropdownUnit"
+                ]
+              },
+              {
+                "required": [
+                  "text"
+                ]
+              },
+              {
+                "required": [
+                  "fieldLabel"
+                ]
+              },
+              {
+                "required": [
+                  "role",
+                  "accessibleName"
+                ]
+              }
+            ],
+            "description": "禁纯坐标步硬约束：交互动作必须落至少一个稳定/可绑定属性(semantic / role+accessibleName / text / fieldLabel / dropdownUnit)，否则 findEvent 无法绑定且违反确定性铁律"
+          }
+        }
+      ]
+    },
+    "semantic": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "name"
+      ],
+      "description": "录制期验证过唯一命中(count===1)的语义定位器",
+      "properties": {
+        "kind": {
+          "enum": [
+            "role",
+            "label",
+            "text"
+          ]
+        },
+        "role": {
+          "type": "string"
+        },
+        "name": {
+          "type": "string"
+        },
+        "exact": {
+          "type": "boolean"
+        }
+      }
+    },
+    "dropdownUnit": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "fieldLabel",
+        "optionText",
+        "scope"
+      ],
+      "description": "下拉语义单元(l0_schema 契约：三要素非空)",
+      "properties": {
+        "fieldLabel": {
+          "type": "string"
+        },
+        "optionText": {
+          "type": "string"
+        },
+        "scope": {
+          "type": "string"
+        },
+        "optionListSelector": {
+          "type": "string"
+        },
+        "native": {
+          "type": "boolean"
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "snap": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "动作前/后页面快照(轻量)；地面真值断言依据另落 observed-<caseId>.json，不在此",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "dlg": {
+          "type": "integer"
+        },
+        "drw": {
+          "type": "integer"
+        },
+        "top": {
+          "type": "string"
+        }
+      }
+    },
+    "node": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "nodeName",
+        "fields"
+      ],
+      "properties": {
+        "nodeName": {
+          "type": "string"
+        },
+        "nodeId": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "fieldLabel"
+            ],
+            "properties": {
+              "fieldLabel": {
+                "type": "string"
+              },
+              "control": {
+                "type": "string"
+              },
+              "required": {
+                "type": "boolean"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

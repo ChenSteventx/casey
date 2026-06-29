@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "caseId": "catalog_wf_crud",
+  "title": "工作流目录 CRUD 贯通",
+  "channel": "web",
+  "signedAgainstBuild": "heren-mid-2026.06.0",
+  "signerId": "steven",
+  "passes": false,
+  "generatedAt": "2026-06-29T07:15:30.000Z",
+  "verdictSummary": {
+    "PASS": 1,
+    "SUT_DEFECT": 1,
+    "HARNESS_ERROR": 0,
+    "NEEDS_HUMAN": 0
+  },
+  "steps": [
+    {
+      "stepId": "atstep_0",
+      "intentId": "intent_0",
+      "atom": "workflow.create",
+      "intentText": "在工作流目录新建一条流程并打开详情",
+      "action": {
+        "kind": "click",
+        "describe": "点击「新建流程」确认按钮",
+        "resolution": "unique"
+      },
+      "verdict": "PASS",
+      "reason": null,
+      "postAssertions": [
+        {
+          "kind": "urlPathname",
+          "op": "startsWith",
+          "value": "/process/detail",
+          "actual": "/process/detail/atl_8842",
+          "ok": true,
+          "soft": false
+        },
+        {
+          "kind": "noErrorEnvelope",
+          "op": "envelopeOk",
+          "value": "status==200",
+          "actual": "status==200",
+          "ok": true,
+          "soft": false
+        }
+      ],
+      "forensics": {
+        "lifecycle": {
+          "pageerror": [],
+          "crashed": false,
+          "crashedAtStepId": null
+        },
+        "network": [
+          {
+            "url": "/ai-manager/process/saveOrModifyProcessData",
+            "status": 200,
+            "initiator": "atstep_0",
+            "attributedStepId": "atstep_0",
+            "errorEnvelope": {
+              "field": "status",
+              "expected": 200,
+              "actual": 200,
+              "ok": true
+            }
+          }
+        ]
+      },
+      "observed": {
+        "urlPathnameAfter": "/process/detail/atl_8842",
+        "cleanTitles": [
+          "流程详情"
+        ],
+        "toastTexts": [
+          "新建成功"
+        ],
+        "replyText": null,
+        "replyStreamUrl": null
+      },
+      "attachments": {
+        "video": "step/atstep_0.mp4",
+        "screenshot": "step/atstep_0.png",
+        "trace": "trace/catalog_wf_crud.atstep_0.zip",
+        "stepPage": "step/atstep_0.html",
+        "videoAt": 0
+      },
+      "defectTicket": null
+    },
+    {
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "atom": "workflow.save",
+      "intentText": "保存当前流程",
+      "action": {
+        "kind": "click",
+        "describe": "点击「保存」按钮",
+        "resolution": "unique"
+      },
+      "verdict": "SUT_DEFECT",
+      "reason": null,
+      "postAssertions": [
+        {
+          "kind": "noErrorEnvelope",
+          "op": "envelopeOk",
+          "value": "status==200",
+          "actual": "status==500",
+          "ok": false,
+          "soft": false
+        },
+        {
+          "kind": "countChange",
+          "op": "up",
+          "value": 1,
+          "actual": 0,
+          "ok": false,
+          "soft": true
+        }
+      ],
+      "forensics": {
+        "lifecycle": {
+          "pageerror": [],
+          "crashed": false,
+          "crashedAtStepId": null
+        },
+        "network": [
+          {
+            "url": "/ai-manager/process/saveOrModifyProcessData",
+            "status": 500,
+            "initiator": "atstep_1",
+            "attributedStepId": "atstep_1",
+            "errorEnvelope": {
+              "field": "status",
+              "expected": 200,
+              "actual": 500,
+              "ok": false
+            }
+          },
+          {
+            "url": "/ai-manager/auths/poll",
+            "status": 401,
+            "initiator": "background",
+            "attributedStepId": "atstep_0",
+            "errorEnvelope": {
+              "field": "status",
+              "expected": 200,
+              "actual": 401,
+              "ok": false
+            }
+          }
+        ]
+      },
+      "observed": {
+        "urlPathnameAfter": "/process/detail/atl_8842",
+        "cleanTitles": [
+          "流程详情"
+        ],
+        "toastTexts": [
+          "保存失败，服务异常"
+        ],
+        "replyText": null,
+        "replyStreamUrl": null
+      },
+      "attachments": {
+        "video": "step/atstep_1.mp4",
+        "screenshot": "step/atstep_1.png",
+        "trace": "trace/catalog_wf_crud.atstep_1.zip",
+        "stepPage": "step/atstep_1.html",
+        "videoAt": 4200
+      },
+      "defectTicket": {
+        "failedAssertions": [
+          {
+            "kind": "noErrorEnvelope",
+            "op": "envelopeOk",
+            "value": "status==200",
+            "actual": "status==500"
+          }
+        ],
+        "backingForensics": [
+          {
+            "url": "/ai-manager/process/saveOrModifyProcessData",
+            "status": 500,
+            "attributedStepId": "atstep_1"
+          }
+        ],
+        "videoAt": 4200,
+        "traceRef": "trace/catalog_wf_crud.atstep_1.zip"
+      }
+    }
+  ]
+}

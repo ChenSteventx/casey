@@ -1,0 +1,187 @@
+{
+  "schemaVersion": 2,
+  "channel": "web",
+  "caseId": "tc_workflow_create_smoke",
+  "url": "http://sut.invalid/ai-manager/process/list",
+  "recordedAt": "2026-06-29T02:00:00.000Z",
+  "compiledBy": "casey-compile-agent",
+  "authored": false,
+  "events": [
+    {
+      "stepId": "atstep_0",
+      "intentId": "intent_0",
+      "atom": "nav.wf",
+      "action": "nav",
+      "url": "http://sut.invalid/ai-manager/process/list",
+      "pre": {
+        "path": "/",
+        "dlg": 0,
+        "drw": 0,
+        "top": ""
+      },
+      "after": {
+        "path": "/ai-manager/process/list",
+        "dlg": 0,
+        "drw": 0,
+        "top": ""
+      }
+    },
+    {
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "atom": "wf.create",
+      "action": "click",
+      "tagName": "button",
+      "role": "button",
+      "accessibleName": "新增工作流",
+      "semantic": {
+        "kind": "role",
+        "role": "button",
+        "name": "新增工作流",
+        "exact": true
+      },
+      "text": "新增工作流",
+      "fallbackCss": "button.hr-button.create-wf",
+      "nth": 0,
+      "x": 1180,
+      "y": 96,
+      "ox": 12,
+      "oy": 8,
+      "pre": {
+        "path": "/ai-manager/process/list",
+        "dlg": 0,
+        "drw": 0,
+        "top": ""
+      },
+      "after": {
+        "path": "/ai-manager/process/list",
+        "dlg": 0,
+        "drw": 1,
+        "top": ""
+      }
+    },
+    {
+      "stepId": "atstep_2",
+      "intentId": "intent_1",
+      "atom": "wf.create",
+      "action": "fill",
+      "tagName": "input",
+      "role": "textbox",
+      "accessibleName": "工作流名称",
+      "fieldLabel": "工作流名称",
+      "required": true,
+      "semantic": {
+        "kind": "label",
+        "name": "工作流名称"
+      },
+      "fallbackCss": "input[placeholder=\"请输入工作流名称\"]",
+      "nth": 0,
+      "value": "atl_{{uniqueName}}",
+      "uniqueGuard": true,
+      "pre": {
+        "path": "/ai-manager/process/list",
+        "dlg": 0,
+        "drw": 1,
+        "top": ""
+      },
+      "after": {
+        "path": "/ai-manager/process/list",
+        "dlg": 0,
+        "drw": 1,
+        "top": ""
+      }
+    },
+    {
+      "stepId": "atstep_3",
+      "intentId": "intent_1",
+      "atom": "wf.create",
+      "action": "selectOption",
+      "dropdownUnit": {
+        "fieldLabel": "分类",
+        "optionText": "测试分类",
+        "scope": ".hr-drawer__content-wrapper",
+        "optionListSelector": ".hr-select__list",
+        "native": false,
+        "options": [
+          "测试分类",
+          "业务分类",
+          "其它"
+        ]
+      },
+      "fallbackCss": "input[placeholder=\"请选择\"]",
+      "pre": {
+        "path": "/ai-manager/process/list",
+        "dlg": 0,
+        "drw": 1,
+        "top": ""
+      },
+      "after": {
+        "path": "/ai-manager/process/list",
+        "dlg": 0,
+        "drw": 1,
+        "top": ""
+      }
+    },
+    {
+      "stepId": "atstep_4",
+      "intentId": "intent_1",
+      "atom": "wf.create",
+      "action": "click",
+      "tagName": "button",
+      "role": "button",
+      "accessibleName": "确定",
+      "semantic": {
+        "kind": "role",
+        "role": "button",
+        "name": "确定",
+        "exact": true
+      },
+      "text": "确定",
+      "fallbackCss": ".hr-drawer__footer button.hr-button--primary",
+      "nth": 0,
+      "pre": {
+        "path": "/ai-manager/process/list",
+        "dlg": 0,
+        "drw": 1,
+        "top": ""
+      },
+      "after": {
+        "path": "/ai-manager/process/detail",
+        "dlg": 0,
+        "drw": 0,
+        "top": ""
+      }
+    },
+    {
+      "stepId": "atstep_5",
+      "intentId": "intent_2",
+      "atom": "workflow.save",
+      "action": "click",
+      "tagName": "button",
+      "role": "button",
+      "accessibleName": "保存",
+      "semantic": {
+        "kind": "role",
+        "role": "button",
+        "name": "保存",
+        "exact": true
+      },
+      "text": "保存",
+      "fallbackCss": "button.hr-button.wf-save",
+      "nth": 0,
+      "pre": {
+        "path": "/ai-manager/process/detail",
+        "dlg": 0,
+        "drw": 0,
+        "top": ""
+      },
+      "after": {
+        "path": "/ai-manager/process/detail",
+        "dlg": 0,
+        "drw": 0,
+        "top": ""
+      }
+    }
+  ],
+  "nodes": []
+}

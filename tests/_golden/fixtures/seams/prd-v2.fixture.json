@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 2,
+  "caseId": "tc_workflow_create_smoke",
+  "channel": "web",
+  "task": "工作流新建-删除冒烟：意图→atom 编译→确定性回放→多态裁定→自包含报告",
+  "specPath": "docs/plans/p4-freeze-sign/plan.md",
+  "testChecksums": {
+    "tests/_golden/fixtures/tc_workflow_create_smoke/expected.frozen.json": "0000000000000000000000000000000000000000000000000000000000000000",
+    "tests/_golden/fixtures/tc_workflow_create_smoke/verdict.golden.json": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "observability": [
+    {
+      "dimension": "真机回放 verdict.json 全 PASS（tier-2，需 site.json 登录态）",
+      "route": "human"
+    },
+    {
+      "dimension": "LLM 回复正文质量（走 LLM-judge 下游线，不进 verdict）",
+      "route": "waived",
+      "note": "现阶段人工抽检"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-create-assert",
+      "desc": "新增工作流后断言落地编辑页且提示新增成功",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/check.mjs --case tc_workflow_create_smoke --intent intent_0 --kind urlPathname --op startsWith --value /heren/aimanagement/edit",
+        "node bin/check.mjs --case tc_workflow_create_smoke --intent intent_0 --kind textVisible --op appears --value 新增成功"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s2-delete-assert",
+      "desc": "删除刚建工作流后列表对应项归零",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/check.mjs --case tc_workflow_create_smoke --intent intent_1 --kind countChange --op equals --value 0"
+      ],
+      "passes": false
+    }
+  ],
+  "expectedFrozenPath": "tests/_golden/fixtures/tc_workflow_create_smoke/expected.frozen.json"
+}

@@ -1,0 +1,80 @@
+{
+  "caseId": "tc_workflow_create_smoke",
+  "channel": "web",
+  "intents": [
+    {
+      "intentId": "intent_0",
+      "intent": "在「工作流管理」里新增一条工作流，名字用唯一前缀",
+      "expected": [
+        {
+          "kind": "urlPathname",
+          "op": "startsWith",
+          "value": "/heren/aimanagement/edit",
+          "soft": false,
+          "signedAt": "2026-06-29T08:15:00Z",
+          "signedAgainstBuild": "heren-mid-2026.06.27-rc3",
+          "signerId": "qa.steven"
+        },
+        {
+          "kind": "textVisible",
+          "op": "appears",
+          "value": "新增成功",
+          "soft": false,
+          "signedAt": "2026-06-29T08:15:00Z",
+          "signedAgainstBuild": "heren-mid-2026.06.27-rc3",
+          "signerId": "qa.steven"
+        },
+        {
+          "kind": "inputReadback",
+          "op": "equals",
+          "value": "{{uniqueName}}",
+          "soft": false,
+          "signedAt": "2026-06-29T08:15:00Z",
+          "signedAgainstBuild": "heren-mid-2026.06.27-rc3",
+          "signerId": "qa.steven"
+        }
+      ],
+      "expectedVerdict": {
+        "verdict": "PASS",
+        "reason": null
+      }
+    },
+    {
+      "intentId": "intent_1",
+      "intent": "删除刚建的工作流",
+      "expected": [
+        {
+          "kind": "countChange",
+          "op": "equals",
+          "value": 0,
+          "soft": false,
+          "signedAt": "2026-06-29T08:15:00Z",
+          "signedAgainstBuild": "heren-mid-2026.06.27-rc3",
+          "signerId": "qa.steven"
+        }
+      ],
+      "expectedVerdict": {
+        "verdict": "PASS",
+        "reason": null
+      }
+    }
+  ],
+  "globalAssertions": [
+    {
+      "kind": "noPageError",
+      "soft": false,
+      "signedAt": "2026-06-29T08:15:00Z",
+      "signedAgainstBuild": "heren-mid-2026.06.27-rc3",
+      "signerId": "qa.steven"
+    },
+    {
+      "kind": "noErrorEnvelope",
+      "op": "envelopeOk",
+      "value": "status==200",
+      "soft": false,
+      "signedAt": "2026-06-29T08:15:00Z",
+      "signedAgainstBuild": "heren-mid-2026.06.27-rc3",
+      "signerId": "qa.steven"
+    }
+  ]
+}

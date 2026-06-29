@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "patchKind": "relocate",
+  "caseId": "tc_workflow_create_smoke",
+  "stepId": "atstep_3",
+  "intentId": "intent_2",
+  "atom": "workflow.deleteByName",
+  "channel": "web",
+  "generatedAt": "2026-06-29T16:42:11+08:00",
+  "tsToken": "1782463331000",
+  "specTarget": {
+    "eventsPath": "runs/tc_workflow_create_smoke/events.json",
+    "eventIndex": 3,
+    "fingerprintBefore": "recordedAt=2026-06-28T10:00:00+08:00|length=7"
+  },
+  "locatorBefore": {
+    "strategy": "css",
+    "selector": ".hr-table-row:nth-child(2) .hr-action-delete",
+    "nth": 1,
+    "raw": "page.locator('.hr-table-row:nth-child(2) .hr-action-delete')"
+  },
+  "locatorAfter": {
+    "strategy": "role",
+    "role": "button",
+    "accessibleName": "删除",
+    "within": "row:has-text(\"atl_wf_5fa1\")",
+    "raw": "page.getByRole('row', { name: /atl_wf_5fa1/ }).getByRole('button', { name: '删除' })"
+  },
+  "stableSignature": {
+    "canonical": "role=button|name=删除|withinRow=atl_wf_5fa1",
+    "before": {
+      "role": "button",
+      "accessibleName": "删除",
+      "semanticName": ""
+    },
+    "after": {
+      "role": "button",
+      "accessibleName": "删除",
+      "semanticName": ""
+    }
+  },
+  "triggerEvidence": {
+    "verdictRef": {
+      "verdictPath": "runs/tc_workflow_create_smoke/verdict.json",
+      "caseId": "tc_workflow_create_smoke",
+      "stepId": "atstep_3",
+      "verdict": "HARNESS_ERROR",
+      "reason": null
+    },
+    "recordedLocatorMiss": true,
+    "driftProbe": {
+      "sameSignatureUniquePresent": true,
+      "candidateCount": 1,
+      "matchedSignature": "role=button|name=删除|withinRow=atl_wf_5fa1"
+    },
+    "driftCount": 1,
+    "escalated": false
+  },
+  "humanSignoff": null,
+  "status": "proposed",
+  "appliedAt": null,
+  "postApplyRecheck": null,
+  "audit": [
+    {
+      "ts": "2026-06-29T16:42:11+08:00",
+      "from": null,
+      "to": "proposed",
+      "by": "self-heal(L3)"
+    }
+  ]
+}

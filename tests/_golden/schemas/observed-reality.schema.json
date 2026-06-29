@@ -1,0 +1,218 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "casey/observed-reality.schema.json",
+  "title": "observed-<caseId>.json — 观测现状（Observed Reality）接缝",
+  "description": "编译期(相1)每个回放原子步达静默点后采集的地面真值。相2 草拟断言、相4 取证背书共吃。存实测字面量(含 atl_<ts> 实例名)，下游负责模板化；本文件不冻结、不进 verdict.json golden。credential hygiene: 绝不含 request/response body、headers、cookie、auth token —— additionalProperties:false 机制兜底。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "caseId",
+    "channel",
+    "capturedAt",
+    "steps"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1,
+      "description": "接缝版本，整数。"
+    },
+    "caseId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "TestCase.caseId，与文件名 observed-<caseId>.json 一致。"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "web",
+        "cef",
+        "arbitrary"
+      ],
+      "description": "回放通道；决定 errorEnvelope 的成功字段语义(Heren web=status===200，落 site.json，非写死 code)。"
+    },
+    "capturedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "采集时刻 ISO-8601；溯源用，非裁定输入。"
+    },
+    "capturedAgainstBuild": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "采集时 SUT 构建标识；供期望版本化(signedAgainstBuild)对齐溯源，未知则 null。"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "description": "逐回放事件步的观测；一条 intent 可裂成 N 个 event，各自回填 intentId 以便卷回。",
+      "items": {
+        "$ref": "#/definitions/observedStep"
+      }
+    }
+  },
+  "definitions": {
+    "observedStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stepId",
+        "intentId",
+        "urlPathnameAfter",
+        "cleanTitles",
+        "toastTexts",
+        "requestLog",
+        "quietPointReached"
+      ],
+      "properties": {
+        "stepId": {
+          "type": "string",
+          "pattern": "^atstep_[0-9]+$",
+          "description": "位置式回放事件 id(复用 autotester 方案)，与三轴/verdict.json 一致。"
+        },
+        "intentId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "用例语义步 id(authoring 写)；裁定/取证/报告据此把 N 个 event 卷回一条 intent。"
+        },
+        "atom": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "该事件绑定的 atomId(如 workflow.save)；与三轴/verdict.json step.atom 对齐，无则 null。"
+        },
+        "urlPathnameAfter": {
+          "type": "string",
+          "description": "达静默点后的 URL pathname(仅路径，去 host/query)，存实测字面量；下游用 startsWith/matches，绝不冻 equals 含实体 ID。"
+        },
+        "cleanTitles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "采集到的干净标题(抽屉/页面主标题，去噪后)；喂 textVisible 草拟。可空数组。"
+        },
+        "toastTexts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "观测到的 toast/提示文本(.hr-message/[role=alert])；喂 textVisible 与 noErrorToast 草拟。可空数组。"
+        },
+        "replyText": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "LLM 流式回复完整正文(达 finished() 后)；喂 replyContains/replyMatches 草拟。天生每次变——抓取展示用，绝不冻成断言字面量、不进 golden。无流式回复则 null。"
+        },
+        "replyStreamUrl": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "命中的流式响应 URL(streamReplyReceived 据其 urlPattern 草拟)；无则 null。"
+        },
+        "requestLog": {
+          "type": "array",
+          "description": "本步采集窗内的网络请求条目，按发起方归因(attributedStepId)，与 watchNetworkForensics 的 network 取证条目同形(相4 直接消费)。可空数组。",
+          "items": {
+            "$ref": "#/definitions/requestLogEntry"
+          }
+        },
+        "quietPointReached": {
+          "type": "boolean",
+          "description": "采集前是否达静默点(networkidle + 无动画 + DOM 稳定 K ms)；false = 该步观测可复现性存疑，下游应 route:human，绝不静默当 ground truth。"
+        }
+      }
+    },
+    "requestLogEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "url",
+        "status",
+        "ts",
+        "initiator",
+        "attributedStepId"
+      ],
+      "description": "单条请求观测。绝不含 body/headers/cookie/token；errorEnvelope 只记被检字段的标量 expected/actual，不落原始 body。",
+      "properties": {
+        "url": {
+          "type": "string",
+          "description": "请求 URL(可含 query；归因与展示用，不入 equals 断言)。"
+        },
+        "method": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "HTTP 方法 GET/POST/...；可选，无则 null。"
+        },
+        "status": {
+          "type": "integer",
+          "description": "HTTP 状态码；requestfailed(无响应)记 0。"
+        },
+        "ts": {
+          "type": "number",
+          "description": "采集时刻 epoch 毫秒(单调、JSON 稳定)。"
+        },
+        "initiator": {
+          "type": "string",
+          "description": "发起方：发起该请求的 stepId 或 'background'(背景轮询)。按发起方归因、非时间窗(护栏 #15)。"
+        },
+        "attributedStepId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "取证归因到的 stepId(=initiator 为某步时即该步)；background/不可归因则可指向他步或 null。相4 据此判 SUT_DEFECT 背书，绝不让背景 401 翻本步 verdict。"
+        },
+        "errorEnvelope": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "required": [
+            "field",
+            "expected",
+            "actual",
+            "ok"
+          ],
+          "description": "HTTP200-但-body-成功字段不符的软失败检查；成功字段按 channel 参数化。非错误信封请求则 null。",
+          "properties": {
+            "field": {
+              "type": "string",
+              "description": "被检成功字段名(Heren=status)。"
+            },
+            "expected": {
+              "description": "期望值标量(如 200)。",
+              "type": [
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ]
+            },
+            "actual": {
+              "description": "实测值标量。",
+              "type": [
+                "string",
+                "number",
+                "boolean",
+                "null"
+              ]
+            },
+            "ok": {
+              "type": "boolean",
+              "description": "成功字段是否相符。"
+            }
+          }
+        }
+      }
+    }
+  }
+}
