@@ -1,0 +1,561 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "report-model.json",
+  "title": "Casey 报告数据源（report-model）",
+  "description": "casey report 一步合成的只读报告数据源：verdict.mjs 输出 ⋈ StepAxes ⋈ observedReality ⋈ prd 冻结契约。报告渲染器（HTML/MD/json 旁车）只读它，不二次推断。不动 S1 冻结的 verdict.mjs / StepAxes 契约。字段命名遵循 CONTEXT.md 统一语言。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "caseId",
+    "channel",
+    "generatedAt",
+    "verdictSummary",
+    "steps"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "caseId": {
+      "type": "string",
+      "description": "测试用例聚合根 id（与 verdict.json/observed-<caseId>.json 同源）"
+    },
+    "title": {
+      "type": "string",
+      "description": "用例标题（来自 TestCase/prd）"
+    },
+    "channel": {
+      "enum": [
+        "web",
+        "cef",
+        "arbitrary"
+      ],
+      "description": "回放通道；裁定/报告层 channel 无关，仅作头部展示"
+    },
+    "signedAgainstBuild": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "期望版本化：冻结断言所签的目标构建标识（来自 prd）；未签为 null"
+    },
+    "signerId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "人签门签署者 id（来自 prd 期望版本化）；未签为 null"
+    },
+    "passes": {
+      "type": [
+        "boolean",
+        "null"
+      ],
+      "description": "gate.mjs 的二值结论旁参（仅展示，绝不在本 model 推断/翻绿）；缺省 null"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "本 model 合成时间（ISO 8601）"
+    },
+    "verdictSummary": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "四态计数，对应报告主页裁定概览（通过/被测缺陷/过程错误/待人裁决）",
+      "required": [
+        "PASS",
+        "SUT_DEFECT",
+        "HARNESS_ERROR",
+        "NEEDS_HUMAN"
+      ],
+      "properties": {
+        "PASS": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "SUT_DEFECT": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "HARNESS_ERROR": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "NEEDS_HUMAN": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/definitions/reportStep"
+      }
+    }
+  },
+  "definitions": {
+    "verdictEnum": {
+      "enum": [
+        "PASS",
+        "SUT_DEFECT",
+        "HARNESS_ERROR",
+        "NEEDS_HUMAN"
+      ]
+    },
+    "reasonEnum": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "SUT_DEFECT_OR_STALE",
+        "CASE_DEFECT",
+        "AMBIGUOUS_ACTION",
+        "AFFORDANCE_ABSENT",
+        "INDETERMINATE",
+        null
+      ],
+      "description": "NEEDS_HUMAN 子类；终判态（PASS/SUT_DEFECT/HARNESS_ERROR）为 null"
+    },
+    "postAssertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "期望对实际单条（字面量）。形状与冻结 StepAxes.postAssertions 一致；soft===true 仅入报告黄标、不进裁定树（护栏 #17）",
+      "required": [
+        "kind",
+        "op",
+        "value",
+        "actual",
+        "ok",
+        "soft"
+      ],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "description": "断言词汇表种类（urlPathname/noErrorEnvelope/countChange/streamReplyReceived/...）"
+        },
+        "op": {
+          "type": "string",
+          "description": "该 kind 允许的算子（startsWith/equals/envelopeOk/up/...）"
+        },
+        "value": {
+          "description": "期望字面量（任意 JSON 标量）",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "actual": {
+          "description": "实际观测字面量",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "ok": {
+          "type": "boolean",
+          "description": "本条是否满足"
+        },
+        "soft": {
+          "type": "boolean",
+          "description": "soft 断言标记；true=不进裁定树（报告单列黄标）"
+        }
+      }
+    },
+    "errorEnvelope": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "description": "错误信封取证：HTTP 200 但 body 软失败，或成功字段不符（成功字段按 channel 参数化）",
+      "required": [
+        "field",
+        "expected",
+        "actual",
+        "ok"
+      ],
+      "properties": {
+        "field": {
+          "type": "string"
+        },
+        "expected": {},
+        "actual": {},
+        "ok": {
+          "type": "boolean"
+        }
+      }
+    },
+    "networkForensic": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "网络取证单条；按请求发起方归因（非时间窗），attributedStepId 决定背书归属",
+      "required": [
+        "url",
+        "status",
+        "initiator",
+        "attributedStepId"
+      ],
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "status": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "initiator": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "发起方步 id 或 background"
+        },
+        "attributedStepId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "归因到的 stepId；背景轮询归别步则不背书本步"
+        },
+        "errorEnvelope": {
+          "$ref": "#/definitions/errorEnvelope"
+        }
+      }
+    },
+    "lifecycle": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "生命周期取证（同 network 按本步归因规矩）",
+      "required": [
+        "pageerror",
+        "crashed"
+      ],
+      "properties": {
+        "pageerror": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "attributedStepId"
+            ],
+            "properties": {
+              "message": {
+                "type": "string"
+              },
+              "attributedStepId": {
+                "type": [
+                  "string",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "crashed": {
+          "type": "boolean"
+        },
+        "crashedAtStepId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "observed": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "观测现状投影（来自 observed-<caseId>.json 该 stepId 切片）；报告操作说明/文本输出取此",
+      "properties": {
+        "urlPathnameAfter": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "cleanTitles": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "toastTexts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "replyText": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "LLM 回复正文（报告文本输出；内容质量不进裁定）"
+        },
+        "replyStreamUrl": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "attachments": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "附件相对路径（拆分式报告：子页内联，主页只引用），路径相对 loop/reports/<caseId>/",
+      "properties": {
+        "video": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "录屏路径（mp4）"
+        },
+        "screenshot": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "trace": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "trace/<caseId>.<stepId>.zip"
+        },
+        "stepPage": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "step/<stepId>.html"
+        },
+        "videoAt": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "本步在 case 录屏中的起始时间点（ms）；缺陷单据此跳转"
+        }
+      }
+    },
+    "defectTicket": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "description": "缺陷单：仅 SUT_DEFECT 步非 null。由失败硬 postAssertion + 背书取证 + videoAt 合成（渲染器不再二次派生）",
+      "required": [
+        "failedAssertions",
+        "backingForensics"
+      ],
+      "properties": {
+        "failedAssertions": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "kind",
+              "op",
+              "value",
+              "actual"
+            ],
+            "properties": {
+              "kind": {
+                "type": "string"
+              },
+              "op": {
+                "type": "string"
+              },
+              "value": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              },
+              "actual": {
+                "type": [
+                  "string",
+                  "number",
+                  "boolean",
+                  "null"
+                ]
+              }
+            }
+          }
+        },
+        "backingForensics": {
+          "type": "array",
+          "minItems": 1,
+          "description": "背书本步 SUT 错误的取证引用（5xx / 错误信封失败 / pageerror / crash，归因本步）",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "url",
+              "status",
+              "attributedStepId"
+            ],
+            "properties": {
+              "url": {
+                "type": "string"
+              },
+              "status": {
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              },
+              "attributedStepId": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "videoAt": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "description": "录屏时间点（ms）"
+        },
+        "traceRef": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "trace zip 引用路径"
+        }
+      }
+    },
+    "reportStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "stepId",
+        "intentId",
+        "atom",
+        "verdict",
+        "reason",
+        "postAssertions"
+      ],
+      "properties": {
+        "stepId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "位置式回放事件 id（atstep_i）"
+        },
+        "intentId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "语义意图步 id；N 个 event 卷回一条 intent"
+        },
+        "atom": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "原子动作 id（workflow.save/assert.onPage/...）"
+        },
+        "intentText": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "意图原文（来自 TestCase/prd）"
+        },
+        "action": {
+          "type": "object",
+          "additionalProperties": false,
+          "description": "agent 实际动作的报告投影（操作说明用）",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "type": "string",
+              "description": "click/none/..."
+            },
+            "describe": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "动作人读描述"
+            },
+            "resolution": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "定位解析结果（unique/fallback_first/none/...）"
+            }
+          }
+        },
+        "verdict": {
+          "$ref": "#/definitions/verdictEnum"
+        },
+        "reason": {
+          "$ref": "#/definitions/reasonEnum"
+        },
+        "postAssertions": {
+          "type": "array",
+          "description": "期望对实际全集（hard+soft 同列，soft 字段区分）；与冻结 StepAxes.postAssertions 同形",
+          "items": {
+            "$ref": "#/definitions/postAssertion"
+          }
+        },
+        "forensics": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "lifecycle",
+            "network"
+          ],
+          "properties": {
+            "lifecycle": {
+              "$ref": "#/definitions/lifecycle"
+            },
+            "network": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/networkForensic"
+              }
+            }
+          }
+        },
+        "observed": {
+          "$ref": "#/definitions/observed"
+        },
+        "attachments": {
+          "$ref": "#/definitions/attachments"
+        },
+        "defectTicket": {
+          "$ref": "#/definitions/defectTicket"
+        }
+      }
+    }
+  }
+}

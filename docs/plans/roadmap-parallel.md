@@ -1,6 +1,8 @@
 # Casey 排期 v2 —— 接缝优先、并行解锁（取代 bootstrap plan 的线性「总体顺序」）
 
 > 2026-06-29 重排。bootstrap plan 的 `P3→P4→P5→P6→P7` 线性顺序已不合理：它把「运行时数据依赖」误当「开发顺序依赖」。本文用接缝优先重排，里程碑细节仍以 `bootstrap/plan.md` 各节为准。
+>
+> 2026-06-30 续：第 1 层接缝已全冻、第 2 层除 P5 外全绿合并，v2 的里程碑级并行红利已兑现完。剩余工作（P5 收尾 + review 接缝增冻 + 集成 + 飞轮）按「单活契约 baton 是真天花板」重排，见文末「排期 v3」——那是现行排期；本节 v2 保留为历史脉络。
 
 ## 核心原则：冻接缝 → 对合成 fixture 并行
 
@@ -61,3 +63,50 @@ compile-gate 真产物 → P5 真回放 → verdict → P7 报告，首条 web �
 ## 待办挂账
 - push：`dev` 待你确认 GitHub 目标仓后推（自动模式分类器拦了我推断的目标）。
 - C1-C4：第 2 层轨 F。
+
+---
+
+# 排期 v3 —— P5 收尾期重排（2026-06-30）
+
+> 接 review 收口（三份外部借鉴备忘录）+ 单活契约 baton 现实。上文 v2 的并行红利已兑现完，本节为现行排期。
+
+## 一、现状（2026-06-30 实地核查）
+
+- 第 0 层 P0/P1/P2 ✓；第 1 层接缝冻结 ✓（6 接缝 + `prd.schema` v2，`prd-seams-freeze` passes:true）。
+- 第 2 层：轨 B·P7、轨 D·P6、轨 C·P4、轨 F·track-F 已合并 `dev` 亲验绿；轨 E·P3 降级 route:human。**P5 是唯一剩的第 2 层轨**：红基线算冻于工作树但未提交、accept 未签发，`bin/replay.mjs` 未写。
+- 第 3 层集成未开始。
+- review 收口已落 additive doc-fix（三份备忘录）；新接缝提案见 `docs/plans/seams-freeze-v2/proposed/`（草稿，待 grill）。
+
+## 二、真天花板：单活契约 baton
+
+loop-kit 是单活契约（hook 读主树共享 `loop/active-contract.json` 一个槽），`LOOP_CONTRACT_FILE` 参数化 + `breaker --state` 未建。结论：多个 `full` 契约真并行落地 = 现在不支持。第 2 层四轨实为「各自 worktree 起草 + 串行合并 `dev`」，非同时落地。决策（2026-06-30）：不投基建，把并行用在不碰 baton 的 fan-out。
+
+## 三、并行设计硬规则
+
+- 可无限 fan-out（不碰 `active-contract` 槽、不写 `lib`/`bin`）：研究 / grill 起草 / schema 起草 / golden 起草 / 异构评审 —— 多用子代理。
+- 碰 `lib`/`bin` 的落地：单活 `full` 契约串行；要并行须 worktree 隔离 + git-native 合并（`merge`/`apply`），绝不 `cp` 进 `lib`/`bin`。
+- P5 内部：一契约 + 7 叶子子代理起草 + 主脑串行集成（见 `p5-replay/exec-plan.md`）。
+- 解锁真多轨落地的前提（暂不投）：`LOOP_CONTRACT_FILE` 参数化 + `breaker --state`。
+
+## 四、剩余工作重排
+
+**关键路径（串行 baton + 内部 fan-out）：**
+- 还原 `p5-replay` 契约 → 人审 accept 4 承诺 → 签冻 → P5 Phase 2（`robust-actions` 三轴埋点前置 → runner → StepAxes → 喂 verdict → 10 golden 绿；7 叶子模块子代理起草，命门 `watchNetworkForensics` 慎做）。不起第二 `full` 契约。
+
+**并行预备轨（现在就能多用子代理，零 baton，与 P5 互不阻塞）：**
+- 轨 P · 借鉴接缝 v2 增冻【预备】：起草 review 5 新接缝的 grill + schema + 合成 fixture。先行 `run-history.jsonl`/`run-metrics.json`、动作词汇表、failure ledger；后置 视觉模板合同、`channelDriver`（随 canvas / arbitrary 维度）。只起草不冻，待走 grill-with-docs 拍板 → 一个聚焦 seams-freeze v2 串行冻（Layer-1 式总钥匙 v2）。
+- 轨 Q · 异构评审 / 研究：持续 fan-out。
+
+**串行小活（碰 `bin`/`lib`，需契约，与 P5 排队或 P5 内顺手带）—— review 挖出的真缺口：**
+- P7 凭据兜底门（护栏 #7）补 coverage golden：`bin/report.mjs` 的 `credentialGate` 目前零 golden 覆盖（对现有实现为绿，属 coverage-add）。
+- P6 `superseded` 状态迁移补 coverage golden：`lib/drift-patch.mjs` 已实现该边但无测试覆盖。
+
+**第 3 层集成（串行，必后）：** compile-gate 真产物 → P5 真回放 → verdict → P7 报告（首条 web 端到端）→ P8 多 channel（web 稳 → cef CDP）→ P9 tier-2 真机 UAT（route:human）= 完成（gate 绿 ≠ 完成）。
+
+**飞轮（P5 绿 + catalog 首条真四态后启动）：** `catalog` → `chat` → 发布 → 画布；第二条起 light 车道。review 新接缝按维度对齐：动作词汇表↔多端动作、视觉模板合同↔画布、`channelDriver`↔arbitrary。
+
+## 五、待办挂账（v3 更新）
+
+- review 新接缝草稿待 grill-with-docs 拍板再冻（造词先登记 `CONTEXT.md`，ADR-0005）；草稿在 `docs/plans/seams-freeze-v2/proposed/`。
+- loop 纪律 hook 引用的 `docs/decisions/2026-06-12-loop-kit.md` 不存在，真出处是 `docs/adr/0001-reuse-loop-kit.md`（2026-06-25）——待修这处坏引用。
+- 两个 hermetic coverage golden 草稿在 `docs/plans/p7-report/proposed/` 与 `docs/plans/p6-selfheal/proposed/`，待接入 light 车道 accept 冻结。

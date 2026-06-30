@@ -1,0 +1,460 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "casey/drift-patch.schema.json",
+  "title": "Casey Drift Patch（非就地自愈补丁旁文件）",
+  "description": "相5自愈对单步确证 HARNESS_ERROR 的重锚提案，落 drift/<caseId>.<ts>.patch 旁文件。原 spec/events 不变照常回放，直到人签后才应用，应用后由同一冻结 L0 checker(verdict.mjs/check.mjs)复核（护栏 #5/#13）。补丁不进 testChecksums（spec/events 由 checkFingerprint 守，断言由 prd testChecksums 守）。状态字段可随生命周期就地推进；每次状态迁移另记 loop/audit.jsonl。字段命名对齐已冻接缝 StepAxes/verdict.json（stepId/intentId/atom/driftProbe/attributedStepId/resolution）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "patchKind",
+    "caseId",
+    "stepId",
+    "intentId",
+    "generatedAt",
+    "specTarget",
+    "locatorBefore",
+    "locatorAfter",
+    "stableSignature",
+    "triggerEvidence",
+    "status"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1,
+      "description": "drift-patch 接缝版本，冻结后不改语义只加版本"
+    },
+    "patchKind": {
+      "const": "relocate",
+      "description": "MVP 唯一补丁种类：单步语义重锚（只换 locator，不改断言、不改动作语义、不改 atom）。其余漂移类型（如签名本身变了）一律不走自愈、route:human。"
+    },
+    "caseId": {
+      "type": "string",
+      "description": "TestCase 聚合根 id（= drift/<caseId>.<ts>.patch 文件名首段，须与 verdictRef.caseId 一致）"
+    },
+    "stepId": {
+      "type": "string",
+      "pattern": "^atstep_[0-9]+$",
+      "description": "回放事件位置式 stepId（atstep_i），与 verdict.json/StepAxes 一致；单补丁只锚一步"
+    },
+    "intentId": {
+      "type": "string",
+      "description": "该 event 回填的语义意图步 id（authoring 写），用于把补丁卷回一条 intent"
+    },
+    "atom": {
+      "type": "string",
+      "description": "可选：该步原子动作 id（如 workflow.deleteByName），与 StepAxes.atom 同源；补丁不得改它"
+    },
+    "channel": {
+      "enum": [
+        "web",
+        "cef",
+        "arbitrary"
+      ],
+      "description": "可选：通道；events.json 重锚管线当前仅 web 成立（cef 是另一条 CDP 路径），缺省按 web"
+    },
+    "generatedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "自愈写补丁时刻（ISO 8601 带时区，对齐 audit.jsonl 的 ts），与文件名 <ts>(epoch ms) 同一时点"
+    },
+    "tsToken": {
+      "type": "string",
+      "pattern": "^[0-9]+$",
+      "description": "文件名 <ts> 段：epoch 毫秒，单调、防同 case 同步多补丁碰名，供按时间排序与 driftCount 关联"
+    },
+    "specTarget": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "eventsPath",
+        "eventIndex"
+      ],
+      "description": "补丁应用时被改写的目标（非就地：仅人签后写入此处，原文件在签前一字不动）",
+      "properties": {
+        "eventsPath": {
+          "type": "string",
+          "description": "events.json 相对仓库路径（spec 不进 testChecksums，由 gate 的 checkFingerprint 守 recordedAt+length）"
+        },
+        "eventIndex": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "该 stepId 在 events[] 中的位置索引"
+        },
+        "fingerprintBefore": {
+          "type": "string",
+          "description": "可选：应用前 events.json 指纹（recordedAt+length 派生），用于检测签后底座是否已变（变了须重生补丁）"
+        }
+      }
+    },
+    "locatorBefore": {
+      "$ref": "#/$defs/locator",
+      "description": "原（录制/编译期）locator——回放期 resolution==='none' 不再命中的那一个"
+    },
+    "locatorAfter": {
+      "$ref": "#/$defs/locator",
+      "description": "重锚后的 locator——只读漂移探针确证指向同稳定签名唯一元素的新定位"
+    },
+    "stableSignature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "canonical",
+        "before",
+        "after"
+      ],
+      "description": "稳定签名（accessibleName/semantic.name 等）。合法漂移的不变量：before.canonical === after.canonical（重锚到同一稳定元素，只是 locator 变了）。两者不等即非纯定位漂移，不得自愈、route:human。",
+      "properties": {
+        "canonical": {
+          "type": "string",
+          "description": "规范化签名串（如 role=button|name=删除|withinRow=atl_*），用作等值判据"
+        },
+        "before": {
+          "$ref": "#/$defs/signature"
+        },
+        "after": {
+          "$ref": "#/$defs/signature"
+        }
+      }
+    },
+    "triggerEvidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "verdictRef",
+        "recordedLocatorMiss",
+        "driftProbe",
+        "driftCount"
+      ],
+      "description": "自愈准入门取证（护栏 #13）：必同时具备 verdict=HARNESS_ERROR 背书 + 录制 locator 未命中(resolution==='none') + 同稳定签名唯一元素仍在。缺任一即不合法、不得开闸。",
+      "properties": {
+        "verdictRef": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "verdictPath",
+            "caseId",
+            "stepId",
+            "verdict"
+          ],
+          "description": "对 verdict.json 的引用——这步被零 LLM 裁判判为 HARNESS_ERROR 的出处",
+          "properties": {
+            "verdictPath": {
+              "type": "string",
+              "description": "产出该裁定的 verdict.json 路径"
+            },
+            "caseId": {
+              "type": "string"
+            },
+            "stepId": {
+              "type": "string",
+              "pattern": "^atstep_[0-9]+$"
+            },
+            "verdict": {
+              "const": "HARNESS_ERROR",
+              "description": "自愈只消费 HARNESS_ERROR；SUT_DEFECT/NEEDS_HUMAN/PASS 一律拒绝（护栏 #13/#14）"
+            },
+            "reason": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "verdict.json 的 reason（HARNESS_ERROR 时为 null）"
+            }
+          }
+        },
+        "recordedLocatorMiss": {
+          "const": true,
+          "description": "录制 locator 未命中（对应 StepAxes.action.resolution==='none'）——正向 miss 证据，缺则落 fail-safe 不自愈"
+        },
+        "driftProbe": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "sameSignatureUniquePresent"
+          ],
+          "description": "只读漂移探针(findEquivalentAffordance)结果，对齐 StepAxes.action.driftProbe",
+          "properties": {
+            "sameSignatureUniquePresent": {
+              "const": true,
+              "description": "同稳定签名的唯一元素仍在——正向漂移确证；为 false/缺失则不是工装漂移、不得自愈"
+            },
+            "candidateCount": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "可选：同签名候选数；探针要求过滤后唯一(===1)，>1 应降级 AMBIGUOUS route:human 而非自愈"
+            },
+            "matchedSignature": {
+              "type": "string",
+              "description": "可选：探针命中的签名规范串，须等于 stableSignature.canonical"
+            }
+          }
+        },
+        "driftCount": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "同一(caseId,stepId)累计漂移次数（含本次）。超阈值=非一次性漂移=flaky locator → escalated=true 升级 inbox，不再自动应用"
+        },
+        "escalated": {
+          "type": "boolean",
+          "default": false,
+          "description": "driftCount 超阈值时置 true：路由 inbox，本补丁转 superseded/搁置，等人裁 flaky"
+        }
+      }
+    },
+    "humanSignoff": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "description": "人签门结果。proposed 态为 null；签后填。decision=apply 才允许应用，reject 则补丁作废存档。",
+      "required": [
+        "signedAt",
+        "signerId",
+        "decision"
+      ],
+      "properties": {
+        "signedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "人签时刻（ISO 8601 带时区）"
+        },
+        "signerId": {
+          "type": "string",
+          "description": "签署人标识（与 expected[] 期望版本化的 signerId 同体系）"
+        },
+        "decision": {
+          "enum": [
+            "apply",
+            "reject"
+          ],
+          "description": "apply=批准重锚并应用；reject=驳回（如疑似真缺陷被伪装成漂移）"
+        },
+        "note": {
+          "type": "string",
+          "description": "可选：裁决理由"
+        }
+      }
+    },
+    "status": {
+      "enum": [
+        "proposed",
+        "signed",
+        "applied",
+        "rejected",
+        "superseded"
+      ],
+      "description": "应用状态机：proposed(自愈刚写,未签) → signed(人签 apply,待写入) → applied(已写入 events 并复核) ；reject→rejected；driftCount 超阈或被新补丁取代→superseded"
+    },
+    "appliedAt": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "format": "date-time",
+      "description": "重锚实际写入 events.json 的时刻；status=applied 必填"
+    },
+    "postApplyRecheck": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "description": "应用后由同一冻结 L0 checker(verdict.mjs/check.mjs)复核结果（护栏 #5：同一冻结 checker 复核）。status=applied 必填且 verdict 须回 PASS，否则补丁不算闭环、回退。",
+      "required": [
+        "verdictPath",
+        "stepId",
+        "verdict"
+      ],
+      "properties": {
+        "verdictPath": {
+          "type": "string",
+          "description": "复核重跑产出的 verdict.json 路径"
+        },
+        "stepId": {
+          "type": "string",
+          "pattern": "^atstep_[0-9]+$"
+        },
+        "verdict": {
+          "enum": [
+            "PASS",
+            "SUT_DEFECT",
+            "HARNESS_ERROR",
+            "NEEDS_HUMAN"
+          ],
+          "description": "复核四态；闭环要求 PASS，非 PASS 即重锚未解决问题、须回退并升级"
+        }
+      }
+    },
+    "audit": {
+      "type": "array",
+      "description": "可选：状态迁移审计游标（与 loop/audit.jsonl 互为冗余）",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "ts",
+          "from",
+          "to"
+        ],
+        "properties": {
+          "ts": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "from": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "to": {
+            "type": "string"
+          },
+          "by": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "applied"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "humanSignoff",
+          "appliedAt",
+          "postApplyRecheck"
+        ],
+        "properties": {
+          "humanSignoff": {
+            "type": "object",
+            "properties": {
+              "decision": {
+                "const": "apply"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "rejected"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "humanSignoff"
+        ],
+        "properties": {
+          "humanSignoff": {
+            "type": "object",
+            "properties": {
+              "decision": {
+                "const": "reject"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "signed"
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "humanSignoff"
+        ]
+      }
+    }
+  ],
+  "$defs": {
+    "locator": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "strategy"
+      ],
+      "description": "语义定位器（getByRole/getByLabel/getByText 优先；CSS/坐标为兜底）。重锚后应尽量升到语义策略。",
+      "properties": {
+        "strategy": {
+          "enum": [
+            "role",
+            "label",
+            "text",
+            "testId",
+            "css",
+            "coord"
+          ],
+          "description": "定位策略；coord 为坐标兜底（authoring 禁纯坐标，重锚不得退化到 coord）"
+        },
+        "role": {
+          "type": "string",
+          "description": "ARIA 角色（strategy=role 时用）"
+        },
+        "accessibleName": {
+          "type": "string",
+          "description": "可访问名（strategy=role/label 时用）"
+        },
+        "text": {
+          "type": "string",
+          "description": "可见文本/子串（strategy=text 时用）"
+        },
+        "testId": {
+          "type": "string"
+        },
+        "selector": {
+          "type": "string",
+          "description": "CSS 选择器（strategy=css 时用）"
+        },
+        "nth": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "可选：同名消歧索引；点击身份门要求过滤后唯一，nth 仅记录不代表合法歧义"
+        },
+        "within": {
+          "type": "string",
+          "description": "可选：作用域限定（如所在行 atl_ 名 / 抽屉标题），把定位收窄到唯一"
+        },
+        "raw": {
+          "type": "string",
+          "description": "可选：原始定位表达式串，便于人审"
+        }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "稳定签名构成（accessibleName / semantic.name / role）",
+      "properties": {
+        "role": {
+          "type": "string"
+        },
+        "accessibleName": {
+          "type": "string"
+        },
+        "semanticName": {
+          "type": "string",
+          "description": "semantic.name（自绘组件的语义名）"
+        }
+      }
+    }
+  }
+}

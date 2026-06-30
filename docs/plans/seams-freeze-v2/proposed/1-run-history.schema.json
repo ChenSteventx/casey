@@ -1,0 +1,217 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "casey/run-history.schema.json",
+  "title": "run-history.jsonl / run-metrics.json — 回放历史与指标接缝（草稿）",
+  "description": "草稿 / 未冻 / 待 grill-with-docs 拍板，勿当已决。确定性回放(bin/replay.mjs，轨 A·P5)逐步落盘的第二层事实：run-history.jsonl 每行一条回放步执行证据(校验 definitions/runHistoryLine)，run-metrics.json 是其聚合(校验 definitions/runMetrics)。边界红线：仅报告/调试，绝不进 bin/verdict.mjs 输入、绝不写 passes(护栏 #15/#17)；落盘前过凭据兜底门，fill 等动作值一律打码、绝不落字面量(护栏 #7)。本草稿未登记 CONTEXT.md、未冻、不进已冻 golden。",
+  "oneOf": [
+    { "$ref": "#/definitions/runHistoryLine" },
+    { "$ref": "#/definitions/runMetrics" }
+  ],
+  "definitions": {
+    "runHistoryLine": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "run-history.jsonl 单行：一个回放步达静默点后的结构化执行证据。绝不进裁定，绝不含原始凭据型动作值。",
+      "required": [
+        "timestamp",
+        "caseId",
+        "stepId",
+        "intentId",
+        "method",
+        "quietPointReached",
+        "durationMs",
+        "result"
+      ],
+      "properties": {
+        "timestamp": {
+          "type": "string",
+          "format": "date-time",
+          "description": "该步落历史时刻 ISO-8601；溯源/排序用，非裁定输入。"
+        },
+        "caseId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "TestCase.caseId，与 run 目录 runs/<caseId>/<runId>/ 一致。"
+        },
+        "stepId": {
+          "type": "string",
+          "pattern": "^atstep_[0-9]+$",
+          "description": "位置式回放事件 id，与 events.json/三轴/verdict.json 一致。"
+        },
+        "intentId": {
+          "type": "string",
+          "pattern": "^intent_[0-9]+$",
+          "description": "用例语义步 id，跟随已冻 events.schema.json 形态(N2 待 grill 确认)；据此把 N 个 event 卷回一条 intent。"
+        },
+        "method": {
+          "type": "string",
+          "enum": [
+            "click",
+            "dblclick",
+            "fill",
+            "selectOption",
+            "press",
+            "nav",
+            "newpage"
+          ],
+          "description": "动作类型，枚举跟随已冻 events.schema.json 的 action(N1 待 grill：字段名是否由 method 改回 action)。"
+        },
+        "parameters": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "description": "动作参数；绝不收原始动作值。fill/press 等的值一律以占位符或脱敏标记承载(护栏 #7)。无参数则 null。",
+          "properties": {
+            "locator": {
+              "type": "object",
+              "additionalProperties": false,
+              "description": "本步实际命中的语义定位器线索(展示/调试用)。",
+              "properties": {
+                "role": {
+                  "type": "string",
+                  "description": "可访问角色，如 textbox/button。"
+                },
+                "accessibleName": {
+                  "type": "string",
+                  "description": "元素可读名(如按钮文本)；非凭据，可保留。"
+                },
+                "semantic": {
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "description": "语义键(如 workflow.name)；与已冻 semantic 形态待对齐(stagehand §1 ⚠️ 待对齐)，无则 null。"
+                }
+              }
+            },
+            "valueRef": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "动作值的脱敏引用：占位符(如 {{workflowName}})或脱敏标记。绝不落 fill/press 的字面量值(护栏 #7)。无值动作则 null。"
+            }
+          }
+        },
+        "cacheStatus": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "hit",
+            "miss",
+            "stale",
+            "bypass",
+            null
+          ],
+          "description": "Q2 待 grill：确定性回放每步重解析定位器、本无解析缓存。若保留(方案 A)，本字段仅记『所加载冻结产物/通道剖面是否复用自既有编译产物』的溯源标记，纯回放无复用恒为 bypass；绝不影响多态裁定、绝不进 verdict.mjs。不可知或方案 B 删字段时为 null。"
+        },
+        "locatorResolution": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "unique",
+            "none",
+            "ambiguous",
+            "fallback_first",
+            "coord_fallback",
+            null
+          ],
+          "description": "本步语义定位器解析结果(标量，stagehand §8)。富对象(candidateCount/backendNodeId/centroid)归 axes.json 动作轴，不在此(N3)。nav 等无定位动作为 null。"
+        },
+        "quietPointReached": {
+          "type": "boolean",
+          "description": "本步采集/动作前是否达静默点(networkidle + 无动画 + DOM 稳定 K ms)；false = 该步证据可复现性存疑。"
+        },
+        "durationMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "本步执行耗时毫秒；性能诊断用，非裁定输入。"
+        },
+        "result": {
+          "type": "string",
+          "enum": [
+            "ok",
+            "actionError",
+            "locatorError",
+            "timeout",
+            "quietPointMiss"
+          ],
+          "description": "动作执行结果。永不等同多态裁定四态(N4)——result=ok 不代表该步 PASS，裁定只由 verdict.mjs 出。"
+        }
+      }
+    },
+    "runMetrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "run-metrics.json：一次 run 的聚合指标，做趋势/flake/性能诊断。绝不写 passes、绝不进 verdict.mjs。",
+      "required": [
+        "schemaVersion",
+        "caseId",
+        "totalSteps",
+        "passedActions",
+        "locatorHitRate",
+        "quietPointWaitMs",
+        "totalDurationMs"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1,
+          "description": "接缝版本，整数。"
+        },
+        "caseId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "TestCase.caseId，与 run-history 各行一致。"
+        },
+        "runId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "本次 run 标识，对应 runs/<caseId>/<runId>/；未知则 null。"
+        },
+        "totalSteps": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "本次 run 的回放步总数。"
+        },
+        "passedActions": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "动作执行成功数(result=ok 的步数)。注意：不是四态 PASS、也不是 prd 的 passes(护栏 #15，stagehand §4『不能因 history 看起来健康就判 PASS』)。"
+        },
+        "locatorHitRate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "locatorResolution=unique 的步占比，0..1；定位稳定度诊断。"
+        },
+        "cacheHitRate": {
+          "type": [
+            "number",
+            "null"
+          ],
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Q2 待 grill：与 cacheStatus 同生死。纯回放无缓存参与时应为 null(诚实反映回放无解析缓存)，而非 0；方案 B 删 cacheStatus 时一并删本字段。"
+        },
+        "quietPointWaitMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "本次 run 等待静默点累计耗时毫秒。"
+        },
+        "totalDurationMs": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "本次 run 回放总耗时毫秒。"
+        }
+      }
+    }
+  }
+}

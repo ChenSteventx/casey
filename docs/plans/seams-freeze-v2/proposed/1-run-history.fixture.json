@@ -1,0 +1,70 @@
+{
+  "_draft": "草稿 / 未冻 / 待 grill-with-docs 拍板，勿当已决",
+  "_note": "本 .json 仅把两份产物打包供人审：run-history.jsonl 实际逐行落 runHistoryLines[] 各元素(每元素校验 definitions/runHistoryLine)；run-metrics.json 落 runMetrics(校验 definitions/runMetrics)。valueRef 用占位符示范凭据打码、cacheStatus=bypass + cacheHitRate=null 示范回放无解析缓存(Q2)。",
+  "runHistoryLines": [
+    {
+      "timestamp": "2026-06-30T10:30:00.000+08:00",
+      "caseId": "tc_workflow_create_smoke",
+      "stepId": "atstep_0",
+      "intentId": "intent_0",
+      "method": "nav",
+      "parameters": null,
+      "cacheStatus": "bypass",
+      "locatorResolution": null,
+      "quietPointReached": true,
+      "durationMs": 412,
+      "result": "ok"
+    },
+    {
+      "timestamp": "2026-06-30T10:30:01.200+08:00",
+      "caseId": "tc_workflow_create_smoke",
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "method": "fill",
+      "parameters": {
+        "locator": {
+          "role": "textbox",
+          "accessibleName": "工作流名称",
+          "semantic": "workflow.name"
+        },
+        "valueRef": "{{workflowName}}"
+      },
+      "cacheStatus": "bypass",
+      "locatorResolution": "unique",
+      "quietPointReached": true,
+      "durationMs": 183,
+      "result": "ok"
+    },
+    {
+      "timestamp": "2026-06-30T10:30:02.050+08:00",
+      "caseId": "tc_workflow_create_smoke",
+      "stepId": "atstep_2",
+      "intentId": "intent_2",
+      "method": "click",
+      "parameters": {
+        "locator": {
+          "role": "button",
+          "accessibleName": "保存",
+          "semantic": null
+        },
+        "valueRef": null
+      },
+      "cacheStatus": "bypass",
+      "locatorResolution": "unique",
+      "quietPointReached": true,
+      "durationMs": 256,
+      "result": "ok"
+    }
+  ],
+  "runMetrics": {
+    "schemaVersion": 1,
+    "caseId": "tc_workflow_create_smoke",
+    "runId": "run_2026063010300000",
+    "totalSteps": 3,
+    "passedActions": 3,
+    "locatorHitRate": 1,
+    "cacheHitRate": null,
+    "quietPointWaitMs": 640,
+    "totalDurationMs": 851
+  }
+}

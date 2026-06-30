@@ -1,0 +1,113 @@
+{
+  "schemaVersion": 1,
+  "caseId": "tc_workflow_create_smoke",
+  "channel": "web",
+  "capturedAt": "2026-06-29T08:14:02.511Z",
+  "capturedAgainstBuild": "heren-aimgmt@2026.06.0",
+  "steps": [
+    {
+      "stepId": "atstep_0",
+      "intentId": "intent_0",
+      "atom": "nav.wf",
+      "urlPathnameAfter": "/heren/aimanagement/list",
+      "cleanTitles": [
+        "工作流管理"
+      ],
+      "toastTexts": [],
+      "replyText": null,
+      "replyStreamUrl": null,
+      "requestLog": [
+        {
+          "url": "/ai-manager/process/listProcessData?pageNo=1",
+          "method": "GET",
+          "status": 200,
+          "ts": 1782634442310,
+          "initiator": "atstep_0",
+          "attributedStepId": "atstep_0",
+          "errorEnvelope": {
+            "field": "status",
+            "expected": 200,
+            "actual": 200,
+            "ok": true
+          }
+        }
+      ],
+      "quietPointReached": true
+    },
+    {
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "atom": "wf.create",
+      "urlPathnameAfter": "/heren/aimanagement/edit/8f3a21",
+      "cleanTitles": [
+        "编辑工作流",
+        "atl_目录CRUD_1782634443"
+      ],
+      "toastTexts": [
+        "新增成功"
+      ],
+      "replyText": null,
+      "replyStreamUrl": null,
+      "requestLog": [
+        {
+          "url": "/ai-manager/process/saveOrModifyProcessData",
+          "method": "POST",
+          "status": 200,
+          "ts": 1782634443002,
+          "initiator": "atstep_1",
+          "attributedStepId": "atstep_1",
+          "errorEnvelope": {
+            "field": "status",
+            "expected": 200,
+            "actual": 200,
+            "ok": true
+          }
+        },
+        {
+          "url": "/ai-manager/auths/poll",
+          "method": "GET",
+          "status": 401,
+          "ts": 1782634443105,
+          "initiator": "background",
+          "attributedStepId": null,
+          "errorEnvelope": {
+            "field": "status",
+            "expected": 200,
+            "actual": 401,
+            "ok": false
+          }
+        }
+      ],
+      "quietPointReached": true
+    },
+    {
+      "stepId": "atstep_2",
+      "intentId": "intent_2",
+      "atom": "chat.send",
+      "urlPathnameAfter": "/heren/aimanagement/edit/8f3a21",
+      "cleanTitles": [
+        "编辑工作流"
+      ],
+      "toastTexts": [],
+      "replyText": "已为该工作流生成节点建议：1) 接收患者主诉 2) 调用分诊模型 3) 输出建议科室。",
+      "replyStreamUrl": "/ai-manager/llm/streamReply?sessionId=atl_sess_1782634444",
+      "requestLog": [
+        {
+          "url": "/ai-manager/llm/streamReply?sessionId=atl_sess_1782634444",
+          "method": "POST",
+          "status": 200,
+          "ts": 1782634444870,
+          "initiator": "atstep_2",
+          "attributedStepId": "atstep_2",
+          "errorEnvelope": {
+            "field": "status",
+            "expected": 200,
+            "actual": 200,
+            "ok": true
+          }
+        }
+      ],
+      "quietPointReached": true
+    }
+  ]
+}

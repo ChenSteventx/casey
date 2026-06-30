@@ -1,0 +1,332 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://casey/loop/prd.schema.json",
+  "title": "loop-kit PRD（任务契约实例）/ Casey 冻结断言契约",
+  "description": "由 acceptance-gate 工序生成与冻结。passes 字段只由 gate.mjs（确定性裁判）写入，任何模型无权翻绿。schemaVersion 1 = loop-kit 通用契约（向后兼容，不破坏现有 prd-*.json）；schemaVersion 2 = 加性扩展 Casey 核心域：caseId + 逐 intent 的冻结 typed expected[]（带人签元数据 signedAt/signedAgainstBuild/signerId）+ 期望版本化 + 多态裁定枚举（PASS/SUT_DEFECT/HARNESS_ERROR/NEEDS_HUMAN + reason 子类，与 verdict.json 同一 Published Language）。见 docs/design/txt2testreport-design.md §4.3/§8。",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "task",
+    "stories"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "enum": [
+        1,
+        2
+      ],
+      "description": "1=loop-kit 通用；2=Casey 冻结断言契约（加性扩展）"
+    },
+    "task": {
+      "type": "string",
+      "description": "任务名"
+    },
+    "specPath": {
+      "type": "string",
+      "description": "阶段1产物（to-plan 的 plan.md）路径"
+    },
+    "testChecksums": {
+      "type": "object",
+      "description": "Test Ratchet：acceptance-gate 冻结的验收测试/golden 存档文件 sha256；gate 每轮校验，不符即红。只冻断言文件，不冻 spec（自愈改 locator 合法、改断言触棘轮，设计 §5）。",
+      "additionalProperties": {
+        "type": "string"
+      }
+    },
+    "observability": {
+      "type": "array",
+      "description": "可观测性申报：质量门禁测不到的维度及去向（route=human 走升级路径 / waived 明确豁免）",
+      "items": {
+        "type": "object",
+        "required": [
+          "dimension",
+          "route"
+        ],
+        "properties": {
+          "dimension": {
+            "type": "string"
+          },
+          "route": {
+            "enum": [
+              "human",
+              "waived"
+            ]
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "stories": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "desc",
+          "lane",
+          "acceptance",
+          "passes"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "desc": {
+            "type": "string"
+          },
+          "lane": {
+            "enum": [
+              "toil",
+              "implementation"
+            ]
+          },
+          "acceptance": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "string"
+            },
+            "description": "可执行规格：每条都是可运行命令（Casey 域 = 一次 bin/check.mjs 调用），全部 exit 0 才算过。schemaVersion 2 形状不变（设计 §5/§8：gate 主循环原样）"
+          },
+          "passes": {
+            "type": "boolean"
+          },
+          "evidence": {
+            "type": "string",
+            "description": "gate 翻绿时写入的证据指向（时间戳+命令结果摘要）"
+          },
+          "reviewed": {
+            "type": "boolean",
+            "description": "异构冗余评审是否通过（review 道结论，独立于 passes）"
+          }
+        }
+      }
+    },
+    "caseId": {
+      "type": "string",
+      "description": "schemaVersion 2：TestCase 聚合根 id（扁平契约 loop/prd-<caseId>.json 的 <caseId>）。与 verdict.json/StepAxes 的 caseId 同一标识"
+    },
+    "channel": {
+      "enum": [
+        "web",
+        "cef",
+        "arbitrary"
+      ],
+      "description": "schemaVersion 2：回放通道；裁定/报告/契约层 channel 无关，仅影响断言成功字段参数化（错误信封）"
+    },
+    "intents": {
+      "type": "array",
+      "minItems": 1,
+      "description": "schemaVersion 2：逐 intent 的冻结断言契约（人签后写入）。一条 intentId 对应 N 个回放 stepId，由 verdict.json 卷回",
+      "items": {
+        "$ref": "#/definitions/intentContract"
+      }
+    },
+    "globalAssertions": {
+      "type": "array",
+      "description": "schemaVersion 2：全局冻结断言（noPageError/noErrorEnvelope/noErrorToast 等取证类，跨 intent 生效，设计 §2）",
+      "items": {
+        "$ref": "#/definitions/frozenAssertion"
+      }
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schemaVersion": {
+            "const": 2
+          }
+        },
+        "required": [
+          "schemaVersion"
+        ]
+      },
+      "then": {
+        "required": [
+          "caseId",
+          "intents"
+        ]
+      }
+    }
+  ],
+  "definitions": {
+    "intentContract": {
+      "type": "object",
+      "required": [
+        "intentId",
+        "expected"
+      ],
+      "properties": {
+        "intentId": {
+          "type": "string",
+          "description": "意图步标识（用例语义步 id，authoring 时写）；区别于回放事件位置式 stepId"
+        },
+        "intent": {
+          "type": "string",
+          "description": "意图自然语言描述（人/LLM authoring）"
+        },
+        "expected": {
+          "type": "array",
+          "minItems": 1,
+          "description": "本 intent 的冻结 typed 断言集（断言续跑、逐条出结果、不首错即停）",
+          "items": {
+            "$ref": "#/definitions/frozenAssertion"
+          }
+        },
+        "expectedVerdict": {
+          "$ref": "#/definitions/verdictAdjudication",
+          "description": "人签时记录的期望多态裁定基线（report 用它对比 runtime verdict.json 的观测裁定；tier-1 合成 golden 直接以它为期望）。runtime 观测裁定永远只进 verdict.json，绝不回写本契约（fail-safe 分进程，护栏 #15）"
+        }
+      }
+    },
+    "frozenAssertion": {
+      "type": "object",
+      "description": "一条冻结的带类型断言 + 人签元数据。runtime 的 actual/ok 不进冻结契约（属 StepAxes/verdict.json 运行态）",
+      "required": [
+        "kind",
+        "signedAt",
+        "signedAgainstBuild",
+        "signerId"
+      ],
+      "properties": {
+        "kind": {
+          "$ref": "#/definitions/assertionKind"
+        },
+        "op": {
+          "$ref": "#/definitions/assertionOp"
+        },
+        "value": {
+          "type": [
+            "string",
+            "number",
+            "boolean"
+          ],
+          "description": "断言比较值；含 uniqueName/ts 的易变值必模板化（{{uniqueName}}/{{ts}}），绝不冻字面量（设计 §2.1 determinism 铁律）"
+        },
+        "soft": {
+          "type": "boolean",
+          "default": false,
+          "description": "true=软断言，只进报告不进裁定树（verdict.mjs 仅 soft===true 才排除）；缺省/false=硬断言"
+        },
+        "signedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "人签时刻（ISO 8601）。期望版本化锚点之一"
+        },
+        "signedAgainstBuild": {
+          "type": "string",
+          "description": "本期望所针对的 SUT 构建标识；有意改版后走重签（新 checksum + 新 signedAgainstBuild，旧期望归档），不自动记缺陷（设计 §4.3）"
+        },
+        "signerId": {
+          "type": "string",
+          "description": "签署人标识（人签门责任落点）"
+        }
+      }
+    },
+    "assertionKind": {
+      "description": "断言词汇表（设计 §2.1）；LLM 不准发明自由断言",
+      "enum": [
+        "urlPathname",
+        "textVisible",
+        "countChange",
+        "inputReadback",
+        "dropdownReadback",
+        "requiredFilled",
+        "streamReplyReceived",
+        "replyContains",
+        "replyMatches",
+        "noPageError",
+        "noErrorEnvelope",
+        "noErrorToast"
+      ]
+    },
+    "assertionOp": {
+      "description": "每种 kind 允许的 op（设计 §2.1 收紧 + 取证类 envelopeOk/absent）；equals 含 ID/atl_ 字面量冻结期 lint 报红",
+      "enum": [
+        "startsWith",
+        "matches",
+        "equals",
+        "appears",
+        "up",
+        "down",
+        "envelopeOk",
+        "absent"
+      ]
+    },
+    "verdictState": {
+      "description": "多态裁定四态（与 verdict.json/CONTEXT.md 同一 Published Language）。PASS/SUT_DEFECT/HARNESS_ERROR 为终判（reason=null）；NEEDS_HUMAN 必带 reason 子类",
+      "enum": [
+        "PASS",
+        "SUT_DEFECT",
+        "HARNESS_ERROR",
+        "NEEDS_HUMAN"
+      ]
+    },
+    "verdictReason": {
+      "description": "NEEDS_HUMAN 的 reason 子类（设计 §4.3）",
+      "enum": [
+        "SUT_DEFECT_OR_STALE",
+        "CASE_DEFECT",
+        "AMBIGUOUS_ACTION",
+        "AFFORDANCE_ABSENT",
+        "INDETERMINATE"
+      ]
+    },
+    "verdictAdjudication": {
+      "type": "object",
+      "description": "一个多态裁定记录，字段名与 verdict.json 逐步项 {verdict, reason} 一致。终判 reason 必 null；NEEDS_HUMAN reason 必为子类（fail-safe 不变量，镜像 bin/verdict.mjs §4.2）",
+      "required": [
+        "verdict"
+      ],
+      "properties": {
+        "verdict": {
+          "$ref": "#/definitions/verdictState"
+        },
+        "reason": {
+          "oneOf": [
+            {
+              "$ref": "#/definitions/verdictReason"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "verdict": {
+                "const": "NEEDS_HUMAN"
+              }
+            },
+            "required": [
+              "verdict"
+            ]
+          },
+          "then": {
+            "properties": {
+              "reason": {
+                "$ref": "#/definitions/verdictReason"
+              }
+            },
+            "required": [
+              "reason"
+            ]
+          },
+          "else": {
+            "properties": {
+              "reason": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    }
+  }
+}
