@@ -67,12 +67,21 @@
 
 经验证：13 探针全过（含反向不误伤：真漂移仍 `HARNESS_ERROR`、合法前缀仍放行、正常信封仍 `ok:true`）；三镜头对抗核验（回归 / 新 fail-open / 护栏，run `wf_317cbbc4-fb6`）全 sound、0 真问题。评审取证留 `loop/audit.jsonl`（review/pass 记录）。
 
-延后项（codex C1-C4 + 本轮新 fail-safe 行为，留下轮 acceptance-gate 契约更新补冻结 golden；改冻结 golden 触 ratchet）：
-- C1：现有 `background_401` golden 无辨别力（硬断言全过先 PASS、根本没走归因分支）—— 需「硬断言失败 + SUT 错误归因别步 → 非 SUT_DEFECT」的辨别 case。
-- C2：crash / pageerror 背书分支、缺 stepId 不背书 防护，均无 case。
-- C3：空 / 缺 prefix + 空实体名破坏性硬闸，无 case。
-- C4：信封坏配置（缺 successValue / 空白字段名）+ 敏感字段 denylist，无 case。
-- 另：B1（非布尔 soft）、B2（缺 miss 证据不自愈）、B3（steps 非数组/空 fail-closed）三条新分支同样待钉。
+延后项进展（新增独立回归锁 golden、不动冻结测试，详见下方「P5 回放异构评审收口」）：
+- **已补冻**（`tests/_golden/p5-replay-coverage.golden.mjs`，commit b0dcaff，gate GREEN 2/2）：
+  - C1 全闭：合成 StepAxes 喂已冻 `verdict.mjs`——「硬断言失败 + 500 归因别步/背景归 null → 非 SUT_DEFECT（落 SUT_DEFECT_OR_STALE）」对「归因对齐本步 → SUT_DEFECT」的辨别 case 已钉。
+  - C2 的 pageerror 半边：pageerror 归因本步 → SUT_DEFECT、归因别步 → 不背书本步（非全局布尔）已钉。
+- **仍待钉**（下轮 acceptance-gate，多属 verdict/forensics 配置层、非 P5 回放）：
+  - C2 余项：crash 背书分支、缺 stepId 不背书。
+  - C3：空 / 缺 prefix + 空实体名破坏性硬闸，无 case。
+  - C4：信封坏配置（缺 successValue / 空白字段名）+ 敏感字段 denylist，无 case。
+  - B1（非布尔 soft）、B2（缺 miss 证据不自愈）、B3（steps 非数组/空 fail-closed）三条分支。
+
+## P5 回放异构评审收口（codex 侧，2026-06-30）
+
+P5 回放内核 loop 绿后接异构评审（与上节 P2/verdict 评审不同轮）。codex（gpt-5.5 真非同族、xhigh、只读、空 cwd 喂 stdin，护栏 #9）判 FAIL、10 发现（5 High + 4 Medium + 1 Low），逐条核实全成立、全修（commit b982171，改 lib/bin 不动冻结 golden；仅 `server.mjs` 的 L10 改动重签 checksum）。最严重 H3：唯一元素 click/fill/goto 抛错被吞却仍谎报 `actionPerformed=true`（同族自建漏掉的 fail-open）。要点修复：动作轴改诚实（失败落 `action_failed`→verdict INDETERMINATE；多匹配绝不点击；统一身份门 count===1 才 unique）、取证归因收紧到动作因果作用域（预导航期 `currentStepId=null`，非时间窗）、pageerror 按步归因不全局污染、网络背书归一到代表步对齐 verdict、断言证不出一律 ok:false、drain 先等在途前台 API。golden p5-replay 10/10 复绿 + selftest tier1 无回归 + gate GREEN。
+
+收口补冻（commit b0dcaff）：上述 fail-safe 不变量的失败方向 p5-replay.golden 不覆盖，新增 `tests/_golden/p5-replay-coverage.golden.mjs`（13 检查）作回归锁、并入 prd-p5-replay（testChecksums + story `s2-failsafe-coverage`，ratchet 只增不减=护栏 #1 允许）。锁两层：断言轴证不出/未实现 kind→ok:false（含正反两向防恒-false 假绿）+ 合成 StepAxes 喂已冻 verdict.mjs 验四态归因。gate GREEN 2/2、passes 由 gate 写。P5 全流水线 grill→plan→accept→loop→review 全 done。
 
 ## 锁定的决策（2026-06-29）
 
@@ -84,14 +93,14 @@
 
 ## 下一步
 
-1. P5 异构冗余评审（阶段 4，唯一剩的 P5 流水线步）—— P5 loop 绿，按全流水线接异构评审。评审料已备 `scratchpad/p5-review-packet.md`（spec + diff + 门禁证据，不含实现者推理，护栏 #9；凭据自检干净）。主评审 codex:gpt-5.5（OpenAI 族，真非同族；WSL 待装：`npm install -g @openai/codex@latest` + `codex login`，原 PATH 那个是 Windows npm 装的缺 linux-x64 二进制）。判 FAIL 直接采信去修、判 PASS 记 `loop/audit.jsonl` 再 `advance review`。
+1. ~~P5 异构冗余评审（阶段 4）~~ 已完成（codex gpt-5.5，判 FAIL→10 修复→复绿，b982171）+ 新 fail-safe 行为补冻回归锁（b0dcaff）。见上节「P5 回放异构评审收口」。P5 流水线 review done、仅 learn 待。
 2. tier-2 真机（route:human，护栏 #16 gate 绿 != 完成）：`catalog_wf_crud` 真站全 PASS + 注 HTTP500 出 `SUT_DEFECT` + CDP initiator 真发起方在真 Heren 流量下可靠度（ADR-0007 推翻条件）。依赖 P3 编译 + P5 真回放。
 3. Layer-3 集成（排期 v3 第3层）：compile-gate 真产物 → P5 真回放 → verdict → P7 报告，首条 web 端到端（真报告——录屏/trace/截图由真回放产出，不再是合成 fixture）。
 4. 收尾：P2 learn；push（review done 解锁后，本仓无 git 远端、待定 GitHub 目标仓）；接缝 v2 增冻（`run-history.jsonl`/动作词汇表/failure ledger 等，走 grill-with-docs，草稿在 `docs/plans/seams-freeze-v2/proposed/`）；两个 hermetic 缺口 golden（P7 credentialGate / P6 superseded，草稿在各 proposed/）。
 
 ## 契约 / 运维
 
-- `loop/active-contract.json` = `p5-replay`（full lane）；grill/plan/accept/loop done（gate GREEN 1/1、`passes:true`，2026-06-30；server.mjs fork 修复后 checksum 重签、accept 重签）；review/learn 待。其余契约（p2-intent-compile / seams-freeze / p2-failsafe-coverage / p7-report / p4-freeze / p6-selfheal）均 loop done、产物落 dev。
+- `loop/active-contract.json` = `p5-replay`（full lane）；grill/plan/accept/loop/review 全 done（gate GREEN 2/2：s1-replay + s2-failsafe-coverage，`passes:true`，2026-06-30；server.mjs fork 修复后 checksum 重签；coverage golden 并入 testChecksums b0dcaff）；仅 learn 待。其余契约（p2-intent-compile / seams-freeze / p2-failsafe-coverage / p7-report / p4-freeze / p6-selfheal）均 loop done、产物落 dev。
 - 单活契约 baton 教训（重要）：loop-kit 是单活契约（hook 读主树共享 `active-contract.json`）。本会话并行起多契约（worktree 隔离）撞了这个单 baton 槽——worktree 子代理 commit 受主树 baton 互锁：P6 子代理曾临时翻主 baton（已还原）、P4 子代理被拦只暂存未提交。landing 办法：已 committed 的分支用 `git merge`（不被 commit 互锁拦）；未提交的（P4）把文件拷进 dev、把主 baton 临时切到其真实 loop-done 契约提交、再还原。未来真并行须按 design §3.1：`LOOP_CONTRACT_FILE` 参数化 + `breaker --state`（未建）。
 - push：本仓无 git 远端（`git remote` 空），待定 GitHub 目标仓（参考 autotester = 私有 `ChenSteventx/autotester`）。
 - 删不动的残留：`docs/plans/seams-freeze/proposed/`（评审副本，破坏性删除被权限层拦，待人 `! Remove-Item -Recurse -Force` 清）。
