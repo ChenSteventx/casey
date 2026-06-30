@@ -1,6 +1,6 @@
 {
-  "_note": "P5 回放 golden（黄金标准测试）的场景表。原则：复现已冻接缝、不另立预期。verdict（多态裁定）四态一律映射到 verdict-cases.json 的已冻八案；drift（locator 漂移）场景照 drift-patch.fixture.json 复刻其 canonical（规范稳定签名）。每条 case 标 groundedIn（事实源）。runner（回放器）真回放假 SUT 产 axes（三轴），喂已冻 verdict.mjs，golden 断言其四态与所映射的冻结案一致。改本文件=Test Ratchet（测试棘轮）判红。",
-  "anchorNote": "anchor（锚点）= 本 case 要断言裁定的那条 intent（意图步）；其余 intent 是到达锚点的铺垫、不断言。expected（期望断言）只给锚点 intent；globalAssertions（全局断言）跨步生效。",
+  "_note": "P5 回放 golden（黄金标准测试）的场景表。原则：复现已冻接缝、不另立预期。verdict（多态裁定）四态一律映射到 verdict-cases.json 的已冻八案（每案 groundedIn 标同源）；drift/vanished（漂移）场景照 drift-patch.fixture.json 复刻其 canonical（规范稳定签名）。本表 10 案复现 verdict-cases 全八案（PASS/SUT_DEFECT/SUT_DEFECT_OR_STALE/AMBIGUOUS_ACTION/HARNESS_ERROR/INDETERMINATE/background_401_not_attributed/soft_assertion_not_gating）。错误信封成功字段 = body.status===200（通道剖面 successField=status/successValue=200，复现 ADR-0006/observed-reality，非旧 code 形态）。runner（回放器）真回放假 SUT 产 axes（三轴），喂已冻 verdict.mjs，golden 断言其四态、漂移信号、关键取证归因与所映射的冻结案一致。改本文件=Test Ratchet（测试棘轮）判红。",
+  "anchorNote": "anchor（锚点）= 本 case 要断言裁定的那条 intent（意图步）；其余 intent 是到达锚点的铺垫、不断言。expected（期望断言）只给锚点 intent；globalAssertions（全局断言）跨步生效。wantForensics（可选）= 对取证轴的关键归因硬断言（背景请求归 null、错误信封 ok）；wantDriftSignal（可选）= 对漂移探针输出的硬断言（含 candidateCount，堵硬编码）。",
   "cases": [
     {
       "name": "happy",
@@ -22,7 +22,20 @@
       "expected": [
         { "intentId": "intent_2", "kind": "noErrorEnvelope", "op": "envelopeOk", "value": "status==200", "soft": false }
       ],
-      "globalAssertions": [ { "kind": "noPageError", "op": "absent", "soft": false } ]
+      "globalAssertions": [ { "kind": "noPageError", "op": "absent", "soft": false } ],
+      "wantForensics": { "network": [ { "urlIncludes": "saveOrModifyProcessData", "atAnchor": true, "httpStatus": 500, "envelopeOk": false } ] }
+    },
+    {
+      "name": "envelope200bad",
+      "groundedIn": "verdict-cases.json#sut_defect（信封软失败路：HTTP 200 但 body.status≠200，归本步背书）",
+      "scenario": "envelope200bad",
+      "eventsRef": "tests/_golden/fixtures/seams/events.fixture.json",
+      "anchor": { "intentId": "intent_2", "wantVerdict": "SUT_DEFECT", "wantReason": null },
+      "expected": [
+        { "intentId": "intent_2", "kind": "noErrorEnvelope", "op": "envelopeOk", "value": "status==200", "soft": false }
+      ],
+      "globalAssertions": [ { "kind": "noPageError", "op": "absent", "soft": false } ],
+      "wantForensics": { "network": [ { "urlIncludes": "saveOrModifyProcessData", "atAnchor": true, "httpStatus": 200, "envelopeOk": false } ] }
     },
     {
       "name": "background401",
@@ -34,7 +47,20 @@
         { "intentId": "intent_2", "kind": "noErrorEnvelope", "op": "envelopeOk", "value": "status==200", "soft": false }
       ],
       "globalAssertions": [ { "kind": "noPageError", "op": "absent", "soft": false } ],
-      "wantForensics": { "note": "/api/auths/poll 的 401 由 setInterval（定时器）发起 → CDP initiator=timer + denylist → attributedStepId:null（background，不归本步），故不背书、不翻 verdict" }
+      "wantForensics": { "network": [ { "urlIncludes": "/api/auths/poll", "attributedStepId": null } ] }
+    },
+    {
+      "name": "stale_bg401",
+      "groundedIn": "verdict-cases.json#sut_defect_or_stale（判别式：本步干净 + 非信封硬断言失败 + 背景 401 不背书）",
+      "scenario": "stale_bg401",
+      "eventsRef": "tests/_golden/fixtures/seams/events.fixture.json",
+      "anchor": { "intentId": "intent_1", "wantVerdict": "NEEDS_HUMAN", "wantReason": "SUT_DEFECT_OR_STALE" },
+      "expected": [
+        { "intentId": "intent_1", "kind": "noErrorEnvelope", "op": "envelopeOk", "value": "status==200", "soft": false },
+        { "intentId": "intent_1", "kind": "urlPathname", "op": "startsWith", "value": "/ai-manager/process/detail", "soft": false }
+      ],
+      "globalAssertions": [ { "kind": "noPageError", "op": "absent", "soft": false } ],
+      "wantForensics": { "network": [ { "urlIncludes": "/api/auths/poll", "attributedStepId": null } ] }
     },
     {
       "name": "stream",
@@ -45,6 +71,29 @@
       "expected": [
         { "intentId": "intent_2", "kind": "noErrorEnvelope", "op": "envelopeOk", "value": "status==200", "soft": false },
         { "intentId": "intent_2", "kind": "streamReplyReceived", "op": "finished", "value": "200", "soft": false }
+      ],
+      "globalAssertions": [ { "kind": "noPageError", "op": "absent", "soft": false } ]
+    },
+    {
+      "name": "ambiguous",
+      "groundedIn": "verdict-cases.json#ambiguous_action（语义定位器多匹配 → resolution=fallback_first）",
+      "scenario": "ambiguous",
+      "eventsRef": "tests/_golden/fixtures/seams/events.fixture.json",
+      "anchor": { "intentId": "intent_2", "wantVerdict": "NEEDS_HUMAN", "wantReason": "AMBIGUOUS_ACTION" },
+      "expected": [
+        { "intentId": "intent_2", "kind": "urlPathname", "op": "startsWith", "value": "/ai-manager/process/detail", "soft": false }
+      ],
+      "globalAssertions": [ { "kind": "noPageError", "op": "absent", "soft": false } ]
+    },
+    {
+      "name": "soft_assertion",
+      "groundedIn": "verdict-cases.json#soft_assertion_not_gating（唯一失败的是 soft 断言 → 不进裁定树 → PASS）",
+      "scenario": "happy",
+      "eventsRef": "tests/_golden/fixtures/seams/events.fixture.json",
+      "anchor": { "intentId": "intent_2", "wantVerdict": "PASS", "wantReason": null },
+      "expected": [
+        { "intentId": "intent_2", "kind": "noErrorEnvelope", "op": "envelopeOk", "value": "status==200", "soft": false },
+        { "intentId": "intent_2", "kind": "countChange", "op": "up", "value": 1, "soft": true }
       ],
       "globalAssertions": [ { "kind": "noPageError", "op": "absent", "soft": false } ]
     },
@@ -78,6 +127,37 @@
         "sameSignatureUniquePresent": true,
         "candidateCount": 1,
         "matchedSignature": "role=button|name=删除|withinRow=atl_wf_5fa1"
+      }
+    },
+    {
+      "name": "vanished",
+      "groundedIn": "verdict-cases.json#indeterminate（drift 的反面：录制 locator 失配 + 同稳定签名元素消失 → sameSignatureUniquePresent=false）",
+      "scenario": "vanished",
+      "events": [
+        {
+          "stepId": "atstep_0", "intentId": "intent_0", "atom": "nav.wf", "action": "nav",
+          "url": "http://sut.invalid/ai-manager/process/list",
+          "pre": { "path": "/", "dlg": 0, "drw": 0, "top": "" },
+          "after": { "path": "/ai-manager/process/list", "dlg": 0, "drw": 0, "top": "" }
+        },
+        {
+          "stepId": "atstep_3", "intentId": "intent_2", "atom": "workflow.deleteByName", "action": "click",
+          "_locatorNote": "同 drift 的脆性定位器，但 vanished 场景列表只渲非目标行 → 录制 locator 失配(resolution=none) 且同稳定签名元素消失(漂移探针 candidateCount=0、sameSignatureUniquePresent=false)。堵把漂移信号硬编码成 present:true 的 runner（会误判 HARNESS_ERROR≠INDETERMINATE）。",
+          "fallbackCss": ".hr-table-row:nth-child(2) .hr-action-delete",
+          "nth": 1,
+          "targetName": "atl_wf_5fa1",
+          "pre": { "path": "/ai-manager/process/list", "dlg": 0, "drw": 0, "top": "" },
+          "after": { "path": "/ai-manager/process/list", "dlg": 0, "drw": 0, "top": "" }
+        }
+      ],
+      "anchor": { "intentId": "intent_2", "wantVerdict": "NEEDS_HUMAN", "wantReason": "INDETERMINATE" },
+      "expected": [
+        { "intentId": "intent_2", "kind": "countChange", "op": "equals", "value": 0, "soft": false }
+      ],
+      "globalAssertions": [ { "kind": "noPageError", "op": "absent", "soft": false } ],
+      "wantDriftSignal": {
+        "sameSignatureUniquePresent": false,
+        "candidateCount": 0
       }
     }
   ]

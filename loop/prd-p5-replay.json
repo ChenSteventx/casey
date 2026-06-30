@@ -1,11 +1,12 @@
 {
   "schemaVersion": 1,
-  "task": "P5 回放内核（★核心）：确定性回放假 SUT（被测系统）→ 产 axes（三轴：动作/逐条断言/取证）→ 喂已冻 verdict.mjs（多态裁定，零 LLM）→ 出四态。组件：回放 runner（回放器，移植 robust-actions/replay-guards/instantiate）+ watchNetworkForensics（网络取证，新建，CDP 真发起方归因 + 背景 denylist + 证不出归 null）+ StepAxes 产出（按 intent）+ 只读漂移探针 findEquivalentAffordance（同稳定签名 count===1）。判据 docs/plans/p5-replay/plan.md + exec-plan.md。本契约只冻命令化层（hermetic 假 SUT，零外部依赖）：复现已冻接缝——verdict 四态映射 verdict-cases.json 八案、drift（漂移）复刻 drift-patch.fixture.json 的 canonical（规范稳定签名）。真机三轴回放与真注故障为 route:human（路由人）tier-2。",
+  "task": "P5 回放内核（★核心）：确定性回放假 SUT（被测系统）→ 产 axes（三轴：动作/逐条断言/取证）→ 喂已冻 verdict.mjs（多态裁定，零 LLM）→ 出四态。组件：回放 runner（回放器，移植 robust-actions/replay-guards/instantiate）+ watchNetworkForensics（网络取证，新建，CDP 真发起方归因 + 背景 denylist + 证不出归 null）+ StepAxes 产出（按 intent）+ 只读漂移探针 findEquivalentAffordance（同稳定签名 count===1）。判据 docs/plans/p5-replay/plan.md + exec-plan.md。本契约只冻命令化层（hermetic 假 SUT，零外部依赖）：复现已冻接缝——10 案复现 verdict-cases.json 全八案（含信封软失败→SUT_DEFECT、背景归因判别式→SUT_DEFECT_OR_STALE、漂移硬编码防护→INDETERMINATE），drift（漂移）复刻 drift-patch.fixture.json 的 canonical（规范稳定签名）。错误信封成功字段=body.status===200，经通道剖面（Channel Profile，非凭据）经 --profile 传 runner（site.json 凭据不进 hermetic）。runner CLI：node bin/replay.mjs --events --sut --expected --profile --out（ADR-0007 补充决策 3）。真机三轴回放与真注故障为 route:human（路由人）tier-2。",
   "specPath": "docs/plans/p5-replay/plan.md",
   "testChecksums": {
-    "tests/_golden/p5-replay.golden.mjs": "8b5e9a74c1a4202ba3b4b2020370f7b7271820cbc3eb229cc17726685e05de47",
-    "tests/_golden/fixtures/p5/replay-cases.json": "30054ac01dea9bf412ca9123e89d7e8b4aefde3fb2fe88566744365cd5a954e2",
-    "tests/fixtures/fake-sut/server.mjs": "29c8d83ee40f5a9f74caff3a7f6da34dea953173457cff7c65ec9889cae9c7f2",
+    "tests/_golden/p5-replay.golden.mjs": "2e41a9cf21df476a7b95ba5267a159a1c42cfbe70ea0ce8d0e9db6342c4bc7bd",
+    "tests/_golden/fixtures/p5/replay-cases.json": "931c708956e6abb0fa2fad0e4ad081b203da884d9a08894dd0828a5e216524b0",
+    "tests/fixtures/fake-sut/server.mjs": "157e53269ab2ea939a66549bc751cf0161f41e3cfaf8580a2b7c1c0665cc7d49",
+    "tests/fixtures/fake-sut/CONTRACT.md": "a1d9aa8d58458d3599699293947c9000a7dc1e4d42dbd894d4ae11671ed02919",
     "tests/_golden/fixtures/seams/events.fixture.json": "49545e6efe597c33d9eeaaff65e9f8f9e268e125509533ccf54026a70023dd14"
   },
   "observability": [
@@ -31,7 +32,8 @@
         "node tests/_golden/p5-replay.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-06-30T08:49:39.419Z 全部 acceptance exit 0"
     }
   ]
 }

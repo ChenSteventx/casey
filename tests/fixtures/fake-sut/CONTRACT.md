@@ -16,18 +16,22 @@
 - 点 `确定` → POST `/api/process/saveOrModifyProcessData` → 成功则跳 `/ai-manager/process/detail` + 弹 toast `新增成功`。
 - `/ai-manager/process/detail`：`保存` 按钮（`hr-button wf-save`）→ 点击发 POST `/api/process/saveOrModifyProcessData`。
 
-## 后端路由 × 场景（8 态）
+## 后端路由 × 场景（10 态，复现 verdict-cases 全八案）
 
-| 场景 | save POST | 背景 `/api/auths/poll`（客户端 setInterval 发） | 流式/生命周期 | 目标 verdict |
+> save 信封一律 `status` 形态：成功 `{status:200}`、软失败 HTTP 200 但 `body.status≠200`（`通道剖面` successField=`status`/successValue=200，复现 ADR-0006/observed-reality 的 Heren 接缝，绝不用旧 `{code}`）。
+
+| 场景 | save POST | 背景 `/api/auths/poll`（客户端 setInterval 发） | 流式/生命周期 | 目标 verdict（八案）|
 |---|---|---|---|---|
-| `happy` | 200 `{code:0}` | 200 | — | PASS |
-| `inject500` | 500 `{code:1,message}` | 200 | — | SUT_DEFECT（5xx 归本步背书）|
-| `envelope200bad` | 200 `{code:1}`（HTTP 200 软失败信封）| 200 | — | SUT_DEFECT（错误信封归本步）|
-| `background401` | 200 `{code:0}` | **401**（timer 发→initiator=background→不归本步）| — | PASS（背景 401 不翻）|
-| `stream` | 200 `{code:0}` | 200 | SSE `/api/llm/streamReply` 推 N 块后 `finished` | PASS（streamReplyReceived）|
-| `pageerror` | 200 `{code:0}` | 200 | 客户端 JS 抛 → lifecycle.pageerror 归本步 | route:human（取证里有，按本步归因）|
-| `drift` | 200 `{code:0}` | 200 | 复刻 drift-patch.fixture：列表只渲 atl_wf_5fa1 在首位，录制脆性 css `.hr-table-row:nth-child(2) .hr-action-delete` 命中空，而 role=button name=删除 withinRow=atl_wf_5fa1 唯一仍在 | HARNESS_ERROR |
-| `ambiguous` | 200 `{code:0}` | 200 | 渲染两个同名 `保存` 按钮→resolution=fallback_first | NEEDS_HUMAN(AMBIGUOUS_ACTION) |
+| `happy` | 200 `{status:200}` | 200 | — | PASS |
+| `inject500` | 500 `{status:500}` | 200 | — | SUT_DEFECT（5xx 归本步背书）|
+| `envelope200bad` | 200 `{status:50001}`（HTTP 200 软失败信封）| 200 | — | SUT_DEFECT（错误信封 ok:false 归本步，第二条背书路）|
+| `background401` | 200 `{status:200}` | 401 `{status:401}`（timer 发→initiator=background→attributedStepId:null 不归本步）| — | PASS（背景 401 不翻）|
+| `stale_bg401` | 200 `{status:200}`（干净）| 401 `{status:401}`（背景归 null）| 客户端 save 成功却不导航（停 /list）→ urlPathname 硬断言失配 | NEEDS_HUMAN(SUT_DEFECT_OR_STALE)；错把 401 归本步则翻 SUT_DEFECT、被 golden 抓 |
+| `stream` | 200 `{status:200}` | 200 | SSE `/api/llm/streamReply` 推 N 块后 `finished` | PASS（streamReplyReceived）|
+| `pageerror` | 200 `{status:200}` | 200 | 客户端 JS 抛 → lifecycle.pageerror 归本步 | route:human（取证里有，按本步归因）|
+| `drift` | 200 `{status:200}` | 200 | 列表只渲目标行 atl_wf_5fa1，脆性 css `.hr-table-row:nth-child(2) .hr-action-delete` 命中空，role=button name=删除 withinRow=atl_wf_5fa1 唯一仍在(count=1) | HARNESS_ERROR |
+| `vanished` | 200 `{status:200}` | 200 | drift 的反面：列表只渲非目标行 atl_目录CRUD_a，脆性 css 同样失配，但目标稳定签名 withinRow=atl_wf_5fa1 已不在(count=0) | NEEDS_HUMAN(INDETERMINATE)；堵漂移信号硬编码成 present:true |
+| `ambiguous` | 200 `{status:200}` | 200 | 渲染两个同名 `保存` 按钮→resolution=fallback_first | NEEDS_HUMAN(AMBIGUOUS_ACTION) |
 
 ## 取证归因怎么靠假 SUT 落地（命门）
 

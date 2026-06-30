@@ -3,7 +3,8 @@
 // 角色：证明「真回放能重现已冻的合成真值」，而非另立一套预期。故：
 //   · verdict（裁定）四态一律映射到 verdict-cases.json 已冻八案（见每 case 的 groundedIn）；
 //   · drift（locator 漂移）信号照 drift-patch.fixture.json 的 canonical（规范稳定签名）复刻、逐字断言。
-// 冻结 runner（回放器）CLI：node bin/replay.mjs --events <f> --sut <baseUrl> --expected <f> --denylist <f> --out <axes.json>
+// 冻结 runner（回放器）CLI：node bin/replay.mjs --events <f> --sut <baseUrl> --expected <f> --profile <f> --out <axes.json>
+//   --profile = 通道剖面（Channel Profile，非凭据）：{ background:[denylist], successField, successValue }；watchNetworkForensics 据此对每条网络记录算错误信封。
 //   axes.json = { caseId, steps: [ StepAxes ] }（与 verdict.mjs 输入同形态）
 // 实现前必须红：bin/replay.mjs 不存在 → execFileSync 抛 → 本测试退非 0。改本文件 = Test Ratchet（测试棘轮）判红。
 import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
@@ -49,15 +50,16 @@ for (const c of CASES) {
     sut = await startFakeSut({ scenario: c.scenario });
     const evFile = join(tmp, `${c.name}.events.json`);
     const expFile = join(tmp, `${c.name}.expected.json`);
-    const dlFile = join(tmp, `${c.name}.denylist.json`);
+    const profFile = join(tmp, `${c.name}.profile.json`);
     const axFile = join(tmp, `${c.name}.axes.json`);
     const vdFile = join(tmp, `${c.name}.verdict.json`);
     writeFileSync(evFile, JSON.stringify(resolveEvents(c)));
     writeFileSync(expFile, JSON.stringify(toExpectedContract(c)));
-    writeFileSync(dlFile, JSON.stringify({ background: FAKE_SITE_DENYLIST }));
+    // 通道剖面（非凭据）：背景 denylist + 错误信封成功字段/值（web/Heren = body.status===200）。site.json 凭据不进 hermetic。
+    writeFileSync(profFile, JSON.stringify({ background: FAKE_SITE_DENYLIST, successField: 'status', successValue: 200 }));
 
     // ① runner 真回放假 SUT 产 axes（实现前在此抛 → 红）
-    execFileSync(process.execPath, [REPLAY, '--events', evFile, '--sut', sut.url, '--expected', expFile, '--denylist', dlFile, '--out', axFile], { stdio: 'pipe' });
+    execFileSync(process.execPath, [REPLAY, '--events', evFile, '--sut', sut.url, '--expected', expFile, '--profile', profFile, '--out', axFile], { stdio: 'pipe' });
     const axes = JSON.parse(readFileSync(axFile, 'utf8'));
     const anchorAx = (axes.steps || []).find((s) => s.intentId === c.anchor.intentId);
     if (!anchorAx) throw new Error(`axes 缺锚点 intent=${c.anchor.intentId} 的 StepAxes`);
@@ -65,11 +67,27 @@ for (const c of CASES) {
       if (!(k in anchorAx)) throw new Error(`StepAxes 缺三轴之一: ${k}`);
     }
 
-    // ② drift 场景：漂移信号逐字对齐已冻 canonical
+    // ② drift/vanished 场景：漂移信号逐字对齐已冻 canonical（含 candidateCount，堵把信号硬编码成 present:true）
     if (c.wantDriftSignal) {
       const dp = anchorAx.action && anchorAx.action.driftProbe;
-      if (!dp || dp.sameSignatureUniquePresent !== c.wantDriftSignal.sameSignatureUniquePresent || dp.matchedSignature !== c.wantDriftSignal.matchedSignature) {
-        throw new Error(`漂移信号不符已冻 canonical：期望 ${JSON.stringify(c.wantDriftSignal)}，实际 ${JSON.stringify(dp)}`);
+      const w = c.wantDriftSignal;
+      if (!dp) throw new Error(`漂移场景缺 action.driftProbe：${c.name}`);
+      if (dp.sameSignatureUniquePresent !== w.sameSignatureUniquePresent) throw new Error(`漂移 sameSignatureUniquePresent 不符：期望 ${w.sameSignatureUniquePresent}，实际 ${dp.sameSignatureUniquePresent}`);
+      if ('candidateCount' in w && dp.candidateCount !== w.candidateCount) throw new Error(`漂移 candidateCount 不符：期望 ${w.candidateCount}，实际 ${dp.candidateCount}（堵硬编码）`);
+      if (w.matchedSignature != null && dp.matchedSignature !== w.matchedSignature) throw new Error(`漂移 matchedSignature 不符已冻 canonical：期望 ${w.matchedSignature}，实际 ${dp.matchedSignature}`);
+    }
+
+    // ②b 取证轴关键归因硬断言：背景请求归 null、错误信封 ok/http status（命门，不只靠下游 verdict 间接暴露）
+    if (c.wantForensics && Array.isArray(c.wantForensics.network)) {
+      const allNet = (axes.steps || []).flatMap((s) => (s.forensics && s.forensics.network) || []);
+      const anchorNet = (anchorAx.forensics && anchorAx.forensics.network) || [];
+      for (const w of c.wantForensics.network) {
+        const pool = w.atAnchor ? anchorNet : allNet;
+        const rec = pool.find((n) => n && typeof n.url === 'string' && n.url.includes(w.urlIncludes));
+        if (!rec) throw new Error(`取证轴缺 url 含「${w.urlIncludes}」的网络记录（${w.atAnchor ? '锚点步' : '全步'}）`);
+        if ('attributedStepId' in w && rec.attributedStepId !== w.attributedStepId) throw new Error(`取证归因不符：${w.urlIncludes} 期望 attributedStepId=${w.attributedStepId}，实际 ${rec.attributedStepId}`);
+        if ('httpStatus' in w && Number(rec.status) !== w.httpStatus) throw new Error(`取证 status 不符：${w.urlIncludes} 期望 ${w.httpStatus}，实际 ${rec.status}`);
+        if ('envelopeOk' in w && !(rec.errorEnvelope && rec.errorEnvelope.ok === w.envelopeOk)) throw new Error(`错误信封 ok 不符：${w.urlIncludes} 期望 ${w.envelopeOk}，实际 ${rec.errorEnvelope && rec.errorEnvelope.ok}`);
       }
     }
 

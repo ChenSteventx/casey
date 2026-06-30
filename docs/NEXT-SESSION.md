@@ -12,7 +12,7 @@
 
 ## 一句话现状
 
-排期 v2 已落；P5（★ 回放核心，唯一剩的第2层轨）grill+plan done + Phase 0+1 落地（2026-06-29）：环境补齐（`@playwright/test` 1.60.0 + chromium + 系统库，headless 实起验过）、假 SUT 建成（`tests/fixtures/fake-sut/`，漂移靶子照 `drift-patch.fixture` 复现）、红 golden + 场景表 + prd 备齐（5 场景红基线，复现已冻接缝——verdict 映射 `verdict-cases` 八案、drift 复刻 `drift-patch` canonical）。accept 已备未冻——下一步先人审 4 处承诺（见 `docs/HANDOFF.md`「下一步」的「P5 accept 待审」）再 advance accept，然后 Phase 2 起 runner。`active-contract.json` = `p5-replay`（full，accept pending；先 `node loop-kit/bin/contract.mjs show` 确认）。细节信 `docs/HANDOFF.md`、内部排期信 `docs/plans/p5-replay/exec-plan.md`。
+排期 v2/v3 已落；P5（★ 回放核心，第2层最后一轨）loop 绿（2026-06-30）：`bin/replay.mjs` + `lib/{replay-actions,replay-forensics,replay-assert,drift-probe,instantiate}.mjs` 全建成，真 chromium 回放假 SUT 产三轴喂已冻 `verdict.mjs`，golden 10/10 全绿。accept 前修法发现并修掉一个冻结夹具缺陷：进程内假 SUT 被同步 `execFileSync(replay)` 冻死、答不了 replay 浏览器（goto 卡死）→ 把假 SUT fork 出独立进程（8 态行为一字未改），server.mjs checksum 重签入 prd、accept 重签、gate GREEN。`active-contract.json` = `p5-replay`（full，grill/plan/accept/loop done，review 待）。下一步 = P5 异构冗余评审（codex:gpt-5.5 非同族，评审料 `scratchpad/p5-review-packet.md`，护栏 #9 只喂 spec+diff+证据），判 FAIL 采信去修、判 PASS 记 `loop/audit.jsonl` 再 `advance review`；再 tier-2 真机 route:human（护栏 #16 gate 绿 != 完成）。细节信 `docs/HANDOFF.md`，内部排期信 `docs/plans/p5-replay/exec-plan.md`。
 
 ## WSL 环境注意（下次在 WSL/bash 跑，不再 PowerShell）
 

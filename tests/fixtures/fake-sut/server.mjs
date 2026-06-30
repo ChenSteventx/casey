@@ -6,9 +6,13 @@
 //   scenario ∈ happy | inject500 | envelope200bad | background401 | stream | pageerror | drift | ambiguous
 //   close() -> Promise<void>
 import http from 'node:http';
+import { fork } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
+import { resolve as resolvePath } from 'node:path';
 
 const SCENARIOS = new Set([
   'happy', 'inject500', 'envelope200bad', 'background401', 'stream', 'pageerror', 'drift', 'ambiguous',
+  'stale_bg401', 'vanished',
 ]);
 
 // 背景轮询 denylist 的合成形态（绝不引真 site.json，护栏 #7）：watchNetworkForensics 用它把 /auths/poll 归 background。
@@ -20,11 +24,12 @@ function json(res, code, obj) {
   res.end(body);
 }
 
-// save POST 的场景化响应（错误信封成功字段 = HTTP status==200 且 body.code===0，对齐 observed-reality/expected-frozen）。
+// save POST 的场景化响应。错误信封成功字段 = body.status===200（web/Heren 实测，ADR-0006/observed-reality 钉死；
+//   通道剖面 successField='status'/successValue=200）。软失败 = HTTP 200 但 body.status≠200（招牌缺陷）。绝不用旧 {code} 形态。
 function saveResponse(res, scenario) {
-  if (scenario === 'inject500') return json(res, 500, { code: 1, message: '内部错误（注入故障）' });
-  if (scenario === 'envelope200bad') return json(res, 200, { code: 1, message: '保存失败（HTTP 200 软失败信封）' });
-  return json(res, 200, { code: 0, data: { id: 'wf_8f3a21' } });
+  if (scenario === 'inject500') return json(res, 500, { status: 500, msg: '内部错误（注入故障）' });
+  if (scenario === 'envelope200bad') return json(res, 200, { status: 50001, msg: '保存失败（HTTP 200 软失败信封）' });
+  return json(res, 200, { status: 200, data: { id: 'wf_8f3a21' } });
 }
 
 // SSE 流式回复：推 N 块后发 finished（静默点 = 流 finished，非 networkidle）。
@@ -77,9 +82,11 @@ function clientMain() {
     // 类名照 drift-patch.fixture 的 locatorBefore/canonical 复刻（reproduce，复现已冻接缝、不另造）。
     // drift（漂移）场景：只渲目标行 atl_wf_5fa1 在第 1 位 → 录制脆性定位器 '.hr-table-row:nth-child(2) .hr-action-delete' 命中空(miss，失配)，
     //   而稳定签名 role=button|name=删除|withinRow=atl_wf_5fa1 唯一仍在 → 漂移探针 candidateCount=1。
+    // vanished（drift 的反面）：只渲【非目标】行 atl_目录CRUD_a → 脆性定位器同样失配，但目标稳定签名 withinRow=atl_wf_5fa1 已不在
+    //   → 漂移探针 candidateCount=0、sameSignatureUniquePresent=false → INDETERMINATE（堵漂移信号硬编码成 present:true）。
     var table = el('table', { class: 'wf-list', role: 'table' });
     var tbody = el('tbody');
-    var rows = scenario === 'drift' ? ['atl_wf_5fa1'] : ['atl_目录CRUD_a', 'atl_目录CRUD_b'];
+    var rows = scenario === 'drift' ? ['atl_wf_5fa1'] : scenario === 'vanished' ? ['atl_目录CRUD_a'] : ['atl_目录CRUD_a', 'atl_目录CRUD_b'];
     for (var i = 0; i < rows.length; i++) {
       var tr = el('tr', { class: 'hr-table-row', role: 'row', 'aria-label': rows[i] });
       tr.appendChild(el('td', null, rows[i]));
@@ -113,8 +120,12 @@ function clientMain() {
     var ok = el('button', { class: 'hr-button hr-button--primary', type: 'button' }, '确定');
     ok.addEventListener('click', async function () {
       var r = await postSave();
-      if (r.status === 200 && r.body && r.body.code === 0) { toast('新增成功'); go('/ai-manager/process/detail'); }
-      else { toast('新增失败'); }
+      // 成功判据 = body.status===200（通道剖面成功字段，复现 Heren）。
+      if (r.status === 200 && r.body && r.body.status === 200) {
+        toast('新增成功');
+        // stale_bg401：save 干净成功却【不】导航（复现『成功但页面未推进』= 缺陷或改版的二义）→ urlPathname 硬断言失配。
+        if (scenario !== 'stale_bg401') go('/ai-manager/process/detail');
+      } else { toast('新增失败'); }
     });
     footer.appendChild(ok);
     drawer.appendChild(lab); drawer.appendChild(inp); drawer.appendChild(sel); drawer.appendChild(footer);
@@ -131,7 +142,7 @@ function clientMain() {
       b.addEventListener('click', async function () {
         var r = await postSave();
         if (scenario === 'stream') openStream();
-        if (!(r.status === 200 && r.body && r.body.code === 0)) toast('保存失败');
+        if (!(r.status === 200 && r.body && r.body.status === 200)) toast('保存失败');
       });
       return b;
     }
@@ -173,8 +184,12 @@ function makeHandler(scenario) {
     const p = u.pathname;
     // 后端路由
     if (p === '/api/process/saveOrModifyProcessData' && req.method === 'POST') return saveResponse(res, scenario);
-    if (p === '/api/auths/poll') return json(res, scenario === 'background401' ? 401 : 200, scenario === 'background401' ? { code: 1 } : { code: 0 });
-    if (p === '/api/process/listProcessData') return json(res, 200, { code: 0, data: { list: ['atl_目录CRUD_a', 'atl_目录CRUD_b'] } });
+    if (p === '/api/auths/poll') {
+      // 背景轮询：background401 与 stale_bg401 回 401（body 用 status 形态、actual=401，复现 observed-reality 的 poll 记录）。
+      var poll401 = scenario === 'background401' || scenario === 'stale_bg401';
+      return json(res, poll401 ? 401 : 200, poll401 ? { status: 401, msg: '登录态过期' } : { status: 200 });
+    }
+    if (p === '/api/process/listProcessData') return json(res, 200, { status: 200, data: { list: ['atl_目录CRUD_a', 'atl_目录CRUD_b'] } });
     if (p === '/api/llm/streamReply') return streamReply(res);
     // 其余一律回单页应用（客户端按 pathname 渲染，覆盖 /ai-manager/process/list|detail 等）
     const body = pageHtml(scenario);
@@ -183,19 +198,42 @@ function makeHandler(scenario) {
   };
 }
 
+// 假 SUT 起在【独立子进程】（fork）。关键：golden 用同步 execFileSync 跑 replay 会冻住调用进程的事件循环；
+// 假 SUT 若在同进程内，replay 期间就答不了浏览器请求（goto 卡死）。fork 到独立进程即不受阻塞——
+// 假被测系统本就该是独立进程。行为（8 态路由 + 客户端）一字未改，只把承载进程移出去。
 export function startFakeSut({ scenario = 'happy', port = 0 } = {}) {
   if (!SCENARIOS.has(scenario)) throw new Error('未知 fixture 场景: ' + scenario + '（合法: ' + [...SCENARIOS].join('/') + '）');
   return new Promise((resolve, reject) => {
-    const server = http.createServer(makeHandler(scenario));
-    server.on('error', reject);
-    server.listen(port, '127.0.0.1', () => {
-      const actual = server.address().port;
+    const child = fork(fileURLToPath(import.meta.url), ['--serve', '--scenario', scenario, '--port', String(port)], { stdio: ['ignore', 'inherit', 'inherit', 'ipc'] });
+    let settled = false;
+    const timer = setTimeout(() => { if (!settled) { settled = true; try { child.kill(); } catch {} reject(new Error('假 SUT 子进程启动超时')); } }, 10000);
+    child.once('message', (msg) => {
+      if (settled || !msg || !msg.ready) return;
+      settled = true;
+      clearTimeout(timer);
       resolve({
-        url: 'http://127.0.0.1:' + actual,
-        port: actual,
+        url: 'http://127.0.0.1:' + msg.port,
+        port: msg.port,
         scenario,
-        close: () => new Promise((r) => server.close(() => r())),
+        close: () => new Promise((r) => { child.once('exit', () => r()); try { child.kill(); } catch { r(); } }),
       });
     });
+    child.once('error', (e) => { if (!settled) { settled = true; clearTimeout(timer); reject(e); } });
+    child.once('exit', (code) => { if (!settled) { settled = true; clearTimeout(timer); reject(new Error('假 SUT 子进程未就绪即退出 code=' + code)); } });
   });
 }
+
+// 子进程入口（fork 后以 --serve 跑）：在独立进程内起 http server、把实际端口经 IPC 报回父进程。
+function serveMain() {
+  const argv = process.argv;
+  const scenario = argv[argv.indexOf('--scenario') + 1] || 'happy';
+  const port = Number(argv[argv.indexOf('--port') + 1] || 0);
+  const server = http.createServer(makeHandler(scenario));
+  server.listen(port, '127.0.0.1', () => {
+    if (process.send) process.send({ ready: true, port: server.address().port });
+  });
+}
+
+// run-as-main 检测：仅 fork 出的 --serve 子进程跑 serveMain；被 import（golden/smoke）时无副作用。
+const isServeMain = process.argv[1] && resolvePath(process.argv[1]) === fileURLToPath(import.meta.url) && process.argv.includes('--serve');
+if (isServeMain) serveMain();
