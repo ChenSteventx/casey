@@ -215,7 +215,12 @@ export function startFakeSut({ scenario = 'happy', port = 0 } = {}) {
         url: 'http://127.0.0.1:' + msg.port,
         port: msg.port,
         scenario,
-        close: () => new Promise((r) => { child.once('exit', () => r()); try { child.kill(); } catch { r(); } }),
+        close: () => new Promise((r) => {
+          if (child.exitCode !== null || child.killed) return r(); // 已退即返回，不挂死（finding 10）
+          const to = setTimeout(() => { try { child.kill('SIGKILL'); } catch {} r(); }, 3000); // 兜底超时
+          child.once('exit', () => { clearTimeout(to); r(); });
+          try { child.kill(); } catch { clearTimeout(to); r(); }
+        }),
       });
     });
     child.once('error', (e) => { if (!settled) { settled = true; clearTimeout(timer); reject(e); } });

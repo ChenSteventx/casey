@@ -5,7 +5,7 @@
   "testChecksums": {
     "tests/_golden/p5-replay.golden.mjs": "2e41a9cf21df476a7b95ba5267a159a1c42cfbe70ea0ce8d0e9db6342c4bc7bd",
     "tests/_golden/fixtures/p5/replay-cases.json": "931c708956e6abb0fa2fad0e4ad081b203da884d9a08894dd0828a5e216524b0",
-    "tests/fixtures/fake-sut/server.mjs": "157e53269ab2ea939a66549bc751cf0161f41e3cfaf8580a2b7c1c0665cc7d49",
+    "tests/fixtures/fake-sut/server.mjs": "2094153fcfb8b6b1488a8e9c45f6985f8e797294aa16861fd2d75323d0b6587d",
     "tests/fixtures/fake-sut/CONTRACT.md": "a1d9aa8d58458d3599699293947c9000a7dc1e4d42dbd894d4ae11671ed02919",
     "tests/_golden/fixtures/seams/events.fixture.json": "49545e6efe597c33d9eeaaff65e9f8f9e268e125509533ccf54026a70023dd14"
   },
@@ -33,7 +33,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-06-30T08:49:39.419Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-06-30T09:53:35.831Z 全部 acceptance exit 0"
     }
   ]
 }
