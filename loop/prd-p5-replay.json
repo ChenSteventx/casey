@@ -4,6 +4,7 @@
   "specPath": "docs/plans/p5-replay/plan.md",
   "testChecksums": {
     "tests/_golden/p5-replay.golden.mjs": "2e41a9cf21df476a7b95ba5267a159a1c42cfbe70ea0ce8d0e9db6342c4bc7bd",
+    "tests/_golden/p5-replay-coverage.golden.mjs": "5a082195d5ee259b5b2a57eeeff29c1dc623d8df84410525fb390a574e27a0c7",
     "tests/_golden/fixtures/p5/replay-cases.json": "931c708956e6abb0fa2fad0e4ad081b203da884d9a08894dd0828a5e216524b0",
     "tests/fixtures/fake-sut/server.mjs": "2094153fcfb8b6b1488a8e9c45f6985f8e797294aa16861fd2d75323d0b6587d",
     "tests/fixtures/fake-sut/CONTRACT.md": "a1d9aa8d58458d3599699293947c9000a7dc1e4d42dbd894d4ae11671ed02919",
@@ -33,7 +34,17 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-06-30T09:53:35.831Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-06-30T10:12:25.200Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-failsafe-coverage",
+      "desc": "回归锁：codex 异构评审（gpt-5.5 非同族）判 FAIL 后修的一批 fail-safe 不变量，p5-replay.golden 的 10 案（走 happy/已冻八态）不覆盖其失败方向。本 story 用 tests/_golden/p5-replay-coverage.golden.mjs 把修复钉死、防回退 fail-open：(1) 断言轴 evaluateAssertions 证不出/未实现 kind 一律 ok:false（noErrorToast 未采集、countChange 计数 null、textVisible 未实现）（护栏 #14）；(2) 合成 StepAxes 喂已冻 verdict.mjs 验四态——唯一元素动作失败 action_failed→NEEDS_HUMAN/INDETERMINATE（不再谎报 PASS）、多匹配 fallback_first→AMBIGUOUS_ACTION（且 runner 此分支不点击不污染 SUT）、网络/pageerror 按本步归因（背景归 null 的 500 与归因别步的 pageerror 都不背书本步，归因对齐本步的 500 与 pageerror 才出 SUT_DEFECT）（护栏 #15）。不重跑真回放（那是 s1-replay 的活），只锁确定性不变量。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-06-30T10:12:25.838Z 全部 acceptance exit 0"
     }
   ]
 }
