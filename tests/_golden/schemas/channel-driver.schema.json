@@ -64,7 +64,7 @@
         "driverId": {
           "type": "string",
           "minLength": 1,
-          "description": "驱动标识(provenance，不进裁定)；与 action-vocabulary entries[].driver.channelDriver 同值互链(如 web/_data_runner)。"
+          "description": "驱动标识(provenance，不进裁定)；与 action-vocabulary entries[].driver.channelDriver 同值互链(如 web/_data_runner)。跨文件互链(本 driverId ⟷ action-vocabulary.driver.channelDriver)单 schema 无法表达，由冻结 golden seams-freeze-v2.golden.mjs 校验(Test Ratchet 锁)。"
         },
         "interfaceType": {
           "type": [
@@ -122,7 +122,29 @@
           },
           "description": "本驱动可采集的观测/取证能力(借 midscene screenshot/size)——喂 取证轴 与录屏，绝不进 verdict 分支(midscene §8『screenshot/size 是取证输入，不是 verdict』)。"
         }
-      }
+      },
+      "allOf": [
+        {
+          "description": "禁纯坐标步(ADR-0003)机制化：web 通道 coordinateSpace 恒 null——web 以语义定位器+点击身份门为准、坐标仅录制元数据禁作唯一定位。schema 层 if/then const 钉死(非仅描述)：真实 producer 给 web driver 写非空 coordinateSpace 也被拒。arbitrary 视觉通道才非 null，属 route:human 后续棘轮批次。",
+          "if": {
+            "properties": {
+              "channel": {
+                "const": "web"
+              }
+            },
+            "required": [
+              "channel"
+            ]
+          },
+          "then": {
+            "properties": {
+              "coordinateSpace": {
+                "const": null
+              }
+            }
+          }
+        }
+      ]
     },
     "actionCapability": {
       "type": "object",

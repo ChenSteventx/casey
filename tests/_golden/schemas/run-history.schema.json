@@ -98,7 +98,8 @@
                 "string",
                 "null"
               ],
-              "description": "动作值的脱敏引用：占位符(如 {{workflowName}})或脱敏标记。绝不落 fill/press 的字面量值(护栏 #7)。无值动作则 null。"
+              "pattern": "^(\\{\\{[A-Za-z0-9_.-]+\\}\\}|<redacted(:[A-Za-z0-9_-]+)?>|\\[REDACTED\\])$",
+              "description": "动作值的脱敏引用：占位符({{name}})或脱敏标记(<redacted:kind> / [REDACTED])。护栏 #7 机制化——pattern 只放行占位符/脱敏标记形态，真实 producer 把 fill/press 字面量值塞进来也被 schema 拒(禁字段扫描抓 key 不抓 value，此 pattern 补 value 侧红线)。无值动作则 null。"
             }
           }
         },

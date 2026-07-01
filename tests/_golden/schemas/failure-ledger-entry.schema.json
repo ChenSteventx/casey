@@ -108,7 +108,7 @@
         "assertionOp",
         "signatureTemplate"
       ],
-      "description": "哈希所用的定长、只含稳定且已模板化字段的元组，随条目落盘供人/golden 复算校验指纹。显式排除：caseId、stepId 序号、runId、时间戳、atl_ 实例名、实体 ID、query 串、replyText 全文、raw locator 坐标、任何凭据/PII。",
+      "description": "哈希所用的定长、只含稳定且已模板化字段的元组，随条目落盘供人/golden 复算校验指纹。channel/verdict/reason/atom 与顶层同值(自包含哈希输入快照)——跨字段相等 draft-07 无法表达，由冻结 golden 校验防指纹与记录漂移。显式排除：caseId、stepId 序号、runId、时间戳、atl_ 实例名、实体 ID、query 串、replyText 全文、raw locator 坐标、任何凭据/PII。",
       "properties": {
         "channel": {
           "type": "string",
@@ -390,6 +390,64 @@
         "properties": {
           "verdict": {
             "const": "HARNESS_ERROR"
+          }
+        }
+      }
+    },
+    {
+      "description": "断言快照与指纹 kind 双向一致机制化(护栏 #17 断言侧)：failedAssertion 为 object 时 fingerprintInputs.assertionKind/assertionOp 必为 string——有断言快照必有 kind。此前仅 golden 抽查 fixture，此 allOf 补 schema 层，真实 producer 漂移也被拒。",
+      "if": {
+        "required": [
+          "failedAssertion"
+        ],
+        "properties": {
+          "failedAssertion": {
+            "type": "object"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "fingerprintInputs": {
+            "required": [
+              "assertionKind",
+              "assertionOp"
+            ],
+            "properties": {
+              "assertionKind": {
+                "type": "string"
+              },
+              "assertionOp": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "反向：fingerprintInputs.assertionKind 为 string 时 failedAssertion 必为 object(断言失败才有断言快照)——防有 kind 无快照漂移。",
+      "if": {
+        "properties": {
+          "fingerprintInputs": {
+            "required": [
+              "assertionKind"
+            ],
+            "properties": {
+              "assertionKind": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "required": [
+          "failedAssertion"
+        ],
+        "properties": {
+          "failedAssertion": {
+            "type": "object"
           }
         }
       }

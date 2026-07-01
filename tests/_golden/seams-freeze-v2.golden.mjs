@@ -3,6 +3,10 @@
 // 钉死 run-history / action-vocabulary / failure-ledger-entry / channel-driver 四组接缝。
 // 动作真值源读已冻 events.schema 的 action 枚举（决策 2.1），四接缝的 action ⊆ 它。
 // 纯结构 + 不变量校验（无 ajv，与项目 hermetic 习惯一致）。改本文件 = Test Ratchet 判红。
+// codex 异构评审 R1 续钉：hard invariant 须在 schema 层钉住（非仅抽查 fixture）——
+//   补 schema-encoding 元检查：coordinateFallback.allowed const:false / channel web coordinateSpace if-then null（ADR-0003）、
+//   run-history valueRef pattern（护栏 #7 value 侧）、failure-ledger failedAssertion⟺assertionKind allOf（护栏 #17）；及 valueRef 值内容校验。
+//   跨字段相等（fingerprintInputs 与顶层）与跨文件互链（driverId）draft-07 表达不了，仍由本 golden 校验（已在四接缝块）。
 import { readFileSync } from 'node:fs';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -123,6 +127,40 @@ ok();
     if (!avDrivers.has(d.driverId)) fail(`channel-driver driver[${i}]: driverId ${d.driverId} 未在 action-vocabulary driver.channelDriver 出现（互链漂移，决策 Q2）`);
   }
   const fk = findForbiddenKey(fx); if (fk) fail(`channel-driver fixture: 命中凭据/PII 禁字段 ${fk}（护栏 #7）`);
+}
+ok();
+
+// --- schema 层硬不变量机制化自守（codex 评审 R1：hard invariant 须在 schema 钉住、非仅 golden 抽查 fixture；真实 producer 只跑 schema 也被拦）---
+{
+  const av = load(S('action-vocabulary.schema.json'), 'action-vocabulary schema');
+  const cf = av && av.definitions && av.definitions.actionEntry && av.definitions.actionEntry.properties && av.definitions.actionEntry.properties.coordinateFallback && av.definitions.actionEntry.properties.coordinateFallback.properties;
+  if (!cf || cf.allowed.const !== false) fail('action-vocabulary.schema: coordinateFallback.allowed 须 const:false（禁纯坐标步 ADR-0003 机制化、非 type:boolean）');
+  if (cf.onlyVia.const !== null) fail('action-vocabulary.schema: coordinateFallback.onlyVia 须 const:null');
+
+  const cd = load(S('channel-driver.schema.json'), 'channel-driver schema');
+  const drvAllOf = cd && cd.definitions && cd.definitions.driver && cd.definitions.driver.allOf;
+  const webNull = Array.isArray(drvAllOf) && drvAllOf.some((r) => r && r.if && r.if.properties && r.if.properties.channel && r.if.properties.channel.const === 'web' && r.then && r.then.properties && r.then.properties.coordinateSpace && r.then.properties.coordinateSpace.const === null);
+  if (!webNull) fail('channel-driver.schema: driver.allOf 须含 if channel=web then coordinateSpace const:null（ADR-0003 机制化）');
+
+  const rh = load(S('run-history.schema.json'), 'run-history schema');
+  const vr = rh && rh.definitions && rh.definitions.runHistoryLine && rh.definitions.runHistoryLine.properties && rh.definitions.runHistoryLine.properties.parameters && rh.definitions.runHistoryLine.properties.parameters.properties && rh.definitions.runHistoryLine.properties.parameters.properties.valueRef;
+  if (!vr || typeof vr.pattern !== 'string' || !vr.pattern.length) fail('run-history.schema: parameters.valueRef 须带 pattern 钉死脱敏引用形态（护栏 #7 value 侧红线）');
+
+  const fle = load(S('failure-ledger-entry.schema.json'), 'failure-ledger schema');
+  const faKind = Array.isArray(fle && fle.allOf) && fle.allOf.some((r) => r && r.if && r.if.properties && r.if.properties.failedAssertion && r.if.properties.failedAssertion.type === 'object' && r.then && r.then.properties && r.then.properties.fingerprintInputs && r.then.properties.fingerprintInputs.properties && r.then.properties.fingerprintInputs.properties.assertionKind && r.then.properties.fingerprintInputs.properties.assertionKind.type === 'string');
+  if (!faKind) fail('failure-ledger.schema: allOf 须含 failedAssertion=object ⟹ fingerprintInputs.assertionKind:string（护栏 #17 断言侧机制化）');
+}
+ok();
+
+// --- run-history fixture valueRef 值须匹 schema pattern（value 侧红线，此前 golden 只扫 key 名不扫值内容）---
+{
+  const rh = load(S('run-history.schema.json'), 'run-history schema');
+  const vrPat = new RegExp(rh.definitions.runHistoryLine.properties.parameters.properties.valueRef.pattern);
+  const fx = load(F('run-history.fixture.json'), 'run-history fixture');
+  for (const [i, ln] of fx.runHistoryLines.entries()) {
+    const vr = ln.parameters && ln.parameters.valueRef;
+    if (vr != null && !vrPat.test(vr)) fail(`run-history line[${i}]: valueRef「${vr}」不匹脱敏引用 pattern（护栏 #7，恐落 fill/press 字面量）`);
+  }
 }
 ok();
 

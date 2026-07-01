@@ -129,15 +129,12 @@
           "description": "坐标兜底治理：x/y 在 events.schema 仅录制元数据、禁作唯一定位。",
           "properties": {
             "allowed": {
-              "type": "boolean",
-              "description": "是否允许坐标兜底定位。web 交互动作恒 false(语义定位器 + 点击身份门 为准)。"
+              "const": false,
+              "description": "是否允许坐标兜底定位。禁纯坐标步铁律(ADR-0003)机制化：本轮全 web 动作恒 false，schema 层 const 钉死、非仅描述——真实 producer 写 allowed:true 也被 schema 拒。将来某视觉 channel 要开坐标，须走改 events.schema + 本 schema 的显式棘轮 + route:human(语义定位器 + 点击身份门 为准)。"
             },
             "onlyVia": {
-              "type": [
-                "string",
-                "null"
-              ],
-              "description": "若某 channel 允许坐标，须经的护栏标注(如 route:human)；web 为 null(根本不允许)。"
+              "const": null,
+              "description": "坐标兜底护栏标注；allowed 恒 false 故 const null。将来开坐标时随 allowed 一并棘轮放宽。"
             },
             "note": {
               "type": "string"

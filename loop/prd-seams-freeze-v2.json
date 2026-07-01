@@ -3,11 +3,11 @@
   "task": "第2层借鉴接缝增冻（排期 v3 轨 P）：run-history/action-vocabulary/failure-ledger/channel-driver 四条接缝 schema + 合成 fixture（承重决策 2.2 把 channelDriver 拉进本轮，范围扩到四接缝）。冻结解锁下游对 fixture 并行；四接缝的 lib/bin 真产出随 P5/P6/P7 真机集成走 route:human。",
   "specPath": "docs/plans/seams-freeze-v2/plan.md",
   "testChecksums": {
-    "tests/_golden/seams-freeze-v2.golden.mjs": "e6cb010ff8364caadd6954d6bc9c108a0aab6554127dec4d628b428c106c5f8c",
-    "tests/_golden/schemas/run-history.schema.json": "736202e9141d64bd709db4d43884102a82638a9b3c262a6725e86a0534932431",
-    "tests/_golden/schemas/action-vocabulary.schema.json": "2b95c59704215121a9f77772c60ed180035dacbacb5996454c8f7397bef5b29e",
-    "tests/_golden/schemas/failure-ledger-entry.schema.json": "93f2745a4132b7aedead06be3a4a4fb66016f8f00a116a2ddedab4c59807aa8b",
-    "tests/_golden/schemas/channel-driver.schema.json": "324d0bb8ae6435fe0b6b12671292295932c57bdb1ba530cb40d020137d77246c",
+    "tests/_golden/seams-freeze-v2.golden.mjs": "32a332987fac5f23a5aafd6ec92111926f128e52d9b1e7e0a94273aa4b35da46",
+    "tests/_golden/schemas/run-history.schema.json": "1cb6dba40a422c7f386345919c6407d2f9f1637ac4aa48925f8e700c8b24b871",
+    "tests/_golden/schemas/action-vocabulary.schema.json": "4eb4a0f8dcce66fdf95befeaef7c7e80bcf8ff7b0247bef3ec8fe2bb67fbd31d",
+    "tests/_golden/schemas/failure-ledger-entry.schema.json": "1e23e881a3de2181bce69f73b468dc7cb89edfe99c16387639e9acc8c440ccea",
+    "tests/_golden/schemas/channel-driver.schema.json": "fc4450f2d2e4a7063758db70fe6779f477dcd808795a901f4d324e5aa047081f",
     "tests/_golden/fixtures/seams-v2/run-history.fixture.json": "e19e299131f0600d0695f368d2a81df976901533b12475a4248e07c878352531",
     "tests/_golden/fixtures/seams-v2/action-vocabulary.fixture.json": "c405c96c2e7ae85b939289140e573c195c8333a2ff476866bcdb767931ef2627",
     "tests/_golden/fixtures/seams-v2/failure-ledger.fixture.json": "6dc3f27e663f3dd1b2ea25d2044c49661c807b5171f8d757ba6cf7836e6a5aa4",
@@ -40,7 +40,7 @@
         "node tests/_golden/seams-freeze-v2.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-01T09:43:13.687Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-01T16:17:32.464Z 全部 acceptance exit 0"
     }
   ]
 }
