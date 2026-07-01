@@ -62,6 +62,46 @@ function notImplemented(phase, planRef, willDo) {
   process.exit(EXIT_NOT_IMPL);
 }
 
+// ── run：确定性尾段编排（相3 回放 → 相4 裁定 → 报表模型装配 → 相6 报告）────
+// LLM 前段（相0-2 ingest/compile/draft/sign）未建、route:human；本命令喂 compile产物直跑尾段。
+function runPipeline(pos, opts) {
+  const caseId = pos[0];
+  if (!caseId || !opts.events || !opts.expected || !opts.profile || !opts.sut) {
+    return notImplemented('run 端到端', 'P0→P5+P7 MVP（串行单用例）',
+      '相0-2 LLM 前段(ingest/compile/draft/sign)未建；确定性尾段可跑：\n  casey run <caseId> --sut <url> --events <f> --expected <f> --profile <f> [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>]\n  串 相3回放 → 相4裁定 → 报表模型装配 → 相6报告，落 runs/<caseId>/<runId>/。');
+  }
+  const runDir = opts['run-dir'] || path.join(PROJECT_ROOT, 'runs', caseId, `run_${Date.now()}`);
+  fs.mkdirSync(runDir, { recursive: true });
+  const bin = (s) => path.join(PROJECT_ROOT, 'bin', s);
+  const axesOut = path.join(runDir, 'axes.json');
+  const verdictOut = path.join(runDir, 'verdict.json');
+  const modelOut = path.join(runDir, 'report-model.json');
+
+  // 退出码归一：各阶段自有码（replay 0/1/64、verdict 0/64/65、report 0/1/2）→ casey 统一图例；任一非零 fail-closed。
+  const normCode = (code) => (code === 64 ? 64 : code === 2 ? 2 : 1);
+  const stage = (label, scriptAbs, args) => {
+    const r = runNode(scriptAbs, args, { quiet: true });
+    if (r.code !== 0) {
+      console.error(col(C.red, `[run] 阶段「${label}」非零退出（${r.code}）→ fail-closed`));
+      if (r.stderr) console.error(col(C.gray, r.stderr.slice(-600)));
+      process.exit(normCode(r.code));
+    }
+  };
+
+  stage('相3 replay 回放', bin('replay.mjs'), ['--events', opts.events, '--sut', opts.sut, '--expected', opts.expected, '--profile', opts.profile, '--out', axesOut]);
+  stage('相4 verdict 裁定', bin('verdict.mjs'), ['--axes', axesOut, '--out', verdictOut]);
+  const rmArgs = ['--verdict', verdictOut, '--axes', axesOut, '--events', opts.events, '--out', modelOut];
+  if (opts.observed) rmArgs.push('--observed', opts.observed);
+  if (opts['generated-at']) rmArgs.push('--generated-at', opts['generated-at']);
+  if (opts['case-meta']) rmArgs.push('--case-meta', opts['case-meta']);
+  stage('报表模型装配', bin('report-model.mjs'), rmArgs);
+  stage('相6 report 报告', bin('report.mjs'), ['--model', modelOut, '--out', runDir]);
+
+  console.log(col(C.green, `\n[run] 端到端（确定性尾段）GREEN → ${runDir}`));
+  console.log(col(C.gray, `  axes.json / verdict.json / report-model.json / ${caseId}.report.{html,md,json}`));
+  process.exit(0);
+}
+
 // ── selftest tier1：hermetic 链路自检 ─────────────────────────
 function selftestTier1() {
   console.log(col(C.bold, '\ncasey selftest --tier1 —— hermetic 链路自检（零外部依赖）\n'));
@@ -171,7 +211,7 @@ function main() {
     case 'verdict': return notImplemented('相4 verdict 多态裁定', 'P5 verdict.mjs 分类器（零 LLM）', '读逐步事实 + 取证 → 判定树 → 每步 PASS/SUT_DEFECT/HARNESS_ERROR/NEEDS_HUMAN(+子类) → verdict.json。');
     case 'heal':    return notImplemented('相5 heal 自愈', 'P6 自愈准入门 + 非就地有界自愈', '仅对确证 HARNESS_ERROR：重锚 → 写 drift 补丁旁文件（原 spec 不变）→ 人签后应用 → 重跑。');
     case 'report':  return notImplemented('相6 report 报告', 'P7 报告 + 裁定徽章 + 缺陷单', '自包含 HTML：操作说明 + 录屏 + 文本输出 + 裁定徽章 + 缺陷单（仅 SUT_DEFECT）+ trace。');
-    case 'run':     return notImplemented('run 端到端', 'P0→P5+P7 MVP（串行单用例）', '串起 ingest→compile→draft→sign→replay→verdict→report，单 active-contract + 单 breaker reset。');
+    case 'run':     return runPipeline(pos, opts);
 
     default:
       console.error(col(C.red, `未知命令：${cmd}`));

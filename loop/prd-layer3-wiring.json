@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "task": "第3层集成 wiring 骨架（hermetic）：新建报表模型装配器 lib/report-model.mjs（verdict ⋈ axes ⋈ observed ⋈ expected → report-model）+ 薄 CLI bin/report-model.mjs + casey run 编排 replay→verdict→装配→report，对假 SUT + 合成 fixture 端到端跑通。消费冻结契约、不改冻结内核。",
+  "specPath": "docs/plans/layer3-wiring/plan.md",
+  "testChecksums": {
+    "tests/_golden/layer3-wiring.golden.mjs": "455389c1220ae97fe173eb5f0f62f4bd1720f4fdf6c982d3a24a7dbef66b1a11"
+  },
+  "observability": [
+    {
+      "dimension": "真机 bring-up（P3 真编译产真 events/观测现状 → 灌本管线 → tier-2 真站 UAT，护栏 #16 gate 绿 ≠ 完成）",
+      "route": "human"
+    },
+    {
+      "dimension": "编排器产 run-history.jsonl/run-metrics.json（本轮不产，冻结 seam 已就位、编排器是天然生产者）",
+      "route": "human"
+    },
+    {
+      "dimension": "casey run 的 --sut 真站 URL + 凭据（site.json/.auth/）走带外、真站回放的 attachments(录屏/trace) 真产出",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-layer3-wiring",
+      "desc": "假 SUT + 合成 fixture 端到端：casey run 编排 replay→verdict→装配→report 两场景全绿（happy→PASS 无 defectTicket；inject500→SUT_DEFECT 锚步带 defectTicket 含归因本步 500）；report-model 过契约（verdictSummary 计数 + defectTicket 仅 SUT_DEFECT 正反两向）；report 三文件产出；退出码归一；产物深扫无凭据禁字段",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/layer3-wiring.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-01T10:09:00.026Z 全部 acceptance exit 0"
+    }
+  ]
+}
