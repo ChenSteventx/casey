@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "task": "统一语言强制兜底（term-guard）：把「开发输出/文档遵循 CONTEXT.md 领域词汇」这条 DDD 统一语言纪律机制强制。两级——钩子甲 bin/term-guard.mjs（零 LLM 确定性：R3 比喻格式 / R5 未登记术语带描述或命中登记 / R6 弃用别名与加粗英文 / 引用豁免（代码体·引号内引用不算使用）/ 中英混合加粗漏检回归，补 loop-kit term-lint 缺口）+ 钩子乙 bin/term-judge.mjs（LLM 评分员，只对甲候选跑，非 Claude 家族异构冗余，判违例可信拦、不确定或不可达路由人写 inbox 不 fail-open，空候选不调）。仅冻命令化 hermetic 层：甲全确定性正反向 + 乙打桩外层；真非 Claude 评分员端到端为 route:human。不改 loop-kit（ADR-0001 字节一致）；乙绝不进 verdict.mjs（裁判零 LLM，护栏 #15）。产品侧质量接口同款过滤另议、非本契约。",
+  "specPath": "docs/plans/term-guard/plan.md",
+  "testChecksums": {
+    "tests/_golden/term-guard.golden.mjs": "d7fba4fa8f87d8e407e926bdeb02798492658f4d924d2943e28b330353fba80a"
+  },
+  "observability": [
+    {
+      "dimension": "真非 Claude 评分员（DeepSeek / codex）对真输出判未声明比喻 / 机翻的准确率（判 FAIL 可信、判 PASS 仍人抽检）",
+      "route": "human"
+    },
+    {
+      "dimension": "乙接真评分员密钥后端到端一次真判（~/.loop-kit 配好非 Claude 密钥）",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-guard-jia",
+      "desc": "钩子甲 bin/term-guard.mjs（零 LLM 确定性）+ 挂 .claude/settings.json 的 Stop 钩子链（独立新条，不改 loop-kit 的 hook-stop.mjs）。只硬拦能确定性判死的：R3 比喻声明块四字段各独占一行、内容非空、不与他物或别字段同行（段内出现本体：或喻体：即触发）；R6 加粗未登记英文（含 __粗__/多行/超长/中英混合，补 term-lint 漏检）与弃用别名明文使用；引用豁免唯一层=反引号代码体（自然语言引号一律不豁免）；R3 声明块不豁免（反引号包住的声明块仍判红）；反引号内的弃用别名甲放行但外抛乙 alias-ref 候选（伪装使用交语义层判）。R5（英文是否需描述）语义模糊已撤除（对专名/文件名/标签/常用词全误拦），裸内嵌大写 CamelCase 外抛乙 newterm 候选、小写常用词不外抛。经 codex 异构评审五轮加固（发现逐轮闭合，收敛到确定性甲/语义乙分界）。确定性预筛出比喻信号词候选、--emit-candidates 写候选 JSON。违例硬拦、退非零。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/term-guard.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-01T05:41:23.466Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-judge-yi",
+      "desc": "钩子乙 bin/term-judge.mjs（LLM 评分员，只对甲候选跑）打桩外层：候选 + 桩判违例 → 退非零拦并给理由；桩判不确定 / 不可达 → exit 0 且写 inbox 一行（路由人，不拦不放，不 fail-open）；空候选 → 不调评分员、不写 inbox、放行。评分员非 Claude 家族（异构冗余，复用 review 道 DeepSeek / codex 路径），真 LLM 判走 route:human。乙绝不进 verdict.mjs、绝不写 passes / verdict。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/term-guard.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-01T05:41:27.375Z 全部 acceptance exit 0"
+    }
+  ]
+}
