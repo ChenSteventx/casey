@@ -101,6 +101,11 @@ function selftestTier1() {
     return code === 0 && flipped;
   });
 
+  // 5. 裁判零 LLM（护栏 #15，I1）：verdict.mjs 依赖闭包无 LLM/网络客户端（model-lane-guard 契约）
+  step('裁判零 LLM：verdict.mjs 闭包无 LLM/网络客户端（verdict-purity-guard exit 0）', () =>
+    runNode(path.join(PROJECT_ROOT, 'bin', 'verdict-purity-guard.mjs'),
+      ['--entry', path.join(PROJECT_ROOT, 'bin', 'verdict.mjs')], { quiet: true }).code === 0);
+
   // 清理临时产物
   try { fs.rmSync(path.join(CASES_DIR, '_selftest'), { recursive: true, force: true }); } catch { /* ignore */ }
 

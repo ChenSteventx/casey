@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "task": "模型分层强制兜底（model-lane-guard）：把 2026-07-01 锁定的模型分层两不变量从文档策略变成机制强制（决策见 HANDOFF「模型分层升级 + 三级兜底」）。仅开发流程 lane、不碰产品功能，verdict.mjs 恒零 LLM。I2 config 异构守卫 bin/config-lane-guard.mjs（读 loop/config.json 断言 review 家族≠implementation 家族 / Claude 族不当 review 主只能待 fallback / diversity=dissimilar，违反退非零指明违反条）；I1 verdict 零 LLM 守卫 bin/verdict-purity-guard.mjs（静态扫 verdict.mjs 传递依赖闭包无 LLM/网络客户端，以断言入 casey selftest --tier1，护栏 #15）；PostToolUse 钩子 bin/config-lane-guard-hook.mjs 挂 .claude/settings.json（写 loop/config.json 时跑 I2、违反回合内可见拦，独立新条不改 loop-kit）。仅冻命令化 hermetic 层（正反向 + hook 活证 + selftest 无回归）；三级梯 watcher 另起辐条不在本契约；不改 loop-kit（ADR-0001 字节一致），I1 只读不改 verdict.mjs 判定树。",
+  "specPath": "docs/plans/model-lane-guard/plan.md",
+  "testChecksums": {
+    "tests/_golden/model-lane-guard.golden.mjs": "68c686c5ba3e5e95bc4488ea68c422f49d6d1645159a6be427c56fa0e4c967ad"
+  },
+  "observability": [
+    {
+      "dimension": "PostToolUse 钩子在真 session 写 loop/config.json 时的实时可见拦：hermetic 只验钩子壳对合成载荷的行为，真 session 端到端触发为 route:human",
+      "route": "human"
+    },
+    {
+      "dimension": "loop 纪律 hook 打印的坏路径 docs/decisions/2026-06-12-loop-kit.md：根源在 loop-kit/bin/hook-loop-triage.mjs:8（ADR-0001 字节冻结）与 .claude/skills/acceptance-gate/SKILL.md:8，非本契约可改",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-config-lane-guard",
+      "desc": "I2 config 异构守卫 bin/config-lane-guard.mjs + PostToolUse 钩子壳 bin/config-lane-guard-hook.mjs（挂 .claude/settings.json 独立新条，不改 loop-kit 的 hook-posttool.mjs）：读 loop/config.json 断言 review 主 model 家族≠implementation 主 model 家族、Claude 族(sonnet/opus/haiku/fable)不当 review 主只能待 review.fallback、review.diversity==='dissimilar'；违反退非零 + stderr 指明违反条、合规退 0；内含 model→家族映射（codex:*→OpenAI、deepseek-*→DeepSeek、上述四者→Claude）。钩子壳读 PostToolUse 载荷、file_path 命中 loop/config.json 时跑守卫、违反回合内可见拦。反向红全用合成坏 config，不改真 loop/config.json。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/model-lane-guard.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-01T07:30:40.919Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-verdict-purity-guard",
+      "desc": "I1 verdict 零 LLM 守卫 bin/verdict-purity-guard.mjs：静态扫 --entry 传递依赖闭包（跟随仓内相对 import，bare 与 node: 说明符作叶子查禁 LLM/网络客户端 anthropic/openai/deepseek/undici/axios/node-fetch/ws/got 与 node:http(s)/net/dgram/tls、node:child_process 出网旁路），命中退非零指明 file:说明符、干净退 0；以断言形式接入 casey selftest --tier1（护栏 #15 裁判零 LLM 机器守）。反向红用合成坏依赖闭包，绝不改真 bin/verdict.mjs。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/model-lane-guard.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-01T07:30:44.513Z 全部 acceptance exit 0"
+    }
+  ]
+}
