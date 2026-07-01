@@ -3,7 +3,10 @@
 // 冻结 CLI：node bin/report-model.mjs --verdict <f> --axes <f> --out <report-model.json>
 //           [--observed <f>] [--events <f>] [--case-meta <f>] [--generated-at <iso>]
 // --case-meta：可选 JSON，含 { caseId?, channel?, title?, signedAgainstBuild?, signerId?, passes?, intentTextByIntent? }
-// 退出码：0 成功；64 缺必填参；1 装配/读写失败（fail-closed，不吞错）。
+//   设计取舍（plan §2 原写 --expected）：report-model 的期望侧只需 intentText + 人签字段（signedAgainstBuild/signerId/passes），
+//   均由 case-meta 投影承载；不把整份冻结 expected 契约传进装配器。完整 verdict⋈axes⋈observed⋈expected 的 expected join
+//   （真 intentText 从 expected.frozen 取）押后真机 bring-up（P3）——本 hermetic 骨架 intentText 可缺省 null。
+// 退出码：0 成功；64 缺必填参；1 装配/读写失败（fail-closed，不吞错）。装配器自守 schema 不变量（无 ajv、见 lib/report-model.mjs）。
 import { readFileSync, writeFileSync } from 'node:fs';
 import { assembleReportModel } from '../lib/report-model.mjs';
 

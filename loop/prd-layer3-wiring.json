@@ -3,7 +3,8 @@
   "task": "第3层集成 wiring 骨架（hermetic）：新建报表模型装配器 lib/report-model.mjs（verdict ⋈ axes ⋈ observed ⋈ expected → report-model）+ 薄 CLI bin/report-model.mjs + casey run 编排 replay→verdict→装配→report，对假 SUT + 合成 fixture 端到端跑通。消费冻结契约、不改冻结内核。",
   "specPath": "docs/plans/layer3-wiring/plan.md",
   "testChecksums": {
-    "tests/_golden/layer3-wiring.golden.mjs": "455389c1220ae97fe173eb5f0f62f4bd1720f4fdf6c982d3a24a7dbef66b1a11"
+    "tests/_golden/layer3-wiring.golden.mjs": "455389c1220ae97fe173eb5f0f62f4bd1720f4fdf6c982d3a24a7dbef66b1a11",
+    "tests/_golden/layer3-wiring-coverage.golden.mjs": "4c24a35dfe4bb9b1958b404af2b5533c12f2ed3430ea27f83c229af2a73bb196"
   },
   "observability": [
     {
@@ -28,7 +29,17 @@
         "node tests/_golden/layer3-wiring.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-01T10:09:00.026Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-01T14:53:42.326Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-assembler-failsafe-coverage",
+      "desc": "装配器 fail-safe/凭据/schema 合法性覆盖锁（codex 异构评审 FAIL 9 发现采信去修 + 第 3 轮残留续钉后钉红）：缺陷单证据闭合（SUT_DEFECT 的 backingForensics 与 verdict.mjs 同源含生命周期 pageerror/crash；失败断言无则仅 ap===false 才合成 actionPerformed、ap≠false 判 SUT_DEFECT 无失败断言 = 不一致 fail-closed；仍无背书 fail-closed）；凭据红线（url 剥 query/hash、信封值收敛标量后再脱敏敏感关键字/邮箱/长不透明串，护栏 #7）；schema 自守（channel/verdict 枚举、reason 一致性、caseId、steps 非空、generatedAt date-time、passes 布尔/title·signer 字符串、network.status 整数、errorEnvelope.field 字符串、events.action 字符串、postAssertion 标量值 + 布尔 ok/soft、verdict⋈axes 唯一 join，护栏 #14）；verdict⋈axes 一致性门（复算 decide 比对、不一致 fail-closed，闭假绿+ambiguous，护栏 #15）；断言值/url 路径段脱敏（含 percent-decode）；SUT 自由文本(observed/pageerror)脱敏；join 完整性(axes 全消费双射)；caseId 严格同源；SUT 文本逐 token 脱敏(邮箱/敏感词/长串/percent-decode，收敛现实形状、真凭据靠下游 credentialGate 兜底)；id/label 类型收敛；正反两向 + 反误伤基线（共 51 检查）",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/layer3-wiring-coverage.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-01T14:53:42.480Z 全部 acceptance exit 0"
     }
   ]
 }

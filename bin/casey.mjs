@@ -66,9 +66,13 @@ function notImplemented(phase, planRef, willDo) {
 // LLM 前段（相0-2 ingest/compile/draft/sign）未建、route:human；本命令喂 compile产物直跑尾段。
 function runPipeline(pos, opts) {
   const caseId = pos[0];
+  // 确定性尾段已实现：缺必填参 = 用参错误 → exit 64（非 notImplemented 的 3）。相0-2 LLM 前段未建、route:human。
   if (!caseId || !opts.events || !opts.expected || !opts.profile || !opts.sut) {
-    return notImplemented('run 端到端', 'P0→P5+P7 MVP（串行单用例）',
-      '相0-2 LLM 前段(ingest/compile/draft/sign)未建；确定性尾段可跑：\n  casey run <caseId> --sut <url> --events <f> --expected <f> --profile <f> [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>]\n  串 相3回放 → 相4裁定 → 报表模型装配 → 相6报告，落 runs/<caseId>/<runId>/。');
+    console.error(col(C.red, '[run] 缺必填参 → 用参错误(64)'));
+    console.error('LLM 前段(相0-2 ingest/compile/draft/sign)未建、route:human；确定性尾段用法：');
+    console.error('  casey run <caseId> --sut <url> --events <f> --expected <f> --profile <f> [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>]');
+    console.error('  串 相3回放 → 相4裁定 → 报表模型装配 → 相6报告，落 runs/<caseId>/<runId>/。');
+    process.exit(64);
   }
   const runDir = opts['run-dir'] || path.join(PROJECT_ROOT, 'runs', caseId, `run_${Date.now()}`);
   fs.mkdirSync(runDir, { recursive: true });
