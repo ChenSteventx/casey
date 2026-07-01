@@ -4,7 +4,8 @@
   "specPath": "docs/plans/p6-selfheal/plan.md",
   "testChecksums": {
     "tests/_golden/p6-selfheal.golden.mjs": "48c28e47dd757977e9a40a203c63975ff0a274ee6a368639e1d1b81547129cbb",
-    "tests/_golden/fixtures/seams/drift-patch.fixture.json": "a862362286e27c87988199ad2b0365d5c4107c50c0c766e24bb1dcefec704e70"
+    "tests/_golden/fixtures/seams/drift-patch.fixture.json": "a862362286e27c87988199ad2b0365d5c4107c50c0c766e24bb1dcefec704e70",
+    "tests/_golden/p6-superseded-coverage.golden.mjs": "942d0d7f739b06a21f33d70f79e5d4f9937d8f6baf1f70d255db294614fede1c"
   },
   "observability": [
     {
@@ -33,7 +34,17 @@
         "node tests/_golden/p6-selfheal.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-06-29T09:10:02.343Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-01T07:46:00.800Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-superseded-coverage",
+      "desc": "S2 补丁 superseded 态覆盖补冻（coverage-add / hermetic-gap-freeze 契约）：给已绿 lib/drift-patch.mjs:nextStatus 补回归锁——proposed/signed --supersede--> superseded 两条合法入边、superseded 终态五事件全抛错无出边、applied/rejected/superseded 三终态不可再被取代。补冻前 p6-selfheal.golden 未覆盖 supersede 边。非红先行、走 direct 补冻。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p6-superseded-coverage.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-01T07:46:00.899Z 全部 acceptance exit 0"
     }
   ]
 }

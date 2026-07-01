@@ -1,10 +1,14 @@
 #!/usr/bin/env node
-// 草稿 / coverage-add / 未冻 / 未进任何 prd 的 testChecksums —— 接入轻车道 accept 才算数。
+// coverage-add 回归锁（hermetic-gap-freeze 契约冻结，checksum 进 prd-p6-selfheal.json testChecksums）。改本文件=Test Ratchet 判红。
 //
 // 缺口补覆盖：P6 状态机的 superseded（被取代）态此前无 golden。tests/_golden/p6-selfheal.golden.mjs
 //   测了 proposed→signed→applied、各 reject 边、以及若干非法跳变，但漏了 supersede→superseded 这条边
-//   与 superseded 终态的出边封锁。本草稿是给【已存在且已绿】的 lib/drift-patch.mjs:nextStatus 补回归覆盖，
-//   属 coverage-add（对现有实现跑应为绿），不是 red ATDD —— 故不应先红；若它红了，说明实现或本草稿写错。
+//   与 superseded 终态的出边封锁。本锁是给【已存在且已绿】的 lib/drift-patch.mjs:nextStatus 补回归覆盖，
+//   属 coverage-add（对现有实现跑为绿），非 red ATDD。
+//
+// 范围边界（不重复冻结区已覆盖的）：签名 before===after 等值门（frozen 2c/2g）、人签后才 apply 的
+//   canApply 人签门（frozen ③）已在 tests/_golden/p6-selfheal.golden.mjs 冻结覆盖。当前 lib 无「新补丁取代
+//   旧补丁」的高阶函数——「被取代」在 lib 层就只是 nextStatus 的 supersede 状态迁移，故本锁只补这一条缝。
 //
 // 被测契约（直接复用现有导出，无需改 lib）：
 //   nextStatus(from, event) -> string；非法迁移（终态再迁 / 未知事件）抛错。
@@ -13,7 +17,7 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const ROOT = resolve(HERE, '..', '..', '..', '..');
+const ROOT = resolve(HERE, '..', '..');
 const LIB_PATCH = join(ROOT, 'lib', 'drift-patch.mjs');
 
 const fail = (msg) => { console.error(`FAIL p6-superseded-cov: ${msg}`); process.exit(1); };
@@ -50,5 +54,5 @@ for (const from of ['applied', 'rejected', 'superseded']) {
 }
 ok();
 
-console.log(`ok   p6-superseded-cov: ${checks} 组 superseded 状态迁移覆盖全过（草稿/未冻/未进 testChecksums）`);
+console.log(`ok   p6-superseded-cov: ${checks} 组 superseded 状态迁移覆盖全过`);
 process.exit(0);

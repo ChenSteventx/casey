@@ -4,7 +4,8 @@
   "specPath": "docs/plans/p7-report/plan.md",
   "testChecksums": {
     "tests/_golden/p7-report.golden.mjs": "1e6b7955dd654f05bec2ea085f93873422dbb317a3a1bb884038fc614b158b76",
-    "tests/_golden/fixtures/seams/report-model.fixture.json": "1a9e08871c8e8b756c42daa91c4207b31f520eee784894c0c3cdc9d28b61d32e"
+    "tests/_golden/fixtures/seams/report-model.fixture.json": "1a9e08871c8e8b756c42daa91c4207b31f520eee784894c0c3cdc9d28b61d32e",
+    "tests/_golden/p7-credgate-coverage.golden.mjs": "9c47793193c5eab397ebff0cb7ce716d6b0d3e9e08e0ade509bde06340917950"
   },
   "observability": [
     {
@@ -29,7 +30,17 @@
         "node tests/_golden/p7-report.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-06-29T08:45:46.295Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-01T07:45:59.806Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-credgate-coverage",
+      "desc": "S2 凭据兜底门覆盖补冻（coverage-add / hermetic-gap-freeze 契约）：给已绿 bin/report.mjs:credentialGate 补回归锁——纯函数门三态(干净放行/禁字段关键词拦大小写无关/凭据文件敏感字面量拦+反证放行) + 端到端壳层(spawn report.mjs：干净模型 exit 0 三产物齐落、泄漏模型 exit 1 落盘前拒写三产物一个不落、缺 --model exit 2)。护栏 #7 落盘前深扫。非红先行、走 direct 补冻。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p7-credgate-coverage.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-01T07:46:00.452Z 全部 acceptance exit 0"
     }
   ]
 }
