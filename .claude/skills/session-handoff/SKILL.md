@@ -19,21 +19,21 @@ description: 生成「能让零上下文的新 session 直接接手 Casey」的�
 
 并行 fan-out 4 个只读 Explore 子代理各取一块（记忆 [[prefer-subagent-fanout]]），各自返回结构化要点、不贴整段原文：
 
-- **项目史 / 决策档案**：读 `docs/adr/*.md`（每个 ADR 一行：编号+标题+锁了什么）；`CLAUDE.md` 顶部血缘（Casey = autotester 翻面、复用 loop-kit）；`git log --oneline -25` 提炼里程碑提交时间线；`docs/HANDOFF.md` 的「已建成什么」。
-- **排期 / 里程碑**：`docs/plans/bootstrap/plan.md`（P0–P9 一行一条+状态）；`docs/plans/roadmap-parallel.md` 文末「排期 v3」（三层结构、单 baton 上限、并行硬规则）；`docs/NEXT-SESSION.md` 的下一步与环境坑；HANDOFF「契约/运维」节的各契约状态。
+- **项目史 / 决策档案 + 未提交现场**：读 `docs/adr/*.md`（每个 ADR 一行：编号+标题+锁了什么）；`CLAUDE.md` 顶部血缘（Casey = autotester 翻面、复用 loop-kit）；`git log --oneline -25` 提炼里程碑提交时间线；`git status --short` 抓未提交 / 未跟踪现场（工作树常有未入史的 bin/golden/prd/配置/文档改动，只看 git log 会误以为已稳定入史）；`docs/HANDOFF.md` 的「已建成什么」。
+- **排期 / 里程碑 / 下一步**：`docs/plans/bootstrap/plan.md`（P0–P9 一行一条+状态）；`docs/plans/roadmap-parallel.md` 文末「排期 v3」（三层结构、单 baton 上限、并行硬规则）；HANDOFF「契约 / 运维」「下一步」节的各契约状态与接续顺序。下一步只信 `docs/HANDOFF.md` + `loop/active-contract.json` + `git status`——`docs/NEXT-SESSION.md` 可能过期（曾停在 P5 review 前），降级为「环境坑参考」、不作下一步事实源。
 - **DDD / 统一语言**：`CONTEXT.md` 全文（七相流水线职责、领域词汇表、弃用别名黑名单）；`docs/design/txt2testreport-design.md`（五层 LLM 准入边界、裁判与自愈分进程、三处 `casey` 标识符）。
 - **护栏 / 兜底**：`loop/GUARDRAILS.md`（17 条逐条）；`CLAUDE.md` 硬规则；`bin/verdict.mjs`/`bin/replay.mjs`/`loop-kit/bin/breaker.mjs`/`loop-kit/bin/gate.mjs` 的实际兜底机制；`loop-kit/bin/contract.mjs` 的入口分流三档判据。
 
-子代理在跑时不要自己重复读同一批文件。若只想快速刷新而非全量重取，可只跑「排期 + 契约状态」一块（其余从上次产出沿用）。
+子代理在跑时不要自己重复读同一批文件。若只想快速刷新而非全量重取，至少跑「排期 + 契约状态」一块，且必带 `git status --short` + `loop/active-contract.json`（脏工作区与活契约槽是易变事实源、不能沿用旧值），其余从上次产出沿用。
 
 ### 2. 填模板
 
-把取回的要点填进下面「固定模板」的各节。校对：里程碑状态与契约状态以 HANDOFF 为准；下一步要可执行、给可点选项而非散文长问（记忆 [[use-askuserquestion-for-decisions]]）。
+把取回的要点填进下面「固定模板」的各节。校对（事实源分工，冲突时显式标出）：里程碑 / 当前状态以 `docs/HANDOFF.md` 为准；活契约槽（谁在跑、走到哪阶段）以 `loop/active-contract.json` 为准；未提交现场以 `git status` 为准。下一步要可执行、给可点选项而非散文长问（记忆 [[use-askuserquestion-for-decisions]]）。
 
 ### 3. 交付
 
 - 在回合输出里给出**可整段复制**的提示词（包在代码块里，term-clean）。
-- 问用户是否同时写进 `docs/NEXT-SESSION.md`（写则替换该文件的「开场提示词」节、保留其余；这一步会触 term-lint，注意无加粗英文/繁体）。
+- 问用户是否同时写进 `docs/NEXT-SESSION.md`。写入约定：以 `## 开场提示词` 为稳定锚点——有则替换该节内容、保留其余；没有则紧随文件标题 / 用法说明后新建该节（别插到 `H1` 标题之前；别假设锚点已存在，旧版曾据不存在的节做替换）。这一步会触 term-lint，注意无加粗英文 / 繁体。
 
 ## 固定模板（章节骨架，每次照填）
 
@@ -53,7 +53,7 @@ CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
 2. docs/HANDOFF.md（最新进度，冲突以它为准）
 3. docs/NEXT-SESSION.md（环境坑）
 4. loop/GUARDRAILS.md（17 条护栏逐条有效）
-5. 追溯「为何这么定」：docs/adr/（架构决策）、docs/decisions/（需求决策）、docs/design/（端到端设计）
+5. 追溯「为何这么定」：docs/adr/（架构决策，主事实源）、docs/design/（端到端设计）；docs/decisions/ 如存在再读（仓库当前可能无此目录，别硬引）
 
 【项目历史 / 决策档案】（ADR 一行一条 + 里程碑时间线）
 <填：ADR 0001–00NN 各锁了什么；P0→当前的关键 commit 时间线>
@@ -100,7 +100,8 @@ CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
 - 并行硬规则：碰 lib/bin 的落地走 worktree 隔离 + git-native 合并（merge/apply），绝不 cp 进 lib/bin。
 
 【当前契约 / 状态】
-<填：active-contract 是谁、各 loop 契约状态（loop done / review / learn 待）、gate 绿几比几、本仓无 git 远端>
+<填：active-contract 是谁、各契约状态（loop done / review / learn 待 / plan-done 等）、gate 绿几比几、本仓无 git 远端、未提交现场（git status --short 摘要，标明哪些改动还没入史）>
+<填：最新工程纪律与决策——凡 HANDOFF「锁定的决策」新增条都在此摘一句，防新会话漏掉最新纪律。如 2026-07-01：模型分层升级（Opus 4.8 ultracode 主环 + Sonnet 5 max subagent 轻车道 + 三级兜底梯）、term-guard 统一语言强制兜底契约（甲零 LLM / 乙语义；甲 Stop 钩子当前 warn-only 只警告不拦、乙真非 Claude 评分员接线待密钥——别误以为硬拦全开）、下一步首推 model-lane-guard>
 
 【下一步（任选其一，先对齐再动手）】
 <填：A/B/C… 可点选项，每条带依赖与一句目标>

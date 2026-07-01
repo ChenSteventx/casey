@@ -53,3 +53,13 @@
 **已采纳 · 岔三（辐条车道随复利递减）**：第一条走 `full`；**第二条起默认轻车道**（跳 `grill`、保留 plan+accept+loop），因为在已冻内核上移植 flow 没有新承重决策可 grill。硬规则：辐条一旦需要**改**（而非**扩**）冻结内核文件（`verdict.mjs` 判定树 / `StepAxes` 形状），当场升回 `full`。`accept`（红 golden 冻结）任何车道都不跳——它是飞轮复利第五项。那次被迫升级，正是「轴当初没够通用」的实证信号。
 
 **加固已落（2026-06-29）**：岔一纪律已写成护栏第十七条（`verdict.mjs` 按种类不可知、种类只在 `check.mjs` 枚举），由机制盯住；并把已弃用的移植口语简写登记进 `CONTEXT.md` 别名列、硬拦复发。
+
+## 开 loop 前 · 模型分层遵约（2026-07-01）
+
+> 接 `HANDOFF.md`「模型分层升级 + 三级兜底」条。仅**开发流程**（谁来跑 loop），不碰产品功能；`verdict.mjs` 恒零 LLM。开任一实施 loop（本会话用 Workflow 跑）前，按 `loop/config.json` lanes 设 agent 选项——这是让 Sonnet 5 真生效的唯一开关（无 runner 自动按 lane 路由，config/HANDOFF 只是事实源）。
+
+- 轻车道辐条：`agent(prompt, { model: 'sonnet', effort: 'max' })`（Sonnet 5 max）。
+- full 车道 / 碰冻结内核：`{ model: 'opus' }`，主环 Opus 4.8 跑 ultracode（xhigh + 动态编排）当编排器 fan-out。
+- `effort:'max'` 只能走 Workflow 的 `agent(…,{effort})`——裸 `Agent` 工具无 effort 参数。别名 `sonnet` 在工具层已解析到当前 `claude-sonnet-5`。
+- 卡死升级（三级梯）：辐条 Sonnet 5 一直不收敛（`circuitBreaker` 判 `zeroCommitRounds`/`sameErrorRounds` 跳闸）→ 同一活升 Opus 4.8 xhigh 重跑 → 再卡 → `NEEDS_HUMAN` 写 `loop/inbox.md`（护栏 #14 fail-safe 不 fail-open）。
+- 机制强制待建：I2 config 异构钩子 + 三级梯 watcher（见 `HANDOFF` 下一步第 5 项）。本节现为会话遵约，待钩子上线后由机制兜底。

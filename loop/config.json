@@ -7,12 +7,13 @@
       "effort": "xhigh",
       "schedule": "nightly",
       "maxCallsPerRun": 5,
-      "_doc": "事务性工作道：夜间分诊、机械小修。额度吃紧时本道先降 effort 到 high（review 道永不降）。"
+      "_doc": "事务性工作道：夜间分诊、机械小修。额度吃紧时本道先降 effort 到 high（review 道永不降）。2026-07-01 曾拟改 Sonnet 5，因暂无夜跑需求撤回，待有 nightly runner 再议（届时重掂 max vs medium）。"
     },
     "implementation": {
       "model": "opus",
-      "effort": "high",
-      "_doc": "契约级实施道：只接走完流水线的任务，spec 一次给全，不切小步。Opus 4.8 同 Claude 家族→对 Codex 评审仍异构；1M 上下文承载单长会话。"
+      "effort": "xhigh",
+      "subagent": { "lane": "light", "model": "sonnet", "effort": "max", "escalateTo": { "model": "opus", "effort": "xhigh" }, "escalateOn": "breakerTrip" },
+      "_doc": "契约级实施道：只接走完流水线的任务，spec 一次给全，不切小步。主环 Opus 4.8 跑 ultracode（xhigh effort + 动态工作流编排）当编排器，承 full 车道与碰冻结内核的最难长程活。轻车道的活派给 Sonnet 5 独立 subagent（max effort）——产出被冻结 golden+checksum 棘轮+gate.mjs+codex 异构评审兜底，错了门禁必拦、与谁写无关；切 subagent 而非主环换模型，保 prompt 缓存与上下文隔离；Sonnet 5 用 max 收窄对 Opus 能力差（注意 max 偶有过度思考、边际递减）。三级兜底阶梯：开发任务上 Sonnet 5 卡住（circuitBreaker 判 zeroCommitRounds/sameErrorRounds 跳闸）→ 升 escalateTo 即 Opus 4.8 xhigh（原 plan）重试 → 再卡 → NEEDS_HUMAN 写 inbox（护栏 #14 fail-safe 不 fail-open，绝不静默过）。同 Claude 家族→对 Codex 评审仍异构；1M 上下文承载单长会话。subagent/escalateTo 为操作者约定、暂无 runner 按 lanes 路由；机制锚在 circuitBreaker，watcher 待建（走 spoke，别改 loop-kit engine——ADR-0001 字节一致）。"
     },
     "review": {
       "model": "codex:gpt-5.5",

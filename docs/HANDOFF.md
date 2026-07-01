@@ -3,7 +3,14 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 当前状态（2026-06-30）
+## 当前状态（2026-07-01）
+
+2026-07-01 会话落地两件事：
+
+1. 模型分层升级——`loop/config.json` 改 Opus 4.8 ultracode 主环 + Sonnet 5 max subagent 轻车道 + 三级兜底梯（详见「锁定的决策」2026-07-01 条）。
+2. 新增 `term-guard` 契约（统一语言强制兜底，6 阶段全绿）：甲 `bin/term-guard.mjs`（零 LLM 确定性）拦 R3 比喻声明块格式 / R6 加粗未登记英文与弃用别名 / 引用豁免只认反引号代码体（自然语言引号不豁免）；乙 `bin/term-judge.mjs`（语义评分员外层，只对甲候选跑，待非 Claude 密钥）。经 codex 九轮异构评审通过（逐轮真 fail-open 全钉红 golden，见 `loop/audit.jsonl` 末条 term-guard 记录）。Stop 钩子 warn-only 接线（`.claude/settings.json` 独立一条 `bin/term-guard-hook.mjs`，不改 loop-kit）。`model-lane-guard` 契约暂停在 accept-ready、`p5-replay` 暂停在 learn（见「契约 / 运维」「下一步」）。
+
+以下 P5 与排期为 2026-06-30 现状（仍有效）：
 
 排期 v2（接缝优先并行）落地 → 第1层接缝冻结完成 → 第2层全部落地：P5 回放内核（★最后一轨）loop 绿——真 chromium 回放假 SUT（被测系统）→ 三轴 → 喂已冻 `verdict.mjs` → 四态全中（golden 10/10）。`casey selftest --tier1` 无回归。P5 review（异构评审）待跑、tier-2 真机 route:human 未走（gate 绿 != 完成，护栏 #16）。排期 v3 见 `docs/plans/roadmap-parallel.md` 文末（2026-06-30 重排）。
 
@@ -91,16 +98,37 @@ P5 回放内核 loop 绿后接异构评审（与上节 P2/verdict 评审不同�
 - **岔三**（已采纳）：第一条走 `full`；之后辐条默认轻车道（跳 grill、保留 plan+accept+loop），碰冻结内核才升 `full`；`accept` 任何车道都不跳。
 - 全文：`docs/FLYWHEEL.md` 开 loop 前细化（2026-06-29）条。
 
+### 模型分层升级 + 三级兜底（2026-07-01，已锁）
+
+> **范围**：仅**开发流程**的模型分层道（谁来跑 loop：`toil`/`implementation`/`review`），**不涉及 Casey 产品功能**——编译/回放/裁定/报告 的运行时 LLM 接缝（相1 编译、相5 自愈、将来 `LLM-judge`）均不在本决策内；`verdict.mjs` 恒零 LLM。即配置顶层「两类 lane 正交」里的「模型分层道」那一类。
+
+- **分层**：`loop/config.json` 模型分层道改——主环 Opus 4.8 跑 ultracode（xhigh + 动态工作流编排）当编排器，承 full 车道与冻结内核；轻车道的活派 Sonnet 5 独立 subagent（max effort）。切 subagent 而非主环换模型：prompt 缓存不被打断、上下文隔离（claude-api 缓存文档明写的正确写法）。`review` 未动，`sonnet` 仍同族末位 fallback。`toil` 缓：夜跑暂无需求，2026-07-01 撤回原 `codex:gpt-5.5`，待有 nightly runner 再议。
+- **三级兜底阶梯（运行时 fail-safe 升级）**：开发任务上 Sonnet 5 max 一直卡（`circuitBreaker` 判 `zeroCommitRounds`/`sameErrorRounds` 跳闸）→ 升 Opus 4.8 xhigh（原 plan）重试 → 再卡 → `NEEDS_HUMAN` 写 `loop/inbox.md`（护栏 #14 fail-safe 不 fail-open，能力升满仍证不出就路由人、绝不静默过）。机制锚已在 `circuitBreaker` + `breaker.mjs`；`toil` 不入此梯（机械小修，跳闸照旧写 inbox）。
+- **静态强制兜底（两条不变量，机器守；模型能自由换的前提）**：
+  - I1 裁判零 LLM（护栏 #15，承重）：`bin/verdict.mjs` 传递依赖闭包零 LLM/网络客户端——「上游随便换模型都不出静默假 PASS」的根兜底。
+  - I2 异构评审不塌同族（护栏 #9 / ADR 异构冗余）：`review.model` 家族 ≠ `implementation.model` 家族，`sonnet`/`opus` 只能在 review `fallback`、绝不当主 `model`。
+  - I3「Sonnet 5 只作 subagent 不换主环」是编排期运行时属性、静态不可查，不假装可强制；其兜底即 I1（verdict 零 LLM + 冻结 golden + gate 三重网）。
+- **待建（诚实标注，别 ad-hoc 破护栏 #11、别改 loop-kit engine ADR-0001）**：I1 verdict 零依赖断言入 `casey selftest --tier1`；I2 config 不变量 PostToolUse 钩子（仿 term-lint）；三级兜底 watcher 读 `loop/.breaker-state.json` 自动再派。三项走轻车道辐条（正好用新分层策略自举）；config 的 `_doc` 是当前策略事实源。
+
 ## 下一步
+
+> 新会话接续顺序：① 第 5 条 `model-lane-guard`（从 accept 起：冻 I1/I2 红 golden → loop → review → learn）→ ② `p5-replay` 的 learn（第 1 条尾）→ ③ 第 6 条 `term-guard` 乙真接线（待密钥）。活契约现为已全 done 的 `term-guard`，切 baton 见「契约 / 运维」。
 
 1. ~~P5 异构冗余评审（阶段 4）~~ 已完成（codex gpt-5.5，判 FAIL→10 修复→复绿，b982171）+ 新 fail-safe 行为补冻回归锁（b0dcaff）。见上节「P5 回放异构评审收口」。P5 流水线 review done、仅 learn 待。
 2. tier-2 真机（route:human，护栏 #16 gate 绿 != 完成）：`catalog_wf_crud` 真站全 PASS + 注 HTTP500 出 `SUT_DEFECT` + CDP initiator 真发起方在真 Heren 流量下可靠度（ADR-0007 推翻条件）。依赖 P3 编译 + P5 真回放。
 3. Layer-3 集成（排期 v3 第3层）：compile-gate 真产物 → P5 真回放 → verdict → P7 报告，首条 web 端到端（真报告——录屏/trace/截图由真回放产出，不再是合成 fixture）。
 4. 收尾：P2 learn；push（review done 解锁后，本仓无 git 远端、待定 GitHub 目标仓）；接缝 v2 增冻（`run-history.jsonl`/动作词汇表/failure ledger 等，走 grill-with-docs，草稿在 `docs/plans/seams-freeze-v2/proposed/`）；两个 hermetic 缺口 golden（P7 credentialGate / P6 superseded，草稿在各 proposed/）。
+5. 新会话首推——`model-lane-guard` 契约（轻车道，仅开发流程、不碰产品功能，见「模型分层升级 + 三级兜底」2026-07-01 条）。现停在 plan-done：`docs/plans/model-lane-guard/` 有 grill.md + plan.md，**accept 未做、无 golden 无 prd**（我被 DDD 术语兜底打断在冻 golden 之前）。恢复：`node loop-kit/bin/contract.mjs init model-lane-guard --lane light --reason ...` → advance grill（--user-confirmed，grill.md 在）→ advance plan（plan.md 在）→ accept：按 plan.md 验收点冻红 golden——I1 `bin/verdict.mjs` 零 LLM 依赖闭包断言（入 `casey selftest --tier1`）+ I2 `loop/config.json` 异构不变量（`review` 家族 ≠ `implementation` 家族、`sonnet` 不当 review 主 `model`），三级兜底 watcher 读 `.breaker-state.json`、breaker 跳闸自动把卡住的开发辐条从 Sonnet 5 再派 Opus 4.8 xhigh → loop → review（codex 异构）→ learn。不改 loop-kit / verdict.mjs。参考 `term-guard` 的实现模式（甲/乙 + golden + codex 评审）。
+6. `term-guard` 收尾（契约已全 6 阶段 done）：乙 `bin/term-judge.mjs` 的真非 Claude 评分员接线（`callRealJudge` 现恒 unreachable 兜底，复用 review 道 DeepSeek/codex 路径，待 `~/.loop-kit` 密钥）；观察期确认无误判后把 `bin/term-guard-hook.mjs` 的 `WARN_ONLY` 置 false 切硬拦。语义死角（提及 vs 使用、反引号内别名/裸英文）本就外抛乙判，是甲零 LLM / 乙语义的分界。
 
 ## 契约 / 运维
 
-- `loop/active-contract.json` = `p5-replay`（full lane）；grill/plan/accept/loop/review 全 done（gate GREEN 2/2：s1-replay + s2-failsafe-coverage，`passes:true`，2026-06-30；server.mjs fork 修复后 checksum 重签；coverage golden 并入 testChecksums b0dcaff）；仅 learn 待。其余契约（p2-intent-compile / seams-freeze / p2-failsafe-coverage / p7-report / p4-freeze / p6-selfheal）均 loop done、产物落 dev。
+- 活契约 `loop/active-contract.json`（runtime、gitignored）现 = `term-guard`（6 阶段全 done）。切 baton 到别的契约：`contract init <slug>` 会重置台账；本会话 tmp scratchpad 有两份备份（`active-contract.{model-lane-guard,p5-replay}.bak.json`，新会话可能取不到——取不到就用下面的 re-init + re-advance 恢复）。
+- 契约一览：
+  - `term-guard`：6 阶段 done（2026-07-01；gate GREEN 2/2、codex 九轮异构评审 pass 见 audit 末条、Stop 钩子 warn-only 接线）。
+  - `model-lane-guard`：plan-done（有 grill.md/plan.md，无 golden 无 prd；从 accept 起，见「下一步」5）。
+  - `p5-replay`（full）：grill/plan/accept/loop/review done、`passes:true`、仅 learn 待。恢复 learn：cp 备份回 `active-contract.json`，或 re-init `p5-replay` + 逐阶段 re-advance（grill/plan 在 `docs/plans/p5-replay/`、accept/loop 交 `prd-p5-replay.json`（passes:true）、review 交 `loop/audit.jsonl` 的 p5-replay 条），再 advance learn。
+  - `p2-intent-compile`：仅 learn 待。其余（seams-freeze / p2-failsafe-coverage / p7-report / p4-freeze / p6-selfheal）loop done、产物落 dev。server.mjs fork 修复 + coverage golden 并入见 b0dcaff。
 - 单活契约 baton 教训（重要）：loop-kit 是单活契约（hook 读主树共享 `active-contract.json`）。本会话并行起多契约（worktree 隔离）撞了这个单 baton 槽——worktree 子代理 commit 受主树 baton 互锁：P6 子代理曾临时翻主 baton（已还原）、P4 子代理被拦只暂存未提交。landing 办法：已 committed 的分支用 `git merge`（不被 commit 互锁拦）；未提交的（P4）把文件拷进 dev、把主 baton 临时切到其真实 loop-done 契约提交、再还原。未来真并行须按 design §3.1：`LOOP_CONTRACT_FILE` 参数化 + `breaker --state`（未建）。
 - push：本仓无 git 远端（`git remote` 空），待定 GitHub 目标仓（参考 autotester = 私有 `ChenSteventx/autotester`）。
 - 删不动的残留：`docs/plans/seams-freeze/proposed/`（评审副本，破坏性删除被权限层拦，待人 `! Remove-Item -Recurse -Force` 清）。

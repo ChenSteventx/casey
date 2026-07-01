@@ -33,6 +33,12 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/loop-kit/bin/hook-stop.mjs\"",
             "timeout": 30,
             "statusMessage": "term-lint 扫描回合输出"
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/bin/term-guard-hook.mjs\"",
+            "timeout": 30,
+            "statusMessage": "term-guard 甲扫回合输出（warn-only 观察期）"
           }
         ]
       }
@@ -46,6 +52,17 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/loop-kit/bin/hook-posttool.mjs\"",
             "timeout": 30,
             "statusMessage": "term-lint 扫描写入文件"
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/bin/config-lane-guard-hook.mjs\"",
+            "timeout": 15,
+            "statusMessage": "model-lane-guard I2 config 异构守卫（写 loop/config.json 时）"
           }
         ]
       }
