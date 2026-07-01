@@ -62,6 +62,61 @@
       ]
     },
     {
+      "action": "dblclick",
+      "label": "双击",
+      "channels": [
+        "web"
+      ],
+      "paramSchema": {
+        "requiredEventFields": [],
+        "optionalEventFields": [
+          "semantic",
+          "role",
+          "accessibleName",
+          "text",
+          "fieldLabel",
+          "fallbackCss",
+          "nth"
+        ],
+        "locatorBinding": "required-anyOf",
+        "constraintNote": "对齐 events.schema allOf：dblclick 与 click 同受交互定位 anyOf 约束（semantic / role+accessibleName / text / fieldLabel / dropdownUnit 之一），禁纯坐标步。"
+      },
+      "coordinateFallback": {
+        "allowed": false,
+        "onlyVia": null,
+        "note": "web 双击以语义定位器 + 点击身份门 为准；坐标兜底不允许。"
+      },
+      "threeAxisEvidence": {
+        "actionAxis": {
+          "performedGate": "点击身份门：过滤后 count===1 或双击后身份回读成立才置 actionPerformed=true。",
+          "ambiguousSignal": "多匹配或坐标兜底双击 → AMBIGUOUS_ACTION。"
+        },
+        "assertionAxisFeeds": [
+          "urlPathname",
+          "textVisible",
+          "countChange"
+        ],
+        "forensicsAxis": [
+          "watchNetworkForensics 网络取证（双击触发的请求）",
+          "生命周期（pageerror / dialog）"
+        ]
+      },
+      "driver": {
+        "channelDriver": "web/_data_runner",
+        "call": "findEvent → 语义定位器 dblclick（点击身份门 包裹）"
+      },
+      "failClosed": {
+        "whenUnsupported": "NEEDS_HUMAN",
+        "needsHumanReason": "INDETERMINATE",
+        "neverSubstitute": true,
+        "neverSelfHeal": true
+      },
+      "golden": [
+        "tests/_golden/p5-replay.golden.mjs",
+        "tests/_golden/fixtures/p5/replay-cases.json"
+      ]
+    },
+    {
       "action": "fill",
       "label": "填值",
       "channels": [
@@ -203,6 +258,100 @@
       "driver": {
         "channelDriver": "web/_data_runner",
         "call": "page.keyboard.press(key)"
+      },
+      "failClosed": {
+        "whenUnsupported": "NEEDS_HUMAN",
+        "needsHumanReason": "INDETERMINATE",
+        "neverSubstitute": true,
+        "neverSelfHeal": true
+      },
+      "golden": [
+        "tests/_golden/p5-replay.golden.mjs",
+        "tests/_golden/fixtures/p5/replay-cases.json"
+      ]
+    },
+    {
+      "action": "nav",
+      "label": "导航",
+      "channels": [
+        "web"
+      ],
+      "paramSchema": {
+        "requiredEventFields": [
+          "url"
+        ],
+        "optionalEventFields": [],
+        "locatorBinding": "none",
+        "constraintNote": "events.schema：nav 必带 url；nav 不受交互定位 anyOf 约束——按 url 直达，不解析元素。"
+      },
+      "coordinateFallback": {
+        "allowed": false,
+        "onlyVia": null,
+        "note": "nav 靠 url 直达，无元素定位；坐标兜底不适用。"
+      },
+      "threeAxisEvidence": {
+        "actionAxis": {
+          "performedGate": "导航后达静默点且 URL 前进到目标 pathname（无点击身份门，nav 不解析新元素）。",
+          "ambiguousSignal": "nav 不定位元素、无多匹配歧义；导航未落目标 url 落 NEEDS_HUMAN（绝不静默成功）。"
+        },
+        "assertionAxisFeeds": [
+          "urlPathname"
+        ],
+        "forensicsAxis": [
+          "watchNetworkForensics 网络取证（导航触发的文档/接口请求）",
+          "生命周期（pageerror / dialog）"
+        ]
+      },
+      "driver": {
+        "channelDriver": "web/_data_runner",
+        "call": "findEvent → page.goto(url)（或录制导航重放）"
+      },
+      "failClosed": {
+        "whenUnsupported": "NEEDS_HUMAN",
+        "needsHumanReason": "INDETERMINATE",
+        "neverSubstitute": true,
+        "neverSelfHeal": true
+      },
+      "golden": [
+        "tests/_golden/p5-replay.golden.mjs",
+        "tests/_golden/fixtures/p5/replay-cases.json"
+      ]
+    },
+    {
+      "action": "newpage",
+      "label": "新开页",
+      "channels": [
+        "web"
+      ],
+      "paramSchema": {
+        "requiredEventFields": [
+          "url"
+        ],
+        "optionalEventFields": [],
+        "locatorBinding": "none",
+        "constraintNote": "events.schema：newpage 必带 url；新标签/新窗口打开目标 url，不受交互定位 anyOf 约束。"
+      },
+      "coordinateFallback": {
+        "allowed": false,
+        "onlyVia": null,
+        "note": "newpage 按 url 开新页，无元素定位；坐标兜底不适用。"
+      },
+      "threeAxisEvidence": {
+        "actionAxis": {
+          "performedGate": "新页/新标签打开、句柄切换成功且达静默点（无点击身份门）。",
+          "ambiguousSignal": "newpage 不定位元素、无多匹配歧义；新页未开或句柄缺失落 NEEDS_HUMAN。"
+        },
+        "assertionAxisFeeds": [
+          "urlPathname"
+        ],
+        "forensicsAxis": [
+          "watchNetworkForensics 网络取证（新页加载触发的请求）",
+          "生命周期（pageerror / dialog）"
+        ]
+      },
+      "driver": {
+        "channelDriver": "web/_data_runner",
+        "call": "context.waitForEvent('page') → 切句柄（或录制 newpage 重放）"
       },
       "failClosed": {
         "whenUnsupported": "NEEDS_HUMAN",

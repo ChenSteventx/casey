@@ -4,7 +4,7 @@
 >
 > 本文只起草开放问题与推荐答案，供后续走 grill-with-docs 人审拍板。落地边界：不冻结、不登记 `CONTEXT.md`、不触碰任何已冻区（`events.schema.json` / `verdict.mjs` / `check.mjs` 一字不改）、不写 `lib`/`bin`。
 >
-> 配套草稿：`2-action-vocabulary.schema.json`（条目 schema）、`2-action-vocabulary.fixture.json`（click/fill/selectOption/press 4 条合成夹具）。
+> 配套草稿：`2-action-vocabulary.schema.json`（条目 schema）、`2-action-vocabulary.fixture.json`（覆盖已冻枚举全 7 个动作 click/dblclick/fill/selectOption/press/nav/newpage 的合成夹具，对齐 Q5「P5 范围=纯治理登记覆盖现有 7 个动作」）。`nav`/`newpage` 是 `locatorBinding:none` + `requiredEventFields:[url]` 的代表（与交互动作的 `required-anyOf` 分野），`dblclick` 与 `click` 同族。
 
 ## 这条接缝是什么
 

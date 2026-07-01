@@ -63,3 +63,6 @@
 - N3 `locatorResolution` 标量 vs 富对象：§4 是标量字符串（`unique` 等五值之一），§8 是带 `candidateCount`/`backendNodeId`/`centroid` 的富对象。推荐 run-history 先用标量枚举（与 §4 一致、最小面），富对象按需在 `axes.json` 动作轴侧展开，别让回放历史承载几何细节。
 - N4 `result` 枚举语义：`result` 记动作执行结果（`ok`/`actionError`/`locatorError`/`timeout`/`quietPointMiss`），不是四态裁定。schema 描述须显式写「`result` 永不等同 `多态裁定` 四态」，防与 verdict 混淆。
 - N5 每行是否带 `schemaVersion`：逐行重复版本号噪声大。推荐版本号只落 `run-metrics.json`（或 run 清单）一处，`run-history.jsonl` 单行不带；交 grill 定。
+- N6 补 `atom` 字段（已在 schema 草稿加）：已冻姊妹接缝 `观测现状` / `漂移补丁` / `report-model` / 失败台账逐步项均带 `atom`（稳定语义动作 id），唯 run-history 原草稿漏了。已按补全惯例加成可空可选字段，使 run-history 能与它们跨 run 对账、并与 失败台账 `fingerprint` 的 `atom` 同源关联。交 grill 确认是否保留（推荐保留）。
+- N7 `locatorHitRate` 分母口径（已在 schema 草稿钉死）：分母只数「有定位需求的步」（`locatorResolution` 非 null，排除 `nav`/`newpage`/`press`），避免把无定位步算进分母稀释比率；整段 run 无定位步（分母 0）时为 null，与 `cacheHitRate` 的 null 约定同法，绝不塞 0/1 造假。fixture 三个定位步全 unique 故为 1。
+- N8 fixture 反例行（已加）：`atstep_3` 唯一命中却未达静默点（`quietPointReached=false` + `result=quietPointMiss`），使 `passedActions`(3) < `totalSteps`(4)，把「`result`/`passedActions` 非四态、跑到底≠判 PASS」用数据钉出来，镜像 `观测现状` fixture 用背景 401 做反例的做法。

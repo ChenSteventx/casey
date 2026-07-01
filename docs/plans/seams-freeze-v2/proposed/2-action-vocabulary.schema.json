@@ -1,6 +1,6 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
-  "$id": "casey/proposed/action-vocabulary.schema.json",
+  "$id": "casey/action-vocabulary.schema.json",
   "title": "动作词汇表 action-vocabulary.json 条目 schema（草稿 / 未冻 / 待 grill 拍板）",
   "description": "草稿：动作词汇表是已冻 events.schema action 枚举的治理层登记，不是新回放数据、不修改 events.schema、不进 testChecksums、未登记 CONTEXT.md。每条把一个已冻 action 名绑上 paramSchema 投影 / 所属 channel / 坐标兜底治理 / 三轴证据产出 / 实现驱动 / golden 覆盖 / 平台不支持时 fail-closed 规则。action 名权威仍活在 events.schema（本表与之对齐，镜像 断言词汇表 kind 权威活在 bin/check.mjs）。verdict.mjs 对 action 不可知（护栏 #17 动作侧对称）：本 schema 只描述证据产出形态，绝不让裁判按 action 分支。",
   "type": "object",

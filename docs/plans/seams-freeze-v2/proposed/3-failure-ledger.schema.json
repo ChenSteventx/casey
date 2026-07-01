@@ -365,6 +365,34 @@
           }
         }
       }
+    },
+    {
+      "description": "自愈红线机制化（grill Q3.3 / Q4，护栏 #13/#15）：humanResolution.decision='drift-healed' 仅当 verdict==='HARNESS_ERROR' 才合法——NEEDS_HUMAN/SUT_DEFECT 条目的人裁绝不能直接路由去自愈；要走自愈须先以新证据重跑产新 verdict(那是新一轮裁定、不是改台账)。此前仅写在描述里、无结构约束，现按已冻姊妹接缝(drift-patch/expected-frozen 的 allOf 不变量)惯例钉成机制。",
+      "if": {
+        "properties": {
+          "humanResolution": {
+            "type": "object",
+            "required": [
+              "decision"
+            ],
+            "properties": {
+              "decision": {
+                "const": "drift-healed"
+              }
+            }
+          }
+        },
+        "required": [
+          "humanResolution"
+        ]
+      },
+      "then": {
+        "properties": {
+          "verdict": {
+            "const": "HARNESS_ERROR"
+          }
+        }
+      }
     }
   ]
 }

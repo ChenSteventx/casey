@@ -18,6 +18,8 @@
 
 共同红线（三条都写进 schema 描述）：仅报告/诊断；绝不进 `bin/verdict.mjs` 输入、绝不写 `passes`（护栏 #15/#17）；落盘过凭据兜底门、凭据型值脱敏（护栏 #7）。
 
+fixture 范式（对齐已冻 `tests/_golden/fixtures/seams/`）：每条 fixture 是单份 schema 合法文档，正例与反例做成同一份里的判别性数据行（镜像已冻 `observed-reality` 用背景 401、`report-model` 用 PASS+SUT_DEFECT 两步），不另立 negative fixture 旁文件；「非法必拒」由 schema 约束（`enum` / `additionalProperties:false` / `allOf if-then`）+ golden 断言承担。当前覆盖：run-history 含 `quietPointMiss` 反例行（`passedActions`<`totalSteps`）；action-vocabulary 覆盖全 7 动作（含 `locatorBinding:none` 的 `nav`/`newpage`）；failure-ledger 跨 `NEEDS_HUMAN`/`HARNESS_ERROR`/`SUT_DEFECT` 三态 + 已裁/未裁两种生命周期。
+
 ## 后置接缝（随 canvas / arbitrary 维度，本轮不起草）
 
 - 视觉模板合同（命中须落成 `断言词汇表` typed 断言、`verdict.mjs` 不分支）。

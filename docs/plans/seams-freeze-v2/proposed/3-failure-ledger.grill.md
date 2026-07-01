@@ -91,6 +91,12 @@
 
 **是否进 `testChecksums`：** 推荐**是，但只冻 schema + fixture 这条数据契约**（与 v1 各接缝同法：schema 校验 golden + fixture 进 `prd-seams-freeze.json` 的 `testChecksums`）。理由：下游要对合成 fixture 并行开发，就得先把数据契约钉死，且 schema 本身要把红线编码进去（无 verdict 可消费的字段、追加不改、指纹确定性）。`fingerprint` 的哈希函数（确定性、可复现）将来落 `lib/bin` 时也要单独配 golden，但函数实现不在本草稿范围。
 
+**本轮草稿已收紧到位（供 grill 复核）：**
+
+- 自愈红线机制化：schema 新增第 3 条 `allOf` 不变量——`humanResolution.decision='drift-healed'` 仅当 `verdict==='HARNESS_ERROR'` 才合法（此前仅写在描述里、无结构约束）。镜像已冻 `drift-patch`/`expected-frozen` 把 fail-safe 不变量钉成 `allOf if/then` 的惯例，让 golden 有可校验的结构靶子。
+- fixture 反例覆盖补全：新增 `fle_0004`（`SUT_DEFECT` 终判、`reason=null`）——原 3 条只覆盖 `NEEDS_HUMAN`×2 + `HARNESS_ERROR`，漏了第三种非 PASS 态 `SUT_DEFECT`；`fle_0004` 同时首次填充 `forensicsRef`（原三条全 null，字段未被示范）与 `confirm-regression-defect` decision，示范「SUT_DEFECT 须带取证背书 + 人裁记缺陷单」。至此 fixture 正例（`fle_0002` 已裁 resign / `fle_0003` 已裁 drift-healed）+ 反例（`fle_0001` 未裁 / `fle_0004` 记缺陷）跨三态齐备。
+- 留给 golden 的跨字段校验（schema 表达不了、落 golden 时补）：(a) `fingerprintInputs.{channel,verdict,reason,atom}` 须逐一等于顶层同名字段（防指纹与记录漂移）；(b) `failedAssertion` 非空 ⟺ `fingerprintInputs.assertionKind` 非空（断言失败才有断言快照）；(c) 深扫凭据/PII 禁字段名（复用 `seams-freeze.golden.mjs` 的 `findForbiddenKey`）。
+
 **留给 grill 的子问：** 本轮到底冻不冻？§10 把「失败学习」列为 Autonoma 的未来方向，可选「本轮只冻 schema 让下游可建、实现 deferred 走 route:human」或「连实现一起排进 P6 之后的新里程碑」。推荐前者：先冻数据接缝、缓建实现，把哈希函数与编译期建议通道留作后续 route:human。
 
 ---
