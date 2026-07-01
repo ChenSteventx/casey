@@ -1,0 +1,148 @@
+{
+  "_note": "失败记录台账合成 fixture：entries[] 各条校验 failure-ledger-entry.schema。跨 NEEDS_HUMAN/HARNESS_ERROR/SUT_DEFECT 三态 + 已裁/未裁生命周期；指纹值为合成占位(格式合法、非真算)。fle_0004 示范 SUT_DEFECT 须取证背书(forensicsRef)+人裁记缺陷单；fle_0003 示范 drift-healed 仅 HARNESS_ERROR 合法。",
+  "entries": [
+    {
+      "schemaVersion": 1,
+      "entryId": "fle_0001",
+      "caseId": "tc_workflow_create_smoke",
+      "runId": "20260630T0814Z-a1b2c3",
+      "stepId": "atstep_3",
+      "intentId": "intent_3",
+      "atom": "workflow.save",
+      "channel": "web",
+      "verdict": "NEEDS_HUMAN",
+      "reason": "AMBIGUOUS_ACTION",
+      "fingerprint": "sha256:9f1c0a7b3e5d4682a0c1f2e3d4b5a6978c0d1e2f3a4b5c6d7e8f901122334455",
+      "fingerprintInputs": {
+        "channel": "web",
+        "verdict": "NEEDS_HUMAN",
+        "reason": "AMBIGUOUS_ACTION",
+        "atom": "workflow.save",
+        "assertionKind": null,
+        "assertionOp": null,
+        "signatureTemplate": "role=button;name=保存"
+      },
+      "failedAssertion": null,
+      "forensicsRef": null,
+      "observedAt": "2026-06-30T08:14:09.220Z",
+      "capturedAgainstBuild": "heren-aimgmt@2026.06.0",
+      "humanResolution": null
+    },
+    {
+      "schemaVersion": 1,
+      "entryId": "fle_0002",
+      "caseId": "tc_workflow_open_regress",
+      "runId": "20260630T0822Z-d4e5f6",
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "atom": "workflow.open",
+      "channel": "web",
+      "verdict": "NEEDS_HUMAN",
+      "reason": "SUT_DEFECT_OR_STALE",
+      "fingerprint": "sha256:1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f809",
+      "fingerprintInputs": {
+        "channel": "web",
+        "verdict": "NEEDS_HUMAN",
+        "reason": "SUT_DEFECT_OR_STALE",
+        "atom": "workflow.open",
+        "assertionKind": "urlPathname",
+        "assertionOp": "startsWith",
+        "signatureTemplate": null
+      },
+      "failedAssertion": {
+        "kind": "urlPathname",
+        "op": "startsWith",
+        "fieldPath": "urlPathnameAfter",
+        "expectedTemplate": "/heren/aimanagement/edit/<entityId>",
+        "actualTemplate": "/heren/aimanagement/list"
+      },
+      "forensicsRef": null,
+      "observedAt": "2026-06-30T08:22:31.004Z",
+      "capturedAgainstBuild": "heren-aimgmt@2026.07.0",
+      "humanResolution": {
+        "decision": "intended-change-resign",
+        "resolvedAt": "2026-06-30T10:05:17.880Z",
+        "resolverId": "qa.lead.steven",
+        "ref": "loop/prd-tc_workflow_open_regress.json#expected[1]@sha256:7c9d…(重签新基线 checksum)",
+        "note": "改版后打开工作流落列表页内联编辑、不再跳 edit 路由；有意改版，走重签新基线而非记缺陷。"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "entryId": "fle_0003",
+      "caseId": "tc_chiefcomplaint_smoke",
+      "runId": "20260630T0830Z-77aa88",
+      "stepId": "atstep_2",
+      "intentId": "intent_2",
+      "atom": "chat.send",
+      "channel": "web",
+      "verdict": "HARNESS_ERROR",
+      "reason": null,
+      "fingerprint": "sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+      "fingerprintInputs": {
+        "channel": "web",
+        "verdict": "HARNESS_ERROR",
+        "reason": null,
+        "atom": "chat.send",
+        "assertionKind": null,
+        "assertionOp": null,
+        "signatureTemplate": "role=button;name=发送"
+      },
+      "failedAssertion": null,
+      "forensicsRef": null,
+      "observedAt": "2026-06-30T08:30:44.610Z",
+      "capturedAgainstBuild": "heren-aimgmt@2026.07.0",
+      "humanResolution": {
+        "decision": "drift-healed",
+        "resolvedAt": "2026-06-30T09:12:03.500Z",
+        "resolverId": "qa.lead.steven",
+        "ref": "drift/tc_chiefcomplaint_smoke.1782640000.patch",
+        "note": "录制 locator 不再命中，同稳定签名唯一发送按钮仍在；漂移补丁人签后应用、同一 verdict.mjs 复核回 PASS。仅 HARNESS_ERROR 才许此 decision。"
+      }
+    },
+    {
+      "schemaVersion": 1,
+      "entryId": "fle_0004",
+      "caseId": "tc_workflow_create_smoke",
+      "runId": "20260630T0841Z-99cc00",
+      "stepId": "atstep_2",
+      "intentId": "intent_2",
+      "atom": "workflow.save",
+      "channel": "web",
+      "verdict": "SUT_DEFECT",
+      "reason": null,
+      "fingerprint": "sha256:0011223344556677889900aabbccddeeff00112233445566778899aabbccddee",
+      "fingerprintInputs": {
+        "channel": "web",
+        "verdict": "SUT_DEFECT",
+        "reason": null,
+        "atom": "workflow.save",
+        "assertionKind": "noErrorEnvelope",
+        "assertionOp": "envelopeOk",
+        "signatureTemplate": null
+      },
+      "failedAssertion": {
+        "kind": "noErrorEnvelope",
+        "op": "envelopeOk",
+        "fieldPath": "requestLog[].errorEnvelope.status",
+        "expectedTemplate": "status==200",
+        "actualTemplate": "status==500"
+      },
+      "forensicsRef": {
+        "urlTemplate": "/ai-manager/process/saveOrModifyProcessData",
+        "status": 500,
+        "errorEnvelopeField": "status",
+        "attributedStepId": "atstep_2"
+      },
+      "observedAt": "2026-06-30T08:41:52.117Z",
+      "capturedAgainstBuild": "heren-aimgmt@2026.07.0",
+      "humanResolution": {
+        "decision": "confirm-regression-defect",
+        "resolvedAt": "2026-06-30T10:22:41.300Z",
+        "resolverId": "qa.lead.steven",
+        "ref": "defects/DEF-2026-0714",
+        "note": "保存接口 500、错误信封 status 非成功，按发起方归因本步；确认被测缺陷、记缺陷单。SUT_DEFECT 为终判（reason=null），取证背书在 forensicsRef。"
+      }
+    }
+  ]
+}

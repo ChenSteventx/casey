@@ -6,6 +6,8 @@
 >
 > 同目录草稿材料：`1-run-history.schema.json`（schema 草稿）、`1-run-history.fixture.json`（合成 fixture）。
 
+> **grill 拍板回填（2026-07-01，决策全表见 `GRILL-DECISIONS.md` 与合并 `GRILL.md`）：** 三条承重/机械决策已定，schema 草稿与 fixture 已按结果改齐——① 决策 1.1（承重·已签）：`cacheStatus`/`cacheHitRate` **整删**，编译产物复用溯源改归编译期字段（类比 `events.schema` 的 `compiledBy`），本轮**登记 deferred 不建**、不动已冻 `events.schema`（下方 Q2 两方案取方案 B）；② 决策 1.2（机械）：动作字段名 `method`→`action`（跟随已冻 `events.schema`）；③ 决策 1.3（机械）：`intentId` 用 `minLength:1`（跟随 4/4 已冻下游姊妹接缝，**不**跟 `events.schema` 严格 pattern——下方 N2 原推荐已作废纠正）。下方 Q2/N1/N2 保留作论证溯源，以本回填为准。
+
 ## 这条接缝是什么
 
 来源：`docs/design/stagehand-action-ir-adaptation.md` §4（运行历史与指标）的「提案待登记」注、§3（缓存命中可观测）、§12（日志 hook），以及 `docs/design/autonoma-adaptation.md` §5（实时透明度与运行日志）。
@@ -59,7 +61,7 @@
 ## 次要开放点（一并交 grill）
 
 - N1 字段名 `method` vs 已冻 `action`：stagehand §4 用 `method`，但已冻 `events.schema.json` 的字段叫 `action`（枚举 `click/dblclick/fill/selectOption/press/nav/newpage`）。推荐 run-history 跟随已冻名用 `action`，避免同义双名；schema 草稿暂按任务字段表写 `method` 并在此标记待统一，倾向最终改 `action`。
-- N2 `intentId` 形态：已冻 `events.schema.json` 是 `^intent_[0-9]+$`，stagehand §4 示例用点分 `create_workflow.fill_name`（已在 stagehand 备忘录里标注与已冻冲突）。推荐 run-history 跟随已冻 `^intent_[0-9]+$`，fixture 已用 `intent_0/1/2` 示范。
+- N2 `intentId` 形态：已冻 `events.schema.json` 是 `^intent_[0-9]+$`，stagehand §4 示例用点分 `create_workflow.fill_name`（已在 stagehand 备忘录里标注与已冻冲突）。~~推荐 run-history 跟随已冻 `^intent_[0-9]+$`~~ **【拍板纠正·决策 1.3】** 原推荐作废：改用 `minLength:1`，跟随 4/4 已冻下游姊妹接缝（`observed-reality`/`report-model`/`drift-patch`/`expected-frozen`）一致惯例——格式权威只钉在编译产出的 `events.schema` 一处，下游证据接缝只信任「非空字符串」，避免格式在编译期演进时所有下游连带改动。schema 草稿与 fixture 均已按 `minLength:1` 改齐（fixture 仍用 `intent_0/1/2` 合法示范）。
 - N3 `locatorResolution` 标量 vs 富对象：§4 是标量字符串（`unique` 等五值之一），§8 是带 `candidateCount`/`backendNodeId`/`centroid` 的富对象。推荐 run-history 先用标量枚举（与 §4 一致、最小面），富对象按需在 `axes.json` 动作轴侧展开，别让回放历史承载几何细节。
 - N4 `result` 枚举语义：`result` 记动作执行结果（`ok`/`actionError`/`locatorError`/`timeout`/`quietPointMiss`），不是四态裁定。schema 描述须显式写「`result` 永不等同 `多态裁定` 四态」，防与 verdict 混淆。
 - N5 每行是否带 `schemaVersion`：逐行重复版本号噪声大。推荐版本号只落 `run-metrics.json`（或 run 清单）一处，`run-history.jsonl` 单行不带；交 grill 定。

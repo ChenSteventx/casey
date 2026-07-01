@@ -1,0 +1,264 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "casey/action-vocabulary.schema.json",
+  "title": "动作词汇表 action-vocabulary.json 条目 schema（seams-freeze-v2 冻结）",
+  "description": "动作词汇表是已冻 events.schema action 枚举的治理层登记，不是新回放数据、不修改 events.schema。每条把一个已冻 action 名绑上 paramSchema 投影 / 所属 channel / 坐标兜底治理 / 三轴证据产出 / 实现驱动 / golden 覆盖 / 平台不支持时 fail-closed 规则。action 名权威仍活在 events.schema(本表与之对齐，镜像 断言词汇表 kind 权威活在 bin/check.mjs)；Quality Gate 校验 entries[].action ⊆ events.schema 枚举(决策 2.1)。verdict.mjs 对 action 不可知(护栏 #17 动作侧对称)：本 schema 只描述证据产出形态，绝不让裁判按 action 分支。与 channelDriver 分工镜像 动作词汇表 : channelDriver ≈ 断言词汇表 : 通道剖面(决策 2.2/Q2)。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "source",
+    "entries"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1,
+      "description": "接缝版本，整数。"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "seam",
+        "enumPath"
+      ],
+      "description": "action 名的单一事实源指针——指向已冻 events.schema 的 action 枚举；本登记表是其治理投影，Quality Gate 应校验 entries[].action 是该枚举的子集。",
+      "properties": {
+        "seam": {
+          "const": "events.json"
+        },
+        "enumPath": {
+          "const": "casey/events.json#/definitions/event/properties/action/enum"
+        }
+      }
+    },
+    "entries": {
+      "type": "array",
+      "minItems": 1,
+      "description": "逐动作的治理登记条目。",
+      "items": {
+        "$ref": "#/definitions/actionEntry"
+      }
+    }
+  },
+  "definitions": {
+    "actionEntry": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action",
+        "channels",
+        "paramSchema",
+        "coordinateFallback",
+        "threeAxisEvidence",
+        "driver",
+        "failClosed",
+        "golden"
+      ],
+      "properties": {
+        "action": {
+          "enum": [
+            "click",
+            "dblclick",
+            "fill",
+            "selectOption",
+            "press",
+            "nav",
+            "newpage"
+          ],
+          "description": "动作名；权威活在 events.schema action 枚举，本表与之对齐(镜像 expected-frozen.assertionKind 与 bin/check.mjs 对齐)。新增动作 = 改已冻 events.schema 枚举 + 驱动 + golden 的棘轮事件，不在本表私自扩。"
+        },
+        "label": {
+          "type": "string",
+          "description": "人读中文标题(如「单击」「填值」)。"
+        },
+        "channels": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "enum": [
+              "web",
+              "cef",
+              "arbitrary"
+            ]
+          },
+          "description": "本动作在词汇表层被定义可用于哪些 channel；某具体驱动是否真的实现由 channelDriver.actionSpace 声明(子集关系，决策 Q2)。P5 这 7 个动作 channels 仅 web。"
+        },
+        "paramSchema": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "requiredEventFields",
+            "locatorBinding"
+          ],
+          "description": "本动作所需 events.json event 字段的投影；不复制 events.schema 全文(单一事实源仍是 events.schema 的 allOf if/then)，只登记必填/选填字段名 + 定位绑定约束，供编译门与人读对照。",
+          "properties": {
+            "requiredEventFields": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "除公共 stepId/intentId/action 外本动作必填的 event 字段(对齐 events.schema allOf if/then)。"
+            },
+            "optionalEventFields": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "本动作可选的 event 字段。"
+            },
+            "locatorBinding": {
+              "enum": [
+                "required-anyOf",
+                "none"
+              ],
+              "description": "是否要求落稳定可绑定定位属性(禁纯坐标步铁律)。交互动作 = required-anyOf(semantic / role+accessibleName / text / fieldLabel / dropdownUnit 之一)；nav/newpage/press = none(nav 靠 url、press 作用于当前聚焦目标)。"
+            },
+            "constraintNote": {
+              "type": "string",
+              "description": "对照 events.schema 的额外约束白话说明。"
+            }
+          }
+        },
+        "coordinateFallback": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "allowed"
+          ],
+          "description": "坐标兜底治理：x/y 在 events.schema 仅录制元数据、禁作唯一定位。",
+          "properties": {
+            "allowed": {
+              "type": "boolean",
+              "description": "是否允许坐标兜底定位。web 交互动作恒 false(语义定位器 + 点击身份门 为准)。"
+            },
+            "onlyVia": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "若某 channel 允许坐标，须经的护栏标注(如 route:human)；web 为 null(根本不允许)。"
+            },
+            "note": {
+              "type": "string"
+            }
+          }
+        },
+        "threeAxisEvidence": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "actionAxis",
+            "assertionAxisFeeds",
+            "forensicsAxis"
+          ],
+          "description": "本动作回放时按三轴须产出的事实形态(裁判·桥·报告共吃的数据契约)。verdict.mjs 对 action 不可知——本字段只描述证据产出，不让裁判按 action 分支(护栏 #17 动作侧对称)。",
+          "properties": {
+            "actionAxis": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": [
+                "performedGate",
+                "ambiguousSignal"
+              ],
+              "description": "动作轴：actionPerformed 的判定来源。",
+              "properties": {
+                "performedGate": {
+                  "type": "string",
+                  "description": "判 actionPerformed=true 的确定性门(点击类 = 点击身份门；fill/selectOption = 写后回读相符；press = 目标聚焦且 keydown 派发)。"
+                },
+                "ambiguousSignal": {
+                  "type": "string",
+                  "description": "触发 AMBIGUOUS_ACTION 的条件(多匹配 / 坐标兜底点击)。"
+                }
+              }
+            },
+            "assertionAxisFeeds": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "本动作典型喂养的断言词汇表 kind(仅 provenance 交叉引用，不强耦合——断言独立由 expected.frozen 冻结、check.mjs 执行、verdict.mjs 卷)。"
+            },
+            "forensicsAxis": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "本动作采集窗内的取证轴事实(watchNetworkForensics 网络取证 + 生命周期)。"
+            }
+          }
+        },
+        "driver": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "channelDriver",
+            "call"
+          ],
+          "description": "实现指针：哪个 channelDriver 的 actionSpace 提供本动作的 call。channelDriver 值与 channel-driver.schema 的 drivers[].driverId 同值互链(决策 Q2)。",
+          "properties": {
+            "channelDriver": {
+              "type": "string",
+              "description": "驱动标识(如 web 的 _data_runner / playwright)。"
+            },
+            "call": {
+              "type": "string",
+              "description": "驱动内执行本动作的入口(provenance，不进裁定)。"
+            }
+          }
+        },
+        "failClosed": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "whenUnsupported",
+            "neverSubstitute",
+            "neverSelfHeal"
+          ],
+          "description": "平台 / 驱动 actionSpace 不含本动作时的 fail-closed 规则。绝不静默换动作、绝不当可自愈 HARNESS_ERROR。",
+          "properties": {
+            "whenUnsupported": {
+              "enum": [
+                "NEEDS_HUMAN",
+                "CASE_DEFECT"
+              ],
+              "description": "回放期驱动缺该能力 → NEEDS_HUMAN(子类默认 INDETERMINATE)；编译期已知目标 channel 缺该动作 → CASE_DEFECT 候选(人签前)。"
+            },
+            "needsHumanReason": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "enum": [
+                "SUT_DEFECT_OR_STALE",
+                "CASE_DEFECT",
+                "AMBIGUOUS_ACTION",
+                "AFFORDANCE_ABSENT",
+                "INDETERMINATE",
+                null
+              ],
+              "description": "whenUnsupported=NEEDS_HUMAN 时的 reason 子类；能力缺失默认 INDETERMINATE(catch-all fail-safe 默认落点，不新造子类)。"
+            },
+            "neverSubstitute": {
+              "const": true,
+              "description": "禁止用别的动作(如 click+坐标)替换不支持的动作。"
+            },
+            "neverSelfHeal": {
+              "const": true,
+              "description": "能力缺失不构成可自愈 HARNESS_ERROR(护栏 #13/#14)。"
+            }
+          }
+        },
+        "golden": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string"
+          },
+          "description": "覆盖本动作的 golden 用例 / 夹具引用(Golden Test)；新动作无 golden 不得入表(动作侧棘轮)。"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,398 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "casey/failure-ledger-entry.schema.json",
+  "title": "failure ledger 单条记录 — 失败记录台账条目（seams-freeze-v2 冻结）",
+  "description": "多态裁定下游的只读诊断记录：verdict.mjs 出完四态后，每条非 PASS 步级裁定追加成一条不可变条目，供人做失败聚类/优先级/编译期建议。红线：只读追加不改、产出绝不进 bin/verdict.mjs、绝不作自愈输入、不能自动改断言/删用例/把 NEEDS_HUMAN 改 HARNESS_ERROR、编译期建议须经人签链路(护栏 #13/#15)。凭据兜底：绝不含 request/response body、headers、cookie、token、PII、replyText 全文 —— additionalProperties:false 机制兜底(护栏 #7)。本 schema 校验台账数组中的每一条；fixture 见 tests/_golden/fixtures/seams-v2/failure-ledger.fixture.json。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "entryId",
+    "caseId",
+    "stepId",
+    "intentId",
+    "channel",
+    "verdict",
+    "reason",
+    "fingerprint",
+    "fingerprintInputs",
+    "observedAt",
+    "humanResolution"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1,
+      "description": "接缝版本，整数。"
+    },
+    "entryId": {
+      "type": "string",
+      "pattern": "^fle_[0-9a-zA-Z_]+$",
+      "description": "条目唯一 id(append-only 台账每条一个)；定位/审计用，不进 fingerprint。"
+    },
+    "caseId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "TestCase.caseId；定位字段，绝不进 fingerprint —— 这样同一失败模式可跨用例聚类。"
+    },
+    "runId": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "产生该观测的运行 id(runs/<caseId>/<runId>/)；审计用，绝不进 fingerprint。未知则 null。"
+    },
+    "stepId": {
+      "type": "string",
+      "pattern": "^atstep_[0-9]+$",
+      "description": "位置式回放事件 id，与三轴/verdict.json 一致；定位字段，绝不进 fingerprint(位置会随 spec 平移)。"
+    },
+    "intentId": {
+      "type": "string",
+      "minLength": 1,
+      "description": "用例语义步 id；定位/展示用。"
+    },
+    "atom": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "稳定语义动作 id(如 workflow.save)；fingerprint 输入之一，无则 null。"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "web",
+        "cef",
+        "arbitrary"
+      ],
+      "description": "回放通道；fingerprint 输入之一。"
+    },
+    "verdict": {
+      "type": "string",
+      "enum": [
+        "SUT_DEFECT",
+        "HARNESS_ERROR",
+        "NEEDS_HUMAN"
+      ],
+      "description": "该步多态裁定(非 PASS)。PASS 不入失败台账。fingerprint 输入之一。台账绝不改写本字段(humanResolution 无 verdict 字段，结构上改不动原裁定)。"
+    },
+    "reason": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "enum": [
+        "SUT_DEFECT_OR_STALE",
+        "CASE_DEFECT",
+        "AMBIGUOUS_ACTION",
+        "AFFORDANCE_ABSENT",
+        "INDETERMINATE",
+        null
+      ],
+      "description": "NEEDS_HUMAN 子类，或终判时 null(镜像 bin/verdict.mjs 判定树与 prd-v2 不变量)；fingerprint 输入之一。"
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$",
+      "description": "可聚类失败指纹 = 'sha256:' + sha256(canonicalJSON(fingerprintInputs))；零 LLM、可复现、要进 golden。绝不含易变实例值(见 fingerprintInputs 排除项)。聚类粒度 route:human(决策 3.3)。"
+    },
+    "fingerprintInputs": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "channel",
+        "verdict",
+        "reason",
+        "atom",
+        "assertionKind",
+        "assertionOp",
+        "signatureTemplate"
+      ],
+      "description": "哈希所用的定长、只含稳定且已模板化字段的元组，随条目落盘供人/golden 复算校验指纹。显式排除：caseId、stepId 序号、runId、时间戳、atl_ 实例名、实体 ID、query 串、replyText 全文、raw locator 坐标、任何凭据/PII。",
+      "properties": {
+        "channel": {
+          "type": "string",
+          "enum": [
+            "web",
+            "cef",
+            "arbitrary"
+          ]
+        },
+        "verdict": {
+          "type": "string",
+          "enum": [
+            "SUT_DEFECT",
+            "HARNESS_ERROR",
+            "NEEDS_HUMAN"
+          ]
+        },
+        "reason": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "SUT_DEFECT_OR_STALE",
+            "CASE_DEFECT",
+            "AMBIGUOUS_ACTION",
+            "AFFORDANCE_ABSENT",
+            "INDETERMINATE",
+            null
+          ]
+        },
+        "atom": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "稳定语义动作 id，非 stepId。"
+        },
+        "assertionKind": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "断言失败时的 kind(urlPathname/textVisible/countChange/...)；非断言失败则 null。kind 枚举唯一权威在 check.mjs，本处只记其值不分支。"
+        },
+        "assertionOp": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "断言 op(startsWith/equals/matches/...)；无则 null。"
+        },
+        "signatureTemplate": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "定位/漂移类失败的稳定签名模板(role+可访问名模板)，非 raw CSS/坐标；无则 null。"
+        }
+      }
+    },
+    "failedAssertion": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "kind",
+        "op",
+        "fieldPath",
+        "expectedTemplate",
+        "actualTemplate"
+      ],
+      "description": "断言失败的诊断快照(已模板化，绝不存 raw 字面量/实体 ID)；非断言失败则 null。",
+      "properties": {
+        "kind": {
+          "type": "string",
+          "description": "断言 kind。"
+        },
+        "op": {
+          "type": "string",
+          "description": "断言 op。"
+        },
+        "fieldPath": {
+          "type": "string",
+          "description": "被检字段路径(如 urlPathnameAfter)。"
+        },
+        "expectedTemplate": {
+          "description": "期望值的模板化形态(易变值已打模板)。",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        },
+        "actualTemplate": {
+          "description": "实测值的模板化形态(易变值已打模板)。",
+          "type": [
+            "string",
+            "number",
+            "boolean",
+            "null"
+          ]
+        }
+      }
+    },
+    "forensicsRef": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "urlTemplate",
+        "status",
+        "errorEnvelopeField",
+        "attributedStepId"
+      ],
+      "description": "取证类失败的诊断指针(按请求发起方归因)，与 watchNetworkForensics 同源。绝不含 body/headers/cookie/token；URL 已模板化去 query/实体 ID。非取证失败则 null。",
+      "properties": {
+        "urlTemplate": {
+          "type": "string",
+          "description": "归因请求的 URL 路径模板(去 host/query/实体 ID)。"
+        },
+        "status": {
+          "type": "integer",
+          "description": "HTTP 状态码；requestfailed 记 0。"
+        },
+        "errorEnvelopeField": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "错误信封被检字段名(按 channel 参数化，如 status)；无则 null。"
+        },
+        "attributedStepId": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "取证归因到的 stepId(按 initiator 归因、非时间窗)；background/不可归因则 null。"
+        }
+      }
+    },
+    "observedAt": {
+      "type": "string",
+      "format": "date-time",
+      "description": "失败观测时刻 ISO-8601；审计/排序用，绝不进 fingerprint、非裁定输入。"
+    },
+    "capturedAgainstBuild": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "观测时 SUT 构建标识；供 重签 的 signedAgainstBuild 对齐溯源，未知则 null。"
+    },
+    "humanResolution": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "decision",
+        "resolvedAt",
+        "resolverId",
+        "ref"
+      ],
+      "description": "人裁决回填：由人经签署链路写入，未裁前为 null。它是只读审计指针、不是执行器——ref 指向权威产物(缺陷单/重签元数据/漂移补丁)，绝不复制权威态、绝不改写原 verdict。红线：decision='drift-healed' 仅当 verdict==='HARNESS_ERROR' 才合法。",
+      "properties": {
+        "decision": {
+          "type": "string",
+          "enum": [
+            "intended-change-resign",
+            "confirm-regression-defect",
+            "tighten-locator-recompile",
+            "fix-case",
+            "drift-healed",
+            "acknowledged-flaky",
+            "needs-more-evidence"
+          ],
+          "description": "人裁出口，镜像 CONTEXT.md 各人裁分支。intended-change-resign→重签；confirm-regression-defect→缺陷单；drift-healed→漂移补丁(仅 HARNESS_ERROR 合法)。"
+        },
+        "resolvedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "人裁决时刻 ISO-8601。"
+        },
+        "resolverId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "裁决人标识(与 期望版本化 signerId 同体系)。"
+        },
+        "ref": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "指向权威产物的引用：缺陷单 id / 新签署 checksum / drift/<caseId>.<ts>.patch 路径。只引用、不复制；无适用产物(如 needs-more-evidence)则 null。"
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "可选人工备注(须过凭据兜底门，绝不含凭据/PII)。"
+        }
+      }
+    }
+  },
+  "allOf": [
+    {
+      "description": "fail-safe 不变量(镜像 bin/verdict.mjs 判定树)：非 NEEDS_HUMAN 的终判 reason 必为 null。",
+      "if": {
+        "properties": {
+          "verdict": {
+            "enum": [
+              "SUT_DEFECT",
+              "HARNESS_ERROR"
+            ]
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reason": {
+            "const": null
+          }
+        }
+      }
+    },
+    {
+      "description": "fail-safe 不变量：NEEDS_HUMAN 必带 5 个 reason 子类之一，绝不为 null(catch-all 落 INDETERMINATE)。",
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "NEEDS_HUMAN"
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "reason": {
+            "type": "string",
+            "enum": [
+              "SUT_DEFECT_OR_STALE",
+              "CASE_DEFECT",
+              "AMBIGUOUS_ACTION",
+              "AFFORDANCE_ABSENT",
+              "INDETERMINATE"
+            ]
+          }
+        }
+      }
+    },
+    {
+      "description": "自愈红线机制化(护栏 #13/#15)：humanResolution.decision='drift-healed' 仅当 verdict==='HARNESS_ERROR' 才合法——NEEDS_HUMAN/SUT_DEFECT 条目的人裁绝不能直接路由去自愈；要走自愈须先以新证据重跑产新 verdict(那是新一轮裁定、不是改台账)。镜像已冻姊妹接缝(drift-patch/expected-frozen 的 allOf 不变量)惯例钉成机制。",
+      "if": {
+        "properties": {
+          "humanResolution": {
+            "type": "object",
+            "required": [
+              "decision"
+            ],
+            "properties": {
+              "decision": {
+                "const": "drift-healed"
+              }
+            }
+          }
+        },
+        "required": [
+          "humanResolution"
+        ]
+      },
+      "then": {
+        "properties": {
+          "verdict": {
+            "const": "HARNESS_ERROR"
+          }
+        }
+      }
+    }
+  ]
+}

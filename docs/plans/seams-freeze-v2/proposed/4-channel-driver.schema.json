@@ -1,0 +1,182 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "casey/channel-driver.schema.json",
+  "title": "channelDriver 通道驱动登记 schema（草稿 / 未冻 / 待 grill 拍板）",
+  "description": "草稿：channelDriver（通道驱动，端口适配器式接缝）声明某回放驱动在某 channel 上能执行哪些动作(actionSpace)、每个动作的实现入口(call)、坐标空间与取证能力。它是能力声明、不是回放数据：runner 据 actionSpace 供 编译门 校验动作可执行性；verdict.mjs 绝不读它、对 action 不可知(护栏 #17 动作侧对称)、绝不按 driver 分支。边界(决策 Q2，midscene §9)：channelDriver 只管能力，transport/CDP attach/背景 denylist/错误信封成功字段等非凭据配置归 通道剖面(Channel Profile)，channelDriver 只用 profileRef 字符串指针指向它、绝不内嵌 profile 字段。动作真值源(决策 2.1)：actionSpace[].action 严格 ⊆ 已冻 events.schema 的 7 动作枚举，扩集(arbitrary/cef 的 tap/scroll/longPress 等)= 改 events.schema 枚举 + 驱动 + golden 的显式棘轮事件 + route:human。凭据红线(护栏 #7)：driver 配置绝不含 .auth/site.json 内容、cookie、token；additionalProperties:false 机制兜底。本草稿未登记 CONTEXT.md、未冻。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "draft",
+    "actionSource",
+    "drivers"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1,
+      "description": "接缝草稿版本，整数。"
+    },
+    "draft": {
+      "const": true,
+      "description": "草稿标记：未冻、未进 testChecksums、未登记 CONTEXT.md。拍板冻结时此字段移除或翻 false 由 grill 决定。"
+    },
+    "actionSource": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "seam",
+        "enumPath"
+      ],
+      "description": "动作名的单一事实源指针——指向已冻 events.schema 的 action 枚举(决策 2.1)；与 action-vocabulary.source 同体系。actionSpace[].action 是该枚举子集，Quality Gate 应校验之。",
+      "properties": {
+        "seam": {
+          "const": "events.json"
+        },
+        "enumPath": {
+          "const": "casey/events.json#/definitions/event/properties/action/enum"
+        }
+      }
+    },
+    "drivers": {
+      "type": "array",
+      "minItems": 1,
+      "description": "逐驱动的能力登记。一个 channelDriver 登记条目对应一个 (channel, driverId) 端口适配器。",
+      "items": {
+        "$ref": "#/definitions/driver"
+      }
+    }
+  },
+  "definitions": {
+    "driver": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "channel",
+        "driverId",
+        "profileRef",
+        "actionSpace",
+        "coordinateSpace"
+      ],
+      "properties": {
+        "channel": {
+          "enum": [
+            "web",
+            "cef",
+            "arbitrary"
+          ],
+          "description": "本驱动服务的通道；与 CONTEXT.md channel 枚举对齐。P5 在册仅 web。"
+        },
+        "driverId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "驱动标识(provenance，不进裁定)；与 action-vocabulary entries[].driver.channelDriver 同值互链(如 web/_data_runner)。"
+        },
+        "interfaceType": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "驱动底座类型(借 midscene interfaceType，如 playwright / sample-device)；无则 null。"
+        },
+        "profileRef": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "指向 通道剖面(Channel Profile) 的字符串指针——transport/CDP attach/背景 denylist/错误信封成功字段等非凭据配置活在那里、绝不内嵌本接缝(决策 Q2 边界，midscene §9)。hermetic 用合成剖面或不引用时为 null。绝不在此落凭据(护栏 #7)。"
+        },
+        "actionSpace": {
+          "type": "array",
+          "minItems": 1,
+          "description": "本驱动实际能执行的动作能力集(端口适配器能力声明)。某已编译 events 要求的动作不在此集 = 本驱动不支持它，编译门/回放走 action-vocabulary.failClosed(NEEDS_HUMAN/INDETERMINATE、绝不替换动作、绝不自愈；护栏 #13/#14)——fail-closed 规则归 动作词汇表 治理，本接缝只声明能力(决策 Q2 分工)。",
+          "items": {
+            "$ref": "#/definitions/actionCapability"
+          }
+        },
+        "coordinateSpace": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "description": "视觉/坐标通道的逻辑坐标空间(借 midscene coordinateSpace)。web 恒 null——web 以 语义定位器 + 点击身份门 为准、坐标仅录制元数据禁作唯一定位(禁纯坐标步铁律)；arbitrary 视觉通道才非 null，但那属 route:human 后续批次(决策 Q3)。",
+          "properties": {
+            "width": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "dpr": {
+              "type": "number",
+              "minimum": 0
+            }
+          }
+        },
+        "observationCapabilities": {
+          "type": "array",
+          "items": {
+            "enum": [
+              "screenshot",
+              "domSnapshot",
+              "networkForensics",
+              "lifecycleEvents"
+            ]
+          },
+          "description": "本驱动可采集的观测/取证能力(借 midscene screenshot/size)——喂 取证轴 与录屏，绝不进 verdict 分支(midscene §8『screenshot/size 是取证输入，不是 verdict』)。"
+        }
+      }
+    },
+    "actionCapability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action",
+        "call"
+      ],
+      "properties": {
+        "action": {
+          "enum": [
+            "click",
+            "dblclick",
+            "fill",
+            "selectOption",
+            "press",
+            "nav",
+            "newpage"
+          ],
+          "description": "动作名；严格 ⊆ 已冻 events.schema action 枚举(决策 2.1/Q3)。绝不在此私自扩——新动作走改 events.schema 枚举 + 本登记 + golden 的显式棘轮 + route:human。"
+        },
+        "call": {
+          "type": "string",
+          "minLength": 1,
+          "description": "驱动内执行本动作的入口(provenance，不进裁定)；与 action-vocabulary entries[].driver.call 同体系(如 findEvent → 语义定位器 click(点击身份门 包裹))。"
+        },
+        "lifecycleHooks": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "additionalProperties": false,
+          "description": "动作前后的 三轴 采集 hook 映射(借 midscene beforeInvokeAction/afterInvokeAction，§8)；provenance 描述哪个采集点触发，不进裁定。无则 null。",
+          "properties": {
+            "beforeInvokeAction": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "afterInvokeAction": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
+        }
+      }
+    }
+  }
+}

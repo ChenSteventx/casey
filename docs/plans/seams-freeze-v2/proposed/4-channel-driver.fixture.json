@@ -1,0 +1,72 @@
+{
+  "_status": "草稿 / 未冻 / 待 grill 拍板",
+  "_note": "channelDriver 通道驱动登记合成 fixture，校验对象是本对象整体(schemaVersion+draft+actionSource+drivers[])。P5 在册仅一个 web 驱动 web/_data_runner，actionSpace 覆盖已冻 events.schema 全 7 动作(决策 2.1/Q3 严格 ⊆ 枚举)。判别性不变量：channel=web ⟹ coordinateSpace=null(web 以 语义定位器+点击身份门 为准、禁纯坐标步)；profileRef 是指向 通道剖面 的字符串指针、不内嵌 transport/denylist/envelope 配置(决策 Q2 边界)；driverId 与 action-vocabulary entries[].driver.channelDriver 同值互链。凭据红线(护栏 #7)：无 .auth/site.json/cookie/token 字面量。arbitrary/cef 驱动(coordinateSpace 非 null、tap/scroll 等)= 未来棘轮 + route:human，本轮不入册。",
+  "_schema": "4-channel-driver.schema.json",
+  "schemaVersion": 1,
+  "draft": true,
+  "actionSource": {
+    "seam": "events.json",
+    "enumPath": "casey/events.json#/definitions/event/properties/action/enum"
+  },
+  "drivers": [
+    {
+      "channel": "web",
+      "driverId": "web/_data_runner",
+      "interfaceType": "playwright",
+      "profileRef": "profiles/web.heren.profile.json",
+      "coordinateSpace": null,
+      "observationCapabilities": [
+        "screenshot",
+        "domSnapshot",
+        "networkForensics",
+        "lifecycleEvents"
+      ],
+      "actionSpace": [
+        {
+          "action": "click",
+          "call": "findEvent → 语义定位器 click（点击身份门 包裹）",
+          "lifecycleHooks": {
+            "beforeInvokeAction": "watchNetworkForensics 起采(取证轴窗口开)",
+            "afterInvokeAction": "点击身份门 回读 + 断言轴评估 + 静默点 等待"
+          }
+        },
+        {
+          "action": "dblclick",
+          "call": "findEvent → 语义定位器 dblclick（点击身份门 包裹）",
+          "lifecycleHooks": null
+        },
+        {
+          "action": "fill",
+          "call": "findEvent → fill（value 模板实例化后写入）",
+          "lifecycleHooks": {
+            "beforeInvokeAction": null,
+            "afterInvokeAction": "写后值回读(inputReadback 同源) + 断言轴评估"
+          }
+        },
+        {
+          "action": "selectOption",
+          "call": "findEvent → selectOption（dropdownUnit 语义单元）",
+          "lifecycleHooks": null
+        },
+        {
+          "action": "press",
+          "call": "page.keyboard.press(key)",
+          "lifecycleHooks": {
+            "beforeInvokeAction": "watchNetworkForensics 起采(含 SSE finished 静默点)",
+            "afterInvokeAction": "流式回复取证 + 断言轴评估"
+          }
+        },
+        {
+          "action": "nav",
+          "call": "findEvent → page.goto(url)（或录制导航重放）",
+          "lifecycleHooks": null
+        },
+        {
+          "action": "newpage",
+          "call": "context.waitForEvent('page') → 切句柄（或录制 newpage 重放）",
+          "lifecycleHooks": null
+        }
+      ]
+    }
+  ]
+}

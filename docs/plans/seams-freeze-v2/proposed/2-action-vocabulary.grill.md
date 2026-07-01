@@ -6,6 +6,8 @@
 >
 > 配套草稿：`2-action-vocabulary.schema.json`（条目 schema）、`2-action-vocabulary.fixture.json`（覆盖已冻枚举全 7 个动作 click/dblclick/fill/selectOption/press/nav/newpage 的合成夹具，对齐 Q5「P5 范围=纯治理登记覆盖现有 7 个动作」）。`nav`/`newpage` 是 `locatorBinding:none` + `requiredEventFields:[url]` 的代表（与交互动作的 `required-anyOf` 分野），`dblclick` 与 `click` 同族。
 
+> **grill 拍板回填（2026-07-01，决策全表见 `GRILL-DECISIONS.md` 与合并 `GRILL.md`）：** ① 决策 2.1（机械·已定）：动作真值源钉在已冻 `events.schema` 枚举，本表是治理投影层，配 `Quality Gate` 校验 `entries[].action ⊆ events.schema 枚举`。② 决策 2.3（机械·已定）：本轮就冻（纯治理文档、零 `events.schema` 改动、覆盖现有 7 动作）。③ 决策 2.2（承重·已签）：`channelDriver` **本轮拉进 co-grill**（范围扩到四接缝，非原 `0-INDEX.md` 的推迟）——故下方 Q4「二者边界待同轮一并定」已在本轮定案：见 `4-channel-driver.{schema,fixture,grill}.json/md` 与决策 Q2（`channelDriver` = 纯能力声明 + `profileRef` 指针，与 `通道剖面` 正交）。本表的 `driver.channelDriver` 指针从此有真接缝对链。
+
 ## 这条接缝是什么
 
 `动作词汇表`（`action vocabulary`，与 `断言词汇表` 对称的一张登记表）打算回答一个问题：Casey 一共认得哪些回放动作、每种动作的参数长什么样、由谁实现、回放时该吐哪些证据、哪条 golden 守它、平台不支持时怎么 fail-closed。
@@ -63,7 +65,7 @@
 - `编译` 门两道校验：events 要求的每个 action ∈ `动作词汇表`（形态合法）**且** ∈ 目标 `channelDriver.actionSpace`（确实可执行）；在词汇表里但不在驱动 `actionSpace` 里 → 走 Q3 的 fail-closed。
 - 一句话对照：`动作词汇表` 是字典（定义全集 + 规则），`actionSpace` 是某个说话者会的子集（能力）。`动作词汇表` : `channelDriver` ≈ `断言词汇表` : `通道剖面`。
 
-注：`channelDriver` 本身也是 v2 待登记的新接缝（`midscene-adaptation.md` §8 已标「提案待登记」），二者的边界应在同一轮 grill 一并定，避免一个先冻、另一个被它框死。
+注：`channelDriver` 本身也是 v2 待登记的新接缝（`midscene-adaptation.md` §8 已标「提案待登记」）。**【拍板·决策 2.2】** 承重决策 2.2 已签把它拉进本轮 co-grill、与本表同批冻结——二者边界本轮定案（见 `4-channel-driver.grill.md` 决策 Q2）：`channelDriver` = 纯能力声明（`actionSpace` 子集 + `call` + `coordinateSpace` + `lifecycleHooks`），本表是 channel 无关字典，二者分工镜像 `断言词汇表` : `通道剖面`；本表 `entries[].driver.channelDriver` 指针与 `channelDriver.drivers[].driverId` 同值互链（accept 落 golden 交叉校验）。
 
 ## Q5 落地时改已冻 `events.schema`，还是另立治理文档？
 

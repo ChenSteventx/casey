@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "task": "第2层借鉴接缝增冻（排期 v3 轨 P）：run-history/action-vocabulary/failure-ledger/channel-driver 四条接缝 schema + 合成 fixture（承重决策 2.2 把 channelDriver 拉进本轮，范围扩到四接缝）。冻结解锁下游对 fixture 并行；四接缝的 lib/bin 真产出随 P5/P6/P7 真机集成走 route:human。",
+  "specPath": "docs/plans/seams-freeze-v2/plan.md",
+  "testChecksums": {
+    "tests/_golden/seams-freeze-v2.golden.mjs": "e6cb010ff8364caadd6954d6bc9c108a0aab6554127dec4d628b428c106c5f8c",
+    "tests/_golden/schemas/run-history.schema.json": "736202e9141d64bd709db4d43884102a82638a9b3c262a6725e86a0534932431",
+    "tests/_golden/schemas/action-vocabulary.schema.json": "2b95c59704215121a9f77772c60ed180035dacbacb5996454c8f7397bef5b29e",
+    "tests/_golden/schemas/failure-ledger-entry.schema.json": "93f2745a4132b7aedead06be3a4a4fb66016f8f00a116a2ddedab4c59807aa8b",
+    "tests/_golden/schemas/channel-driver.schema.json": "324d0bb8ae6435fe0b6b12671292295932c57bdb1ba530cb40d020137d77246c",
+    "tests/_golden/fixtures/seams-v2/run-history.fixture.json": "e19e299131f0600d0695f368d2a81df976901533b12475a4248e07c878352531",
+    "tests/_golden/fixtures/seams-v2/action-vocabulary.fixture.json": "c405c96c2e7ae85b939289140e573c195c8333a2ff476866bcdb767931ef2627",
+    "tests/_golden/fixtures/seams-v2/failure-ledger.fixture.json": "6dc3f27e663f3dd1b2ea25d2044c49661c807b5171f8d757ba6cf7836e6a5aa4",
+    "tests/_golden/fixtures/seams-v2/channel-driver.fixture.json": "de877fceaf2be77b61e050d81d06be8f21b44522c4988132dca5f83f971ca2cd"
+  },
+  "observability": [
+    {
+      "dimension": "四接缝的 lib/bin 真产出与运行期 golden（run-history 实发逐行过 schema、verdict 进程不读四接缝、fingerprint 哈希函数确定性）随 P5/P6/P7 真机集成落地",
+      "route": "human"
+    },
+    {
+      "dimension": "channelDriver 的 arbitrary/cef 真能力（tap/scroll/longPress/coordinateSpace 非 null）+ 触发的 events.schema 枚举棘轮（决策 Q3）",
+      "route": "human"
+    },
+    {
+      "dimension": "failure-ledger 的 fingerprint 聚类粒度与文案归一阈值（决策 3.3）、编译期建议通道形态、读时聚合视图",
+      "route": "human"
+    },
+    {
+      "dimension": "编译期『编译产物复用溯源』字段（类比 events.schema compiledBy，决策 1.1 登记 deferred，本轮不建）",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-seams-freeze-v2",
+      "desc": "四条接缝 schema + 合成 fixture 解析与关键不变量全过：run-history 无 method/cacheStatus + 反例 passedActions<totalSteps；action-vocabulary action⊆events.schema枚举 + 覆盖全7 + web坐标兜底false + failClosed红线；failure-ledger 三条fail-safe + fingerprintInputs与顶层一致 + drift-healed⟹HARNESS_ERROR；channelDriver actionSpace⊆枚举 + web⟹coordinateSpace null + driverId互链；四份深扫无凭据禁字段",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/seams-freeze-v2.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-01T09:43:13.687Z 全部 acceptance exit 0"
+    }
+  ]
+}

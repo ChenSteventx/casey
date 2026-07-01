@@ -58,6 +58,7 @@
 | 编译 | Compile | 相1：LLM 唯一一次直接跑用例，把 intent 翻译成确定性可回放 spec + 落观测现状；此后回放不再烧 LLM、结果可复现 | — |
 | 观测现状 | Observed Reality | 编译期落盘的地面真值（真实成功 URL/提示/回复/请求日志），存 `observed-<caseId>.json`；断言草拟与裁定的依据 | — |
 | 断言词汇表 | Assertion Vocabulary | 带类型的断言枚举（urlPathname/textVisible/countChange/streamReplyReceived/...）+ 每种允许的 op；LLM 不准发明自由断言 | — |
+| 动作词汇表 | Action Vocabulary | 已冻 events.schema action 枚举（click/dblclick/fill/selectOption/press/nav/newpage）的治理投影层：每动作登记 paramSchema 投影/所属 channel/坐标兜底治理/三轴证据产出/驱动指针/golden/fail-closed；action 名权威仍在 events.schema，verdict.mjs 对 action 不可知（护栏 #17 动作侧对称）。与 断言词汇表 对称 | — |
 | 断言草拟 | Assertion Drafting | 相2：LLM 从 intent + 观测现状 推导带类型 `expected[]`（只用断言词汇表 + op 约束，默认结构式、易变值模板化） | — |
 | 冻结断言契约 | Frozen Assertion Contract | 人签后写入 `loop/prd-<caseId>.json` 并 checksum 冻结的断言；只冻断言文件，不冻 spec（自愈改 locator 合法、改断言触棘轮） | — |
 | 多态裁定 | Polymorphic Verdict | 零 LLM 的 `verdict.mjs` 按判定树给每步四态之一的分类；区别于 gate 的二值 `passes` | 判官 |
@@ -75,6 +76,7 @@
 | 网络取证 | Network Forensics | `watchNetworkForensics`：记 response/requestfailed 的 {url,status,initiator} + error-envelope，按请求发起方归因（非时间窗） | — |
 | 错误信封 | Error Envelope | 响应 body 的成功字段判失败的软失败（典型：HTTP 200 但 body 表失败）；`noErrorEnvelope` 断言据此取证；成功字段按 channel 参数化、经`通道剖面`注入（web/Heren 实测为 body `status===200`，非早期假设的 `code!=0`） | — |
 | 通道剖面 | Channel Profile | runner 回放某 channel 所需的非凭据配置：背景 denylist + 错误信封成功字段/值；与 `site.json` 凭据密文严格分离（护栏 #7 边界），hermetic 经 `--profile` 传合成值、tier-2 由 site.json 非凭据子集投影 | — |
+| 通道驱动 | channelDriver | 端口适配器式接缝：声明某驱动在某 channel 上能执行的动作能力集（actionSpace，严格 ⊆ events.schema 枚举）+ 每动作 call 指针 + coordinateSpace + 取证能力；只声明能力，transport/denylist/成功字段归 通道剖面（只带 profileRef 指针不内嵌）。分工镜像 动作词汇表 : channelDriver ≈ 断言词汇表 : 通道剖面；verdict.mjs 绝不读它、对 action 不可知（护栏 #17） | — |
 | 三轴 | Three-Axis | 回放期每个原子步吐的三组事实——动作（过点击身份门判 true/ambiguous/false）/ 逐条断言（typed kind 各一条，断言续跑、不首错即停）/ 取证（网络取证 + 生命周期）；零 LLM 的 `verdict.mjs` 据此跑判定树出四态，是裁判·桥·报告共吃的数据契约 | — |
 | 自愈 | Self-heal | 相5：仅对确证 `HARNESS_ERROR` 的有界重锚；是裁定的下游消费者，绝不反向进入裁判进程 | — |
 | 自愈准入门 | Self-heal Admission Gate | 护栏：自愈只对确证 `HARNESS_ERROR` 开闸；`SUT_DEFECT`/`NEEDS_HUMAN` 一律拒绝自愈 | — |
@@ -107,6 +109,10 @@
 | `tier-1` | 第一层自检 | hermetic 自检：假 SUT、零外部依赖，验编译→回放→报告管线 + 给分类器喂合成四元组逐一触发四态 | — |
 | `tier-2` | 第二层自检 | live smoke：需 site.json + creds，覆盖 SUT_DEFECT/取证/流式分支，gated route:human | — |
 | 只读漂移探针 | Read-only Drift Probe | findEquivalentAffordance：无 spec 变更、无重跑地探明「同稳定签名唯一元素是否仍在」，供 verdict.mjs 判 `HARNESS_ERROR`；与自愈写回（相5）严格分离（拆 P5/P6 循环依赖） | — |
+| 回放历史 | Run History | 确定性回放 逐步落盘的第二层事实 run-history.jsonl（每步一行执行证据：动作/定位解析/静默点/耗时/result）+ 聚合 run-metrics.json（回放指标）；仅报告/诊断，绝不进 verdict.mjs、绝不写 passes（护栏 #15）；落盘过凭据兜底门、动作值打码（护栏 #7）。result 非四态、passedActions 非 PASS | 运行历史 |
+| 失败记录台账 | Failure Ledger | 多态裁定下游的只读诊断台账：verdict 出完四态后每条非 PASS 步级裁定追加成不可变条目，供人做失败聚类/优先级/编译期建议；血缘锚 ITIL 已知错误库（KEDB/Problem Record）+ 会计台账追加不改。绝不进 verdict.mjs、绝不作自愈输入、绝不改写原裁定（护栏 #13/#15） | — |
+| 失败指纹 | Failure Fingerprint | 失败记录台账 的可聚类指纹 = sha256(canonicalJSON(fingerprintInputs))，输入只含稳定已模板化字段（channel/verdict/reason/atom/assertionKind/assertionOp/signatureTemplate）；显式排除 caseId/stepId/runId/时间戳/实例名/凭据，故同一失败模式跨用例聚类。零 LLM、可复现、进 golden；聚类粒度 route:human（决策 3.3） | — |
+| 人裁决回填 | Human Resolution | 失败记录台账 条目里由人经签署链路写入的裁决指针（decision/resolvedAt/resolverId/ref）：只读审计引用非执行器，ref 指向权威产物（缺陷单/重签元数据/漂移补丁），绝不复制权威态、绝不改原裁定；decision=drift-healed 仅当 verdict=HARNESS_ERROR 才合法 | — |
 | route:human | 路由人 | 把某项判断/动作显式移交人裁的标注（落 Inbox + 通知，Escalation Path 的标记形态）；Observability 测不到的维度必申报为 route:human | — |
 | 静默点 | Quiet Point | 编译期落观测现状/做后检查前必达的确定性等待条件（networkidle + 无动画 + DOM 稳定 K ms），替代固定睡眠保可复现 | — |
 | LLM-judge | LLM 评分员 | 独立异构家族的语义评分器；判 FAIL 可信、判 PASS 仍人抽检；严格踢出确定性裁判（verdict.mjs）之外，绝不写 passes/verdict | — |

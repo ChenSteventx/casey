@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "actionSource": {
+    "seam": "events.json",
+    "enumPath": "casey/events.json#/definitions/event/properties/action/enum"
+  },
+  "drivers": [
+    {
+      "channel": "web",
+      "driverId": "web/_data_runner",
+      "interfaceType": "playwright",
+      "profileRef": "profiles/web.heren.profile.json",
+      "coordinateSpace": null,
+      "observationCapabilities": [
+        "screenshot",
+        "domSnapshot",
+        "networkForensics",
+        "lifecycleEvents"
+      ],
+      "actionSpace": [
+        {
+          "action": "click",
+          "call": "findEvent → 语义定位器 click（点击身份门 包裹）",
+          "lifecycleHooks": {
+            "beforeInvokeAction": "watchNetworkForensics 起采(取证轴窗口开)",
+            "afterInvokeAction": "点击身份门 回读 + 断言轴评估 + 静默点 等待"
+          }
+        },
+        {
+          "action": "dblclick",
+          "call": "findEvent → 语义定位器 dblclick（点击身份门 包裹）",
+          "lifecycleHooks": null
+        },
+        {
+          "action": "fill",
+          "call": "findEvent → fill（value 模板实例化后写入）",
+          "lifecycleHooks": {
+            "beforeInvokeAction": null,
+            "afterInvokeAction": "写后值回读(inputReadback 同源) + 断言轴评估"
+          }
+        },
+        {
+          "action": "selectOption",
+          "call": "findEvent → selectOption（dropdownUnit 语义单元）",
+          "lifecycleHooks": null
+        },
+        {
+          "action": "press",
+          "call": "page.keyboard.press(key)",
+          "lifecycleHooks": {
+            "beforeInvokeAction": "watchNetworkForensics 起采(含 SSE finished 静默点)",
+            "afterInvokeAction": "流式回复取证 + 断言轴评估"
+          }
+        },
+        {
+          "action": "nav",
+          "call": "findEvent → page.goto(url)（或录制导航重放）",
+          "lifecycleHooks": null
+        },
+        {
+          "action": "newpage",
+          "call": "context.waitForEvent('page') → 切句柄（或录制 newpage 重放）",
+          "lifecycleHooks": null
+        }
+      ]
+    }
+  ]
+}

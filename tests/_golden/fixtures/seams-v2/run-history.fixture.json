@@ -1,7 +1,5 @@
 {
-  "_draft": "草稿 / 未冻 / 待 grill-with-docs 拍板，勿当已决",
-  "_note": "本 .json 仅把两份产物打包供人审：run-history.jsonl 实际逐行落 runHistoryLines[] 各元素(每元素校验 definitions/runHistoryLine)；run-metrics.json 落 runMetrics(校验 definitions/runMetrics)。正例 = atstep_0..2 三步 result=ok；反例 = atstep_3 唯一命中但未达静默点 → quietPointReached=false + result=quietPointMiss，据此 passedActions(3) < totalSteps(4)，示范『result 非四态、看起来跑完不等于判 PASS』。valueRef 用占位符示范凭据打码(护栏 #7)。动作字段名跟随已冻 events.schema 用 action(决策 1.2)。决策 1.1 已签：cacheStatus/cacheHitRate 整删——确定性回放每步重解析定位器、回放期无解析缓存可命中；『编译产物是否复用』的溯源改归编译期字段(类比 events.schema compiledBy)、本轮登记 deferred 不建(不动已冻 events.schema)。",
-  "_schema": "1-run-history.schema.json",
+  "_note": "回放历史合成 fixture：runHistoryLines[] 各元素校验 run-history.schema definitions/runHistoryLine，runMetrics 校验 definitions/runMetrics。正例 atstep_0..2 result=ok；反例 atstep_3 唯一命中但未达静默点 → quietPointReached=false + result=quietPointMiss，据此 passedActions(3)<totalSteps(4)，示范 result 非四态、跑到底≠判 PASS。valueRef 用占位符示范凭据打码(护栏 #7)。action 字段跟随已冻 events.schema(决策 1.2)、无 cacheStatus/cacheHitRate(决策 1.1)、intentId 用非空 string(决策 1.3)。",
   "runHistoryLines": [
     {
       "timestamp": "2026-06-30T10:30:00.000+08:00",
