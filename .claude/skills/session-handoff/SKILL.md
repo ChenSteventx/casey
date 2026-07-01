@@ -1,6 +1,6 @@
 ---
 name: session-handoff
-description: 生成「能让零上下文的新 session 直接接手 Casey」的完整交接提示词。当用户说「给我提示词」「新 session 提示词」「写一份交接」「handoff」「换个 session 接着干，先给我开场词」时使用。按固定模板从已落文档取料（项目历史/开发准则/排期/DDD 统一语言/兜底机制/当前状态/下一步），产出可直接粘贴的开场词，并可写入 docs/NEXT-SESSION.md。只读综合，不改实现。
+description: 生成「能让零上下文的新 session 直接接手 Casey」的完整交接提示词。当用户说「给我提示词」「新 session 提示词」「写一份交接」「handoff」「换个 session 接着干，先给我开场词」时使用。按固定模板从已落文档取料（项目历史/开发准则/排期/DDD 统一语言/兜底机制/当前状态/下一步），产出可直接粘贴的开场词，并自动刷新 docs/NEXT-SESSION.md 与 docs/HANDOFF.md 到最新。只写文档、不改实现。
 ---
 
 # session-handoff — Casey 新 session 交接提示词生成器
@@ -11,7 +11,7 @@ description: 生成「能让零上下文的新 session 直接接手 Casey」的�
 
 - **一切以已落文档为事实源，绝不现编**（记忆 [[ground-in-docs-before-acting]]）。冲突时**信最新**：`docs/HANDOFF.md` 的更新通常晚于 `docs/NEXT-SESSION.md`，二者矛盾以 HANDOFF 现状为准。
 - **绝不在产出里发加粗英文 / 繁体字**：Stop hook + PostToolUse hook 会当场拦（ADR-0005）。英文术语一律用反引号包、别给拉丁字母加粗；中文一律标准简体。
-- 这是只读综合：入口分流属**直干**（不改数据、不碰 `lib`/`bin`），无需 `contract init`。
+- 这是文档综合：入口分流属**直干**（只写 `docs/NEXT-SESSION.md` 与 `docs/HANDOFF.md` 两个 md、不碰 `lib`/`bin`/`prd`），无需 `contract init`；即便活契约是 full/pre-plan，写这两个 md 也不被 hook-loop-guard 拦（非 edit-impl/write-prd）。
 
 ## 流程
 
@@ -33,7 +33,12 @@ description: 生成「能让零上下文的新 session 直接接手 Casey」的�
 ### 3. 交付
 
 - 在回合输出里给出**可整段复制**的提示词（包在代码块里，term-clean）。
-- 问用户是否同时写进 `docs/NEXT-SESSION.md`。写入约定：以 `## 开场提示词` 为稳定锚点——有则替换该节内容、保留其余；没有则紧随文件标题 / 用法说明后新建该节（别插到 `H1` 标题之前；别假设锚点已存在，旧版曾据不存在的节做替换）。这一步会触 term-lint，注意无加粗英文 / 繁体。
+- **自动写这两个文件、不再问用户**（用户 2026-07-01 定：这两步固定做）：
+  1. `docs/NEXT-SESSION.md`：整节替换 `## 开场提示词`（无则紧随标题 / 用法说明后新建该节，别插到 `H1` 之前）。把该节以外的过期内容剪掉——本文件 body = 标题 + 用法 + `## 开场提示词` 节，只留最新开场词，过期误导内容不保留（git 历史留底；旧版曾滞留 P5-accept 时代的错状态误导接手者）。
+  2. `docs/HANDOFF.md`：同步到当前，别让它滞后于 git + `loop/active-contract.json`。外科式更新（保留历史层、只改滞后节）：`## 当前状态` 开头补本 session 收口清单（哪些契约收口、几笔提交入 dev）；`## 锁定的决策` 里凡「待建」项已建的改「已建」；`## 下一步` 重写为最新接续（活契约优先、删掉已完成项）；`## 契约 / 运维` 更新活契约槽与契约一览（各契约 done / pending）。
+  - **一致性扫（必做，别只改「当前状态」节）**：更完后 grep 全文找与新「当前状态」矛盾的旧快照/历史段措辞——某阶段已 6/6 done 但历史/快照段仍写「review 待跑」「learn 待」「仍有效」「暂停在 X」「plan-done」之类。逐处处理：属历史快照的明标「本段 2026-XX-XX 快照、只溯源、勿据其判现状」，属该改的直接改状态。`p2-intent-compile` 等真实待跑项保留（先分清是真待跑还是旧措辞）。此类「改了现状节却留历史段自相矛盾」的坑已两次被用户抓出，务必扫。
+  - **净检术语（必做）**：两个 md 写完各跑 `node bin/term-guard.mjs --text <file>`（`term-guard` 甲比 loop-kit `term-lint` 严）确认 R3/R6 干净——常见是给 `P0/P1` 这类字母加了粗（R6 加粗未登记英文），改反引号或去加粗；本条自身也踩过（加粗里含 `term-guard`），故加粗只给纯中文。
+- 两步都触 term-lint（写 md / json），注意无加粗英文 / 繁体；加粗只给中文。
 
 ## 固定模板（章节骨架，每次照填）
 
@@ -101,7 +106,7 @@ CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
 
 【当前契约 / 状态】
 <填：active-contract 是谁、各契约状态（loop done / review / learn 待 / plan-done 等）、gate 绿几比几、本仓无 git 远端、未提交现场（git status --short 摘要，标明哪些改动还没入史）>
-<填：最新工程纪律与决策——凡 HANDOFF「锁定的决策」新增条都在此摘一句，防新会话漏掉最新纪律。如 2026-07-01：模型分层升级（Opus 4.8 ultracode 主环 + Sonnet 5 max subagent 轻车道 + 三级兜底梯）、term-guard 统一语言强制兜底契约（甲零 LLM / 乙语义；甲 Stop 钩子当前 warn-only 只警告不拦、乙真非 Claude 评分员接线待密钥——别误以为硬拦全开）、下一步首推 model-lane-guard>
+<填：最新工程纪律与决策——凡 HANDOFF「锁定的决策」新增条都在此摘一句，防新会话漏掉最新纪律；按当时 HANDOFF 现状填，别照抄旧例的具体任务名、别写死某个 slug 或某任务「首推」（会随进度过期）。要摘的类别：模型分层策略（主环 vs subagent 分工 + 兜底梯 + 哪几条不变量已机制强制、哪些仍待建）、统一语言与异构评审的兜底契约当前生效档位（各兜底钩子硬拦还是 warn-only、真评分员是否接线）。>
 
 【下一步（任选其一，先对齐再动手）】
 <填：A/B/C… 可点选项，每条带依赖与一句目标>
