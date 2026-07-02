@@ -3,7 +3,20 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 当前状态（2026-07-02 续）
+## 当前状态（2026-07-02 再续）
+
+本 session 再续（2026-07-02 傍晚）：P3 tier-2 真机 bring-up 上半场（969ffbb + 第六雷收口一笔入 dev）——六项 route:human 走到半程：
+
+1. 反向隧道全通：`scripts/wsl-reverse-listen.mjs` 加逐请求 Host 头重写（网关按虚拟主机路由，原 Host 落默认静态块致 API 405）+ keep-alive 状态机整请求单次写出（配合 Windows 代理首包捕获）；环回隔离自测三案（GET / POST 带 body / keep-alive 第二请求）钉绿；僵尸池根因定位——Windows 代理先于 WSL 监听器启动则池不补，重启即愈（启动顺序：先 WSL 后 Windows）；登录页经隧道 HTTP 200 / 38ms 热路径；新增 Windows 侧连通探针 `scripts/win-probe-target.mjs`（只出状态码、目标地址不回显，护栏 #7）。
+2. spike（route:human ①）机器侧四向全过：真机登录 1.7s（顺验 login-bootstrap SPA 判据修正）、前台 XHR（queryProcess）按 `initiator` 归因到活动步、无活动步期 56 条流量零违例归 null、错误信封经隧道解析 14/14。录屏曾整片无中文——根因 WSL 零中文字体（headless 无字形可画，DOM/定位/断言不受影响），已装用户级 Noto Sans CJK 修复、登录页截图亲验中文齐；旧录屏作废、待重录人签。
+3. `tc_catalog_wf_crud` 三件备齐（`cases/` 下 gitignored）：手写规范 TestCase（意图留痕四 intent）/ 通道剖面 profile.json（背景 denylist 4 条 app-shell 实采 + 信封 successField status/200 + `routes.workflowList`）/ flow 草稿过 compile-gate 闸并人 confirm（Steven，2026-07-02T16:09:22+08:00）。
+4. 首跑 `--execute` 撞出真机五雷、fail-closed 诊断报告逐轮收敛后全修（969ffbb）：① 登录入口须 = `--sut` 基址 + site.json startUrl 路径段（裸基址根路径无登录表单，SPA 判据被误读为已登录 fail-open、后续全步 absent）；② `/ai-manager/process/list` 真机是 API 前缀（503）→ 列表路由按通道剖面正名做成 `profile.routes.workflowList` 可选覆盖（缺省 `ROUTE_LIST`、hermetic 行为不变，形状校验 fail-closed）；③ Heren 表单标签是 div 无程序化关联（getByLabel 必 0）→ form__item 容器锚定 fallbackCss（count=1 亲验），描述实名「工作流描述」；④ 分类下拉无 combobox 角色 → 线性化两击（回放 doSelect 只认 combobox；选项限定 `.hr-select__list:visible`——全局同名文本会撞列表页分类 tab 被抽屉遮罩拦点，亲验）；⑤ 抽屉 footer 与删除对话框是 div 按钮（role=button 采样必 0）→ 主按钮锚定 + 实采文本记 compile-report（route:human ⑤⑦ 证据位）。真机分支全部只在角色采样 0 命中时启用；hermetic golden 13/13 + p5/p7 回归锁 + tier1 全绿。
+5. site.json 起草的 login 覆盖段真机命中 0（错草稿）已删，回落内置默认（真机逐字吻合）。
+6. 二跑 `--execute`（2026-07-02 16:52）撞第六雷、修复已落并补冻：12 步全 `unique` 且 acted（五雷修复全兑现），但删除段计数对账不恒等（表格行=0、删除目标=1）fail-closed 截断——真机列表是卡片布局非表格（`.hr-table-row` 必 0）。修复：对账兼容表格/卡片双布局（`summarizeDeleteCountAudit`/`auditDeleteCount`，卡片按 `.hr-card--bordered` 含目标名计数，证不出仍截断）+ `observed` 的 `requestLog` 只落 pathname 不携 origin（护栏 #7 收紧）；golden 增 C3b 卡片对账 + C4b pathname 断言至 14 检查、checksum 补冻入 prd（护栏 #1 加法，先例同 p5 补冻 b0dcaff）、gate GREEN 2/2 复验、tier1 无回归。**注意真机残留**：二跑 create 段已成、删除被截断 → `atl_c1` 实体残留真机，三跑前先人工清掉或换 `--unique-name c2`。
+7. 已知缺口（走核验段前必解）：`compile --verify` 直喂 `bin/replay.mjs`、无登录预备动作 → 真机必撞登录墙；方案（replay 可选登录预备动作 or storageState 移交）待定，涉回放器 CLI 面，建议 light 契约。
+8. 直接下一步 = 三跑 `--execute`（卡片对账已修；先清 `atl_c1` 残留或换 `--unique-name c2`）→ 核验清单 ⑤⑦④③ + 计数对账 → 解 `--verify` 登录墙 → 回放核验第二轮 → P4 交接面四件套 → 重录 spike 录屏交人签核销 route:human ①。
+
+以下为本日早前 session 快照（p3-compile 六阶段收口；其第 4 条「直接下一步」已被顶部傍晚条目接管半程，只溯源）：
 
 本 session 续（2026-07-02 下午）：`p3-compile`（full）六阶段全收口（788bb2b/76d6ef5/5f721e2 三笔入 dev + 收口一笔）——P3 相1 编译命令化层落地：
 

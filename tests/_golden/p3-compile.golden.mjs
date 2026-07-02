@@ -113,6 +113,19 @@ await checkAsync('C3 凭据门共享件', async () => {
   if (typeof rep.credentialGate !== 'function') throw new Error('bin/report.mjs 须保留 credentialGate re-export（p7 冻结 golden 依赖）');
 });
 
+// ---------- C3b 删除计数口径：表格行 + 真机卡片布局都可对账，证不出仍红 ----------
+await checkAsync('C3b 删除计数口径兼容卡片布局', async () => {
+  const m = await import(`file://${join(ROOT, 'lib', 'compile-atoms.mjs').replace(/\\/g, '/')}`);
+  const { summarizeDeleteCountAudit } = m;
+  if (typeof summarizeDeleteCountAudit !== 'function') throw new Error('lib/compile-atoms.mjs 须导出 summarizeDeleteCountAudit');
+  const table = summarizeDeleteCountAudit({ tableRows: 1, tableDeleteButtons: 1, targetCards: 0, targetCardDeleteButtons: 0, globalDeleteButtons: 1 });
+  if (!table.equal || table.layout !== 'table' || table.recordContainers !== 1 || table.deleteButtons !== 1) throw new Error('表格行布局 1:1 应放行');
+  const card = summarizeDeleteCountAudit({ tableRows: 0, tableDeleteButtons: 0, targetCards: 1, targetCardDeleteButtons: 1, globalDeleteButtons: 1 });
+  if (!card.equal || card.layout !== 'card' || card.recordContainers !== 1 || card.deleteButtons !== 1) throw new Error('卡片布局 1:1 应放行（真机 atl_c1 形态）');
+  const mismatch = summarizeDeleteCountAudit({ tableRows: 0, tableDeleteButtons: 0, targetCards: 1, targetCardDeleteButtons: 2, globalDeleteButtons: 2 });
+  if (mismatch.equal || mismatch.layout !== 'card') throw new Error('卡片布局记录与删除目标不恒等时必须 fail-closed');
+});
+
 // ---------- 合成输入（inline fixture：TestCase 最小规范形态 + flow 草稿） ----------
 const TESTCASE = {
   schemaVersion: 1, caseId: CASE_ID, channel: 'web', uniquePrefix: 'atl_',
@@ -212,6 +225,9 @@ check('C4b observed 观测现状纪律', () => {
     }
     for (const r of st.requestLog) {
       if (String(r.url).includes('?')) throw new Error(`requestLog url 须剥 query（G5）：${r.url}`);
+      if (!String(r.url).startsWith('/') || String(r.url).includes('://') || String(r.url).includes('127.0.0.1')) {
+        throw new Error(`requestLog url 只许落 pathname，不得携 origin/site 字面量（护栏 #7）：${r.url}`);
+      }
       if (String(r.url).includes('/api/auths/poll') && r.attributedStepId !== null) throw new Error('背景轮询须归 background/null，不得归因业务步');
     }
   }
