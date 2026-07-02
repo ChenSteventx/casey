@@ -43,7 +43,11 @@ ok('countChange equals 计数 null → ok:false', evaluateAssertions(A1('countCh
 ok('countChange equals 真归零 → ok:true', evaluateAssertions(A1('countChange', 'equals', 0), { countBefore: 1, countAfter: 0 })[0].ok === true);
 ok('noPageError 本 intent 有 pageerror → ok:false', evaluateAssertions(A1('noPageError', 'absent'), { pageErrors: [{ attributedStepId: 'atstep_1' }] })[0].ok === false);
 ok('noPageError 本 intent 无 pageerror → ok:true', evaluateAssertions(A1('noPageError', 'absent'), { pageErrors: [] })[0].ok === true);
-ok('noErrorEnvelope 无 save 记录 → ok:false', evaluateAssertions(A1('noErrorEnvelope', 'envelopeOk'), { netRecords: [] })[0].ok === false);
+// noErrorEnvelope 缺席语义三向（2026-07-02 人签契约更新 noerrenv-absence，Steven 批）：原「无 save 记录 → ok:false」
+// 钉的是 p5 假 SUT 硬编码捷径（/saveOrModifyProcessData/），真机首航实证假败；改镜像 noPageError 缺席范式。
+ok('noErrorEnvelope 零信封记录（缺席语义）→ ok:true', evaluateAssertions(A1('noErrorEnvelope', 'envelopeOk'), { netRecords: [] })[0].ok === true);
+ok('noErrorEnvelope 坏信封归因本步 → ok:false', evaluateAssertions(A1('noErrorEnvelope', 'envelopeOk'), { netRecords: [{ url: '/api/x', errorEnvelope: { ok: false } }] })[0].ok === false);
+ok('noErrorEnvelope 仅好信封 → ok:true', evaluateAssertions(A1('noErrorEnvelope', 'envelopeOk'), { netRecords: [{ url: '/api/x', errorEnvelope: { ok: true } }] })[0].ok === true);
 
 // ===== (2) 动作轴 + 取证 → verdict 四态（findings 1/2/3/4/5）=====
 const hardFail = [{ kind: 'noErrorEnvelope', op: 'envelopeOk', ok: false, soft: false }];
