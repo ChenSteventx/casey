@@ -119,6 +119,16 @@ async function executeMode(caseId, args) {
   rmSync(join(outDir, 'events.json'), { force: true });
   rmSync(join(outDir, `observed-${caseId}.json`), { force: true });
   const profile = readJson(args.profile, '通道剖面');
+  // 剖面可选 routes.workflowList（非凭据通道配置）：present 则须以 / 开头的路径段（R1-F5 形状校验同律），
+  // 缺省 null → compile-atoms 走 ROUTE_LIST（hermetic 行为不变）。
+  let listRoute = null;
+  if (profile.routes !== undefined) {
+    const r = profile.routes;
+    const okShape = r && typeof r === 'object' && !Array.isArray(r)
+      && (r.workflowList === undefined || (typeof r.workflowList === 'string' && r.workflowList.startsWith('/')));
+    if (!okShape) { console.error('compile: 通道剖面 routes 形状非法（workflowList 须以 / 开头的路径段），拒跑（fail-closed）'); process.exit(65); }
+    listRoute = r.workflowList || null;
+  }
   const sut = String(args.sut).replace(/\/$/, '');
   const uniqueName = String(args['unique-name'] || Date.now().toString(36));
   const site = loadSiteConfig();
@@ -137,14 +147,17 @@ async function executeMode(caseId, args) {
     currentStep: () => state.currentStepId,
   });
 
-  const run = createCompileRun({ page, forensics, state, sut, uniqueName, site });
+  const run = createCompileRun({ page, forensics, state, sut, uniqueName, site, listRoute });
   let exitCode = 0;
   try {
     if (!args['skip-login']) {
-      // 登录预备动作：不产 event，凭据只进内存（护栏 #7）。startUrl 取 site.json 投影，绝不写死。
+      // 登录预备动作：不产 event，凭据只进内存（护栏 #7）。登录入口 = --sut 基址 + site.json startUrl 的路径段——
+      // devProxyUrl/根 '/' 只是基址不渲染登录表单（真机实采 2026-07-02：裸基址上 SPA 判据「表单不在场」
+      // 会被误读为已登录态 fail-open，后续全步 absent）；基址恒由 --sut 注入、绝不写死。
       const creds = loadCreds();
-      const startUrl = (site.target && (site.target.devProxyUrl || site.target.startUrl)) || sut + ROUTE_LIST;
-      await loginBootstrap(page, { site, creds, startUrl });
+      let entryPath = ROUTE_LIST;
+      try { entryPath = new URL(site.target.startUrl).pathname; } catch { /* 无 startUrl：退列表路由 */ }
+      await loginBootstrap(page, { site, creds, startUrl: sut + entryPath });
       run.notes.push('登录预备动作完成（不产 event）');
     }
     await compileFlow(run, flowDoc.flow);
