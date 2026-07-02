@@ -3,7 +3,16 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 当前状态（2026-07-02 三续）
+## 当前状态（2026-07-02 四续）
+
+本 session 四续（2026-07-02 夜）：**P3 收官后即启 P4——`p4-drafter`（full）六阶段全收口**（Steven「开！」授权）：
+
+1. G-seam 接缝对齐（GRILL 缺席推定取 A、可否决、列 prd observability 交人复核）：`expected-frozen.schema.json` 双 enum 加法对齐 `check.mjs` 权威表——`assertionKind` 12→15（补 `textHidden`/`buttonState`/`switchState`）+ **落地时新发现同接缝第二漏收** `assertionOp` 8→15（已收 kind 的法定 op `filled`/`finished`/`contains` 竟表达不了 = 潜在假拒）；`prd-seams-freeze` checksum 重签、其 gate 复验 GREEN 1/1。
+2. `lib/assertion-draft.mjs`（新，纯函数零 LLM）：`synthesizeSkeleton`（D1 查表映射、观测/`urlIncludes` 双分支同剥实体 ID、未知原子落 `pending[]` 不发明）+ `validateDraft`（LLM 补缝准入闸：kind/op spawn `check.mjs --validate-only` 复核零副本表、易变字面量纪律盖全部字符串值不分 op、D2 soft 语义两向钉死、闸自身 total 全域返回不抛）+ `lib/replay-assert.mjs` 加性导出 `IMPLEMENTED_KINDS`（已实现集唯一供源）。LLM 补缝 prompt/schema 沿用 `proposed/llm-patch.draft.md`（CLI 外跑，同 P3 flow 范式）。
+3. golden `tests/_golden/p4-drafter.golden.mjs` 13→20 检查（底稿承另一 session 预备轨、红先行）；gate GREEN 2/2 + seams/p5 回归锁 + tier1 全绿。codex 四轮 R1..R4：3→2→2→0 逐轮全采信钉红修绿（R3 有 High——闸未钉 D2 soft 语义，LLM 草稿可绕硬裁定/造假红），R4 PASS 零发现记 `loop/audit.jsonl`；learn 六教训落 `docs/plans/p4-drafter/learn.md`（接缝对齐查全伴生 enum / 缺席推定三要件 / 闸 total·纪律盖全通道·语义不变量在准入 / 覆盖独立性 / 收敛看 PASS 不看发现数 / 唯一事实源纪律）。
+4. 直接下一步 = 相2 端到端首航（route:human，在 prd observability）：`tc_catalog_wf_crud` 真产物（`cases/` 下 observed + compile-report 的 `assertionAtoms`）→ `synthesizeSkeleton` 草稿 → LLM 补缝（CLI 外）→ `validateDraft` 闸 → 人签冻结（`sign-gate` 既有）→ 回放裁定走通相2→3→4。另：G-seam 推定待 Steven 复核；`casey draft` CLI 面（函数层已验，命令化小契约）。
+
+以下为本日早前时段快照（P3 收官），只溯源：
 
 本 session 三续（2026-07-02 晚）：P3 tier-2 真机 bring-up 下半场开局——三跑全通产真四件套 + 登录墙契约收口：
 

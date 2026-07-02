@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "task": "P4 相2 断言草拟器（full）：lib/assertion-draft.mjs 纯函数零 LLM——synthesizeSkeleton（assert.* 原子留痕 + 观测现状 → typed expected[] 骨架：D1 查表映射 / 全局取证默认加 / urlPathnameAfter 确定性剥尾段实体 ID / 未知原子不发明落 pending[]）+ validateDraft（LLM 补缝零 LLM 校验闸：kind/op 经 bin/check.mjs --validate-only 复核（词表唯一事实源不建副本）、equals 禁 atl_ 裸字面量（仅 atl_{{uniqueName}} 模板形态合法）与 9+ 位数字长串，fail-closed）+ D2 soft 承载（kind 不在 replay-assert 已实现集标 soft:true，补实现后重签提 hard；已实现集由 lib/replay-assert.mjs 加性导出 IMPLEMENTED_KINDS 唯一供源）。连带 G-seam 接缝对齐：expected-frozen.schema.json 的 assertionKind 12→15 + assertionOp 8→15 双 enum 加法对齐 check.mjs 权威表（schema 自述对齐方向），prd-seams-freeze checksum 已重签、gate 复验 GREEN。决策依 docs/plans/p4-drafter/proposed/GRILL.md（D1/D2 人签 Steven + G-seam 缺席推定可否决）。LLM 补缝本体在 CLI 外（prompt/schema 见 proposed/llm-patch.draft.md，同 P3 flow 草稿范式）；语义质量 route:human 抽检不在本契约。",
+  "specPath": "docs/plans/p4-drafter/plan.md",
+  "testChecksums": {
+    "tests/_golden/p4-drafter.golden.mjs": "53d6078e67e46ffe7cbc2847ca2cf58cde687c6a0680fa99c52b2ffafe533627"
+  },
+  "observability": [
+    {
+      "dimension": "LLM 补缝语义质量与覆盖度抽检（断言选得对不对、覆盖够不够）——真用例真观测现状上人工抽验",
+      "route": "human"
+    },
+    {
+      "dimension": "G-seam 缺席推定复核：Steven 回看 GRILL.md 的 G-seam 段，否决则按其回滚路径执行",
+      "route": "human"
+    },
+    {
+      "dimension": "tc_catalog_wf_crud 真产物走一遍草拟：cases/ 下真 observed + compile-report 的 assertionAtoms → 草稿 → 人签冻结（相2 端到端首航）",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-drafter-core",
+      "desc": "lib/assertion-draft.mjs 两纯函数 + lib/replay-assert.mjs 加性导出 IMPLEMENTED_KINDS + expected-frozen schema 双 enum 对齐。golden 12 检查：接缝对齐钉死 / 导出面 / 骨架形状卷回 / 全局取证 / kind 词表 + op 过 check 硬闸 / 剥实体 ID / soft 承载正反 / D1 映射全量（buttonState/noErrorToast）/ 未知原子落 pending 不发明 / 校验闸合规放 + 三违规拦 + 模板形态防过度拒绝（实现前红已核：模块缺席 import 抛）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p4-drafter.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-02T12:42:51.058Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-regression-locks",
+      "desc": "回归锁：schema 双 enum 加法不破已冻接缝（seams-freeze golden 原样绿、prd-seams-freeze 已另行重签复验）；replay-assert 加性导出不扰 p5 回放内核（两份冻结 golden 原样绿）；p4-freeze 既有件不受扰（expected-compile/sign-gate 走 tier1 已覆盖）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-02T12:43:45.430Z 全部 acceptance exit 0"
+    }
+  ]
+}
