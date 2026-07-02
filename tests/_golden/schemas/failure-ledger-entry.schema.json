@@ -11,11 +11,14 @@
     "caseId",
     "stepId",
     "intentId",
+    "atom",
     "channel",
     "verdict",
     "reason",
     "fingerprint",
     "fingerprintInputs",
+    "failedAssertion",
+    "forensicsRef",
     "observedAt",
     "humanResolution"
   ],
@@ -152,21 +155,24 @@
             "string",
             "null"
           ],
-          "description": "断言失败时的 kind(urlPathname/textVisible/countChange/...)；非断言失败则 null。kind 枚举唯一权威在 check.mjs，本处只记其值不分支。"
+          "description": "断言失败时的 kind(urlPathname/textVisible/countChange/...)；非断言失败则 null。kind 枚举唯一权威在 check.mjs，本处只记其值不分支。 非空白 pattern(codex R11-F1)。",
+          "pattern": "\\S"
         },
         "assertionOp": {
           "type": [
             "string",
             "null"
           ],
-          "description": "断言 op(startsWith/equals/matches/...)；无则 null。"
+          "description": "断言 op(startsWith/equals/matches/...)；无则 null。 非空白 pattern(codex R11-F1)。",
+          "pattern": "\\S"
         },
         "signatureTemplate": {
           "type": [
             "string",
             "null"
           ],
-          "description": "定位/漂移类失败的稳定签名模板(role+可访问名模板)，非 raw CSS/坐标；无则 null。"
+          "pattern": "^role=[a-z]+;name=(?!.*(?:[cC][sS][sS]=|[xX][pP][aA][tT][hH]=|nth-child|[xXyY]=\\d))[^;#\\[\\]>+~=/.:,'\"()*]{1,120}$",
+          "description": "定位/漂移类失败的稳定签名模板(role+可访问名模板)，非 raw CSS/坐标；无则 null。pattern 钉死 role=<角色>;name=<可访问名> 唯一形态(codex R4)，name 段负字符集保守收紧(codex R5-F3+R6-F2+R7-F2)：结构字符 []>+~ 与 =/.:,'\"()* 全禁——css=/xpath= 前缀(含大小写)、裸选择器(button.primary、//button、:has-text)、坐标对(x=1,y=2、left=1,top=2)在此形态下无处容身。schema 层机制化「raw locator 坐标不进 fingerprintInputs」，防指纹依赖布局坐标破坏稳定聚类；可访问名若真含这些 ASCII 标点属棘轮放宽事件 route:human。"
         }
       }
     },
@@ -187,15 +193,18 @@
       "properties": {
         "kind": {
           "type": "string",
-          "description": "断言 kind。"
+          "description": "断言 kind。 非空白 pattern(codex R11-F1 空串证据封口)。",
+          "pattern": "\\S"
         },
         "op": {
           "type": "string",
-          "description": "断言 op。"
+          "description": "断言 op。 非空白 pattern(codex R11-F1 空串证据封口)。",
+          "pattern": "\\S"
         },
         "fieldPath": {
           "type": "string",
-          "description": "被检字段路径(如 urlPathnameAfter)。"
+          "description": "被检字段路径(如 urlPathnameAfter)。 非空白 pattern(codex R11-F1 空串证据封口)。",
+          "pattern": "\\S"
         },
         "expectedTemplate": {
           "description": "期望值的模板化形态(易变值已打模板)。",
@@ -233,7 +242,8 @@
       "properties": {
         "urlTemplate": {
           "type": "string",
-          "description": "归因请求的 URL 路径模板(去 host/query/实体 ID)。"
+          "pattern": "^/[A-Za-z0-9_\\-./<>]*$",
+          "description": "归因请求的 URL 路径模板(去 host/query/实体 ID)。pattern 钉死纯路径形态(codex R4)：以 / 起、字符集排除 ?/=/&/#/空白——query 串形态凭据(?token=…&patientId=…)在 schema 层被拒，护栏 #7 value 侧机制化(与 run-history valueRef pattern 同思路)；实体 ID 模板位允许 <entityId> 尖括号占位。"
         },
         "status": {
           "type": "integer",
@@ -244,14 +254,16 @@
             "string",
             "null"
           ],
-          "description": "错误信封被检字段名(按 channel 参数化，如 status)；无则 null。"
+          "description": "错误信封被检字段名(按 channel 参数化，如 status)；无则 null。 非空白 pattern(codex R11-F1)。",
+          "pattern": "\\S"
         },
         "attributedStepId": {
           "type": [
             "string",
             "null"
           ],
-          "description": "取证归因到的 stepId(按 initiator 归因、非时间窗)；background/不可归因则 null。"
+          "pattern": "^atstep_[0-9]+$",
+          "description": "取证归因到的 stepId(按 initiator 归因、非时间窗)；background/不可归因则 null。pattern 钉 atstep_N 形态(codex R10-F1)；作 SUT_DEFECT 背书时须非 null 且等于本条 stepId(等值跨字段约束由冻结 golden 校验)。"
         }
       }
     },
@@ -448,6 +460,190 @@
         "properties": {
           "failedAssertion": {
             "type": "object"
+          }
+        }
+      }
+    },
+    {
+      "description": "fail-safe 证据背书机制化(codex R9-F1 修正采纳)：SUT_DEFECT 是须取证背书的终判(护栏 #14/ADR-0002)，台账条目至少携一个非 null 证据指针——failedAssertion(断言证据)或 forensicsRef(取证证据)。不强制 failedAssertion：SUT_DEFECT 可仅由 5xx/pageerror/crash 背书而无失败断言(layer3-wiring 评审裁决)；零证据指针的 SUT_DEFECT 违「证不出→NEEDS_HUMAN」，schema 层拒。",
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "SUT_DEFECT"
+          }
+        },
+        "required": [
+          "verdict"
+        ]
+      },
+      "then": {
+        "anyOf": [
+          {
+            "properties": {
+              "failedAssertion": {
+                "type": "object",
+                "anyOf": [
+                  {
+                    "properties": {
+                      "expectedTemplate": {
+                        "type": [
+                          "string",
+                          "number",
+                          "boolean"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "expectedTemplate"
+                    ]
+                  },
+                  {
+                    "properties": {
+                      "actualTemplate": {
+                        "type": [
+                          "string",
+                          "number",
+                          "boolean"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "actualTemplate"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "failedAssertion"
+            ]
+          },
+          {
+            "properties": {
+              "forensicsRef": {
+                "type": "object",
+                "required": [
+                  "attributedStepId"
+                ],
+                "properties": {
+                  "attributedStepId": {
+                    "type": "string"
+                  }
+                },
+                "anyOf": [
+                  {
+                    "properties": {
+                      "status": {
+                        "minimum": 500
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "status": {
+                        "const": 0
+                      }
+                    }
+                  },
+                  {
+                    "properties": {
+                      "errorEnvelopeField": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "errorEnvelopeField"
+                    ]
+                  }
+                ]
+              }
+            },
+            "required": [
+              "forensicsRef"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "description": "kind/op 成对不变量(codex R3)：fingerprintInputs.assertionKind 为 null 时 assertionOp 必为 null——非断言失败绝不携断言 op，防污染失败聚类；与上两条合成 failedAssertion⟺assertionKind⟺assertionOp 三者同真假。",
+      "if": {
+        "properties": {
+          "fingerprintInputs": {
+            "properties": {
+              "assertionKind": {
+                "const": null
+              }
+            }
+          }
+        }
+      },
+      "then": {
+        "properties": {
+          "fingerprintInputs": {
+            "properties": {
+              "assertionOp": {
+                "const": null
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "description": "混合证据同锁(codex R11-F2)：SUT_DEFECT 携任何非 null forensicsRef——无论是否同时有断言证据——都须真背书(归因字段必填 string + 失败信号 anyOf)，不许「断言证据打掩护、装饰性取证指针随行」。",
+      "if": {
+        "properties": {
+          "verdict": {
+            "const": "SUT_DEFECT"
+          },
+          "forensicsRef": {
+            "type": "object"
+          }
+        },
+        "required": [
+          "verdict",
+          "forensicsRef"
+        ]
+      },
+      "then": {
+        "properties": {
+          "forensicsRef": {
+            "required": [
+              "attributedStepId"
+            ],
+            "properties": {
+              "attributedStepId": {
+                "type": "string"
+              }
+            },
+            "anyOf": [
+              {
+                "properties": {
+                  "status": {
+                    "minimum": 500
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "status": {
+                    "const": 0
+                  }
+                }
+              },
+              {
+                "properties": {
+                  "errorEnvelopeField": {
+                    "type": "string",
+                    "pattern": "\\S"
+                  }
+                },
+                "required": [
+                  "errorEnvelopeField"
+                ]
+              }
+            ]
           }
         }
       }

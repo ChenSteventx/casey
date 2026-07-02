@@ -1,5 +1,5 @@
 {
-  "_note": "失败记录台账合成 fixture：entries[] 各条校验 failure-ledger-entry.schema。跨 NEEDS_HUMAN/HARNESS_ERROR/SUT_DEFECT 三态 + 已裁/未裁生命周期；指纹值为合成占位(格式合法、非真算)。fle_0004 示范 SUT_DEFECT 须取证背书(forensicsRef)+人裁记缺陷单；fle_0003 示范 drift-healed 仅 HARNESS_ERROR 合法。",
+  "_note": "失败记录台账合成 fixture：entries[] 各条校验 failure-ledger-entry.schema。跨 NEEDS_HUMAN/HARNESS_ERROR/SUT_DEFECT 三态 + 已裁/未裁生命周期；指纹值为真算(sha256 of canonicalJSON(fingerprintInputs)、递归排序 key，golden 复算比对；codex R1-F2)。fle_0004 示范 SUT_DEFECT 须取证背书(forensicsRef)+人裁记缺陷单；fle_0003 示范 drift-healed 仅 HARNESS_ERROR 合法。",
   "entries": [
     {
       "schemaVersion": 1,
@@ -12,7 +12,7 @@
       "channel": "web",
       "verdict": "NEEDS_HUMAN",
       "reason": "AMBIGUOUS_ACTION",
-      "fingerprint": "sha256:9f1c0a7b3e5d4682a0c1f2e3d4b5a6978c0d1e2f3a4b5c6d7e8f901122334455",
+      "fingerprint": "sha256:1ae30523fe22643c837f9911e91034cb1551305aa420f67fcb4137850fa2d188",
       "fingerprintInputs": {
         "channel": "web",
         "verdict": "NEEDS_HUMAN",
@@ -39,7 +39,7 @@
       "channel": "web",
       "verdict": "NEEDS_HUMAN",
       "reason": "SUT_DEFECT_OR_STALE",
-      "fingerprint": "sha256:1a2b3c4d5e6f708192a3b4c5d6e7f8091a2b3c4d5e6f708192a3b4c5d6e7f809",
+      "fingerprint": "sha256:6a34d4d2d23150ca709d6e1eeb226ce10315a751ab4fae2a5398395301145ce0",
       "fingerprintInputs": {
         "channel": "web",
         "verdict": "NEEDS_HUMAN",
@@ -78,7 +78,7 @@
       "channel": "web",
       "verdict": "HARNESS_ERROR",
       "reason": null,
-      "fingerprint": "sha256:abcdef0123456789abcdef0123456789abcdef0123456789abcdef0123456789",
+      "fingerprint": "sha256:9ff88bd6de2af8f7a9a6ba0dfe7a9b9081722f2fd45469a40e8de5312a4117b2",
       "fingerprintInputs": {
         "channel": "web",
         "verdict": "HARNESS_ERROR",
@@ -111,7 +111,7 @@
       "channel": "web",
       "verdict": "SUT_DEFECT",
       "reason": null,
-      "fingerprint": "sha256:0011223344556677889900aabbccddeeff00112233445566778899aabbccddee",
+      "fingerprint": "sha256:0306b42eae5a9144e910cf5d273bf1d739d117f5fda8d751ca23a24508f5cc76",
       "fingerprintInputs": {
         "channel": "web",
         "verdict": "SUT_DEFECT",

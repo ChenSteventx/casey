@@ -3,14 +3,14 @@
   "task": "第2层借鉴接缝增冻（排期 v3 轨 P）：run-history/action-vocabulary/failure-ledger/channel-driver 四条接缝 schema + 合成 fixture（承重决策 2.2 把 channelDriver 拉进本轮，范围扩到四接缝）。冻结解锁下游对 fixture 并行；四接缝的 lib/bin 真产出随 P5/P6/P7 真机集成走 route:human。",
   "specPath": "docs/plans/seams-freeze-v2/plan.md",
   "testChecksums": {
-    "tests/_golden/seams-freeze-v2.golden.mjs": "32a332987fac5f23a5aafd6ec92111926f128e52d9b1e7e0a94273aa4b35da46",
-    "tests/_golden/schemas/run-history.schema.json": "1cb6dba40a422c7f386345919c6407d2f9f1637ac4aa48925f8e700c8b24b871",
-    "tests/_golden/schemas/action-vocabulary.schema.json": "4eb4a0f8dcce66fdf95befeaef7c7e80bcf8ff7b0247bef3ec8fe2bb67fbd31d",
-    "tests/_golden/schemas/failure-ledger-entry.schema.json": "1e23e881a3de2181bce69f73b468dc7cb89edfe99c16387639e9acc8c440ccea",
+    "tests/_golden/seams-freeze-v2.golden.mjs": "0702ff5be91b19e937bfac74f64fe1dd8c991766aed21c042c53422bbdcc660c",
+    "tests/_golden/schemas/run-history.schema.json": "8679b6c99df81ba809bc694e9c16fdddabe6faea9942dfa767d689b806be43fe",
+    "tests/_golden/schemas/action-vocabulary.schema.json": "b57902de75312e45a181263033a315f535c5a1f1f22f2e6f4c0935073135b559",
+    "tests/_golden/schemas/failure-ledger-entry.schema.json": "d160c07b49c05fe3e78787e329fb889c58d8ba1f5232f2d1e69b7482d14ce46b",
     "tests/_golden/schemas/channel-driver.schema.json": "fc4450f2d2e4a7063758db70fe6779f477dcd808795a901f4d324e5aa047081f",
     "tests/_golden/fixtures/seams-v2/run-history.fixture.json": "e19e299131f0600d0695f368d2a81df976901533b12475a4248e07c878352531",
     "tests/_golden/fixtures/seams-v2/action-vocabulary.fixture.json": "c405c96c2e7ae85b939289140e573c195c8333a2ff476866bcdb767931ef2627",
-    "tests/_golden/fixtures/seams-v2/failure-ledger.fixture.json": "6dc3f27e663f3dd1b2ea25d2044c49661c807b5171f8d757ba6cf7836e6a5aa4",
+    "tests/_golden/fixtures/seams-v2/failure-ledger.fixture.json": "90c5cbc92dea003991e9065a6d126ca318bbda61bbd3cdbd1f7512c360498f25",
     "tests/_golden/fixtures/seams-v2/channel-driver.fixture.json": "de877fceaf2be77b61e050d81d06be8f21b44522c4988132dca5f83f971ca2cd"
   },
   "observability": [
@@ -40,7 +40,7 @@
         "node tests/_golden/seams-freeze-v2.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-01T16:17:32.464Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-02T04:00:00.006Z 全部 acceptance exit 0"
     }
   ]
 }

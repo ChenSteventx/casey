@@ -35,7 +35,8 @@
     "entries": {
       "type": "array",
       "minItems": 1,
-      "description": "逐动作的治理登记条目。",
+      "maxItems": 7,
+      "description": "逐动作的治理登记条目。maxItems 镜像已冻 events.schema 7 动作枚举(codex R5-F4 辅助收紧)：draft-07 表达不了按 action 唯一(uniqueItems 拒不了同 action 不同治理的冲突条目)，恰一条/动作的唯一性由冻结 golden 校验，schema 层以 maxItems 拦粗暴重复；扩枚举 = 改 events.schema + 本值的显式棘轮事件。",
       "items": {
         "$ref": "#/definitions/actionEntry"
       }
@@ -124,9 +125,10 @@
           "type": "object",
           "additionalProperties": false,
           "required": [
-            "allowed"
+            "allowed",
+            "onlyVia"
           ],
-          "description": "坐标兜底治理：x/y 在 events.schema 仅录制元数据、禁作唯一定位。",
+          "description": "坐标兜底治理：x/y 在 events.schema 仅录制元数据、禁作唯一定位。onlyVia 入 required(codex R5-F2)：const 只约束「出现时的值」、省略字段即绕过——required 封死省略口，与 const:null 合成真闭合。",
           "properties": {
             "allowed": {
               "const": false,
@@ -245,7 +247,36 @@
               "const": true,
               "description": "能力缺失不构成可自愈 HARNESS_ERROR(护栏 #13/#14)。"
             }
-          }
+          },
+          "allOf": [
+            {
+              "description": "护栏 #14 机制化(codex R3)：whenUnsupported=NEEDS_HUMAN 时 needsHumanReason 必填且为 5 子类之一(能力缺失默认 INDETERMINATE)——NEEDS_HUMAN 无 reason 子类即 fail-open，schema 层拒；真实 producer 省略/置 null 也被拦。",
+              "if": {
+                "properties": {
+                  "whenUnsupported": {
+                    "const": "NEEDS_HUMAN"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "needsHumanReason"
+                ],
+                "properties": {
+                  "needsHumanReason": {
+                    "type": "string",
+                    "enum": [
+                      "SUT_DEFECT_OR_STALE",
+                      "CASE_DEFECT",
+                      "AMBIGUOUS_ACTION",
+                      "AFFORDANCE_ABSENT",
+                      "INDETERMINATE"
+                    ]
+                  }
+                }
+              }
+            }
+          ]
         },
         "golden": {
           "type": "array",

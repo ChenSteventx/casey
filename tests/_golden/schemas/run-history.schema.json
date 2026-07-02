@@ -4,8 +4,12 @@
   "title": "run-history.jsonl / run-metrics.json — 回放历史与回放指标接缝（seams-freeze-v2 冻结）",
   "description": "确定性回放(bin/replay.mjs，轨 A·P5)逐步落盘的第二层事实：run-history.jsonl 每行一条回放步执行证据(校验 definitions/runHistoryLine)，run-metrics.json 是其聚合(校验 definitions/runMetrics)。边界红线：仅报告/调试，绝不进 bin/verdict.mjs 输入、绝不写 passes(护栏 #15/#17)；落盘前过凭据兜底门，fill 等动作值一律打码、绝不落字面量(护栏 #7)。cacheStatus/cacheHitRate 已删(决策 1.1：确定性回放每步重解析定位器、回放期无解析缓存；编译产物复用溯源改归编译期字段、本轮 deferred)。动作字段名跟随已冻 events.schema 用 action(决策 1.2)、intentId 用 minLength:1(决策 1.3)。",
   "oneOf": [
-    { "$ref": "#/definitions/runHistoryLine" },
-    { "$ref": "#/definitions/runMetrics" }
+    {
+      "$ref": "#/definitions/runHistoryLine"
+    },
+    {
+      "$ref": "#/definitions/runMetrics"
+    }
   ],
   "definitions": {
     "runHistoryLine": {
@@ -138,7 +142,58 @@
           ],
           "description": "动作执行结果。永不等同多态裁定四态——result=ok 不代表该步 PASS，裁定只由 verdict.mjs 出。"
         }
-      }
+      },
+      "allOf": [
+        {
+          "description": "locatorResolution 与 action 类别绑定(codex R11-F3)：nav/newpage/press 无定位需求恒 null——否则无定位动作可携 unique 污染 locatorHitRate 分母。",
+          "if": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "nav",
+                  "newpage",
+                  "press"
+                ]
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "locatorResolution": {
+                "const": null
+              }
+            }
+          }
+        },
+        {
+          "description": "交互动作(click/dblclick/fill/selectOption)恒有定位需求，locatorResolution 须非 null(codex R11-F3)。",
+          "if": {
+            "properties": {
+              "action": {
+                "enum": [
+                  "click",
+                  "dblclick",
+                  "fill",
+                  "selectOption"
+                ]
+              }
+            },
+            "required": [
+              "action"
+            ]
+          },
+          "then": {
+            "properties": {
+              "locatorResolution": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      ]
     },
     "runMetrics": {
       "type": "object",
