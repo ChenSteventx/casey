@@ -70,6 +70,7 @@ function gateMode(caseId, args) {
   mkdirSync(outDir, { recursive: true });
   const doc = {
     caseId, uniquePrefix: tc.uniquePrefix,
+    preconditions: tc.preconditions || [],
     gate: { ok: true, atomsFrom: 'lib/atoms-registry.snapshot.json' },
     confirmedBy: '', confirmedAt: null,
     flow,
@@ -87,9 +88,21 @@ async function executeMode(caseId, args) {
   const flowFile = join(outDir, `flow-${caseId}.json`);
   if (!existsSync(flowFile)) { console.error(`compile: 缺 ${flowFile}——先跑闸段落 flow 草稿`); process.exit(65); }
   const flowDoc = readJson(flowFile, 'flow-<caseId>.json');
-  if (typeof flowDoc.confirmedBy !== 'string' || !flowDoc.confirmedBy.trim()) {
-    console.error('compile: flow 草稿未经人 confirm（confirmedBy 空）——破坏性原子上真机前须人眼一道（G3 人签门），拒跑');
+  if (typeof flowDoc.confirmedBy !== 'string' || !flowDoc.confirmedBy.trim()
+    || typeof flowDoc.confirmedAt !== 'string' || !flowDoc.confirmedAt.trim()) {
+    console.error('compile: flow 草稿未经人 confirm（confirmedBy/confirmedAt 空）——破坏性原子上真机前须人眼一道（G3 人签门），拒跑');
     process.exit(66);
+  }
+  // 执行段重验闸（R1-F1）：flow-<caseId>.json 是可编辑文件，confirm 后被篡改（裸名破坏性原子/坏状态机）
+  // 不得凭旧 gate 结论上真机——上真机前以当下内容重跑三闸，fail-closed。
+  {
+    const registry = readJson(SNAPSHOT_FILE, '原子注册表快照');
+    const re = validateDraft(flowDoc.flow, { prefix: flowDoc.uniquePrefix, registry, initialStates: flowDoc.preconditions || [] });
+    if (!re.ok) {
+      console.error(`compile: 执行前重验闸未过（${re.problems.length} 问题，疑 confirm 后被改）：`);
+      for (const p of re.problems) console.error(`  - ${p}`);
+      process.exit(65);
+    }
   }
   const profile = readJson(args.profile, '通道剖面');
   const sut = String(args.sut).replace(/\/$/, '');
@@ -131,29 +144,38 @@ async function executeMode(caseId, args) {
 
   if (exitCode === 0) {
     const now = new Date().toISOString();
-    const firstNav = run.events.find((e) => e.action === 'nav');
-    const eventsDoc = {
-      schemaVersion: 2, channel: 'web', caseId,
-      url: firstNav ? firstNav.url : `{{baseUrl}}${ROUTE_LIST}`,
-      recordedAt: now, compiledBy: 'casey-compile/p3', authored: false,
-      events: run.events,
-    };
-    const observedDoc = projectObserved(run, { caseId, capturedAt: now, capturedAgainstBuild: null });
     const reportDoc = {
       caseId, compiledAt: now, uniquePrefix: flowDoc.uniquePrefix,
       verification: run.verification,
+      countAudit: run.countAudit,
       caseDefectCandidates: run.caseDefectCandidates,
       handoff: { assertionAtoms: run.assertionAtoms },
       notes: run.notes,
     };
-    gatedWrite({
-      [join(outDir, 'events.json')]: JSON.stringify(eventsDoc, null, 2) + '\n',
-      [join(outDir, `observed-${caseId}.json`)]: JSON.stringify(observedDoc, null, 2) + '\n',
-      [join(outDir, 'compile-report.json')]: JSON.stringify(reportDoc, null, 2) + '\n',
-    });
     const nonUnique = run.verification.filter((v) => v.resolution !== 'unique');
-    console.log(`compile: 执行段完成 → events ${run.events.length} 步 / observed ${observedDoc.steps.length} 步 / 候选 ${run.caseDefectCandidates.length}`);
-    if (nonUnique.length) console.log(`compile: ${nonUnique.length} 步定位核验非唯一 → route:human（见 compile-report.json）`);
+    if (nonUnique.length) {
+      // 证不出不产成功产物（R1-F3，护栏 #14）：任一步非 unique（多匹配/缺席/动作失败）→
+      // 只落诊断用 compile-report（route:human 依据），不落可进 P4 的 events/observed，非零退出。
+      gatedWrite({ [join(outDir, 'compile-report.json')]: JSON.stringify(reportDoc, null, 2) + '\n' });
+      console.error(`compile: ${nonUnique.length} 步定位核验非 unique（fail-closed，不产 events/observed）→ route:human：`);
+      for (const v of nonUnique) console.error(`  - ${v.stepId}（${v.atom}/${v.action}）resolution=${v.resolution} count=${v.candidateCount}`);
+      exitCode = 65;
+    } else {
+      const firstNav = run.events.find((e) => e.action === 'nav');
+      const eventsDoc = {
+        schemaVersion: 2, channel: 'web', caseId,
+        url: firstNav ? firstNav.url : `{{baseUrl}}${ROUTE_LIST}`,
+        recordedAt: now, compiledBy: 'casey-compile/p3', authored: false,
+        events: run.events,
+      };
+      const observedDoc = projectObserved(run, { caseId, capturedAt: now, capturedAgainstBuild: null });
+      gatedWrite({
+        [join(outDir, 'events.json')]: JSON.stringify(eventsDoc, null, 2) + '\n',
+        [join(outDir, `observed-${caseId}.json`)]: JSON.stringify(observedDoc, null, 2) + '\n',
+        [join(outDir, 'compile-report.json')]: JSON.stringify(reportDoc, null, 2) + '\n',
+      });
+      console.log(`compile: 执行段完成 → events ${run.events.length} 步 / observed ${observedDoc.steps.length} 步 / 候选 ${run.caseDefectCandidates.length}`);
+    }
   }
   clearTimeout(watchdog);
   await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
@@ -178,13 +200,27 @@ function verifyMode(caseId, args) {
     process.exit(1);
   }
   const axes = readJson(axesFile, 'axes');
-  const bad = (axes.steps || []).filter((s) => !s.action || s.action.resolution !== 'unique');
+  // 逐 event 扫（R1-F4）：intent 卷回的代表步会掩盖中间 event 的 ambiguous——优先吃 eventActions 全量；
+  // 老 axes 无该字段时退回代表步（弱判据，照实提示）。
+  const bad = [];
+  let total = 0;
+  let sawEventActions = true;
+  for (const s of axes.steps || []) {
+    const evs = Array.isArray(s.eventActions) && s.eventActions.length
+      ? s.eventActions
+      : (sawEventActions = false, [{ stepId: s.stepId, action: s.action }]);
+    for (const ea of evs) {
+      total++;
+      if (!ea.action || ea.action.resolution !== 'unique') bad.push({ stepId: ea.stepId, intentId: s.intentId, resolution: ea.action && ea.action.resolution });
+    }
+  }
   if (bad.length) {
     console.error(`compile --verify: ${bad.length} 步未过点击身份门（回放核验红，G1 判据）：`);
-    for (const s of bad) console.error(`  - ${s.stepId}（intent=${s.intentId}）resolution=${s.action && s.action.resolution}（ambiguous/失配雷点 → route:human）`);
+    for (const b of bad) console.error(`  - ${b.stepId}（intent=${b.intentId}）resolution=${b.resolution}（ambiguous/失配雷点 → route:human）`);
     process.exit(1);
   }
-  console.log(`compile --verify: ${(axes.steps || []).length} 步动作轴全 unique——events 可加载、可回放、点击身份门全过`);
+  if (!sawEventActions) console.error('compile --verify: 注意——axes 无 eventActions 字段，只核验了 intent 代表步（弱判据）');
+  console.log(`compile --verify: ${total} 步动作轴全 unique——events 可加载、可回放、点击身份门全过`);
   process.exit(0);
 }
 

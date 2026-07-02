@@ -166,6 +166,10 @@ async function main() {
       intentId: iid,
       atom: es.slice(-1)[0].atom,
       action: actionByStep.get(reprStepId) || { resolution: 'none' },
+      // 逐 event 动作轴（加性，p3 评审 R1-F4）：intent 卷回只留代表步动作，中间 event 的
+      // ambiguous/失配会被掩盖——编译回放核验（casey compile --verify）须逐 event 扫，故全量外露。
+      // verdict.mjs 只读 action.resolution，不消费本字段。
+      eventActions: es.map((e) => ({ stepId: e.stepId, action: actionByStep.get(e.stepId) || { resolution: 'none' } })),
       postAssertions: post,
       forensics: { network: net, lifecycle: { crashed: false, crashedAtStepId: null, pageerror: pe } },
     };

@@ -102,6 +102,11 @@ await checkAsync('C3 凭据门共享件', async () => {
   if (stripUrlQuery('/api/x') !== '/api/x') throw new Error('无 query 须原样');
   const bad = credentialGate({ j: '{"note":"password=abc123"}' });
   if (!bad || bad.ok !== false) throw new Error('禁字段关键词须 fail-closed { ok:false }');
+  // R1-F5 采信半边：关键词面补 token/cookie（p7 原表缺）。
+  for (const kw of ['token', 'cookie']) {
+    const hit = credentialGate({ j: `{"note":"${kw}=abc123"}` });
+    if (!hit || hit.ok !== false) throw new Error(`禁字段关键词「${kw}」须 fail-closed`);
+  }
   const good = credentialGate({ j: '{"note":"干净产物"}' });
   if (!good || good.ok !== true) throw new Error('干净产物须放行');
   const rep = await import(`file://${join(ROOT, 'bin', 'report.mjs').replace(/\\/g, '/')}`);
@@ -274,6 +279,62 @@ await checkAsync('C6 占位符 events 可回放', async () => {
       throw new Error(`回放核验判据失守：${s.stepId} resolution=${s.action && s.action.resolution}`);
     }
   }
+});
+
+// ---------- C4d 确认门防篡改（R1-F1）：confirm 后被改坏的 flow 不得执行 ----------
+const dirC = join(tmp, 'out-c'); mkdirSync(dirC, { recursive: true });
+await checkAsync('C4d 执行段重验闸（防 confirm 后篡改）', async () => {
+  const g = run([CASEY, 'compile', CASE_ID, '--testcase', tcFile, '--flow', writeFlow(FLOW_GOOD, 'flow.c.json'), '--out-dir', dirC]);
+  if (g.status !== 0) throw new Error(`过闸应 0，实际 ${g.status}`);
+  const flowFile = join(dirC, `flow-${CASE_ID}.json`);
+  const flow = JSON.parse(readFileSync(flowFile, 'utf8'));
+  flow.confirmedBy = 'golden-human'; flow.confirmedAt = '2026-07-02T00:00:00.000Z';
+  flow.flow.steps[0].params.name = '目录CRUD裸名篡改'; // confirm 后把实体名改掉前缀——须被执行段重验拦住
+  writeFileSync(flowFile, JSON.stringify(flow, null, 2));
+  const e = run([CASEY, 'compile', CASE_ID, '--execute', '--sut', sutHappy.url, '--out-dir', dirC, '--profile', profFile, '--skip-login', '--unique-name', 'g3']);
+  if (e.status !== 65) throw new Error(`篡改 flow 执行应 exit 65（重验闸 fail-closed），实际 ${e.status}`);
+  if (existsSync(join(dirC, 'events.json'))) throw new Error('篡改 flow 不得产 events.json');
+});
+
+// ---------- C8 非唯一拒产出（R1-F2/F3）：多匹配绝不点击、执行段非零退出、events 不落盘 ----------
+const dirD = join(tmp, 'out-d'); mkdirSync(dirD, { recursive: true });
+await checkAsync('C8 多匹配拒动作拒产出', async () => {
+  let sutAmb2;
+  try {
+    sutAmb2 = await startFakeSut({ scenario: 'ambiguous' });
+    const g = run([CASEY, 'compile', CASE_ID, '--testcase', tcFile, '--flow', writeFlow(FLOW_GOOD, 'flow.d.json'), '--out-dir', dirD]);
+    if (g.status !== 0) throw new Error(`过闸应 0，实际 ${g.status}`);
+    const flowFile = join(dirD, `flow-${CASE_ID}.json`);
+    const flow = JSON.parse(readFileSync(flowFile, 'utf8'));
+    flow.confirmedBy = 'golden-human'; flow.confirmedAt = '2026-07-02T00:00:00.000Z';
+    writeFileSync(flowFile, JSON.stringify(flow, null, 2));
+    const e = run([CASEY, 'compile', CASE_ID, '--execute', '--sut', sutAmb2.url, '--out-dir', dirD, '--profile', profFile, '--skip-login', '--unique-name', 'g4']);
+    if (e.status !== 65) throw new Error(`保存按钮多匹配执行应 exit 65（证不出→非零，fail-safe），实际 ${e.status}`);
+    if (existsSync(join(dirD, 'events.json'))) throw new Error('非唯一执行不得产可进 P4 的 events.json');
+    if (!existsSync(join(dirD, 'compile-report.json'))) throw new Error('诊断用 compile-report.json 应照落（route:human 依据）');
+    const rep = JSON.parse(readFileSync(join(dirD, 'compile-report.json'), 'utf8'));
+    if (!rep.verification.some((v) => v.resolution === 'multi' && v.acted === false)) throw new Error('多匹配步须记 multi 且 acted=false（绝不点击）');
+  } finally { if (sutAmb2) await sutAmb2.close(); }
+});
+
+// ---------- C7b 逐 event 核验（R1-F4）：intent 中间步 ambiguous 不得被代表步掩盖 ----------
+const dirE = join(tmp, 'out-e'); mkdirSync(dirE, { recursive: true });
+await checkAsync('C7b verify 逐 event 不被卷回掩盖', async () => {
+  writeFileSync(join(dirE, 'events.json'), JSON.stringify({
+    schemaVersion: 2, channel: 'web', caseId: CASE_ID,
+    url: '{{baseUrl}}/ai-manager/process/list', recordedAt: '2026-07-02T00:00:00.000Z',
+    compiledBy: 'golden-crafted', authored: false,
+    events: [
+      { stepId: 'atstep_0', intentId: 'intent_0', atom: 'workflow.create', action: 'nav', url: '{{baseUrl}}/ai-manager/process/list' },
+      { stepId: 'atstep_1', intentId: 'intent_0', atom: 'workflow.create', action: 'click', semantic: { kind: 'text', name: '删除', exact: true }, text: '删除' },
+      { stepId: 'atstep_2', intentId: 'intent_0', atom: 'workflow.create', action: 'click', semantic: { kind: 'role', role: 'button', name: '新增工作流', exact: true }, text: '新增工作流' },
+    ],
+  }));
+  // happy 列表两行 → 「删除」count=2 = 中间步多匹配；代表步（最后一步）unique——verify 须仍红且点名 atstep_1。
+  const v = run([CASEY, 'compile', CASE_ID, '--verify', '--sut', sutHappy.url, '--out-dir', dirE, '--profile', profFile]);
+  if (v.status === 0) throw new Error('intent 中间步 ambiguous 时 verify 应非零（代表步聚合不得掩盖）');
+  const out = `${v.stdout || ''}${v.stderr || ''}`;
+  if (!out.includes('atstep_1')) throw new Error('verify 失败输出须点名中间雷点步 atstep_1');
 });
 
 // ---------- C7 回放核验器 CLI（G1 取 B）：unique 全过才 0，ambiguous 非零+雷点清单 ----------
