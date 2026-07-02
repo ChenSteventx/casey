@@ -158,15 +158,15 @@ await checkAsync('C4 闸+confirm+执行 happy', async () => {
   const g2 = run([CASEY, 'compile', CASE_ID, '--testcase', tcFile, '--flow', writeFlow(FLOW_BAD_PREFIX, 'flow.bad.json'), '--out-dir', dirBad]);
   if (g2.status !== 65) throw new Error(`坏 flow 应 exit 65（fail-closed），实际 ${g2.status}`);
   if (existsSync(join(dirBad, `flow-${CASE_ID}.json`))) throw new Error('坏 flow 不得落盘 canonical flow');
-  // 人 confirm 门：未确认拒跑 exit 66、不产 events
-  const e1 = run([CASEY, 'compile', CASE_ID, '--execute', '--sut', sutHappy.url, '--out-dir', dirA, '--profile', profFile, '--skip-login', '--unique-name', 'g1']);
+  // 人 confirm 门：未确认拒跑 exit 66、不产 events（执行段以 --testcase 为不可变锚，R2-F1）
+  const e1 = run([CASEY, 'compile', CASE_ID, '--execute', '--testcase', tcFile, '--sut', sutHappy.url, '--out-dir', dirA, '--profile', profFile, '--skip-login', '--unique-name', 'g1']);
   if (e1.status !== 66) throw new Error(`未 confirm 执行应 exit 66，实际 ${e1.status}`);
   if (existsSync(join(dirA, 'events.json'))) throw new Error('未 confirm 不得产 events.json');
   const flow = JSON.parse(readFileSync(flowFile, 'utf8'));
   flow.confirmedBy = 'golden-human'; flow.confirmedAt = '2026-07-02T00:00:00.000Z';
   writeFileSync(flowFile, JSON.stringify(flow, null, 2));
   // 执行：产 events + observed + 编译期核验记录
-  const e2 = run([CASEY, 'compile', CASE_ID, '--execute', '--sut', sutHappy.url, '--out-dir', dirA, '--profile', profFile, '--skip-login', '--unique-name', 'g1']);
+  const e2 = run([CASEY, 'compile', CASE_ID, '--execute', '--testcase', tcFile, '--sut', sutHappy.url, '--out-dir', dirA, '--profile', profFile, '--skip-login', '--unique-name', 'g1']);
   if (e2.status !== 0) throw new Error(`confirm 后执行应 exit 0，实际 ${e2.status}：${(e2.stderr || '').slice(-300)}`);
   for (const f of ['events.json', `observed-${CASE_ID}.json`, 'compile-report.json']) {
     if (!existsSync(join(dirA, f))) throw new Error(`执行后缺产物 ${f}`);
@@ -251,7 +251,7 @@ await checkAsync('C5 CASE_DEFECT 候选', async () => {
   const flow = JSON.parse(readFileSync(flowFile, 'utf8'));
   flow.confirmedBy = 'golden-human'; flow.confirmedAt = '2026-07-02T00:00:00.000Z';
   writeFileSync(flowFile, JSON.stringify(flow, null, 2));
-  const e = run([CASEY, 'compile', CASE_ID, '--execute', '--sut', sutHappy.url, '--out-dir', dirB, '--profile', profFile, '--skip-login', '--unique-name', 'g2']);
+  const e = run([CASEY, 'compile', CASE_ID, '--execute', '--testcase', tcFile, '--sut', sutHappy.url, '--out-dir', dirB, '--profile', profFile, '--skip-login', '--unique-name', 'g2']);
   if (e.status !== 0) throw new Error(`入口缺席不 fail 全盘、应 exit 0，实际 ${e.status}：${(e.stderr || '').slice(-300)}`);
   const ev = JSON.parse(readFileSync(join(dirB, 'events.json'), 'utf8'));
   if (ev.events.some((x) => x.atom === 'workflow.deleteByName')) throw new Error('入口缺席的原子不得落 event');
@@ -289,10 +289,14 @@ await checkAsync('C4d 执行段重验闸（防 confirm 后篡改）', async () =
   const flowFile = join(dirC, `flow-${CASE_ID}.json`);
   const flow = JSON.parse(readFileSync(flowFile, 'utf8'));
   flow.confirmedBy = 'golden-human'; flow.confirmedAt = '2026-07-02T00:00:00.000Z';
-  flow.flow.steps[0].params.name = '目录CRUD裸名篡改'; // confirm 后把实体名改掉前缀——须被执行段重验拦住
+  // R2-F1 双篡改（自洽伪造）：实体名改裸名 + flow 文件自带锚 uniquePrefix 一起改配套——
+  // 执行段重验必须以 --testcase（不可变锚）为准而非 flow 文件自带字段，否则放行。
+  flow.flow.steps[0].params.name = '目录CRUD裸名篡改';
+  flow.uniquePrefix = '目录';
+  flow.preconditions = ['已登录'];
   writeFileSync(flowFile, JSON.stringify(flow, null, 2));
-  const e = run([CASEY, 'compile', CASE_ID, '--execute', '--sut', sutHappy.url, '--out-dir', dirC, '--profile', profFile, '--skip-login', '--unique-name', 'g3']);
-  if (e.status !== 65) throw new Error(`篡改 flow 执行应 exit 65（重验闸 fail-closed），实际 ${e.status}`);
+  const e = run([CASEY, 'compile', CASE_ID, '--execute', '--testcase', tcFile, '--sut', sutHappy.url, '--out-dir', dirC, '--profile', profFile, '--skip-login', '--unique-name', 'g3']);
+  if (e.status !== 65) throw new Error(`双篡改 flow 执行应 exit 65（重验以 TestCase 为锚），实际 ${e.status}`);
   if (existsSync(join(dirC, 'events.json'))) throw new Error('篡改 flow 不得产 events.json');
 });
 
@@ -308,9 +312,13 @@ await checkAsync('C8 多匹配拒动作拒产出', async () => {
     const flow = JSON.parse(readFileSync(flowFile, 'utf8'));
     flow.confirmedBy = 'golden-human'; flow.confirmedAt = '2026-07-02T00:00:00.000Z';
     writeFileSync(flowFile, JSON.stringify(flow, null, 2));
-    const e = run([CASEY, 'compile', CASE_ID, '--execute', '--sut', sutAmb2.url, '--out-dir', dirD, '--profile', profFile, '--skip-login', '--unique-name', 'g4']);
+    // R2-F3：out-dir 预放旧「成功产物」——失败运行后不得残留假冒本轮成功。
+    writeFileSync(join(dirD, 'events.json'), JSON.stringify({ stale: true }));
+    writeFileSync(join(dirD, `observed-${CASE_ID}.json`), JSON.stringify({ stale: true }));
+    const e = run([CASEY, 'compile', CASE_ID, '--execute', '--testcase', tcFile, '--sut', sutAmb2.url, '--out-dir', dirD, '--profile', profFile, '--skip-login', '--unique-name', 'g4']);
     if (e.status !== 65) throw new Error(`保存按钮多匹配执行应 exit 65（证不出→非零，fail-safe），实际 ${e.status}`);
-    if (existsSync(join(dirD, 'events.json'))) throw new Error('非唯一执行不得产可进 P4 的 events.json');
+    if (existsSync(join(dirD, 'events.json'))) throw new Error('非唯一执行不得产/残留可进 P4 的 events.json（含旧产物清场）');
+    if (existsSync(join(dirD, `observed-${CASE_ID}.json`))) throw new Error('非唯一执行不得残留旧 observed（假冒本轮成功）');
     if (!existsSync(join(dirD, 'compile-report.json'))) throw new Error('诊断用 compile-report.json 应照落（route:human 依据）');
     const rep = JSON.parse(readFileSync(join(dirD, 'compile-report.json'), 'utf8'));
     if (!rep.verification.some((v) => v.resolution === 'multi' && v.acted === false)) throw new Error('多匹配步须记 multi 且 acted=false（绝不点击）');

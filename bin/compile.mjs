@@ -10,7 +10,7 @@
 //
 // 退出码：0 成功；1 运行时失败/凭据门拦；64 缺参；65 输入坏/闸拒（fail-closed）；66 flow 未 confirm。
 // 所有落盘口过 lib/cred-gate.mjs（G5 取 B，护栏 #7）。本进程零 LLM、零裁定（护栏 #15）。
-import { readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
@@ -93,17 +93,30 @@ async function executeMode(caseId, args) {
     console.error('compile: flow 草稿未经人 confirm（confirmedBy/confirmedAt 空）——破坏性原子上真机前须人眼一道（G3 人签门），拒跑');
     process.exit(66);
   }
-  // 执行段重验闸（R1-F1）：flow-<caseId>.json 是可编辑文件，confirm 后被篡改（裸名破坏性原子/坏状态机）
-  // 不得凭旧 gate 结论上真机——上真机前以当下内容重跑三闸，fail-closed。
+  // 执行段重验闸（R1-F1 + R2-F1）：flow-<caseId>.json 是可编辑文件，自带 uniquePrefix/preconditions
+  // 可与 flow 一起自洽伪造——重验锚点一律取 --testcase（不可变 TestCase），不信 flow 文件自带字段。
+  const tc = readJson(args.testcase, 'TestCase');
+  if (tc.caseId !== caseId || flowDoc.caseId !== caseId) {
+    console.error(`compile: caseId 不一致（命令行 ${caseId} / TestCase ${tc.caseId} / flow ${flowDoc.caseId}），拒跑`);
+    process.exit(65);
+  }
+  if (typeof tc.uniquePrefix !== 'string' || !tc.uniquePrefix.length) {
+    console.error('compile: TestCase.uniquePrefix 缺失/空——破坏性前缀硬闸无锚，拒跑（fail-closed）');
+    process.exit(65);
+  }
   {
     const registry = readJson(SNAPSHOT_FILE, '原子注册表快照');
-    const re = validateDraft(flowDoc.flow, { prefix: flowDoc.uniquePrefix, registry, initialStates: flowDoc.preconditions || [] });
+    const re = validateDraft(flowDoc.flow, { prefix: tc.uniquePrefix, registry, initialStates: tc.preconditions || [] });
     if (!re.ok) {
       console.error(`compile: 执行前重验闸未过（${re.problems.length} 问题，疑 confirm 后被改）：`);
       for (const p of re.problems) console.error(`  - ${p}`);
       process.exit(65);
     }
   }
+  // 旧成功产物清场（R2-F3）：本目录语义 = 本次运行结果；先清旧 events/observed，
+  // 失败路径绝不让上一轮成功产物残留假冒本轮（可进 P4 的只能是本轮全 unique 产物）。
+  rmSync(join(outDir, 'events.json'), { force: true });
+  rmSync(join(outDir, `observed-${caseId}.json`), { force: true });
   const profile = readJson(args.profile, '通道剖面');
   const sut = String(args.sut).replace(/\/$/, '');
   const uniqueName = String(args['unique-name'] || Date.now().toString(36));
@@ -145,20 +158,22 @@ async function executeMode(caseId, args) {
   if (exitCode === 0) {
     const now = new Date().toISOString();
     const reportDoc = {
-      caseId, compiledAt: now, uniquePrefix: flowDoc.uniquePrefix,
+      caseId, compiledAt: now, uniquePrefix: tc.uniquePrefix,
       verification: run.verification,
       countAudit: run.countAudit,
+      blockers: run.blockers,
       caseDefectCandidates: run.caseDefectCandidates,
       handoff: { assertionAtoms: run.assertionAtoms },
       notes: run.notes,
     };
     const nonUnique = run.verification.filter((v) => v.resolution !== 'unique');
-    if (nonUnique.length) {
-      // 证不出不产成功产物（R1-F3，护栏 #14）：任一步非 unique（多匹配/缺席/动作失败）→
+    if (nonUnique.length || run.blockers.length) {
+      // 证不出不产成功产物（R1-F3 + R2-F4，护栏 #14）：任一步非 unique 或存在硬阻断 →
       // 只落诊断用 compile-report（route:human 依据），不落可进 P4 的 events/observed，非零退出。
       gatedWrite({ [join(outDir, 'compile-report.json')]: JSON.stringify(reportDoc, null, 2) + '\n' });
-      console.error(`compile: ${nonUnique.length} 步定位核验非 unique（fail-closed，不产 events/observed）→ route:human：`);
+      console.error(`compile: ${nonUnique.length} 步非 unique + ${run.blockers.length} 硬阻断（fail-closed，不产 events/observed）→ route:human：`);
       for (const v of nonUnique) console.error(`  - ${v.stepId}（${v.atom}/${v.action}）resolution=${v.resolution} count=${v.candidateCount}`);
+      for (const b of run.blockers) console.error(`  - ${b}`);
       exitCode = 65;
     } else {
       const firstNav = run.events.find((e) => e.action === 'nav');
@@ -233,7 +248,7 @@ async function main() {
     return verifyMode(caseId, args);
   }
   if (args.execute) {
-    for (const k of ['sut', 'out-dir', 'profile']) if (!args[k]) { console.error(`compile --execute: 缺 --${k}`); process.exit(64); }
+    for (const k of ['sut', 'out-dir', 'profile', 'testcase']) if (!args[k]) { console.error(`compile --execute: 缺 --${k}`); process.exit(64); }
     return executeMode(caseId, args);
   }
   for (const k of ['testcase', 'flow', 'out-dir']) if (!args[k]) { console.error(`compile: 缺 --${k}（闸段用法：--testcase <f> --flow <f> --out-dir <d>）`); process.exit(64); }
