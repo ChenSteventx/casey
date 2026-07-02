@@ -3,16 +3,42 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 当前状态（2026-07-01）
+## 当前状态（2026-07-02）
 
-2026-07-01（跨两 session）开发流程兜底 + 收口一批（最近一 session 6 提交 `9a9ff03`→`9c5e4cf` 全入 dev；当下工作树以 git status 为准）：
+本 session（2026-07-02）收口一批（827cebc/7c52114/a06c29c 三笔入 dev + 交接文档一笔随后提交，工作树随之干净）：
+
+1. `seams-freeze-v2`（full）六阶段全收口——codex 异构评审十二轮 R1..R12 至 PASS（`loop/audit.jsonl` 有案）：R1 续钉 hard invariant 升 schema 层机制化（827cebc）；R5–R11 本 session 逐轮采信去修 26 条发现、红方向注入亲验 31 场景（7c52114）——指纹真算、SUT_DEFECT 证据背书链（至少一个证据指针→取证指针真信号非装饰→混合证据同锁→空串空壳封口，镜像 `verdict.mjs` 背书语义）、golden 校验器 fail-closed 全量兑现（与数据无关全量预扫 + 关键字值元校验 + `$ref` 悬空/null 子 schema/空组合数组全拒）、三凭据扫描器各带自测金丝雀（key 子串/value kv 提取/字段名字符串）、join 四重（driverId 双向/actionSpace 包含/channel 一致/call 全等）、run-metrics 聚合复算、locatorResolution×action 类别绑定。R9-F1 修正采纳留案：拒「SUT_DEFECT 必须失败断言」（违 ADR-0002，可仅由 5xx/pageerror/crash 背书），改钉证据指针。learn 落 `docs/plans/seams-freeze-v2/learn.md`。
+2. `layer3-wiring`（light）六阶段全收口（上一 session 尾、b4985d9）——codex 七轮 R7 判 PASS 记 audit，装配器 fail-safe 硬化：verdict⋈axes 一致性门、join 双射、schema 自守、现实形状凭据脱敏；learn 落 `docs/plans/layer3-wiring/learn.md`。
+3. P3 真机 bring-up 前置全解除（a06c29c）——备料三草稿（`docs/plans/p3-compile/proposed/`：`catalog_wf_crud` 重表达清单 7 步→4 intent/15 event、观测现状采集计划、grill 决策草稿 G1–G7，零 baton 子代理产出、全留人签、route:human 7 项）；凭据现场就位（`.auth/` 自 autotester 拷入 + site.json 起草，均 gitignored、内容不进任何输出）；WSL 直连站点不通（Windows 防火墙拦正向入站，亲验 Windows 通/WSL 不通）→ 反向隧道落地（`scripts/wsl-reverse-listen.mjs` + `scripts/win-reverse-agent.mjs` + 重拉 `scripts/win-forward-start.cmd`），登录页经隧道亲验 HTTP 200、site.json 记 `devProxyUrl`；UAT 不能真造 500（用户确认）→ `SUT_DEFECT` 场景改回放侧代理拦截注入（进 P3 grill 决策）。
+
+以下为上一 session（2026-07-01 续）快照——其中 `layer3-wiring` 的 review 修复回合与残留项均已收口（见顶部 1/2），只溯源、勿据其判现状：
+
+`layer3-wiring` 的 review 修复回合进行中（review 阶段未推进、活契约仍 review+learn 待）。codex 异构评审（`gpt-5.5`、只读、空 cwd 喂 stdin，护栏 #9）两轮都判 `FAIL`：
+
+- 第 1 轮 9 发现（5 高 + 3 中 + 1 低），逐条核实全成立、采信去修：F1 缺陷单空证据 / F2 生命周期背书漏投 / F3 URL query 与信封值凭据泄漏 / F4 join 缺失静默假通过 / F5 无 schema 自守 / F6 未知 verdict 静默忽略 / F7 `!!` 掩盖输入损坏 / F8 未接 `--expected` / F9 缺参 exit 3 非 64。
+- 已落工作树（**未提交**）：`lib/report-model.mjs` 装配器硬化（缺陷单背书与 `verdict.mjs` 同源含生命周期 pageerror/crash、找不到背书 fail-closed 抛、`url` 剥 query/hash、verdict/channel 枚举 + reason 一致性 + caseId + steps 非空 + 布尔 `ok`/`soft` 自守、verdict⋈axes 唯一 join）+ `bin/report-model.mjs`（F8 文档化取舍）+ `bin/casey.mjs`（F9 exit 64）+ 新 `tests/_golden/layer3-wiring-coverage.golden.mjs`（20 检查，红→绿严格核：先对未修装配器跑 17 红）+ `loop/prd-layer3-wiring.json`（加 testChecksum、加 story `s2-assembler-failsafe-coverage`）。`gate --prd prd-layer3-wiring` GREEN 2/2、原冻结 golden 2/2 仍绿、`selftest --tier1` 无回归。
+- 第 2 轮复审：F2 / F4(主) / F6 / F7 / F9 **已闭合**；**残留待下轮收**：
+  - F3 未闭合——`safeScalar` 只 redact 对象/数组，标量字符串 `errorEnvelope.actual`/`expected` 仍可原样搬 `token=…&email=…`（护栏 #7）；须对标量值也脱敏/摘要。
+  - F5 未闭合——残余非法产物路径：`meta.passes` 非布尔 / `meta.title` 非字符串 / `generatedAt` 未验 date-time / `events.action` 为对象→`action.kind` 对象 / `network.status` 非整数 / `errorEnvelope.field` 缺失或非字符串。
+  - 新语义洞——`buildDefectTicket` 无失败硬断言时无条件合成 `actionPerformed` 断言，未校验上游确有 `ap===false`；若 `SUT_DEFECT` 仅由 5xx/pageerror/crash 背书且动作实已执行，会造无证据的失败断言（违「只读消费者」精神）。须先验动作轴再决定是否合成。
+  - F4 提醒——装配器拒 `stepId:null` 而 report schema 允许 null；实操 replay 恒 `atstep_i` 非 null、暂无误伤，收残留时一并确认是否放宽。
+  - F8 codex 认可作 P3 范围延期（非代码闭合）。
+
+（上段「下轮首要」已完成：codex 续评至 R7 判 PASS、随 b4985d9 收口，见顶部本 session 2。）
+
+上一 session（2 提交 `f41e527`→`a7ab5e9` 全入 dev）：
+
+1. `seams-freeze-v2`（full）四接缝冻结已完成——借鉴接缝 v2 增冻（`run-history`/`action-vocabulary`/`failure-ledger`/`channelDriver`）：grill 收口（承重决策 1.1/2.2/3.3 人签 + 7 机械决策，合并记录 `docs/plans/seams-freeze-v2/proposed/GRILL.md`）→ plan → accept → loop，gate GREEN，9 文件 checksum 冻入 `prd-seams-freeze-v2`，`CONTEXT.md` 登记 6 术语（动作词汇表/通道驱动/回放历史/失败记录台账/失败指纹/人裁决回填），tier-1 无回归。承重决策 2.2 人签把 `channelDriver` 从后置接缝拉进本轮、范围扩到四接缝。（本条快照的「review + learn 待」已于 2026-07-02 十二轮收口，见顶部本 session 1。）
+2. `layer3-wiring`（light）第 3 层集成 hermetic 骨架已建成——补上 `verdict→report` 唯一断链：新建 `lib/report-model.mjs` 报表模型装配器（verdict ⋈ 三轴 ⋈ 观测现状 ⋈ 冻结契约 → report-model，符合已冻 schema、缺陷单仅 SUT_DEFECT）+ 薄 CLI `bin/report-model.mjs` + `casey run` 编排器（串 相3→相4→装配→相6，`runs/<caseId>/<runId>/` 布局 + 退出码归一 fail-closed）；hermetic 端到端 golden 假 SUT × 2 场景（happy→PASS / inject500→SUT_DEFECT）2/2 绿、红→绿严格核实（stash impl 退桩红），gate GREEN、tier-1 无回归。确定性尾段（相3-6）现对合成数据端到端跑通。（本条快照的「review+learn 待」已收口六阶段全 done，见顶部本 session 2。）真数据端到端 = P3 之后的直接下一步。
+
+以下为前两 session（2026-07-01 跨两 session）开发流程兜底 + 收口一批（6 提交 `9a9ff03`→`9c5e4cf` 全入 dev）：
 
 1. 模型分层升级——`loop/config.json` 改 Opus 4.8 ultracode 主环 + Sonnet 5 max subagent 轻车道 + 三级兜底梯（详见「锁定的决策」2026-07-01 条）。
 2. `term-guard` 契约（统一语言强制兜底，6 阶段全绿）：甲 `bin/term-guard.mjs`（零 LLM 拦 R3 比喻格式 / R6 加粗未登记英文与弃用别名，引用豁免只认反引号）+ 乙 `bin/term-judge.mjs`（语义评分员，待非 Claude 密钥）；codex 九轮异构评审 pass；Stop 钩子 warn-only 接线（不改 loop-kit）。
 3. `model-lane-guard` 契约（模型分层强制兜底，6 阶段收口）：I1 `bin/verdict-purity-guard.mjs`（静态扫 `verdict.mjs` 依赖闭包无 LLM/网络客户端，接入 `casey selftest --tier1`，护栏 #15）+ I2 `bin/config-lane-guard.mjs` + `.claude/settings.json` 独立 PostToolUse 钩子（断言 config 异构不塌同族，护栏 #9）；codex 四轮异构评审 6→5→2→0 收敛，逐轮钉红 golden 硬化（全局 fetch/注释插入/目录 index/minified import/未映射族 fail-closed/路径穿越+软链）。**两条不变量从文档策略变成机制强制，守卫已上线。**
 4. `hermetic-gap-freeze`（direct）：两份缺口 coverage golden 补冻——P7 credentialGate（护栏 #7 落盘前拒写）入 `prd-p7-report`、P6 nextStatus superseded 状态边入 `prd-p6-selfheal`，gate 各 2/2。
 5. `p5-replay` learn 收口——P5 回放核心契约 6 阶段全 done（learn 见 `docs/plans/p5-replay/learn.md`）；tier-2 真机 route:human 仍未走。
-6. `seams-freeze-v2`（full）grill 进行中——接缝冻结第二批，3 承重决策已人签、run-history 三改已落（见「契约 / 运维」与「下一步」1）。
+6. `seams-freeze-v2`（full）grill 当时进行中——现已四接缝冻结完成、见本节顶「本 session」1（本条为前 session 快照、只溯源勿据其判现状）。
 
 以下 P5 与排期为 2026-06-30 快照（★注意：其中 P5 的 review/learn 已在最近一 session 收口、6 阶段全 done，见「当前状态」与「契约 / 运维」；本段只溯源、勿据其中「待跑」字样判现状）：
 
@@ -116,21 +142,21 @@ P5 回放内核 loop 绿后接异构评审（与上节 P2/verdict 评审不同�
 
 ## 下一步
 
-> 新会话接续顺序：① 接续活契约 `seams-freeze-v2` 的 grill（见下 1）→ ② 其余任选。活契约现为 `seams-freeze-v2`（full，grill 进行中），切 baton 见「契约 / 运维」。
+> 新会话接续顺序：① P3 真机 bring-up（首推，料全齐、前置全解除）→ ② 其余任选。活契约槽 = `seams-freeze-v2` 六阶段全 done、baton 空闲，下一契约直接 `contract init`。
 
-1. **首推（接续活契约）** `seams-freeze-v2` grill——接缝冻结第二批。3 决策已人签：1.1 run-history 删 `cacheStatus`/`cacheHitRate`、编译期复用溯源字段登记 deferred（不动已冻 `events.schema`、本轮不建）；2.2 `channelDriver` 拉进本轮 co-grill（范围扩到四接缝、channelDriver 净新无草稿）；3.3 fingerprint 聚类粒度延后到哈希实现阶段 route:human。7 机械决策见 `docs/plans/seams-freeze-v2/proposed/GRILL-DECISIONS.md`。run-history 三改已落已提交（`method`→`action` / `intentId` 改 `minLength:1` / 删 `cacheStatus`）。剩：run-history 的 fixture+grill.md 跟 schema 改 → 起草净新 `channelDriver` 接缝（`actionSpace` ⊆ `events.schema` 的 action 枚举、凭据不进护栏 #7）+ 定它与 action-vocabulary 边界（决策 2.2 核心）→ action-vocabulary/failure-ledger 决策落地 → 写合并 grill.md + 登记 `CONTEXT.md` 新词 → advance grill → plan → accept（冻四接缝 schema+fixture 入新 `prd-seams-freeze-v2`）→ loop（golden 校验器）→ codex 异构评审 → learn。
-2. `p2-intent-compile` 的 learn（沉淀收尾，轻）。
-3. tier-2 真机（route:human，护栏 #16 gate 绿 != 完成）：`catalog_wf_crud` 真站全 PASS + 注 HTTP500 出 `SUT_DEFECT` + CDP initiator 真发起方在真 Heren 流量下可靠度（ADR-0007 推翻条件）。依赖 P3 编译 + P5 真回放。
-4. Layer-3 集成（排期 v3 第 3 层）：compile-gate 真产物 → P5 真回放 → verdict → P7 报告，首条 web 端到端（真报告——录屏/trace/截图由真回放产出，不再是合成 fixture）。
-5. `term-guard` 乙真接线（待 `~/.loop-kit` 非 Claude 密钥）：`bin/term-judge.mjs` 的 `callRealJudge` 接真评分员（复用 review 道 DeepSeek/codex 路径），观察期无误判后把 `bin/term-guard-hook.mjs` 的 `WARN_ONLY` 置 false 切硬拦。
-6. push：本仓无 git 远端（`git remote` 空），待定 GitHub 目标仓。
-7. 坏引用挂账（route:human）：loop 纪律 hook 引的 `docs/decisions/2026-06-12-loop-kit.md` 不存在，根在冻结 `loop-kit/bin/hook-loop-triage.mjs:8` 与 `.claude/skills/acceptance-gate/SKILL.md:8`，真身 `docs/adr/0001-reuse-loop-kit.md`。
+1. **首推** P3 真机 bring-up：`contract init p3-compile --lane full` → grill（吃 `docs/plans/p3-compile/proposed/grill-draft.md` 的 G1–G7、人签）→ plan → accept → loop：骑 regress `catalog_wf_crud` 重表达产真 events.json + 观测现状（基址用 site.json 的 `devProxyUrl`、先拉反向隧道，见 NEXT-SESSION 环境坑）→ 灌 `casey run` 管线（已通）→ 相2 断言草拟+冻结+人签 → tier-2 真站 UAT：验四态 + CDP initiator 真发起方归因可靠度（ADR-0007 推翻条件）；500 场景走回放侧代理拦截注入（不能真造，用户已确认）。
+2. `casey run` 编排器接 `run-history.jsonl`/`run-metrics.json` 真产出（light 车道）——刚冻的接缝、编排器是天然生产者；可与 1 的 grill 等待期错峰。
+3. `p2-intent-compile` 的 learn（沉淀收尾，轻）。
+4. `term-guard` 乙真接线（待 `~/.loop-kit` 非 Claude 密钥）：`bin/term-judge.mjs` 的 `callRealJudge` 接真评分员（复用 review 道 DeepSeek/codex 路径），观察期无误判后把 `bin/term-guard-hook.mjs` 的 `WARN_ONLY` 置 false 切硬拦。
+5. push：本仓无 git 远端（`git remote` 空），待定 GitHub 目标仓。
+6. 坏引用挂账（route:human）：loop 纪律 hook 引的 `docs/decisions/2026-06-12-loop-kit.md` 不存在，根在冻结 `loop-kit/bin/hook-loop-triage.mjs:8` 与 `.claude/skills/acceptance-gate/SKILL.md:8`，真身 `docs/adr/0001-reuse-loop-kit.md`。
 
 ## 契约 / 运维
 
-- 活契约 `loop/active-contract.json`（runtime、gitignored）现 = `seams-freeze-v2`（full，grill 进行中、六阶段全 false）。切 baton：`contract init <slug>` 重置台账（不丢磁盘草稿）。要提交而活契约是 pre-loop 的 full：先 `init` 一个 `direct` 契约授权 commit、提完 re-init 原契约恢复 baton（本会话即如此提交 6 笔）。恢复某已 done 契约的台账：re-init + 逐阶段 re-advance（grill 带 `--user-confirmed`、accept 带 `--red-verified`、artifact 交对应产物），gate 复验绿背书。
+- 活契约 `loop/active-contract.json`（runtime、gitignored）现 = `seams-freeze-v2`（full，六阶段全 done）——baton 空闲，下一契约直接 `contract init <slug>`（重置台账、不丢磁盘草稿）。要提交而活契约是 pre-loop 的 full：先 `init` 一个 `direct` 契约授权 commit、提完 re-init 原契约恢复 baton；light 契约 plan 后 commit-impl 即放行、无 lib/bin 的提交任何时候放行；post-loop 的 full 契约提交放行。恢复某已 done / 被覆盖 契约的台账：re-init + 逐阶段 re-advance（grill 带 `--user-confirmed`、accept 带 `--red-verified`、artifact 交对应产物），gate 复验绿背书。
 - 契约一览：
-  - `seams-freeze-v2`（full）：grill 进行中（六阶段全 false）。见「下一步」1。
+  - `layer3-wiring`（light）：六阶段全 done（codex 七轮 R7 PASS 记 audit、learn 落 `docs/plans/layer3-wiring/learn.md`；gate GREEN 2/2、覆盖 golden 51 检查）。
+  - `seams-freeze-v2`（full）：六阶段全 done（codex 十二轮 R12 PASS 记 audit、learn 落 `docs/plans/seams-freeze-v2/learn.md`；gate GREEN、golden 13 组、`CONTEXT.md` 登记 6 术语）。四接缝 lib/bin 真产出随真机集成 route:human（prd observability 列）。
   - `term-guard`：6 阶段 done（gate GREEN 2/2、codex 九轮异构评审 pass、Stop 钩子 warn-only；乙真接线待密钥见「下一步」5）。
   - `model-lane-guard`：6 阶段 done（gate GREEN 2/2、codex 四轮异构评审 6→5→2→0 收敛 pass；I1+I2 守卫上线）。
   - `hermetic-gap-freeze`（direct）：done（两份缺口 coverage golden 补冻入 prd-p7-report / prd-p6-selfheal，gate 各 2/2）。
