@@ -18,8 +18,8 @@
 9. **G-seam 推定已获追认**（Steven「追认」2026-07-02 深夜）：schema 双 enum 对齐转正式人签，`prd-p4-drafter` observability 该项核销、GRILL 已改记。
 10. `draft-cli`（light）六阶段全收口：`casey draft` 上线（骨架+`--patch` 补缝合并+闸+落草稿，违规整份拒）；codex 两轮 R2 PASS（R1 四发现：三采信——caseId 缺席同拒/限形状防穿越/裸 `--patch` 拒；一修正采纳——凭据门退出码取 compile 先例 1，修 GRILL 措辞钉约定获 R2 认可）；learn 四教训（薄 CLI 是不可信输入第一道闸 / 一致性闸缺席分支 / 文件名标识符验形状 / 修正采纳第三种处置）。挂账：`compile.mjs` 有同型 caseId 拼文件名缝（顺手同修候选）。
 11. `kinds-harden`（light）六阶段全收口——`textVisible`/`noErrorToast` 提硬（`IMPLEMENTED_KINDS` 5→7）：replay 代表步静默点现场采（toast 快照选择器逐字复刻 compile 观测采集 + `getByText`/toast 双通道命中计数），缺采集一律证不出；`noErrorToast` 词表判（`失败|错误|异常`，Steven 人签 G1；`actual` 携实采全文可纠错；结构类名收紧挂账 route:human）。三份冻结 golden「未实现范例」随 D2 生命周期翻转（范例换 `buttonState`/soft 翻硬，GRILL G2 清单红先行、各 prd 补冻、四 gate GREEN）；codex 一轮 PASS 零发现；learn 四教训（范例钉点会过期 / 新 kind 成本在采集 / 采集器同构纪律 / 词表判+全量证据回填）。`casey draft` 真用例重产草稿 **7 条全硬（soft 0）**——D2「补实现→重签提硬」首次真兑现。
-12. **挂账待 Steven（route:human）**：重签提硬——`cases/tc_catalog_wf_crud/expected.draft-tc_catalog_wf_crud.json`（7 条全硬）等重签冻结（新 `signedAt`、`signedAgainstBuild=1.1.2`、`signerId=Steven`）→ 真机 `casey run` 重跑全硬裁定。回来说「签」即续。
-13. 直接下一步：① 重签提硬收尾（上条）；② `casey run` 接 `run-history`/`run-metrics` 真产出；③ 第二条用例移植（`chiefcomplaint_smoke`）；④ `compile.mjs` caseId 形状同修（direct 小契约候选）。
+12. **重签提硬完成（Steven「签」，2026-07-03）**：7 条全硬断言重签冻结（新 `signedAt`，`expected.frozen.json` 覆盖首航版）→ 真机 `casey run` 重跑 **4/4 PASS 零 soft**（`run_1783008079114`）——报告「期望对实际」全对：`noErrorToast` 实际值携活采「保存成功」toast（词表判 + 全文可核）、`textVisible` 命中计数在场。D2 生命周期「未实现冻 soft → 补实现 → 重签提硬 → 全硬裁定」端到端走完，`kinds-harden` 的 route:human 主项核销（错误 toast 结构类名采样仍挂）。
+13. 直接下一步：① `casey run` 接 `run-history`/`run-metrics` 真产出（旧挂账，编排器天然生产者）；② 第二条用例移植（`chiefcomplaint_smoke`，飞轮第二条）；③ `compile.mjs` caseId 形状同修（direct 小契约候选）；④ 未实现余 8 kind 按需加法（护栏 #17）。
 
 以下为本日早前时段快照（P3 收官），只溯源：
 
