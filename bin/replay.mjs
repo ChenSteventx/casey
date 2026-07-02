@@ -121,6 +121,8 @@ async function main() {
   const actionByStep = new Map();
   const intentUrl = new Map();
   const intentCount = new Map();
+  const intentToasts = new Map();   // kinds-harden：代表步静默点 toast 快照
+  const intentTextHits = new Map(); // kinds-harden：代表步 textVisible 命中计数
 
   try {
     for (const ev of events) {
@@ -167,6 +169,26 @@ async function main() {
         intentUrl.set(ev.intentId, pathOf(page.url()));
         const c = intentCount.get(ev.intentId);
         if (c) c.after = await rowCount(page);
+        // kinds-harden（G3）：代表步静默点现场采——事后卷回评估只吃此刻事实（同 intentUrl/intentCount 范式）。
+        // toast 快照选择器逐字复刻 lib/compile-atoms.mjs 观测采集（编译期作者与回放期消费者同构）。
+        const toasts = await page.evaluate(() => {
+          const out = [];
+          for (const el of document.querySelectorAll('.hr-toast,.hr-message,[role="status"],[role="alert"]')) {
+            const t = (el.textContent || '').trim();
+            if (t) out.push(t);
+          }
+          return [...new Set(out)];
+        }).catch(() => []);
+        intentToasts.set(ev.intentId, toasts);
+        // 本 intent textVisible 断言值命中计数：正文 getByText + toast 文本双通道（toast 短暂，双保）。
+        const hits = {};
+        for (const a of [...(expectedByIntent.get(ev.intentId) || []), ...globalAssertions]) {
+          if (a.kind !== 'textVisible' || typeof a.value !== 'string') continue;
+          const inPage = await page.getByText(a.value).count().catch(() => 0);
+          const inToast = toasts.filter((t) => t.includes(a.value)).length;
+          hits[a.value] = inPage + (inPage === 0 ? inToast : 0);
+        }
+        intentTextHits.set(ev.intentId, hits);
       }
     }
   } finally {
@@ -196,6 +218,8 @@ async function main() {
       netRecords: net,
       countBefore: cnt.before, countAfter: cnt.after,
       pageErrors: pe,
+      toastTexts: intentToasts.get(iid),  // kinds-harden：缺采集即 undefined → 证不出
+      textHits: intentTextHits.get(iid),
     });
     return {
       stepId: reprStepId,

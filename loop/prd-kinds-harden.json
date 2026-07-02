@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "task": "textVisible/noErrorToast 提硬（light）：IMPLEMENTED_KINDS 5→7。bin/replay.mjs 在 intent 代表步静默点现场采（同 compile 观测采集时机）：toast 快照（选择器逐字复刻 compile-atoms：.hr-toast,.hr-message,[role=status],[role=alert]，同构注释互指）+ 本 intent textVisible 断言值命中计数（getByText + toast 文本双通道）；评估上下文加 toastTexts/textHits。lib/replay-assert.mjs 两分支：textVisible 命中数>0（actual=计数）；noErrorToast 词表判（失败|错误|异常 零命中即过，actual=实采 toast 串，Steven 人签 GRILL G1）；缺上下文一律 ok:false/actual:null（证不出）。连带三份冻结 golden 范例换 kind/soft 翻硬（GRILL G2 清单，D2 重签提硬生命周期既定涟漪）：p4-drafter（S3/C-map 翻硬 + S3b 范例换 buttonState）/ draft-cli（D1 翻硬 + D2/D9 patch 去 soft）/ report-fidelity（F2b 范例换 buttonState），各 prd 补冻 gate 复验。收口后真机重签提硬（route:human）。",
+  "specPath": "docs/plans/kinds-harden/plan.md",
+  "testChecksums": {
+    "tests/_golden/kinds-harden.golden.mjs": "eed42cd8563a7304add785c92b305aa50e1b525eb31ce100d10cd9708a43bbd7"
+  },
+  "observability": [
+    {
+      "dimension": "真机重签提硬：casey draft 重产草稿（新 kind 出硬）→ Steven 重签 → casey run 重跑全硬 PASS；错误 toast 结构类名采样收紧（撞真机错误弹窗时顺手采）",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-harden-two-kinds",
+      "desc": "两 kind 提硬 golden 5 检查：已实现集 7（buttonState 仍除外）/ 单元三向×2（命中/未命中/证不出 + 词表正反/零弹窗/证不出）/ 假 SUT 集成命中真过+未命中真败（实现前 5 红全核）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-02T15:35:43.378Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-ripple-and-locks",
+      "desc": "涟漪翻转与回归锁：p4-drafter/draft-cli/report-fidelity 三份 golden 翻转后全绿（各 prd 另行补冻复验）；p5 两份冻结 golden 原样绿（evaluateAssertions 加分支纯加法）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p4-drafter.golden.mjs",
+        "node tests/_golden/draft-cli.golden.mjs",
+        "node tests/_golden/report-fidelity.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-02T15:36:25.673Z 全部 acceptance exit 0"
+    }
+  ]
+}

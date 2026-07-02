@@ -72,7 +72,7 @@ check('F2a urlPathname 回填实测 pathname', () => {
   if (ea.ok !== true) throw new Error('ok 判定不得受回填影响');
 });
 check('F2b 未实现 kind actual 恒 null', () => {
-  const ea = evaluateAssertions([{ kind: 'textVisible', op: 'appears', value: 'x' }], {})[0];
+  const ea = evaluateAssertions([{ kind: 'buttonState', op: 'enabled', value: 'x' }], {})[0];
   if (ea.actual !== null) throw new Error(`未实现 kind actual 应 null，实际 ${JSON.stringify(ea.actual)}`);
   if (ea.ok !== false) throw new Error('未实现 kind 仍须 ok:false（fail-safe 不变）');
 });

@@ -3,7 +3,7 @@
   "task": "P4 相2 断言草拟器（full）：lib/assertion-draft.mjs 纯函数零 LLM——synthesizeSkeleton（assert.* 原子留痕 + 观测现状 → typed expected[] 骨架：D1 查表映射 / 全局取证默认加 / urlPathnameAfter 确定性剥尾段实体 ID / 未知原子不发明落 pending[]）+ validateDraft（LLM 补缝零 LLM 校验闸：kind/op 经 bin/check.mjs --validate-only 复核（词表唯一事实源不建副本）、equals 禁 atl_ 裸字面量（仅 atl_{{uniqueName}} 模板形态合法）与 9+ 位数字长串，fail-closed）+ D2 soft 承载（kind 不在 replay-assert 已实现集标 soft:true，补实现后重签提 hard；已实现集由 lib/replay-assert.mjs 加性导出 IMPLEMENTED_KINDS 唯一供源）。连带 G-seam 接缝对齐：expected-frozen.schema.json 的 assertionKind 12→15 + assertionOp 8→15 双 enum 加法对齐 check.mjs 权威表（schema 自述对齐方向），prd-seams-freeze checksum 已重签、gate 复验 GREEN。决策依 docs/plans/p4-drafter/proposed/GRILL.md（D1/D2 人签 Steven + G-seam 缺席推定可否决）。LLM 补缝本体在 CLI 外（prompt/schema 见 proposed/llm-patch.draft.md，同 P3 flow 草稿范式）；语义质量 route:human 抽检不在本契约。",
   "specPath": "docs/plans/p4-drafter/plan.md",
   "testChecksums": {
-    "tests/_golden/p4-drafter.golden.mjs": "53d6078e67e46ffe7cbc2847ca2cf58cde687c6a0680fa99c52b2ffafe533627"
+    "tests/_golden/p4-drafter.golden.mjs": "4c30b84e145b0b2a46b1adf84d3f154ab56354fc82616ffbf2c18784dd93a482"
   },
   "observability": [
     {
@@ -29,7 +29,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-02T12:42:51.058Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-02T15:36:46.091Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-regression-locks",
@@ -41,7 +41,7 @@
         "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-02T12:43:45.430Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-02T15:37:23.426Z 全部 acceptance exit 0"
     }
   ]
 }

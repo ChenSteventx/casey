@@ -92,11 +92,11 @@ check('S1d assert.onPage → urlPathname startsWith 且剥实体 ID', () => {
 });
 
 // ---------- S3 pendingImpl：未实现 kind 标 soft（D2） ----------
-check('S3 soft 承载：textVisible soft / urlPathname 硬', () => {
+check('S3 soft 承载：textVisible 已提硬 / urlPathname 硬（kinds-harden 翻转）', () => {
   const i1 = draft.intents.find((it) => it.intentId === 'intent_1');
   const tv = (i1.expected || []).find((a) => a.kind === 'textVisible');
   if (!tv) throw new Error('assert.textVisible 未合成出 textVisible 断言');
-  if (tv.soft !== true) throw new Error('未实现 kind textVisible 应标 soft:true（pendingImpl，不假红）');
+  if (tv.soft === true) throw new Error('textVisible 已提硬（kinds-harden），骨架不应再标 soft');
   const urlA = (i1.expected || []).find((a) => a.kind === 'urlPathname');
   if (urlA.soft === true) throw new Error('已实现 kind urlPathname 不应标 soft');
 });
@@ -116,12 +116,12 @@ check('C-map buttonState 同名映射 + soft', () => {
   if (bs.soft !== true) throw new Error('未实现 kind buttonState 应标 soft:true');
 });
 
-check('C-map noErrorToast 同名映射 + soft', () => {
+check('C-map noErrorToast 同名映射 + 已提硬', () => {
   const i1 = draft2.intents.find((it) => it.intentId === 'intent_1');
   const nt = (i1?.expected || []).find((a) => a.kind === 'noErrorToast');
   if (!nt) throw new Error('assert.noErrorToast 未合成出 noErrorToast 断言');
   if (nt.op !== 'absent') throw new Error(`noErrorToast op 应 absent，实际 ${nt.op}`);
-  if (nt.soft !== true) throw new Error('未实现 kind noErrorToast 应标 soft:true');
+  if (nt.soft === true) throw new Error('noErrorToast 已提硬（kinds-harden），骨架不应再标 soft');
 });
 
 check('C-pending 未知原子不发明、落 pending', () => {
@@ -196,10 +196,10 @@ check('S3b 校验闸钉 D2 soft 语义两向（R3-F1）', () => {
   const r1 = validateDraft({ caseId: 't', intents: [{ intentId: 'i', expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/x', soft: true }] }], globalAssertions: [] });
   if (!r1 || r1.ok !== false || !r1.problems.length) throw new Error('已实现 kind 带 soft:true 应被拒（绕硬裁定）');
   // 未实现 kind 漏标 soft = 回放必假红，拒：
-  const r2 = validateDraft({ caseId: 't', intents: [{ intentId: 'i', expected: [{ kind: 'textVisible', op: 'appears', value: 'x' }] }], globalAssertions: [] });
+  const r2 = validateDraft({ caseId: 't', intents: [{ intentId: 'i', expected: [{ kind: 'buttonState', op: 'enabled', value: 'x' }] }], globalAssertions: [] });
   if (!r2 || r2.ok !== false || !r2.problems.length) throw new Error('未实现 kind 漏 soft:true 应被拒（假红温床）');
   // 未实现 kind 带 soft = 合法（D2 正向）：
-  const r3 = validateDraft({ caseId: 't', intents: [{ intentId: 'i', expected: [{ kind: 'textVisible', op: 'appears', value: 'x', soft: true }] }], globalAssertions: [] });
+  const r3 = validateDraft({ caseId: 't', intents: [{ intentId: 'i', expected: [{ kind: 'buttonState', op: 'enabled', value: 'x', soft: true }] }], globalAssertions: [] });
   if (!r3 || r3.ok !== true) throw new Error(`未实现 kind 带 soft:true 应放行，实际 ${JSON.stringify(r3).slice(0, 160)}`);
 });
 

@@ -48,7 +48,7 @@ check('D1 纯骨架草拟落盘', () => {
   for (const k of ['noPageError', 'noErrorEnvelope']) if (!gk.has(k)) throw new Error(`全局取证缺 ${k}`);
   const i1 = (d.intents || []).find((it) => it.intentId === 'intent_1');
   const tv = (i1?.expected || []).find((a) => a.kind === 'textVisible');
-  if (!tv || tv.soft !== true) throw new Error('textVisible 应在场且 soft:true（未实现 kind）');
+  if (!tv || tv.soft === true) throw new Error('textVisible 应在场且已提硬（kinds-harden 后不标 soft）');
   if (!Array.isArray(d.pending)) throw new Error('草稿须带 pending 留痕（可空数组）');
 });
 
@@ -56,7 +56,7 @@ check('D1 纯骨架草拟落盘', () => {
 check('D2 补缝合并', () => {
   const PATCH = join(tmp, 'patch-ok.json');
   writeFileSync(PATCH, JSON.stringify([
-    { intentId: 'intent_2', kind: 'textVisible', op: 'appears', value: '生成节点建议', soft: true },
+    { intentId: 'intent_2', kind: 'textVisible', op: 'appears', value: '生成节点建议' },
     { intentId: 'intent_0', kind: 'urlPathname', op: 'startsWith', value: '/heren/aimanagement/list' },
   ]));
   const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE, '--compile-report', REPORT, '--out-dir', outDir, '--patch', PATCH]);
@@ -125,7 +125,7 @@ check('D9 凭据门拦截 exit 1（R1-F4 修正采纳：同 compile 先例，1=�
   mkdirSync(cleanDir, { recursive: true });
   const PATCH_CRED = join(tmp, 'patch-cred.json');
   writeFileSync(PATCH_CRED, JSON.stringify([
-    { intentId: 'intent_1', kind: 'textVisible', op: 'appears', value: 'password: hunter2 明文', soft: true },
+    { intentId: 'intent_1', kind: 'textVisible', op: 'appears', value: 'password: hunter2 明文' },
   ]));
   const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE, '--compile-report', REPORT, '--out-dir', cleanDir, '--patch', PATCH_CRED]);
   if (r.status !== 1) throw new Error(`凭据门拦截应 exit 1（compile 先例），实际 ${r.status}`);
