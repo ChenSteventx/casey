@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "task": "回放器登录预备动作（light）：bin/replay.mjs 加 opt-in 旗标 --login-bootstrap——回放前把浏览器带到已登录态（复用 lib/login-bootstrap.mjs，不产 event、不进 axes、凭据只进内存，护栏 #7）；凭据/站点前置加载失败或登录失败 exit 65 不落 axes（fail-closed，护栏 #14）；登录期 currentStepId=null 流量一律归 null 不背书（护栏 #15）；compile --verify 透传旗标。方案分岔人签取「replay 登录预备动作」弃 storageState（docs/plans/replay-login-bootstrap/proposed/GRILL.md，Steven 2026-07-02）。缺省（无旗标）行为一字不变，p5 冻结 golden 即证。真机回放核验第二轮为 P3 tier-2 route:human 挂账，不在本契约 gate 内。",
+  "specPath": "docs/plans/replay-login-bootstrap/plan.md",
+  "testChecksums": {
+    "tests/_golden/replay-login-bootstrap.golden.mjs": "0aee1e4ea4bdfd2479447727bad8c555a8ce9d8edb678284444ff3daf8e73234",
+    "tests/fixtures/login-sut/server.mjs": "7be49b113cc752be770cf0963b31750fdde50316c902717ca04d36341598a0c5"
+  },
+  "observability": [
+    {
+      "dimension": "真机回放核验第二轮带 --login-bootstrap 过登录墙（P3 tier-2 挂账项的解锁件；hermetic 绿 ≠ 完成，护栏 #16）",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-login-bootstrap-optin",
+      "desc": "三处加法：lib/login-bootstrap.mjs 的 loadCreds 凭据文件路径加 AT_CREDS_FILE env 覆盖（与 AT_SITE_JSON 同范式，hermetic 凭据源隔离所需）；bin/replay.mjs 识别 --login-bootstrap（前置 loadSiteConfig+loadCreds 失败 exit 65、登录入口 = --sut + site.target.startUrl 路径段（退 events 信封 url 路径段再退 /）、forensics 接线后事件循环前执行 loginBootstrap、登录失败关浏览器 exit 65 不落 axes）；bin/compile.mjs verify 段按调用方旗标透传 --login-bootstrap 给子 replay。五检查 golden：C1 无旗标零行为差 / C2 缺凭据 fail-closed 65 / C3 登录真发生且 axes 无登录步无凭据值 / C4 无表单幂等直通 / C5 verify 透传（实现前 C2/C3/C5 红已核）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/replay-login-bootstrap.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-02T09:54:35.076Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-regression-locks",
+      "desc": "回归锁：无旗标路径一字不变——p5 回放内核两份冻结 golden 与 p3 编译 golden（compile --verify 既有语义、login-bootstrap 登录件语义）原样复跑全绿。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-02T09:56:40.551Z 全部 acceptance exit 0"
+    }
+  ]
+}

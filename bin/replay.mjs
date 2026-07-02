@@ -1,7 +1,9 @@
 #!/usr/bin/env node
 // bin/replay.mjs —— 确定性回放器（相3）。真回放 SUT（被测系统）→ 产三轴 axes.json → 喂已冻 verdict.mjs。
-// 冻结 CLI：node bin/replay.mjs --events <f> --sut <baseUrl> --expected <f> --profile <f> --out <axes.json>
+// 冻结 CLI：node bin/replay.mjs --events <f> --sut <baseUrl> --expected <f> --profile <f> --out <axes.json> [--login-bootstrap]
 //   --profile = 通道剖面（非凭据）：{ background:[denylist], successField, successValue }。
+//   --login-bootstrap（opt-in，缺省行为一字不变）：回放前执行登录预备动作（CONTEXT.md 术语）——
+//     不产 event、不进 axes、凭据只进内存（护栏 #7）；前置加载/登录失败 exit 65 不落 axes（护栏 #14）。
 // 裁判零 LLM（护栏 #15）：本进程只产三轴事实，绝不裁定、绝不问 LLM、绝不写 verdict/passes。
 // 取证按【动作作用域 + 发起方】归因（护栏 #15，非时间窗）：currentStepId 仅在该步动作执行+静默期开放，
 //   预导航/上下文恢复期一律 null；证不出归 null（fail-safe，护栏 #14）。
@@ -11,6 +13,7 @@ import { performAction } from '../lib/replay-actions.mjs';
 import { instantiate } from '../lib/instantiate.mjs';
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { evaluateAssertions } from '../lib/replay-assert.mjs';
+import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
 
 const { chromium } = pw;
 
@@ -23,6 +26,7 @@ function parseArgs(argv) {
     else if (a === '--expected') o.expected = argv[++i];
     else if (a === '--profile') o.profile = argv[++i];
     else if (a === '--out') o.out = argv[++i];
+    else if (a === '--login-bootstrap') o.loginBootstrap = true;
   }
   return o;
 }
@@ -54,6 +58,24 @@ async function main() {
   // baseUrl：G6 分岔三取 C——events url 走 {{baseUrl}} 占位符，回放期回填 --sut（对完整 URL 的旧 fixture 是 no-op）。
   const ctx = { uniqueName: 'r1', baseUrl: sut };
 
+  // 登录预备动作前置（GRILL 人签取 A）：凭据/站点配置在开浏览器前加载，任一失败 exit 65（fail-closed）。
+  // 登录入口 = --sut 基址 + site.target.startUrl 路径段（真机实采教训：裸基址不渲染登录表单，SPA 判据
+  // 会 fail-open 误判已登录）；无 startUrl 退 events 信封 url 路径段，再退 '/'。凭据只进内存，绝不入日志。
+  let loginPrep = null;
+  if (args.loginBootstrap) {
+    try {
+      const site = loadSiteConfig(undefined, { strict: true }); // 坏 site.json 抛错 fail-closed（codex R1-F2）
+      const creds = loadCreds();
+      let entryPath = null;
+      try { entryPath = new URL(site.target.startUrl).pathname; } catch { /* 无 startUrl：走信封 url 兜底 */ }
+      if (!entryPath && typeof eventsDoc.url === 'string' && eventsDoc.url) entryPath = pathOf(instantiate(eventsDoc.url, ctx));
+      loginPrep = { site, creds, startUrl: sut + (entryPath || '/') };
+    } catch (e) {
+      console.error('replay: 登录预备动作前置失败（fail-closed）：' + String((e && e.message) || e).slice(0, 300));
+      process.exit(65);
+    }
+  }
+
   const intentOrder = [];
   const intentEvents = new Map();
   for (const ev of events) {
@@ -81,6 +103,20 @@ async function main() {
     successValue: profile.successValue,
     currentStep: () => state.currentStepId,
   });
+
+  // 登录预备动作执行：forensics 已接线、事件循环未开——此刻 currentStepId=null，登录期流量一律
+  // 归 null 不背书（护栏 #14/#15）；不产 event、不进 axes（axes 步只源于 events）。失败关浏览器 exit 65。
+  if (loginPrep) {
+    try {
+      await loginBootstrap(page, loginPrep);
+      log('login bootstrap done');
+    } catch (e) {
+      console.error('replay: 登录预备动作失败（fail-closed）：' + String((e && e.message) || e).slice(0, 300));
+      clearTimeout(watchdog);
+      await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
+      process.exit(65);
+    }
+  }
 
   const actionByStep = new Map();
   const intentUrl = new Map();

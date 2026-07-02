@@ -6,8 +6,9 @@
 //   node bin/compile.mjs <caseId> --execute --testcase <f> --sut <url> --out-dir <d> --profile <f> [--skip-login] [--unique-name <tok>]
 //       执行段：以 TestCase 为不可变锚重验三闸 → 登录预备动作（凭据只进内存）→ 骑 atom 知识真机逐步执行
 //       → events.json + observed-<caseId>.json + compile-report.json（任一步证不出 → 只落诊断报告 exit 65）。
-//   node bin/compile.mjs <caseId> --verify --sut <url> --out-dir <d> --profile <f>
+//   node bin/compile.mjs <caseId> --verify --sut <url> --out-dir <d> --profile <f> [--login-bootstrap]
 //       核验段（G1 取 B）：调 bin/replay.mjs 产 axes → 动作轴全 unique 才 0；否则列雷点清单非零退出。
+//       --login-bootstrap 透传给子 replay（真机核验过登录墙；hermetic 不带旗标零行为差）。
 //
 // 退出码：0 成功；1 运行时失败/凭据门拦；64 缺参；65 输入坏/闸拒（fail-closed）；66 flow 未 confirm。
 // 所有落盘口过 lib/cred-gate.mjs（G5 取 B，护栏 #7）。本进程零 LLM、零裁定（护栏 #15）。
@@ -223,6 +224,8 @@ function verifyMode(caseId, args) {
   const axesFile = join(tmp, 'axes.json');
   const r = spawnSync(process.execPath, [join(PROJECT_ROOT, 'bin', 'replay.mjs'),
     '--events', eventsFile, '--sut', String(args.sut), '--expected', expFile, '--profile', String(args.profile), '--out', axesFile,
+    // 登录预备动作透传（GRILL 人签取 A）：真机核验必过登录墙；hermetic 调用不带旗标、行为一字不变。
+    ...(args['login-bootstrap'] ? ['--login-bootstrap'] : []),
   ], { encoding: 'utf8', timeout: 120000 });
   if (r.status !== 0) {
     console.error(`compile --verify: 回放器非零退出（${r.status}）：${(r.stderr || '').slice(-400)}`);

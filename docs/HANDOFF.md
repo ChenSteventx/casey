@@ -3,7 +3,16 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 当前状态（2026-07-02 再续）
+## 当前状态（2026-07-02 三续）
+
+本 session 三续（2026-07-02 晚）：P3 tier-2 真机 bring-up 下半场开局——三跑全通产真四件套 + 登录墙契约收口：
+
+1. 三跑 `--execute`（`--unique-name c2`）真机全通：16 步全 `unique` 且 acted、零 blocker 零 `CASE_DEFECT` 候选；卡片布局计数对账恒等（目标卡片 1 :「删除」目标 1）放行删除段，`atl_c2` 建成→删除净场（末步 toast「删除成功」）；P4 交接面四件套（events / observed / testcase / compile-report）已落 `cases/tc_catalog_wf_crud/`（gitignored）。产物纪律亲验：信封 `authored:false`、16 步 URL 全走 `{{baseUrl}}` 占位符、requestLog 94 条全剥 query 且只落 pathname、75 条按 `initiator` 归因、背景轮询零误归因、`capturedAgainstBuild` 取不到落 `null`（fail-safe）。
+2. 核验清单 ⑤⑦④③ + 计数对账（route:human）证据已呈：⑤ 抽屉确认 = role button「确认」count=1 / ⑦ 删除确认 = role button「确定」count=1 / ④ 描述 = label「工作流描述」count=1（此轮 role/label 采样非 0，五雷真机分支未触发即全 unique）/ ③ nav 直达豁免 / 计数对账恒等。**Steven 选「先上真机看看」，签核待其过目后落**（顺手清 `atl_c1` 残留——二跑遗留真机）。小瑕疵记档：requestLog 对 `data:image` URL 落整段 base64 载荷（纯噪音非泄漏，后续可折叠成 `data:<mime>`）。
+3. `replay-login-bootstrap`（light）六阶段全收口——已知缺口「`--verify` 登录墙」hermetic 侧已解：方案分岔人签取「replay 登录预备动作」弃 storageState（AskUserQuestion，Steven）；`bin/replay.mjs` 加 opt-in `--login-bootstrap`（不产 event、不进 axes、凭据只进内存，前置/登录失败 exit 65 不落 axes，登录期 `currentStepId=null` 流量归 null）+ `compile --verify` 透传 + `loadCreds` 加 `AT_CREDS_FILE` env 覆盖（hermetic 凭据源隔离）；新夹具 `tests/fixtures/login-sut/server.mjs`（服务端 cookie 会话、登录标记只落布尔）；golden 7 检查红先行（C2/C3/C5 三红核实）；gate GREEN 2/2 + p5/p3 冻结 golden 回归全绿。codex 两轮：R1 FAIL 3 发现——F1 High 凭据字节经 `JSON.parse` 报错漏 stderr（实测坐实，消毒重抛 + C2b 钉死）/ F2 High 坏 `site.json` 静默回落默认（`loadSiteConfig` 加 `strict`，replay 开旗标 fail-closed + C2c 钉死）/ F3 尾斜杠证伪拒绝（`replay.mjs:56` 既有剥除）→ R2 PASS 零发现记 `loop/audit.jsonl`；learn 落 `docs/plans/replay-login-bootstrap/learn.md`（六教训：报错通道也是泄漏面 / 泄漏断言按片段抓 / 坏文件≠缺文件 / env 换路径隔离凭据源 / 假 SUT 会话服务端化 / 拒绝要带行号证据）。
+4. 直接下一步 = 真机回放核验第二轮：`casey compile tc_catalog_wf_crud --verify --sut <devProxyUrl> --out-dir cases/tc_catalog_wf_crud --profile cases/tc_catalog_wf_crud/profile.json --login-bootstrap`（route:human，需隧道 + 人在场）→ 过则 P3 tier-2 剩余项（Steven 签核核验清单、重录 spike 录屏核销 ①、`capturedAgainstBuild` 来源确认）→ 相2 断言草拟+冻结+人签（P4）。注意回放器看门狗 75s——真机 16 步 + 登录若超时属预期雷点，届时按诊断调整（本契约未动时长）。
+
+以下为本日早前 session 快照（tier-2 上半场；其「直接下一步/已知缺口」已被顶部条目接管，只溯源）：
 
 本 session 再续（2026-07-02 傍晚）：P3 tier-2 真机 bring-up 上半场（969ffbb + 第六雷收口一笔入 dev）——六项 route:human 走到半程：
 
