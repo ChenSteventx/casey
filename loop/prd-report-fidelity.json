@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "task": "报告保真度三修（light）：① bin/report-model.mjs 加可选 --expected——全部断言过 sign-gate isSigned 且 signedAgainstBuild/signerId 均一才投影入模型顶层字段，任一未签/混签不投影（报告如实「未签」，fail-closed 不粉饰）、--case-meta 显式优先；casey run 装配 stage 恒透传 --expected。② lib/report-model.mjs 的 redactScalar：纯路径形态 token（^/[A-Za-z0-9_./-]*$，不含 =?&@:%）转既有 redactUrlPath 逐段脱敏——修 OPAQUE_BLOB 32+ 长串启发式对纯路径的整段误伤（首份真机报告实证），凭据方向零放松（kv/编码/邮箱形态原判、路径内长串段仍逐段拦、layer3 十二轮金丝雀全保）。③ lib/replay-assert.mjs 的 evaluateAssertions 加性回填标量 actual（urlPathname→实测 pathname / countChange→before→after / noPageError→归因计数 / noErrorEnvelope→坏信封计数 / streamReplyReceived→流状态 / 未实现 kind 恒 null 不硬凑）——修报告「期望对实际」实际值全 null。决策 GRILL G1–G3（Steven「开工」授权 HANDOFF 首推项）。",
+  "specPath": "docs/plans/report-fidelity/plan.md",
+  "testChecksums": {
+    "tests/_golden/report-fidelity.golden.mjs": "6d1b41702230007ccc6eb950a8332b5cc60b7a1bbd99055684906c847c83498a"
+  },
+  "observability": [
+    {
+      "dimension": "真机 casey run 重跑亲验报告三缺陷消失（期望版本=1.1.2·签署人在场 / 路径可读 / 期望对实际成对），Steven 过目",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-fidelity-trio",
+      "desc": "三修合一 golden 11 检查：路径保真三向（F1a 现红）+ actual 回填四口径（F2a-d 现红）+ 签署投影四向（F3a 现红；F3b/c/d 为守卫回归向）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/report-fidelity.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-02T14:31:41.934Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-regression-locks",
+      "desc": "回归锁：layer3 脱敏金丝雀全保（redactScalar 收窄零放松）+ p7 报告渲染 + p5 回放两份（evaluateAssertions 形状加性）+ replay-login-bootstrap（run CLI 面）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/layer3-wiring-coverage.golden.mjs",
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-02T14:32:35.146Z 全部 acceptance exit 0"
+    }
+  ]
+}

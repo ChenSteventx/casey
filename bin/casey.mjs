@@ -96,7 +96,8 @@ function runPipeline(pos, opts) {
   stage('相3 replay 回放', bin('replay.mjs'), ['--events', opts.events, '--sut', opts.sut, '--expected', opts.expected, '--profile', opts.profile, '--out', axesOut,
     ...(opts['login-bootstrap'] ? ['--login-bootstrap'] : [])]);
   stage('相4 verdict 裁定', bin('verdict.mjs'), ['--axes', axesOut, '--out', verdictOut]);
-  const rmArgs = ['--verdict', verdictOut, '--axes', axesOut, '--events', opts.events, '--out', modelOut];
+  // --expected 恒透传（report-fidelity G1）：run 必带该参，装配器读签署字段投影「期望版本/签署人」。
+  const rmArgs = ['--verdict', verdictOut, '--axes', axesOut, '--events', opts.events, '--expected', opts.expected, '--out', modelOut];
   if (opts.observed) rmArgs.push('--observed', opts.observed);
   if (opts['generated-at']) rmArgs.push('--generated-at', opts['generated-at']);
   if (opts['case-meta']) rmArgs.push('--case-meta', opts['case-meta']);
