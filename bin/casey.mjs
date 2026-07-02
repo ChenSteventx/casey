@@ -170,7 +170,8 @@ ${col(C.cyan, '端到端')}
 ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅助/heal；replay/verdict/report 零 LLM）
   casey ingest  <file> [--out <caseId>]   相0 归一：杂乱输入 → 规范 TestCase            [P2]
   casey compile <caseId>                  相1 编译：agent 真机跑一遍 → spec + observed   [P3]
-  casey draft   <caseId>                  相2 断言草拟：observed → 带类型 expected[]      [P4]
+  casey draft   <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]
+                                          相2 断言草拟：骨架+补缝合并+闸 → expected.draft（未签）
   casey sign    <caseId> [--signer <id> --build <id>]  相2 人签门：签掉冻结断言            [P4]
   casey replay  <caseId>                  相3 确定性回放 + 录屏 + 取证                     [P5]
   casey verdict <caseId>                  相4 多态裁定（零 LLM 判定树）                    [P5]
@@ -213,7 +214,7 @@ function main() {
     case 'ingest':  return notImplemented('相0 ingest 归一', 'P2 规范 TestCase + 输入归一', 'excel/json/txt/自由文本 → LLM 归一 → 确定性 parseTestCase 校验（fail-closed）→ 规范 TestCase 聚合根。');
     // 相1 编译（P3）：三段式确定性 CLI（闸+confirm 门 / 执行 / 回放核验），LLM 只在 CLI 外产 flow 草稿。
     case 'compile': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'compile.mjs'), rest); process.exit(r.code); }
-    case 'draft':   return notImplemented('相2 draft 断言草拟', 'P4 断言草拟 + 冻结 + 人签', 'LLM 从 intent + observed 推导带类型 expected[]（只用断言词汇表 + op 约束，默认结构式、易变值模板化）。');
+    case 'draft': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'draft.mjs'), rest); process.exit(r.code); }
     case 'sign':    return notImplemented('相2 sign 人签门', 'P4 断言草拟 + 冻结 + 人签', '人签掉冻结断言（写 signedAt/signedAgainstBuild/signerId）→ checksum 冻结仅断言文件。');
     case 'replay':  return notImplemented('相3 replay 回放', 'P5 确定性回放 + 取证', '确定性重放 spec + 录屏 + 抓回复 + watchPageLifecycle + watchNetworkForensics。');
     case 'verdict': return notImplemented('相4 verdict 多态裁定', 'P5 verdict.mjs 分类器（零 LLM）', '读逐步事实 + 取证 → 判定树 → 每步 PASS/SUT_DEFECT/HARNESS_ERROR/NEEDS_HUMAN(+子类) → verdict.json。');

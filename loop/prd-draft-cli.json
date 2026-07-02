@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "task": "相2 草拟命令化（light）：casey draft <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]——薄 CLI 零 LLM 包已收口函数层（synthesizeSkeleton + validateDraft）：assertionAtoms 唯一源 = compile-report.handoff.assertionAtoms（P4 交接面既定位）；--patch 为 LLM 补缝文件通道（CLI 外产出，同 P3 flow 范式，prompt 用 p4-drafter 既定件）；合并后整份过闸、违规 exit 65 不落草稿（半份草稿比没有更危险）；caseId 三方一致闸；产物 expected.draft-<caseId>.json 带 pending 留痕、经凭据门落盘。人签 UX 照 p4-drafter 既定 route:human 不做。决策 GRILL G1–G4（Steven「继续开」授权 HANDOFF ①）。",
+  "specPath": "docs/plans/draft-cli/plan.md",
+  "testChecksums": {
+    "tests/_golden/draft-cli.golden.mjs": "20260315ea2f90a629d82495bb2bacc0e98ed18223f5ac6277fd33c6848b326e"
+  },
+  "observability": [
+    {
+      "dimension": "真机第二条用例（chiefcomplaint_smoke）走 casey draft 产草稿 → LLM 补缝 → 人签，验 CLI 面在真数据上的可用性",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-draft-cli",
+      "desc": "bin/draft.mjs 新薄 CLI + casey.mjs draft 分支改派发。golden 5 检查：骨架落盘（卷回/全局取证/soft）/ 补缝合并（硬软语义）/ 违规整份拒不落草稿 / caseId 一致闸 / 缺参 64（实现前 5 红全核：桩 exit 3）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/draft-cli.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-02T15:02:26.033Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-regression-locks",
+      "desc": "回归锁：p4-drafter golden（函数层零改动）原样绿。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p4-drafter.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-02T15:02:27.248Z 全部 acceptance exit 0"
+    }
+  ]
+}

@@ -30,7 +30,7 @@ P4 两块（`p4-freeze/grill.md:7`）：① 断言草拟（L2，本轮）；② 
 ## G-seam 接缝对齐拍板（落地 session，2026-07-02 晚）
 
 - **取「补 schema 至 15」**（seams 补冻，纯加法 enum 扩展 + `prd-seams-freeze` checksum 重签）；lane 定 `full`。
-- **性质：缺席推定，可否决**——Steven 明令「开！」后 60s 未答复选项，按既有人签与定理推定：① 已签 D1 映射表含 `assert.buttonState/switchState → 同名`，本身预设这三种 kind 在 schema 内（不补则 D1 自相矛盾、骨架产物被自家闸拒）；② 项目定理「断言 kind 枚举唯一活在 `check.mjs`」——schema 12 是漏收、15 是权威；③ 反向收 `check.mjs` 是减法、违护栏 #17 加法原则。若 Steven 否决：映射表阉割回 12、`assert.buttonState/switchState` 原子改记 route:human 挂账、schema 回滚（enum 扩展无消费者前回滚零风险）。
+- **性质：缺席推定 → 已转正式人签**（Steven「追认」，AskUserQuestion，2026-07-02 深夜；prd observability 该项核销）。推定当时依据：① 已签 D1 映射表含 `assert.buttonState/switchState → 同名`，本身预设这三种 kind 在 schema 内（不补则 D1 自相矛盾、骨架产物被自家闸拒）；② 项目定理「断言 kind 枚举唯一活在 `check.mjs`」——schema 12 是漏收、15 是权威；③ 反向收 `check.mjs` 是减法、违护栏 #17 加法原则。若 Steven 否决：映射表阉割回 12、`assert.buttonState/switchState` 原子改记 route:human 挂账、schema 回滚（enum 扩展无消费者前回滚零风险）。
 
 ## route:human / deferred
 
