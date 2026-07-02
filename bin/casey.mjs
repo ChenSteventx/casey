@@ -70,7 +70,7 @@ function runPipeline(pos, opts) {
   if (!caseId || !opts.events || !opts.expected || !opts.profile || !opts.sut) {
     console.error(col(C.red, '[run] 缺必填参 → 用参错误(64)'));
     console.error('LLM 前段(相0-2 ingest/compile/draft/sign)未建、route:human；确定性尾段用法：');
-    console.error('  casey run <caseId> --sut <url> --events <f> --expected <f> --profile <f> [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>]');
+    console.error('  casey run <caseId> --sut <url> --events <f> --expected <f> --profile <f> [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>] [--login-bootstrap]');
     console.error('  串 相3回放 → 相4裁定 → 报表模型装配 → 相6报告，落 runs/<caseId>/<runId>/。');
     process.exit(64);
   }
@@ -92,7 +92,9 @@ function runPipeline(pos, opts) {
     }
   };
 
-  stage('相3 replay 回放', bin('replay.mjs'), ['--events', opts.events, '--sut', opts.sut, '--expected', opts.expected, '--profile', opts.profile, '--out', axesOut]);
+  // --login-bootstrap 透传（同 compile --verify 先例）：真机跑过登录墙；hermetic 不带旗标零行为差。
+  stage('相3 replay 回放', bin('replay.mjs'), ['--events', opts.events, '--sut', opts.sut, '--expected', opts.expected, '--profile', opts.profile, '--out', axesOut,
+    ...(opts['login-bootstrap'] ? ['--login-bootstrap'] : [])]);
   stage('相4 verdict 裁定', bin('verdict.mjs'), ['--axes', axesOut, '--out', verdictOut]);
   const rmArgs = ['--verdict', verdictOut, '--axes', axesOut, '--events', opts.events, '--out', modelOut];
   if (opts.observed) rmArgs.push('--observed', opts.observed);

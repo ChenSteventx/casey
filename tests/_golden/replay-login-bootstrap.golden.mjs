@@ -174,6 +174,20 @@ await checkAsync('C5 verify 透传登录旗标', async () => {
   if (!existsSync(MARKER_C)) throw new Error('登录标记缺席——verify 未把 --login-bootstrap 透传给子 replay');
 });
 
+// ---------- C6 run 编排器透传：casey run --login-bootstrap → 子 replay 登录（相6 真机报告的接线） ----------
+await checkAsync('C6 run 编排器透传登录旗标', async () => {
+  const MARKER_D = join(tmp, 'login-marker-d');
+  const srvRun = await startLoginSut({ markerFile: MARKER_D });
+  try {
+    const runDir = join(tmp, 'run-out');
+    const r = run([CASEY, 'run', 'tc_login_probe', '--sut', srvRun.url, '--events', EVENTS_APP, '--expected', EXPECTED_EMPTY, '--profile', PROFILE, '--run-dir', runDir, '--login-bootstrap'],
+      isoEnv({ AT_CREDS_FILE: NO_CREDS_FILE, AT_SITE_JSON: SITE_APP, AT_CREDS_USER: FAKE_USER, AT_CREDS_PASS: FAKE_PASS }));
+    if (r.status !== 0) throw new Error(`run 带旗标应 exit 0，实际 ${r.status}：${(r.stderr || r.stdout || '').slice(-300)}`);
+    if (!existsSync(MARKER_D)) throw new Error('登录标记缺席——run 编排器未把 --login-bootstrap 透传给相3 replay');
+    if (!existsSync(join(runDir, 'tc_login_probe.report.html'))) throw new Error('相6 报告未产出（run 应串到报告落盘）');
+  } finally { await srvRun.close(); }
+});
+
 if (srvApp) await srvApp.close();
 if (srvPlain) await srvPlain.close();
 if (srvVerify) await srvVerify.close();
