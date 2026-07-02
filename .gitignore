@@ -30,3 +30,4 @@ loop/contracts/
 .loop-kit/
 *.key
 *.deepseek-key
+runs/
