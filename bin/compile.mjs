@@ -3,8 +3,9 @@
 //
 //   node bin/compile.mjs <caseId> --testcase <f> --flow <f> --out-dir <d>
 //       闸段：flow 草稿过 compile-gate 双闸（前缀自 TestCase.uniquePrefix，fail-closed）→ 落 flow-<caseId>.json 等人 confirm。
-//   node bin/compile.mjs <caseId> --execute --sut <url> --out-dir <d> --profile <f> [--skip-login] [--unique-name <tok>]
-//       执行段：登录预备动作（凭据只进内存）→ 骑 atom 知识真机逐步执行 → events.json + observed-<caseId>.json + compile-report.json。
+//   node bin/compile.mjs <caseId> --execute --testcase <f> --sut <url> --out-dir <d> --profile <f> [--skip-login] [--unique-name <tok>]
+//       执行段：以 TestCase 为不可变锚重验三闸 → 登录预备动作（凭据只进内存）→ 骑 atom 知识真机逐步执行
+//       → events.json + observed-<caseId>.json + compile-report.json（任一步证不出 → 只落诊断报告 exit 65）。
 //   node bin/compile.mjs <caseId> --verify --sut <url> --out-dir <d> --profile <f>
 //       核验段（G1 取 B）：调 bin/replay.mjs 产 axes → 动作轴全 unique 才 0；否则列雷点清单非零退出。
 //

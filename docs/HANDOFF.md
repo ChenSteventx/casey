@@ -3,7 +3,16 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 当前状态（2026-07-02）
+## 当前状态（2026-07-02 续）
+
+本 session 续（2026-07-02 下午）：`p3-compile`（full）六阶段全收口（788bb2b/76d6ef5/5f721e2 三笔入 dev + 收口一笔）——P3 相1 编译命令化层落地：
+
+1. grill：G1–G7 全数人签（G6 分岔三人签改选 C——events url 走 `{{baseUrl}}` 占位符 + `instantiate` 回填；其余照草稿倾向），机械决策与 7 项 route:human 挂账合并记 `docs/plans/p3-compile/proposed/GRILL.md`；「登录预备动作」登记 CONTEXT.md。
+2. loop：`casey compile` 三段式 CLI（`compile-gate` 三闸+落 flow 人 confirm 门 / 以 `--testcase` 为不可变锚重验三闸+执行 / `--verify` 回放核验逐 event 扫）+ `lib/compile-atoms.mjs` 原子编译知识（拆 intent、分支线性化、入口可证缺席→`CASE_DEFECT` 候选不落步、断言原子折 intent 留痕、计数口径对账）+ `lib/login-bootstrap.mjs`（拷快照 autotester 登录件）+ `lib/cred-gate.mjs`（凭据门共享化+`token`/`cookie` 补强+非凭据键形状校验）+ `lib/atoms-registry.snapshot.json`（整表 60 原子带 `snapshotOf`）+ replay `{{baseUrl}}` 接线与 axes 加性 `eventActions`。hermetic golden 13 检查全绿（红先行）、gate GREEN 2/2、p5/p7/layer3/tier1 回归全绿。
+3. review：codex 三轮 R1..R3 至 PASS（R1 六发现/R2 四发现逐轮采信去修各钉红 golden；R1-F5 修正采纳留案——「取消非凭据键跳过」违通道剖面接缝定义被否、改形状校验收紧；记 `loop/audit.jsonl`）。learn 落 `docs/plans/p3-compile/learn.md`。
+4. 直接下一步 = P3 tier-2 真机 bring-up（六项 route:human 在 `prd-p3-compile.json` observability）：拉反向隧道 → spike（CDP 归因/录屏）→ 手写规范 TestCase + flow 草稿人 confirm → 真机编译 `tc_catalog_wf_crud` → 核验清单 ⑤⑦④③ + 计数对账 → 回放核验第二轮 → P4 交接面四件套落 `cases/`。需要人在场（Windows 侧拉隧道 + confirm 人签 + 真机建/删实体过目）。
+
+以下为本日早前 session 快照（seams-freeze-v2 收口 + P3 备料，只溯源）：
 
 本 session（2026-07-02）收口一批（827cebc/7c52114/a06c29c 三笔入 dev + 交接文档一笔随后提交，工作树随之干净）：
 
@@ -142,9 +151,9 @@ P5 回放内核 loop 绿后接异构评审（与上节 P2/verdict 评审不同�
 
 ## 下一步
 
-> 新会话接续顺序：① P3 真机 bring-up（首推，料全齐、前置全解除）→ ② 其余任选。活契约槽 = `seams-freeze-v2` 六阶段全 done、baton 空闲，下一契约直接 `contract init`。
+> 新会话接续顺序：① P3 tier-2 真机 bring-up（首推，hermetic 层已全绿、只剩真机六项 route:human）→ ② 其余任选。活契约槽 = `p3-compile` 六阶段全 done、baton 空闲。
 
-1. **首推** P3 真机 bring-up：`contract init p3-compile --lane full` → grill（吃 `docs/plans/p3-compile/proposed/grill-draft.md` 的 G1–G7、人签）→ plan → accept → loop：骑 regress `catalog_wf_crud` 重表达产真 events.json + 观测现状（基址用 site.json 的 `devProxyUrl`、先拉反向隧道，见 NEXT-SESSION 环境坑）→ 灌 `casey run` 管线（已通）→ 相2 断言草拟+冻结+人签 → tier-2 真站 UAT：验四态 + CDP initiator 真发起方归因可靠度（ADR-0007 推翻条件）；500 场景走回放侧代理拦截注入（不能真造，用户已确认）。
+1. **首推** P3 tier-2 真机 bring-up（route:human，需人在场）：拉反向隧道（WSL `node scripts/wsl-reverse-listen.mjs` + Windows 双击 `scripts/win-forward-start.cmd`）→ spike 验隧道下 CDP initiator 归因与录屏（失真退 Windows 侧）→ 手写规范 TestCase（`tc_catalog_wf_crud`，含 uniquePrefix `atl_`、preconditions、意图留痕）+ LLM 出 flow 草稿 → `casey compile` 闸段 → 人 confirm → 执行段（`--sut` 用 site.json 的 `devProxyUrl`）→ 核验清单（⑤ 抽屉确认按钮文本第一雷 / ⑦ 删除确认 / ④ 描述锚定 / ③ 菜单唯一性 / 计数口径三方对账）→ `--verify` 真机第二轮 → P4 交接面四件套落 `cases/tc_catalog_wf_crud/` → 后续相2 断言草拟+冻结+人签 → tier-2 真站 UAT：验四态 + CDP initiator 可靠度（ADR-0007 推翻条件）；500 场景走回放侧代理拦截注入（不能真造，用户已确认）。
 2. `casey run` 编排器接 `run-history.jsonl`/`run-metrics.json` 真产出（light 车道）——刚冻的接缝、编排器是天然生产者；可与 1 的 grill 等待期错峰。
 3. `p2-intent-compile` 的 learn（沉淀收尾，轻）。
 4. `term-guard` 乙真接线（待 `~/.loop-kit` 非 Claude 密钥）：`bin/term-judge.mjs` 的 `callRealJudge` 接真评分员（复用 review 道 DeepSeek/codex 路径），观察期无误判后把 `bin/term-guard-hook.mjs` 的 `WARN_ONLY` 置 false 切硬拦。
@@ -153,8 +162,9 @@ P5 回放内核 loop 绿后接异构评审（与上节 P2/verdict 评审不同�
 
 ## 契约 / 运维
 
-- 活契约 `loop/active-contract.json`（runtime、gitignored）现 = `seams-freeze-v2`（full，六阶段全 done）——baton 空闲，下一契约直接 `contract init <slug>`（重置台账、不丢磁盘草稿）。要提交而活契约是 pre-loop 的 full：先 `init` 一个 `direct` 契约授权 commit、提完 re-init 原契约恢复 baton；light 契约 plan 后 commit-impl 即放行、无 lib/bin 的提交任何时候放行；post-loop 的 full 契约提交放行。恢复某已 done / 被覆盖 契约的台账：re-init + 逐阶段 re-advance（grill 带 `--user-confirmed`、accept 带 `--red-verified`、artifact 交对应产物），gate 复验绿背书。
+- 活契约 `loop/active-contract.json`（runtime、gitignored）现 = `p3-compile`（full，六阶段全 done）——baton 空闲，下一契约直接 `contract init <slug>`（重置台账、不丢磁盘草稿）。要提交而活契约是 pre-loop 的 full：先 `init` 一个 `direct` 契约授权 commit、提完 re-init 原契约恢复 baton；light 契约 plan 后 commit-impl 即放行、无 lib/bin 的提交任何时候放行；post-loop 的 full 契约提交放行。恢复某已 done / 被覆盖 契约的台账：re-init + 逐阶段 re-advance（grill 带 `--user-confirmed`、accept 带 `--red-verified`、artifact 交对应产物），gate 复验绿背书。
 - 契约一览：
+  - `p3-compile`（full）：六阶段全 done（codex 三轮 R3 PASS 记 audit、learn 落 `docs/plans/p3-compile/learn.md`；gate GREEN 2/2、golden 13 检查）。真机 bring-up 六项 route:human（prd observability 列）未走。
   - `layer3-wiring`（light）：六阶段全 done（codex 七轮 R7 PASS 记 audit、learn 落 `docs/plans/layer3-wiring/learn.md`；gate GREEN 2/2、覆盖 golden 51 检查）。
   - `seams-freeze-v2`（full）：六阶段全 done（codex 十二轮 R12 PASS 记 audit、learn 落 `docs/plans/seams-freeze-v2/learn.md`；gate GREEN、golden 13 组、`CONTEXT.md` 登记 6 术语）。四接缝 lib/bin 真产出随真机集成 route:human（prd observability 列）。
   - `term-guard`：6 阶段 done（gate GREEN 2/2、codex 九轮异构评审 pass、Stop 钩子 warn-only；乙真接线待密钥见「下一步」5）。
