@@ -56,6 +56,7 @@
 | 归一 | Normalization | 相0：杂乱 excel/txt/自由文本 → 规范 `TestCase`，由确定性 `parseTestCase` 校验，不合规 fail-closed | 输入清洗 |
 | `intentId` | 意图步标识 | 用例语义步 id（人/LLM authoring 时写）；区别于回放事件的位置式 `stepId`（一条 intent 可裂成 N 个 event） | — |
 | 编译 | Compile | 相1：LLM 唯一一次直接跑用例，把 intent 翻译成确定性可回放 spec + 落观测现状；此后回放不再烧 LLM、结果可复现 | — |
+| 登录预备动作 | Login Bootstrap | 回放/编译开始前把浏览器带到已登录态的开场步；不产 event、不进 spec（凭据红线护栏 #7），凭据只经 `.auth/` 与 env 进内存；复用件按 ADR-0001 拷快照范式取自 autotester（登录选择器 + `loadCreds` + `loadSiteConfig`）；`TestCase.preconditions` 记「已登录」、`target.auth` 记 `ref:site.json` | — |
 | 观测现状 | Observed Reality | 编译期落盘的地面真值（真实成功 URL/提示/回复/请求日志），存 `observed-<caseId>.json`；断言草拟与裁定的依据 | — |
 | 断言词汇表 | Assertion Vocabulary | 带类型的断言枚举（urlPathname/textVisible/countChange/streamReplyReceived/...）+ 每种允许的 op；LLM 不准发明自由断言 | — |
 | 动作词汇表 | Action Vocabulary | 已冻 events.schema action 枚举（click/dblclick/fill/selectOption/press/nav/newpage）的治理投影层：每动作登记 paramSchema 投影/所属 channel/坐标兜底治理/三轴证据产出/驱动指针/golden/fail-closed；action 名权威仍在 events.schema，verdict.mjs 对 action 不可知（护栏 #17 动作侧对称）。与 断言词汇表 对称 | — |

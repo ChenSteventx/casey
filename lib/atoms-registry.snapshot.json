@@ -1,0 +1,1022 @@
+{
+  "snapshotOf": {
+    "repo": "regress_autotest",
+    "path": "tests/_atoms/atoms.registry.json",
+    "sourceVersion": 2,
+    "copiedAt": "2026-07-02"
+  },
+  "version": 2,
+  "_note": "原子动作注册表（复杂操作流 = 原子库 + NL 编译 的骨架，见 PLAN-atomic-flows.md）。编译器只能从这里挑 atomId + 按 params 填参；validateFlow（_flow-runner.ts 收集期 / scripts/lint-flow.mjs 离线）据此校验冻结的 *.flow.json。改原子实现（tests/_atoms/_atoms.ts）务必同步本表与 scripts/lint-flow.mjs。 v2：states=封闭状态词表（标签只能用这里的词，lint 注册表自检兜底）；exclusiveGroups=互斥组（provide 组内状态自动移除组内其它）；每原子可标 requires/provides/removes（缺省[]）/destructive（确认门高亮）/entityNameParam（该参数值必须 ctxtest_ 前缀，建删硬闸）。校验逻辑见 scripts/lint-flow.mjs 闸二 与 _flow-runner.ts:validateFlow（双实现同步）。",
+  "states": {
+    "已登录": "login 成功进入应用（不再停在 /login）",
+    "在智能体管理页": "智能体管理列表（/agent/list）",
+    "在工作流管理页": "工作流管理列表（/process/list）",
+    "智能体详情已开": "智能体详情页（/agent/detail）",
+    "画布已开": "工作流画布编辑器（/process/detail）",
+    "MCP列表页": "MCP 工具列表页（/mcp/tools）",
+    "测试面板已开": "智能体测试会话面板（消息框「请输入消息」可见）",
+    "节点抽屉已开": "画布某节点的配置抽屉",
+    "工具选择器已开": "智能体加工具的选择器对话框",
+    "详情快照已记": "ctx.detailUrl/detailChips 已由 agent.snapshotDetailState 记录",
+    "选择器一级基线已记": "ctx.pickerPrimaries 已由 picker.snapshotPrimaries 记录"
+  },
+  "exclusiveGroups": [
+    [
+      "在智能体管理页",
+      "在工作流管理页",
+      "智能体详情已开",
+      "画布已开",
+      "MCP列表页"
+    ]
+  ],
+  "atoms": {
+    "login": {
+      "desc": "打开起始 URL；被鉴权守卫拦到 /login 时填账号密码登录（凭据读 .auth/credentials.json，绝不写死）。",
+      "params": {
+        "startUrl": {
+          "type": "string",
+          "required": false,
+          "runtimeInput": true,
+          "desc": "起始 URL；缺省 APP_START_URL 或内置默认目标环境地址（运行时输入，不写死凭据）。"
+        }
+      },
+      "provides": [
+        "已登录"
+      ],
+      "post": "不再停在 /login（进入应用）。"
+    },
+    "nav.agentManagement": {
+      "desc": "点击左侧「智能体管理」进入智能体列表。",
+      "params": {},
+      "requires": [
+        "已登录"
+      ],
+      "provides": [
+        "在智能体管理页"
+      ],
+      "post": "「智能体管理」列表可见。"
+    },
+    "nav.workflowManagement": {
+      "desc": "点击左侧「工作流管理」进入工作流列表（真机实测 URL=/process/list）。",
+      "params": {},
+      "requires": [
+        "已登录"
+      ],
+      "provides": [
+        "在工作流管理页"
+      ],
+      "removes": [
+        "测试面板已开",
+        "节点抽屉已开",
+        "工具选择器已开"
+      ],
+      "post": "工作流列表可见（URL 含 /process/list）。"
+    },
+    "workflow.open": {
+      "desc": "在工作流管理列表点工作流『名字』进入画布编辑器（真机实测：点名字进画布、URL=/process/detail；『编辑』按钮是改名弹窗、不是画布）。",
+      "params": {
+        "openName": {
+          "type": "string",
+          "required": true,
+          "desc": "工作流列表里要点开的名称（须足够唯一）。"
+        }
+      },
+      "requires": [
+        "在工作流管理页"
+      ],
+      "provides": [
+        "画布已开"
+      ],
+      "post": "进入工作流画布编辑器（URL 含 /process/detail）。"
+    },
+    "workflow.publish": {
+      "desc": "【破坏性·确认门高亮】点画布编辑器的「发布」按钮（节点完整则真发布、不完整则出校验提示）。真机实测编辑器有 分享/预览/测试/保存/发布/历史版本/添加节点。",
+      "params": {},
+      "requires": [
+        "画布已开"
+      ],
+      "destructive": true,
+      "post": "点了「发布」（结果由后续 assert.* 判定：成功 toast 或校验提示）。"
+    },
+    "workflow.save": {
+      "desc": "【破坏性】点画布编辑器的「保存」按钮（暂存工作流，任何状态都可保存）。",
+      "params": {},
+      "requires": [
+        "画布已开"
+      ],
+      "destructive": true,
+      "post": "点了「保存」。"
+    },
+    "workflow.clickEditorButton": {
+      "desc": "点画布编辑器顶部某个按钮（测试/导出/历史版本/新建版本/预览 等只读或弹层类）。破坏性按钮（发布/保存/删除）请用专用原子，便于确认门高亮。",
+      "params": {
+        "name": {
+          "type": "string",
+          "required": true,
+          "desc": "按钮可见名，如 测试/导出/历史版本/新建版本/预览。"
+        }
+      },
+      "requires": [
+        "画布已开"
+      ],
+      "post": "点了该按钮（结果由后续 assert.* 判定）。"
+    },
+    "workflow.create": {
+      "desc": "【破坏性】新增工作流：点「新增工作流」下拉→菜单「新增工作流」→填 名称/编码/描述/分类(全必填)→确认，回到列表。名称建议 ctxtest_ 前缀便于清理。编码可省（中台按名称拼音自动生成）。",
+      "params": {
+        "name": {
+          "type": "string",
+          "required": true,
+          "desc": "工作流名称（后端唯一约束，建 ctxtest_ 前缀）。"
+        },
+        "code": {
+          "type": "string",
+          "required": false,
+          "desc": "工作流编码（省略则中台按名称拼音自动生成）。"
+        },
+        "desc": {
+          "type": "string",
+          "required": false,
+          "desc": "工作流描述（省略用名称）。"
+        },
+        "category": {
+          "type": "string",
+          "required": false,
+          "desc": "分类，缺省「测试分类」。"
+        }
+      },
+      "requires": [
+        "已登录"
+      ],
+      "provides": [
+        "画布已开"
+      ],
+      "removes": [
+        "测试面板已开",
+        "节点抽屉已开",
+        "工具选择器已开"
+      ],
+      "destructive": true,
+      "entityNameParam": "name",
+      "post": "回到列表且新工作流名出现。"
+    },
+    "workflow.addNode": {
+      "desc": "往画布拖入一个节点（坐标方案：开「添加节点」面板→拖面板项到画布坐标）。优先用 nodeName(按面板项文本)——因多类节点共用图标(排他/并行/真并行网关都是 gateway；MCP/智能体工作流/文档提取都是 server)。需先在画布编辑器(/process/detail)。坐标相对画布左上角，x≥600 避左侧面板、间距≥350 防重叠。",
+      "params": {
+        "nodeName": {
+          "type": "string",
+          "required": false,
+          "desc": "节点面板项文本(推荐)：开始节点/结束节点/HTTP请求/SSE流式请求/变量映射/排他网关/并行网关/真并行网关/脚本转换/模型节点/知识库检索/重排序/数据库节点/MCP工具/智能体/工作流/变量聚合/文档提取/缓存读取/缓存写入/中断节点。"
+        },
+        "nodeType": {
+          "type": "string",
+          "required": false,
+          "desc": "（兼容）图标后缀 start/end/api/app... 仅对图标唯一的节点可靠；歧义节点请用 nodeName。"
+        },
+        "x": {
+          "type": "number",
+          "required": false,
+          "desc": "落点 x（相对画布左上角，缺省 600）。"
+        },
+        "y": {
+          "type": "number",
+          "required": false,
+          "desc": "落点 y（缺省 280）。"
+        }
+      },
+      "requires": [
+        "画布已开"
+      ],
+      "post": "画布节点数 +1（.lf-node 计数增加）。"
+    },
+    "workflow.openNode": {
+      "desc": "点开画布上某节点的配置抽屉（按节点标题定位 .lf-node→点中心→等抽屉打开，点空重点一次）。需先在画布编辑器。",
+      "params": {
+        "label": {
+          "type": "string",
+          "required": true,
+          "desc": "画布上节点的可见标题，如 智能体/工作流、开始节点、结束节点。"
+        }
+      },
+      "requires": [
+        "画布已开"
+      ],
+      "provides": [
+        "节点抽屉已开"
+      ],
+      "post": "右侧配置抽屉打开。"
+    },
+    "assert.switchState": {
+      "desc": "L1：断言配置抽屉里某开关的状态（如「回显」默认 ON）——做回显优化等「默认打开/关闭」类用例。按「开关所在行文本含 label」定位。",
+      "params": {
+        "label": {
+          "type": "string",
+          "required": true,
+          "desc": "开关所在行的文本（如 回显/缓存/提示）。"
+        },
+        "state": {
+          "type": "string",
+          "required": false,
+          "desc": "on(缺省)/off。"
+        }
+      },
+      "requires": [
+        "节点抽屉已开"
+      ],
+      "post": "该开关处于期望状态。"
+    },
+    "workflow.connectNodes": {
+      "desc": "把两个节点连线（坐标/锚点方案：hover 源节点→取 .lf-node-anchor-hover 真锚点→拖到目标节点）。注：纯 DOM 读不到边的 source/target，只能断「边数增加」，无法断「连对哪两个」——要确定性需前端暴露 window.lf（见 PLAN §6.5）。",
+      "params": {
+        "fromLabel": {
+          "type": "string",
+          "required": true,
+          "desc": "起始节点的可见标题（如 开始节点）。"
+        },
+        "toLabel": {
+          "type": "string",
+          "required": true,
+          "desc": "目标节点的可见标题（如 结束节点）。"
+        }
+      },
+      "requires": [
+        "画布已开"
+      ],
+      "post": "画布边数 +1（.lf-edge 计数增加）。"
+    },
+    "workflow.setNodeField": {
+      "desc": "在已打开的节点配置抽屉里，按 placeholder 填某个文本字段（如 HTTP 节点 URL：placeholder「请输入接口的URL」）。",
+      "params": {
+        "placeholder": {
+          "type": "string",
+          "required": true,
+          "desc": "字段占位符，如 请输入接口的URL / 请输入变量名 / 请输入(请求头名称)。"
+        },
+        "value": {
+          "type": "string",
+          "required": true,
+          "desc": "要填的值。"
+        },
+        "exact": {
+          "type": "boolean",
+          "required": false,
+          "desc": "占位符精确匹配（如「请输入」是子串会撞 URL，需 exact）。"
+        },
+        "nth": {
+          "type": "number",
+          "required": false,
+          "desc": "同占位符多个时取第几个（缺省 0）。"
+        }
+      },
+      "requires": [
+        "节点抽屉已开"
+      ],
+      "post": "该字段被填入值。"
+    },
+    "workflow.setSwitch": {
+      "desc": "在配置抽屉里把某开关设到目标态（如关掉 HTTP 节点「鉴权」以免 Key/Value 变必填）。按需点切换。",
+      "params": {
+        "label": {
+          "type": "string",
+          "required": true,
+          "desc": "开关所在行文本，如 鉴权/缓存/提示/回显。"
+        },
+        "state": {
+          "type": "string",
+          "required": false,
+          "desc": "on / off(缺省)。"
+        }
+      },
+      "requires": [
+        "节点抽屉已开"
+      ],
+      "post": "该开关处于目标态。"
+    },
+    "workflow.selectMcpTool": {
+      "desc": "在已打开的「MCP工具」节点配置抽屉里，通过级联选择器(.hr-cascader)选「第三方、自定义工具」：第一列点 MCP 服务器分类→第二列点工具叶子。真机实证：选后触发器值变「分类 / 工具」、「输入」区按工具入参自动填充(如 maps_weather→变量名 city)。需先 workflow.openNode 打开 MCP工具 节点。",
+      "params": {
+        "category": {
+          "type": "string",
+          "required": true,
+          "desc": "MCP 服务器名(级联第一列)，如 第三方mcp测试。注意 0 工具的服务器是禁用叶子、选不了。"
+        },
+        "tool": {
+          "type": "string",
+          "required": true,
+          "desc": "工具名(级联第二列叶子)，如 maps_weather。"
+        }
+      },
+      "requires": [
+        "节点抽屉已开"
+      ],
+      "post": "级联触发器值含「分类 / 工具」（= 该 MCP 工具已选中、输入区已按其入参填充）。"
+    },
+    "workflow.selectNodeDropdown": {
+      "desc": "在已打开的节点配置抽屉里选一个 HEREN select 下拉（点第 nth 个「请选择」触发器→弹层 .hr-select-option 选项）。用于 数据库节点(选库)/知识库检索(选重排模型)/重排序/中断 等。需先 workflow.openNode。",
+      "params": {
+        "nth": {
+          "type": "number",
+          "required": false,
+          "desc": "抽屉里第几个「请选择」下拉(0 起，缺省 0)。"
+        },
+        "option": {
+          "type": "string",
+          "required": false,
+          "desc": "选项文本(子串)；缺省选第一项。给了则后置断言触发器值含它。"
+        }
+      },
+      "requires": [
+        "节点抽屉已开"
+      ],
+      "post": "（给了 option 则）该下拉已选中含 option 的项。"
+    },
+    "workflow.assertNodeFieldValue": {
+      "desc": "L1：断言节点配置抽屉里某字段(按 placeholder 定位 input/textarea)的 value 含期望值——用于验证 setNodeField/脚本等填值生效(value 非文本节点，assert.textVisible 看不到)。",
+      "params": {
+        "placeholder": {
+          "type": "string",
+          "required": true,
+          "desc": "字段占位符，如 请输入接口的URL / 请输入python脚本。"
+        },
+        "value": {
+          "type": "string",
+          "required": true,
+          "desc": "期望 value 含的子串。"
+        }
+      },
+      "requires": [
+        "节点抽屉已开"
+      ],
+      "post": "该字段 value 含期望子串。"
+    },
+    "workflow.assertEchoByVar": {
+      "desc": "L1：断言节点配置抽屉「输出」区里某个输出变量行(按变量名匹配 .request-params-item 第一个 input 的 value)的「回显」开关状态。用于『回显优化』用例：模型/智能体节点默认输出 answer(回显ON) + jsons(回显OFF)——比 assert.switchState(只匹配首个含「回显」的行)更精确，能分别断 answer/jsons。需先 workflow.openNode 打开该节点。",
+      "params": {
+        "varName": {
+          "type": "string",
+          "required": true,
+          "desc": "输出变量名(精确匹配该行变量名输入框 value)，真机默认：answer / jsons。"
+        },
+        "state": {
+          "type": "string",
+          "required": false,
+          "desc": "期望回显开关态 on / off(缺省 off)。"
+        }
+      },
+      "requires": [
+        "节点抽屉已开"
+      ],
+      "post": "该输出变量行的回显开关处于期望状态。"
+    },
+    "workflow.closeDrawer": {
+      "desc": "Esc 关闭当前浮层：节点配置抽屉、历史版本等 Esc 可关的弹窗（实现=按一次 Esc，通用关闭器）。配完节点要关抽屉，否则盖住发布/测试按钮。",
+      "params": {},
+      "removes": [
+        "节点抽屉已开"
+      ],
+      "post": "配置抽屉关闭。"
+    },
+    "workflow.configEndOutput": {
+      "desc": "配置结束节点输出 ans=<源节点>.<变量>（缺省 开始节点.question，与历史行为一致；可指定如 模型节点 + answer (str)）。内含「开一次开始节点抽屉再 Esc」trick=注册默认入参 question+消开始节点红框（漏这步发布被拦——2026-06-10 实证）。否则发布/测试/试跑报「存在节点内容未填写完整」。需画布上已有 开始节点+结束节点。",
+      "params": {
+        "sourceNode": {
+          "type": "string",
+          "required": false,
+          "desc": "引用来源节点名（缺省 开始节点）。"
+        },
+        "variable": {
+          "type": "string",
+          "required": false,
+          "desc": "变量标签（缺省 question (str)；空格容忍，answer (str) 也能匹配真机的 answer(str)）。"
+        }
+      },
+      "requires": [
+        "画布已开"
+      ],
+      "post": "结束节点输出 ans 已配置并勾必传（工作流可发布/试跑）。"
+    },
+    "workflow.selectNodeModel": {
+      "desc": "模型节点选模型【2026-06-10 破解 §3.2 卡点】：点模型字段「本体」(抽屉第一个只读 input .hr-input.hr-is-readonly)→弹层 .hr-popup.hr-select__dropdown 选项「平台<模型名><厂商>」→点选项即写入字段，无需确认按钮(录制里的 .col-3 按钮是抽屉头布局按钮、点了反而关抽屉=历史假失败根因)。需先 workflow.openNode 打开模型节点。",
+      "params": {
+        "modelName": {
+          "type": "string",
+          "required": true,
+          "desc": "模型名(子串)，如 deepseek-v3。"
+        },
+        "vendor": {
+          "type": "string",
+          "required": false,
+          "desc": "厂商锁定(deepseek-v3 有 腾讯/阿里 两项)，如 腾讯。"
+        }
+      },
+      "requires": [
+        "节点抽屉已开"
+      ],
+      "post": "模型字段 value 含模型名（动态信号：默认为空，真选中才出现）。"
+    },
+    "workflow.addNodeInputVar": {
+      "desc": "模型节点「输入」区添加变量行并命名【2026-06-10 破解】：输入区默认「暂无数据」(无默认行)，「添加」=该折叠面板内 primary 按钮。注意：输入变量不会自动注入模型(真机实证)，须用户提示词 {变量名} 引用(fillNodeTextArea nth1)。需先 workflow.openNode。",
+      "params": {
+        "name": {
+          "type": "string",
+          "required": true,
+          "desc": "变量名，如 q。"
+        }
+      },
+      "requires": [
+        "节点抽屉已开"
+      ],
+      "post": "输入区出现该名变量行。"
+    },
+    "workflow.refNodeVariable": {
+      "desc": "节点配置抽屉里给值框做变量引用【2026-06-10 破解】：齿轮=第 nth 个 .variable-value-input 容器内方形图标按钮→弹窗选 listitem 源节点→点变量文本即生效并自动关弹窗(无需确认按钮)。nth 按抽屉 DOM 序：输入区行在缓存 key 行之前；模型节点未加输入行时 nth0=缓存 key(先 addNodeInputVar)。",
+      "params": {
+        "nth": {
+          "type": "number",
+          "required": false,
+          "desc": "第几个 .variable-value-input 容器(0 起，缺省 0)。"
+        },
+        "sourceNode": {
+          "type": "string",
+          "required": true,
+          "desc": "源节点名，如 开始节点 / 模型节点。"
+        },
+        "variable": {
+          "type": "string",
+          "required": true,
+          "desc": "变量标签，如 question (str) / answer (str)（空格容忍）。"
+        }
+      },
+      "requires": [
+        "节点抽屉已开"
+      ],
+      "post": "该值框出现「源节点 变量」引用 chip。"
+    },
+    "workflow.fillNodeTextArea": {
+      "desc": "填节点配置抽屉的提示词编辑区(.text-input-area 自定义 div 编辑器，.fill() 可填——用户录制实证)：模型节点 nth0=系统提示词、nth1=用户提示词。用户提示词以 {变量名} 引用输入区变量(UI 占位符明示)。需先 workflow.openNode。",
+      "params": {
+        "nth": {
+          "type": "number",
+          "required": false,
+          "desc": "第几个 .text-input-area(0 起，缺省 0=系统提示词)。"
+        },
+        "text": {
+          "type": "string",
+          "required": true,
+          "desc": "要填的提示词文本，如 {q}。"
+        }
+      },
+      "requires": [
+        "节点抽屉已开"
+      ],
+      "post": "该提示词区含填入文本。"
+    },
+    "workflow.optimizeVersion": {
+      "desc": "已发布工作流→进入可编辑新版本【2026-06-10 破解】：「新建版本」只 toast 保存成功(后台建 V2 草稿、当前页仍锁定 V1)；本原子做「历史版本」表→V2 行「优化」链接(A.hr-link)→确认弹窗「请确定当前流程图数据已保存…」点确认→落 V2 草稿。需先 workflow.publish + clickEditorButton(新建版本)。",
+      "params": {},
+      "requires": [
+        "画布已开"
+      ],
+      "destructive": true,
+      "post": "画布解锁（「添加节点」按钮 enabled——已发布态它是 disabled，动态信号）。"
+    },
+    "workflow.trialRun": {
+      "desc": "试运行工作流：点「测试」→在「请输入消息」发输入→（可选）断言回复出现期望内容（证明数据真流通，画布域允许的内容断言）。【2026-06-10 防假绿加固】测试会话抽屉会带出历史气泡(异步加载)：发送前等气泡数稳定记快照，断言只认「发送后新增」内容。",
+      "params": {
+        "input": {
+          "type": "string",
+          "required": true,
+          "desc": "试运行输入。"
+        },
+        "expectIncludes": {
+          "type": "string",
+          "required": false,
+          "desc": "期望回复包含的子串/正则；给了才断言。"
+        }
+      },
+      "requires": [
+        "画布已开"
+      ],
+      "destructive": true,
+      "post": "（给了 expectIncludes 则）回复出现期望内容。"
+    },
+    "workflow.deleteByName": {
+      "desc": "清理：按名称搜索隔离后删除工作流（搜索后删除按钮恰好 1 个才动手；整段容错，清理失败不连累用例）。",
+      "params": {
+        "name": {
+          "type": "string",
+          "required": true,
+          "desc": "要删除的工作流名称。"
+        }
+      },
+      "requires": [
+        "已登录"
+      ],
+      "provides": [
+        "在工作流管理页"
+      ],
+      "removes": [
+        "测试面板已开",
+        "节点抽屉已开",
+        "工具选择器已开"
+      ],
+      "destructive": true,
+      "entityNameParam": "name",
+      "post": "（尽力）该工作流被删除。"
+    },
+    "agent.searchOpen": {
+      "desc": "在「智能体管理」搜索框输入关键词并打开指定智能体详情（搜索+打开合为一个有独立后置断言的业务动作）。",
+      "params": {
+        "searchKeyword": {
+          "type": "string",
+          "required": true,
+          "desc": "搜索框输入（智能体名称或编码）。"
+        },
+        "openName": {
+          "type": "string",
+          "required": true,
+          "desc": "搜索结果里点开的列表项可见文本（须足够唯一，避免 strict mode 命中多个）。"
+        }
+      },
+      "requires": [
+        "在智能体管理页"
+      ],
+      "provides": [
+        "智能体详情已开"
+      ],
+      "post": "进入该智能体详情页（出现「测试」按钮）。"
+    },
+    "agent.openTestPanel": {
+      "desc": "打开「测试」面板（硬化：等详情页 networkidle→等「测试」可见→点→确认消息框出现，点空则重点一次）。",
+      "params": {},
+      "requires": [
+        "智能体详情已开"
+      ],
+      "provides": [
+        "测试面板已开"
+      ],
+      "post": "测试面板消息输入框「请输入消息」可见（点空会被这条后置断言逮到）。"
+    },
+    "agent.assertPromptTabs": {
+      "desc": "L1：断言智能体详情「提示词」区按系统/用户分区（真机实测：系统/用户为 .prompt-tip 标签，父 .agent-content.two-prompt）。做测试表『提示词区分为系统、用户』用例。需先在某智能体详情页(agent.searchOpen 之后)。",
+      "params": {
+        "labels": {
+          "type": "string[]",
+          "required": false,
+          "desc": "要断言存在的提示词分区标签；缺省 ['系统','用户']。"
+        }
+      },
+      "requires": [
+        "智能体详情已开"
+      ],
+      "post": "提示词区出现全部期望分区标签（系统/用户）。"
+    },
+    "agent.create": {
+      "desc": "【破坏性·建实体】新增草稿智能体：「新增智能体」下拉→菜单→抽屉填 名称/编码/描述/角色编码(限定 .hr-drawer--open scope) + 选 输出类型/类型 两个必填下拉(HEREN select：点 .hr-select 包裹展开、选项=.hr-select-option) → 确认直达 /agent/detail 草稿态。运行时给名称+编码加唯一后缀(flow.json 冻结不能带时间戳)，实际名写入 ctx.agentName 供 agent.delete 精确清理。",
+      "params": {
+        "name": {
+          "type": "string",
+          "required": false,
+          "desc": "名称基（缺省 ctxtest_工具用例）；运行时自动加唯一后缀。务必 ctxtest_ 前缀便于清理。"
+        },
+        "role": {
+          "type": "string",
+          "required": false,
+          "desc": "智能体角色编码（缺省 ctxtest_role）。"
+        },
+        "outputType": {
+          "type": "string",
+          "required": false,
+          "desc": "输出类型下拉：流式输出(缺省)/非流式输出。"
+        },
+        "agentType": {
+          "type": "string",
+          "required": false,
+          "desc": "类型下拉（数据获取/病历质控/诊后管理/…）；缺省空=第一项。"
+        }
+      },
+      "requires": [
+        "在智能体管理页"
+      ],
+      "provides": [
+        "智能体详情已开"
+      ],
+      "destructive": true,
+      "entityNameParam": "name",
+      "post": "进入新建草稿智能体详情（URL 含 /agent/detail）。"
+    },
+    "agent.openToolPicker": {
+      "desc": "在(草稿/可编辑态)智能体详情右侧「工具」区点「+ 添加」打开工具选择器对话框。gating 实证：已发布态点添加无效，需草稿态。稳健 finder 定位「工具」行的「添加」(不要求叶子)。注：详情左侧「工具」是提示词模板标签、不是它。",
+      "params": {},
+      "requires": [
+        "智能体详情已开"
+      ],
+      "provides": [
+        "工具选择器已开"
+      ],
+      "post": "工具选择器对话框出现（含搜索框「请输入关键字搜索」）。"
+    },
+    "picker.search": {
+      "desc": "在工具选择器搜索框输入关键字并回车过滤（真机：需 Enter 才触发；搜一级名→过滤到该一级，搜二级工具名→过滤到其父一级）。可断言过滤后一级卡片数 / 期望一级名可见。",
+      "params": {
+        "keyword": {
+          "type": "string",
+          "required": false,
+          "desc": "搜索关键字（空=清空过滤）。"
+        },
+        "expectCount": {
+          "type": "number",
+          "required": false,
+          "desc": "断言过滤后可见一级(.hr-collapse-panel)卡片数；省略不断言。"
+        },
+        "expectName": {
+          "type": "string",
+          "required": false,
+          "desc": "断言过滤后某一级名可见；省略不断言。"
+        }
+      },
+      "requires": [
+        "工具选择器已开"
+      ],
+      "post": "（给了断言参数则）过滤结果符合期望。"
+    },
+    "picker.expandPrimary": {
+      "desc": "点工具选择器里某一级(MCP)卡片的 header 展开其二级工具列表（真机：点 .hr-collapse-panel__header 即展开、不跳转）。",
+      "params": {
+        "name": {
+          "type": "string",
+          "required": true,
+          "desc": "要展开的一级（MCP）名，如 预约挂号。"
+        }
+      },
+      "requires": [
+        "工具选择器已开"
+      ],
+      "post": "该一级展开，二级工具项(.tool-item)可见。"
+    },
+    "picker.selectFirstTool": {
+      "desc": "勾选第一个【可见】二级工具的勾选框(.tool-item .hr-checkbox)。给 under 则限定到该一级面板内选其首个工具(多选不同一级各一个工具时用)。顺手把该工具名(去掉描述行)写入 ctx.lastToolName，供 agent.openAddedToolMcpList 点详情上的它。",
+      "params": {
+        "under": {
+          "type": "string",
+          "required": false,
+          "desc": "限定在哪个一级(MCP)面板下选首个工具，如 高德地图；省略则选全局第一个可见工具。需先 expandPrimary 展开该一级。"
+        }
+      },
+      "requires": [
+        "工具选择器已开"
+      ],
+      "post": "至少 1 个工具被选中(checkbox checked)；ctx.lastToolName = 该工具名。"
+    },
+    "agent.openAddedToolMcpList": {
+      "desc": "R24：在智能体详情「工具」区点【已添加工具的名字】→ 同标签页跳转到 MCP 工具列表页(/mcp/tools)。真机实证(tmp/probe_tool_jump.mjs)：picker 弹框里点工具不跳；工具加进来后、在详情页点它的名字才跳。需先 agent.confirmToolPicker 把工具加进来。",
+      "params": {
+        "toolName": {
+          "type": "string",
+          "required": false,
+          "desc": "要点的已添加工具名；省略则用 ctx.lastToolName(picker.selectFirstTool 的产物)。"
+        }
+      },
+      "requires": [
+        "智能体详情已开"
+      ],
+      "provides": [
+        "MCP列表页"
+      ],
+      "post": "当前 URL 含 /mcp/tools（= 跳到了 MCP 工具列表页）。"
+    },
+    "mcp.backToAgentDetail": {
+      "desc": "R25：在 MCP 工具列表页(/mcp/tools)点「返回」→ 回智能体详情(/agent/detail)。真机实证：返回是 span.back(chevron-left 图标 + 文字「返回」)。需先在 /mcp/tools。",
+      "params": {},
+      "requires": [
+        "MCP列表页"
+      ],
+      "provides": [
+        "智能体详情已开"
+      ],
+      "post": "当前 URL 含 /agent/detail（= 返回了智能体详情）。"
+    },
+    "agent.snapshotDetailState": {
+      "desc": "R25 加强(2026-06-10 用户演示)：在智能体详情页快照当前界面——URL + 已添加工具 chips(.hr-tag--close 文本列表)，写 ctx.detailUrl/ctx.detailChips 并把快照写进报告注解。配合 agent.assertDetailStateRestored 断『跳转前后是同一个界面』。注意先 agent.save——未保存的工具加入在跳转→返回后会丢。",
+      "params": {},
+      "requires": [
+        "智能体详情已开"
+      ],
+      "provides": [
+        "详情快照已记"
+      ],
+      "post": "ctx.detailUrl/ctx.detailChips 已记录；报告出现「跳转前详情快照」注解。"
+    },
+    "agent.assertToolChip": {
+      "desc": "L1：断言智能体详情「工具」区某工具 chip(.hr-tag--close 含名字)在/不在。用户演示实证(2026-06-10)：工具确认加入但【未保存】时跳转→返回后 chip 丢失；【已保存】则仍在。name 省略用 ctx.lastToolName。",
+      "params": {
+        "name": {
+          "type": "string",
+          "required": false,
+          "desc": "工具名(chip 文本)，如 预约挂号；省略用 ctx.lastToolName。"
+        },
+        "state": {
+          "type": "string",
+          "required": false,
+          "desc": "present(缺省)=应存在 / absent=应不存在。"
+        }
+      },
+      "requires": [
+        "智能体详情已开"
+      ],
+      "post": "该工具 chip 处于期望的 在/不在 状态。"
+    },
+    "agent.assertDetailStateRestored": {
+      "desc": "R25 加强：对比当前详情页与 agent.snapshotDetailState 的快照是否【同一个界面】。硬断言(用户定标 2026-06-10)=两处记录的 URL 逐字符相等即可；工具 chips 仅写报告注解供人工核对、不判红。快照与对比结论都进报告注解。",
+      "params": {},
+      "requires": [
+        "智能体详情已开",
+        "详情快照已记"
+      ],
+      "post": "URL 与跳转前完全一致（= 返回后是同一界面）。"
+    },
+    "agent.selectModel": {
+      "desc": "在智能体详情选『应用模型』：模型字段=第一个 .hr-input.hr-is-readonly(leftLabel『模型』)，点其后缀 chevron→下拉(.common-model-select__overlay-option)里点含 modelName 的 .hr-select-option。真机实证(探针+用户录制)破解 §3.2 长期没攻下的模型选择。后置断模型字段 value 变为 modelName(动态)。",
+      "params": {
+        "modelName": {
+          "type": "string",
+          "required": false,
+          "desc": "要选的模型名(子串匹配下拉选项)，缺省 deepseek-v3；下拉项文如『平台deepseek-v3腾讯』，选后字段显示『deepseek-v3』。"
+        }
+      },
+      "requires": [
+        "智能体详情已开"
+      ],
+      "post": "模型字段 value 含 modelName（= 模型已选中）。"
+    },
+    "agent.save": {
+      "desc": "【破坏性】点智能体详情『保存』按钮持久化(模型/工具等改动)。后置断出现『保存成功/操作成功』toast(动态信号)。",
+      "params": {},
+      "requires": [
+        "智能体详情已开"
+      ],
+      "destructive": true,
+      "post": "出现保存成功提示。"
+    },
+    "agent.publish": {
+      "desc": "【破坏性·确认门高亮】点智能体详情『发布』按钮(可能弹确认框，自动点确认)→断『发布成功/操作成功』。注：用户录制实证测试在『保存』后即可跑，发布非测试前置；本原子供需要发布态的用例。",
+      "params": {},
+      "requires": [
+        "智能体详情已开"
+      ],
+      "destructive": true,
+      "post": "出现发布成功提示。"
+    },
+    "picker.toggleShowSelected": {
+      "desc": "切换工具选择器的「仅显示已选」开关。真机：无已选时切 ON→一级清空(0)；选了工具后切 ON→只剩含该工具的一级。可断言切后一级卡片数。",
+      "params": {
+        "state": {
+          "type": "string",
+          "required": false,
+          "desc": "on(缺省)/off。"
+        },
+        "expectCount": {
+          "type": "number",
+          "required": false,
+          "desc": "断言切后可见一级卡片数；省略不断言。"
+        }
+      },
+      "requires": [
+        "工具选择器已开"
+      ],
+      "post": "「仅显示已选」处于目标态，（给了 expectCount 则）一级数符合期望。"
+    },
+    "picker.snapshotPrimaries": {
+      "desc": "快照工具选择器当前可见一级(MCP)卡片的【有序】名称列表(按 DOM 顺序，写入 ctx.pickerPrimaries)——给「切换显示全部·按原始顺序」用例做基线。后置断言至少抓到 1 个一级(防空快照假绿)。需先 agent.openToolPicker。",
+      "params": {},
+      "requires": [
+        "工具选择器已开"
+      ],
+      "provides": [
+        "选择器一级基线已记"
+      ],
+      "post": "ctx.pickerPrimaries = 当前有序一级名列表(非空)。"
+    },
+    "picker.assertPrimariesRestored": {
+      "desc": "L1：断言「显示全部」(切『仅显示已选』OFF)后，可见一级(MCP)卡片与 ctx.pickerPrimaries 基线【条数+顺序完全一致】——证明切回显示全部恢复了原始顺序。需先 picker.snapshotPrimaries 抓基线。",
+      "params": {},
+      "requires": [
+        "工具选择器已开",
+        "选择器一级基线已记"
+      ],
+      "post": "当前有序一级名列表 === ctx.pickerPrimaries（按原始顺序恢复）。"
+    },
+    "picker.cancel": {
+      "desc": "点工具选择器「取消」关闭对话框（不持久化选择，保持自包含）。",
+      "params": {},
+      "requires": [
+        "工具选择器已开"
+      ],
+      "removes": [
+        "工具选择器已开"
+      ],
+      "post": "工具选择器对话框关闭。"
+    },
+    "agent.confirmToolPicker": {
+      "desc": "点工具选择器「确认」把弹框内勾选的工具加到智能体（持久化）。真机实证：确认后弹框关闭，右侧「工具」区出现该工具 chip(.hr-tag--close)，左侧「提示词」区多出「工具」段=工具提示词编辑框(默认『工具调用优化要求…』)、系统提示词变 {tools_inst}。",
+      "params": {},
+      "requires": [
+        "工具选择器已开"
+      ],
+      "removes": [
+        "工具选择器已开"
+      ],
+      "post": "工具选择器关闭（所选工具已加到智能体）。"
+    },
+    "agent.removeToolByName": {
+      "desc": "移除智能体已加的某工具：点其「工具」区 chip(.hr-tag--close 含该名)的关闭图标(.hr-tag__icon-close)。真机实证：移除后该 chip 消失、工具提示词编辑框默认文案随之消失。",
+      "params": {
+        "name": {
+          "type": "string",
+          "required": true,
+          "desc": "要移除的工具(MCP)名，如 预约挂号。"
+        }
+      },
+      "requires": [
+        "智能体详情已开"
+      ],
+      "post": "该工具 chip 被移除。"
+    },
+    "assert.textHidden": {
+      "desc": "L1：断言页面【不】出现某段文字（toBeHidden，含未挂载）——用于「移除后某元素应消失」类用例（如移除工具后工具提示词编辑框默认文案『工具调用优化要求』应消失）。",
+      "params": {
+        "text": {
+          "type": "string",
+          "required": true,
+          "desc": "不应出现的文字（子串匹配）。"
+        },
+        "timeoutMs": {
+          "type": "number",
+          "required": false,
+          "desc": "等待消失的超时，缺省 8000。"
+        }
+      },
+      "post": "页面不出现该文字。"
+    },
+    "agent.delete": {
+      "desc": "清理：按名称搜索隔离后删除智能体（搜索后删除恰 1 个才动手；name 省略则用 ctx.agentName，即 agent.create 写入的实际唯一名）。整段容错，清理失败不连累用例。",
+      "params": {
+        "name": {
+          "type": "string",
+          "required": false,
+          "desc": "要删的智能体名；省略则用 ctx.agentName（agent.create 的产物）。"
+        }
+      },
+      "requires": [
+        "已登录"
+      ],
+      "provides": [
+        "在智能体管理页"
+      ],
+      "removes": [
+        "测试面板已开",
+        "节点抽屉已开",
+        "工具选择器已开"
+      ],
+      "destructive": true,
+      "entityNameParam": "name",
+      "post": "（尽力）该智能体被删除。"
+    },
+    "chat.sendAndWait": {
+      "desc": "逐字符输入消息并发送，等 LLM 流式接口结束 + 助手气泡文本稳定。本 UI send 触发与 wait 不可分，故合并为一个原子（忠于现有实现，不为对齐设计图拆出脆边界）。",
+      "params": {
+        "prompt": {
+          "type": "string",
+          "required": true,
+          "desc": "打进对话框的消息文本。"
+        },
+        "streamUrlPattern": {
+          "type": "string",
+          "required": false,
+          "desc": "LLM 流式接口 URL 子串；缺省 /ai-api/tester/agent/stream。"
+        },
+        "replySelector": {
+          "type": "string",
+          "required": false,
+          "desc": "助手回复气泡选择器；缺省 .hr-chat__text__assistant（断言只读它，不读整页避免命中用户输入回显）。"
+        },
+        "sendIconSelector": {
+          "type": "string",
+          "required": false,
+          "desc": "发送小箭头选择器；缺省 .hr-icon.hr-icon-arrow-up。"
+        }
+      },
+      "requires": [
+        "测试面板已开"
+      ],
+      "post": "助手气泡出现非空文本且 2s 内稳定（产物 replyText 写入 ctx 供后续原子用）。"
+    },
+    "assert.bubble": {
+      "desc": "对 ctx.replyText（助手气泡原文）做软期望子串判定，只标注不判红（L2，阶段一可选）。",
+      "params": {
+        "mustInclude": {
+          "type": "string[]",
+          "required": false,
+          "desc": "应包含子串（未命中只标注）。"
+        },
+        "mustNotInclude": {
+          "type": "string[]",
+          "required": false,
+          "desc": "不应包含子串（命中只标注）。"
+        }
+      },
+      "post": "（软）命中与否进注解，不影响 pass/fail。"
+    },
+    "assert.noErrorToast": {
+      "desc": "L1 红线兜底：断言页面没有「操作失败/系统异常/网络错误」等错误提示弹窗。命中即原子失败判红——逮 app 拒绝/低级错。【注：toast 选择器待真机确认，见 _atoms.ts 注释】",
+      "params": {
+        "phrases": {
+          "type": "string[]",
+          "required": false,
+          "desc": "判错短语；缺省 操作失败/系统异常/网络错误/请求失败。"
+        }
+      },
+      "post": "无可见错误 toast（有则判红）。"
+    },
+    "assert.onPage": {
+      "desc": "L1：断言当前页 URL 含指定片段——用来判跳转（如 /process/detail=进了画布、/agent/detail=智能体详情、/process/list=工作流列表）。不含即判红。",
+      "params": {
+        "urlIncludes": {
+          "type": "string",
+          "required": true,
+          "desc": "期望 URL 含的片段。"
+        },
+        "label": {
+          "type": "string",
+          "required": false,
+          "desc": "人类可读页名（报告显示用）。"
+        }
+      },
+      "post": "当前 URL 含指定片段。"
+    },
+    "assert.textVisible": {
+      "desc": "L1：断言页面出现某段可见文字（如『请先配置数据库』『不支持发布』『发布成功』）。没出现即判红——这是这批用例最常用的检查。",
+      "params": {
+        "text": {
+          "type": "string",
+          "required": true,
+          "desc": "期望出现的文字（子串匹配）。"
+        },
+        "timeoutMs": {
+          "type": "number",
+          "required": false,
+          "desc": "等待出现的超时，缺省 15000。"
+        }
+      },
+      "post": "页面出现该文字。"
+    },
+    "assert.buttonState": {
+      "desc": "L1：断言某按钮的状态——用于「支持/不支持某操作」类用例（真机：未发布编辑器无『导出』、有『保存/发布』；发布后有『导出/新建版本』、无『保存/发布』）。",
+      "params": {
+        "name": {
+          "type": "string",
+          "required": true,
+          "desc": "按钮可见名（子串匹配），如 导出/保存/发布/新建版本。"
+        },
+        "state": {
+          "type": "string",
+          "required": false,
+          "desc": "present(缺省,存在可见)/absent(不存在)/enabled(可点)/disabled(置灰)。"
+        },
+        "timeoutMs": {
+          "type": "number",
+          "required": false,
+          "desc": "等待超时，缺省 10000。"
+        }
+      },
+      "post": "该按钮处于期望状态。"
+    },
+    "evidence.capture": {
+      "desc": "留证据：整页截图 + 助手气泡原文（判定铁证）+ 整页文本（仅留档，切勿据它判泄露）。",
+      "params": {},
+      "post": "证据附件已 attach。"
+    },
+    "chat.closeTestPanel": {
+      "desc": "关闭右侧测试面板抽屉。",
+      "params": {},
+      "requires": [
+        "测试面板已开"
+      ],
+      "removes": [
+        "测试面板已开"
+      ],
+      "post": "抽屉关闭。"
+    },
+    "final": {
+      "desc": "回到列表并留最终状态（截图 + URL + DOM）。",
+      "params": {},
+      "requires": [
+        "智能体详情已开"
+      ],
+      "provides": [
+        "在智能体管理页"
+      ],
+      "post": "最终状态证据已 attach。"
+    }
+  }
+}

@@ -208,7 +208,8 @@ function main() {
 
     // 生命周期（当前为诚实桩，逐阶段实现）
     case 'ingest':  return notImplemented('相0 ingest 归一', 'P2 规范 TestCase + 输入归一', 'excel/json/txt/自由文本 → LLM 归一 → 确定性 parseTestCase 校验（fail-closed）→ 规范 TestCase 聚合根。');
-    case 'compile': return notImplemented('相1 compile 编译', 'P3 编译期 recorder-as-library + authoring agent', 'L3 agent 真机跑一遍，intent → 稳健动作落 events.json/spec.ts + observed-<caseId>.json（地面真值）；禁纯坐标步。');
+    // 相1 编译（P3）：三段式确定性 CLI（闸+confirm 门 / 执行 / 回放核验），LLM 只在 CLI 外产 flow 草稿。
+    case 'compile': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'compile.mjs'), rest); process.exit(r.code); }
     case 'draft':   return notImplemented('相2 draft 断言草拟', 'P4 断言草拟 + 冻结 + 人签', 'LLM 从 intent + observed 推导带类型 expected[]（只用断言词汇表 + op 约束，默认结构式、易变值模板化）。');
     case 'sign':    return notImplemented('相2 sign 人签门', 'P4 断言草拟 + 冻结 + 人签', '人签掉冻结断言（写 signedAt/signedAgainstBuild/signerId）→ checksum 冻结仅断言文件。');
     case 'replay':  return notImplemented('相3 replay 回放', 'P5 确定性回放 + 取证', '确定性重放 spec + 录屏 + 抓回复 + watchPageLifecycle + watchNetworkForensics。');

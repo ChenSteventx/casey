@@ -8,6 +8,7 @@
 import { readFileSync, writeFileSync } from 'node:fs';
 import pw from '@playwright/test';
 import { performAction } from '../lib/replay-actions.mjs';
+import { instantiate } from '../lib/instantiate.mjs';
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { evaluateAssertions } from '../lib/replay-assert.mjs';
 
@@ -49,7 +50,9 @@ async function main() {
   const events = eventsDoc.events || [];
   const caseId = eventsDoc.caseId || expectedDoc.caseId || 'unknown';
   const sut = String(args.sut).replace(/\/$/, '');
-  const ctx = { uniqueName: 'r1' }; // 确定性令牌（可 golden）；真机由 compile-gate 注入带 Reserved Prefix 的实体名
+  // 确定性令牌（可 golden）；真机由 compile-gate 注入带 Reserved Prefix 的实体名。
+  // baseUrl：G6 分岔三取 C——events url 走 {{baseUrl}} 占位符，回放期回填 --sut（对完整 URL 的旧 fixture 是 no-op）。
+  const ctx = { uniqueName: 'r1', baseUrl: sut };
 
   const intentOrder = [];
   const intentEvents = new Map();
@@ -95,7 +98,7 @@ async function main() {
       try {
         if (ev.action === 'nav') {
           state.currentStepId = ev.stepId; // nav 本身就是动作，开放归因
-          await page.goto(sut + pathOf(ev.url), { waitUntil: 'load' });
+          await page.goto(sut + pathOf(instantiate(ev.url, ctx)), { waitUntil: 'load' });
         } else {
           const want = ev.pre && ev.pre.path;
           if (want && pathOf(page.url()) !== want) await page.goto(sut + want, { waitUntil: 'load' });
