@@ -10,6 +10,7 @@
 //           | 'stale'（面板预置历史气泡、发送死键：不开流不产新气泡——钉「旧气泡陈迹不得当新回复」codex R1-F3）
 //           | 'bgstream'（同 happy 但页面加载即开一条永不结束的背景 SSE——钉「流等待按本步发起归因、
 //             背景长流不拖无关步」codex R1-F2）
+//           | 'leaky'（同 happy 但发送另发一条 query 携凭据形态的请求——钉「axes 落盘口过凭据门拒写」）
 //   GET /                          —— 首页：侧栏 list「智能体管理」→ /agent/list
 //   GET /agent/list                —— 搜索框（placeholder 输入智能体名称或编码进行搜索）Enter 出结果项
 //   GET /agent/detail              —— 「测试」按钮 → 右抽屉：消息框（请输入消息）+ 发送箭头
@@ -45,9 +46,12 @@ const LIST_PAGE =
 function detailPage(scenario) {
   const staleBubble = scenario === 'stale' ? '<div class="hr-chat__text__assistant">历史回复：建议多喝水</div>' : '';
   // stale：发送死键（不开流不产新气泡）——旧气泡陈迹在场但本次无回复（codex R1-F3 考场）。
+  // 真机同款时序（cred-route-mask G2）：发送先自取临时凭据（路由名字面含 token——凭据门打码考场），再开流。
+  const leakyExtra = scenario === 'leaky' ? 'fetch("/api/leaky/save?token=fake-cred-999").catch(function(){});' : '';
   const sendBody = scenario === 'stale'
     ? '/* 死发送：无流无新气泡 */'
-    : 'var b=document.createElement("div");b.className="hr-chat__text__assistant";document.getElementById("chat-log").appendChild(b);' +
+    : leakyExtra + 'fetch("/ai-manager/auths/getTempTokenForApi").catch(function(){});' +
+      'var b=document.createElement("div");b.className="hr-chat__text__assistant";document.getElementById("chat-log").appendChild(b);' +
       'var es=new EventSource("/ai-api/tester/agent/stream");' +
       'es.onmessage=function(e){b.textContent+=e.data;};' +
       'es.addEventListener("finished",function(){es.close();});';
@@ -100,6 +104,13 @@ function makeHandler(scenario) {
     if (req.method === 'GET' && path === '/agent/list') return html(res, LIST_PAGE);
     if (req.method === 'GET' && path === '/agent/detail') return html(res, detailPage(scenario));
     if (req.method === 'GET' && path === '/ai-api/tester/agent/stream') return streamReply(res, scenario);
+    if (req.method === 'GET' && path === '/ai-manager/auths/getTempTokenForApi') {
+      // 假临时凭据端点：只回成功信封，绝不回真值形态（打码考场只考路由名字面）。
+      const body = JSON.stringify({ status: 200 });
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Content-Length': Buffer.byteLength(body) });
+      res.end(body);
+      return;
+    }
     if (req.method === 'GET' && path === '/ai-api/background/stream') {
       // 背景长流：只发注释心跳、永不 finished、永不 end（服务进程随 close() 一并回收）。
       res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-store', Connection: 'keep-alive' });

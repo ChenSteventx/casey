@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "task": "凭据路由名源头打码（direct，Steven 拍板护栏 #7 处置）：lib/cred-gate.mjs 新增 maskCredentialRoute（路径段命中禁字段关键词→<redacted:cred-route>，query/hash 原样、携凭据仍由门拦）；消费点 compile-atoms requestLogPath（observed）+ replay projectNet/孤儿投影（axes）。门零弱化（credentialGate 一字不改，U3 门配对机器证明）。真机误伤原型 getTempTokenForApi；chat-sut 夹具补真机同款先取票再开流时序，chiefcomplaint golden C2/I1 补打码钉（双 prd 同步补冻）。",
+  "specPath": "docs/plans/cred-route-mask/plan.md",
+  "testChecksums": {
+    "tests/_golden/cred-route-mask.golden.mjs": "1e122170a45d176c3ef65634f183461cfdd1d2147b10d4bd843c29e6f29080de"
+  },
+  "observability": [
+    {
+      "dimension": "真机编译复跑过门落四件套（打码痕迹人过目）→ 接 draft/人签/run 三停站",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-mask-at-source",
+      "desc": "打码 golden 3 检查（命中段替换/零行为差/门配对）+ chiefcomplaint golden 11/11（C2/I1 打码钉，修前红=hermetic 精确复现真机门拦事故）+ tier1。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/cred-route-mask.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-03T04:11:10.591Z 全部 acceptance exit 0"
+    }
+  ]
+}

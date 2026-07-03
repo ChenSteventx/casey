@@ -131,6 +131,10 @@ await checkAsync('I1 happy：keydown 垫真 enable + 动态流等待 + reply 采
     }
     const rc = s2.postAssertions.find((x) => x.kind === 'replyContains');
     if (!String(rc.actual).includes('建议多休息')) throw new Error(`replyContains actual 应携全量回复（气泡 2s 稳定后），实际 ${rc.actual}`);
+    // cred-route-mask：axes 全文零原始凭据路由名、发送步取证含打码痕迹（真机 getTempTokenForApi 误伤原型）。
+    const axesText = JSON.stringify(axes);
+    if (axesText.includes('getTempTokenForApi')) throw new Error('axes 含原始凭据路由名（应源头打码）');
+    if (!s2.forensics.network.some((n) => String(n.url).includes('<redacted:cred-route>'))) throw new Error('发送步取证应含打码路由痕迹');
     // 逐 event 动作全成（keydown 垫后发送钮真 enable，click 未超时）
     for (const ea of s2.eventActions) {
       if ((ea.action && ea.action.resolution) !== 'unique') throw new Error(`步 ${ea.stepId} 应 unique，实际 ${ea.action && ea.action.resolution}（disabled 钮点击失败即现形）`);
@@ -201,6 +205,17 @@ await checkAsync('I4 bgstream：背景长流在场，无关步不被拖等（流
     const s2 = axes.steps.find((s) => s.intentId === 'intent_2');
     const rc = s2.postAssertions.find((x) => x.kind === 'replyContains');
     if (!rc || rc.ok !== true) throw new Error(`本步对话流断言应照常过，实际 ${rc?.ok}`);
+  } finally { await srv.close(); }
+});
+
+await checkAsync('I5 leaky：query 携凭据形态 → axes 落盘口过凭据门拒写 exit 1（漏网落盘口补门，codex mask-R1）', async () => {
+  const srv = await startChatSut({ scenario: 'leaky' });
+  try {
+    const OUT = join(tmp, 'i5-axes.json');
+    const r = run([REPLAY, '--events', EVENTS, '--sut', srv.url, '--expected', EXP_HAPPY, '--profile', PROFILE, '--out', OUT]);
+    if (r.status !== 1) throw new Error(`应 exit 1（凭据门拒写 fail-closed），实际 ${r.status}`);
+    if (existsSync(OUT)) throw new Error('axes 不应落盘（query 携凭据形态）');
+    if (!String(r.stderr || '').includes('凭据兜底门')) throw new Error('应报凭据兜底门拦截');
   } finally { await srv.close(); }
 });
 
@@ -275,6 +290,10 @@ await checkAsync('C1 闸段 + C2 执行段：五原子编译知识产四件套�
     const want = ['fill', 'press', 'press', 'click'];
     if (JSON.stringify(chatActs) !== JSON.stringify(want)) throw new Error(`chat 步应产 keydown 垫序列 ${want}，实际 ${JSON.stringify(chatActs)}`);
     const observed = JSON.parse(readFileSync(join(dir, 'observed-tc_chat_smoke.json'), 'utf8'));
+    // cred-route-mask：observed 全文零原始凭据路由名、requestLog 含打码痕迹（凭据门全严之下真机可落盘）。
+    const obsText = JSON.stringify(observed);
+    if (obsText.includes('getTempTokenForApi')) throw new Error('observed 含原始凭据路由名（应源头打码）');
+    if (!obsText.includes('<redacted:cred-route>')) throw new Error('observed requestLog 应含打码路由痕迹');
     const sendObs = observed.steps.filter((s) => s.atom === 'chat.sendAndWait').slice(-1)[0];
     if (!sendObs || !String(sendObs.replyText || '').includes('建议多休息')) throw new Error(`observed 送步 replyText 应回填全量回复，实际 ${sendObs && JSON.stringify(sendObs.replyText)}`);
     if ((sendObs.replyStreamUrl || '') !== '/ai-api/tester/agent/stream') throw new Error(`replyStreamUrl 应为流路径段，实际 ${sendObs && sendObs.replyStreamUrl}`);

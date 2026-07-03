@@ -17,7 +17,7 @@ import { instantiate } from '../lib/instantiate.mjs';
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { evaluateAssertions } from '../lib/replay-assert.mjs';
 import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
-import { credentialGate } from '../lib/cred-gate.mjs';
+import { credentialGate, maskCredentialRoute } from '../lib/cred-gate.mjs';
 
 const { chromium } = pw;
 
@@ -338,8 +338,9 @@ async function main() {
 
   const allRecords = forensics.records();
   // 归因到本步的记录归一到 intent 代表步（verdict 按 ===StepAxes.stepId 背书，须对齐，finding 5）；其余归 null。
+  // url 过凭据路由名打码（cred-route-mask）：报告装配下游同源受益；无关键词路由零行为差。
   const projectNet = (r, reprStepId) => ({
-    url: r.url, status: r.status, ts: r.ts, initiator: r.initiator,
+    url: maskCredentialRoute(r.url), status: r.status, ts: r.ts, initiator: r.initiator,
     attributedStepId: r.attributedStepId != null ? reprStepId : null,
     errorEnvelope: r.errorEnvelope, streamFinished: r.streamFinished, streamStatus: r.streamStatus,
   });
@@ -377,10 +378,20 @@ async function main() {
 
   // 孤儿网络记录（首事件前/无步发起）并进首 intent，归因仍 null，确保 allNet 可见。
   const orphan = allRecords.filter((r) => r.firingStepId == null || !allStepIds.has(r.firingStepId))
-    .map((r) => ({ url: r.url, status: r.status, ts: r.ts, initiator: r.initiator, attributedStepId: null, errorEnvelope: r.errorEnvelope, streamFinished: r.streamFinished, streamStatus: r.streamStatus }));
+    .map((r) => ({ url: maskCredentialRoute(r.url), status: r.status, ts: r.ts, initiator: r.initiator, attributedStepId: null, errorEnvelope: r.errorEnvelope, streamFinished: r.streamFinished, streamStatus: r.streamStatus }));
   if (orphan.length && steps.length) steps[0].forensics.network.push(...orphan);
 
-  writeFileSync(args.out, JSON.stringify({ caseId, steps }, null, 2) + '\n', 'utf8');
+  // axes 落盘前过凭据兜底门（cred-route-mask codex R1 High：axes 此前是漏网落盘口——路径段已打码，
+  // 但 query/hash 携凭据只能靠门拦；命中即拒写 exit 1，fail-closed，同 compile/report 先例）。
+  const axesText = JSON.stringify({ caseId, steps }, null, 2) + '\n';
+  const axesGate = credentialGate({ 'axes.json': axesText });
+  if (!axesGate.ok) {
+    console.error(`凭据兜底门拦截（护栏 #7）：${axesGate.hit}；拒绝落盘 axes`);
+    clearTimeout(watchdog);
+    await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
+    process.exit(1);
+  }
+  writeFileSync(args.out, axesText, 'utf8');
 
   // 回放历史/回放指标真产出（G5：与 axes 同刻、正常成功路径、过凭据兜底门、命中拒写 exit 1）。
   // locatorHitRate 分母只数有定位需求步（locatorResolution 非 null），分母 0 → null（诚实无比率）。
