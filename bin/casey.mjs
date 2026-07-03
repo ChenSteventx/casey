@@ -70,7 +70,7 @@ function runPipeline(pos, opts) {
   if (!caseId || !opts.events || !opts.expected || !opts.profile || !opts.sut) {
     console.error(col(C.red, '[run] 缺必填参 → 用参错误(64)'));
     console.error('LLM 前段(相0-2 ingest/compile/draft/sign)未建、route:human；确定性尾段用法：');
-    console.error('  casey run <caseId> --sut <url> --events <f> --expected <f> --profile <f> [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>] [--login-bootstrap]');
+    console.error('  casey run <caseId> --sut <url> --events <f> --expected <f> --profile <f> [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>] [--login-bootstrap] [--no-video]');
     console.error('  串 相3回放 → 相4裁定 → 报表模型装配 → 相6报告，落 runs/<caseId>/<runId>/。');
     process.exit(64);
   }
@@ -95,22 +95,29 @@ function runPipeline(pos, opts) {
   // --login-bootstrap 透传（同 compile --verify 先例）：真机跑过登录墙；hermetic 不带旗标零行为差。
   // 回放历史/回放指标接线（G6）：runId=runDir 目录名（本编排器是 runs/<caseId>/<runId>/ 布局唯一知情者）；
   // 仅诊断证据——相4 verdict 只吃 axes.json，绝不喂这两件（护栏 #15/#17）。
+  // 录屏缺省开启（replay-video GRILL D4）：--no-video 显式关；视频与元数据旁件落本 runDir
+  // （登录期不入镜由 replay 双 page 舞步结构保证）。仅诊断附件，绝不进相4 裁定（M7）。
   stage('相3 replay 回放', bin('replay.mjs'), ['--events', opts.events, '--sut', opts.sut, '--expected', opts.expected, '--profile', opts.profile, '--out', axesOut,
     '--run-history', path.join(runDir, 'run-history.jsonl'), '--run-metrics', path.join(runDir, 'run-metrics.json'), '--run-id', path.basename(runDir),
-    ...(opts['login-bootstrap'] ? ['--login-bootstrap'] : [])]);
+    ...(opts['login-bootstrap'] ? ['--login-bootstrap'] : []),
+    ...(opts['no-video'] ? [] : ['--video-dir', runDir])]);
   stage('相4 verdict 裁定', bin('verdict.mjs'), ['--axes', axesOut, '--out', verdictOut]);
   // --expected 恒透传（report-fidelity G1）：run 必带该参，装配器读签署字段投影「期望版本/签署人」。
   const rmArgs = ['--verdict', verdictOut, '--axes', axesOut, '--events', opts.events, '--expected', opts.expected, '--out', modelOut];
   if (opts.observed) rmArgs.push('--observed', opts.observed);
   if (opts['generated-at']) rmArgs.push('--generated-at', opts['generated-at']);
   if (opts['case-meta']) rmArgs.push('--case-meta', opts['case-meta']);
+  // 视频元数据旁件存在才透传（replay-video M5 缺席容忍：收敛失败/--no-video 时零行为差）。
+  const videoMetaPath = path.join(runDir, 'video.json');
+  if (!opts['no-video'] && fs.existsSync(videoMetaPath)) rmArgs.push('--video-meta', videoMetaPath);
   stage('报表模型装配', bin('report-model.mjs'), rmArgs);
   // 回放诊断呈现（report-diagnostics 路 B）：相3 恒产两旁件于本 runDir，相6 传路径进呈现层——仅诊断不进裁定。
   stage('相6 report 报告', bin('report.mjs'), ['--model', modelOut, '--out', runDir,
     '--run-history', path.join(runDir, 'run-history.jsonl'), '--run-metrics', path.join(runDir, 'run-metrics.json')]);
 
   console.log(col(C.green, `\n[run] 端到端（确定性尾段）GREEN → ${runDir}`));
-  console.log(col(C.gray, `  axes.json / verdict.json / report-model.json / run-history.jsonl / run-metrics.json / ${caseId}.report.{html,md,json}`));
+  const videoNote = fs.existsSync(path.join(runDir, 'video.webm')) ? ' / video.webm / video.json' : '';
+  console.log(col(C.gray, `  axes.json / verdict.json / report-model.json / run-history.jsonl / run-metrics.json / ${caseId}.report.{html,md,json}${videoNote}`));
   process.exit(0);
 }
 

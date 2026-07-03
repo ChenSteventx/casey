@@ -7,10 +7,15 @@
 //   --profile = 通道剖面（非凭据）：{ background:[denylist], successField, successValue }。
 //   --login-bootstrap（opt-in，缺省行为一字不变）：回放前执行登录预备动作（CONTEXT.md 术语）——
 //     不产 event、不进 axes、凭据只进内存（护栏 #7）；前置加载/登录失败 exit 65 不落 axes（护栏 #14）。
+//   --video-dir <dir>（opt-in，缺省行为一字不变，replay-video GRILL M3）：context 级录屏——正常收敛后
+//     恰余一份 <dir>/video.webm + 元数据旁件 <dir>/video.json（{schemaVersion:1,file,startedAt,steps:[{stepId,videoAt}]}）；
+//     与 --login-bootstrap 同开时登录跑独立 page、其镜头收敛必删（登录期不入镜，护栏 #7）；
+//     收敛失败按缺席容忍（fail-safe：视频永远只是诊断附件，绝不进 verdict，M5/M7）。
 // 裁判零 LLM（护栏 #15）：本进程只产三轴事实，绝不裁定、绝不问 LLM、绝不写 verdict/passes。
 // 取证按【动作作用域 + 发起方】归因（护栏 #15，非时间窗）：currentStepId 仅在该步动作执行+静默期开放，
 //   预导航/上下文恢复期一律 null；证不出归 null（fail-safe，护栏 #14）。
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, renameSync, readdirSync, rmSync } from 'node:fs';
+import { join } from 'node:path';
 import pw from '@playwright/test';
 import { performAction } from '../lib/replay-actions.mjs';
 import { instantiate } from '../lib/instantiate.mjs';
@@ -34,8 +39,28 @@ function parseArgs(argv) {
     else if (a === '--run-history') o.runHistory = argv[++i];
     else if (a === '--run-metrics') o.runMetrics = argv[++i];
     else if (a === '--run-id') o.runId = argv[++i];
+    else if (a === '--video-dir') o.videoDir = argv[++i];
   }
   return o;
+}
+
+// ── 录像基座（replay-video GRILL D1/M3–M5）─────────────────────
+// fail-closed 退出路径的录像清扫：不许把镜头残件（尤其登录期键入）留在盘上（护栏 #7）。
+// 正常成功路径收敛后 videoSweepDir 置 null，语义名 video.webm 不受清扫。
+let activeBrowser = null;
+let videoSweepDir = null;
+function sweepVideos() {
+  if (!videoSweepDir) return;
+  try {
+    for (const f of readdirSync(videoSweepDir)) if (f.endsWith('.webm')) rmSync(join(videoSweepDir, f));
+  } catch { /* 尽力而为 */ }
+}
+// 舞步失败退出前清扫（codex R1-F1 采信：清扫不依赖 close 成败）：先清扫（unlink 不需要浏览器配合，
+// Linux 下写入中的文件同样即刻离目录）、再限时关 context、关后补扫（close 期间新终结的残件）。
+async function discardVideos(context) {
+  sweepVideos();
+  try { await Promise.race([context.close(), new Promise((r) => setTimeout(r, 5000))]); } catch { /* 尽力而为 */ }
+  sweepVideos();
 }
 
 // ── 回放历史逐行构造（G2/G3/G4 口径见 docs/plans/run-history/proposed/GRILL.md）────
@@ -116,7 +141,18 @@ async function main() {
     if (!args[k]) { console.error(`replay: 缺 --${k}`); process.exit(64); }
   }
   // 看门狗 120s（同 compile 先例；chiefcomplaint-smoke D2：chat 用例含 LLM 流式等待，75s 偏紧）。fail-safe 语义不变。
-  const watchdog = setTimeout(() => { console.error('replay 看门狗：超时强制退出'); process.exit(1); }, 120000);
+  // M5 尽力收口（codex R1-F1 采信）：清扫先行（不依赖 close 成败）→ 尽力关 → 关后补扫，4s 兜底强退，
+  // 退出码语义不变（仍 1）。REPLAY_WATCHDOG_MS 仅测试缝（golden 钉清扫语义用），缺省 120s 一字不变。
+  const wdMs = Number(process.env.REPLAY_WATCHDOG_MS) > 0 ? Number(process.env.REPLAY_WATCHDOG_MS) : 120000;
+  const watchdog = setTimeout(async () => {
+    console.error('replay 看门狗：超时强制退出');
+    const bail = setTimeout(() => process.exit(1), 4000);
+    sweepVideos();
+    try { if (activeBrowser) await activeBrowser.close(); } catch { /* 尽力而为 */ }
+    sweepVideos();
+    clearTimeout(bail);
+    process.exit(1);
+  }, wdMs);
   const DBG = !!process.env.REPLAY_DEBUG;
   const T0 = Date.now();
   const log = (m) => { if (DBG) console.error('[replay +' + (Date.now() - T0) + 'ms] ' + m); };
@@ -174,8 +210,36 @@ async function main() {
   const allStepIds = new Set(events.map((e) => e.stepId));
 
   const browser = await chromium.launch({ headless: true });
-  const context = await browser.newContext();
-  const page = await context.newPage();
+  activeBrowser = browser;
+  // 录像 opt-in（M3）：recordVideo 是 context 级选项；缺省不带旗标时 newContext 无参、行为一字不变。
+  const context = await browser.newContext(args.videoDir ? { recordVideo: { dir: args.videoDir } } : undefined);
+  if (args.videoDir) {
+    videoSweepDir = args.videoDir;
+    // 陈迹清除（codex R2-N2）：目录复用时上一轮 video.json/*.webm 会被编排器误当本次产物接进报告——
+    // 起录先清（本次录像文件随 newPage 才出现），拒写/收敛失败的「缺席容忍」才真缺席。
+    try { rmSync(join(args.videoDir, 'video.json'), { force: true }); } catch { /* 尽力而为 */ }
+    sweepVideos();
+  }
+  let page = await context.newPage();
+  let loginPage = null;
+  let videoT0 = Date.now(); // 起录时刻 best-effort（M2）：以回放 page 创建时刻为 case 级录屏偏移基准
+  // 双 page 舞步（GRILL D1/M6，仅录像+登录同开）：登录跑 page1、其镜头收敛时必删；回放/CDP/取证全在 page2——
+  // 登录期键入不入镜（视频是二进制、文本凭据门管不住，卫生只能结构保证）。CDP 尚未接线，登录流量天然不进取证。
+  if (args.videoDir && loginPrep) {
+    loginPage = page;
+    try {
+      await loginBootstrap(loginPage, loginPrep);
+    } catch (e) {
+      console.error('replay: 登录预备动作失败（fail-closed）：' + String((e && e.message) || e).slice(0, 300));
+      clearTimeout(watchdog);
+      await discardVideos(context);
+      await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
+      sweepVideos(); // 关后补扫（codex R4-N7）：context 关不上时镜头在 browser.close 期间才终结
+      process.exit(65);
+    }
+    page = await context.newPage();
+    videoT0 = Date.now();
+  }
   const cdp = await context.newCDPSession(page);
   await cdp.send('Network.enable');
   log('browser+cdp ready');
@@ -190,10 +254,10 @@ async function main() {
     currentStep: () => state.currentStepId,
   });
 
-  // 登录预备动作执行：forensics 已接线、事件循环未开——此刻 currentStepId=null，登录期流量一律
-  // 归 null 不背书（护栏 #14/#15）；不产 event、不进 axes（axes 步只源于 events）。失败关浏览器 exit 65。
+  // 登录预备动作执行（无录像的单 page 路径，原样）：forensics 已接线、事件循环未开——此刻 currentStepId=null，
+  // 登录期流量一律归 null 不背书（护栏 #14/#15）；不产 event、不进 axes（axes 步只源于 events）。失败关浏览器 exit 65。
   let loginMark = 0; // 登录期取证记录数（login-traffic-drop）：投影只取其后，登录期流量整体不进 axes
-  if (loginPrep) {
+  if (loginPrep && !loginPage) {
     try {
       await loginBootstrap(page, loginPrep);
       loginMark = forensics.records().length;
@@ -202,6 +266,22 @@ async function main() {
       console.error('replay: 登录预备动作失败（fail-closed）：' + String((e && e.message) || e).slice(0, 300));
       clearTimeout(watchdog);
       await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
+      process.exit(65);
+    }
+  } else if (loginPage) {
+    // 舞步后半：回放 page 预热到登录后入口（同 context 共享会话）再关登录 page；预热流量同属登录期、
+    // 整体切断（login-traffic-drop 与单 page 路径语义对齐）。失败清扫镜头残件 exit 65。
+    try {
+      await page.goto(loginPrep.startUrl, { waitUntil: 'load' });
+      await loginPage.close();
+      loginMark = forensics.records().length;
+      log('login bootstrap done (video dance)');
+    } catch (e) {
+      console.error('replay: 登录预备动作失败（fail-closed）：' + String((e && e.message) || e).slice(0, 300));
+      clearTimeout(watchdog);
+      await discardVideos(context);
+      await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
+      sweepVideos(); // 关后补扫（codex R4-N7）
       process.exit(65);
     }
   }
@@ -218,6 +298,7 @@ async function main() {
   const rhOn = !!(args.runHistory || args.runMetrics);
   const rhLines = [];
   let rhQuietWait = 0;
+  const vSteps = []; // 录像逐事件步偏移（M2 case 级单录屏）：video.json steps，纯观察者零时序影响
 
   // chat 通道配置（chiefcomplaint-smoke D5，通道剖面非凭据段，可整段缺省）：
   // replySelector 缺省跟随通道既定气泡类；streamUrlPattern 供 streamReplyReceived 谓词普化。
@@ -235,6 +316,7 @@ async function main() {
       // 预导航/上下文恢复期：归因关闭（currentStepId=null），此期请求不系任何步（护栏 #15）。
       state.currentStepId = null;
       const evT0 = Date.now();
+      if (args.videoDir) vSteps.push({ stepId: ev.stepId, videoAt: Math.max(0, evT0 - videoT0) });
       let navOk = true;
       let navErr = null;
       try {
@@ -383,6 +465,37 @@ async function main() {
     log('drained');
   }
 
+  // 录像收敛（GRILL D1/M4/M5）：视频只在 context 关闭后保证落盘——先显式关 context；登录页镜头必删
+  // （删除失败重试一次仍败 = 凭据卫生 fail-closed 非零退出，卫生优先于回放结果）；回放页镜头收敛语义名
+  // video.webm。收敛失败按缺席容忍：videoOk=false → 不写 video.json、报告无附件，回放结果与裁定零影响。
+  let videoOk = false;
+  if (args.videoDir) {
+    const loginVideo = loginPage ? loginPage.video() : null;
+    const replayVideo = page.video();
+    try { await context.close(); } catch { /* 缺席容忍 */ }
+    if (loginVideo) {
+      let deleted = false;
+      for (let i = 0; i < 2 && !deleted; i++) {
+        try { await loginVideo.delete(); deleted = true; } catch { /* 重试一次 */ }
+      }
+      if (!deleted) {
+        console.error('replay: 登录页录像删除失败（凭据卫生 fail-closed，护栏 #7）');
+        clearTimeout(watchdog);
+        sweepVideos();
+        await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
+        sweepVideos(); // 关后补扫（codex R4-N7）：登录镜头若在 browser.close 才终结也不许留
+        process.exit(1);
+      }
+    }
+    try {
+      const raw = replayVideo ? await replayVideo.path() : null;
+      if (raw) { renameSync(raw, join(args.videoDir, 'video.webm')); videoOk = true; }
+    } catch { videoOk = false; }
+    if (!videoOk) sweepVideos(); // 收敛失败清掉残件：缺席容忍 = 干净缺席
+    // 刻意不在此解除清扫（codex R3-N6）：下游凭据门任一 fail-closed 退出都不得遗留已收敛录像——
+    // 清扫豁免只随成功 exit 0 自然到期（正常路径此后无人再调 sweep）。
+  }
+
   // 登录期流量整体不进 axes（login-traffic-drop，CONTEXT「登录预备动作…不进 axes」字面兑现）：
   // 真机实证凭据可走 query（doLogin），归因 null 不够——记录本体切断（步过滤本按 firingStepId，
   // 唯一入径是孤儿并入）。无登录旗标 loginMark=0 零行为差。
@@ -458,7 +571,9 @@ async function main() {
   if (!axesGate.ok) {
     console.error(`凭据兜底门拦截（护栏 #7）：${axesGate.hit}；拒绝落盘 axes`);
     clearTimeout(watchdog);
+    sweepVideos(); // fail-closed 退出不留已收敛录像（codex R3-N6）
     await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
+    sweepVideos(); // 关后补扫（codex R4-N7）
     process.exit(1);
   }
   writeFileSync(args.out, axesText, 'utf8');
@@ -485,16 +600,51 @@ async function main() {
     if (!gate.ok) {
       console.error(`凭据兜底门拦截（护栏 #7）：${gate.hit}；拒绝落盘诊断件`);
       clearTimeout(watchdog);
+      sweepVideos(); // fail-closed 退出不留已收敛录像（codex R3-N6）
       await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
+      sweepVideos(); // 关后补扫（codex R4-N7）
       process.exit(1);
     }
     if (args.runHistory) writeFileSync(args.runHistory, outputs['run-history.jsonl'], 'utf8');
     if (args.runMetrics) writeFileSync(args.runMetrics, outputs['run-metrics.json'], 'utf8');
   }
 
+  // 视频元数据旁件（M3：照 run-history 式样——正常成功路径、过凭据兜底门写出；收敛失败缺席容忍不写）。
+  // 内容只有语义文件名/时刻/毫秒偏移；stepId 源自输入事件、可走私 URL 形态——整文 :// 零容忍
+  // （codex R1-F3 采信）：命中拒写旁件（缺席容忍，视频本体与回放结果零影响）；凭据门仍是末道闸。
+  if (args.videoDir && videoOk) {
+    const vText = JSON.stringify({ schemaVersion: 1, file: 'video.webm', startedAt: videoT0, steps: vSteps }, null, 2) + '\n';
+    if (vText.includes('://')) {
+      console.error('replay: 视频元数据含 ://（零容忍），拒绝落盘 video.json（缺席容忍）');
+    } else {
+      const vGate = credentialGate({ 'video.json': vText });
+      if (!vGate.ok) {
+        console.error(`凭据兜底门拦截（护栏 #7）：${vGate.hit}；拒绝落盘视频元数据`);
+        clearTimeout(watchdog);
+        sweepVideos(); // fail-closed 退出不留已收敛录像（codex R3-N6）
+        await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
+        sweepVideos(); // 关后补扫（codex R4-N7）
+        process.exit(1);
+      }
+      writeFileSync(join(args.videoDir, 'video.json'), vText, 'utf8');
+    }
+  }
+
   clearTimeout(watchdog);
   await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
+  // 关后补扫（codex R4-N7）：收敛失败（缺席容忍）时，context 关不上而 browser.close 期间才终结的
+  // raw 镜头也不许留——缺席必须真缺席；videoOk 成功路径的 video.webm 不在此扫（豁免随 exit 0 到期）。
+  if (args.videoDir && !videoOk) sweepVideos();
   process.exit(0);
 }
 
-main().catch((e) => { console.error('replay 失败：' + ((e && e.stack) || e)); process.exit(1); });
+main().catch(async (e) => {
+  console.error('replay 失败：' + ((e && e.stack) || e));
+  // M5 尽力收口（同看门狗，codex R1-F1）：清扫先行 → 尽力关 → 补扫，4s 兜底强退，退出码语义不变。
+  const bail = setTimeout(() => process.exit(1), 4000);
+  sweepVideos();
+  try { if (activeBrowser) await activeBrowser.close(); } catch { /* 尽力而为 */ }
+  sweepVideos();
+  clearTimeout(bail);
+  process.exit(1);
+});

@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "task": "回放视频录制 replay-video（full）：补「真机 run 报告无视频」缺口（根因 replay.mjs 未启 recordVideo）。D1 登录期镜头不入镜 = 同 context 双 page 舞步（仅 --video-dir 与 --login-bootstrap 同开：登录 page1 → 回放 page2 承载 CDP/forensics 与事件循环，登录页视频退出前必删、删除失败重试一次仍败非零退出 fail-closed；视频是二进制、文本凭据门管不住，卫生只能结构保证）；D2 装配器直产 attachments（schema 预留位早已冻结可用：replay 落 video.json 元数据旁件 → report-model --video-meta 直填 step.attachments{video,videoAt} 与败步 defectTicket.videoAt，缺席零行为差、坏件 fail-closed 零落盘）；D3 渲染器升 <video controls> 相对路径可播（:// 零容忍不出 src，json 机读旁车恒不投 attachments）；D4 casey run 缺省开启（--no-video 显式关）；M1 webm 直出零新依赖（mp4 转码挂账）/ M2 case 级单录屏 + 每步毫秒偏移 / M3 replay 侧 --video-dir opt-in 缺省一字不变 / M4 语义名 video.webm 收敛 / M5 看门狗与 crash 分支尽力 close + 视频缺席容忍 / M7 视频绝不进 verdict / M8 冻结 schema 全体零动。决策依 docs/plans/replay-video/proposed/GRILL.md（D1–D4 Steven 逐条拍板）。",
+  "specPath": "docs/plans/replay-video/plan.md",
+  "testChecksums": {
+    "tests/_golden/replay-video.golden.mjs": "f257ff0582be4d858fe28481cc7e71d4055d3c425ca43a416846fe869484abc8"
+  },
+  "observability": [
+    {
+      "dimension": "真机验收（route:human，需拉隧道 + Steven 在场，可与真机四停站合并行程）：真机 casey run 报告录屏内联可播 + 登录期镜头不入镜人工目检（视频帧内容 hermetic 断言不到，机器只锁结构：登录页视频必删 + 回放页才录）。人不在场只挂账绝不代签。",
+      "route": "human"
+    },
+    {
+      "dimension": "mp4 转码挂账（M1）：webm 在主流浏览器可播；若真机过目发现目标环境播不了 webm，随后续加法契约引 ffmpeg-static 转码，不进本契约。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-video-record-and-report",
+      "desc": "录屏全链：replay --video-dir（V1 登录舞步恰余一份 video.webm + video.json 形状/卫生自守 + 舞步不弱化回放语义；V2 缺省零行为差；V3 无登录单 page）+ 装配器 --video-meta（V4a 直产 attachments 与败步 videoAt；V4b 缺席零行为差；V4c 坏旁件六形态 fail-closed 零落盘）+ 渲染器（V5a <video controls> 相对 src 自包含 + json 旁车零动；V5b :// 零容忍）+ run 编排器（V6a 缺省录屏至报告可播；V6b --no-video 显式关）。实现前 7/10 红已核（V2/V4b/V6b 回归方向冻结即绿）。codex R1 四发现采信/修正采纳重钉（golden 10→12 检查、checksum 重签）：F1 清扫先行（sweep→close→补扫，discardVideos 限时）+ F2 媒体路径安全门（V5b 五形态）+ F3 旁件整文 :// 拒写（V3b）——F2/F3 临时回退双红实证后修绿；F4 看门狗测试缝 REPLAY_WATCHDOG_MS（缺省 120s 零变）+ V7 清扫回归锁（冻结即绿）；登录页视频 delete 重试穷尽分支 hermetic 强制不了，记残余随真机停站目检。codex R2 两新发现采信重钉（checksum 再签，双红实证后修绿）：N1 安全门收窄拒任意冒号与反斜杠（V5b 六形态）+ N2 目录复用陈迹起录必清（V3b 预置陈迹）；N3 属流程位说明（golden/prd 随 learn 阶段提交入库，非代码缺陷）。codex R3 三新发现全采信重钉（checksum 三签，三红实证后修绿）：N4 安全门改 percent-decode 后逐段白名单（V5b 七形态，编码父目录进不了 src）+ N5 装配器 file 收窄纯文件名白名单与呈现层同口径（V4c 七形态）+ N6 清扫豁免只随成功 exit 0 到期、三处凭据门 fail-closed 退出补清扫（V8 新增：已收敛录像遇门拦截必清）。codex R4 一新发现采信（N7 High：context 关失败被吞后 browser.close 期间才终结的 raw 镜头漏过关前清扫）——全部退出路径统一「扫前→关→关后补扫」、成功路径收敛失败也关后补扫；context 关失败 hermetic 强制不了、无新 golden，靠评审静态核 + V7/V8 既有锁兜（golden 零动 checksum 不变）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/replay-video.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-03T11:39:18.821Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-ripple-and-locks",
+      "desc": "回归锁：碰 replay.mjs/report-model/report.mjs/casey run 四处，锁全部消费者——回放侧（p5 双份 + layer3-wiring 双份 + replay-login-bootstrap 含 C6 run 透传 + run-history + 三条飞轮 golden）+ 报告侧（p7-report 吃带 attachments.video 的冻结 fixture、渲染升级须原样绿 + report-diagnostics U1 单参零差异 + report-fidelity）+ 凭据侧（cred-route-mask + p7-credgate-coverage）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs",
+        "node tests/_golden/layer3-wiring-coverage.golden.mjs",
+        "node tests/_golden/replay-login-bootstrap.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/report-diagnostics.golden.mjs",
+        "node tests/_golden/report-fidelity.golden.mjs",
+        "node tests/_golden/cred-route-mask.golden.mjs",
+        "node tests/_golden/p7-credgate-coverage.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-03T11:44:10.986Z 全部 acceptance exit 0"
+    }
+  ]
+}
