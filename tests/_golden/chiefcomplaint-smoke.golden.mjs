@@ -85,6 +85,7 @@ check('U5 streamReplyReceived 谓词普化：profile 模式命中 + legacy 兼�
 const PROFILE = join(tmp, 'profile.json');
 writeFileSync(PROFILE, JSON.stringify({
   background: [], successField: 'status', successValue: 200,
+  routes: { workflowList: '/' }, // 壳页锚：nav.agentManagement 编译知识落 run.listRoute（真机为列表页）
   chat: { streamUrlPattern: '/ai-api/tester/agent/stream', replySelector: '.hr-chat__text__assistant' },
 }));
 function chatEventsDoc() {

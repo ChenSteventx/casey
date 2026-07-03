@@ -3,7 +3,7 @@
   "task": "飞轮第二条移植 chiefcomplaint-smoke（full）：流式 chat 用例全命令面。D1 reply 系 kind 顺手实现（IMPLEMENTED_KINDS 7→10：replyContains/replyMatches/textHidden）+ streamReplyReceived URL 谓词普化（profile.chat.streamUrlPattern 命中或 legacy /streamReply/ 兼容）；D2 动态流等待（动作作用域内开流→等 finished 或 30s 上界+气泡 2s 稳定，无流零行为差，看门狗 75→120s）；D3 keydown 触发垫（fill+Space+Backspace 三 event，冻结枚举内）；D5 reply 双侧采集（DOM 气泡通道，compile 回填 observed.replyText/replyStreamUrl 原 null 字段，replay 评估上下文 +replyText/+streamUrlPattern，textHits 扩 textHidden）；D6 五原子编译知识（nav.agentManagement list 限定/agent.searchOpen/agent.openTestPanel/chat.sendAndWait/chat.closeTestPanel）。涟漪：kinds-harden.golden U1 size===7 重钉补冻（D7）。决策依 docs/plans/chiefcomplaint-smoke/proposed/GRILL.md（Steven 逐条拍板）。",
   "specPath": "docs/plans/chiefcomplaint-smoke/plan.md",
   "testChecksums": {
-    "tests/_golden/chiefcomplaint-smoke.golden.mjs": "dec7c5ce4c24f25e2e387627695a668087b8af76ff40e8de5365c16db4f15708",
+    "tests/_golden/chiefcomplaint-smoke.golden.mjs": "cc50f1d2f71f4290c9e40d5ac60c4fe27c9b0f4125d8685a80f0ed2efb894b0c",
     "tests/fixtures/chat-sut/server.mjs": "2a7128f1a6623d7983cdf54247c0df1768e7891d3835d508088098950ce94787"
   },
   "observability": [
@@ -22,7 +22,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-03T02:36:52.711Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-03T02:46:20.810Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-ripple-and-locks",
@@ -36,7 +36,7 @@
         "node tests/_golden/run-history.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-03T02:38:17.896Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-03T02:47:43.201Z 全部 acceptance exit 0"
     }
   ]
 }
