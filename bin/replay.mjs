@@ -179,9 +179,11 @@ async function main() {
 
   // 登录预备动作执行：forensics 已接线、事件循环未开——此刻 currentStepId=null，登录期流量一律
   // 归 null 不背书（护栏 #14/#15）；不产 event、不进 axes（axes 步只源于 events）。失败关浏览器 exit 65。
+  let loginMark = 0; // 登录期取证记录数（login-traffic-drop）：投影只取其后，登录期流量整体不进 axes
   if (loginPrep) {
     try {
       await loginBootstrap(page, loginPrep);
+      loginMark = forensics.records().length;
       log('login bootstrap done');
     } catch (e) {
       console.error('replay: 登录预备动作失败（fail-closed）：' + String((e && e.message) || e).slice(0, 300));
@@ -336,11 +338,32 @@ async function main() {
     log('drained');
   }
 
-  const allRecords = forensics.records();
+  // 登录期流量整体不进 axes（login-traffic-drop，CONTEXT「登录预备动作…不进 axes」字面兑现）：
+  // 真机实证凭据可走 query（doLogin），归因 null 不够——记录本体切断（步过滤本按 firingStepId，
+  // 唯一入径是孤儿并入）。无登录旗标 loginMark=0 零行为差。
+  const allRecords = forensics.records().slice(loginMark);
   // 归因到本步的记录归一到 intent 代表步（verdict 按 ===StepAxes.stepId 背书，须对齐，finding 5）；其余归 null。
-  // url 过凭据路由名打码（cred-route-mask）：报告装配下游同源受益；无关键词路由零行为差。
+  // url 投影两道卫生（cred-route-mask + login-traffic-drop G3）：剥 host 只留 pathname+search
+  // （目标地址只活在 site.json、绝不进任何输出——真机基址字面撞门实证；query 保留仍受门拦）+
+  // 凭据路由名打码。报告装配下游同源受益。
+  // blob: 等非 http(s)/ws(s) scheme 的 pathname 内嵌完整 origin（codex 实证 blob:http://host/uuid）——
+  // 一律脱敏占位；解析不了且非 / 开头同罪（:// 零容忍，宁失细节不漏 host）。
+  const toPathQuery = (u) => {
+    const s = String(u);
+    try {
+      const x = new URL(s);
+      if (!['http:', 'https:', 'ws:', 'wss:'].includes(x.protocol)) return '<redacted:non-http-url>';
+      const out = x.pathname + x.search;
+      // 代理型路径可自嵌完整 URL（/proxy/http://host/x）——:// 零容忍到输出侧（codex R2 纵深）。
+      return out.includes('://') ? '<redacted:non-http-url>' : out;
+    } catch {
+      // //host/x 协议相对引用也走私 host（codex R2）：仅放行单斜杠起始的纯路径。
+      return s.startsWith('/') && !s.startsWith('//') && !s.includes('://') ? s : '<redacted:non-http-url>';
+    }
+  };
+  const projUrl = (u) => maskCredentialRoute(toPathQuery(u));
   const projectNet = (r, reprStepId) => ({
-    url: maskCredentialRoute(r.url), status: r.status, ts: r.ts, initiator: r.initiator,
+    url: projUrl(r.url), status: r.status, ts: r.ts, initiator: r.initiator,
     attributedStepId: r.attributedStepId != null ? reprStepId : null,
     errorEnvelope: r.errorEnvelope, streamFinished: r.streamFinished, streamStatus: r.streamStatus,
   });
@@ -378,7 +401,7 @@ async function main() {
 
   // 孤儿网络记录（首事件前/无步发起）并进首 intent，归因仍 null，确保 allNet 可见。
   const orphan = allRecords.filter((r) => r.firingStepId == null || !allStepIds.has(r.firingStepId))
-    .map((r) => ({ url: maskCredentialRoute(r.url), status: r.status, ts: r.ts, initiator: r.initiator, attributedStepId: null, errorEnvelope: r.errorEnvelope, streamFinished: r.streamFinished, streamStatus: r.streamStatus }));
+    .map((r) => ({ url: projUrl(r.url), status: r.status, ts: r.ts, initiator: r.initiator, attributedStepId: null, errorEnvelope: r.errorEnvelope, streamFinished: r.streamFinished, streamStatus: r.streamStatus }));
   if (orphan.length && steps.length) steps[0].forensics.network.push(...orphan);
 
   // axes 落盘前过凭据兜底门（cred-route-mask codex R1 High：axes 此前是漏网落盘口——路径段已打码，

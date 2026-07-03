@@ -3,7 +3,7 @@
   "task": "真机 bring-up 四修（direct）：routes.agentList 路由导航优先 / 失败步不堆等 / 消息框 exact:false / openTestPanel networkidle 有界前置 + 点空重点采集自愈。红先行 = chiefcomplaint-smoke.golden C2 新增「单路由 nav event」断言（修前红：实产 nav / + click 两 event）；该 golden 由本 prd 与 prd-chiefcomplaint-smoke 双冻（涟漪同步更新，同 kinds-harden 先例）。真机证据：编译零非 unique 步全流程跑通、验证到凭据门前（token 路由名处置挂账 Steven）。",
   "specPath": "docs/plans/chief-bringup/plan.md",
   "testChecksums": {
-    "tests/_golden/chiefcomplaint-smoke.golden.mjs": "0730e385c2c0688a390a69cc0cfec7315d2dae396dc7346030f928ae50ccc915"
+    "tests/_golden/chiefcomplaint-smoke.golden.mjs": "3e233f511c4430c17969bca029d41fa7f168b793e0e777fc8072cec188d1ac02"
   },
   "observability": [
     {
@@ -21,7 +21,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-03T04:15:15.573Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-03T05:35:12.372Z 全部 acceptance exit 0"
     }
   ]
 }

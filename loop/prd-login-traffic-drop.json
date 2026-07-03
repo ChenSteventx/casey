@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "task": "登录期流量不进 axes + axes 剥 host（direct，护栏 #7 真泄露向量修复）：真机实证 GET doLogin 凭据走 query、site.json 基址字面在 axes 全量 URL、blob pathname 内嵌 origin。修法 loginMark 切断 + 投影 pathname+search + 非 http(s) scheme/自嵌 :///协议相对引用一律脱敏占位。golden 双冻（login C3 补钉主冻在 prd-replay-login-bootstrap，chiefcomplaint I1 收紧双冻同步）。",
+  "specPath": "docs/plans/login-traffic-drop/plan.md",
+  "testChecksums": {
+    "tests/_golden/replay-login-bootstrap.golden.mjs": "6a56e9852734bfd1b246b3d7f0820deadf03938534013e2831ca955f7da9118a",
+    "tests/_golden/chiefcomplaint-smoke.golden.mjs": "3e233f511c4430c17969bca029d41fa7f168b793e0e777fc8072cec188d1ac02"
+  },
+  "observability": [
+    {
+      "dimension": "历史落盘泄露洗盘（catalog 时代 6 件含 doLogin 带值 query，git 清白本地 only）+ 平台侧缺陷上报（doLogin GET 凭据进 URL/服务端日志 + 智能体回复会话异常）——待 Steven 拍板",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-login-drop-and-host-strip",
+      "desc": "登录期切断 + 剥 host + blob/自嵌/协议相对三缝：login golden 8/8（C3 补钉红先行）+ chiefcomplaint 12/12（I1 两轮收紧 + blob 考场红先行）+ tier1。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/replay-login-bootstrap.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-03T05:41:26.170Z 全部 acceptance exit 0"
+    }
+  ]
+}

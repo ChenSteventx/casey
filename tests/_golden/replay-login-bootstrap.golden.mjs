@@ -148,6 +148,9 @@ await checkAsync('C3 登录预备动作真发生', async () => {
     if (!['atstep_0', 'atstep_1'].includes(ea.stepId)) throw new Error(`axes 混入非 events 步：${ea.stepId}`);
     if (!ea.action || ea.action.resolution !== 'unique') throw new Error(`${ea.stepId} 未过点击身份门（登录墙未解则「进入」必 0）`);
   }
+  // login-traffic-drop：登录期流量整体不进 axes（CONTEXT「不进 axes」字面兑现）——此前登录 POST
+  // 经孤儿并入落盘；真机实证凭据可走 query（doLogin），登录期记录必须整体切断而非只归因 null。
+  if (axesText.includes('/api/login')) throw new Error('axes 含登录期请求（登录预备动作流量应整体不进 axes）');
 });
 
 // ---------- C4 已登录态幂等：入口无登录表单 → SPA 判据直通、不 POST 登录 ----------

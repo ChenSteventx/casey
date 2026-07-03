@@ -50,7 +50,10 @@ function detailPage(scenario) {
   const leakyExtra = scenario === 'leaky' ? 'fetch("/api/leaky/save?token=fake-cred-999").catch(function(){});' : '';
   const sendBody = scenario === 'stale'
     ? '/* 死发送：无流无新气泡 */'
-    : leakyExtra + 'fetch("/ai-manager/auths/getTempTokenForApi").catch(function(){});' +
+    : leakyExtra +
+      // blob 请求（login-traffic-drop codex R2 考场）：blob: URL 的 pathname 内嵌完整 origin——投影须拒非 http(s) scheme。
+      'try{var bu=URL.createObjectURL(new Blob(["x"]));fetch(bu).catch(function(){});}catch(e){}' +
+      'fetch("/ai-manager/auths/getTempTokenForApi").catch(function(){});' +
       'var b=document.createElement("div");b.className="hr-chat__text__assistant";document.getElementById("chat-log").appendChild(b);' +
       'var es=new EventSource("/ai-api/tester/agent/stream");' +
       'es.onmessage=function(e){b.textContent+=e.data;};' +

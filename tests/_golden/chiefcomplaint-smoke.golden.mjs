@@ -135,6 +135,14 @@ await checkAsync('I1 happy：keydown 垫真 enable + 动态流等待 + reply 采
     const axesText = JSON.stringify(axes);
     if (axesText.includes('getTempTokenForApi')) throw new Error('axes 含原始凭据路由名（应源头打码）');
     if (!s2.forensics.network.some((n) => String(n.url).includes('<redacted:cred-route>'))) throw new Error('发送步取证应含打码路由痕迹');
+    // login-traffic-drop G3：axes 网络投影剥 host（目标地址绝不进任何输出——真机 site.json 基址字面撞门实证）；
+    // blob: 等非 http(s) scheme 的 pathname 内嵌完整 origin（codex R2）——一律脱敏占位，:// 零容忍。
+    for (const st of axes.steps) {
+      for (const n of st.forensics.network) {
+        const u = String(n.url);
+        if ((!u.startsWith('/') && !u.startsWith('<redacted:')) || u.startsWith('//') || u.includes('://')) throw new Error(`axes 网络 url 应剥 host 只留路径或脱敏占位（实际 ${u.slice(0, 40)}…）`);
+      }
+    }
     // 逐 event 动作全成（keydown 垫后发送钮真 enable，click 未超时）
     for (const ea of s2.eventActions) {
       if ((ea.action && ea.action.resolution) !== 'unique') throw new Error(`步 ${ea.stepId} 应 unique，实际 ${ea.action && ea.action.resolution}（disabled 钮点击失败即现形）`);

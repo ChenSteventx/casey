@@ -3,7 +3,7 @@
   "task": "回放器登录预备动作（light）：bin/replay.mjs 加 opt-in 旗标 --login-bootstrap——回放前把浏览器带到已登录态（复用 lib/login-bootstrap.mjs，不产 event、不进 axes、凭据只进内存，护栏 #7）；凭据/站点前置加载失败或登录失败 exit 65 不落 axes（fail-closed，护栏 #14）；登录期 currentStepId=null 流量一律归 null 不背书（护栏 #15）；compile --verify 透传旗标。方案分岔人签取「replay 登录预备动作」弃 storageState（docs/plans/replay-login-bootstrap/proposed/GRILL.md，Steven 2026-07-02）。缺省（无旗标）行为一字不变，p5 冻结 golden 即证。真机回放核验第二轮为 P3 tier-2 route:human 挂账，不在本契约 gate 内。",
   "specPath": "docs/plans/replay-login-bootstrap/plan.md",
   "testChecksums": {
-    "tests/_golden/replay-login-bootstrap.golden.mjs": "8012f871d238ff14ff8a2abd575dffd1496e943723641402a1a23964d00786bb",
+    "tests/_golden/replay-login-bootstrap.golden.mjs": "6a56e9852734bfd1b246b3d7f0820deadf03938534013e2831ca955f7da9118a",
     "tests/fixtures/login-sut/server.mjs": "7be49b113cc752be770cf0963b31750fdde50316c902717ca04d36341598a0c5"
   },
   "observability": [
@@ -22,7 +22,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-02T14:00:24.616Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-03T05:35:43.529Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-regression-locks",
@@ -34,7 +34,7 @@
         "node tests/_golden/p3-compile.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-02T14:02:35.330Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-03T05:37:30.639Z 全部 acceptance exit 0"
     }
   ]
 }

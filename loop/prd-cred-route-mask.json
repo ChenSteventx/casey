@@ -22,7 +22,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-03T04:11:10.591Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-03T05:20:48.836Z 全部 acceptance exit 0"
     }
   ]
 }
