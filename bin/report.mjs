@@ -33,8 +33,39 @@ function main() {
   let model;
   try { model = JSON.parse(readFileSync(modelPath, 'utf8')); } catch (e) { console.error(`读/解析 report-model 失败：${e.message}`); process.exit(1); }
 
+  // 回放诊断旁件（report-diagnostics 路 B，可选）：不传零行为差；传了但缺/坏 = fail-closed exit 1
+  // 零落盘（报告宁缺不糊，M1）。渲染逻辑仍全在 lib（纯函数），本壳只做 IO。
+  let diagnostics = null;
+  if (opts['run-history'] || opts['run-metrics']) {
+    diagnostics = {};
+    if (opts['run-metrics']) {
+      try { diagnostics.metrics = JSON.parse(readFileSync(resolve(String(opts['run-metrics'])), 'utf8')); }
+      catch (e) { console.error(`读/解析 run-metrics 失败（fail-closed，宁缺不糊）：${e.message}`); process.exit(1); }
+      // 坏件语义收紧（codex R2）：合法 JSON 但非对象（null/数字/数组）= 坏件，同 fail-closed 拒（不静默降级）。
+      const m = diagnostics.metrics;
+      if (!m || typeof m !== 'object' || Array.isArray(m)) {
+        console.error('run-metrics 坏件（非对象），拒渲染（fail-closed，宁缺不糊）');
+        process.exit(1);
+      }
+    }
+    if (opts['run-history']) {
+      try {
+        diagnostics.history = readFileSync(resolve(String(opts['run-history'])), 'utf8')
+          .split('\n').filter((s) => s.trim()).map((s) => JSON.parse(s));
+      } catch (e) { console.error(`读/解析 run-history 失败（fail-closed，宁缺不糊）：${e.message}`); process.exit(1); }
+      // 坏行定义收紧（codex R1-F3）：合法 JSON 但非对象、或缺 stepId/intentId 字符串键 = 坏行——
+      // 同 fail-closed 拒（呈现层不猜半截行；生产端 schema 本就要求这两键）。
+      for (const l of diagnostics.history) {
+        if (!l || typeof l !== 'object' || Array.isArray(l) || typeof l.stepId !== 'string' || typeof l.intentId !== 'string') {
+          console.error('run-history 坏行（非对象或缺 stepId/intentId），拒渲染（fail-closed，宁缺不糊）');
+          process.exit(1);
+        }
+      }
+    }
+  }
+
   let out;
-  try { out = renderReport(model); } catch (e) { console.error(`渲染失败：${e.message}`); process.exit(1); }
+  try { out = renderReport(model, diagnostics); } catch (e) { console.error(`渲染失败：${e.message}`); process.exit(1); }
 
   const outputs = {
     [`${model.caseId}.report.html`]: out.html,

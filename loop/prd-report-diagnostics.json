@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "task": "P7 报告消费侧加法 report-diagnostics（light）：回放诊断栏目走路 B + 逐步嵌入（Steven 拍板）——renderReport(model, diagnostics) 可选第二参（单参零行为差）+ bin/report.mjs 可选旁件旗标 --run-history/--run-metrics（缺席零行为差、坏件 fail-closed exit 1 零落盘）+ bin/casey.mjs run 相6 stage 接线；run-metrics 落全局指标行（标注仅诊断不进裁定）、run-history 按 intentId 嵌所属步卡、无匹配行落「未归属」小节不静默丢；report-model 与全部冻结 schema 零动、report.json 机读形态零动；新栏目零绝对 URL 零外链（p7 自包含续绿）、文本过 credentialGate 末道闸。replyText 摘录挂账核销（侦察实证 observed.replyText + 断言 actual 两通道已在渲染）+ U5 回归锁。红线：仅诊断、绝不进 verdict、绝不写 passes。决策依 docs/plans/report-diagnostics/proposed/GRILL.md（D1/D2 Steven 拍板）。",
+  "specPath": "docs/plans/report-diagnostics/plan.md",
+  "testChecksums": {
+    "tests/_golden/report-diagnostics.golden.mjs": "ddad834234f55bfec4246ad21f91fa8996b4bc29eb36c8f0001fe334abdcd3d3"
+  },
+  "observability": [
+    {
+      "dimension": "真机报告带回放诊断栏目过目（route:human）：并入下次真机停站顺带——Steven 看真机报告时核诊断栏目呈现与可读性（素材 run_1783054730282 复渲或新跑均可）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-diagnostics-render-and-wiring",
+      "desc": "渲染器可选第二参 + 壳旁件旗标 + casey run 接线 golden 9 检查（实现前 6/9 红已核：U2/U3/U4/W1a/W1b/E1；U1 单参零行为差、U5 replyText 回归锁、W1c 不带旗标零行为差冻结即绿=回归保护）。 codex R1 三 High/Medium 采信钉红修绿：F1 诊断 CSS 条件注入（单参字节级零差异）/ F2 旁件值 :// 零容忍脱敏占位（U6）/ F3 坏行定义收紧（W1d：非对象/缺键行 fail-closed）/ F4 golden 补钉（MD 无绝对 URL + E1 嵌入块标题去弱子串），9→11 检查。 codex R2 一发现采信：W1e 坏 metrics 语义收紧（合法 JSON 非对象 fail-closed），11→12 检查。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/report-diagnostics.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-03T08:25:08.720Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-regression-locks",
+      "desc": "回归锁：p7-report（单参续绿+自包含硬约束）/report-fidelity/run-history（不进 verdict 红线）/layer3-wiring/chiefcomplaint-smoke（W1 casey run 报告面）/wf-publish-states 原样绿。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/report-fidelity.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-03T08:27:51.765Z 全部 acceptance exit 0"
+    }
+  ]
+}

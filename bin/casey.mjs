@@ -105,7 +105,9 @@ function runPipeline(pos, opts) {
   if (opts['generated-at']) rmArgs.push('--generated-at', opts['generated-at']);
   if (opts['case-meta']) rmArgs.push('--case-meta', opts['case-meta']);
   stage('报表模型装配', bin('report-model.mjs'), rmArgs);
-  stage('相6 report 报告', bin('report.mjs'), ['--model', modelOut, '--out', runDir]);
+  // 回放诊断呈现（report-diagnostics 路 B）：相3 恒产两旁件于本 runDir，相6 传路径进呈现层——仅诊断不进裁定。
+  stage('相6 report 报告', bin('report.mjs'), ['--model', modelOut, '--out', runDir,
+    '--run-history', path.join(runDir, 'run-history.jsonl'), '--run-metrics', path.join(runDir, 'run-metrics.json')]);
 
   console.log(col(C.green, `\n[run] 端到端（确定性尾段）GREEN → ${runDir}`));
   console.log(col(C.gray, `  axes.json / verdict.json / report-model.json / run-history.jsonl / run-metrics.json / ${caseId}.report.{html,md,json}`));
