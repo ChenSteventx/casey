@@ -17,7 +17,7 @@ CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
 
 【先读，别现编已决的事】（必读顺序）
 1. CLAUDE.md + CONTEXT.md（统一语言注册表，命名以它为准；弃用别名黑名单；繁体禁用）
-2. docs/HANDOFF.md（最新进度，冲突以它为准；已更到 2026-07-03 七契约收口 + 真机四停站）
+2. docs/HANDOFF.md（最新进度，冲突以它为准；已更到 2026-07-03 续：飞轮三/四 + 报告诊断三契约收口）
 3. loop/GUARDRAILS.md（17 条护栏逐条有效）
 4. 追溯「为何这么定」：docs/adr/（架构决策主事实源）、docs/design/（端到端设计）；
    docs/decisions/ 目录不存在，loop 纪律钩子引的坏引用真身是 docs/adr/0001-reuse-loop-kit.md。
@@ -32,10 +32,11 @@ CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
 - ADR-0006 Casey = autotester 与 regress 分层融合：否决白嫖 60 原子，锁「扩断言词表 + watchNetworkForensics + 原子吐三轴」增量序。
 - ADR-0007 P5 回放基座 @playwright/test + 取证按 CDP 真发起方归因 + 背景 denylist；证不出归 null 永不背书；通道剖面抽非凭据配置。
 - 里程碑时间线（git log，越往下越新）：接缝两层冻结 + 四轨 hermetic → P5 回放内核 → 机制护栏上线 →
-  layer3-wiring 集成骨架 → p3-compile 收官（真机六项 route:human 全清）→ 相2 首航（首份人签断言真机 4/4 PASS）
-  → 相6 真机报告 + 保真度三修 → P4 草拟器 + draft-cli 命令化 → kinds-harden（5→7）→ 重签提硬（7 条全硬零 soft）
-  → 2026-07-03 全日七契约：run-history 接线 → chiefcomplaint-smoke 移植（7→10，飞轮第二条）→ 真机四修
-  → 凭据卫生三契约 → 真机四停站走完，Casey 首个真机 SUT_DEFECT 真发现（f0bd596）。本仓无 git 远端。
+  layer3-wiring → p3-compile 收官 → 相2 首航（人签断言真机 4/4 PASS）→ 相6 真机报告 + 保真度三修 →
+  P4 草拟器 + draft-cli → kinds-harden（5→7）→ 重签提硬（7 条全硬）→ 2026-07-03 全日七契约
+  （run-history → chiefcomplaint-smoke 飞轮第二条真机贯通、Casey 首个真机 SUT_DEFECT，f0bd596）→
+  2026-07-03 续三契约：wf-publish-states 飞轮第三条（buttonState 提硬，158ead2）→ report-diagnostics
+  报告回放诊断栏目（7ca5fc6）→ wf-history-version 飞轮第四条（零机制缝，7ec2ff2）。本仓无 git 远端。
 
 【DDD / 统一语言】（领域模型）
 - 七相流水线（LLM 只在相 0/1/2/5；相 3/4/6 纯零 LLM 确定性）：
@@ -47,73 +48,67 @@ CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
   · 多态裁定四态：PASS / SUT_DEFECT（须取证背书、禁自愈、出缺陷单）/ HARNESS_ERROR（可自愈）/ NEEDS_HUMAN（证不出、带 reason 子类）。
   · 点击身份门：唯一命中或点击后身份回读成立才 actionPerformed=true；多匹配/坐标兜底→ambiguous→NEEDS_HUMAN。
   · 网络取证按发起方归因：按 initiator/attributedStepId 归发起步，非时间窗；背景轮询 401 不翻本步 verdict。
-  · 动态流等待：动作步作用域内「本步发起 且 命中 profile.chat.streamUrlPattern 域」的 EventSource 才等 finished
-    （30s 上界 + 气泡 2s 稳定）；背景/他步/本步附带非对话长流都不拖步——「等 X 必先证 X 因本步而起」。
-  · reply 陈迹基线：intent 首步记气泡数+末泡文本，代表步仅「新气泡或末泡变化」才回填 replyText，旧气泡绝不当新回复。
-  · keydown 触发垫：fill+Space+Backspace 三 event 触发 keydown 判据（冻结枚举内绕开逐字符敲键缺位）；真机实证 fill 即 enable、垫无害保留。
-  · 通道剖面 profile：channel 回放所需非凭据配置（背景 denylist + 信封成功字段 + routes.workflowList/agentList + chat 段流参数/气泡选择器）。
-  · 登录预备动作：回放/编译前把浏览器带到已登录态；不产 event、不进 axes（登录期取证记录整体切断——凭据可走 query 的真机实证）、凭据只进内存。
-  · 凭据路由名打码：落盘投影处路径段命中禁字段关键词→<redacted:cred-route>；axes 剥 host 只留 pathname+search、非 http(s) scheme 一律脱敏占位；门本体零弱化。
-  · 静默点 / 观测现状 / 冻结断言契约 / TestCase 聚合根 / 错误信封：登记不变，见 CONTEXT.md。
-  · 断言词汇表：kind 枚举唯一活在 bin/check.mjs（15 种）；IMPLEMENTED_KINDS 现 10 种（replay-assert 唯一供源；
-    +replyContains/+replyMatches/+textHidden，reply 走 DOM 气泡通道、textHidden 复用 textHits）；未实现 5 种草拟冻 soft（D2）。
-  · 回放历史/回放指标：casey run 每跑必产 runs/<caseId>/<runId>/run-history.jsonl + run-metrics.json（真机已在产）；
-    仅诊断、绝不进 verdict、绝不写 passes。失败记录台账/失败指纹/人裁决回填仍未接线。
+  · 动态流等待：动作步作用域内「本步发起 且 命中 profile.chat.streamUrlPattern 域」的 EventSource 才等 finished。
+  · 断言词汇表：kind 枚举唯一活在 bin/check.mjs（15 种）；IMPLEMENTED_KINDS 现 11 种（replay-assert 唯一供源；
+    2026-07-03 续 +buttonState，present/absent 双 op；enabled/disabled 留位挂账随 publish_blocked 带实现回归）；
+    buttonState 采集 = buttonHits 双通道合计（role 必采 + profile.buttons.extraSelector 补采）+ buttonSeen 活性反证
+    （absent 判真须通道活着、盲区证不出）。未实现 kind 现以 switchState 为冻结 golden 未实现范例。
+  · 回放诊断（report-diagnostics）：报告呈现层加法——run-metrics 全局指标行 + run-history 按 intentId 嵌步卡，
+    标「仅诊断不进裁定」；渲染器 renderReport(model, diagnostics) 可选第二参、单参字节级零差异；旁件缺席零行为差、
+    坏件 fail-closed；诊断标量 :// 零容忍脱敏（路 B 绕过装配器脱敏、呈现层补防线）。report-model 与冻结 schema 零动。
+  · 通道剖面 profile：channel 回放所需非凭据配置（背景 denylist + 信封成功字段 + routes + chat 段流参数 + buttons.extraSelector）。
+  · 登录预备动作 / 凭据路由名打码 / 静默点 / 观测现状 / 冻结断言契约 / TestCase 聚合根 / 错误信封：见 CONTEXT.md。
 - 五层 LLM 准入边界：L0 确定性内核（零 LLM：gate 唯一写 passes / verdict / 熔断器 / 报告渲染 / 凭据兜底门）；
   L1 归一·L2 断言草拟·L3 编译与自愈执行 = LLM 手术刀（产物必经 L0 复核）；人签门归人。
 - 裁判与自愈分进程：verdict.mjs 零 LLM，自愈是其下游消费者，不得反向进裁判进程。
 
 【开发准则（机制强制，不是建议）】
 - 阶段互锁：改 lib/bin/web 或提交前必先 contract init 声明入口分流（direct|light|full），hook-loop-guard 按 contract 互锁。
-- 入口分流三档：direct=地板全放行；light=加 plan 门；full=全链（碰冻结内核必走）。accept 任何车道都不跳、红先行必核
-  （direct 台账同样六阶段齐走：grill 要 --user-confirmed、accept 要 prd-<slug>.json 且 testChecksums 非空 + --red-verified）。
-- passes 只 gate 写：prd 的 passes 仅 loop-kit/bin/gate.mjs 有权写；testChecksums 冻结文件对实现者只读。
+- 入口分流三档：direct=地板全放行（但台账仍六阶段齐走：grill 要 --user-confirmed、accept 要 prd 且 testChecksums 非空 + --red-verified）；
+  light=加 plan 门；full=全链（碰冻结内核必走）。direct 不豁免异构评审深度（wf-history-version 三轮才 PASS 实证）。
+- passes 只 gate 写；testChecksums 冻结文件对实现者只读；共享夹具改动后跑全部消费者 golden + 重签全部相关 prd 的夹具 checksum。
 - 双 hook 术语拦截：回合输出与写入 md/json 被 term-lint 扫；加粗只给纯中文、英文走反引号。
 - 护栏 17 要点：#1 测试冻结棘轮 / #5 冻结断言只读+自愈非就地 / #7 凭据不外泄 / #9 评审只喂 spec+diff+证据 / #11 阶段互锁 /
   #13 自愈只对确证 HARNESS_ERROR 开闸 / #14 fail-safe 不 fail-open / #15 裁判零 LLM 分进程 / #16 gate 绿≠完成 / #17 裁判按断言种类不可知。
 
 【兜底 / fail-safe 机制】（证不出怎么收）
-- 四态 catch-all：verdict 判定树落任何「证不出」分支 → NEEDS_HUMAN(INDETERMINATE)，绝不静默 PASS。
-- 入参畸形 fail-closed：verdict 缺 --axes/--out → exit 64；坏数据 → exit 65。
-- 回放看门狗 120s 强退（chat 用例流等待放宽自 75s）；--login-bootstrap 前置/登录失败 exit 65 不落 axes。
-- 断言评估：未实现 kind / 缺采集 / 缺 value（空正则缝已封）一律 ok:false + actual:null；行计数失败回 null 不回 0。
-- check.mjs 词表硬闸：词表外 kind / 越界 op exit 2。
+- 四态 catch-all：verdict 落任何「证不出」分支 → NEEDS_HUMAN(INDETERMINATE)，绝不静默 PASS。
+- 入参畸形 fail-closed（verdict exit 64/65）；回放看门狗 120s 强退；--login-bootstrap 前置/登录失败 exit 65 不落 axes。
+- 断言评估：未实现 kind / 缺采集 / 缺 value 一律 ok:false + actual:null；buttonState.absent 缺活性反证（buttonSeen）证不出。
 - 取证按发起方归因：只认 attributedStepId===本步；stepId==null 不背书。
 - gate 默认 FAIL 凭证据翻绿；熔断器越阈写 loop/inbox.md 后 exit 2。
-- 凭据兜底门（本 session 两连真阳性立功）：所有落盘口过 lib/cred-gate.mjs——compile 四件套、报告、axes（新补门）、
-  回放历史/指标；命中拒写非零退出。投影侧配套：路径段打码 + axes 剥 host + 登录期流量切断。
-- 草拟准入闸 validateDraft：kind/op 复核零副本表、易变字面量盖全 op、D2 soft 两向钉死、闸自身 total 不抛。
+- 凭据兜底门：所有落盘口过 lib/cred-gate.mjs——compile 四件套、报告、axes、回放历史/指标；命中拒写非零退出。
+  投影侧配套：路径段打码 + axes 剥 host + 登录期流量切断 + 报告诊断标量 :// 零容忍。
 
 【排期】
-- P0–P3 全收官；P4 全落（草拟+冻结+人签命令面）；P5 done（回放内核随两条真机用例多轮实跑）；
-  P6 hermetic done（相5 未吃过真 HARNESS_ERROR）；P7 done + 保真度三修（replyText/回放历史呈现待加法）；
+- P0–P3 全收官；P4 全落；P5 done；P6 hermetic done（相5 未吃过真 HARNESS_ERROR）；P7 done + 保真度三修 + 报告诊断栏目；
   P8 未开始；P9 tier-1 绿、tier-2 随真机实跑持续兑现。
-- 飞轮：第一条 tc_catalog_wf_crud（dom_crud）7 条全硬 4/4 PASS；第二条 tc_chiefcomplaint_smoke（chat_streaming）
-  6 条全硬、首跑 SUT_DEFECT 真发现（详见【当前契约 / 状态】）。第三条候选 echo_default_on / dom_crud 余量。
+- 飞轮已铺三维度：dom_crud（tc_catalog_wf_crud 7 条全硬 4/4 PASS + tc_wf_publish_states + tc_wf_history_version）/
+  chat（tc_chiefcomplaint_smoke 6 条全硬、首跑 SUT_DEFECT 真发现）/ 发布状态（wf_publish_states/wf_history_version）。
+  画布维度（R9 前线）压最后；wf_open_smoke（只读零缝）是暖场候选。
 - 单 baton 上限：loop-kit 单活契约；并行只用在零 baton fan-out（研究/探针/schema/golden 起草/异构评审）。
 
 【当前契约 / 状态】
-- 活契约槽 = login-traffic-drop（direct）六阶段全 done——baton 空闲，下一契约直接 contract init。工作树净，最新提交 f0bd596。
-- 本 session（2026-07-03 全日）七契约六提交：run-history（light）/ chiefcomplaint-smoke（full，飞轮第二条移植）/
-  compile-caseid-shape（direct）/ chief-bringup（direct，真机四修）/ cred-route-mask（direct）/ login-traffic-drop（direct）。
-  真机四停站走完（Steven 全程人签）：compile 零非 unique 步落四件套 → draft+人签 6 条全硬 → casey run 落七件
-  runs/tc_chiefcomplaint_smoke/run_1783054730282——intent_3 SUT_DEFECT（有取证背书）：被测智能体真回复「会话异常」，
-  签的 textHidden(会话异常) 命中 + 坏信封同步翻红；其余四 intent 全 PASS。这是 Casey 首个真机真发现。
-- 凭据卫生（本 session 大项）：门两连真阳性（token 路由名→源头打码；doLogin GET 凭据走 query→登录期流量切断+axes 剥 host+blob 三缝）；
-  历史落盘泄露就地打码洗盘、终扫 49 件零凭据值（git 历史清白）。
-- 真机教训（bring-up 必读）：真机前先跑只读假设核对探针（本轮五探针把点击拦截/真名省略号/间歇吞点/fill 即 enable 全定点）；
-  二手结论标日期重验；失败步不堆等（快死才有诊断）；路由导航优先于 UI 点击。
+- 活契约槽 baton 空闲（wf-history-version 六阶段全 done）——下一契约直接 contract init。工作树净，最新提交 7ec2ff2。
+- 本 session（2026-07-03 续）三契约三提交：wf-publish-states（full，飞轮第三条，buttonState 提硬）/
+  report-diagnostics（light，报告回放诊断栏目）/ wf-history-version（direct，飞轮第四条，零机制缝）。
+  机制缝递减假设终点验证：第二条 3 缝 → 第三条 1 缝 → 第四条 0 缝。
+- 选型教训：echo_default_on 归 chat 是二手结论错档（实测画布维度、坐标拖拽），FLYWHEEL/CONTEXT 已纠；
+  排期表维度归类按「用了什么机制通路」重验，不按名字/直觉。
+- 报告事实（本 session 用户三问揪出）：cases/runs 全 gitignored（凭据卫生），报告只在真机 casey run 后本地产；
+  新两条 tc 从未真机跑、无报告；报告无视频根因 = replay.mjs 未启 recordVideo（非隧道问题，补录是加法契约候选）。
 - 最新工程纪律：review 用 codex（gpt-5.5 非同族、空 cwd 喂 stdin、逐发现采信/证伪/修正采纳三处置）绝不同族自评；
-  对 route:human 项人不在场只挂账绝不代签（缺席推定记可否决+回滚路径交追认——本 session compile-caseid-shape 先例）；
-  凭据面改动评审包应显式列「全部落盘口 × 是否过门」矩阵；模型分层机制（I1/I2 已上线，三级兜底 watcher 待建）不变。
+  评审包新文件走 cat 全文、改动文件走 git diff（未跟踪文件 git diff 空会误判）；direct 不豁免评审深度；
+  对 route:human 项人不在场只挂账绝不代签；模型分层机制（I1/I2 已上线，三级兜底 watcher 待建）不变。
 
 【下一步（任选其一，先对齐再动手）】
-A 会话异常闭环（route:human）：run_1783054730282 报告转平台修智能体 → casey run 复跑见绿——真发现→修复→复跑闭环
-  在第二条用例走完；同笔转交 doLogin GET 凭据进 URL 安全缺陷。
-B 飞轮第三条移植（echo_default_on 或 dom_crud 余量）：chat 机制三件已就位，验证「机制缝递减」假设。
-C 报告消费侧加法（P7）：呈现 replyText 摘录 + 回放历史/回放指标诊断栏目（素材真机在产）。
-D 其余：余 5 kind 按需加法 / 错误 toast 结构类名采样 / p2-intent-compile learn / term-guard 乙接线 /
-  相5 自愈真机首触（需真 HARNESS_ERROR）/ 回放期面板吞点观察（频发再议）。
+A 真机四停站（route:human，需拉隧道 + Steven 在场，可一次行程合并 wf-publish-states + wf-history-version）：
+  flow confirm → compile --execute → casey draft 人签 → casey run 报告过目；顺带核回放诊断栏目真机呈现。
+B 会话异常闭环（route:human）：defect-handoff.md 已备两笔缺陷单，Steven 转交平台修复 → casey run 复跑见绿。
+C 回放视频录制（P7/replay 加法，碰回放器须 full）：newContext({recordVideo}) + 落 runDir + 报告 attachments.video
+  接线 + 凭据卫生（视频不含登录期镜头）——补报告无视频缺口。
+D 飞轮第五条（wf_open_smoke 只读零缝暖场 或 画布维度 R9 前线）/ 余 kind 加法（含 enabled/disabled 随 publish_blocked
+  带实现回归）/ 错误 toast 结构类名采样 / p2-intent-compile learn / 相5 自愈真机首触。
 
 【环境坑（WSL）】
 - 反向隧道（真机访问必用）启动顺序敏感：先 WSL 侧 node scripts/wsl-reverse-listen.mjs（后台），
@@ -122,7 +117,7 @@ D 其余：余 5 kind 按需加法 / 错误 toast 结构类名采样 / p2-intent
   真机命令一律 WSL 侧跑（G6 人签既定）。
 - WSL 中文字体：已装用户级 Noto Sans CJK；截图/录屏中文空白先 fc-list :lang=zh 查。
 - 9p 崩溃：/mnt/d 全局 EIO 时资源管理器戳一下 D: 唤醒，或 sudo umount /mnt/d; sudo mount -t drvfs D: /mnt/d。
-- git index.lock 卡挂：先 pgrep -a git 杀挂死进程、再删 .git/index.lock。
+- git index.lock 卡挂：先 pgrep -a git 杀挂死进程、再删 .git/index.lock。loop/audit.jsonl 与 cases/runs gitignored（提交时警告非错）。
 - loop-guard 误判（比想象宽）：命令含 prd 路径 → 判 write-prd；node -e 内联 / cp / rm → 判 edit-impl；
   读类命令带重定向/管道 + bin/ 路径 → 判 edit-impl。对策：查文件用 Read 工具或 scratchpad 脚本。
 - 授权提交/切 baton：full 契约 pre-loop 拦 commit-impl，先 init 一个 direct 契约授权、提完 re-init 恢复；
