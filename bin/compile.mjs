@@ -260,6 +260,9 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   const caseId = args.pos[0];
   if (!caseId) { console.error('compile: 缺 <caseId>'); process.exit(64); }
+  // caseId 进产物文件名（flow-/observed-<caseId>.json）——限路径安全字符，拒 / .. 等穿越形态
+  // （fail-closed；镜像 bin/draft.mjs R1-F2 先例，draft-cli 评审挖出的同型缝）。
+  if (!/^[A-Za-z0-9_-]+$/.test(caseId)) { console.error(`compile: caseId 含非法字符（仅限字母数字_-）：${caseId}`); process.exit(65); }
   if (args.verify) {
     for (const k of ['sut', 'out-dir', 'profile']) if (!args[k]) { console.error(`compile --verify: 缺 --${k}`); process.exit(64); }
     return verifyMode(caseId, args);
