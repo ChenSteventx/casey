@@ -3,7 +3,21 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 当前状态（2026-07-02 四续）
+## 当前状态（2026-07-03 全日）
+
+本 session 七契约六提交全收口（Steven 全程拍板：点单顺序「a 然后 b 然后 c」+ 真机四停站人签），飞轮第二条真机贯通、Casey 首个真机 `SUT_DEFECT` 真发现：
+
+1. `run-history`（light）六阶段收口：`casey run` 接回放历史/回放指标真产出——`bin/replay.mjs` 三 opt-in 旗标（`--run-history`/`--run-metrics`/`--run-id`，缺省行为一字不变），纯观察者逐 event 收集（零新增等待防污染取证归因窗）、与 axes 同刻过凭据门写出；编排器传 `runId`=目录名。codex 两轮 R2 PASS（R1 四发现：三采信含零事件空行真缺陷钉红修绿、一证伪留案）。`f3b0aa6`。
+2. `chiefcomplaint-smoke`（full，飞轮第二条）hermetic 半程收口：`IMPLEMENTED_KINDS` 7→10（`replyContains`/`replyMatches`/`textHidden`）+ 流谓词普化（`profile.chat.streamUrlPattern` 命中或 legacy `/streamReply/` 兼容）；动态流等待两轮收紧（本步发起 且 命中对话流 URL 域才等——背景长流/本步附带非对话流都不拖步，40922ms 修前红实证）；keydown 触发垫（`fill`+Space+Backspace 三 event，冻结枚举内绕开 pressSequentially 缺位）；reply 双侧采集带陈迹基线（旧气泡绝不当新回复）；五原子编译知识（`nav.agentManagement`/`agent.searchOpen`/`agent.openTestPanel`/`chat.sendAndWait`/`chat.closeTestPanel`）；`chat-sut` 五场景对抗夹具（happy/error/stale/bgstream/leaky）。codex 三轮 R3 PASS + 审后微调 R4；`kinds-harden` golden 精确计数重钉（涟漪补冻：精确计数移交最新前沿 golden 持有）。`ab8587d` + `dcd48e3`。
+3. `compile-caseid-shape`（direct）六阶段收口：caseId 穿越拒门（镜像 `draft.mjs` 先例，`x/../../evil` 真穿越 exit 0 双红实证）+ `urlPathname` matches 空正则封死（`chiefcomplaint` 评审挂账并批）。缺席推定记档、Steven 回场已追认。`69ab478`。
+4. `chief-bringup`（direct，真机 bring-up 四修）：五只读探针定点四处假设差——`nav.agentManagement` 路由导航优先（`profile.routes.agentList` 接线；点击被 `hr-submenu`/spacer 拦 + 父 `li` 多匹配实证）；失败步不堆等（30s 级后置等待堆积曾撞死 120s 看门狗、连诊断不落）；消息框语义 `exact:false`（真名「请输入消息...」带省略号）；`agent.openTestPanel` networkidle 有界前置 + 点空重点采集自愈（间歇吞点实证；重点不产 event，回放期风险 fail-safe 兜）。真机编译零非 unique 步跑通。二手结论过时实证：真机 `fill` 即 enable（regress 的 keydown 判据已过时，垫无害保留）。`0ddd7b7`。
+5. `cred-route-mask`（direct，Steven 拍板「源头打码」）：`maskCredentialRoute` 路径段打码（observed+axes 投影），凭据门零弱化（门配对机器证明：原样必拦/打码必过）；codex R1 High 挖出 axes 历史债（从无凭据门、query 可携凭据裸落盘）→ 落盘前补门拒写 exit 1 + leaky 场景退桩红。真机误伤原型 = 发送期应用自取临时凭据路由 `getTempTokenForApi`（路由名字面含 `token`）。`60e89d4`。
+6. `login-traffic-drop`（direct，真泄露向量修复）：真机停站④两连门拦揪出 `GET doLogin` 凭据走 query → `loginMark` 切断登录期流量（CONTEXT「登录预备动作…不进 axes」字面兑现——此前只做到归因 null、记录本体经孤儿并入落盘）；axes 投影剥 host 只留 `pathname+search`（目标地址绝不进输出）；codex 三轮再挖三缝全采信（`blob:` pathname 内嵌 origin 穿透/代理型自嵌 `://`/`//host/x` 协议相对引用——非白名单形态一律 `<redacted:non-http-url>`）。`f0bd596`。
+7. 真机四停站全走完（Steven 在场）：flow confirm（八步）→ `compile --execute` 零非 unique 步落四件套（10 events / 10 observed / 0 候选，打码痕迹在、零原始路由名）→ `casey draft` 骨架 + LLM 补缝 + `validateDraft` 闸 → Steven 人签 6 条全硬（`signedAgainstBuild=1.1.2`）→ `casey run` 端到端落七件 `runs/tc_chiefcomplaint_smoke/run_1783054730282`——**`intent_3` `SUT_DEFECT`（有取证背书）**：所签 `textHidden(会话异常)` 命中（被测智能体真回复「会话异常」四字，彩排两次+编译一次三次一致）+ `noErrorEnvelope` 坏信封同步翻红、流未见 finished，三路证据同源；其余四 intent 全 PASS、动作 10/10、`locatorHitRate`=1。回放历史/回放指标首次真机产出（`runId` 落章）。
+8. 凭据卫生收口：历史落盘泄露（catalog 时代 axes 无门期，`doLogin` 带值 query 4 处）就地打码洗盘、终扫 49 件产物零凭据值（git 历史清白，`cases`/`runs` 从未入库）；`testcase` source 措辞消噪（`regress` 仓名后缀撞 `creds.user` 常见词，纯巧合零披露）。
+9. 新挂账：平台侧缺陷上报两笔待 Steven 转交——① `doLogin` GET 凭据进 URL/服务端日志（安全面）；② 「互联网问诊-主诉」智能体回复「会话异常」（`run_1783054730282` 报告即证据）。回放期面板吞点观察（回放单击无采集自愈，fail-safe 兜底不假绿；真机回放若频发另起契约议回放器通用机制，动内核须 full）。
+
+以下为昨日快照（2026-07-02 四续；其末条「直接下一步」已被顶部接管并全数完成），只溯源：
 
 本 session 四续（2026-07-02 夜）：P3 收官后即启 P4——`p4-drafter`（full）六阶段全收口（Steven「开！」授权）：
 
@@ -196,23 +210,24 @@ P5 回放内核 loop 绿后接异构评审（与上节 P2/verdict 评审不同�
 
 ## 下一步
 
-> 新会话接续顺序（2026-07-03 刷新，旧「P3 tier-2 首推」已收官清账）：活契约槽 = `kinds-harden` 六阶段全 done、baton 空闲。
+> 新会话接续顺序（2026-07-03 夜刷新，前日四项点单全数完成清账）：活契约槽 = `login-traffic-drop` 六阶段全 done、baton 空闲。
 
-1. `casey run` 编排器接 `run-history.jsonl`/`run-metrics.json` 真产出（light 车道）——已冻接缝、编排器是天然生产者，纯加法接线。
-2. 第二条用例移植 `chiefcomplaint_smoke`（飞轮第二条，route:human 需人在场拉隧道+人签）：首次全程吃现成命令面 `ingest`→`compile`→`draft`→人签→`run`，流水线泛化性第一考。
-3. `compile.mjs` caseId 形状同修（direct 小契约）——`draft-cli` 评审挖出的同型缝（caseId 拼文件名未验形状）。
-4. 余 8 kind 按需加法（护栏 #17）/ 错误 toast 结构类名采样（撞真机错误弹窗顺手采）/ 相5 自愈真机首触（需真 `HARNESS_ERROR` 场景）。
+1. 会话异常闭环（route:human）：`run_1783054730282` 报告转平台侧修「互联网问诊-主诉」智能体 → 修后 `casey run` 复跑见绿——D2 全生命周期（真发现→修复→复跑闭环）在第二条用例上走完；同笔转交 `doLogin` GET 凭据进 URL 的安全缺陷。
+2. 飞轮第三条移植（`echo_default_on` 流式姊妹条 或 `dom_crud` 余量）：chat 维度机制已全就位（流等待/reply 采集/kind 三件），第三条应显著便宜——验证「机制缝递减」假设。
+3. 报告消费侧加法（P7）：报告呈现 `replyText` 摘录与回放历史/回放指标（诊断栏目），素材已真机在产。
+4. 余 kind 按需加法（护栏 #17）/ 错误 toast 结构类名采样（撞真机错误弹窗顺手采）/ 相5 自愈真机首触（需真 `HARNESS_ERROR` 场景）/ 回放期面板吞点观察（频发再议）。
 5. `p2-intent-compile` 的 learn（沉淀收尾，轻）。
-4. `term-guard` 乙真接线（待 `~/.loop-kit` 非 Claude 密钥）：`bin/term-judge.mjs` 的 `callRealJudge` 接真评分员（复用 review 道 DeepSeek/codex 路径），观察期无误判后把 `bin/term-guard-hook.mjs` 的 `WARN_ONLY` 置 false 切硬拦。
-5. push：本仓无 git 远端（`git remote` 空），待定 GitHub 目标仓。
-6. 坏引用挂账（route:human）：loop 纪律 hook 引的 `docs/decisions/2026-06-12-loop-kit.md` 不存在，根在冻结 `loop-kit/bin/hook-loop-triage.mjs:8` 与 `.claude/skills/acceptance-gate/SKILL.md:8`，真身 `docs/adr/0001-reuse-loop-kit.md`。
+6. `term-guard` 乙真接线（待 `~/.loop-kit` 非 Claude 密钥）：`bin/term-judge.mjs` 的 `callRealJudge` 接真评分员（复用 review 道 DeepSeek/codex 路径），观察期无误判后把 `bin/term-guard-hook.mjs` 的 `WARN_ONLY` 置 false 切硬拦。
+7. push：本仓无 git 远端（`git remote` 空），待定 GitHub 目标仓。
+8. 坏引用挂账（route:human）：loop 纪律 hook 引的 `docs/decisions/2026-06-12-loop-kit.md` 不存在，根在冻结 `loop-kit/bin/hook-loop-triage.mjs:8` 与 `.claude/skills/acceptance-gate/SKILL.md:8`，真身 `docs/adr/0001-reuse-loop-kit.md`。
 
 ## 契约 / 运维
 
-- 活契约 `loop/active-contract.json`（runtime、gitignored）现 = `kinds-harden`（light，六阶段全 done，2026-07-03）——baton 空闲，下一契约直接 `contract init <slug>`（重置台账、不丢磁盘草稿）。要提交而活契约是 pre-loop 的 full：先 `init` 一个 `direct` 契约授权 commit、提完 re-init 原契约恢复 baton；light 契约 plan 后 commit-impl 即放行、无 lib/bin 的提交任何时候放行；post-loop 的 full 契约提交放行。恢复某已 done / 被覆盖 契约的台账：re-init + 逐阶段 re-advance（grill 带 `--user-confirmed`、accept 带 `--red-verified`、artifact 交对应产物），gate 复验绿背书。
+- 活契约 `loop/active-contract.json`（runtime、gitignored）现 = `login-traffic-drop`（direct，六阶段全 done，2026-07-03）——baton 空闲，下一契约直接 `contract init <slug>`（重置台账、不丢磁盘草稿）。要提交而活契约是 pre-loop 的 full：先 `init` 一个 `direct` 契约授权 commit、提完 re-init 原契约恢复 baton；light 契约 plan 后 commit-impl 即放行、无 lib/bin 的提交任何时候放行；post-loop 的 full 契约提交放行。恢复某已 done / 被覆盖 契约的台账：re-init + 逐阶段 re-advance（grill 带 `--user-confirmed`、accept 带 `--red-verified`、artifact 交对应产物），gate 复验绿背书。
 - 契约一览：
+  - 本 session 七契约（2026-07-03 全日，均六阶段全 done、codex PASS 记 audit，learn 各落 `docs/plans/<slug>/learn.md`）：`run-history`（light，两轮）/ `chiefcomplaint-smoke`（full，三轮 + 审后微调 R4 微轮）/ `compile-caseid-shape`（direct，一轮，缺席推定已追认）/ `chief-bringup`（direct，两轮）/ `cred-route-mask`（direct，两轮）/ `login-traffic-drop`（direct，三轮）。真机件 `cases/tc_chiefcomplaint_smoke/`（gitignored）四件套 + `expected.frozen.json`（6 条全硬）+ `runs/.../run_1783054730282` 七件齐备。
   - `p3-compile`（full）：六阶段全 done（codex 三轮 R3 PASS 记 audit、learn 落 `docs/plans/p3-compile/learn.md`）。真机 bring-up 六项 route:human 已全清（2026-07-02/03，P3 收官，见「当前状态」）。
-  - 本 session 六契约（2026-07-02 夜至 07-03，均六阶段全 done、codex PASS 记 audit）：`replay-login-bootstrap`（light，两轮）/ `p4-drafter`（full，四轮，含 G-seam 双 enum 对齐 Steven 追认）/ `noerrenv-absence`（light，一轮）/ `run-login-passthrough`（direct）/ `report-fidelity`（light，三轮）/ `draft-cli`（light，两轮）/ `kinds-harden`（light，一轮）。learn 各落 `docs/plans/<slug>/learn.md`。
+  - 前日六契约（2026-07-02 夜至 07-03 晨，均六阶段全 done、codex PASS 记 audit）：`replay-login-bootstrap`（light，两轮）/ `p4-drafter`（full，四轮，含 G-seam 双 enum 对齐 Steven 追认）/ `noerrenv-absence`（light，一轮）/ `run-login-passthrough`（direct）/ `report-fidelity`（light，三轮）/ `draft-cli`（light，两轮）/ `kinds-harden`（light，一轮）。learn 各落 `docs/plans/<slug>/learn.md`。
   - `layer3-wiring`（light）：六阶段全 done（codex 七轮 R7 PASS 记 audit、learn 落 `docs/plans/layer3-wiring/learn.md`；gate GREEN 2/2、覆盖 golden 51 检查）。
   - `seams-freeze-v2`（full）：六阶段全 done（codex 十二轮 R12 PASS 记 audit、learn 落 `docs/plans/seams-freeze-v2/learn.md`；gate GREEN、golden 13 组、`CONTEXT.md` 登记 6 术语）。四接缝 lib/bin 真产出随真机集成 route:human（prd observability 列）。
   - `term-guard`：6 阶段 done（gate GREEN 2/2、codex 九轮异构评审 pass、Stop 钩子 warn-only；乙真接线待密钥见「下一步」5）。
