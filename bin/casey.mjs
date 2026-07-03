@@ -93,7 +93,10 @@ function runPipeline(pos, opts) {
   };
 
   // --login-bootstrap 透传（同 compile --verify 先例）：真机跑过登录墙；hermetic 不带旗标零行为差。
+  // 回放历史/回放指标接线（G6）：runId=runDir 目录名（本编排器是 runs/<caseId>/<runId>/ 布局唯一知情者）；
+  // 仅诊断证据——相4 verdict 只吃 axes.json，绝不喂这两件（护栏 #15/#17）。
   stage('相3 replay 回放', bin('replay.mjs'), ['--events', opts.events, '--sut', opts.sut, '--expected', opts.expected, '--profile', opts.profile, '--out', axesOut,
+    '--run-history', path.join(runDir, 'run-history.jsonl'), '--run-metrics', path.join(runDir, 'run-metrics.json'), '--run-id', path.basename(runDir),
     ...(opts['login-bootstrap'] ? ['--login-bootstrap'] : [])]);
   stage('相4 verdict 裁定', bin('verdict.mjs'), ['--axes', axesOut, '--out', verdictOut]);
   // --expected 恒透传（report-fidelity G1）：run 必带该参，装配器读签署字段投影「期望版本/签署人」。
@@ -105,7 +108,7 @@ function runPipeline(pos, opts) {
   stage('相6 report 报告', bin('report.mjs'), ['--model', modelOut, '--out', runDir]);
 
   console.log(col(C.green, `\n[run] 端到端（确定性尾段）GREEN → ${runDir}`));
-  console.log(col(C.gray, `  axes.json / verdict.json / report-model.json / ${caseId}.report.{html,md,json}`));
+  console.log(col(C.gray, `  axes.json / verdict.json / report-model.json / run-history.jsonl / run-metrics.json / ${caseId}.report.{html,md,json}`));
   process.exit(0);
 }
 

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "task": "casey run 接回放历史/回放指标真产出（light）：bin/replay.mjs 加 --run-history/--run-metrics/--run-id 三 opt-in 旗标（缺省行为一字不变，同 --login-bootstrap 先例），纯观察者逐 event 收集 runHistoryLine（G2 枚举缝合：action_failed→unique+result=actionError；G3 quietPointReached=前置稳定程序达成口径；G4 valueRef 单占位符才透传否则打码）、回放尾与 axes 同刻经凭据兜底门一次写出（命中拒写 exit 1）；run-metrics 同进程尾算（locatorHitRate 分母只数有定位需求步、分母 0→null；runId=--run-id 缺省 null）。bin/casey.mjs runPipeline 相3 args 追加三旗标（run-id=runDir 目录名，G6）。红线：仅诊断证据绝不进 verdict.mjs、绝不写 passes（护栏 #15/#17）、字面量零落盘（护栏 #7）。决策依 docs/plans/run-history/proposed/GRILL.md。",
+  "specPath": "docs/plans/run-history/plan.md",
+  "testChecksums": {
+    "tests/_golden/run-history.golden.mjs": "82b50c4b84ae811358ac9cef6ca1b51f63f97d9d1ffc033b91880dc8984a14d4"
+  },
+  "observability": [
+    {
+      "dimension": "真机 casey run 顺产两件核验（runs/<caseId>/<runId>/ 落 run-history.jsonl + run-metrics.json、runId=目录名、无凭据外泄）——下次真机跑顺手核，非收口门槛",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-produce-and-wire",
+      "desc": "真产出 + 编排接线 golden 5 检查：裁判闭包红线（verdict.mjs 依赖闭包零接缝引用）/ 三旗标逐行过冻结 schema + 打码 + 失配诚实 + 聚合一致 / 缺省零产物零行为差 / 零事件空文件 + locatorHitRate null（codex R1-F3 钉红修绿）/ casey run 端到端 runDir 落两件 runId=目录名（实现前 I1/I3 红已核）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/run-history.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-03T01:26:34.421Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-regression-locks",
+      "desc": "回归锁：p5 两份冻结 golden（回放内核缺省路径零行为差）+ kinds-harden（代表步采集不受扰）+ layer3-wiring（编排端到端不回归）原样绿。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-03T01:27:34.250Z 全部 acceptance exit 0"
+    }
+  ]
+}

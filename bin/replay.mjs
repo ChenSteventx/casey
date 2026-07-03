@@ -1,6 +1,9 @@
 #!/usr/bin/env node
 // bin/replay.mjs —— 确定性回放器（相3）。真回放 SUT（被测系统）→ 产三轴 axes.json → 喂已冻 verdict.mjs。
 // 冻结 CLI：node bin/replay.mjs --events <f> --sut <baseUrl> --expected <f> --profile <f> --out <axes.json> [--login-bootstrap]
+//   [--run-history <f>] [--run-metrics <f>] [--run-id <id>]（opt-in 回放历史/回放指标真产出，缺省行为一字不变）：
+//   纯观察者逐 event 收集（零新增等待、零改动作时序——动了取证归因窗即污染护栏 #15），与 axes 同刻经
+//   凭据兜底门一次写出；仅诊断证据，绝不进 verdict.mjs、绝不写 passes（口径见 docs/plans/run-history/proposed/GRILL.md）。
 //   --profile = 通道剖面（非凭据）：{ background:[denylist], successField, successValue }。
 //   --login-bootstrap（opt-in，缺省行为一字不变）：回放前执行登录预备动作（CONTEXT.md 术语）——
 //     不产 event、不进 axes、凭据只进内存（护栏 #7）；前置加载/登录失败 exit 65 不落 axes（护栏 #14）。
@@ -14,6 +17,7 @@ import { instantiate } from '../lib/instantiate.mjs';
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { evaluateAssertions } from '../lib/replay-assert.mjs';
 import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
+import { credentialGate } from '../lib/cred-gate.mjs';
 
 const { chromium } = pw;
 
@@ -27,8 +31,57 @@ function parseArgs(argv) {
     else if (a === '--profile') o.profile = argv[++i];
     else if (a === '--out') o.out = argv[++i];
     else if (a === '--login-bootstrap') o.loginBootstrap = true;
+    else if (a === '--run-history') o.runHistory = argv[++i];
+    else if (a === '--run-metrics') o.runMetrics = argv[++i];
+    else if (a === '--run-id') o.runId = argv[++i];
   }
   return o;
+}
+
+// ── 回放历史逐行构造（G2/G3/G4 口径见 docs/plans/run-history/proposed/GRILL.md）────
+// 纯翻译既有机制事实：locatorResolution 冻结枚举缝合（内部值 action_failed→unique，失败归 result=actionError）；
+// valueRef 值侧打码（全串恰为单占位符才透传，否则脱敏标记，护栏 #7）；quietPointReached=该步前置稳定程序达成。
+const RH_PLACEHOLDER = /^\{\{[A-Za-z0-9_.-]+\}\}$/;
+const RH_INTERACTIVE = new Set(['click', 'dblclick', 'fill', 'selectOption']);
+const RH_ACTIONS = new Set(['click', 'dblclick', 'fill', 'selectOption', 'press', 'nav', 'newpage']);
+const RH_LR_ENUM = new Set(['unique', 'none', 'ambiguous', 'fallback_first', 'coord_fallback']); // 冻结枚举透传（codex R1-F2）
+function historyLine(ev, { navOk, navErr, axis, durationMs, caseId }) {
+  if (!RH_ACTIONS.has(ev.action)) return null; // 冻结枚举外（如纯断言步）不落行
+  let locatorResolution = null;
+  let result;
+  if (ev.action === 'nav') {
+    result = navOk ? 'ok' : (/timeout/i.test(String((navErr && (navErr.name || navErr.message)) || '')) ? 'timeout' : 'actionError');
+  } else {
+    const res = (axis && axis.resolution) || 'none';
+    // G2 字面提硬（codex R1-F1）：unique 且回读明确 false → actionError（现机制 unique 恒回读 ok，防御映射）。
+    const readbackFailed = !!(axis && axis.identityReadback && axis.identityReadback.ok === false);
+    result = res === 'unique' ? (readbackFailed ? 'actionError' : 'ok') : res === 'action_failed' ? 'actionError' : 'locatorError';
+    if (RH_INTERACTIVE.has(ev.action)) {
+      locatorResolution = res === 'action_failed' ? 'unique' : RH_LR_ENUM.has(res) ? res : 'none';
+    }
+  }
+  let valueRef = null;
+  if (ev.action === 'fill') valueRef = ev.value == null ? null : (RH_PLACEHOLDER.test(ev.value) ? ev.value : '<redacted:fill>');
+  else if (ev.action === 'press') valueRef = ev.key ? '<redacted:key>' : null;
+  else if (ev.action === 'selectOption') valueRef = ev.dropdownUnit && ev.dropdownUnit.optionText ? '<redacted:option>' : null;
+  const s = ev.semantic || {};
+  const role = s.role || ev.role || (ev.action === 'selectOption' ? 'combobox' : null);
+  const accessibleName = s.name || ev.accessibleName || ev.fieldLabel || (ev.dropdownUnit && ev.dropdownUnit.fieldLabel) || ev.text || null;
+  const locator = role || accessibleName ? { ...(role ? { role } : {}), ...(accessibleName ? { accessibleName } : {}), semantic: null } : null;
+  const parameters = locator || valueRef ? { ...(locator ? { locator } : {}), valueRef } : null;
+  return {
+    timestamp: new Date().toISOString(),
+    caseId,
+    stepId: ev.stepId,
+    intentId: ev.intentId,
+    atom: ev.atom ?? null,
+    action: ev.action,
+    parameters,
+    locatorResolution,
+    quietPointReached: !!navOk,
+    durationMs,
+    result,
+  };
 }
 
 const pathOf = (u) => { try { return new URL(u).pathname; } catch { return u; } };
@@ -124,6 +177,11 @@ async function main() {
   const intentToasts = new Map();   // kinds-harden：代表步静默点 toast 快照
   const intentTextHits = new Map(); // kinds-harden：代表步 textVisible 命中计数
 
+  // 回放历史 opt-in（run-history）：纯观察者收集，不加任何等待、不改任何时序。
+  const rhOn = !!(args.runHistory || args.runMetrics);
+  const rhLines = [];
+  let rhQuietWait = 0;
+
   try {
     for (const ev of events) {
       const isFirst = intentEvents.get(ev.intentId)[0].stepId === ev.stepId;
@@ -132,16 +190,21 @@ async function main() {
 
       // 预导航/上下文恢复期：归因关闭（currentStepId=null），此期请求不系任何步（护栏 #15）。
       state.currentStepId = null;
+      const evT0 = Date.now();
       let navOk = true;
+      let navErr = null;
       try {
         if (ev.action === 'nav') {
           state.currentStepId = ev.stepId; // nav 本身就是动作，开放归因
           await page.goto(sut + pathOf(instantiate(ev.url, ctx)), { waitUntil: 'load' });
         } else {
           const want = ev.pre && ev.pre.path;
-          if (want && pathOf(page.url()) !== want) await page.goto(sut + want, { waitUntil: 'load' });
+          if (want && pathOf(page.url()) !== want) {
+            const restoreT = Date.now();
+            try { await page.goto(sut + want, { waitUntil: 'load' }); } finally { rhQuietWait += Date.now() - restoreT; }
+          }
         }
-      } catch { navOk = false; }
+      } catch (e) { navOk = false; navErr = e; }
 
       if (isFirst) intentCount.set(ev.intentId, { before: await rowCount(page), after: null });
 
@@ -157,10 +220,12 @@ async function main() {
           : Promise.resolve(null);
         const axis = await performAction(page, ev, ctx);
         actionByStep.set(ev.stepId, axis || { resolution: 'none' });
+        const settleT = Date.now();
         await respWait;
         // 给动作的直接异步后果（如 save 响应后随即开的 SSE 流）一点点出现窗，仍归本步——
         // 这是动作的因果作用域（save→stream），非任意时间窗；背景轮询仍由 denylist 归 null。
         if (ev.action === 'click') { await new Promise((r) => setTimeout(r, 150)); }
+        rhQuietWait += Date.now() - settleT;
         log('  acted ' + ev.stepId + ' resolution=' + (axis && axis.resolution));
         state.currentStepId = null; // 动作作用域结束，关闭归因
       }
@@ -189,6 +254,11 @@ async function main() {
           hits[a.value] = inPage + (inPage === 0 ? inToast : 0);
         }
         intentTextHits.set(ev.intentId, hits);
+      }
+
+      if (rhOn) {
+        const line = historyLine(ev, { navOk, navErr, axis: ev.action === 'nav' ? null : actionByStep.get(ev.stepId), durationMs: Date.now() - evT0, caseId });
+        if (line) rhLines.push(line);
       }
     }
   } finally {
@@ -241,6 +311,36 @@ async function main() {
   if (orphan.length && steps.length) steps[0].forensics.network.push(...orphan);
 
   writeFileSync(args.out, JSON.stringify({ caseId, steps }, null, 2) + '\n', 'utf8');
+
+  // 回放历史/回放指标真产出（G5：与 axes 同刻、正常成功路径、过凭据兜底门、命中拒写 exit 1）。
+  // locatorHitRate 分母只数有定位需求步（locatorResolution 非 null），分母 0 → null（诚实无比率）。
+  if (rhOn) {
+    const denom = rhLines.filter((l) => l.locatorResolution !== null);
+    const metrics = {
+      schemaVersion: 1,
+      caseId,
+      runId: args.runId || null,
+      totalSteps: rhLines.length,
+      passedActions: rhLines.filter((l) => l.result === 'ok').length,
+      locatorHitRate: denom.length ? denom.filter((l) => l.locatorResolution === 'unique').length / denom.length : null,
+      quietPointWaitMs: Math.max(0, Math.round(rhQuietWait)),
+      totalDurationMs: Date.now() - T0,
+    };
+    const outputs = {};
+    // 零行集写空文件（codex R1-F3）：JSONL 不容空行。
+    if (args.runHistory) outputs['run-history.jsonl'] = rhLines.length ? rhLines.map((l) => JSON.stringify(l)).join('\n') + '\n' : '';
+    if (args.runMetrics) outputs['run-metrics.json'] = JSON.stringify(metrics, null, 2) + '\n';
+    const gate = credentialGate(outputs);
+    if (!gate.ok) {
+      console.error(`凭据兜底门拦截（护栏 #7）：${gate.hit}；拒绝落盘诊断件`);
+      clearTimeout(watchdog);
+      await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
+      process.exit(1);
+    }
+    if (args.runHistory) writeFileSync(args.runHistory, outputs['run-history.jsonl'], 'utf8');
+    if (args.runMetrics) writeFileSync(args.runMetrics, outputs['run-metrics.json'], 'utf8');
+  }
+
   clearTimeout(watchdog);
   await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
   process.exit(0);
