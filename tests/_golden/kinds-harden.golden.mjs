@@ -25,10 +25,13 @@ async function checkAsync(name, fn) {
 }
 
 // ---------- U 单元向：evaluateAssertions 两 kind 正反 + 证不出 ----------
-check('U1 IMPLEMENTED_KINDS 5→7（buttonState 仍不在）', () => {
+check('U1 IMPLEMENTED_KINDS 含本轮两 kind（buttonState 仍不在；精确计数移交最新前沿 golden 持有）', () => {
+  // 重钉（chiefcomplaint-smoke D7 涟漪，2026-07-03）：原 size===7 是「未实现范例会过期」的同型钉点——
+  // 已实现集随飞轮只增不减，精确计数由最新一轮契约的 golden 钉（现 chiefcomplaint-smoke.golden ===10），
+  // 本 golden 只守本轮资产：两 kind 在列 + buttonState（未实现范例依赖）不在列。
   for (const k of ['textVisible', 'noErrorToast']) if (!IMPLEMENTED_KINDS.has(k)) throw new Error(`已实现集缺 ${k}`);
   if (IMPLEMENTED_KINDS.has('buttonState')) throw new Error('buttonState 不应在已实现集（冻结 golden 未实现范例依赖）');
-  if (IMPLEMENTED_KINDS.size !== 7) throw new Error(`已实现集应 7 种，实际 ${IMPLEMENTED_KINDS.size}`);
+  if (IMPLEMENTED_KINDS.size < 7) throw new Error(`已实现集不应缩水（≥7），实际 ${IMPLEMENTED_KINDS.size}`);
 });
 
 check('U2 textVisible 命中/未命中/证不出三向', () => {

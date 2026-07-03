@@ -86,6 +86,25 @@ function historyLine(ev, { navOk, navErr, axis, durationMs, caseId }) {
 
 const pathOf = (u) => { try { return new URL(u).pathname; } catch { return u; } };
 
+// 气泡文本稳定等待（chiefcomplaint-smoke D2/D5，regress 实测「网络流结束 ≠ UI 渲染完成」）：
+// 选择器 last() 的 innerText 连续 stableMs 不变即稳；budgetMs 上界兜底，取不到回 null（证不出，不背书）。
+async function waitReplyStable(page, selector, { stableMs = 2000, budgetMs = 10000 } = {}) {
+  const t0 = Date.now();
+  let prev = null;
+  let since = Date.now();
+  while (Date.now() - t0 < budgetMs) {
+    let cur = null;
+    try {
+      const loc = page.locator(selector).last();
+      cur = (await loc.count()) ? await loc.innerText({ timeout: 500 }) : null;
+    } catch { cur = null; }
+    if (cur !== prev) { prev = cur; since = Date.now(); }
+    else if (cur != null && Date.now() - since >= stableMs) return cur;
+    await new Promise((r) => setTimeout(r, 250));
+  }
+  return prev;
+}
+
 // 行计数：失败回 null（未知），绝不回 0——避免 countChange equals 0 把「证不出」洗成假绿（finding 7）。
 async function rowCount(page) {
   try { return await page.locator('.hr-table-row').count(); } catch { return null; }
@@ -96,7 +115,8 @@ async function main() {
   for (const k of ['events', 'sut', 'expected', 'profile', 'out']) {
     if (!args[k]) { console.error(`replay: 缺 --${k}`); process.exit(64); }
   }
-  const watchdog = setTimeout(() => { console.error('replay 看门狗：超时强制退出'); process.exit(1); }, 75000);
+  // 看门狗 120s（同 compile 先例；chiefcomplaint-smoke D2：chat 用例含 LLM 流式等待，75s 偏紧）。fail-safe 语义不变。
+  const watchdog = setTimeout(() => { console.error('replay 看门狗：超时强制退出'); process.exit(1); }, 120000);
   const DBG = !!process.env.REPLAY_DEBUG;
   const T0 = Date.now();
   const log = (m) => { if (DBG) console.error('[replay +' + (Date.now() - T0) + 'ms] ' + m); };
@@ -182,6 +202,13 @@ async function main() {
   const rhLines = [];
   let rhQuietWait = 0;
 
+  // chat 通道配置（chiefcomplaint-smoke D5，通道剖面非凭据段，可整段缺省）：
+  // replySelector 缺省跟随通道既定气泡类；streamUrlPattern 供 streamReplyReceived 谓词普化。
+  const chatCfg = profile.chat && typeof profile.chat === 'object' ? profile.chat : null;
+  const replySelector = (chatCfg && chatCfg.replySelector) || '.hr-chat__text__assistant';
+  const intentReply = new Map();     // 代表步静默点实采 reply 正文（气泡 DOM 通道）
+  const intentReplyBase = new Map(); // intent 首步气泡基线（codex R1-F3：陈迹不当新回复）
+
   try {
     for (const ev of events) {
       const isFirst = intentEvents.get(ev.intentId)[0].stepId === ev.stepId;
@@ -208,6 +235,17 @@ async function main() {
 
       if (isFirst) intentCount.set(ev.intentId, { before: await rowCount(page), after: null });
 
+      // reply 陈迹基线（codex R1-F3）：intent 首步记气泡数与末泡文本；基线证不出则本 intent 不回填（fail-safe）。
+      if (isFirst && chatCfg) {
+        let base = null;
+        try {
+          const loc = page.locator(replySelector);
+          const n = await loc.count();
+          base = { n, text: n ? await loc.last().innerText({ timeout: 500 }) : null };
+        } catch { base = null; }
+        intentReplyBase.set(ev.intentId, base);
+      }
+
       if (ev.action === 'nav') {
         // nav 动作轴按 goto 实际成败（不再恒 unique，finding 3）。
         actionByStep.set(ev.stepId, navOk ? { resolution: 'unique', identityReadback: { ok: true } } : { resolution: 'action_failed', identityReadback: { ok: false } });
@@ -225,6 +263,22 @@ async function main() {
         // 给动作的直接异步后果（如 save 响应后随即开的 SSE 流）一点点出现窗，仍归本步——
         // 这是动作的因果作用域（save→stream），非任意时间窗；背景轮询仍由 denylist 归 null。
         if (ev.action === 'click') { await new Promise((r) => setTimeout(r, 150)); }
+        // 动态流等待（chiefcomplaint-smoke D2，Steven 拍板；codex R1-F2 + R2 两轮收紧）：
+        // 只等「本步 firingStepId 发起 且 命中 chat 流 URL 域」的 EventSource 走到 finished（或 30s 上界）
+        // ——流是本步动作的直接后果，归因窗随延（因果作用域，非任意时间窗）；背景/他步长流、本步开的
+        // 非对话长流（如面板附带 SSE）都绝不拖本步。配置了 streamUrlPattern 才有域可判；未配置时按
+        // 本步发起判（与 compile 侧对称）。无本步流零行为差（p5/catalog 回归锁背书）。
+        const streamInScope = (u) => !(chatCfg && chatCfg.streamUrlPattern) || String(u).includes(chatCfg.streamUrlPattern);
+        const myStreams = () => forensics.records().filter((r) => r.type === 'EventSource' && r.firingStepId === ev.stepId && streamInScope(r.url));
+        if (myStreams().length > 0) {
+          log('  step stream open, waiting finished ' + ev.stepId);
+          const swT = Date.now();
+          while (Date.now() - swT < 30000 && !myStreams().every((r) => r.streamFinished === true)) {
+            await new Promise((r) => setTimeout(r, 200));
+          }
+          // 网络流结束 ≠ UI 渲染完成（regress 实测）：配置了 chat 通道再等气泡文本 2s 稳定（上界 10s）。
+          if (chatCfg) await waitReplyStable(page, replySelector);
+        }
         rhQuietWait += Date.now() - settleT;
         log('  acted ' + ev.stepId + ' resolution=' + (axis && axis.resolution));
         state.currentStepId = null; // 动作作用域结束，关闭归因
@@ -245,15 +299,29 @@ async function main() {
           return [...new Set(out)];
         }).catch(() => []);
         intentToasts.set(ev.intentId, toasts);
-        // 本 intent textVisible 断言值命中计数：正文 getByText + toast 文本双通道（toast 短暂，双保）。
+        // 本 intent textVisible/textHidden 断言值命中计数：正文 getByText + toast 文本双通道（toast 短暂，双保）。
+        // textHidden 复用同通道（chiefcomplaint-smoke D4：缺席断言 = 命中数为 0 才过）。
         const hits = {};
         for (const a of [...(expectedByIntent.get(ev.intentId) || []), ...globalAssertions]) {
-          if (a.kind !== 'textVisible' || typeof a.value !== 'string') continue;
+          if ((a.kind !== 'textVisible' && a.kind !== 'textHidden') || typeof a.value !== 'string') continue;
           const inPage = await page.getByText(a.value).count().catch(() => 0);
           const inToast = toasts.filter((t) => t.includes(a.value)).length;
           hits[a.value] = inPage + (inPage === 0 ? inToast : 0);
         }
         intentTextHits.set(ev.intentId, hits);
+        // reply 正文采集（chiefcomplaint-smoke D5：DOM 气泡通道，代表步静默点实采；未配置 chat 段不采。
+        // codex R1-F3：对照 intent 首步基线，仅「新气泡出现或末泡文本变化」才回填——陈迹绝不当新回复）。
+        if (chatCfg) {
+          let rt;
+          const base = intentReplyBase.get(ev.intentId);
+          try {
+            const loc = page.locator(replySelector);
+            const n = await loc.count();
+            const text = n ? await loc.last().innerText({ timeout: 1000 }) : null;
+            rt = base != null && text != null && (n > base.n || text !== base.text) ? text : undefined;
+          } catch { rt = undefined; }
+          intentReply.set(ev.intentId, rt);
+        }
       }
 
       if (rhOn) {
@@ -290,6 +358,8 @@ async function main() {
       pageErrors: pe,
       toastTexts: intentToasts.get(iid),  // kinds-harden：缺采集即 undefined → 证不出
       textHits: intentTextHits.get(iid),
+      replyText: intentReply.get(iid),    // chiefcomplaint-smoke：缺采集即 undefined → 证不出
+      streamUrlPattern: chatCfg ? chatCfg.streamUrlPattern : undefined,
     });
     return {
       stepId: reprStepId,
