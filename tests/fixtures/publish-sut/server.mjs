@@ -51,22 +51,42 @@ function editorPage(scenario) {
   // divButtons 场景带隐藏模板节点（codex R1-F2 考场）：类名命中补采选择器、文本「导出」、display:none——
   // 可见性过滤缺席时 present(导出) 会被 DOM 计数假绿。
   const hiddenTpl = div ? '<div class="editor-btn" style="display:none">导出</div>' : '';
+  // 历史版本弹窗（wf-history-version D4，regress 2026-06-09 真机探得形态复刻）：未发布「暂无数据」、
+  // 发布后表头 版本/状态/创建时间/操作 + 行 V1/查看 + 关闭钮；Esc 关闭（closeDrawer 键盘行为考场）。
   return (
     '<h1>工作流编辑器</h1>' +
-    '<div id="topbar">' + mk('保存') + mk('发布', 'btn-publish') + dupPublish + plainHint + hiddenTpl + '</div>' +
+    // 历史版本钮走 mk（divButtons 场景同为 div，保持该场景「role 全盲」前提不被本钮污染——wf-publish-states I3）。
+    '<div id="topbar">' + mk('保存') + mk('发布', 'btn-publish') + mk('历史版本', 'btn-history') + dupPublish + plainHint + hiddenTpl + '</div>' +
+    '<div id="history-dialog" class="hr-dialog" hidden></div>' +
     '<script>\n' +
     'var bar=document.getElementById("topbar");\n' +
     'var isDiv=' + JSON.stringify(div) + ';\n' +
+    'var published=false;\n' +
     'function mkBtn(name){var el;if(isDiv){el=document.createElement("div");el.className="editor-btn";}' +
     'else{el=document.createElement("button");el.type="button";el.className="top-btn";}el.textContent=name;return el;}\n' +
     'function onPublish(){\n' +
     '  fetch("/ai-manager/process/publish").catch(function(){});\n' +
+    '  published=true;\n' +
     '  var all=bar.querySelectorAll("button.top-btn,div.editor-btn");\n' +
     '  for(var i=0;i<all.length;i++){if((all[i].textContent||"").trim()==="发布")all[i].remove();}\n' +
     '  bar.appendChild(mkBtn("导出"));bar.appendChild(mkBtn("新建版本"));\n' +
     '}\n' +
     'var all=bar.querySelectorAll("button.top-btn,div.editor-btn");\n' +
     'for(var i=0;i<all.length;i++){if((all[i].textContent||"").trim()==="发布")all[i].addEventListener("click",onPublish);}\n' +
+    'var dlg=document.getElementById("history-dialog");\n' +
+    'document.getElementById("btn-history").addEventListener("click",function(){\n' +
+    '  dlg.innerHTML=published\n' +
+    '    ?"<table><thead><tr><th>版本</th><th>状态</th><th>创建时间</th><th>操作</th></tr></thead>"+\n' +
+    '     "<tbody><tr><td>V1</td><td>已发布</td><td>2026-07-03 00:00:00</td><td><button type=\\"button\\">查看</button></td></tr></tbody></table>"+\n' +
+    '     "<button type=\\"button\\" id=\\"dlg-close\\">关闭</button>"\n' +
+    '    :"<div class=\\"empty\\">暂无数据</div><button type=\\"button\\" id=\\"dlg-close\\">关闭</button>";\n' +
+    '  dlg.hidden=false;\n' +
+    '});\n' +
+    // 关闭效果可观测（codex hist R1-F1）：Esc 关弹窗时清空内容——「暂无数据」真离 DOM，供 textHidden 锁关闭效果。
+    'function closeDlg(){dlg.hidden=true;dlg.innerHTML="";}\n' +
+    'document.addEventListener("keydown",function(e){if(e.key==="Escape")closeDlg();});\n' +
+    // 关闭钮 handler（codex hist R1-F4）：本流关闭走 Esc(closeDrawer)，关闭钮同走 closeDlg 保语义一致。
+    'dlg.addEventListener("click",function(e){if(e.target&&e.target.id==="dlg-close")closeDlg();});\n' +
     '</script>'
   );
 }

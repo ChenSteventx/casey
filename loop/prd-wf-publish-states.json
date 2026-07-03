@@ -4,7 +4,7 @@
   "specPath": "docs/plans/wf-publish-states/plan.md",
   "testChecksums": {
     "tests/_golden/wf-publish-states.golden.mjs": "1001c892a07a6dadd11ff5d7ccc80c8066fa4978821aad5e2efefd88b72fdac9",
-    "tests/fixtures/publish-sut/server.mjs": "3c4d07d46fb9852aa2d93ea7e9d8fdfdb715d3d9e5fa154c0f80b2b18c642671"
+    "tests/fixtures/publish-sut/server.mjs": "3485923096539c4d3abeb13e5b1d2b8e17c5541f03f2298649be02a5f2447ddf"
   },
   "observability": [
     {
@@ -26,7 +26,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-03T07:29:51.529Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-03T09:21:40.921Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-ripple-and-locks",
@@ -45,7 +45,7 @@
         "node tests/_golden/run-history.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-03T07:32:45.433Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-03T09:24:00.200Z 全部 acceptance exit 0"
     }
   ]
 }
