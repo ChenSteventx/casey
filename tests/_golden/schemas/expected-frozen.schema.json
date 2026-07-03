@@ -68,8 +68,8 @@
       "enum": ["urlPathname", "textVisible", "countChange", "inputReadback", "dropdownReadback", "requiredFilled", "streamReplyReceived", "replyContains", "replyMatches", "noPageError", "noErrorEnvelope", "noErrorToast", "textHidden", "buttonState", "switchState"]
     },
     "assertionOp": {
-      "description": "每种 kind 允许的 op（设计 §2.1 收紧 + 取证类 envelopeOk/absent）；per-kind op 约束留 P4 加固；equals 含 ID/atl_ 字面量冻结期 lint 报红（2026-07-02 G-seam 同轮对齐 check.mjs 全 op 集：原 8 种漏收已收 kind 的法定 op）",
-      "enum": ["startsWith", "matches", "equals", "appears", "up", "down", "envelopeOk", "absent", "filled", "finished", "contains", "enabled", "disabled", "on", "off"]
+      "description": "每种 kind 允许的 op（设计 §2.1 收紧 + 取证类 envelopeOk/absent）；per-kind op 约束留 P4 加固；equals 含 ID/atl_ 字面量冻结期 lint 报红（2026-07-02 G-seam 同轮对齐 check.mjs 全 op 集：原 8 种漏收已收 kind 的法定 op；2026-07-03 wf-publish-states 加法 +present——buttonState 存在性双 op，enabled/disabled 留位挂账后补）",
+      "enum": ["startsWith", "matches", "equals", "appears", "up", "down", "envelopeOk", "absent", "filled", "finished", "contains", "present", "enabled", "disabled", "on", "off"]
     },
     "verdictState": {
       "description": "多态裁定四态（与 verdict.json/CONTEXT.md 同一 Published Language）。PASS/SUT_DEFECT/HARNESS_ERROR 为终判（reason=null）；NEEDS_HUMAN 必带 reason 子类",

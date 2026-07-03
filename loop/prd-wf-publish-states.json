@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "task": "飞轮第三条移植 wf-publish-states（full）：发布状态机×按钮态，验证「机制缝递减」（第二条 3 缝→本条 1 缝）。D1 词表收窄 buttonState ['enabled','disabled']→['present','absent']（词表=可草拟=已实现；enabled/disabled 挂账 publish_blocked 契约带实现回归——Steven 明令「后面需要补完整」）+ schema assertionOp enum +present（prd-seams-freeze 重签，p4-drafter 先例）；D2 buttonHits 采集 = getByRole('button',{name,exact:true}) 必采 + profile.buttons.extraSelector 可选补采合计（present>0 / absent===0 / 缺采集证不出；absent 是唯一 fail-open 风险方向，补采通道 + 真机 role 可达性探针双防线）+ 形状校验 fail-closed（routes 先例）；D3 重表达补「发布 absent」负向（nl 语义为源，人签终抉）；IMPLEMENTED_KINDS 10→11 + 草拟映射条件翻转（present/absent 硬映射、enabled/disabled 落 pending）+ compileWorkflowPublish 编译知识（照 workflow.save 形状）。涟漪：kinds-harden/chiefcomplaint-smoke/p4-drafter 三 golden 未实现范例与计数重钉（精确计数移交本契约 golden 前沿持有）。决策依 docs/plans/wf-publish-states/proposed/GRILL.md（D1–D3 Steven 逐条拍板）。",
+  "specPath": "docs/plans/wf-publish-states/plan.md",
+  "testChecksums": {
+    "tests/_golden/wf-publish-states.golden.mjs": "1001c892a07a6dadd11ff5d7ccc80c8066fa4978821aad5e2efefd88b72fdac9",
+    "tests/fixtures/publish-sut/server.mjs": "3c4d07d46fb9852aa2d93ea7e9d8fdfdb715d3d9e5fa154c0f80b2b18c642671"
+  },
+  "observability": [
+    {
+      "dimension": "真机四停站（route:human，需 Steven 在场）：① flow 草稿 confirm → ② casey compile --execute 真机跑（隧道 + 登录预备动作）→ ③ casey draft 草拟 + Steven 人签冻结 expected（D3 补的「发布 absent」终抉）→ ④ casey run 真机报告过目。前置只读探针：编辑器顶栏按钮 role 可达性重验（regress 2026-06-08 二手结论按纪律重验；发现 div 形态即配 profile.buttons.extraSelector 补采，零机制追加）。人不在场只挂账绝不代签。",
+      "route": "human"
+    },
+    {
+      "dimension": "enabled/disabled 两 op 挂账（Steven 明令「后面需要补完整」）：随 publish_blocked 维度契约带着实现（disabled 态采集）一起回归词表与 schema，不许静默丢。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-buttonstate-kind-and-capture",
+      "desc": "词表收窄 + buttonState 评估三向 + buttonHits 双通道采集 + 草拟映射翻转 + workflow.publish 编译知识 + 对抗场景（plainText/divButtons/dupButtons）+ casey run 端到端 golden 14 检查（实现前 11/13 红已核；codex R1 两 High 采信钉红修绿：F1 absent 通道活性反证 buttonSeen + F2 补采可见性过滤，3 红实证假绿后修绿：U1/U2/U3/D1/I1/I2/I4/I5/I6/W1/C1；I0 夹具冒烟与 I3 盲区 fail-safe 方向冻结时即绿=回归保护）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-03T07:29:51.529Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-ripple-and-locks",
+      "desc": "涟漪重钉与回归锁：kinds-harden/chiefcomplaint-smoke 未实现范例换 switchState + 精确计数移交（重钉后即绿已核）；p4-drafter C-map 翻硬（重钉后 1 红=右红，随实现转绿）；report-fidelity 零改仍绿；seams 双 golden（schema +present 加法无害已核）+ p5 双份 + layer3-wiring + run-history 原样绿。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/p4-drafter.golden.mjs",
+        "node tests/_golden/report-fidelity.golden.mjs",
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/seams-freeze-v2.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-03T07:32:45.433Z 全部 acceptance exit 0"
+    }
+  ]
+}

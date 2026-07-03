@@ -22,7 +22,7 @@
 每移植一条多覆一块设计空间、不叠冗余。推荐排期：
 
 1. `catalog_wf_crud`（DOM / CRUD）—— 装轴承，正在 loop。覆：`urlPathname`、`countChange` 绝对归 0、`noErrorToast`、网络信封、点击身份门、合成故障 `SUT_DEFECT`。
-2. chat 流（`chiefcomplaint_smoke` / `echo_default_on`）—— 覆 catalog 碰不到的：`streamReplyReceived`、LLM 流式取证（`waitForReplyByStream` 底座，即 R3 已存在但被丢弃的能力）、`replyContains`。
+2. chat 流（`chiefcomplaint_smoke`）—— 覆 catalog 碰不到的：`streamReplyReceived`、LLM 流式取证（`waitForReplyByStream` 底座，即 R3 已存在但被丢弃的能力）、`replyContains`。（`echo_default_on` 原列此档系错档，2026-07-03 摸底实证：测画布节点配置抽屉开关默认态、`workflow.addNode` 带落点坐标、不走测试面板/SSE——归画布域前哨，压后。）
 3. 发布 / 被拦流（`wf_publish_states` / `publish_blocked` / `test_blocked`）—— 覆按钮态、开关态、`textHidden`，外加「被拦」负例（天然喂 `NEEDS_HUMAN` / `CASE_DEFECT`，验裁判「不敢终判」那几条分支，光跑真绿用例验不到）。
 4. 画布域（`wf_node_*`）—— 压最后，当「哪里会断」的探针，不当早期燃料（R9 前线）。
 

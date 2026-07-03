@@ -149,6 +149,19 @@ async function main() {
     }
   }
 
+  // 按钮补采通道（wf-publish-states GRILL D2，通道剖面非凭据段，可整段缺省）：present 则 extraSelector
+  // 须非空字符串——形状非法拒跑 fail-closed（routes 先例，compile.mjs 同律）。
+  let buttonsCfg = null;
+  if (profile.buttons !== undefined) {
+    const b = profile.buttons;
+    const okShape = b && typeof b === 'object' && !Array.isArray(b) && typeof b.extraSelector === 'string' && b.extraSelector.trim();
+    if (!okShape) {
+      console.error('replay: 通道剖面 buttons 形状非法（extraSelector 须非空字符串），拒跑（fail-closed）');
+      process.exit(65);
+    }
+    buttonsCfg = { extraSelector: b.extraSelector };
+  }
+
   const intentOrder = [];
   const intentEvents = new Map();
   for (const ev of events) {
@@ -198,6 +211,8 @@ async function main() {
   const intentCount = new Map();
   const intentToasts = new Map();   // kinds-harden：代表步静默点 toast 快照
   const intentTextHits = new Map(); // kinds-harden：代表步 textVisible 命中计数
+  const intentButtonHits = new Map(); // wf-publish-states：代表步 buttonState 命中合计（role + 可选补采，可见口径）
+  const intentButtonSeen = new Map(); // wf-publish-states：代表步全通道可见按钮总数（absent 活性反证，codex R1-F1）
 
   // 回放历史 opt-in（run-history）：纯观察者收集，不加任何等待、不改任何时序。
   const rhOn = !!(args.runHistory || args.runMetrics);
@@ -311,6 +326,36 @@ async function main() {
           hits[a.value] = inPage + (inPage === 0 ? inToast : 0);
         }
         intentTextHits.set(ev.intentId, hits);
+        // 本 intent buttonState 断言值命中合计（wf-publish-states D2）：role=button exact 必采 +
+        // profile.buttons.extraSelector 可选补采。任一通道采集失败 = 该值缺采集（不落 0）→ 评估证不出。
+        // codex R1 两 High 收紧：F2 补采只数可见节点（隐藏模板不计）；F1 同刻加采通道总活性
+        // buttonSeen（全通道可见按钮总数）——absent 判真的反证前提，盲区页 seen=0 → 证不出。
+        const btnVals = [...new Set([...(expectedByIntent.get(ev.intentId) || []), ...globalAssertions]
+          .filter((a) => a.kind === 'buttonState' && typeof a.value === 'string').map((a) => a.value))];
+        if (btnVals.length) {
+          const visibleCount = (els, name) => els.filter((el) =>
+            (name == null || (el.textContent || '').trim() === name) &&
+            el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden').length;
+          let roleTotal = null;
+          try { roleTotal = await page.getByRole('button').count(); } catch { roleTotal = null; }
+          let extraTotal = 0;
+          if (buttonsCfg) {
+            try { extraTotal = await page.locator(buttonsCfg.extraSelector).evaluateAll(visibleCount, null); } catch { extraTotal = null; }
+          }
+          const btnHits = {};
+          for (const value of btnVals) {
+            let roleN = null;
+            try { roleN = await page.getByRole('button', { name: value, exact: true }).count(); } catch { roleN = null; }
+            let extraN = 0;
+            if (buttonsCfg) {
+              try { extraN = await page.locator(buttonsCfg.extraSelector).evaluateAll(visibleCount, value); } catch { extraN = null; }
+            }
+            if (roleN == null || extraN == null) continue;
+            btnHits[value] = roleN + extraN;
+          }
+          intentButtonHits.set(ev.intentId, btnHits);
+          if (roleTotal != null && extraTotal != null) intentButtonSeen.set(ev.intentId, roleTotal + extraTotal);
+        }
         // reply 正文采集（chiefcomplaint-smoke D5：DOM 气泡通道，代表步静默点实采；未配置 chat 段不采。
         // codex R1-F3：对照 intent 首步基线，仅「新气泡出现或末泡文本变化」才回填——陈迹绝不当新回复）。
         if (chatCfg) {
@@ -382,6 +427,8 @@ async function main() {
       pageErrors: pe,
       toastTexts: intentToasts.get(iid),  // kinds-harden：缺采集即 undefined → 证不出
       textHits: intentTextHits.get(iid),
+      buttonHits: intentButtonHits.get(iid), // wf-publish-states：缺采集即 undefined → 证不出
+      buttonSeen: intentButtonSeen.get(iid), // 同刻通道活性（absent 反证前提）；缺采集即 undefined → 证不出
       replyText: intentReply.get(iid),    // chiefcomplaint-smoke：缺采集即 undefined → 证不出
       streamUrlPattern: chatCfg ? chatCfg.streamUrlPattern : undefined,
     });

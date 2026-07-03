@@ -2,7 +2,8 @@
 // 冻结黄金标准（P4 相2 断言草拟器 · hermetic）：确定性合成骨架 + 零 LLM 校验闸 + soft 承载。
 // 决策依 docs/plans/p4-drafter/proposed/GRILL.md（D1/D2 人签 + G-seam 对齐拍板）；计划依 docs/plans/p4-drafter/plan.md。
 // 底稿 = proposed/p4-drafter.golden.draft.mjs（另一 session 预备轨、已验红），落地增补：
-//   C-align 接缝对齐钉死（schema 15 kind 含新三种）/ C-map-ext D1 映射表全量（buttonState/noErrorToast soft）
+//   C-align 接缝对齐钉死（schema 15 kind 含新三种）/ C-map-ext D1 映射表全量（buttonState 已随
+//   wf-publish-states 提硬、soft 生命周期范例换 switchState——2026-07-03 涟漪重钉）
 //   / C-pending 未知原子不发明 / C-tpl-ok atl_{{uniqueName}} 模板形态合法（防过度拒绝）。
 // 钉 lib/assertion-draft.mjs 纯函数：synthesizeSkeleton(observed, assertionAtoms) / validateDraft(expectedDraft)。
 // 消费已冻接缝：observed-reality.fixture.json + expected-frozen.schema.json 词表 + bin/check.mjs --validate-only。
@@ -103,17 +104,17 @@ check('S3 soft 承载：textVisible 已提硬 / urlPathname 硬（kinds-harden �
 
 // ---------- C-map-ext：D1 映射表全量（新收 kind + 取证类）+ 未知原子不发明 ----------
 const draft2 = synthesizeSkeleton(observed, [
-  { intentId: 'intent_1', atom: 'assert.buttonState', params: { name: '保存', state: 'enabled' } },
+  { intentId: 'intent_1', atom: 'assert.buttonState', params: { name: '保存', state: 'present' } },
   { intentId: 'intent_1', atom: 'assert.noErrorToast', params: {} },
   { intentId: 'intent_2', atom: 'assert.bubble', params: {} },
 ]);
 
-check('C-map buttonState 同名映射 + soft', () => {
+check('C-map buttonState 同名映射 + 已提硬（wf-publish-states 翻转：present/absent 实现、enabled/disabled 挂账后补）', () => {
   const i1 = draft2.intents.find((it) => it.intentId === 'intent_1');
   const bs = (i1?.expected || []).find((a) => a.kind === 'buttonState');
-  if (!bs) throw new Error('assert.buttonState 未合成出 buttonState 断言');
-  if (bs.op !== 'enabled') throw new Error(`buttonState op 应取 params.state（enabled），实际 ${bs.op}`);
-  if (bs.soft !== true) throw new Error('未实现 kind buttonState 应标 soft:true');
+  if (!bs) throw new Error('assert.buttonState(present) 未合成出 buttonState 断言');
+  if (bs.op !== 'present') throw new Error(`buttonState op 应取 params.state（present），实际 ${bs.op}`);
+  if (bs.soft === true) throw new Error('buttonState 已提硬（wf-publish-states），骨架不应再标 soft');
 });
 
 check('C-map noErrorToast 同名映射 + 已提硬', () => {
@@ -195,11 +196,11 @@ check('S3b 校验闸钉 D2 soft 语义两向（R3-F1）', () => {
   // 已实现 kind 标 soft = 绕硬裁定（fail-open 向），拒：
   const r1 = validateDraft({ caseId: 't', intents: [{ intentId: 'i', expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/x', soft: true }] }], globalAssertions: [] });
   if (!r1 || r1.ok !== false || !r1.problems.length) throw new Error('已实现 kind 带 soft:true 应被拒（绕硬裁定）');
-  // 未实现 kind 漏标 soft = 回放必假红，拒：
-  const r2 = validateDraft({ caseId: 't', intents: [{ intentId: 'i', expected: [{ kind: 'buttonState', op: 'enabled', value: 'x' }] }], globalAssertions: [] });
+  // 未实现 kind 漏标 soft = 回放必假红，拒（范例换 switchState：buttonState 已随 wf-publish-states 提硬）：
+  const r2 = validateDraft({ caseId: 't', intents: [{ intentId: 'i', expected: [{ kind: 'switchState', op: 'on', value: 'x' }] }], globalAssertions: [] });
   if (!r2 || r2.ok !== false || !r2.problems.length) throw new Error('未实现 kind 漏 soft:true 应被拒（假红温床）');
   // 未实现 kind 带 soft = 合法（D2 正向）：
-  const r3 = validateDraft({ caseId: 't', intents: [{ intentId: 'i', expected: [{ kind: 'buttonState', op: 'enabled', value: 'x', soft: true }] }], globalAssertions: [] });
+  const r3 = validateDraft({ caseId: 't', intents: [{ intentId: 'i', expected: [{ kind: 'switchState', op: 'on', value: 'x', soft: true }] }], globalAssertions: [] });
   if (!r3 || r3.ok !== true) throw new Error(`未实现 kind 带 soft:true 应放行，实际 ${JSON.stringify(r3).slice(0, 160)}`);
 });
 

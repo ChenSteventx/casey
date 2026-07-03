@@ -30,10 +30,13 @@ async function checkAsync(name, fn) {
 }
 
 // ---------- U 单元向：三 kind + 谓词普化 ----------
-check('U1 IMPLEMENTED_KINDS 7→10（replyContains/replyMatches/textHidden 入列，buttonState/switchState 仍外）', () => {
+check('U1 IMPLEMENTED_KINDS 含本轮三 kind（switchState 仍外；精确计数移交最新前沿 golden 持有）', () => {
+  // 重钉（wf-publish-states 涟漪，2026-07-03）：原 size===10 与「buttonState 不在列」随 buttonState
+  // 实现而过期——精确计数移交最新前沿 golden（现 wf-publish-states.golden ===11，kinds-harden 同款先例），
+  // 本 golden 只守本轮资产：三 kind 在列 + switchState（未实现范例依赖）不在列。
   for (const k of ['replyContains', 'replyMatches', 'textHidden']) if (!IMPLEMENTED_KINDS.has(k)) throw new Error(`已实现集缺 ${k}`);
-  for (const k of ['buttonState', 'switchState']) if (IMPLEMENTED_KINDS.has(k)) throw new Error(`${k} 不应在已实现集（冻结 golden 未实现范例依赖）`);
-  if (IMPLEMENTED_KINDS.size !== 10) throw new Error(`已实现集应 10 种，实际 ${IMPLEMENTED_KINDS.size}`);
+  if (IMPLEMENTED_KINDS.has('switchState')) throw new Error('switchState 不应在已实现集（冻结 golden 未实现范例依赖）');
+  if (IMPLEMENTED_KINDS.size < 10) throw new Error(`已实现集不应缩水（≥10），实际 ${IMPLEMENTED_KINDS.size}`);
 });
 
 check('U2 replyContains 命中/未命中/证不出三向', () => {
