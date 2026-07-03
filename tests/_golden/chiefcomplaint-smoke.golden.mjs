@@ -85,7 +85,7 @@ check('U5 streamReplyReceived 谓词普化：profile 模式命中 + legacy 兼�
 const PROFILE = join(tmp, 'profile.json');
 writeFileSync(PROFILE, JSON.stringify({
   background: [], successField: 'status', successValue: 200,
-  routes: { workflowList: '/' }, // 壳页锚：nav.agentManagement 编译知识落 run.listRoute（真机为列表页）
+  routes: { workflowList: '/', agentList: '/agent/list' }, // agentList：路由导航优先（chief-bringup G1，点击通路真机被拦实证）
   chat: { streamUrlPattern: '/ai-api/tester/agent/stream', replySelector: '.hr-chat__text__assistant' },
 }));
 function chatEventsDoc() {
@@ -95,9 +95,9 @@ function chatEventsDoc() {
     events: [
       { stepId: 'atstep_0', intentId: 'intent_0', atom: 'nav.agentDetail', action: 'nav', url: '{{baseUrl}}/agent/detail' },
       { stepId: 'atstep_1', intentId: 'intent_1', atom: 'agent.openTestPanel', action: 'click', semantic: { kind: 'role', role: 'button', name: '测试', exact: true } },
-      { stepId: 'atstep_2', intentId: 'intent_2', atom: 'chat.sendAndWait', action: 'fill', semantic: { kind: 'role', role: 'textbox', name: '请输入消息', exact: true }, value: '头疼三天，伴轻微恶心' },
-      { stepId: 'atstep_3', intentId: 'intent_2', atom: 'chat.sendAndWait', action: 'press', key: 'Space', semantic: { kind: 'role', role: 'textbox', name: '请输入消息', exact: true } },
-      { stepId: 'atstep_4', intentId: 'intent_2', atom: 'chat.sendAndWait', action: 'press', key: 'Backspace', semantic: { kind: 'role', role: 'textbox', name: '请输入消息', exact: true } },
+      { stepId: 'atstep_2', intentId: 'intent_2', atom: 'chat.sendAndWait', action: 'fill', semantic: { kind: 'role', role: 'textbox', name: '请输入消息', exact: false }, value: '头疼三天，伴轻微恶心' },
+      { stepId: 'atstep_3', intentId: 'intent_2', atom: 'chat.sendAndWait', action: 'press', key: 'Space', semantic: { kind: 'role', role: 'textbox', name: '请输入消息', exact: false } },
+      { stepId: 'atstep_4', intentId: 'intent_2', atom: 'chat.sendAndWait', action: 'press', key: 'Backspace', semantic: { kind: 'role', role: 'textbox', name: '请输入消息', exact: false } },
       { stepId: 'atstep_5', intentId: 'intent_2', atom: 'chat.sendAndWait', action: 'click', fallbackCss: '.hr-icon.hr-icon-arrow-up' },
       { stepId: 'atstep_6', intentId: 'intent_3', atom: 'chat.closeTestPanel', action: 'click', fallbackCss: '.hr-drawer.hr-drawer--right.hr-drawer--open > .hr-drawer__content-wrapper > .hr-drawer__close-btn > .hr-icon' },
     ],
@@ -266,6 +266,11 @@ await checkAsync('C1 闸段 + C2 执行段：五原子编译知识产四件套�
     const e = run([CASEY, 'compile', 'tc_chat_smoke', '--execute', '--testcase', TC, '--sut', srv.url, '--out-dir', dir, '--profile', PROFILE, '--skip-login', '--unique-name', 'g1']);
     if (e.status !== 0) throw new Error(`执行段应 exit 0，实际 ${e.status}：${(e.stderr || e.stdout || '').slice(-300)}`);
     const events = JSON.parse(readFileSync(join(dir, 'events.json'), 'utf8'));
+    // chief-bringup G1：配了 routes.agentList → 该原子应产单个路由 nav event（点击通路真机被拦，路由一击即中）。
+    const navEvs = events.events.filter((ev) => ev.atom === 'nav.agentManagement');
+    if (navEvs.length !== 1 || navEvs[0].action !== 'nav' || navEvs[0].url !== '{{baseUrl}}/agent/list') {
+      throw new Error(`nav.agentManagement 应产单个路由 nav（{{baseUrl}}/agent/list），实际 ${JSON.stringify(navEvs.map((e) => [e.action, e.url || e.text]))}`);
+    }
     const chatActs = events.events.filter((ev) => ev.atom === 'chat.sendAndWait').map((ev) => ev.action);
     const want = ['fill', 'press', 'press', 'click'];
     if (JSON.stringify(chatActs) !== JSON.stringify(want)) throw new Error(`chat 步应产 keydown 垫序列 ${want}，实际 ${JSON.stringify(chatActs)}`);

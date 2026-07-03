@@ -123,12 +123,14 @@ async function executeMode(caseId, args) {
   // 剖面可选 routes.workflowList（非凭据通道配置）：present 则须以 / 开头的路径段（R1-F5 形状校验同律），
   // 缺省 null → compile-atoms 走 ROUTE_LIST（hermetic 行为不变）。
   let listRoute = null;
+  let agentListRoute = null;
   if (profile.routes !== undefined) {
     const r = profile.routes;
-    const okShape = r && typeof r === 'object' && !Array.isArray(r)
-      && (r.workflowList === undefined || (typeof r.workflowList === 'string' && r.workflowList.startsWith('/')));
-    if (!okShape) { console.error('compile: 通道剖面 routes 形状非法（workflowList 须以 / 开头的路径段），拒跑（fail-closed）'); process.exit(65); }
+    const routeOk = (v) => v === undefined || (typeof v === 'string' && v.startsWith('/'));
+    const okShape = r && typeof r === 'object' && !Array.isArray(r) && routeOk(r.workflowList) && routeOk(r.agentList);
+    if (!okShape) { console.error('compile: 通道剖面 routes 形状非法（各路由须以 / 开头的路径段），拒跑（fail-closed）'); process.exit(65); }
     listRoute = r.workflowList || null;
+    agentListRoute = r.agentList || null; // chief-bringup G1：智能体列表路由（nav.agentManagement 路由导航优先）
   }
   const sut = String(args.sut).replace(/\/$/, '');
   const uniqueName = String(args['unique-name'] || Date.now().toString(36));
@@ -148,7 +150,7 @@ async function executeMode(caseId, args) {
     currentStep: () => state.currentStepId,
   });
 
-  const run = createCompileRun({ page, forensics, state, sut, uniqueName, site, listRoute });
+  const run = createCompileRun({ page, forensics, state, sut, uniqueName, site, listRoute, agentListRoute });
   let exitCode = 0;
   try {
     if (!args['skip-login']) {
