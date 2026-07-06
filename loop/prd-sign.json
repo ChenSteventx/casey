@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "task": "相2 人签门 sign（full）：把 draft 产的 expected.draft 盖签署字段（signedAt/signedAgainstBuild/signerId）冻成 expected.frozen（去 pending、additionalProperties 合规、自守 assertSignedContract ok）+ sha256 冻进 prd testChecksums/expectedFrozenPath（仅断言文件，护栏 #5）+ 把「未签→裁定拒算数」硬接进 bin/replay.mjs 前置闸（读完 expectedDoc 后开浏览器前 assertSignedContract 非 ok exit 65 fail-closed，护栏 #14；空断言 vacuously ok）。pending 非空默认拒签、--force 留痕独立旁车不静默丢；expectedVerdict 仅 --verdict-baseline 人给值 + fail-safe 不变量、缺则不写不反推；重签 --resign 归档旧期望 + anti-clobber + 绝不自动记缺陷。裁判零 LLM（不碰 verdict.mjs）、凭据落盘过 cred-gate。D1 未签闸落点 Steven 拍板：知 ~7 金牌爆炸半径仍选 replay 前置闸（无后门）。决策全表 docs/plans/sign/proposed/GRILL.md。",
+  "specPath": "docs/plans/sign/plan.md",
+  "testChecksums": {
+    "tests/_golden/p2-sign.golden.mjs": "0a2e4c4b1b1074370fec4522536a3c58eea6162de72127b23364a8a1c98cfe52",
+    "tests/_golden/fixtures/seams/expected-draft.fixture.json": "2282a286a1670e91a0e131d114695f0ba69e7a7c67835a4170626b61100c905b",
+    "tests/_golden/_sign-helper.mjs": "c445b2721ed825e1577354c7824b4ae4c34c7998c51891f25c45c2d55ad0dc80"
+  },
+  "observability": [
+    {
+      "dimension": "真人签身份核验 + 人评审冻结断言真表达用例意图（route:human，ADR-0004 §6 / sign-gate.mjs:4-5）：本相机制层 hermetic 建成，--signer/--build 当可信授权输入；真人签是策略/评审门，人不在场只挂账绝不代签。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-sign-and-replay-gate",
+      "desc": "签发端 + 未签闸：新建 bin/sign.mjs（draft→frozen 盖三签字段 + 去 pending + 自守 assertSignedContract ok + 白名单键自检，任一不过 exit 65 零落盘；pending 非空拒签/--force 留痕旁车；expectedVerdict 人给值+fail-safe 不变量+不反推；sha256 冻进 prd testChecksums/expectedFrozenPath 只断言文件；重签 --resign 归档+anti-clobber+不记缺陷；落盘过 cred-gate；caseId 一致/路径安全）+ bin/replay.mjs 加 assertSignedContract 前置闸（未签非空 exit 65 fail-closed，空 vacuously ok）+ bin/casey.mjs sign 分发接线。金牌 C1-C8（实现前 0/8 全红已核：C1/C2/C4/C6/C7 缺 sign.mjs exit 1、C3/C8 待精确 65/1、C5 未签 replay 现 exit 0 待接闸）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p2-sign.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T09:25:03.379Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-ripple-locks",
+      "desc": "涟漪回归锁（D1 知情选择的落地面）：碰 bin/replay.mjs 加未签闸 → 所有喂非空未签 expected 的金牌须经 _sign-helper.signExpected 补签 + 各自 prd testChecksums 重签 + 原样复跑 GREEN。实测受影响 9 金牌：回放内核 p5-replay/layer3-wiring + 飞轮 chiefcomplaint-smoke/kinds-harden/replay-video/wf-history-version/wf-publish-states + 端到端 run-history/report-diagnostics（casey run 喂非空 expected，全套跑一遍完整性扫补捉）；工具 scripts/sample-report.mjs 同步补签。全套 37 金牌零红实证。空断言金牌（video-login-carry 等）vacuously ok 不受影响。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/replay-video.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/report-diagnostics.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T09:29:39.632Z 全部 acceptance exit 0"
+    }
+  ]
+}

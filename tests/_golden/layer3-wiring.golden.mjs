@@ -9,6 +9,7 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { startFakeSut, FAKE_SITE_DENYLIST } from '../fixtures/fake-sut/server.mjs';
+import { signExpected } from './_sign-helper.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -93,7 +94,7 @@ for (const c of CASES) {
     const runDir = join(tmp, `${c.name}.run`);
     mkdirSync(runDir, { recursive: true });
     writeFileSync(evFile, readFileSync(EVENTS_REF, 'utf8'));
-    writeFileSync(expFile, JSON.stringify(toExpectedContract(c)));
+    writeFileSync(expFile, JSON.stringify(signExpected(toExpectedContract(c))));
     writeFileSync(profFile, JSON.stringify({ background: FAKE_SITE_DENYLIST, successField: 'status', successValue: 200 }));
 
     // 端到端编排（实现前 casey run 桩 exit 3 → execFileSync 抛 → 红）

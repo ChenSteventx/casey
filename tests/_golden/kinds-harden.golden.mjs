@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { evaluateAssertions, IMPLEMENTED_KINDS } from '../../lib/replay-assert.mjs';
 import { startLoginSut } from '../fixtures/login-sut/server.mjs';
+import { signExpected } from './_sign-helper.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -80,10 +81,10 @@ await checkAsync('I1 集成：textVisible 页面命中真过 + noErrorToast 无�
   const srv = await startLoginSut({});
   try {
     const EXP = join(tmp, 'exp-hit.json');
-    writeFileSync(EXP, JSON.stringify(expectedDoc([
+    writeFileSync(EXP, JSON.stringify(signExpected(expectedDoc([
       { kind: 'textVisible', op: 'appears', value: '纯页' },
       { kind: 'noErrorToast', op: 'absent' },
-    ])));
+    ]))));
     const OUT = join(tmp, 'axes-i1.json');
     const r = spawnSync(process.execPath, [REPLAY, '--events', EVENTS, '--sut', srv.url, '--expected', EXP, '--profile', PROFILE, '--out', OUT], { encoding: 'utf8', timeout: 120000 });
     if (r.status !== 0) throw new Error(`replay 应 exit 0，实际 ${r.status}：${(r.stderr || '').slice(-200)}`);
@@ -100,7 +101,7 @@ await checkAsync('I2 集成：textVisible 未命中真败（不假绿）', async
   const srv = await startLoginSut({});
   try {
     const EXP = join(tmp, 'exp-miss.json');
-    writeFileSync(EXP, JSON.stringify(expectedDoc([{ kind: 'textVisible', op: 'appears', value: '不存在的文字九三七' }])));
+    writeFileSync(EXP, JSON.stringify(signExpected(expectedDoc([{ kind: 'textVisible', op: 'appears', value: '不存在的文字九三七' }]))));
     const OUT = join(tmp, 'axes-i2.json');
     const r = spawnSync(process.execPath, [REPLAY, '--events', EVENTS, '--sut', srv.url, '--expected', EXP, '--profile', PROFILE, '--out', OUT], { encoding: 'utf8', timeout: 120000 });
     if (r.status !== 0) throw new Error(`replay 应 exit 0（断言败进轴不改码），实际 ${r.status}`);

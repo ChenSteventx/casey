@@ -3,7 +3,7 @@
   "task": "第3层集成 wiring 骨架（hermetic）：新建报表模型装配器 lib/report-model.mjs（verdict ⋈ axes ⋈ observed ⋈ expected → report-model）+ 薄 CLI bin/report-model.mjs + casey run 编排 replay→verdict→装配→report，对假 SUT + 合成 fixture 端到端跑通。消费冻结契约、不改冻结内核。",
   "specPath": "docs/plans/layer3-wiring/plan.md",
   "testChecksums": {
-    "tests/_golden/layer3-wiring.golden.mjs": "455389c1220ae97fe173eb5f0f62f4bd1720f4fdf6c982d3a24a7dbef66b1a11",
+    "tests/_golden/layer3-wiring.golden.mjs": "f94c54cf8799fedff2262e19bca032ef4a530c0f1569e316b8bf68390864acb4",
     "tests/_golden/layer3-wiring-coverage.golden.mjs": "4c24a35dfe4bb9b1958b404af2b5533c12f2ed3430ea27f83c229af2a73bb196"
   },
   "observability": [

@@ -31,6 +31,7 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { startLoginSut } from '../fixtures/login-sut/server.mjs';
+import { signExpected } from './_sign-helper.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -330,9 +331,9 @@ await checkAsync('V8 凭据门拦截后不得遗留已收敛录像', async () =>
   // 断言值携敏感词（password-wall）→ axes 文本命中凭据兜底门关键词 → 落盘拒写 exit 1；
   // 此刻录像已收敛（video.webm 已改名落盘）——fail-closed 退出必须连它一起清，不许半干净。
   const expectedHot = join(tmp, 'expected.credword.json');
-  writeFileSync(expectedHot, JSON.stringify({ caseId: CASE_ID, channel: 'web', intents: [], globalAssertions: [
+  writeFileSync(expectedHot, JSON.stringify(signExpected({ caseId: CASE_ID, channel: 'web', intents: [], globalAssertions: [
     { assertionId: 'ga_1', kind: 'textVisible', op: 'contains', value: 'password-wall', soft: false },
-  ] }));
+  ] })));
   const axesOut = join(tmp, 'axes-v8.json');
   const r = run([REPLAY, '--events', EVENTS_PLAIN, '--sut', srvPlain.url, '--expected', expectedHot, '--profile', PROFILE, '--out', axesOut, '--video-dir', vdir],
     isoEnv({ AT_CREDS_FILE: NO_CREDS_FILE, AT_SITE_JSON: SITE_PLAIN }));

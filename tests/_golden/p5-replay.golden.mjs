@@ -13,6 +13,7 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { startFakeSut, FAKE_SITE_DENYLIST } from '../fixtures/fake-sut/server.mjs';
+import { signExpected } from './_sign-helper.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -54,7 +55,7 @@ for (const c of CASES) {
     const axFile = join(tmp, `${c.name}.axes.json`);
     const vdFile = join(tmp, `${c.name}.verdict.json`);
     writeFileSync(evFile, JSON.stringify(resolveEvents(c)));
-    writeFileSync(expFile, JSON.stringify(toExpectedContract(c)));
+    writeFileSync(expFile, JSON.stringify(signExpected(toExpectedContract(c))));
     // 通道剖面（非凭据）：背景 denylist + 错误信封成功字段/值（web/Heren = body.status===200）。site.json 凭据不进 hermetic。
     writeFileSync(profFile, JSON.stringify({ background: FAKE_SITE_DENYLIST, successField: 'status', successValue: 200 }));
 

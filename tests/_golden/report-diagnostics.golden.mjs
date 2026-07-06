@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { renderReport } from '../../lib/report.mjs';
 import { startPublishSut } from '../fixtures/publish-sut/server.mjs';
+import { signExpected } from './_sign-helper.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -174,11 +175,11 @@ await checkAsync('E1 casey run 端到端：report.html 含诊断栏目 + 步卡�
       events: [{ stepId: 'atstep_0', intentId: 'intent_1', atom: 'nav.editor', action: 'nav', url: '{{baseUrl}}/ai-manager/process/detail' }],
     }));
     const EXP = join(tmp, 'e1-expected.json');
-    writeFileSync(EXP, JSON.stringify({
+    writeFileSync(EXP, JSON.stringify(signExpected({
       caseId: 'tc_diag_run', channel: 'web',
       intents: [{ intentId: 'intent_1', expected: [{ kind: 'textVisible', op: 'appears', value: '工作流编辑器', soft: false }] }],
       globalAssertions: [],
-    }));
+    })));
     const PROFILE = join(tmp, 'e1-profile.json');
     writeFileSync(PROFILE, JSON.stringify({ background: [], successField: 'status', successValue: 200 }));
     const runDir = join(tmp, 'e1-run');

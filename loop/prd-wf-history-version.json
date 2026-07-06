@@ -3,7 +3,7 @@
   "task": "飞轮第四条移植 wf-history-version（direct）：历史版本弹窗，零机制缝——「机制缝递减」终点验证（3→1→0）。两个纯加法编译原子 compileWorkflowClickEditorButton（click，semantic role button exact）+ compileWorkflowCloseDrawer（press Escape 锚 body）；断言全为已实现 kind（textVisible×3 + buttonState present + textHidden），零词表/schema/回放器改动。publish-sut 夹具扩历史版本弹窗（未发布「暂无数据」/ 发布后表头版本·状态·创建时间·操作 + 行 V1·查看 + 关闭钮，Esc 关，regress 2026-06-09 真机形态复刻），历史版本钮走 mk() 保 divButtons 场景 role 全盲前提（wf-publish-states I3 涟漪，其 prd 夹具 checksum 重签）。决策依 docs/plans/wf-history-version/proposed/GRILL.md（全机械，案子 Steven 点选）。",
   "specPath": "docs/plans/wf-history-version/plan.md",
   "testChecksums": {
-    "tests/_golden/wf-history-version.golden.mjs": "4cefbd1518471a5fbcf428e24cb082a7d6a3e4f8189d4c55fd30a7d13b7c44e6",
+    "tests/_golden/wf-history-version.golden.mjs": "130600fb9cedcceb5918a0ff139f667999e93c96ba21b21fbd41637bac3a27fd",
     "tests/fixtures/publish-sut/server.mjs": "3485923096539c4d3abeb13e5b1d2b8e17c5541f03f2298649be02a5f2447ddf"
   },
   "observability": [

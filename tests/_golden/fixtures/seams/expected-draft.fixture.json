@@ -1,0 +1,23 @@
+{
+  "caseId": "tc_sign_probe",
+  "intents": [
+    {
+      "intentId": "intent_1",
+      "expected": [
+        { "kind": "buttonState", "op": "present", "value": "发布" },
+        { "kind": "urlPathname", "op": "startsWith", "value": "/edit" }
+      ]
+    },
+    {
+      "intentId": "intent_2",
+      "expected": [
+        { "kind": "textVisible", "op": "appears", "value": "已发布", "soft": true }
+      ]
+    }
+  ],
+  "globalAssertions": [
+    { "kind": "noPageError", "op": "absent" },
+    { "kind": "noErrorEnvelope", "op": "envelopeOk" }
+  ],
+  "pending": []
+}

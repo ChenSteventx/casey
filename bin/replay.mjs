@@ -23,6 +23,7 @@ import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { evaluateAssertions } from '../lib/replay-assert.mjs';
 import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
 import { credentialGate, maskCredentialRoute } from '../lib/cred-gate.mjs';
+import { assertSignedContract } from '../lib/sign-gate.mjs';
 
 const { chromium } = pw;
 
@@ -159,6 +160,20 @@ async function main() {
 
   const eventsDoc = JSON.parse(readFileSync(args.events, 'utf8'));
   const expectedDoc = JSON.parse(readFileSync(args.expected, 'utf8'));
+  // 未签→裁定拒算数前置闸（相2 sign，护栏 #14）：读完 expected、开浏览器前——非空断言契约未签则 exit 65
+  // fail-closed（不进「算数」路径、零 axes）。空断言契约 assertSignedContract vacuously ok，零行为差。
+  const signCheck = assertSignedContract(expectedDoc);
+  if (!signCheck.ok) {
+    console.error('replay: expected 契约未签，裁定流程拒算数（fail-closed，护栏 #14）：' + signCheck.problems.slice(0, 3).join('；'));
+    process.exit(65);
+  }
+  // caseId 端到端绑定（codex R1-F1 + R2-F2）：非空签署契约须与本次 events 同 case——两侧 caseId 都在且相等，
+  // 否则拒算数（防用 A 的签名给 B 的 events、或删 caseId 绕过绑定）。空契约 vacuously 无需绑定。
+  const expHasAssertions = (expectedDoc.intents || []).some((it) => (it.expected || []).length > 0) || (expectedDoc.globalAssertions || []).length > 0;
+  if (expHasAssertions && (!expectedDoc.caseId || !eventsDoc.caseId || expectedDoc.caseId !== eventsDoc.caseId)) {
+    console.error(`replay: 已签契约与 events 的 caseId 未双向绑定（expected=${expectedDoc.caseId ?? '(缺)'} / events=${eventsDoc.caseId ?? '(缺)'}），拒算数（fail-closed）`);
+    process.exit(65);
+  }
   const profile = JSON.parse(readFileSync(args.profile, 'utf8'));
   const events = eventsDoc.events || [];
   const caseId = eventsDoc.caseId || expectedDoc.caseId || 'unknown';

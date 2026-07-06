@@ -3,7 +3,7 @@
   "task": "回放视频录制 replay-video（full）：补「真机 run 报告无视频」缺口（根因 replay.mjs 未启 recordVideo）。D1 登录期镜头不入镜 = 同 context 双 page 舞步（仅 --video-dir 与 --login-bootstrap 同开：登录 page1 → 回放 page2 承载 CDP/forensics 与事件循环，登录页视频退出前必删、删除失败重试一次仍败非零退出 fail-closed；视频是二进制、文本凭据门管不住，卫生只能结构保证）；D2 装配器直产 attachments（schema 预留位早已冻结可用：replay 落 video.json 元数据旁件 → report-model --video-meta 直填 step.attachments{video,videoAt} 与败步 defectTicket.videoAt，缺席零行为差、坏件 fail-closed 零落盘）；D3 渲染器升 <video controls> 相对路径可播（:// 零容忍不出 src，json 机读旁车恒不投 attachments）；D4 casey run 缺省开启（--no-video 显式关）；M1 webm 直出零新依赖（mp4 转码挂账）/ M2 case 级单录屏 + 每步毫秒偏移 / M3 replay 侧 --video-dir opt-in 缺省一字不变 / M4 语义名 video.webm 收敛 / M5 看门狗与 crash 分支尽力 close + 视频缺席容忍 / M7 视频绝不进 verdict / M8 冻结 schema 全体零动。决策依 docs/plans/replay-video/proposed/GRILL.md（D1–D4 Steven 逐条拍板）。",
   "specPath": "docs/plans/replay-video/plan.md",
   "testChecksums": {
-    "tests/_golden/replay-video.golden.mjs": "f257ff0582be4d858fe28481cc7e71d4055d3c425ca43a416846fe869484abc8"
+    "tests/_golden/replay-video.golden.mjs": "637d688bbf315ae989eba3d76352d02a1e6d87754bae2982be4efa62e69b257c"
   },
   "observability": [
     {

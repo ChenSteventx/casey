@@ -4,7 +4,7 @@
   "specPath": "docs/plans/login-traffic-drop/plan.md",
   "testChecksums": {
     "tests/_golden/replay-login-bootstrap.golden.mjs": "6a56e9852734bfd1b246b3d7f0820deadf03938534013e2831ca955f7da9118a",
-    "tests/_golden/chiefcomplaint-smoke.golden.mjs": "3e233f511c4430c17969bca029d41fa7f168b793e0e777fc8072cec188d1ac02"
+    "tests/_golden/chiefcomplaint-smoke.golden.mjs": "0a014f1ac56b12b8fca4e5cc81a1aa77ba725a8cb61755bd72d0042195ba7f4f"
   },
   "observability": [
     {

@@ -3,7 +3,7 @@
   "task": "casey run 接回放历史/回放指标真产出（light）：bin/replay.mjs 加 --run-history/--run-metrics/--run-id 三 opt-in 旗标（缺省行为一字不变，同 --login-bootstrap 先例），纯观察者逐 event 收集 runHistoryLine（G2 枚举缝合：action_failed→unique+result=actionError；G3 quietPointReached=前置稳定程序达成口径；G4 valueRef 单占位符才透传否则打码）、回放尾与 axes 同刻经凭据兜底门一次写出（命中拒写 exit 1）；run-metrics 同进程尾算（locatorHitRate 分母只数有定位需求步、分母 0→null；runId=--run-id 缺省 null）。bin/casey.mjs runPipeline 相3 args 追加三旗标（run-id=runDir 目录名，G6）。红线：仅诊断证据绝不进 verdict.mjs、绝不写 passes（护栏 #15/#17）、字面量零落盘（护栏 #7）。决策依 docs/plans/run-history/proposed/GRILL.md。",
   "specPath": "docs/plans/run-history/plan.md",
   "testChecksums": {
-    "tests/_golden/run-history.golden.mjs": "82b50c4b84ae811358ac9cef6ca1b51f63f97d9d1ffc033b91880dc8984a14d4"
+    "tests/_golden/run-history.golden.mjs": "db137b06ae01d5502d05af849ae17d8a446ac775397ce24f33154817880aa417"
   },
   "observability": [
     {

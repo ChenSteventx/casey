@@ -3,7 +3,7 @@
   "task": "飞轮第三条移植 wf-publish-states（full）：发布状态机×按钮态，验证「机制缝递减」（第二条 3 缝→本条 1 缝）。D1 词表收窄 buttonState ['enabled','disabled']→['present','absent']（词表=可草拟=已实现；enabled/disabled 挂账 publish_blocked 契约带实现回归——Steven 明令「后面需要补完整」）+ schema assertionOp enum +present（prd-seams-freeze 重签，p4-drafter 先例）；D2 buttonHits 采集 = getByRole('button',{name,exact:true}) 必采 + profile.buttons.extraSelector 可选补采合计（present>0 / absent===0 / 缺采集证不出；absent 是唯一 fail-open 风险方向，补采通道 + 真机 role 可达性探针双防线）+ 形状校验 fail-closed（routes 先例）；D3 重表达补「发布 absent」负向（nl 语义为源，人签终抉）；IMPLEMENTED_KINDS 10→11 + 草拟映射条件翻转（present/absent 硬映射、enabled/disabled 落 pending）+ compileWorkflowPublish 编译知识（照 workflow.save 形状）。涟漪：kinds-harden/chiefcomplaint-smoke/p4-drafter 三 golden 未实现范例与计数重钉（精确计数移交本契约 golden 前沿持有）。决策依 docs/plans/wf-publish-states/proposed/GRILL.md（D1–D3 Steven 逐条拍板）。",
   "specPath": "docs/plans/wf-publish-states/plan.md",
   "testChecksums": {
-    "tests/_golden/wf-publish-states.golden.mjs": "1001c892a07a6dadd11ff5d7ccc80c8066fa4978821aad5e2efefd88b72fdac9",
+    "tests/_golden/wf-publish-states.golden.mjs": "c51d10c11bb7b112f70099a43d6e8915b79f62fa305b7054220f9830c95a4191",
     "tests/fixtures/publish-sut/server.mjs": "3485923096539c4d3abeb13e5b1d2b8e17c5541f03f2298649be02a5f2447ddf"
   },
   "observability": [
@@ -26,7 +26,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-03T09:21:40.921Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-06T07:21:01.239Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-ripple-and-locks",
@@ -44,8 +44,8 @@
         "node tests/_golden/layer3-wiring.golden.mjs",
         "node tests/_golden/run-history.golden.mjs"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-03T09:24:00.200Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     }
   ]
 }

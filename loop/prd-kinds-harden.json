@@ -3,7 +3,7 @@
   "task": "textVisible/noErrorToast 提硬（light）：IMPLEMENTED_KINDS 5→7。bin/replay.mjs 在 intent 代表步静默点现场采（同 compile 观测采集时机）：toast 快照（选择器逐字复刻 compile-atoms：.hr-toast,.hr-message,[role=status],[role=alert]，同构注释互指）+ 本 intent textVisible 断言值命中计数（getByText + toast 文本双通道）；评估上下文加 toastTexts/textHits。lib/replay-assert.mjs 两分支：textVisible 命中数>0（actual=计数）；noErrorToast 词表判（失败|错误|异常 零命中即过，actual=实采 toast 串，Steven 人签 GRILL G1）；缺上下文一律 ok:false/actual:null（证不出）。连带三份冻结 golden 范例换 kind/soft 翻硬（GRILL G2 清单，D2 重签提硬生命周期既定涟漪）：p4-drafter（S3/C-map 翻硬 + S3b 范例换 buttonState）/ draft-cli（D1 翻硬 + D2/D9 patch 去 soft）/ report-fidelity（F2b 范例换 buttonState），各 prd 补冻 gate 复验。收口后真机重签提硬（route:human）。",
   "specPath": "docs/plans/kinds-harden/plan.md",
   "testChecksums": {
-    "tests/_golden/kinds-harden.golden.mjs": "d487c29069a8eee6280b8687972b6f9b855522d129e80191d3b92ce8b8549605"
+    "tests/_golden/kinds-harden.golden.mjs": "f8269da16c86d1468e3a632df760056588d20804cff7ce1df0dc6cbf9a6e987d"
   },
   "observability": [
     {

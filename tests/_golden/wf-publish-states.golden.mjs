@@ -18,6 +18,7 @@ import { tmpdir } from 'node:os';
 import { evaluateAssertions, IMPLEMENTED_KINDS } from '../../lib/replay-assert.mjs';
 import { synthesizeSkeleton } from '../../lib/assertion-draft.mjs';
 import { startPublishSut } from '../fixtures/publish-sut/server.mjs';
+import { signExpected } from './_sign-helper.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -128,10 +129,10 @@ const bsa = (op, value) => ({ kind: 'buttonState', op, value, soft: false });
 // 六断言重表达（源 flow 五条 + GRILL D3 补「发布 absent」）：未发布态三条挂 intent_1（nav 代表步静默点采），
 // 已发布态三条挂 intent_2（点「发布」后翻面采）。
 const EXP_HAPPY = join(tmp, 'exp-happy.json');
-writeFileSync(EXP_HAPPY, JSON.stringify(expectedDoc(
+writeFileSync(EXP_HAPPY, JSON.stringify(signExpected(expectedDoc(
   [bsa('present', '发布'), bsa('present', '保存'), bsa('absent', '导出')],
   [bsa('present', '导出'), bsa('present', '新建版本'), bsa('absent', '发布')],
-)));
+))));
 
 await checkAsync('I0 夹具冒烟（冻结时即绿）：nav + 点「发布」动作 unique、axes 落盘、翻面后«发布»真移除', async () => {
   const srv = await startPublishSut({ scenario: 'happy' });
@@ -186,7 +187,7 @@ await checkAsync('I3 divButtons 无补采：role 盲区 present 与 absent 双�
     const OUT = join(tmp, 'i3-axes.json');
     const EXP = join(tmp, 'exp-div.json');
     // absent(保存)：保存 div 假按钮真实可见——role 盲区计数 0，无活性反证时会假绿（codex R1-F1 场景原样钉死）。
-    writeFileSync(EXP, JSON.stringify(expectedDoc([bsa('present', '保存'), bsa('absent', '保存')], [])));
+    writeFileSync(EXP, JSON.stringify(signExpected(expectedDoc([bsa('present', '保存'), bsa('absent', '保存')], []))));
     const r = run([REPLAY, '--events', EVENTS, '--sut', srv.url, '--expected', EXP, '--profile', PROFILE, '--out', OUT]);
     if (r.status !== 0) throw new Error(`replay 应 exit 0，实际 ${r.status}`);
     const axes = JSON.parse(readFileSync(OUT, 'utf8'));
@@ -204,7 +205,7 @@ await checkAsync('I4 divButtons + extraSelector（D2 补采）：present 真过�
     const OUT = join(tmp, 'i4-axes.json');
     const EXP = join(tmp, 'exp-div-btn.json');
     // 同值双向：保存 present（应过）+ 保存 absent（补采通道看得见 → 必败）——absent 的 fail-open 缝被补采封住。
-    writeFileSync(EXP, JSON.stringify(expectedDoc([bsa('present', '保存'), bsa('absent', '保存')], [])));
+    writeFileSync(EXP, JSON.stringify(signExpected(expectedDoc([bsa('present', '保存'), bsa('absent', '保存')], []))));
     const r = run([REPLAY, '--events', EVENTS, '--sut', srv.url, '--expected', EXP, '--profile', PROFILE_BTN, '--out', OUT]);
     if (r.status !== 0) throw new Error(`replay 应 exit 0，实际 ${r.status}：${(r.stderr || '').slice(-200)}`);
     const axes = JSON.parse(readFileSync(OUT, 'utf8'));
@@ -222,7 +223,7 @@ await checkAsync('I7 divButtons + extraSelector：隐藏模板节点不进补采
     const OUT = join(tmp, 'i7-axes.json');
     const EXP = join(tmp, 'exp-div-hidden.json');
     // 夹具 divButtons 场景带 display:none 的 .editor-btn「导出」模板——DOM 计数会数到、真实用户看不见。
-    writeFileSync(EXP, JSON.stringify(expectedDoc([bsa('present', '导出'), bsa('absent', '导出')], [])));
+    writeFileSync(EXP, JSON.stringify(signExpected(expectedDoc([bsa('present', '导出'), bsa('absent', '导出')], []))));
     const r = run([REPLAY, '--events', EVENTS, '--sut', srv.url, '--expected', EXP, '--profile', PROFILE_BTN, '--out', OUT]);
     if (r.status !== 0) throw new Error(`replay 应 exit 0，实际 ${r.status}：${(r.stderr || '').slice(-200)}`);
     const axes = JSON.parse(readFileSync(OUT, 'utf8'));
@@ -239,7 +240,7 @@ await checkAsync('I5 dupButtons：多匹配计数如实（present actual=2）、
   try {
     const OUT = join(tmp, 'i5-axes.json');
     const EXP = join(tmp, 'exp-dup.json');
-    writeFileSync(EXP, JSON.stringify(expectedDoc([bsa('present', '发布')], [])));
+    writeFileSync(EXP, JSON.stringify(signExpected(expectedDoc([bsa('present', '发布')], []))));
     const r = run([REPLAY, '--events', EVENTS, '--sut', srv.url, '--expected', EXP, '--profile', PROFILE, '--out', OUT]);
     if (r.status !== 0) throw new Error(`replay 应 exit 0，实际 ${r.status}`);
     const axes = JSON.parse(readFileSync(OUT, 'utf8'));

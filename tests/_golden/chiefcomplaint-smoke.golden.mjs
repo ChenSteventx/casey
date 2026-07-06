@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { evaluateAssertions, IMPLEMENTED_KINDS } from '../../lib/replay-assert.mjs';
 import { startChatSut } from '../fixtures/chat-sut/server.mjs';
+import { signExpected } from './_sign-helper.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -112,12 +113,12 @@ function expectedDoc(intent2) {
   return { caseId: 'tc_chat_replay', channel: 'web', intents: [{ intentId: 'intent_2', expected: intent2 }], globalAssertions: [] };
 }
 const EXP_HAPPY = join(tmp, 'exp-happy.json');
-writeFileSync(EXP_HAPPY, JSON.stringify(expectedDoc([
+writeFileSync(EXP_HAPPY, JSON.stringify(signExpected(expectedDoc([
   { kind: 'streamReplyReceived', op: 'finished', soft: false },
   { kind: 'replyContains', op: 'contains', value: '建议', soft: false },
   { kind: 'textVisible', op: 'appears', value: '建议多休息。', soft: false },
   { kind: 'textHidden', op: 'absent', value: '操作失败', soft: false },
-])));
+]))));
 
 await checkAsync('I1 happy：keydown 垫真 enable + 动态流等待 + reply 采集四断言全过（送步耗时覆盖流窗）', async () => {
   const srv = await startChatSut({ scenario: 'happy' });
@@ -163,10 +164,10 @@ await checkAsync('I2 error：气泡携「操作失败」→ textHidden 真败（
   const srv = await startChatSut({ scenario: 'error' });
   try {
     const EXP = join(tmp, 'exp-err.json');
-    writeFileSync(EXP, JSON.stringify(expectedDoc([
+    writeFileSync(EXP, JSON.stringify(signExpected(expectedDoc([
       { kind: 'textHidden', op: 'absent', value: '操作失败', soft: false },
       { kind: 'replyContains', op: 'contains', value: '建议', soft: false },
-    ])));
+    ]))));
     const OUT = join(tmp, 'i2-axes.json');
     const r = run([REPLAY, '--events', EVENTS, '--sut', srv.url, '--expected', EXP, '--profile', PROFILE, '--out', OUT]);
     if (r.status !== 0) throw new Error(`replay 应 exit 0（断言败进轴不改码），实际 ${r.status}`);
@@ -184,9 +185,9 @@ await checkAsync('I3 stale：旧气泡在场 + 死发送（无流无新气泡）
   try {
     const EXP = join(tmp, 'exp-stale.json');
     // 旧气泡「历史回复：建议多喝水」含「建议」——若采集吃陈迹，replyContains 会假绿。
-    writeFileSync(EXP, JSON.stringify(expectedDoc([
+    writeFileSync(EXP, JSON.stringify(signExpected(expectedDoc([
       { kind: 'replyContains', op: 'contains', value: '建议', soft: false },
-    ])));
+    ]))));
     const OUT = join(tmp, 'i3-axes.json');
     const r = run([REPLAY, '--events', EVENTS, '--sut', srv.url, '--expected', EXP, '--profile', PROFILE, '--out', OUT]);
     if (r.status !== 0) throw new Error(`replay 应 exit 0，实际 ${r.status}`);

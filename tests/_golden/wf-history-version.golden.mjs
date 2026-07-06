@@ -11,6 +11,7 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { startPublishSut } from '../fixtures/publish-sut/server.mjs';
+import { signExpected } from './_sign-helper.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -51,7 +52,7 @@ function histEventsDoc() {
 const EVENTS = join(tmp, 'hist-events.json');
 writeFileSync(EVENTS, JSON.stringify(histEventsDoc(), null, 2));
 const EXP = join(tmp, 'hist-expected.json');
-writeFileSync(EXP, JSON.stringify({
+writeFileSync(EXP, JSON.stringify(signExpected({
   caseId: 'tc_hist_replay', channel: 'web',
   intents: [
     { intentId: 'intent_2', expected: [{ kind: 'textVisible', op: 'appears', value: '暂无数据', soft: false }] },
@@ -65,7 +66,7 @@ writeFileSync(EXP, JSON.stringify({
     ] },
   ],
   globalAssertions: [],
-}));
+})));
 
 await checkAsync('I1 回放向（夹具+既有通路回归）：空态「暂无数据」真过 → Esc 关 → 发布翻面「导出」present → 版本表「创建时间/查看」真过 + 空态已消失', async () => {
   const srv = await startPublishSut({ scenario: 'happy' });

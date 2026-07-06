@@ -3,7 +3,7 @@
   "task": "P7 报告消费侧加法 report-diagnostics（light）：回放诊断栏目走路 B + 逐步嵌入（Steven 拍板）——renderReport(model, diagnostics) 可选第二参（单参零行为差）+ bin/report.mjs 可选旁件旗标 --run-history/--run-metrics（缺席零行为差、坏件 fail-closed exit 1 零落盘）+ bin/casey.mjs run 相6 stage 接线；run-metrics 落全局指标行（标注仅诊断不进裁定）、run-history 按 intentId 嵌所属步卡、无匹配行落「未归属」小节不静默丢；report-model 与全部冻结 schema 零动、report.json 机读形态零动；新栏目零绝对 URL 零外链（p7 自包含续绿）、文本过 credentialGate 末道闸。replyText 摘录挂账核销（侦察实证 observed.replyText + 断言 actual 两通道已在渲染）+ U5 回归锁。红线：仅诊断、绝不进 verdict、绝不写 passes。决策依 docs/plans/report-diagnostics/proposed/GRILL.md（D1/D2 Steven 拍板）。",
   "specPath": "docs/plans/report-diagnostics/plan.md",
   "testChecksums": {
-    "tests/_golden/report-diagnostics.golden.mjs": "ddad834234f55bfec4246ad21f91fa8996b4bc29eb36c8f0001fe334abdcd3d3"
+    "tests/_golden/report-diagnostics.golden.mjs": "2b12caab4ecf49bed0a07230100f3cbeedd0a199d89abb9339a50835d54721ce"
   },
   "observability": [
     {

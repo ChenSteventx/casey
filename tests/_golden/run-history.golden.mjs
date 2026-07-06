@@ -12,6 +12,7 @@ import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { startLoginSut } from '../fixtures/login-sut/server.mjs';
 import { startFakeSut, FAKE_SITE_DENYLIST } from '../fixtures/fake-sut/server.mjs';
+import { signExpected } from './_sign-helper.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -205,11 +206,11 @@ await checkAsync('I3 casey run 接线：runDir 落两件、runId=目录名、逐
     const runDir = join(tmp, 'e2e-run');
     mkdirSync(runDir, { recursive: true });
     writeFileSync(evFile, JSON.stringify(eventsDoc));
-    writeFileSync(expFile, JSON.stringify({
+    writeFileSync(expFile, JSON.stringify(signExpected({
       caseId: CASE_ID, channel: 'web',
       intents: [{ intentId: 'intent_2', expected: [{ kind: 'noErrorEnvelope', op: 'envelopeOk', value: 'status==200', soft: false }] }],
       globalAssertions: [{ kind: 'noPageError', op: 'absent', soft: false }],
-    }));
+    })));
     writeFileSync(profFile, JSON.stringify({ background: FAKE_SITE_DENYLIST, successField: 'status', successValue: 200 }));
     execFileSync(process.execPath, [CASEY, 'run', CASE_ID,
       '--sut', sut.url, '--events', evFile, '--expected', expFile, '--profile', profFile,
