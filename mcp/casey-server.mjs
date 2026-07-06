@@ -18,11 +18,16 @@ import path from 'node:path';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CLI = path.join(ROOT, 'bin', 'casey.mjs');
-const SERVER_INFO = { name: 'casey', version: '0.1.0' };
+const SERVER_INFO = { name: 'casey', version: '0.2.0' };
 const log = (...a) => process.stderr.write(`[casey-mcp] ${a.join(' ')}\n`); // 诊断只走 stderr，绝不污染 stdout 协议流
 
-// 工具目录：每个工具映射成一组 casey CLI 参数。
-const TOOLS = [
+// 工具目录：每个工具映射成一组 casey CLI 参数（cli-mcp-face 契约对齐 CLI 真面：inputSchema 逐字对齐
+// 各 bin 真实旗标；toArgs 只对在场值拼旗标——空参调用透传到 CLI 落真实用法错码，绝不在壳里预判）。
+// flag(k,v)：值在场才产 ['--k', v]；boolFlag：true 才产 ['--k']。
+const flag = (k, v) => (v === undefined || v === null || v === '' ? [] : [`--${k}`, String(v)]);
+const boolFlag = (k, v) => (v ? [`--${k}`] : []);
+// export：漂移锁金牌直接对 toArgs 做 argv 映射表断言（cli-mcp-face 契约 codex R1-F1）；服务行为零变。
+export const TOOLS = [
   {
     name: 'casey_selftest',
     description: 'hermetic 链路自检（零外部依赖）：验证确定性内核 + 统一语言双向有效。',
@@ -42,22 +47,58 @@ const TOOLS = [
     toArgs: (a) => (a.prd ? ['gate', '--prd', a.prd] : ['gate']),
   },
   {
-    name: 'casey_run',
-    description: '端到端：文本用例 → 测试报告（归一→编译→草拟→人签→回放→裁定→报告，MVP 串行单用例）。注意：当前多阶段为诚实桩，exitCode=3 表示该阶段未实现。',
-    inputSchema: { type: 'object', required: ['file'], properties: { file: { type: 'string' }, channel: { type: 'string', enum: ['web', 'cef', 'arbitrary'] } } },
-    toArgs: (a) => ['run', a.file, ...(a.channel ? ['--channel', a.channel] : [])],
+    name: 'casey_ingest',
+    description: '相0 归一：候选 TestCase JSON（LLM 在 CLI 外把杂乱原文归一成候选）→ 确定性 parseTestCase 校验 → testcase-<caseId>.json（喂相1）。闸拒 exit 65 零落盘；凭据门前置扫输入原文 exit 1。',
+    inputSchema: { type: 'object', required: ['caseId', 'in', 'outDir'], properties: { caseId: { type: 'string' }, in: { type: 'string', description: '候选 JSON 文件路径' }, outDir: { type: 'string' } } },
+    toArgs: (a) => ['ingest', ...(a.caseId ? [a.caseId] : []), ...flag('in', a.in), ...flag('out-dir', a.outDir)],
+  },
+  {
+    name: 'casey_flow_bridge',
+    description: '相1 flow 草拟桥：规范 TestCase + LLM mapping（CLI 外产 [{intentId,atom,params}]）→ 过三闸（投影忠实/编译知识允许集/compile-gate）→ flow-<caseId>.json（compile 的 --flow 输入）。闸拒 exit 65 零落盘。',
+    inputSchema: { type: 'object', required: ['caseId', 'testcase', 'mapping', 'outDir'], properties: { caseId: { type: 'string' }, testcase: { type: 'string' }, mapping: { type: 'string' }, outDir: { type: 'string' } } },
+    toArgs: (a) => ['flow-bridge', ...(a.caseId ? [a.caseId] : []), ...flag('testcase', a.testcase), ...flag('mapping', a.mapping), ...flag('out-dir', a.outDir)],
+  },
+  {
+    name: 'casey_compile',
+    description: '相1 编译三段式：闸段（--testcase --flow --out-dir，落 flow 文档待人 confirm）；执行段（--execute --sut --profile，须 flow 已 confirm，落 events/observed/compile-report）；核验段（--verify --sut --profile）。未 confirm 执行 exit 66。',
+    inputSchema: { type: 'object', required: ['caseId', 'testcase', 'outDir'], properties: { caseId: { type: 'string' }, testcase: { type: 'string' }, flow: { type: 'string' }, outDir: { type: 'string' }, execute: { type: 'boolean' }, verify: { type: 'boolean' }, sut: { type: 'string' }, profile: { type: 'string' }, skipLogin: { type: 'boolean' }, loginBootstrap: { type: 'boolean' }, uniqueName: { type: 'string' } } },
+    toArgs: (a) => ['compile', ...(a.caseId ? [a.caseId] : []), ...boolFlag('execute', a.execute), ...boolFlag('verify', a.verify), ...flag('testcase', a.testcase), ...flag('flow', a.flow), ...flag('out-dir', a.outDir), ...flag('sut', a.sut), ...flag('profile', a.profile), ...boolFlag('skip-login', a.skipLogin), ...boolFlag('login-bootstrap', a.loginBootstrap), ...flag('unique-name', a.uniqueName)],
+  },
+  {
+    name: 'casey_draft',
+    description: '相2 断言草拟：observed + compile-report 骨架查表映射 + 可选 --patch（LLM 补缝，CLI 外产）→ validateDraft 闸 → expected.draft-<caseId>.json（未签草稿）。违规整份拒 exit 65。',
+    inputSchema: { type: 'object', required: ['caseId', 'observed', 'compileReport', 'outDir'], properties: { caseId: { type: 'string' }, observed: { type: 'string' }, compileReport: { type: 'string' }, outDir: { type: 'string' }, patch: { type: 'string' } } },
+    toArgs: (a) => ['draft', ...(a.caseId ? [a.caseId] : []), ...flag('observed', a.observed), ...flag('compile-report', a.compileReport), ...flag('out-dir', a.outDir), ...flag('patch', a.patch)],
+  },
+  {
+    name: 'casey_sign',
+    description: '相2 人签门：草稿 → 冻结签署（signedAt/signedAgainstBuild/signerId 盖章）+ prd 回写 checksum。pending 非空默认拒（--force 写 sidecar）；未签契约会被 replay 前置闸拒。签署人身份归人、本工具只代跑 CLI。',
+    inputSchema: { type: 'object', required: ['caseId', 'draft', 'prd', 'frozenOut', 'signer', 'againstBuild'], properties: { caseId: { type: 'string' }, draft: { type: 'string' }, prd: { type: 'string' }, frozenOut: { type: 'string' }, signer: { type: 'string' }, againstBuild: { type: 'string' }, signedAt: { type: 'string' }, verdictBaseline: { type: 'string' }, resign: { type: 'boolean' }, force: { type: 'boolean' }, archiveDir: { type: 'string' } } },
+    toArgs: (a) => ['sign', ...(a.caseId ? [a.caseId] : []), ...flag('draft', a.draft), ...flag('prd', a.prd), ...flag('frozen-out', a.frozenOut), ...flag('signer', a.signer), ...flag('against-build', a.againstBuild), ...flag('signed-at', a.signedAt), ...flag('verdict-baseline', a.verdictBaseline), ...boolFlag('resign', a.resign), ...boolFlag('force', a.force), ...flag('archive-dir', a.archiveDir)],
+  },
+  {
+    name: 'casey_replay',
+    description: '相3 确定性回放（零 LLM）：events + 已签 expected + profile → 真浏览器回放 --sut → 三轴 axes.json（+可选录屏/回放历史/回放指标）。未签契约/caseId 不符 exit 65 零 axes。',
+    inputSchema: { type: 'object', required: ['events', 'sut', 'expected', 'profile', 'out'], properties: { events: { type: 'string' }, sut: { type: 'string' }, expected: { type: 'string' }, profile: { type: 'string' }, out: { type: 'string' }, loginBootstrap: { type: 'boolean' }, runHistory: { type: 'string' }, runMetrics: { type: 'string' }, runId: { type: 'string' }, videoDir: { type: 'string' } } },
+    toArgs: (a) => ['replay', ...flag('events', a.events), ...flag('sut', a.sut), ...flag('expected', a.expected), ...flag('profile', a.profile), ...flag('out', a.out), ...boolFlag('login-bootstrap', a.loginBootstrap), ...flag('run-history', a.runHistory), ...flag('run-metrics', a.runMetrics), ...flag('run-id', a.runId), ...flag('video-dir', a.videoDir)],
   },
   {
     name: 'casey_verdict',
-    description: '多态裁定（零 LLM 判定树）：对某条用例出 PASS/SUT_DEFECT/HARNESS_ERROR/NEEDS_HUMAN。注意：当前为诚实桩，exitCode=3 表示该阶段未实现（见 plan P5）。',
-    inputSchema: { type: 'object', required: ['caseId'], properties: { caseId: { type: 'string' } } },
-    toArgs: (a) => ['verdict', a.caseId],
+    description: '相4 多态裁定（零 LLM 判定树）：axes.json → 每步 PASS/SUT_DEFECT/HARNESS_ERROR/NEEDS_HUMAN(+reason) → verdict.json。fail-safe：证不出一律 NEEDS_HUMAN，绝不静默 PASS。',
+    inputSchema: { type: 'object', required: ['axes', 'out'], properties: { axes: { type: 'string' }, out: { type: 'string' } } },
+    toArgs: (a) => ['verdict', ...flag('axes', a.axes), ...flag('out', a.out)],
   },
   {
     name: 'casey_report',
-    description: '出自包含测试报告（操作说明 + 录屏 + 文本输出 + 裁定徽章 + 缺陷单 + trace）。注意：当前为诚实桩，exitCode=3 表示该阶段未实现（见 plan P7）。',
-    inputSchema: { type: 'object', required: ['caseId'], properties: { caseId: { type: 'string' } } },
-    toArgs: (a) => ['report', a.caseId],
+    description: '相6 自包含报告（零 LLM 渲染）：report-model.json → <caseId>.report.{html,md,json}（裁定徽章 + 期望对实际 + 缺陷单仅 SUT_DEFECT；可选回放诊断旁件）。注意：本命令用法错历史码为 exit 2。',
+    inputSchema: { type: 'object', required: ['model', 'out'], properties: { model: { type: 'string' }, out: { type: 'string' }, runHistory: { type: 'string' }, runMetrics: { type: 'string' } } },
+    toArgs: (a) => ['report', ...flag('model', a.model), ...flag('out', a.out), ...flag('run-history', a.runHistory), ...flag('run-metrics', a.runMetrics)],
+  },
+  {
+    name: 'casey_run',
+    description: '相3-4-6 编排：回放 → 裁定 → 装配 → 报告，产物落 --run-dir（缺省 runs/<caseId>/run_<ts>/）。相0-2 前段（ingest/flow-bridge/compile/draft/sign）须先各自跑完备好 events 与已签 expected。',
+    inputSchema: { type: 'object', required: ['caseId', 'sut', 'events', 'expected', 'profile'], properties: { caseId: { type: 'string' }, sut: { type: 'string' }, events: { type: 'string' }, expected: { type: 'string' }, profile: { type: 'string' }, observed: { type: 'string' }, generatedAt: { type: 'string' }, caseMeta: { type: 'string' }, runDir: { type: 'string' }, loginBootstrap: { type: 'boolean' }, noVideo: { type: 'boolean' } } },
+    toArgs: (a) => ['run', ...(a.caseId ? [a.caseId] : []), ...flag('sut', a.sut), ...flag('events', a.events), ...flag('expected', a.expected), ...flag('profile', a.profile), ...flag('observed', a.observed), ...flag('generated-at', a.generatedAt), ...flag('case-meta', a.caseMeta), ...flag('run-dir', a.runDir), ...boolFlag('login-bootstrap', a.loginBootstrap), ...boolFlag('no-video', a.noVideo)],
   },
 ];
 const TOOL_BY_NAME = new Map(TOOLS.map((t) => [t.name, t]));

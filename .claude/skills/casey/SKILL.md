@@ -31,19 +31,20 @@ description: 把一段文本测试用例（excel/json/txt/自由文本）在给�
 
 | 用户意图 | 执行 |
 |---|---|
-| 一句话跑完整流程 | `node bin/casey.mjs run <用例文件> [--channel web\|cef\|arbitrary]` |
-| 归一杂乱用例 | `node bin/casey.mjs ingest <file> [--out <caseId>]` |
-| 编译成可回放 spec | `node bin/casey.mjs compile <caseId>` |
-| 草拟断言 | `node bin/casey.mjs draft <caseId>` |
-| 人签冻结断言 | `node bin/casey.mjs sign <caseId> --signer <id> --build <id>`（**让用户签**，CC 不代签） |
-| 确定性回放 | `node bin/casey.mjs replay <caseId>` |
-| 出多态裁定 | `node bin/casey.mjs verdict <caseId>` |
-| 自愈（仅工装漂移） | `node bin/casey.mjs heal <caseId>` |
-| 出报告 | `node bin/casey.mjs report <caseId>` |
+| 相3-4-6 编排（回放→裁定→报告） | `node bin/casey.mjs run <caseId> --sut <url> --events <f> --expected <f> --profile <f> [--run-dir <d> --login-bootstrap --no-video]`（相0-2 前段须先各自跑完备好 events 与已签 expected） |
+| 相0 归一（候选须先由 LLM 在 CLI 外产出） | `node bin/casey.mjs ingest <caseId> --in <candidate.json> --out-dir <d>` |
+| 相1 flow 桥（mapping 由 LLM 在 CLI 外产出） | `node bin/casey.mjs flow-bridge <caseId> --testcase <f> --mapping <f> --out-dir <d>` |
+| 相1 编译（三段式：闸→人 confirm→执行） | `node bin/casey.mjs compile <caseId> --testcase <f> --flow <f> --out-dir <d>`；执行段加 `--execute --sut <url> --profile <f>`（须 flow 已 confirm，否则 exit 66） |
+| 相2 草拟断言 | `node bin/casey.mjs draft <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]` |
+| 相2 人签冻结断言 | `node bin/casey.mjs sign <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id>`（**让用户签**，CC 不代签） |
+| 相3 确定性回放 | `node bin/casey.mjs replay --events <f> --sut <url> --expected <f> --profile <f> --out <axes.json>`（未签契约拒回放） |
+| 相4 出多态裁定 | `node bin/casey.mjs verdict --axes <f> --out <f>` |
+| 相5 自愈（仅工装漂移） | `node bin/casey.mjs heal <caseId>`（诚实桩 exit 3，相5 只有 lib 件） |
+| 相6 出报告 | `node bin/casey.mjs report --model <f> --out <d> [--run-history <f> --run-metrics <f>]` |
 | 链路自检 | `node bin/casey.mjs selftest --tier1` |
 | loop 纪律 | `node bin/casey.mjs lint\|gate\|breaker\|contract ...` |
 
-> 当前进度：P0 引导 + P1 词表/ADR 已落地，loop 纪律生效；生命周期命令（ingest/compile/…）多数是诚实桩（exit 3），逐阶段实现。桩返回 exit 3 时**如实告诉用户该阶段未实现**，按 `docs/plans/bootstrap/plan.md` 推进，绝不假装跑完了。
+> 当前进度：七相全建且 hermetic「文本→报告」全链已由集成金牌贯通（`tests/_golden/e2e-chain.golden.mjs`）；`heal` 是唯一诚实桩（exit 3，相5 未吃过真场景）。真机端到端仍需一次真机 compile bring-up + 人签在场（route:human）。桩返回 exit 3 时**如实告诉用户该阶段未实现**，绝不假装跑完了；`report` 的用法错历史码是 exit 2。
 
 ## 报告里有什么（设计 §6）
 

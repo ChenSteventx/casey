@@ -188,10 +188,12 @@ ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅�
   casey draft   <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]
                                           相2 断言草拟：骨架+补缝合并+闸 → expected.draft（未签）
   casey sign    <caseId> [--signer <id> --build <id>]  相2 人签门：签掉冻结断言            [P4]
-  casey replay  <caseId>                  相3 确定性回放 + 录屏 + 取证                     [P5]
-  casey verdict <caseId>                  相4 多态裁定（零 LLM 判定树）                    [P5]
+  casey replay  --events <f> --sut <url> --expected <f> --profile <f> --out <axes.json> [--login-bootstrap ...]
+                                          相3 确定性回放 + 录屏 + 取证（未签契约拒回放）
+  casey verdict --axes <f> --out <f>      相4 多态裁定（零 LLM 判定树）
   casey heal    <caseId>                  相5 自愈：仅对确证 HARNESS_ERROR 非就地重锚      [P6]
-  casey report  <caseId>                  相6 自包含报告 + 裁定徽章 + 缺陷单              [P7]
+  casey report  --model <f> --out <d> [--run-history <f> --run-metrics <f>]
+                                          相6 自包含报告 + 裁定徽章 + 缺陷单
 
 ${col(C.cyan, 'loop 机制')}（薄壳直通 loop-kit；纪律已生效）
   casey lint [--registry|--file <...>]    统一语言检查（term-lint）
@@ -233,10 +235,12 @@ function main() {
     case 'draft': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'draft.mjs'), rest); process.exit(r.code); }
     case 'flow-bridge': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'flow-bridge.mjs'), rest); process.exit(r.code); }
     case 'sign': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'sign.mjs'), rest); process.exit(r.code); }
-    case 'replay':  return notImplemented('相3 replay 回放', 'P5 确定性回放 + 取证', '确定性重放 spec + 录屏 + 抓回复 + watchPageLifecycle + watchNetworkForensics。');
-    case 'verdict': return notImplemented('相4 verdict 多态裁定', 'P5 verdict.mjs 分类器（零 LLM）', '读逐步事实 + 取证 → 判定树 → 每步 PASS/SUT_DEFECT/HARNESS_ERROR/NEEDS_HUMAN(+子类) → verdict.json。');
+    // 相3/4/6 直通各自 bin（参数契约归各 bin 自管，同 compile/draft/sign/flow-bridge/ingest 五先例；
+    // 此前为桩而底层 bin 早已建成、run 编排内部直连在用——cli-mcp-face 契约接通门面）。
+    case 'replay': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'replay.mjs'), rest); process.exit(r.code); }
+    case 'verdict': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'verdict.mjs'), rest); process.exit(r.code); }
     case 'heal':    return notImplemented('相5 heal 自愈', 'P6 自愈准入门 + 非就地有界自愈', '仅对确证 HARNESS_ERROR：重锚 → 写 drift 补丁旁文件（原 spec 不变）→ 人签后应用 → 重跑。');
-    case 'report':  return notImplemented('相6 report 报告', 'P7 报告 + 裁定徽章 + 缺陷单', '自包含 HTML：操作说明 + 录屏 + 文本输出 + 裁定徽章 + 缺陷单（仅 SUT_DEFECT）+ trace。');
+    case 'report': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'report.mjs'), rest); process.exit(r.code); }
     case 'run':     return runPipeline(pos, opts);
 
     default:
