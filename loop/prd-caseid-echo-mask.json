@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "task": "caseid-echo-mask（direct）：姊妹 CLI 拒绝分支原值回显封缝——ingest 契约 codex R2-F2 同族挂账收口。CLI 参数在凭据兜底门扫描面外（门只扫「将写的文本」），非法参数拒绝分支回显原值即泄漏面。六处（compile:267 / draft:40 / flow-bridge:31 / sign:87 caseId + :90 signer + :91 against-build）报错文案收紧，逐字镜像 bin/ingest.mjs:29 已评审形态（只报字符集 + 原值不回显）；退出码/闸序零变。决策 docs/plans/caseid-echo-mask/proposed/GRILL.md。",
+  "specPath": "docs/plans/caseid-echo-mask/plan.md",
+  "testChecksums": {
+    "tests/_golden/caseid-echo-mask.golden.mjs": "9c2beb7db64c5fc4447ff19ce4c6889cf5d195a66159440cab38f0385cdd4e8e"
+  },
+  "observability": [
+    {
+      "dimension": "同类回显面的全仓系统扫（不一致类回显文件侧值 / 其他 CLI 的 die 消息含用户可控片段）不在本契约——本契约只收「非法字符拒绝分支」六处；全仓输出通道审计另立契约议。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-echo-mask",
+      "desc": "六处拒绝分支文案收紧（镜像 ingest:29，退出码/闸序零变）。金牌 C1-C6 红先行（实现前 0 过 / 6 败全回显哨兵、全 exit 65 证打中拒绝分支）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/caseid-echo-mask.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T13:21:36.549Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-ripple-locks",
+      "desc": "涟漪回归锁：四 CLI 既有金牌复跑零行为差（冻结金牌只钉退出码不钉文案，已核零棘轮冲突）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/draft-cli.golden.mjs",
+        "node tests/_golden/compile-caseid-shape.golden.mjs",
+        "node tests/_golden/p2-sign.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T13:23:35.867Z 全部 acceptance exit 0"
+    }
+  ]
+}

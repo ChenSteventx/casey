@@ -84,11 +84,12 @@ if (!caseId || !args.draft || !args.prd || !args['frozen-out'] || !args.signer |
   die(64, '用法: casey sign <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--signed-at <iso>] [--verdict-baseline <f>] [--resign] [--force] [--archive-dir <d>]');
 }
 // caseId / 授权输入 / 产物路径安全（codex R1-F2；caseId 同 draft.mjs:40）。
-if (!/^[A-Za-z0-9_-]+$/.test(caseId)) die(65, `caseId 含非法字符（仅限字母数字_-）：${caseId}`);
+// 报错不回显原值——CLI 参数在凭据门扫描面外（ingest 契约 codex R2-F2 同族封缝，镜像 bin/ingest.mjs:29）。
+if (!/^[A-Za-z0-9_-]+$/.test(caseId)) die(65, 'caseId 含非法字符（仅限字母数字_-；原值不回显）');
 const signer = String(args.signer);
 const build = String(args['against-build']);
-if (!SAFE_ID.test(signer)) die(65, `signer 含非法字符（仅限 [A-Za-z0-9._@-]）：${signer}`);
-if (!SAFE_ID.test(build)) die(65, `against-build 含非法字符（仅限 [A-Za-z0-9._@-]）：${build}`);
+if (!SAFE_ID.test(signer)) die(65, 'signer 含非法字符（仅限 [A-Za-z0-9._@-]；原值不回显）');
+if (!SAFE_ID.test(build)) die(65, 'against-build 含非法字符（仅限 [A-Za-z0-9._@-]；原值不回显）');
 const frozenOut = String(args['frozen-out']);
 const frozenBase = basename(frozenOut);
 // frozen-out 只许 .json 断言旁车形态，拒 events-/spec- 形态（testChecksums 只冻断言文件，护栏 #5 + codex R1-F2）。

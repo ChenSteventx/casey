@@ -37,7 +37,7 @@ if (!caseId || !args.observed || !args['compile-report'] || !args['out-dir']) {
   process.exit(64);
 }
 // R1-F2：caseId 进产物文件名——限路径安全字符，拒 / .. 等穿越形态（fail-closed）。
-if (!/^[A-Za-z0-9_-]+$/.test(caseId)) { console.error(`draft: caseId 含非法字符（仅限字母数字_-）：${caseId}`); process.exit(65); }
+if (!/^[A-Za-z0-9_-]+$/.test(caseId)) { console.error('draft: caseId 含非法字符（仅限字母数字_-；原值不回显——CLI 参数在凭据门扫描面外）'); process.exit(65); }
 // R1-F3：裸 --patch（无文件值）不得静默忽略——给了旗标就必须给文件。
 if (args.patch !== undefined && typeof args.patch !== 'string') { console.error('draft: --patch 须带文件路径'); process.exit(65); }
 

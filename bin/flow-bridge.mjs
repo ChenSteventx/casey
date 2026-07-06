@@ -28,7 +28,7 @@ const caseId = args.pos[0];
 if (!caseId || !args.testcase || !args.mapping || !args['out-dir']) {
   die(64, '用法: casey flow-bridge <caseId> --testcase <f> --mapping <f> --out-dir <d>');
 }
-if (!/^[A-Za-z0-9_-]+$/.test(caseId)) die(65, `caseId 含非法字符（仅限字母数字_-）：${caseId}`); // 路径安全（同 draft.mjs）
+if (!/^[A-Za-z0-9_-]+$/.test(caseId)) die(65, 'caseId 含非法字符（仅限字母数字_-；原值不回显——CLI 参数在凭据门扫描面外）'); // 路径安全（同 draft.mjs）
 
 const tcText = (() => { try { return readFileSync(String(args.testcase), 'utf8'); } catch (e) { die(65, `读 TestCase 失败：${e.message}`); } })();
 const mapText = (() => { try { return readFileSync(String(args.mapping), 'utf8'); } catch (e) { die(65, `读 mapping 失败：${e.message}`); } })();
