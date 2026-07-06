@@ -3,13 +3,14 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 当前状态（2026-07-06 晚，相0 归一 ingest 建成——七相全建，hermetic 机制面闭合）
+## 当前状态（2026-07-06 晚，相0 建成 + hermetic 全链贯通——七相全建且首尾成链）
 
-本 session 一契约一提交入 dev（Steven「把剩下的相都跑完」+ 三承重决策签核：D3 `source.kind` 必填 / D6 存 raw / D7 只当校验器）：相0 归一是七相里最后一个未建相，建成后流水线每一相都有真机制。baton 空闲，下一契约直接 `contract init`：
+本 session 三契约四提交入 dev（Steven「把剩下的相都跑完」+「先继续做」+ 三承重决策签核：D3 `source.kind` 必填 / D6 存 raw / D7 只当校验器）：相0 归一（最后一个未建相）建成 → 姊妹 CLI 回显缝收口 → hermetic「文本→报告」全链首次贯通为集成金牌。baton 空闲，下一契约直接 `contract init`：
 
 1. `ingest`（相0 归一，full，`b7c8f61`）：`tests/_golden/schemas/testcase.schema.json` 冻结形态契约（draft-07、additionalProperties:false 处处、必填 schemaVersion/caseId/source.kind/steps/uniquePrefix；`uniquePrefix` `^\S+$` 封「纯空白过 compile 长度闸」缝、`preconditions` 数组形态是唯一守点——下游对非数组静默吞）+ `lib/parse-testcase.mjs`（手写闸与 schema 同刻——金牌 C4 从 schema 文件读必填集/enum 现场构造坏输入锁双源；语义闸 intentId 全局唯一 + caseId 一致；手写 JSON 数据投影器：不调 toJSON、own enumerable data、数组稠密 own、`Object.create(null)` 防 `__proto__` setter——校验对象=落盘对象按构造同一）+ `bin/ingest.mjs`（薄 CLI 镜像 flow-bridge：凭据门前置扫输入原文 exit 1 早于解析/回显/mkdir；输出通道三封——成功日志只回显定名产物、读失败只回显 errno、落盘异常捕获 65）+ `bin/casey.mjs` 接线（桩换 runNode + help 真实旗标 + 顺手补 flow-bridge help 行）。金牌 C1–C22（16 起红先行 14 败/2 过，评审期 +C17..C22 逐轮钉红）。codex 七轮 R7 PASS（12 发现 = 10 采信 + 2 修正采纳；R6 High：`JSON.parse` 建 `__proto__` own 键 + 投影赋值触发原型 setter——必填从原型链满足、落盘成空壳，经 CLI 候选文件端到端可达、红跑 exit 0 实锤）。产物 `testcase-<caseId>.json` 直喂相1，round-trip 金牌证相0→相1→compile gate 三段贯通。learn 六教训落 `docs/plans/ingest/learn.md`。
 2. 挂账：① 姊妹 CLI 同族缝**已收口**——`caseid-echo-mask`（direct，`d3a5c11`）六处拒绝分支原值回显封缝（compile:267 / draft:40 / flow-bridge:31 / sign:87,90,91，哨兵三断言金牌红先行 0/6→6/6，codex 一轮 R1 PASS，五涟漪金牌零行为差）；余留全仓输出通道系统审计另立契约（prd-caseid-echo-mask observability）；② caseId 形态接缝张力——testcase `^[A-Za-z0-9_-]+$` 宽于 events `^tc_[a-z0-9_]+$`（记 prd-ingest observability，route:human）；③ `casey run` 编排器仍起于相3，相0–2 前段接线属后续契约（真机 compile bring-up 后才有意义）。
-3. 端到端诚实交底更新：hermetic 机制面七相全建；「文本用例→报告」真机端到端仍需一次真机 compile bring-up（ADR-0003）+ 相2 人签在场，全属 route:human。
+3. `e2e-chain`（light，`365c185`）：hermetic「文本→报告」全链首次贯通——十站集成金牌 `tests/_golden/e2e-chain.golden.mjs`（C1–C8）：候选文本(mock 归一)→ingest→flow-bridge(mock mapping 含 assert.* 原子)→compile gate→confirm 门(手编，p3 金牌先例)→execute(fake-sut + --skip-login + AT_SITE_JSON 合成隔离 + 凭据 env 毒化陷阱)→draft(+patch 补 nav 硬断言防 INDETERMINATE)→sign(CLI 真签面 + 最小 prd 夹具)→casey run→verdict 3 intent 全 PASS→报告三件。bring-up 首跑零集成缝（各相接缝纪律迟到红利）。codex 四轮 R4 PASS（15 发现全打金牌断言强度：11 采信——源头期望集 deepEq 钉死/参数双侧闭环/prd 回写 sha256 实算/cwd:tmp；2 修正采纳——真回放铁证钉 axes 取证轴（保存 POST 按步归因+信封 ok+轮询 null 归因+identityReadback）不改冻结夹具；2 证伪留案指认既有守点）。零 lib/bin 改动。链金牌 ~35s 不入 tier1、gate acceptance 位。
+4. 端到端诚实交底更新：hermetic 机制面七相全建且首尾成链（集成金牌锁定）；「文本用例→报告」真机端到端仍需一次真机 compile bring-up（ADR-0003）+ 相2 人签在场，全属 route:human（记 prd-e2e-chain observability）；相5 自愈不在链上（happy 链不触发，维持未吃过真场景交底）。
 
 以下为本日早前时段快照（三相补齐：相2 sign + 相1 flow-bridge + 相3 video-login-carry），只溯源（其「相0 归一是唯一剩口/下一 session 地基」已由上条收口）：
 
