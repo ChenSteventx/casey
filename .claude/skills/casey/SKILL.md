@@ -1,11 +1,11 @@
 ---
 name: casey
-description: 把一段文本测试用例（excel/json/txt/自由文本）在给定平台上跑成测试报告。当用户说"跑这个测试用例""把这份用例在中台上测一遍""生成测试报告（带录屏/断言/裁定/页面输出）""txt2testreport"时使用。底层是 D:\ctx\heren\casey 的 CLI；本 skill 是薄壳，只把意图映射到 casey 命令，绝不在此做裁定或把桩当成已完成。
+description: 把一段文本测试用例（excel/json/txt/自由文本）在给定平台上跑成测试报告。当用户说"跑这个测试用例""把这份用例在中台上测一遍""生成测试报告（带录屏/断言/裁定/页面输出）""txt2testreport"时使用。底层是本仓 bin/casey.mjs 的 CLI；本 skill 是薄壳，只把意图映射到 casey 命令，绝不在此做裁定或把桩当成已完成。
 ---
 
 # casey — 文本用例 → 测试报告
 
-`D:\ctx\heren\casey` 这套 CLI 的薄壳。真正的活由 `bin/casey.mjs` 与 `loop-kit/bin/*` 干，本 skill 只把用户的自然语言意图映射到正确命令并执行。
+本仓 CLI 的薄壳。真正的活由 `bin/casey.mjs` 与 `loop-kit/bin/*` 干（在仓根执行），本 skill 只把用户的自然语言意图映射到正确命令并执行。
 
 ## 内核（不可让渡，违反即停）
 

@@ -8,8 +8,9 @@
  * 零第三方依赖（不需要 @modelcontextprotocol/sdk）：手写最小 stdio 协议，便于 P0 即可挂载。
  * 退出码语义透传：tools/call 结果里带 exitCode（3 = 该阶段未实现），调用方据此区分「跑完」与「未实现」。
  *
- * 挂载（Claude Code）：
- *   claude mcp add casey -- node D:\\ctx\\heren\\casey\\mcp\\casey-server.mjs
+ * 挂载（Claude Code，WSL 侧——回放依赖 Linux 侧 playwright，Windows 侧挂载必败，G6 人签约束）：
+ *   claude mcp add casey -- node /mnt/d/ctx/heren/casey/mcp/casey-server.mjs
+ *   （路径按 clone 位置替换；详见 README「MCP 挂载」）
  */
 import { spawnSync } from 'node:child_process';
 import { createInterface } from 'node:readline';

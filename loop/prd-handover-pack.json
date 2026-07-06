@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "task": "handover-pack（light）：移交包。README.md 八节新建（三面/安装/三级环境验收/凭据格式文档不含真值/真机链路与 WSL-only/MCP 挂载 WSL 写法/hooks 预告/分发现状）+ bin/casey.mjs help 四处过时文案修（run 行假签名/compile 行/sign 行缺必填/页脚 P0+P1，零行为差）+ mcp 头注释与 SKILL.md 的 D:\\ 硬编码修（换机即失真）。缺口清单全来自 2026-07-07 四路审计 D 组。漂移锁金牌三检查。决策 docs/plans/handover-pack/proposed/GRILL.md。",
+  "specPath": "docs/plans/handover-pack/plan.md",
+  "testChecksums": {
+    "tests/_golden/handover-pack.golden.mjs": "f31ac6e532b1fdefc5a58c27c9edaa29462884d5db005472501469c0e8accc60"
+  },
+  "observability": [
+    {
+      "dimension": "route:human：建远端/git bundle/凭据带外交付是维护者动作；README 面向人类同事的可读性最终由 Steven 过目定夺；NEXT-SESSION 刷新归 /session-handoff 另口。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-handover",
+      "desc": "README 八节 + help 四修 + 硬编码两修 + 漂移锁金牌 C1-C3（C1 README 八节锚+凭据卫生扫描 / C2 help 过时形态清零+真形态锚 / C3 零 D:\\ctx）。红基线说明：C2 过时形态断言实现前为真红（help 旧文案 c33d519 尚在库，git 可溯）；C1/C3 属冻结即绿收编（README 新建/硬编码同笔修）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/handover-pack.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T18:30:23.493Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-ripple-locks",
+      "desc": "涟漪回归锁：bin/casey.mjs 仅 help 文案改动——经 casey 子进程金牌复跑零行为差。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/ingest.golden.mjs",
+        "node tests/_golden/cli-mcp-face.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T18:31:01.749Z 全部 acceptance exit 0"
+    }
+  ]
+}

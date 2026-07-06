@@ -177,18 +177,22 @@ function help() {
   console.log(`${col(C.bold, 'casey')} —— 文本用例 → 测试报告 自动化测试（loop engineering 驱动）
 
 ${col(C.cyan, '端到端')}
-  casey run <file> [--channel web|cef|arbitrary]   归一→编译→草拟→人签→回放→裁定→报告（MVP 串行单用例）
+  casey run <caseId> --sut <本地基址> --events <f> --expected <f> --profile <f> [--run-dir <d> --login-bootstrap --no-video]
+                                          相3-4-6 编排：回放→裁定→装配→报告（相0-2 前段先各自跑完备料）
+                                          --sut 只喂隧道回环基址（site.json 的 devProxyUrl）或夹具地址；真目标地址绝不进命令行（护栏 #7）
 
 ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅助/heal；replay/verdict/report 零 LLM）
   casey ingest  <caseId> --in <f> --out-dir <d>
                                           相0 归一：候选（CLI 外 LLM 产）→ 校验 → 规范 TestCase
-  casey compile <caseId>                  相1 编译：agent 真机跑一遍 → spec + observed   [P3]
+  casey compile <caseId> --testcase <f> --flow <f> --out-dir <d>
+                                          相1 编译闸段（落 flow 待人 confirm）；执行段加 --execute --sut <本地基址> --profile <f> [--skip-login --unique-name <t>]
   casey flow-bridge <caseId> --testcase <f> --mapping <f> --out-dir <d>
                                           相1 flow 草拟桥：TestCase + mapping → compile 的 --flow
   casey draft   <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]
                                           相2 断言草拟：骨架+补缝合并+闸 → expected.draft（未签）
-  casey sign    <caseId> [--signer <id> --build <id>]  相2 人签门：签掉冻结断言            [P4]
-  casey replay  --events <f> --sut <url> --expected <f> --profile <f> --out <axes.json> [--login-bootstrap ...]
+  casey sign    <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--signed-at <iso> --verdict-baseline <f> --resign --force --archive-dir <d>]
+                                          相2 人签门：草稿→冻结签署（未签契约会被回放前置闸拒）
+  casey replay  --events <f> --sut <本地基址> --expected <f> --profile <f> --out <axes.json> [--login-bootstrap ...]
                                           相3 确定性回放 + 录屏 + 取证（未签契约拒回放）
   casey verdict --axes <f> --out <f>      相4 多态裁定（零 LLM 判定树）
   casey heal    <caseId>                  相5 自愈：仅对确证 HARNESS_ERROR 非就地重锚      [P6]
@@ -206,7 +210,7 @@ ${col(C.cyan, '自检')}
   casey selftest --tier2                  live smoke（需 site.json + creds，route:human） [P9]
 
 退出码：0 成功；1 红；2 熔断/互锁；3 该阶段未实现；64 用法错误。
-进度：P0 引导 + P1 词表/ADR 已落地；P2–P9 见 docs/plans/bootstrap/plan.md。`);
+进度：七相全建（heal 唯一诚实桩）+ hermetic 全链金牌贯通；真机端到端 route:human——权威现状见 docs/HANDOFF.md。`);
 }
 
 function main() {
