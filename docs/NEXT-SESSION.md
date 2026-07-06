@@ -17,7 +17,7 @@ CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
 
 【先读，别现编已决的事】（必读顺序）
 1. CLAUDE.md + CONTEXT.md（统一语言注册表，命名以它为准；弃用别名黑名单；繁体禁用）
-2. docs/HANDOFF.md（最新进度，冲突以它为准；已更到 2026-07-03 续：飞轮三/四 + 报告诊断三契约收口）
+2. docs/HANDOFF.md（最新进度，冲突以它为准；已更到 2026-07-06：相2 sign + 相1 flow-bridge + 相3 video-login-carry 三契约收口，端到端唯余相0 归一 ingest）
 3. loop/GUARDRAILS.md（17 条护栏逐条有效）
 4. 追溯「为何这么定」：docs/adr/（架构决策主事实源）、docs/design/（端到端设计）；
    docs/decisions/ 目录不存在，loop 纪律钩子引的坏引用真身是 docs/adr/0001-reuse-loop-kit.md。
@@ -36,12 +36,16 @@ CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
   P4 草拟器 + draft-cli → kinds-harden（5→7）→ 重签提硬（7 条全硬）→ 2026-07-03 全日七契约
   （run-history → chiefcomplaint-smoke 飞轮第二条真机贯通、Casey 首个真机 SUT_DEFECT，f0bd596）→
   2026-07-03 续三契约：wf-publish-states 飞轮第三条（buttonState 提硬，158ead2）→ report-diagnostics
-  报告回放诊断栏目（7ca5fc6）→ wf-history-version 飞轮第四条（零机制缝，7ec2ff2）。本仓无 git 远端。
+  报告回放诊断栏目（7ca5fc6）→ wf-history-version 飞轮第四条（零机制缝，7ec2ff2）→
+  2026-07-06 前半段补建：replay-video 回放视频录制（f291c70）→ video-login-carry 回放舞步登录态 carry（bb6f594）→
+  sign 相2 人签门 CLI 建成（2497309）→ flow-bridge 相1 LLM flow 桥建成（ef13787）。本仓无 git 远端。
 
 【DDD / 统一语言】（领域模型）
 - 七相流水线（LLM 只在相 0/1/2/5；相 3/4/6 纯零 LLM 确定性）：
-  相0 归一 ingest（桩）→ 相1 编译 compile（唯一一次真机跑，落 events + 观测现状）→ 相2 草拟+冻结+人签（casey draft 命令化）
-  → 相3 回放 replay（零 LLM，--login-bootstrap 过登录墙 + 代表步静默点采集 + 动态流等待）→ 相4 裁定 verdict（零 LLM 四态）
+  相0 归一 ingest（桩，下一 session 首推建：文本→规范嵌套 TestCase）→ 相1 编译 compile（flow-bridge 桥已建：
+  规范嵌套 TestCase + CLI 外 LLM mapping → compile 吃的 flow；仍需一次真机 compile bring-up 落 events + 观测现状）
+  → 相2 草拟+冻结+人签（casey draft 命令化 + casey sign 冻结签署 CLI 建成，未签前置闸硬接 replay）
+  → 相3 回放 replay（零 LLM，--login-bootstrap 过登录墙 + 舞步登录态 carry + 视频录制 recordVideo + 代表步静默点采集 + 动态流等待）→ 相4 裁定 verdict（零 LLM 四态）
   → 相5 自愈 self-heal（仅确证 HARNESS_ERROR，尚未吃过真场景）→ 相6 报告 report（零 LLM 自包含 HTML/MD/json）。
 - 核心领域词汇（各一行白话）：
   · 三轴 StepAxes：每原子步吐动作轴/断言轴/取证轴三组正交事实；裁判·报告共吃的数据契约。
@@ -81,32 +85,39 @@ CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
   投影侧配套：路径段打码 + axes 剥 host + 登录期流量切断 + 报告诊断标量 :// 零容忍。
 
 【排期】
-- P0–P3 全收官；P4 全落；P5 done；P6 hermetic done（相5 未吃过真 HARNESS_ERROR）；P7 done + 保真度三修 + 报告诊断栏目；
-  P8 未开始；P9 tier-1 绿、tier-2 随真机实跑持续兑现。
+- P0–P3 全收官 + 相1 flow 桥补建（flow-bridge：规范嵌套 TestCase + LLM mapping → compile 吃的 flow，hermetic；真机 compile bring-up 属 route:human）；
+  P4 全落 + casey sign 冻结签署 CLI 补建（相2 命令化，未签闸硬接 replay）；P5 done + 视频录制 recordVideo + 舞步登录态 carry；
+  P6 hermetic done（相5 未吃过真 HARNESS_ERROR）；P7 done + 保真度三修 + 报告诊断栏目；P8 未开始；P9 tier-1 绿、tier-2 随真机实跑持续兑现。
+  端到端唯一剩口 = 相0 归一 ingest 未建（下一 session 首推、hermetic 全建）。
 - 飞轮已铺三维度：dom_crud（tc_catalog_wf_crud 7 条全硬 4/4 PASS + tc_wf_publish_states + tc_wf_history_version）/
   chat（tc_chiefcomplaint_smoke 6 条全硬、首跑 SUT_DEFECT 真发现）/ 发布状态（wf_publish_states/wf_history_version）。
   画布维度（R9 前线）压最后；wf_open_smoke（只读零缝）是暖场候选。
 - 单 baton 上限：loop-kit 单活契约；并行只用在零 baton fan-out（研究/探针/schema/golden 起草/异构评审）。
 
 【当前契约 / 状态】
-- 活契约槽 baton 空闲（wf-history-version 六阶段全 done）——下一契约直接 contract init。工作树净，最新提交 7ec2ff2。
-- 本 session（2026-07-03 续）三契约三提交：wf-publish-states（full，飞轮第三条，buttonState 提硬）/
-  report-diagnostics（light，报告回放诊断栏目）/ wf-history-version（direct，飞轮第四条，零机制缝）。
-  机制缝递减假设终点验证：第二条 3 缝 → 第三条 1 缝 → 第四条 0 缝。
-- 选型教训：echo_default_on 归 chat 是二手结论错档（实测画布维度、坐标拖拽），FLYWHEEL/CONTEXT 已纠；
-  排期表维度归类按「用了什么机制通路」重验，不按名字/直觉。
-- 报告事实（本 session 用户三问揪出）：cases/runs 全 gitignored（凭据卫生），报告只在真机 casey run 后本地产；
-  新两条 tc 从未真机跑、无报告；报告无视频根因 = replay.mjs 未启 recordVideo（非隧道问题，补录是加法契约候选）。
-- 最新工程纪律：review 用 codex（gpt-5.5 非同族、空 cwd 喂 stdin、逐发现采信/证伪/修正采纳三处置）绝不同族自评；
+- 活契约槽 baton 空闲（flow-bridge 六阶段全 done）——下一契约直接 contract init。工作树净，最新提交 ef13787。
+- 本 session（2026-07-06）三契约三提交 + 一契约刷入：sign（full，相2 人签门 CLI，此前为 stub，七轮 R7）/
+  flow-bridge（full，相1 LLM flow 桥，三轮 R3）/ video-login-carry（full，相3 回放舞步登录态 carry，四轮 R4）；
+  另 replay-video（full，回放视频录制，五轮 R5，上一 session 末收口、本次刷入 HANDOFF）。前两条补齐「文本用例→spec」前半。
+- 端到端可用性诚实交底：hermetic 引擎（相3→相4→相6）跑通、scripts/sample-report.mjs 手写 spec 端到端产样例报告为证
+  （runs/sample-wf-publish/tc_wf_publish_sample.report.html）；但「文本用例→spec」前半仍需相0 归一 ingest 建成（未建）
+  + 一次真机 compile bring-up（ADR-0003）。cases/runs 全 gitignored（凭据卫生），报告只在真机 casey run 后本地产；第三面是 MCP server、非 webui。
+- 最新工程纪律：sign 落盘走两段式 fail-closed（全 .tmp 后 rename + precheck 路径碰撞/原型键/目录副作用），未签前置闸硬接
+  bin/replay.mjs（缺签 / caseId 不符 exit 65）；flow 桥「单一事实源」纪律——编译分派表 Object.create(null) 建、允许集由键派生、
+  Object.hasOwn own-key 判定（防原型链键绕过）；冻结断言涟漪 golden 经 signExpected 重签 + 各 prd testChecksums 同步重签。
+- 承前纪律不变：review 用 codex（gpt-5.5 非同族、空 cwd 喂 stdin、逐发现采信/证伪/修正采纳三处置）绝不同族自评；
   评审包新文件走 cat 全文、改动文件走 git diff（未跟踪文件 git diff 空会误判）；direct 不豁免评审深度；
-  对 route:human 项人不在场只挂账绝不代签；模型分层机制（I1/I2 已上线，三级兜底 watcher 待建）不变。
+  route:human 项人不在场只挂账绝不代签；模型分层机制（I1/I2 已上线、三级兜底 watcher 待建）不变。
 
 【下一步（任选其一，先对齐再动手）】
-A 真机四停站（route:human，需拉隧道 + Steven 在场，可一次行程合并 wf-publish-states + wf-history-version）：
-  flow confirm → compile --execute → casey draft 人签 → casey run 报告过目；顺带核回放诊断栏目真机呈现。
-B 会话异常闭环（route:human）：defect-handoff.md 已备两笔缺陷单，Steven 转交平台修复 → casey run 复跑见绿。
-C 回放视频录制（P7/replay 加法，碰回放器须 full）：newContext({recordVideo}) + 落 runDir + 报告 attachments.video
-  接线 + 凭据卫生（视频不含登录期镜头）——补报告无视频缺口。
+A 相0 归一 ingest 建成（首推，hermetic 全建、无真机依赖、走 full）：文本用例（excel/json/txt/自由文本）→
+  规范嵌套 TestCase（design §2 聚合根：caseId/title/uniquePrefix/preconditions/steps[].intentId）。三件套：
+  lib/parse-testcase.mjs（纯函数解析 + schema 校验，坏输入 fail-closed 契约码）+ tests/_golden/schemas/testcase.schema.json
+  （冻结形态契约）+ bin/ingest.mjs（薄 CLI + bin/casey.mjs 接线）。产物直喂相1 flow-bridge；凭据门须扫输入原文（自由文本可能贴凭据）。
+  建成即打通 hermetic「文本→spec→报告」全链（真机 compile bring-up 仍 route:human）。
+B 真机四停站（route:human，需拉隧道 + Steven 在场，可一次行程合并 wf-publish-states + wf-history-version）：
+  flow confirm → compile --execute → casey draft 人签 → casey run 报告过目；顺带核回放诊断栏目 + 回放视频真机呈现。
+C 会话异常闭环（route:human）：defect-handoff.md 已备两笔缺陷单，Steven 转交平台修复 → casey run 复跑见绿。
 D 飞轮第五条（wf_open_smoke 只读零缝暖场 或 画布维度 R9 前线）/ 余 kind 加法（含 enabled/disabled 随 publish_blocked
   带实现回归）/ 错误 toast 结构类名采样 / p2-intent-compile learn / 相5 自愈真机首触。
 

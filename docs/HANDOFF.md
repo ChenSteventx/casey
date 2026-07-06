@@ -3,7 +3,17 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 当前状态（2026-07-03 续，飞轮三/四 + 报告诊断）
+## 当前状态（2026-07-06，三相补齐推进：相2 人签门 + 相1 flow 桥建成，相0 归一是唯一剩口）
+
+本 session 续三契约三提交入 dev（Steven「三块全建」+ 规范嵌套 TestCase + sign 未签闸硬接 replay 前置闸），把「文本用例→报告」流水线前半段的两处 stub/缺口补成真机制。端到端唯一剩口 = 相0 归一 ingest（下一 session 地基）。baton 空闲，下一契约直接 `contract init`：
+
+1. `sign`（相2 人签门，full，`2497309`）：`bin/sign.mjs` 草稿→冻结签署 CLI 建成（此前为 stub）——两段式 fail-closed 落盘（全 `.tmp` 后 rename，precheck 路径碰撞/原型键/目录副作用）、caseId 路径安全、冻结产物须 `.json` 非 events-/spec- 形态、prd.caseId 绑定、pending 非空默认拒（`--force` 写 sidecar）、expectedVerdict 仅 `--verdict-baseline` 且守 fail-safe 不变量、cred-gate 覆盖冻结+sidecar+prd+归档。`assertSignedContract` 未签前置闸硬接 `bin/replay.mjs`（Steven 两次确认硬接、含知悉约九件 golden 涟漪）+ caseId 绑定闸。codex 七轮 R7 PASS（落盘原子性边角：`.tmp` 派生碰撞 / 归档副作用 / 归档目录在 frozen.tmp 下）。金牌 `p2-sign` 23 检查。九涟漪 golden 经 `signExpected` 重签盖 signedAt/signedAgainstBuild/signerId + 各 prd testChecksums 重签。
+2. `flow-bridge`（相1 LLM flow 草拟桥，full，`ef13787`）：补 compile「LLM 一次编译」链条唯一没落地的机制口——规范嵌套 TestCase + CLI 外 LLM mapping → compile 吃的 flow。`lib/flow-bridge.mjs`（buildFlow + validateBridge 三闸：投影忠实 / 编译知识允许集 / 复用 compile-gate.validateDraft）+ `bin/flow-bridge.mjs`（薄 CLI，cred-gate 输入前置早于校验回显与 mkdir、任一闸 exit 65 零落盘）+ `lib/compile-atoms.mjs` 加法（编译分派表 `Object.create(null)` 单一事实源、允许集由其键派生、`Object.hasOwn` own-key 判定）+ `bin/casey.mjs` 接线。codex 三轮 R3 PASS（R1 五含允许集非单一事实源 / route:human 通道太弱；R2 三含分派表原型链键绕过）。金牌 `flow-bridge` 16 检查。route:human 跳过须带 reason 留痕、不得又被 mapping 覆盖。
+3. `video-login-carry`（相3 回放，full，`bb6f594`）：修回放舞步登录态 carry——loginBootstrap 后从 page1 采 sessionStorage 快照、page2 首 goto 前经 `addInitScript` 注入（带 origin 守卫、entries 数组防 `__proto__` 污染）；`login-sut` 夹具加 `/app-session` tab 级会话模式（随机三键、`close()` 等 `'close'` 事件保 capture flush 确定性）。codex 四轮 R4 PASS（R3-F1 capture 输出扫描竞态）。
+4. `replay-video`（full，`f291c70`，上一 session 末收口、本次刷入 HANDOFF）：回放视频录制补上——`newContext({ recordVideo })` + 落 runDir + 报告接线 + 凭据卫生（视频不含登录期镜头）。兑现下方 07-03 快照第 5 条视频挂账——报告 `attachments.video` 槽不再永空。codex 五轮 R5 PASS。
+5. 端到端可用性诚实交底（用户三问「cli/skill 能否直接输入用例产报告」）：hermetic 引擎（相3 回放→相4 裁定→相6 报告）跑通，`scripts/sample-report.mjs` 手写 spec 端到端产样例报告为证（`runs/sample-wf-publish/tc_wf_publish_sample.report.html`）；但「文本用例→spec」前半仍需一次真机 compile bring-up（ADR-0003，LLM 编译期真机跑产地面真值 + 补缺失原子飞轮），且相0 归一 ingest 尚未建（下一 session 地基：`lib/parse-testcase.mjs` + `tests/_golden/schemas/testcase.schema.json` + `bin/ingest.mjs`）。第三面是 MCP server、非 webui。
+
+以下为 2026-07-03 时段快照（飞轮三/四 + 报告诊断），只溯源（其第 5 条视频挂账已由上「replay-video」收口）：
 
 本 session 续三契约三提交全收口（Steven 点单「b再c再a」+ 选型/路线拍板），飞轮铺到三维度、机制缝递减假设终点验证，baton 空闲：
 
@@ -218,11 +228,12 @@ P5 回放内核 loop 绿后接异构评审（与上节 P2/verdict 评审不同�
 
 ## 下一步
 
-> 新会话接续顺序（2026-07-03 续刷新，本 session 飞轮三/四 + 报告诊断三契约收口）：活契约槽 baton 空闲（`wf-history-version` 六阶段全 done），下一契约直接 `contract init`。真机三项待 Steven 拉隧道在场（见 1/2）。
+> 新会话接续顺序（2026-07-06 刷新，本 session 相2 sign + 相1 flow-bridge + 相3 video-login-carry 三契约收口）：活契约槽 baton 空闲（`flow-bridge` 六阶段全 done），下一契约直接 `contract init`。首推 = 相0 归一 ingest（端到端「文本用例→spec」唯一剩口、hermetic 可全建，见 0）；真机项仍待 Steven 拉隧道在场（见 2/3）。
 
-1. 真机四停站（route:human，需拉反向隧道 + Steven 在场，可一次行程合并）：`wf-publish-states` 与 `wf-history-version` 两条新 tc 从未真机跑——flow confirm → `compile --execute` → `casey draft` 人签 → `casey run` 报告过目。前置只读探针：编辑器顶栏按钮 role 可达性重验（regress 2026-06-08/09 二手结论）；顺带真机报告核回放诊断栏目呈现。
+0. 相0 归一 ingest 建成（首推，hermetic 全建、无真机依赖）：补流水线最后一处未落地的相——文本用例（excel/json/txt/自由文本）→ 规范嵌套 TestCase（design §2 聚合根形态，`caseId`/`title`/`uniquePrefix`/`preconditions`/`steps[].intentId`）。地基三件：`lib/parse-testcase.mjs`（纯函数解析 + schema 校验，坏输入 fail-closed 契约码）+ `tests/_golden/schemas/testcase.schema.json`（冻结形态契约）+ `bin/ingest.mjs`（薄 CLI + `bin/casey.mjs` 接线）。产物直喂相1 `flow-bridge`（其已吃规范嵌套 TestCase）。走 full（新相、碰编译链上游），红先行金牌。凭据门须扫输入原文（自由文本可能贴含凭据的用例）。
+1. 真机四停站（route:human，需拉反向隧道 + Steven 在场，可一次行程合并）：`wf-publish-states` 与 `wf-history-version` 两条新 tc 从未真机跑——flow confirm → `compile --execute` → `casey draft` 人签 → `casey run` 报告过目。前置只读探针：编辑器顶栏按钮 role 可达性重验（regress 2026-06-08/09 二手结论）；顺带真机报告核回放诊断栏目 + 回放视频呈现。
 2. 会话异常闭环（route:human）：转交材料已备好 `runs/tc_chiefcomplaint_smoke/run_1783054730282/defect-handoff.md`（两笔缺陷单）——Steven 转交平台修「互联网问诊-主诉」智能体 + `doLogin` GET 凭据安全缺陷 → 修后 `casey run` 复跑见绿闭环。
-3. 回放视频录制（P7/replay 加法契约候选）：报告无视频根因 = `bin/replay.mjs` 的 `newContext()` 未启 `recordVideo`（`attachments.video` 槽永空）。补法：`newContext({ recordVideo })` + 落 runDir + 报告接线 + 凭据卫生（视频不含登录期镜头）。碰回放器 lib/bin 须 full。
+3. 回放视频录制：已由 `replay-video` 契约收口（`f291c70`，full，codex 五轮 R5 PASS，见「当前状态」4）——`newContext({ recordVideo })` + 落 runDir + 报告接线 + 凭据卫生已建，`attachments.video` 槽不再永空。真机呈现待停站①顺带核（见 1）。
 4. 飞轮第五条移植（`wf_open_smoke` 只读零缝暖场 或 画布维度 R9 前线）：三维度已铺（dom_crud/chat/发布状态），画布压最后。
 5. 余 kind 按需加法（护栏 #17，含 `enabled`/`disabled` 随 `publish_blocked` 带实现回归——`wf-publish-states` 明令挂账）/ 错误 toast 结构类名采样 / 相5 自愈真机首触（需真 `HARNESS_ERROR`）/ 回放期面板吞点观察。
 6. `p2-intent-compile` 的 learn（沉淀收尾，轻）。
@@ -232,9 +243,10 @@ P5 回放内核 loop 绿后接异构评审（与上节 P2/verdict 评审不同�
 
 ## 契约 / 运维
 
-- 活契约 `loop/active-contract.json`（runtime、gitignored）现 = `wf-history-version`（direct，六阶段全 done，2026-07-03 续）——baton 空闲，下一契约直接 `contract init <slug>`（重置台账、不丢磁盘草稿）。本 session 续三契约（均六阶段全 done、codex PASS 记 audit、learn 各落 `docs/plans/<slug>/learn.md`）：`wf-publish-states`（full，两轮 R2，`158ead2`）/ `report-diagnostics`（light，三轮 R3，`7ca5fc6`）/ `wf-history-version`（direct，三轮 R3，`7ec2ff2`）。共享夹具 `tests/fixtures/publish-sut/server.mjs` 被两 golden 共吃，扩改后两 prd 夹具 checksum 均已重签。要提交而活契约是 pre-loop 的 full：先 `init` 一个 `direct` 契约授权 commit、提完 re-init 原契约恢复 baton；light 契约 plan 后 commit-impl 即放行、无 lib/bin 的提交任何时候放行；post-loop 的 full 契约提交放行。恢复某已 done / 被覆盖 契约的台账：re-init + 逐阶段 re-advance（grill 带 `--user-confirmed`、accept 带 `--red-verified`、artifact 交对应产物），gate 复验绿背书。
+- 活契约 `loop/active-contract.json`（runtime、gitignored）现 = `flow-bridge`（full，六阶段全 done，2026-07-06）——baton 空闲，下一契约直接 `contract init <slug>`（重置台账、不丢磁盘草稿）。本 session（2026-07-06）续三契约（均六阶段全 done、codex PASS 记 audit、learn 各落 `docs/plans/<slug>/learn.md`）：`sign`（相2 人签门，full，七轮 R7，`2497309`）/ `flow-bridge`（相1 flow 桥，full，三轮 R3，`ef13787`）/ `video-login-carry`（相3 回放，full，四轮 R4，`bb6f594`）。`sign` 未签闸硬接 `bin/replay.mjs` 的涟漪九件 golden 经 `signExpected` 重签、各 prd testChecksums 同步重签；`flow-bridge` 的 `compile-atoms` 分派重构涟漪 `p3-compile`/`chiefcomplaint-smoke`/`wf-publish-states`/`wf-history-version` 复跑零行为差。要提交而活契约是 pre-loop 的 full：先 `init` 一个 `direct` 契约授权 commit、提完 re-init 原契约恢复 baton；light 契约 plan 后 commit-impl 即放行、无 lib/bin 的提交任何时候放行；post-loop 的 full 契约提交放行。恢复某已 done / 被覆盖 契约的台账：re-init + 逐阶段 re-advance（grill 带 `--user-confirmed`、accept 带 `--red-verified`、artifact 交对应产物），gate 复验绿背书。
 - 契约一览：
-  - 本 session 七契约（2026-07-03 全日，均六阶段全 done、codex PASS 记 audit，learn 各落 `docs/plans/<slug>/learn.md`）：`run-history`（light，两轮）/ `chiefcomplaint-smoke`（full，三轮 + 审后微调 R4 微轮）/ `compile-caseid-shape`（direct，一轮，缺席推定已追认）/ `chief-bringup`（direct，两轮）/ `cred-route-mask`（direct，两轮）/ `login-traffic-drop`（direct，三轮）。真机件 `cases/tc_chiefcomplaint_smoke/`（gitignored）四件套 + `expected.frozen.json`（6 条全硬）+ `runs/.../run_1783054730282` 七件齐备。
+  - 2026-07-06 四契约（均六阶段全 done、codex PASS 记 audit、learn 各落 `docs/plans/<slug>/learn.md`）：`sign`（相2 人签门，full，七轮 R7，`2497309`）/ `flow-bridge`（相1 flow 桥，full，三轮 R3，`ef13787`）/ `video-login-carry`（相3 回放舞步登录态 carry，full，四轮 R4，`bb6f594`）/ `replay-video`（回放视频录制，full，五轮 R5，`f291c70`，上一 session 末收口、本次刷入 HANDOFF）。前两条补齐「文本用例→spec」前半的 sign stub + flow 桥缺口，端到端唯余相0 归一 ingest。样例报告驱动 `scripts/sample-report.mjs` 证 hermetic 引擎端到端可跑（相3→相4→相6）。
+  - 2026-07-03 全日七契约（均六阶段全 done、codex PASS 记 audit，learn 各落 `docs/plans/<slug>/learn.md`）：`run-history`（light，两轮）/ `chiefcomplaint-smoke`（full，三轮 + 审后微调 R4 微轮）/ `compile-caseid-shape`（direct，一轮，缺席推定已追认）/ `chief-bringup`（direct，两轮）/ `cred-route-mask`（direct，两轮）/ `login-traffic-drop`（direct，三轮）。真机件 `cases/tc_chiefcomplaint_smoke/`（gitignored）四件套 + `expected.frozen.json`（6 条全硬）+ `runs/.../run_1783054730282` 七件齐备。
   - `p3-compile`（full）：六阶段全 done（codex 三轮 R3 PASS 记 audit、learn 落 `docs/plans/p3-compile/learn.md`）。真机 bring-up 六项 route:human 已全清（2026-07-02/03，P3 收官，见「当前状态」）。
   - 前日六契约（2026-07-02 夜至 07-03 晨，均六阶段全 done、codex PASS 记 audit）：`replay-login-bootstrap`（light，两轮）/ `p4-drafter`（full，四轮，含 G-seam 双 enum 对齐 Steven 追认）/ `noerrenv-absence`（light，一轮）/ `run-login-passthrough`（direct）/ `report-fidelity`（light，三轮）/ `draft-cli`（light，两轮）/ `kinds-harden`（light，一轮）。learn 各落 `docs/plans/<slug>/learn.md`。
   - `layer3-wiring`（light）：六阶段全 done（codex 七轮 R7 PASS 记 audit、learn 落 `docs/plans/layer3-wiring/learn.md`；gate GREEN 2/2、覆盖 golden 51 检查）。
