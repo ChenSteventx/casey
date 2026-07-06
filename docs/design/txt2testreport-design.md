@@ -8,6 +8,20 @@
 >
 > **v0.2 修订**：经 4 路异构红队对抗审查（determinism / verdict-logic / loop-fidelity / buildability，全部对照 autotester 源码核验），修正了 v0.1 的多处「不可复现」「假缺陷」「复用过载」硬伤。逐条见 §12。
 
+## 与实现的已知偏离（对账表，2026-07-07 审计核定；正文是历史决策记录、以此表为准）
+
+| 设计文面 | 实现真身 |
+|---|---|
+| §9.2 recorder-as-library（录制器库化） | 已被 ADR-0006 取代：相1 = `compile-gate` + `compile-atoms` 三段式（NL→atom flow→真机执行产 events）；库化仅存「陌生站点孵化」支线概念 |
+| §6 录屏 mp4 内嵌单文件报告 | webm 独立文件 + 报告引用（`recordVideo`，replay-video 契约）；报告三形态 html/md/json 拆分式（report-spec） |
+| §6 trace 归档 / 截图 | 均未建（全链无 tracing/screenshot 调用，缺陷单 traceRef 恒 null）——挂账 |
+| §6.2 取证「标注」小节 | 取证全量进机读 report-model；人看 HTML 只在缺陷单背书处展示，非缺陷步取证小节未建——挂账 |
+| §8 prd sv2 加 verdict 枚举 + signedAgainstBuild | 实际 sv2 加 caseId/channel/expectedFrozenPath；签署元数据在 `expected.frozen.json` 旁车、期望裁定在 `--verdict-baseline`（功能等价、字段归属不同） |
+| §3.1 熔断器每步进展哈希（--progress） | 未建（breaker 仍按 git HEAD 判进展）——挂账 |
+| §7 cef/arbitrary 双通道 | 数据面（channel enum/channelDriver 接缝）已冻，回放仅 web 真实现（P8 未启动） |
+| §2.1 countChange 计数选择器 | 硬编码 `.hr-table-row` 未走通道剖面——挂账 |
+| §5 checkFingerprint spec 指纹 gate 检查项 | 未建（prd-p4-freeze observability 挂 route:human） |
+
 ---
 
 ## 0. 设计立场：autotester 翻了个面，但内核不让渡

@@ -4,6 +4,11 @@
 > 实读两套参考后定调：`D:\ctx\heren\autotester\reporters\report.ts`（单次录制、单文件全内联）与 `D:\ctx\heren\regress_autotest\reporters\per-spec-report.ts`（flow 驱动、多用例、拆分式 + HTML/MD/json）。
 > 结论：**以 regress 的拆分结构为骨架 + autotester 的自包含内嵌当 helper + Casey 多态裁定**。本规格同时**反向约束 S1 的 `verdict.json` 必须携带什么**。
 
+> **与实现的已知偏离（对账表，2026-07-07 审计核定）**：§4 两个「verdict.json」命名之争已按本规格
+> 落地为 `report-model.json`（富信息装配产物），`verdict.json` 保持最小五字段；§4 `action.describe`
+> 装配恒 null（列有名无实）——挂账；§6 trace/截图未建，缺陷单 `traceRef` 恒 null——挂账；
+> §7 多用例总目录聚合按原文自留待裁决、未建（非欠账）。
+
 ## 1. 产物布局：拆分式（照 regress）
 
 单条用例（caseId）的报告是一组文件，不是一个大 HTML：

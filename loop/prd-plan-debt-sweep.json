@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "task": "plan-debt-sweep（full）：计划欠账小清洗四件（2026-07-07 审计产出、Steven 点单③）。① capturedAgainstBuild ?v= 提取接线（Steven 2026-07-02 决议⑥兑现）：compile 执行段投影前从 document.scripts 提取首个 ?v= 查询串，取不到/异常照旧 null（fail-safe 不变）；fake-sut 加法场景 versioned（既有九场景零动，prd-p5-replay 夹具重签）。② sign 冻结期易变字面量 lint：镜像 validateDraft 两正则（裸 atl_ / 9+ 位数字）盖全部断言字符串值，命中 65 零落盘——补上「草拟闸可被手编草稿/重签路径绕过」的冻结面缺口（护栏 #5，故 full）。③ CONTEXT.md 三词条失配修（verdict.json 最小五字段+report-model 指针 / trace 未建挂账 / recorder-as-library 已被 ADR-0006 取代）。④ 两设计文档头部「已知偏离」对账表。决策 docs/plans/plan-debt-sweep/proposed/GRILL.md。",
+  "specPath": "docs/plans/plan-debt-sweep/plan.md",
+  "testChecksums": {
+    "tests/_golden/plan-debt-sweep.golden.mjs": "0137ca86ecc821d41299ca9230e63933ec5d9404332d921d9e55725e2454029e"
+  },
+  "observability": [
+    {
+      "dimension": "真机 ?v= 提取实证（route:human）：Heren 入口 api-config.js?v=1.1.2 的真机提取随下次真机行程顺带核；lint 公共件抽取（validateDraft 与 sign 两处正则同款）另案。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-debt-sweep",
+      "desc": "四件欠账 + 金牌 C1-C4（红先行 0 过 / 4 败：versioned 场景不存在 / 裸 atl_ 字面量 sign exit 0 实锤冻结面洞 / CONTEXT 词条仍声称 passes / 设计文档无对账节）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/plan-debt-sweep.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T18:46:49.203Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-ripple-locks",
+      "desc": "涟漪回归锁：碰 compile 执行段 + fake-sut 共享夹具（prd-p5-replay 重签）+ sign 门 → 各面消费者金牌复跑零行为差。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/p2-sign.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T18:49:51.933Z 全部 acceptance exit 0"
+    }
+  ]
+}

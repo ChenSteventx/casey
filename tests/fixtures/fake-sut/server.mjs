@@ -13,6 +13,7 @@ import { resolve as resolvePath } from 'node:path';
 const SCENARIOS = new Set([
   'happy', 'inject500', 'envelope200bad', 'background401', 'stream', 'pageerror', 'drift', 'ambiguous',
   'stale_bg401', 'vanished',
+  'versioned', // plan-debt-sweep：入口脚本带 ?v= 发版号（capturedAgainstBuild 提取考场，复刻 Heren api-config.js?v=1.1.2 形态）
 ]);
 
 // 背景轮询 denylist 的合成形态（绝不引真 site.json，护栏 #7）：watchNetworkForensics 用它把 /auths/poll 归 background。
@@ -170,8 +171,11 @@ function clientMain() {
 
 function pageHtml(scenario) {
   const cfg = JSON.stringify({ scenario });
+  // versioned 场景：入口脚本 src 带 ?v= 发版号（capturedAgainstBuild 提取考场）；其余场景零动。
+  const versionTag = scenario === 'versioned' ? '<script src="/api-config.js?v=9.9.9-test"></script>' : '';
   return '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>假 SUT</title>'
     + '<style>.hr-toast{position:fixed;top:8px;right:8px}.hr-drawer__content-wrapper{border:1px solid #ccc}</style>'
+    + versionTag
     + '</head><body><div id="app"></div>'
     + '<script>window.__CFG__=' + cfg + ';</script>'
     + '<script>(' + clientMain.toString() + ')();</script>'
@@ -191,6 +195,10 @@ function makeHandler(scenario) {
     }
     if (p === '/api/process/listProcessData') return json(res, 200, { status: 200, data: { list: ['atl_目录CRUD_a', 'atl_目录CRUD_b'] } });
     if (p === '/api/llm/streamReply') return streamReply(res);
+    if (p === '/api-config.js') { // versioned 场景的发版号脚本（内容无关，只为 src 的 ?v= 查询串）
+      res.writeHead(200, { 'Content-Type': 'application/javascript', 'Cache-Control': 'no-store' });
+      return res.end('/* fake api-config */');
+    }
     // 其余一律回单页应用（客户端按 pathname 渲染，覆盖 /ai-manager/process/list|detail 等）
     const body = pageHtml(scenario);
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Content-Length': Buffer.byteLength(body), 'Cache-Control': 'no-store' });

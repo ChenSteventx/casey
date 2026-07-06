@@ -89,12 +89,12 @@
 | 裁定徽章 | Verdict Badge | 报告里每步的四态标记（通过/被测缺陷/过程错误/待人裁决+子类）+ 具名理由 | — |
 | 缺陷单 | Defect Ticket | 仅 `SUT_DEFECT` 生成：步号 + 期望对实际 + 取证 + 录屏时间点 + trace 引用 | — |
 | `CSS` | 层叠样式表 | Cascading Style Sheets：报告自包含靠内联 CSS、零外部依赖（autotester report.ts 把样式内联进 HTML，Casey 报告照搬此法） | — |
-| `trace` | 回放追踪档 | Playwright 逐帧追踪归档（.zip）；报告里不内嵌、复制到 `trace/` 加下载链接与 show-trace 提示 | — |
+| `trace` | 回放追踪档 | Playwright 逐帧追踪归档（.zip）；报告里不内嵌、复制到 `trace/` 加下载链接与 show-trace 提示。**未建挂账**（2026-07-07 审计核实：全链无 tracing 调用、报告 traceRef 恒 null；设计文档「已知偏离」表有账） | — |
 | `channel` | 通道 | 回放目标类型：`web`（Heren 中台）/`cef`（Hi小助）/`arbitrary`（任意站点）；裁定/报告/熔断/契约层 channel 无关 | — |
 | `chat` | 对话流 | 飞轮排期第二维度：覆盖 catalog 维度碰不到的流式回复取证（`streamReplyReceived`、`waitForReplyByStream` 底座）与 `replyContains`；骑 regress `chiefcomplaint_smoke` 语料（`echo_default_on` 经 2026-07-03 摸底实证属画布维度错档：测节点抽屉开关、带坐标拖拽，不走对话流） | — |
 | 移植 | — | 把 regress 现成 flow 用到的原子在 autotester L1 原语上重表达成吐三轴的纯 mjs、再配观测现状与 verdict golden 的工作；飞轮的主要人力成本。弃用口语简写见别名列（2026-06-29 清零并登记） | 港 |
-| `verdict.json` | 裁定档 | 可复现的机读产物：caseId + 逐步四态 + passes + 期望对实际字面量 + 取证引用；golden 唯一校验对象 | — |
-| recorder-as-library | 录制器库化 | 把 autotester 人操作录制器重构成 LLM agent 拥有 context 的库（关人抖动去噪、避导航竞态）；编译期捕获 agent 动作→events.json | — |
+| `verdict.json` | 裁定档 | 可复现的机读最小产物：caseId + 逐步 {stepId,intentId,atom,verdict,reason} 五字段（冻结实现，golden 唯一校验对象）；期望对实际字面量与取证引用等富信息在 report-model.json（report-spec §4 两名分离裁决，2026-07-07 词条对齐实现） | — |
+| recorder-as-library | 录制器库化 | 把 autotester 人操作录制器重构成 LLM agent 拥有 context 的库（关人抖动去噪、避导航竞态）。**已被 ADR-0006 的 atoms/flow 编译路线取代**（相1 现实现 = compile-gate + compile-atoms 三段式；本概念仅存「陌生站点孵化」支线，2026-07-07 词条对齐实现） | — |
 | `fail-safe` | 故障安全 | 失败时退到安全态：机器证不出就路由人（`NEEDS_HUMAN`），绝不默认成可自愈（fail-open 的反面） | — |
 | `fail-open` | 故障放行 | 故障时放行：基础设施/hook 自身故障不阻塞正常工作；仅用于 lint/hook，绝不用于裁定 | — |
 | `fail-closed` | 故障关闭 | 故障时拒绝：校验不过/缺数据时报红拒绝（用于 `parseTestCase` 等准入） | — |

@@ -200,7 +200,21 @@ async function executeMode(caseId, args) {
         recordedAt: now, compiledBy: 'casey-compile/p3', authored: false,
         events: run.events,
       };
-      const observedDoc = projectObserved(run, { caseId, capturedAt: now, capturedAgainstBuild: null });
+      // capturedAgainstBuild 提取（Steven 决议 2026-07-02 ⑥ 接线，plan-debt-sweep）：入口 HTML 脚本 src 的
+      // ?v= 查询串 = 前端发版号（Heren api-config.js?v=1.1.2 形态）；SPA 脚本跨路由常驻、尾页提取即入口提取。
+      // 取不到/异常照旧 null（fail-safe 方向一字不变）。
+      let capturedBuild = null;
+      try {
+        capturedBuild = await page.evaluate(() => {
+          for (const s of Array.from(document.scripts)) {
+            const m = /[?&]v=([A-Za-z0-9._-]+)/.exec(s.getAttribute('src') || '');
+            if (m) return m[1];
+          }
+          return null;
+        });
+      } catch { capturedBuild = null; }
+      if (typeof capturedBuild !== 'string' || !capturedBuild) capturedBuild = null;
+      const observedDoc = projectObserved(run, { caseId, capturedAt: now, capturedAgainstBuild: capturedBuild });
       gatedWrite({
         [join(outDir, 'events.json')]: JSON.stringify(eventsDoc, null, 2) + '\n',
         [join(outDir, `observed-${caseId}.json`)]: JSON.stringify(observedDoc, null, 2) + '\n',

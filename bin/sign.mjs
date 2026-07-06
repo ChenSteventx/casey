@@ -107,6 +107,17 @@ for (const it of draft.intents) {
 if (draft.globalAssertions !== undefined && !Array.isArray(draft.globalAssertions)) die(65, 'draft.globalAssertions 须为数组');
 if (draft.pending !== undefined && !Array.isArray(draft.pending)) die(65, 'draft.pending 存在须为数组（坏 pending 拒签，别丢 route:human 信号）');
 
+// 冻结期易变字面量 lint（plan-debt-sweep，design §2.1 铁律的冻结面兑现）：草拟闸 validateDraft 已盖，
+// 但手编草稿/重签路径可绕过草拟闸——sign 是冻结落盘唯一口，同款两正则再守一遍（正则与
+// lib/assertion-draft.mjs:126-127 逐字同款；抽公共件另案）。盖全部断言字符串值、不分 op。
+for (const group of [...draft.intents.map((it) => it.expected), draft.globalAssertions || []]) {
+  for (const a of group || []) {
+    if (!a || typeof a.value !== 'string') continue;
+    if (/atl_(?!\{\{uniqueName\}\})/.test(a.value)) die(65, `冻结期字面量 lint：值含未模板化 atl_ 字面量（须 atl_{{uniqueName}} 形态）：${a.value}`);
+    if (/\d{9,}/.test(a.value)) die(65, `冻结期字面量 lint：值含 9+ 位数字长串（时间戳/实体 ID 字面量禁冻）：${a.value}`);
+  }
+}
+
 const prdPath = String(args.prd);
 const prd = readJson(prdPath, 'prd');
 if (!prd || typeof prd !== 'object' || Array.isArray(prd)) die(65, 'prd 非对象');
