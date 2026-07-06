@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "task": "e2e-chain（light）：hermetic「文本→报告」全链首次贯通集成金牌。十站链：候选文本(mock 归一) → 相0 casey ingest → 相1 casey flow-bridge(mock mapping 含 assert.* 原子) → compile gate 段 → confirm 门(手编 confirmedBy，镜像 p3 金牌先例) → compile --execute(fake-sut 夹具 + --skip-login + AT_SITE_JSON 合成隔离) → 相2 casey draft(+patch=mock LLM 补缝，含给无断言 intent 补硬断言防 INDETERMINATE) → 相2 casey sign(CLI 真签面 + 最小 prd 夹具，--signed-at 定值) → 相3-4-6 casey run(--sut 指夹具) → verdict 全 intent PASS + 报告三件。性质：集成回归金牌（收编存量行为，冻结时即绿——零新实现，绿即链通；bring-up 首跑 8/8 一把全绿、零集成缝）。决策 docs/plans/e2e-chain/proposed/GRILL.md。",
+  "specPath": "docs/plans/e2e-chain/plan.md",
+  "testChecksums": {
+    "tests/_golden/e2e-chain.golden.mjs": "415e5f5b06e7b64f8b71b511c6cd22982806ad37a833f61024a096315b8f6a0d"
+  },
+  "observability": [
+    {
+      "dimension": "hermetic 全链贯通 ≠ 真机端到端（护栏 #16 gate 绿≠完成）：真「文本用例→报告」仍需一次真机 compile bring-up（ADR-0003）+ 相2 Steven 人签在场 + 隧道，全属 route:human。相5 自愈不在链上（仅确证 HARNESS_ERROR 开闸，happy 链不触发，维持未吃过真场景诚实交底）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-chain",
+      "desc": "十站链金牌 C1-C8：相0 ingest / 相1 flow-bridge / compile gate / confirm 负闸(exit 66 零 events)+execute 三件 / draft 骨架+补缝 pending 空且每 intent ≥1 硬断言 / sign 三签署字段齐+prd 回写 checksum / casey run 裁定全 PASS+报告三件 / caseId 绑定+产物哨兵扫描零凭据形串。冻结即绿证据：bring-up 首跑 8 过 / 0 败。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T14:04:03.023Z 全部 acceptance exit 0"
+    }
+  ]
+}
