@@ -3,7 +3,7 @@
   "task": "相1 LLM flow 草拟桥 flow-bridge（full）：规范 TestCase（嵌套 steps）+ CLI 外 LLM mapping → compile 吃的 flow（原子+参数）。lib/flow-bridge.mjs 纯函数 buildFlow + validateBridge 三闸（投影忠实：每 TestCase.steps[].intentId 被覆盖 + 无凭空 intentId；编译知识允许集：atom 可编译，补 compile-gate 放行册内无编译知识原子的缝——真缝 nav.workflowManagement；复用 compile-gate.validateDraft 结构+破坏性前缀+状态机）；bin/flow-bridge.mjs 薄 CLI（caseId 一致+路径安全+cred-gate，任一闸拒 exit 65 零落盘）；lib/compile-atoms.mjs 加法导出 COMPILE_KNOWN_ATOMS/isCompilableAtom（:259 throw 同源，行为一字不变）；bin/casey.mjs flow-bridge 分发接线。LLM 在 CLI 外产 mapping、进程零 LLM 零真机（测时 mock）。决策全表 docs/plans/flow-bridge/proposed/GRILL.md。",
   "specPath": "docs/plans/flow-bridge/plan.md",
   "testChecksums": {
-    "tests/_golden/flow-bridge.golden.mjs": "f34c2325c43f94b3799ce200d1877f66339797dcd6c022e83473de7c782576b8"
+    "tests/_golden/flow-bridge.golden.mjs": "f4dcc34e5281020897ff429c18ff00fdc171c1ff5a0856a71c73275239abf245"
   },
   "observability": [
     {
@@ -21,7 +21,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-06T10:20:26.497Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-06T19:25:15.598Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-ripple-locks",
@@ -34,7 +34,7 @@
         "node tests/_golden/wf-history-version.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-06T10:24:00.721Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-06T19:29:15.304Z 全部 acceptance exit 0"
     }
   ]
 }

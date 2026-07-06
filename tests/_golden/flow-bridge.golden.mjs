@@ -87,8 +87,9 @@ await checkAsync('C4 未知原子（不在注册表）→ 桥 exit 65 零落盘'
 });
 
 // ---------- C5 真缝：册内无编译知识原子拒 ----------
-await checkAsync('C5【真缝】册内(60)但无编译知识原子（如 nav.workflowManagement）→ 桥 exit 65 点名无编译知识', async () => {
-  const bad = [{ intentId: 'intent_create', atom: 'nav.workflowManagement', params: {} }, { intentId: 'intent_save', atom: 'workflow.save', params: {} }];
+await checkAsync('C5【真缝】册内(60)但无编译知识原子（如 workflow.addNode）→ 桥 exit 65 点名无编译知识', async () => {
+  // 例翻（wf-open-smoke）：nav.workflowManagement 已获编译知识——反例换 workflow.addNode（R9 画布原子，坐标依赖长期无知识）。
+  const bad = [{ intentId: 'intent_create', atom: 'workflow.addNode', params: {} }, { intentId: 'intent_save', atom: 'workflow.save', params: {} }];
   const mf = writeMapping(bad, 'm-c5.json'); const od = join(tmp, 'c5');
   const r = bridge(CASE_ID, mf, od);
   if (r.status !== 65) throw new Error(`册内无编译知识原子应 exit 65，实际 ${r.status}`);
@@ -175,12 +176,12 @@ await checkAsync('C13 凭据门前零目录副作用：leaky mapping + 全新 ou
   if (existsSync(od)) throw new Error('凭据拒不得创建 out-dir（零目录副作用）');
 });
 
-// ---------- C14 isCompilableAtom 单一事实源语义（codex R1-F1） ----------
-await checkAsync('C14 isCompilableAtom 语义：11 命名 + login + assert.* 真；册内无知识/未知 假；集恰 11', async () => {
+// ---------- C14 isCompilableAtom 单一事实源语义（codex R1-F1；wf-open-smoke 集 11→13 重钉） ----------
+await checkAsync('C14 isCompilableAtom 语义：13 命名 + login + assert.* 真；册内无知识/未知 假；集恰 13', async () => {
   const ca = await import(`file://${join(ROOT, 'lib', 'compile-atoms.mjs').replace(/\\/g, '/')}`);
-  for (const a of ['workflow.create', 'chat.closeTestPanel', 'login', 'assert.onPage']) if (!ca.isCompilableAtom(a)) throw new Error(`${a} 应可编译`);
-  for (const a of ['nav.workflowManagement', 'nonsense.x']) if (ca.isCompilableAtom(a)) throw new Error(`${a} 不应可编译`);
-  if (ca.COMPILE_KNOWN_ATOMS.size !== 11) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 11 个（分派表派生），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
+  for (const a of ['workflow.create', 'chat.closeTestPanel', 'nav.workflowManagement', 'workflow.open', 'login', 'assert.onPage']) if (!ca.isCompilableAtom(a)) throw new Error(`${a} 应可编译`);
+  for (const a of ['workflow.addNode', 'nonsense.x']) if (ca.isCompilableAtom(a)) throw new Error(`${a} 不应可编译`);
+  if (ca.COMPILE_KNOWN_ATOMS.size !== 13) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 13 个（分派表派生，wf-open-smoke +2），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
 });
 
 // ---------- C15 原型链键 + 导出 Set 可变性（codex R2） ----------
@@ -190,9 +191,9 @@ await checkAsync('C15 原型链原子（toString/constructor）不可编译且�
   // 桥拒（toString 不在注册表 → validateDraft 未知原子）
   const bad = [{ intentId: 'intent_create', atom: 'toString', params: {} }, MAPPING[1]];
   if (bridge(CASE_ID, writeMapping(bad, 'm-c15.json'), join(tmp, 'c15')).status !== 65) throw new Error('原型链原子桥应拒 exit 65');
-  // 导出 Set 可变性：篡改不影响行为判定（isCompilableAtom 直查私有分派表）
-  ca.COMPILE_KNOWN_ATOMS.add('nav.workflowManagement');
-  if (ca.isCompilableAtom('nav.workflowManagement')) throw new Error('篡改导出 Set 不得让 isCompilableAtom 漂移');
+  // 导出 Set 可变性：篡改不影响行为判定（isCompilableAtom 直查私有分派表；例随 wf-open-smoke 换 addNode）
+  ca.COMPILE_KNOWN_ATOMS.add('workflow.addNode');
+  if (ca.isCompilableAtom('workflow.addNode')) throw new Error('篡改导出 Set 不得让 isCompilableAtom 漂移');
 });
 
 // ---------- C16 坏 mapping 契约退出码（codex R2）：mapping:[null] → exit 65 非未捕获 exit 1 ----------

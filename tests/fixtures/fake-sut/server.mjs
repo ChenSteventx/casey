@@ -90,7 +90,10 @@ function clientMain() {
     var rows = scenario === 'drift' ? ['atl_wf_5fa1'] : scenario === 'vanished' ? ['atl_目录CRUD_a'] : ['atl_目录CRUD_a', 'atl_目录CRUD_b'];
     for (var i = 0; i < rows.length; i++) {
       var tr = el('tr', { class: 'hr-table-row', role: 'row', 'aria-label': rows[i] });
-      tr.appendChild(el('td', null, rows[i]));
+      // 行名可点进详情（wf-open-smoke 加法通路：workflow.open 文本精确点开考场；既有场景无人点行名零行为差）。
+      var nameTd = el('td', null, rows[i]);
+      nameTd.addEventListener('click', (function (nm) { return function () { window.__OPENED__ = nm; go('/ai-manager/process/detail'); }; })(rows[i]));
+      tr.appendChild(nameTd);
       var delCell = el('td');
       var del = el('button', { class: 'hr-action-delete', type: 'button' }, '删除');
       del.addEventListener('click', (function (row) { return function () { row.remove(); }; })(tr));
@@ -136,6 +139,8 @@ function clientMain() {
   function renderDetail() {
     app.innerHTML = '';
     if (scenario === 'pageerror') { throw new Error('注入页面错误（pageerror 场景）'); }
+    // 身份闭环（wf-open-smoke）：经行名打开时渲染被打开名——仅 __OPENED__ 置位才渲，既有通路（抽屉新增→详情）零行为差。
+    if (window.__OPENED__) { app.appendChild(el('div', { class: 'wf-open-title' }, window.__OPENED__)); }
     // drift：保存按钮换 class（录制 fallbackCss button.hr-button.wf-save 失配），但 role=button + name 保存 不变 → 同稳定签名唯一仍在。
     var saveClass = scenario === 'drift' ? 'hr-button wf-save-v2' : 'hr-button wf-save';
     function mkSave() {

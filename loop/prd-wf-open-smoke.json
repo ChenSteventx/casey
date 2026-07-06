@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "task": "wf-open-smoke（direct）：飞轮第五条只读零缝暖场。两纯加法编译原子——nav.workflowManagement（路由导航一击即中，镜像 nav.agentManagement；后置锚双布局记录容器可见、仅 unique 才等 G2）+ workflow.open（openName 文本精确点开进详情，只读零破坏；后置 waitForURL detail、仅 unique 才等）；fake-sut 行名 td 可点通路（加法，prd-p5-replay 夹具重签）；flow-bridge 金牌三钉点例翻 workflow.addNode（R9 画布原子长期无知识天然反例）+ 集 11→13 重钉（prd-flow-bridge 重签）。COMPILE_KNOWN_ATOMS 11→13。决策 docs/plans/wf-open-smoke/proposed/GRILL.md。",
+  "specPath": "docs/plans/wf-open-smoke/plan.md",
+  "testChecksums": {
+    "tests/_golden/wf-open-smoke.golden.mjs": "f5a5ce2e15396f626e9a5fa2920d88a31ee77e19d664d88b9c12e6c48aa3fb65"
+  },
+  "observability": [
+    {
+      "dimension": "真机四停站（route:human，需 Steven 在场）：flow confirm → compile --execute 真机（隧道+登录预备动作，真机行/卡片双布局核 workflow.open 定位）→ draft 人签 → casey run 报告过目；可与 wf-publish-states/wf-history-version 合并一次行程（三条待真机）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-open-atoms",
+      "desc": "两编译原子 + 夹具通路 + 金牌 C1-C4（红先行 0 过 / 4 败：两原子「暂无编译知识」抛错实锤 / execute exit 1 / 下游产物全缺席）。C2 events 序列/observed 尾步/assertionAtoms 挂靠钉死；C3 mini 端到端 verdict 全 PASS；C4 只读钉死（动作 ⊆ nav,click、零破坏原子）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-open-smoke.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T19:21:15.798Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-ripple-flip-and-locks",
+      "desc": "涟漪：flow-bridge 金牌三钉点例翻（C5 真缝例/C14 名单与集 13/C15 篡改探针 → workflow.addNode）+ prd-flow-bridge 金牌重签；fake-sut 共享夹具 prd-p5-replay 重签；消费者金牌复跑零行为差。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T19:24:06.769Z 全部 acceptance exit 0"
+    }
+  ]
+}
