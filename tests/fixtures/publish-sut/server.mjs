@@ -48,6 +48,13 @@ function editorPage(scenario) {
     : '<button type="button" class="top-btn"' + (id ? ' id="' + id + '"' : '') + '>' + name + '</button>';
   const plainHint = scenario === 'plainText' ? '<span class="pub-hint">导出</span>' : '';
   const dupPublish = scenario === 'dupButtons' ? mk('发布') : '';
+  // 禁用态考场（btn-enable-ops D5，加法场景零动既有）：属性路真禁用钮 + aria 路 + 类名路（div 假按钮，
+  // 须 profile.buttons.{extraSelector:'.editor-btn', disabledClass:'hr-button--disabled'} 补判才判禁）。
+  const disabledPack = scenario === 'disabledBtn'
+    ? '<button type="button" class="top-btn" disabled>导出</button>' +
+      '<button type="button" class="top-btn" aria-disabled="true">新建版本</button>' +
+      '<div class="editor-btn hr-button--disabled">发布审核</div>'
+    : '';
   // divButtons 场景带隐藏模板节点（codex R1-F2 考场）：类名命中补采选择器、文本「导出」、display:none——
   // 可见性过滤缺席时 present(导出) 会被 DOM 计数假绿。
   const hiddenTpl = div ? '<div class="editor-btn" style="display:none">导出</div>' : '';
@@ -56,7 +63,7 @@ function editorPage(scenario) {
   return (
     '<h1>工作流编辑器</h1>' +
     // 历史版本钮走 mk（divButtons 场景同为 div，保持该场景「role 全盲」前提不被本钮污染——wf-publish-states I3）。
-    '<div id="topbar">' + mk('保存') + mk('发布', 'btn-publish') + mk('历史版本', 'btn-history') + dupPublish + plainHint + hiddenTpl + '</div>' +
+    '<div id="topbar">' + mk('保存') + mk('发布', 'btn-publish') + mk('历史版本', 'btn-history') + dupPublish + plainHint + hiddenTpl + disabledPack + '</div>' +
     '<div id="history-dialog" class="hr-dialog" hidden></div>' +
     '<script>\n' +
     'var bar=document.getElementById("topbar");\n' +

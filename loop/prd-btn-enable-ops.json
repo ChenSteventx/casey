@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "task": "btn-enable-ops（full）：buttonState enabled/disabled 双 op 拆先行（Steven 挂账明令不许静默丢；载体 publish_blocked 被 R9 卡真机，op 实现 hermetic 拆开先行）。判据（Steven 签，GRILL D1）：disabled 属性 ∨ aria-disabled=\"true\" ∨ profile.buttons.disabledClass 可选类名补判（真机适配口，镜像 extraSelector 先例；补判是显式开口——不配类名则类名禁用钮按可用计，语义钉死）。语义（D3 fail-safe）：enabled = hits>0∧disabled=0；disabled = hits>0∧disabled===hits；混合态/零命中/缺采集一律不判真；actual 复合标量。改动五处：check.mjs 词表 +2 op（碰词表故 full；schema enum 已留位零动）/ replay.mjs 采集 buttonDisabledHits 双通道 + disabledClass 形状闸 / replay-assert.mjs 评估双 op / assertion-draft.mjs mapAtom 翻硬映射 / publish-sut 加法场景 disabledBtn。wf-publish-states 金牌三钉点生命周期翻转重签（kinds-harden 先例）+ 共享夹具双 prd 重签。决策 docs/plans/btn-enable-ops/proposed/GRILL.md。",
+  "specPath": "docs/plans/btn-enable-ops/plan.md",
+  "testChecksums": {
+    "tests/_golden/btn-enable-ops.golden.mjs": "6fa130cc5f0dda443388d223975a155293c479b92393141e611f7bddd8b0824f"
+  },
+  "observability": [
+    {
+      "dimension": "真机 disabled 类名采样（route:human）：Heren div 假按钮禁用态的真实类名待真机采样后填 profile.buttons.disabledClass（零内核改动）；publish_blocked flow 本体整维度 R9 route:human 不在本契约。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-enable-ops",
+      "desc": "词表+采集+评估+草拟四面 + 夹具场景。金牌 C1-C5（红先行 0 过 / 6 败全形态实锤：词表拒 enabled exit 2 / 评估证不出 / mapAtom 落 pending / 回放四断言全败无禁用态采集 / disabledClass 形状闸不存在 exit 0）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/btn-enable-ops.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T18:04:26.839Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-ripple-flip-and-locks",
+      "desc": "涟漪：wf-publish-states 金牌三钉点生命周期翻转（U2 词表拒→过 / 遗留 op 证不出→语义评估 / D 段落 pending→硬映射）红先行改 + 其 prd 金牌与共享夹具 checksum 重签 + prd-wf-history-version 夹具 checksum 重签；四面消费者金牌复跑零行为差。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs",
+        "node tests/_golden/p4-drafter.golden.mjs",
+        "node tests/_golden/p2-check-vocab.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T18:06:28.094Z 全部 acceptance exit 0"
+    }
+  ]
+}

@@ -44,12 +44,12 @@ check('U1 IMPLEMENTED_KINDS 10→11（buttonState 入列；switchState 仍外；
   if (IMPLEMENTED_KINDS.size !== 11) throw new Error(`已实现集应 11 种，实际 ${IMPLEMENTED_KINDS.size}`);
 });
 
-check('U2 词表收窄（D1）：present/absent 合法、enabled/disabled 拒（词表=可草拟=已实现）、switchState 不动', () => {
+check('U2 词表（D1，btn-enable-ops 翻转）：buttonState 四 op 全合法（词表=可草拟=已实现）、switchState 不动', () => {
+  // 生命周期翻转（kinds-harden 先例，2026-07-07 btn-enable-ops 收口挂账）：enabled/disabled 由「拒」翻「过」。
   const v = (kind, op) => run([CHECK, '--kind', kind, '--op', op, '--validate-only']).status;
-  if (v('buttonState', 'present') !== 0) throw new Error('buttonState present 应合法（exit 0）');
-  if (v('buttonState', 'absent') !== 0) throw new Error('buttonState absent 应合法（exit 0）');
-  if (v('buttonState', 'enabled') !== 2) throw new Error('buttonState enabled 应被拒（exit 2，挂账 publish_blocked 带实现回归）');
-  if (v('buttonState', 'disabled') !== 2) throw new Error('buttonState disabled 应被拒（exit 2）');
+  for (const op of ['present', 'absent', 'enabled', 'disabled']) {
+    if (v('buttonState', op) !== 0) throw new Error(`buttonState ${op} 应合法（exit 0，btn-enable-ops 已实现）`);
+  }
   if (v('switchState', 'on') !== 0) throw new Error('switchState on 应仍合法（回归）');
 });
 
@@ -70,24 +70,31 @@ check('U3 buttonState 评估三向 + 活性反证 + 遗留 op 证不出（D2 合
   if (a2.ok !== false || a2.actual !== 2) throw new Error(`absent 有命中应 false/2，实际 ${a2.ok}/${a2.actual}`);
   const na = one('present', '发布', {});
   if (na.ok !== false || na.actual !== null) throw new Error(`缺采集应 false/null（证不出，护栏 #14），实际 ${na.ok}/${na.actual}`);
+  // btn-enable-ops 翻转：enabled 已实现——缺禁用态采集（无 buttonDisabledHits）仍证不出（判据采集是前提）；
+  // 带采集则按 D3 语义判（全可用真）。语义矩阵全量在 btn-enable-ops 金牌，此处锁翻转边界两向。
   const legacy = one('enabled', '保存', { buttonHits: { '保存': 1 }, buttonSeen: 1 });
-  if (legacy.ok !== false) throw new Error(`遗留 op enabled 应证不出 false（绝不判真），实际 ${legacy.ok}`);
+  if (legacy.ok !== false || legacy.actual !== null) throw new Error(`enabled 缺禁用态采集应证不出 false/null，实际 ${legacy.ok}/${legacy.actual}`);
+  const enOk = one('enabled', '保存', { buttonHits: { '保存': 1 }, buttonSeen: 1, buttonDisabledHits: { '保存': 0 } });
+  if (enOk.ok !== true) throw new Error(`enabled 带采集全可用应 true，实际 ${enOk.ok}`);
 });
 
-// ---------- D 草拟向：映射条件翻转（present/absent 硬映射，enabled/disabled 落 pending） ----------
-check('D1 草拟映射：present 硬映射（已实现不 soft）、enabled 落 pending（route:human 留痕）', () => {
+// ---------- D 草拟向（btn-enable-ops 翻转）：四 op 全硬映射，枚举外 state 仍落 pending ----------
+check('D1 草拟映射：present/enabled 均硬映射（已实现不 soft）、枚举外 state 落 pending（留痕不静默丢）', () => {
   const draft = synthesizeSkeleton({ caseId: 'tc_pub_smoke' }, [
     { intentId: 'intent_1', atom: 'assert.buttonState', params: { name: '发布', state: 'present' } },
     { intentId: 'intent_1', atom: 'assert.buttonState', params: { name: '保存', state: 'enabled' } },
+    { intentId: 'intent_1', atom: 'assert.buttonState', params: { name: '幽灵', state: 'blinking' } },
   ]);
   const i1 = draft.intents.find((it) => it.intentId === 'intent_1');
-  const bs = (i1?.expected || []).find((a) => a.kind === 'buttonState');
-  if (!bs) throw new Error('assert.buttonState(present) 未合成出 buttonState 断言');
-  if (bs.op !== 'present' || bs.value !== '发布') throw new Error(`应 op:present/value:发布，实际 ${bs.op}/${bs.value}`);
-  if (bs.soft === true) throw new Error('buttonState 已实现，骨架不应标 soft');
+  const exp = i1?.expected || [];
+  for (const [op, val] of [['present', '发布'], ['enabled', '保存']]) {
+    const a = exp.find((x) => x.kind === 'buttonState' && x.op === op);
+    if (!a || a.value !== val) throw new Error(`state ${op} 应硬映射（btn-enable-ops 翻转），实际 ${JSON.stringify(exp)}`);
+    if (a.soft === true) throw new Error(`buttonState ${op} 已实现，骨架不应标 soft`);
+  }
   const pend = draft.pending || [];
   if (!pend.some((p) => p.atom === 'assert.buttonState' && p.intentId === 'intent_1')) {
-    throw new Error('enabled（未实现 op）应落 pending[]（挂账后补，不得静默丢、不得硬凑）');
+    throw new Error('枚举外 state（blinking）应落 pending[]（留痕，不得静默丢、不得硬凑）');
   }
 });
 

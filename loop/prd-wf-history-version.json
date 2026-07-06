@@ -4,7 +4,7 @@
   "specPath": "docs/plans/wf-history-version/plan.md",
   "testChecksums": {
     "tests/_golden/wf-history-version.golden.mjs": "130600fb9cedcceb5918a0ff139f667999e93c96ba21b21fbd41637bac3a27fd",
-    "tests/fixtures/publish-sut/server.mjs": "3485923096539c4d3abeb13e5b1d2b8e17c5541f03f2298649be02a5f2447ddf"
+    "tests/fixtures/publish-sut/server.mjs": "10754869e47c53be4e2d52123cdd43aaf75f386d4fef45af2c8cf14a8af2725f"
   },
   "observability": [
     {
@@ -22,7 +22,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-03T09:29:39.835Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-06T17:47:00.376Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-regression-locks",
@@ -36,7 +36,7 @@
         "node tests/_golden/report-diagnostics.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-03T09:31:48.923Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-06T17:49:31.205Z 全部 acceptance exit 0"
     }
   ]
 }

@@ -22,9 +22,9 @@ const VOCAB = {
   noPageError: ['absent'],
   noErrorToast: ['absent'], // 新增：DOM 错误弹窗缺席（取证类）
   noErrorEnvelope: ['envelopeOk'],
-  // wf-publish-states（D1，2026-07-03）：收窄为已实现双 op——词表=可草拟=已实现（IMPLEMENTED_KINDS 是
-  // kind 级，词表留未实现 op 会让硬断言必假红）；enabled/disabled 随 publish_blocked 契约带实现回归（挂账）。
-  buttonState: ['present', 'absent'],
+  // wf-publish-states（D1，2026-07-03）收窄为已实现 op——词表=可草拟=已实现；btn-enable-ops（2026-07-07）
+  // 挂账收口 +enabled +disabled（判据 = disabled 属性 ∨ aria-disabled ∨ profile.buttons.disabledClass 补判）。
+  buttonState: ['present', 'absent', 'enabled', 'disabled'],
   switchState: ['on', 'off'],
 };
 

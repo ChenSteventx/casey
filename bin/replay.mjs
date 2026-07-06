@@ -206,11 +206,15 @@ async function main() {
   if (profile.buttons !== undefined) {
     const b = profile.buttons;
     const okShape = b && typeof b === 'object' && !Array.isArray(b) && typeof b.extraSelector === 'string' && b.extraSelector.trim();
-    if (!okShape) {
-      console.error('replay: 通道剖面 buttons 形状非法（extraSelector 须非空字符串），拒跑（fail-closed）');
+    // disabledClass 可选类名补判（btn-enable-ops D1 真机适配口）：给了就须非空字符串，形状非法同拒。
+    const okDisabled = b == null || b.disabledClass === undefined || (typeof b.disabledClass === 'string' && b.disabledClass.trim());
+    if (!okShape || !okDisabled) {
+      console.error('replay: 通道剖面 buttons 形状非法（extraSelector 须非空字符串；disabledClass 给了须非空字符串），拒跑（fail-closed）');
       process.exit(65);
     }
-    buttonsCfg = { extraSelector: b.extraSelector };
+    // disabledClass 存 trim 值（codex R1-F4）：classList.contains 对含空白 token 返回 false 不抛——
+    // 存原值会让类名判据静默失效、enabled 方向 fail-open。
+    buttonsCfg = { extraSelector: b.extraSelector, disabledClass: b.disabledClass === undefined ? null : b.disabledClass.trim() };
   }
 
   const intentOrder = [];
@@ -326,6 +330,7 @@ async function main() {
   const intentTextHits = new Map(); // kinds-harden：代表步 textVisible 命中计数
   const intentButtonHits = new Map(); // wf-publish-states：代表步 buttonState 命中合计（role + 可选补采，可见口径）
   const intentButtonSeen = new Map(); // wf-publish-states：代表步全通道可见按钮总数（absent 活性反证，codex R1-F1）
+  const intentButtonDisabledHits = new Map(); // btn-enable-ops：代表步命中且判禁用计数（enabled/disabled 判据采集）
 
   // 回放历史 opt-in（run-history）：纯观察者收集，不加任何等待、不改任何时序。
   const rhOn = !!(args.runHistory || args.runMetrics);
@@ -457,18 +462,34 @@ async function main() {
           if (buttonsCfg) {
             try { extraTotal = await page.locator(buttonsCfg.extraSelector).evaluateAll(visibleCount, null); } catch { extraTotal = null; }
           }
+          // 禁用态计数谓词（btn-enable-ops D1/D2）：disabled 属性 ∨ aria-disabled="true" ∨ 可选类名补判；
+          // vis=true 时叠可见性过滤（补采通道口径同 buttonHits），role 通道自身角色树已滤隐藏不再叠。
+          const disabledCount = (els, o) => els.filter((el) => {
+            if (o.name != null && (el.textContent || '').trim() !== o.name) return false;
+            if (o.vis && !(el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden')) return false;
+            return el.disabled === true || el.getAttribute('aria-disabled') === 'true' || (o.cls ? el.classList.contains(o.cls) : false);
+          }).length;
+          const cls = buttonsCfg ? buttonsCfg.disabledClass : null;
           const btnHits = {};
+          const btnDisabledHits = {};
           for (const value of btnVals) {
             let roleN = null;
+            let roleDisN = null;
             try { roleN = await page.getByRole('button', { name: value, exact: true }).count(); } catch { roleN = null; }
+            try { roleDisN = await page.getByRole('button', { name: value, exact: true }).evaluateAll(disabledCount, { name: null, vis: false, cls }); } catch { roleDisN = null; }
             let extraN = 0;
+            let extraDisN = 0;
             if (buttonsCfg) {
               try { extraN = await page.locator(buttonsCfg.extraSelector).evaluateAll(visibleCount, value); } catch { extraN = null; }
+              try { extraDisN = await page.locator(buttonsCfg.extraSelector).evaluateAll(disabledCount, { name: value, vis: true, cls }); } catch { extraDisN = null; }
             }
             if (roleN == null || extraN == null) continue;
             btnHits[value] = roleN + extraN;
+            // 禁用态双通道任一失败 = 该值缺禁用态采集（不落 0）→ enabled/disabled 评估证不出（镜像 buttonHits 纪律）。
+            if (roleDisN != null && extraDisN != null) btnDisabledHits[value] = roleDisN + extraDisN;
           }
           intentButtonHits.set(ev.intentId, btnHits);
+          intentButtonDisabledHits.set(ev.intentId, btnDisabledHits);
           if (roleTotal != null && extraTotal != null) intentButtonSeen.set(ev.intentId, roleTotal + extraTotal);
         }
         // reply 正文采集（chiefcomplaint-smoke D5：DOM 气泡通道，代表步静默点实采；未配置 chat 段不采。
@@ -575,6 +596,7 @@ async function main() {
       textHits: intentTextHits.get(iid),
       buttonHits: intentButtonHits.get(iid), // wf-publish-states：缺采集即 undefined → 证不出
       buttonSeen: intentButtonSeen.get(iid), // 同刻通道活性（absent 反证前提）；缺采集即 undefined → 证不出
+      buttonDisabledHits: intentButtonDisabledHits.get(iid), // btn-enable-ops：缺采集即 undefined → enabled/disabled 证不出
       replyText: intentReply.get(iid),    // chiefcomplaint-smoke：缺采集即 undefined → 证不出
       streamUrlPattern: chatCfg ? chatCfg.streamUrlPattern : undefined,
     });
