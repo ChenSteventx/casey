@@ -4,7 +4,7 @@
   "specPath": "docs/plans/replay-login-bootstrap/plan.md",
   "testChecksums": {
     "tests/_golden/replay-login-bootstrap.golden.mjs": "6a56e9852734bfd1b246b3d7f0820deadf03938534013e2831ca955f7da9118a",
-    "tests/fixtures/login-sut/server.mjs": "7be49b113cc752be770cf0963b31750fdde50316c902717ca04d36341598a0c5"
+    "tests/fixtures/login-sut/server.mjs": "b3a9683fb5f92dfc6c4a5d567e726f91c015281cf2ab82e4f39f6af372fc33cc"
   },
   "observability": [
     {
@@ -22,7 +22,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-03T05:35:43.529Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-06T06:42:23.172Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-regression-locks",
@@ -34,7 +34,7 @@
         "node tests/_golden/p3-compile.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-03T05:37:30.639Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-06T06:43:55.450Z 全部 acceptance exit 0"
     }
   ]
 }

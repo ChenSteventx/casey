@@ -225,10 +225,20 @@ async function main() {
   let videoT0 = Date.now(); // 起录时刻 best-effort（M2）：以回放 page 创建时刻为 case 级录屏偏移基准
   // 双 page 舞步（GRILL D1/M6，仅录像+登录同开）：登录跑 page1、其镜头收敛时必删；回放/CDP/取证全在 page2——
   // 登录期键入不入镜（视频是二进制、文本凭据门管不住，卫生只能结构保证）。CDP 尚未接线，登录流量天然不进取证。
+  let carrySnapshot = null; // 舞步登录态收割（video-login-carry D1）：仅进程内存，绝不 log/落盘（护栏 #7）
   if (args.videoDir && loginPrep) {
     loginPage = page;
     try {
       await loginBootstrap(loginPage, loginPrep);
+      // 收割：登录归位后一次性取该 origin 的 sessionStorage 全键值快照——页签级登录态不随 page2 继承
+      // （Heren 形态 2026-07-06 真机实证）；cookie/localStorage 是 context 级共享，无须收割。
+      // 用 entries 数组而非普通对象（codex R2-F4）：键名如 __proto__ 用 obj[k]=v 会被 [[Set]] 吞掉、
+      // 不成自有属性 → 「全键值快照」名不副实；[k,v] 对逐条透传，任何字符串键都不丢。
+      carrySnapshot = await loginPage.evaluate(() => {
+        const entries = [];
+        for (let i = 0; i < sessionStorage.length; i++) { const k = sessionStorage.key(i); entries.push([k, sessionStorage.getItem(k)]); }
+        return { origin: location.origin, entries };
+      });
     } catch (e) {
       console.error('replay: 登录预备动作失败（fail-closed）：' + String((e && e.message) || e).slice(0, 300));
       clearTimeout(watchdog);
@@ -272,6 +282,14 @@ async function main() {
     // 舞步后半：回放 page 预热到登录后入口（同 context 共享会话）再关登录 page；预热流量同属登录期、
     // 整体切断（login-traffic-drop 与单 page 路径语义对齐）。失败清扫镜头残件 exit 65。
     try {
+      // 注入（video-login-carry D1）：首次 goto 前挂 init script，location.origin 恒等才种入——
+      // 每次导航自动重种、SPA 同 origin 覆盖；异 origin 不种，快照不外溢。空快照不挂（cookie 会话零行为差）。
+      if (carrySnapshot && carrySnapshot.entries.length) {
+        await page.addInitScript(({ origin, entries }) => {
+          if (location.origin !== origin) return;
+          for (const [k, v] of entries) sessionStorage.setItem(k, v);
+        }, carrySnapshot);
+      }
       await page.goto(loginPrep.startUrl, { waitUntil: 'load' });
       await loginPage.close();
       loginMark = forensics.records().length;
