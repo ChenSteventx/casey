@@ -1,0 +1,139 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "casey/testcase.json",
+  "title": "TestCase 聚合根（相0 归一产物）",
+  "description": "design §2：excel/json/txt/自由文本归一后的唯一内部用例对象。LLM 在 CLI 外产候选，`parseTestCase` 确定性校验（不合规 fail-closed）；本文件是冻结形态契约与 golden 真值源——运行期 lib 手写同刻字段闸（项目习惯无 ajv），golden 逐条从本文件读必填集/enum 比对防漂移。决策 docs/plans/ingest/proposed/GRILL.md（D3/D6 已签 2026-07-06）。",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "caseId", "source", "steps", "uniquePrefix"],
+  "properties": {
+    "schemaVersion": {
+      "const": 1,
+      "description": "形态契约版本，钉死 1；改形态须走契约重冻。"
+    },
+    "caseId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]+$",
+      "description": "用例标识，进产物文件名（路径安全，拒穿越，同 `draft`/`flow-bridge` CLI 闸）。已知接缝张力：events.schema 的 caseId 形态 `^tc_[a-z0-9_]+$` 更严（挂账观察，运行期无校验故无行为差）。"
+    },
+    "title": {
+      "type": "string",
+      "description": "可选标题；相1 `buildFlow` 取非空白 title 作 flow.name，否则回落 caseId。"
+    },
+    "source": { "$ref": "#/definitions/source" },
+    "target": { "$ref": "#/definitions/target" },
+    "preconditions": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "\\S" },
+      "description": "前置状态种子（如「已登录」），喂相1/compile 状态机 initialStates。本 schema 是唯一守点：下游 compile-gate 对非数组静默吞成空种子、非 string 元素静默丢（fail-closed 只能在相0 落）。只有注册表 states 词表内的串有语义效果，未知串无害。"
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/definitions/step" },
+      "description": "语义步数组（聚合根主体）。steps[].intentId 全局唯一由 `parseTestCase` 语义闸守（JSON Schema 表达不了跨元素唯一）。"
+    },
+    "globalAssertions": {
+      "type": "array",
+      "items": { "$ref": "#/definitions/assertion" },
+      "description": "全程断言（如 noPageError / noErrorEnvelope），形态同步级 expected。"
+    },
+    "uniquePrefix": {
+      "type": "string",
+      "pattern": "^\\S+$",
+      "description": "破坏性实体名前缀（如 atl_），compile 双段硬要求非空；pattern 拒纯空白——封「纯空白过 compile 长度闸、破坏性闸只在有破坏性原子时才兜」的缝。"
+    },
+    "boundContract": {
+      "type": "string",
+      "description": "可选：绑定的 prd 契约路径（扁平在 loop/，design §2）。"
+    }
+  },
+  "definitions": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "enum": ["excel", "json", "txt", "freetext"],
+          "description": "来源模态（D3 已签必填）。"
+        },
+        "raw": {
+          "type": "string",
+          "description": "候选原文（D6 已签：保留溯源）。凭据卫生由 CLI 前置凭据门硬保证——含凭据的原文整份拒收 exit 1，存下来的必是干净原文（护栏 #7）。"
+        },
+        "ingestedAt": {
+          "type": "string",
+          "format": "date-time",
+          "description": "归一时刻；缺席时由 `bin/ingest.mjs` 落章，在场原样保留。"
+        }
+      }
+    },
+    "target": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "startUrl": { "type": "string", "description": "入口地址；真机目标只活在 site.json，此处 hermetic/占位用。" },
+        "auth": { "type": "string", "description": "凭据引用（如 ref:site.json），只存引用绝不存值（护栏 #7）。" },
+        "channel": { "enum": ["web", "cef", "arbitrary"], "description": "通道类型（design §2）。" }
+      },
+      "description": "可选目标段：真机 bring-up 才需（D3 已签 optional）。"
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["intentId"],
+      "properties": {
+        "intentId": {
+          "type": "string",
+          "pattern": "\\S",
+          "description": "语义步 id（authoring 层），区别于回放事件的位置式 stepId；相1 投影忠实闸按它对账，须全局唯一（`parseTestCase` 守）。"
+        },
+        "intent": { "type": "string", "description": "步意图白话（人/LLM 写）。" },
+        "actionHint": {
+          "enum": ["click", "fill", "select", "send", "navigate", "assert"],
+          "description": "动作提示（design §2 封闭枚举）。"
+        },
+        "inputValue": { "type": "string", "description": "输入模板；易变值如 {{uniqueName}} 绝不冻字面量（design §2 铁律）。" },
+        "uniqueGuard": { "type": "boolean", "description": "是否要求实体名带 uniquePrefix 前缀防误伤。" },
+        "expected": {
+          "type": "array",
+          "items": { "$ref": "#/definitions/assertion" },
+          "description": "步级期望（authoring 留痕）；冻结断言另走相2 旁车 expected.frozen.json（护栏 #5）。"
+        },
+        "route": {
+          "enum": ["human"],
+          "description": "显式跳过通道：只收 human（typo 如 humann fail-closed 拒，不静默当普通步）；相1 靠它走跳过通道留痕。"
+        },
+        "reason": {
+          "type": "string",
+          "pattern": "\\S",
+          "description": "route:human 的留痕理由（绝不静默丢，镜像 flow-bridge 闸）。"
+        }
+      },
+      "allOf": [
+        {
+          "if": { "required": ["route"] },
+          "then": { "required": ["reason"] }
+        }
+      ]
+    },
+    "assertion": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind"],
+      "properties": {
+        "kind": {
+          "type": "string",
+          "pattern": "\\S",
+          "description": "断言种类。相0 只校形态不校词表——kind 枚举唯一活在 bin/check.mjs（相2 事，护栏 #17）。"
+        },
+        "op": { "type": "string", "description": "断言操作符（相2 词表校验）。" },
+        "value": {
+          "type": ["string", "number", "boolean"],
+          "description": "期望值标量；易变片段须模板化（design §2 铁律）。"
+        }
+      }
+    }
+  }
+}

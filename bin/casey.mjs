@@ -180,8 +180,11 @@ ${col(C.cyan, '端到端')}
   casey run <file> [--channel web|cef|arbitrary]   归一→编译→草拟→人签→回放→裁定→报告（MVP 串行单用例）
 
 ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅助/heal；replay/verdict/report 零 LLM）
-  casey ingest  <file> [--out <caseId>]   相0 归一：杂乱输入 → 规范 TestCase            [P2]
+  casey ingest  <caseId> --in <f> --out-dir <d>
+                                          相0 归一：候选（CLI 外 LLM 产）→ 校验 → 规范 TestCase
   casey compile <caseId>                  相1 编译：agent 真机跑一遍 → spec + observed   [P3]
+  casey flow-bridge <caseId> --testcase <f> --mapping <f> --out-dir <d>
+                                          相1 flow 草拟桥：TestCase + mapping → compile 的 --flow
   casey draft   <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]
                                           相2 断言草拟：骨架+补缝合并+闸 → expected.draft（未签）
   casey sign    <caseId> [--signer <id> --build <id>]  相2 人签门：签掉冻结断言            [P4]
@@ -223,7 +226,8 @@ function main() {
       return selftestTier1();
 
     // 生命周期（当前为诚实桩，逐阶段实现）
-    case 'ingest':  return notImplemented('相0 ingest 归一', 'P2 规范 TestCase + 输入归一', 'excel/json/txt/自由文本 → LLM 归一 → 确定性 parseTestCase 校验（fail-closed）→ 规范 TestCase 聚合根。');
+    // 相0 归一：LLM 在 CLI 外产候选，本 CLI 是 L0 确定性校验器（parseTestCase，fail-closed）。
+    case 'ingest': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'ingest.mjs'), rest); process.exit(r.code); }
     // 相1 编译（P3）：三段式确定性 CLI（闸+confirm 门 / 执行 / 回放核验），LLM 只在 CLI 外产 flow 草稿。
     case 'compile': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'compile.mjs'), rest); process.exit(r.code); }
     case 'draft': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'draft.mjs'), rest); process.exit(r.code); }

@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "task": "相0 归一 ingest（full）：杂乱输入（excel/json/txt/自由文本）→ 规范 TestCase 聚合根（design §2）。LLM 在 CLI 外把杂乱原文归一成候选 JSON（同 mapping/patch 先例）；进程零 LLM 零真机。三件套：tests/_golden/schemas/testcase.schema.json 冻结形态契约（draft-07、additionalProperties:false 处处、必填 schemaVersion/caseId/source.kind/steps/uniquePrefix——D3 已签；uniquePrefix 拒纯空白封 compile 长度闸缝、preconditions 数组形态是唯一守点防下游静默吞）+ lib/parse-testcase.mjs（纯函数手写字段闸与 schema 同刻——项目习惯无 ajv 零运行期 schema 加载，加语义闸 intentId 全局唯一 + caseId 一致）+ bin/ingest.mjs（薄 CLI 镜像 flow-bridge：缺参 64 / 输入坏闸拒 65 零落盘 / 凭据门前置扫输入原文 exit 1 早于解析回显 mkdir——D6 已签存 source.raw 前置门兜底；缺席 ingestedAt 落章）+ bin/casey.mjs 接线（notImplemented 桩换 runNode 一行式 + help 真实旗标）。产物 testcase-<caseId>.json 直喂相1 flow-bridge。决策全表 docs/plans/ingest/proposed/GRILL.md（D1-D7 已签 2026-07-06）。",
+  "specPath": "docs/plans/ingest/plan.md",
+  "testChecksums": {
+    "tests/_golden/ingest.golden.mjs": "028f1b8eb62aa954826ddcc7104cf816e24181968b4377de894bdb2507d1b1a6",
+    "tests/_golden/schemas/testcase.schema.json": "c27faa174a4ab363690046a8eef564fb3032e167fbf62e222d36e8e711847233"
+  },
+  "observability": [
+    {
+      "dimension": "真机侧不涉（route:human 挂账）：ingest 纯 hermetic；真实杂乱原文（excel 列/自由文本）→ 结构化候选的 LLM 归一质量随真机 compile bring-up 一并核（ADR-0003），人不在场只挂账。",
+      "route": "human"
+    },
+    {
+      "dimension": "接缝张力挂账观察：testcase.schema 的 caseId 形态 ^[A-Za-z0-9_-]+$（与 CLI 闸一致、D3 已签）宽于 events.schema 的 ^tc_[a-z0-9_]+$；大写/横线 caseId 过相0 但真机落 events 后与 events.schema 不合——运行期无校验故无行为差，收紧属后续契约。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-parse-and-cli",
+      "desc": "相0 三件套 + 接线：lib/parse-testcase.mjs（parseTestCase 手写闸与 schema 同刻 + intentId 唯一 + caseId 一致，全 problems 汇总、结构坏短路防 TypeError）+ bin/ingest.mjs（闸序：64 缺参→65 caseId 形状→65 读文件→1 凭据门前置→65 解析→65 parseTestCase 逐条回显零落盘→ingestedAt 落章→1 输出门→过全才 mkdir 落盘）+ bin/casey.mjs 接线。金牌 C1-C16（实现前红已核：14 败 / 2 过——C12 半份安全空虚真 + C15 schema 自守冻结即绿回归锁，C11 已加 stderr 佐证防 MODULE_NOT_FOUND 撞码假绿）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/ingest.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T12:35:10.541Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-ripple-locks",
+      "desc": "涟漪回归锁：碰 bin/casey.mjs（dispatch 加 ingest 分发 + help 行）→ 经 casey 子进程的金牌复跑零行为差（同 prd-flow-bridge s2 先例）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T12:37:56.181Z 全部 acceptance exit 0"
+    }
+  ]
+}
