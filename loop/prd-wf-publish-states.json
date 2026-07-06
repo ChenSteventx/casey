@@ -26,7 +26,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-06T07:21:01.239Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-06T16:27:31.058Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-ripple-and-locks",
@@ -44,8 +44,8 @@
         "node tests/_golden/layer3-wiring.golden.mjs",
         "node tests/_golden/run-history.golden.mjs"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-07-06T16:30:30.897Z 全部 acceptance exit 0"
     }
   ]
 }
