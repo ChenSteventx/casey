@@ -3,7 +3,15 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 当前状态（2026-07-06，三相补齐推进：相2 人签门 + 相1 flow 桥建成，相0 归一是唯一剩口）
+## 当前状态（2026-07-06 晚，相0 归一 ingest 建成——七相全建，hermetic 机制面闭合）
+
+本 session 一契约一提交入 dev（Steven「把剩下的相都跑完」+ 三承重决策签核：D3 `source.kind` 必填 / D6 存 raw / D7 只当校验器）：相0 归一是七相里最后一个未建相，建成后流水线每一相都有真机制。baton 空闲，下一契约直接 `contract init`：
+
+1. `ingest`（相0 归一，full，`b7c8f61`）：`tests/_golden/schemas/testcase.schema.json` 冻结形态契约（draft-07、additionalProperties:false 处处、必填 schemaVersion/caseId/source.kind/steps/uniquePrefix；`uniquePrefix` `^\S+$` 封「纯空白过 compile 长度闸」缝、`preconditions` 数组形态是唯一守点——下游对非数组静默吞）+ `lib/parse-testcase.mjs`（手写闸与 schema 同刻——金牌 C4 从 schema 文件读必填集/enum 现场构造坏输入锁双源；语义闸 intentId 全局唯一 + caseId 一致；手写 JSON 数据投影器：不调 toJSON、own enumerable data、数组稠密 own、`Object.create(null)` 防 `__proto__` setter——校验对象=落盘对象按构造同一）+ `bin/ingest.mjs`（薄 CLI 镜像 flow-bridge：凭据门前置扫输入原文 exit 1 早于解析/回显/mkdir；输出通道三封——成功日志只回显定名产物、读失败只回显 errno、落盘异常捕获 65）+ `bin/casey.mjs` 接线（桩换 runNode + help 真实旗标 + 顺手补 flow-bridge help 行）。金牌 C1–C22（16 起红先行 14 败/2 过，评审期 +C17..C22 逐轮钉红）。codex 七轮 R7 PASS（12 发现 = 10 采信 + 2 修正采纳；R6 High：`JSON.parse` 建 `__proto__` own 键 + 投影赋值触发原型 setter——必填从原型链满足、落盘成空壳，经 CLI 候选文件端到端可达、红跑 exit 0 实锤）。产物 `testcase-<caseId>.json` 直喂相1，round-trip 金牌证相0→相1→compile gate 三段贯通。learn 六教训落 `docs/plans/ingest/learn.md`。
+2. 新挂账：① 姊妹 CLI 同族缝——`bin/flow-bridge.mjs:31` / `bin/draft.mjs:40` 非法 caseId 回显原值（R2-F2 同族，direct 小契约候选）；② caseId 形态接缝张力——testcase `^[A-Za-z0-9_-]+$` 宽于 events `^tc_[a-z0-9_]+$`（记 prd-ingest observability，route:human）；③ `casey run` 编排器仍起于相3，相0–2 前段接线属后续契约（真机 compile bring-up 后才有意义）。
+3. 端到端诚实交底更新：hermetic 机制面七相全建；「文本用例→报告」真机端到端仍需一次真机 compile bring-up（ADR-0003）+ 相2 人签在场，全属 route:human。
+
+以下为本日早前时段快照（三相补齐：相2 sign + 相1 flow-bridge + 相3 video-login-carry），只溯源（其「相0 归一是唯一剩口/下一 session 地基」已由上条收口）：
 
 本 session 续三契约三提交入 dev（Steven「三块全建」+ 规范嵌套 TestCase + sign 未签闸硬接 replay 前置闸），把「文本用例→报告」流水线前半段的两处 stub/缺口补成真机制。端到端唯一剩口 = 相0 归一 ingest（下一 session 地基）。baton 空闲，下一契约直接 `contract init`：
 
