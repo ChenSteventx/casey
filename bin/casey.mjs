@@ -227,6 +227,7 @@ function main() {
     // 相1 编译（P3）：三段式确定性 CLI（闸+confirm 门 / 执行 / 回放核验），LLM 只在 CLI 外产 flow 草稿。
     case 'compile': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'compile.mjs'), rest); process.exit(r.code); }
     case 'draft': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'draft.mjs'), rest); process.exit(r.code); }
+    case 'flow-bridge': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'flow-bridge.mjs'), rest); process.exit(r.code); }
     case 'sign': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'sign.mjs'), rest); process.exit(r.code); }
     case 'replay':  return notImplemented('相3 replay 回放', 'P5 确定性回放 + 取证', '确定性重放 spec + 录屏 + 抓回复 + watchPageLifecycle + watchNetworkForensics。');
     case 'verdict': return notImplemented('相4 verdict 多态裁定', 'P5 verdict.mjs 分类器（零 LLM）', '读逐步事实 + 取证 → 判定树 → 每步 PASS/SUT_DEFECT/HARNESS_ERROR/NEEDS_HUMAN(+子类) → verdict.json。');

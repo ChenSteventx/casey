@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "task": "相1 LLM flow 草拟桥 flow-bridge（full）：规范 TestCase（嵌套 steps）+ CLI 外 LLM mapping → compile 吃的 flow（原子+参数）。lib/flow-bridge.mjs 纯函数 buildFlow + validateBridge 三闸（投影忠实：每 TestCase.steps[].intentId 被覆盖 + 无凭空 intentId；编译知识允许集：atom 可编译，补 compile-gate 放行册内无编译知识原子的缝——真缝 nav.workflowManagement；复用 compile-gate.validateDraft 结构+破坏性前缀+状态机）；bin/flow-bridge.mjs 薄 CLI（caseId 一致+路径安全+cred-gate，任一闸拒 exit 65 零落盘）；lib/compile-atoms.mjs 加法导出 COMPILE_KNOWN_ATOMS/isCompilableAtom（:259 throw 同源，行为一字不变）；bin/casey.mjs flow-bridge 分发接线。LLM 在 CLI 外产 mapping、进程零 LLM 零真机（测时 mock）。决策全表 docs/plans/flow-bridge/proposed/GRILL.md。",
+  "specPath": "docs/plans/flow-bridge/plan.md",
+  "testChecksums": {
+    "tests/_golden/flow-bridge.golden.mjs": "f34c2325c43f94b3799ce200d1877f66339797dcd6c022e83473de7c782576b8"
+  },
+  "observability": [
+    {
+      "dimension": "真机编译真实用例（route:human，ADR-0003）：桥纯确定性 hermetic 建成；真实「文本用例→spec」端到端仍需一次真机 compile bring-up（LLM 编译期真机跑一遍产 events/observed 地面真值）+ 补缺失原子飞轮。人不在场只挂账。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-bridge-and-gate",
+      "desc": "桥核心 + 三闸：新建 lib/flow-bridge.mjs（buildFlow：id 从 caseId 确定性派生 ^[a-z0-9_]+$、steps 顺序=mapping、去 intentId；validateBridge：投影忠实双向 + 编译知识允许集 + 复用 compile-gate.validateDraft）+ bin/flow-bridge.mjs（薄 CLI，caseId 一致+路径安全+cred-gate，任一闸 exit 65 零落盘）+ lib/compile-atoms.mjs 加法导出 COMPILE_KNOWN_ATOMS/isCompilableAtom + bin/casey.mjs 分发接线。金牌 C1-C10（实现前红已核：C1 缺 lib、C3-C9 缺 bin exit 1）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T10:20:26.497Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-ripple-locks",
+      "desc": "涟漪回归锁：碰 lib/compile-atoms.mjs（加法导出 + :259 throw 同源）→ 经 compile-atoms 的金牌复跑零行为差——p3-compile（直接 import compile-atoms）+ 经 casey compile 子进程的 chiefcomplaint-smoke/wf-publish-states/wf-history-version。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-06T10:24:00.721Z 全部 acceptance exit 0"
+    }
+  ]
+}
