@@ -3,7 +3,7 @@
 // MCP 工具目录是 P0 时代（casey_run 参数形态对不上真 runPipeline、verdict/report 误标诚实桩、新命令未暴露）。
 // C1 CLI 三分发真跑非桩（heal 仍真桩）；C2 MCP 握手 + 工具名集钉死（12）；C3 正路 lint 真跑；
 // C4 反路：未知工具 -32602 + 缺参调用如实回传 [exitCode=…] 非「尚未实现」；C5 漂移锁：逐生命周期工具
-// 空参调用须落各 bin 真实用法错码（64；report 历史例外 2）——工具映射断线/退化成桩即红。
+// 空参调用须落各 bin 真实用法错码（64 全仓统一；report 历史例外 2 已由 report-exit64 收敛）——工具映射断线/退化成桩即红。
 import { spawnSync, spawn } from 'node:child_process';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -45,7 +45,7 @@ function mcpClient() {
   return { rpc, close: () => { try { child.stdin.end(); child.kill(); } catch { /* 尽力 */ } } };
 }
 
-// 工具名集（钉死 deepEq——目录漂移即红）与逐工具空参用法错码期望（report 历史例外 exit 2，收敛另案挂账）。
+// 工具名集（钉死 deepEq——目录漂移即红）与逐工具空参用法错码期望（九工具全 64，report-exit64 契约收敛后无例外）。
 const EXPECT_TOOL_NAMES = [
   'casey_selftest', 'casey_lint', 'casey_gate',
   'casey_ingest', 'casey_flow_bridge', 'casey_compile', 'casey_draft', 'casey_sign',
@@ -53,7 +53,7 @@ const EXPECT_TOOL_NAMES = [
 ];
 const LIFECYCLE_EMPTY_EXIT = {
   casey_ingest: 64, casey_flow_bridge: 64, casey_compile: 64, casey_draft: 64, casey_sign: 64,
-  casey_replay: 64, casey_verdict: 64, casey_report: 2, casey_run: 64,
+  casey_replay: 64, casey_verdict: 64, casey_report: 64, casey_run: 64,
 };
 
 // ---------- C1 CLI 三分发真跑非桩 ----------
@@ -61,7 +61,7 @@ await checkAsync('C1 CLI：replay/verdict/report 零参走真 bin 用法错非�
   const expects = [
     ['replay', 64, '--events'],
     ['verdict', 64, '--axes'],
-    ['report', 2, '--model'],
+    ['report', 64, '--model'],
   ];
   for (const [cmd, code, flag] of expects) {
     const r = runCli([cmd]);

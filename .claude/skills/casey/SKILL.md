@@ -44,7 +44,7 @@ description: 把一段文本测试用例（excel/json/txt/自由文本）在给�
 | 链路自检 | `node bin/casey.mjs selftest --tier1` |
 | loop 纪律 | `node bin/casey.mjs lint\|gate\|breaker\|contract ...` |
 
-> 当前进度：七相全建且 hermetic「文本→报告」全链已由集成金牌贯通（`tests/_golden/e2e-chain.golden.mjs`）；`heal` 是唯一诚实桩（exit 3，相5 未吃过真场景）。真机端到端仍需一次真机 compile bring-up + 人签在场（route:human）。桩返回 exit 3 时**如实告诉用户该阶段未实现**，绝不假装跑完了；`report` 的用法错历史码是 exit 2。
+> 当前进度：七相全建且 hermetic「文本→报告」全链已由集成金牌贯通（`tests/_golden/e2e-chain.golden.mjs`）；`heal` 是唯一诚实桩（exit 3，相5 未吃过真场景）。真机端到端仍需一次真机 compile bring-up + 人签在场（route:human）。桩返回 exit 3 时**如实告诉用户该阶段未实现**，绝不假装跑完了；全部生命周期命令用法错统一 exit 64（`report` 历史例外 2 已由 report-exit64 契约收敛）。
 
 ## 报告里有什么（设计 §6）
 
