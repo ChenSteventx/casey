@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 2,
+  "caseId": "tc_wf_history_version",
+  "task": "tc_wf_history_version 人签断言契约（扁平每用例 prd；2026-07-07 真机合并行程首签，sign 写 expectedFrozenPath + checksum）",
+  "testChecksums": {
+    "cases/tc_wf_history_version/expected.frozen.json": "b584ef0e9ed3bcf80cc226eac389a6976ad48c3e2ecdb9933a38d970659a075a"
+  },
+  "stories": [],
+  "expectedFrozenPath": "cases/tc_wf_history_version/expected.frozen.json"
+}
