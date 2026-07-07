@@ -35,8 +35,8 @@
     "entries": {
       "type": "array",
       "minItems": 1,
-      "maxItems": 7,
-      "description": "逐动作的治理登记条目。maxItems 镜像已冻 events.schema 7 动作枚举(codex R5-F4 辅助收紧)：draft-07 表达不了按 action 唯一(uniqueItems 拒不了同 action 不同治理的冲突条目)，恰一条/动作的唯一性由冻结 golden 校验，schema 层以 maxItems 拦粗暴重复；扩枚举 = 改 events.schema + 本值的显式棘轮事件。",
+      "maxItems": 8,
+      "description": "逐动作的治理登记条目。maxItems 镜像已冻 events.schema 8 动作枚举(codex R5-F4 辅助收紧)：draft-07 表达不了按 action 唯一(uniqueItems 拒不了同 action 不同治理的冲突条目)，恰一条/动作的唯一性由冻结 golden 校验，schema 层以 maxItems 拦粗暴重复；扩枚举 = 改 events.schema + 本值的显式棘轮事件。",
       "items": {
         "$ref": "#/definitions/actionEntry"
       }
@@ -65,7 +65,8 @@
             "selectOption",
             "press",
             "nav",
-            "newpage"
+            "newpage",
+            "dragTo"
           ],
           "description": "动作名；权威活在 events.schema action 枚举，本表与之对齐(镜像 expected-frozen.assertionKind 与 bin/check.mjs 对齐)。新增动作 = 改已冻 events.schema 枚举 + 驱动 + golden 的棘轮事件，不在本表私自扩。"
         },

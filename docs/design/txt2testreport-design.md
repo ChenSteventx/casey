@@ -132,7 +132,7 @@ excel / json / txt / 自由文本全部归一到一个内部 `TestCase`（推广
 
 - **「编译」= 文本 → 确定性可回放 spec。** 相 1 是 LLM 唯一一次「直接跑用例」：① 把 intent 解析成稳健动作落 `events.json`；② 落 `observed-<caseId>.json` 当地面真值（真实成功 URL/提示/回复/请求日志）；③ 标 `CASE_DEFECT` 候选（**仅此编译期、人签前有效** —— 见 §4.3）。
 - **回放只跑相 3→4(→5→6)。** 可复现性来源：日常回归确定性，LLM 只在确证漂移自愈时回现场。
-- **相 1 determinism 契约（红队 M）**：记 `observedReality`/做后检查前，必等**静默点**（networkidle + 无动画 + DOM 稳定 K ms），不靠 `waitForTimeout` 硬睡；spec 落**稳定属性**（role+accessibleName+stepId），**禁止纯坐标步**（authoring agent 非人手光标，无录制坐标）；本质不可复现步（画布拖拽等）标 route:human。
+- **相 1 determinism 契约（红队 M）**：记 `observedReality`/做后检查前，必等**静默点**（networkidle + 无动画 + DOM 稳定 K ms），不靠 `waitForTimeout` 硬睡；spec 落**稳定属性**（role+accessibleName+stepId），**禁止纯坐标步**语义不变（定位必须走稳定属性，坐标绝不作定位依据）；画布拖拽经 `dragTo` 动作类封装为确定性动作——源经语义定位器 + 点击身份门定位，落点坐标（`ox`/`oy`）是内容参数而非定位兜底；无法封装的本质不可复现步仍标 route:human（2026-07-07 真机二号探针实证修订，wf-add-node GRILL D2）。
 
 ### 3.1 「loop」的再诠释 + 熔断器（v0.2 修正）
 

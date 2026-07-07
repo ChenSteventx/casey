@@ -3,7 +3,7 @@
   "task": "wf-open-smoke（direct）：飞轮第五条只读零缝暖场。两纯加法编译原子——nav.workflowManagement（路由导航一击即中，镜像 nav.agentManagement；后置锚双布局记录容器可见、仅 unique 才等 G2）+ workflow.open（openName 文本精确点开进详情，只读零破坏；后置 waitForURL detail、仅 unique 才等）；fake-sut 行名 td 可点通路（加法，prd-p5-replay 夹具重签）；flow-bridge 金牌三钉点例翻 workflow.addNode（R9 画布原子长期无知识天然反例）+ 集 11→13 重钉（prd-flow-bridge 重签）。COMPILE_KNOWN_ATOMS 11→13。决策 docs/plans/wf-open-smoke/proposed/GRILL.md。",
   "specPath": "docs/plans/wf-open-smoke/plan.md",
   "testChecksums": {
-    "tests/_golden/wf-open-smoke.golden.mjs": "f5a5ce2e15396f626e9a5fa2920d88a31ee77e19d664d88b9c12e6c48aa3fb65"
+    "tests/_golden/wf-open-smoke.golden.mjs": "c58b6a704e732b9b1731ab4a85a679145389935023965fce44f5b20ad5fc4e14"
   },
   "observability": [
     {
@@ -21,7 +21,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-06T19:21:15.798Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-07T04:58:58.045Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-ripple-flip-and-locks",
@@ -34,7 +34,7 @@
         "node tests/_golden/e2e-chain.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-06T19:24:06.769Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-07T05:01:46.420Z 全部 acceptance exit 0"
     }
   ]
 }

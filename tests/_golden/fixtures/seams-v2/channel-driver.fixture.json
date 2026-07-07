@@ -61,6 +61,14 @@
           "action": "newpage",
           "call": "context.waitForEvent('page') → 切句柄（或录制 newpage 重放）",
           "lifecycleHooks": null
+        },
+        {
+          "action": "dragTo",
+          "call": "findEvent → 语义定位器锚源（点击身份门 包裹）→ mouse 三段式拖至画布 ox/oy 落点",
+          "lifecycleHooks": {
+            "beforeInvokeAction": "watchNetworkForensics 起采(取证轴窗口开)",
+            "afterInvokeAction": ".lf-node 计数后置核验 + 断言轴评估 + 静默点 等待"
+          }
         }
       ]
     }

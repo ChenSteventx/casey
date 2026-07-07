@@ -362,6 +362,57 @@
         "tests/_golden/p5-replay.golden.mjs",
         "tests/_golden/fixtures/p5/replay-cases.json"
       ]
+    },
+    {
+      "action": "dragTo",
+      "label": "拖放",
+      "channels": [
+        "web"
+      ],
+      "paramSchema": {
+        "requiredEventFields": [
+          "ox",
+          "oy",
+          "semantic"
+        ],
+        "optionalEventFields": [
+          "text"
+        ],
+        "locatorBinding": "required-anyOf",
+        "constraintNote": "对齐 events.schema allOf：dragTo 必带 ox/oy 落点与 semantic 源语义定位器；源经语义定位器 + 点击身份门唯一命中才拖，落点 ox/oy 是相对画布容器（.lf-graph）左上角的内容参数（registry x/y 直译）、非定位兜底；禁纯坐标步。"
+      },
+      "coordinateFallback": {
+        "allowed": false,
+        "onlyVia": null,
+        "note": "画布拖拽经 dragTo 封装为确定性动作：源以语义定位器 + 点击身份门 为准，坐标兜底不允许；ox/oy 是内容参数（拖到哪）而非定位兜底（元素在哪）。"
+      },
+      "threeAxisEvidence": {
+        "actionAxis": {
+          "performedGate": "点击身份门：源过滤后 count===1 且画布容器在场、拖放派发成功才置 actionPerformed=true。",
+          "ambiguousSignal": "源多匹配或坐标兜底拖拽 → AMBIGUOUS_ACTION；画布容器缺席证不出落点 → 如实 action_failed，绝不谎报。"
+        },
+        "assertionAxisFeeds": [
+          "countChange",
+          "textVisible"
+        ],
+        "forensicsAxis": [
+          "watchNetworkForensics 网络取证（拖放落点触发的画布图更新请求）",
+          "生命周期（pageerror / dialog）"
+        ]
+      },
+      "driver": {
+        "channelDriver": "web/_data_runner",
+        "call": "findEvent → 语义定位器锚源（点击身份门 包裹）→ mouse 三段式拖至画布 ox/oy 落点"
+      },
+      "failClosed": {
+        "whenUnsupported": "NEEDS_HUMAN",
+        "needsHumanReason": "INDETERMINATE",
+        "neverSubstitute": true,
+        "neverSelfHeal": true
+      },
+      "golden": [
+        "tests/_golden/wf-add-node.golden.mjs"
+      ]
     }
   ]
 }

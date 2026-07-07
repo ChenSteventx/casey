@@ -68,8 +68,8 @@ async function discardVideos(context) {
 // 纯翻译既有机制事实：locatorResolution 冻结枚举缝合（内部值 action_failed→unique，失败归 result=actionError）；
 // valueRef 值侧打码（全串恰为单占位符才透传，否则脱敏标记，护栏 #7）；quietPointReached=该步前置稳定程序达成。
 const RH_PLACEHOLDER = /^\{\{[A-Za-z0-9_.-]+\}\}$/;
-const RH_INTERACTIVE = new Set(['click', 'dblclick', 'fill', 'selectOption']);
-const RH_ACTIONS = new Set(['click', 'dblclick', 'fill', 'selectOption', 'press', 'nav', 'newpage']);
+const RH_INTERACTIVE = new Set(['click', 'dblclick', 'fill', 'selectOption', 'dragTo']); // dragTo 源有定位 → 交互支（wf-add-node）
+const RH_ACTIONS = new Set(['click', 'dblclick', 'fill', 'selectOption', 'press', 'nav', 'newpage', 'dragTo']);
 const RH_LR_ENUM = new Set(['unique', 'none', 'ambiguous', 'fallback_first', 'coord_fallback']); // 冻结枚举透传（codex R1-F2）
 function historyLine(ev, { navOk, navErr, axis, durationMs, caseId }) {
   if (!RH_ACTIONS.has(ev.action)) return null; // 冻结枚举外（如纯断言步）不落行
@@ -132,8 +132,9 @@ async function waitReplyStable(page, selector, { stableMs = 2000, budgetMs = 100
 }
 
 // 行计数：失败回 null（未知），绝不回 0——避免 countChange equals 0 把「证不出」洗成假绿（finding 7）。
-async function rowCount(page) {
-  try { return await page.locator('.hr-table-row').count(); } catch { return null; }
+// 选择器可经 profile.countSelector 换通道（wf-add-node GRILL D4 (a)：画布用例配 .lf-node），缺省零行为差。
+async function rowCount(page, selector = '.hr-table-row') {
+  try { return await page.locator(selector).count(); } catch { return null; }
 }
 
 async function main() {
@@ -215,6 +216,17 @@ async function main() {
     // disabledClass 存 trim 值（codex R1-F4）：classList.contains 对含空白 token 返回 false 不抛——
     // 存原值会让类名判据静默失效、enabled 方向 fail-open。
     buttonsCfg = { extraSelector: b.extraSelector, disabledClass: b.disabledClass === undefined ? null : b.disabledClass.trim() };
+  }
+
+  // 计数通道选择器（wf-add-node GRILL D4 (a)，通道剖面非凭据加法）：缺省 .hr-table-row 零行为差；
+  // 给了须非空字符串，形状非法拒跑 fail-closed（buttons/routes 同律）；存 trim 值。
+  let countSel = '.hr-table-row';
+  if (profile.countSelector !== undefined) {
+    if (typeof profile.countSelector !== 'string' || !profile.countSelector.trim()) {
+      console.error('replay: 通道剖面 countSelector 形状非法（给了须非空字符串），拒跑（fail-closed）');
+      process.exit(65);
+    }
+    countSel = profile.countSelector.trim();
   }
 
   const intentOrder = [];
@@ -370,7 +382,7 @@ async function main() {
         }
       } catch (e) { navOk = false; navErr = e; }
 
-      if (isFirst) intentCount.set(ev.intentId, { before: await rowCount(page), after: null });
+      if (isFirst) intentCount.set(ev.intentId, { before: await rowCount(page, countSel), after: null });
 
       // reply 陈迹基线（codex R1-F3）：intent 首步记气泡数与末泡文本；基线证不出则本 intent 不回填（fail-safe）。
       if (isFirst && chatCfg) {
@@ -424,7 +436,7 @@ async function main() {
       if (isLast) {
         intentUrl.set(ev.intentId, pathOf(page.url()));
         const c = intentCount.get(ev.intentId);
-        if (c) c.after = await rowCount(page);
+        if (c) c.after = await rowCount(page, countSel);
         // kinds-harden（G3）：代表步静默点现场采——事后卷回评估只吃此刻事实（同 intentUrl/intentCount 范式）。
         // toast 快照选择器逐字复刻 lib/compile-atoms.mjs 观测采集（编译期作者与回放期消费者同构）。
         const toasts = await page.evaluate(() => {

@@ -155,6 +155,64 @@ function clientMain() {
     app.appendChild(mkSave());
     // ambiguous：渲染第二个同名保存按钮 → 语义定位器多匹配 → resolution=fallback_first。
     if (scenario === 'ambiguous') app.appendChild(mkSave());
+    // 画布通路（wf-add-node）：详情页尾部加法渲染，既有场景无人碰画布零行为差（wf-open-smoke 行名先例）。
+    renderCanvas();
+  }
+
+  // —— 画布通路（wf-add-node，LogicFlow 形态假画布）——
+  // 真机实采对齐：`添加节点` 钮（role=button name=添加节点）点开面板 → .node-item 21 项 →
+  //   mouse 三段式（mousedown 在面板项 / mousemove 位移过阈值 / mouseup 落在画布界内）落 .lf-node（节点名进 .lf-node-content）；
+  //   单击/双击面板项【不】落节点（真机否定行为，金牌拿它当反证）。纯 DOM 零网络（取证中性，进不了 forensics）。
+  // 前 4 名为真机实采名（开始节点/结束节点/脚本转换/模型节点），余 17 为合成名凑真机面板项数 21。
+  var NODE_TYPES = ['开始节点', '结束节点', '脚本转换', '模型节点', '条件分支', '循环节点', '并行网关', '汇聚网关', 'HTTP请求', 'SQL查询', '消息推送', '人工审核', '子流程', '定时等待', '数据映射', '知识检索', '意图识别', '文本抽取', '报表输出', '邮件通知', '异常处理'];
+  var DRAG_MIN_PX = 12; // 位移阈值：低于它按点击论（单击不落节点的机制保证之一；另一保证是落点须在画布界内）
+  var nodeSeq = 0; // 跨重渲递增，节点 id 不复用
+
+  function renderCanvas() {
+    var wrap = el('div', { class: 'lf-canvas-wrap' });
+    var graph = el('div', { class: 'lf-graph', 'data-node-count': '0' });
+    var overlay = el('div', { class: 'lf-canvas-overlay' });
+    graph.appendChild(overlay);
+
+    // 拖拽机：mousedown（面板项）时才挂 document 级 move/up 监听、mouseup 即卸——重渲不累积监听。
+    function beginDrag(name, ev) {
+      ev.preventDefault(); // 压掉原生文本选择，对齐 LogicFlow 拖拽手感
+      var sx = ev.clientX, sy = ev.clientY, moved = false;
+      function onMove(m) { if (Math.abs(m.clientX - sx) + Math.abs(m.clientY - sy) >= DRAG_MIN_PX) moved = true; }
+      function onUp(u) {
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp);
+        var r = graph.getBoundingClientRect();
+        var inside = u.clientX >= r.left && u.clientX <= r.right && u.clientY >= r.top && u.clientY <= r.bottom;
+        if (!moved || !inside) return; // 单击/双击/微动/落点出画布 → 不落节点（真机否定行为）
+        nodeSeq += 1;
+        var node = el('div', { class: 'lf-node', id: 'lf_node_' + nodeSeq });
+        node.style.left = (u.clientX - r.left) + 'px';
+        node.style.top = (u.clientY - r.top) + 'px';
+        node.appendChild(el('div', { class: 'lf-node-content' }, name));
+        overlay.appendChild(node);
+        graph.setAttribute('data-node-count', String(overlay.querySelectorAll('.lf-node').length)); // 计数一致：以 DOM 实数为准
+      }
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    }
+
+    var panel = null;
+    var addBtn = el('button', { class: 'lf-add-node-btn', type: 'button' }, '添加节点');
+    addBtn.addEventListener('click', function () {
+      if (panel) { panel.remove(); panel = null; return; } // 再点收起（toggle）
+      panel = el('div', { class: 'node-panel' });
+      for (var i = 0; i < NODE_TYPES.length; i++) {
+        var item = el('div', { class: 'node-item' }, NODE_TYPES[i]);
+        item.addEventListener('mousedown', (function (nm) { return function (ev2) { beginDrag(nm, ev2); }; })(NODE_TYPES[i]));
+        panel.appendChild(item);
+      }
+      wrap.insertBefore(panel, graph); // 面板在画布上方，几何不重叠（落点判定干净）
+    });
+
+    wrap.appendChild(addBtn);
+    wrap.appendChild(graph);
+    app.appendChild(wrap);
   }
 
   function openStream() {
@@ -179,7 +237,12 @@ function pageHtml(scenario) {
   // versioned 场景：入口脚本 src 带 ?v= 发版号（capturedAgainstBuild 提取考场）；其余场景零动。
   const versionTag = scenario === 'versioned' ? '<script src="/api-config.js?v=9.9.9-test"></script>' : '';
   return '<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><title>假 SUT</title>'
-    + '<style>.hr-toast{position:fixed;top:8px;right:8px}.hr-drawer__content-wrapper{border:1px solid #ccc}</style>'
+    + '<style>.hr-toast{position:fixed;top:8px;right:8px}.hr-drawer__content-wrapper{border:1px solid #ccc}'
+    + '.node-panel{display:flex;flex-wrap:wrap;gap:4px;max-width:840px;margin-top:8px}'
+    + '.node-item{border:1px solid #bbb;padding:4px 8px;cursor:grab;user-select:none}'
+    + '.lf-graph{position:relative;height:320px;border:1px solid #ddd;margin-top:8px}'
+    + '.lf-canvas-overlay{position:absolute;left:0;top:0;right:0;bottom:0}'
+    + '.lf-node{position:absolute;border:1px solid #567;padding:2px 6px;background:#fff}</style>'
     + versionTag
     + '</head><body><div id="app"></div>'
     + '<script>window.__CFG__=' + cfg + ';</script>'

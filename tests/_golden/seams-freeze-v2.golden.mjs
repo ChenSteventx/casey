@@ -299,7 +299,7 @@ const ok = () => { checks++; };
 // --- 动作真值源：读已冻 events.schema 的 action 枚举（决策 2.1，非硬编码）---
 const eventsSchema = load(S('events.schema.json'), 'events.schema（真值源）');
 const ACTION_ENUM = eventsSchema?.definitions?.event?.properties?.action?.enum;
-if (!Array.isArray(ACTION_ENUM) || ACTION_ENUM.length !== 7) fail('events.schema: action 枚举缺失或非 7 项（真值源被破坏）');
+if (!Array.isArray(ACTION_ENUM) || ACTION_ENUM.length !== 8) fail('events.schema: action 枚举缺失或非 8 项（真值源被破坏）');
 const ACTIONS = new Set(ACTION_ENUM);
 ok();
 

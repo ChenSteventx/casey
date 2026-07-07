@@ -162,7 +162,8 @@
             "selectOption",
             "press",
             "nav",
-            "newpage"
+            "newpage",
+            "dragTo"
           ],
           "description": "动作名；严格 ⊆ 已冻 events.schema action 枚举(决策 2.1/Q3)。绝不在此私自扩——新动作走改 events.schema 枚举 + 本登记 + golden 的显式棘轮 + route:human。"
         },

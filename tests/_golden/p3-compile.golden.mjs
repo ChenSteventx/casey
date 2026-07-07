@@ -24,7 +24,7 @@ const CASEY = join(ROOT, 'bin', 'casey.mjs');
 const REPLAY = join(ROOT, 'bin', 'replay.mjs');
 const SNAPSHOT = join(ROOT, 'lib', 'atoms-registry.snapshot.json');
 const CASE_ID = 'tc_compile_smoke';
-const ACTIONS = new Set(['click', 'dblclick', 'fill', 'selectOption', 'press', 'nav', 'newpage']);
+const ACTIONS = new Set(['click', 'dblclick', 'fill', 'selectOption', 'press', 'nav', 'newpage', 'dragTo']);
 const tmp = mkdtempSync(join(tmpdir(), 'casey-p3compile-'));
 
 const fails = [];

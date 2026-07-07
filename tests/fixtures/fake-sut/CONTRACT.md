@@ -16,6 +16,25 @@
 - 点 `确定` → POST `/api/process/saveOrModifyProcessData` → 成功则跳 `/ai-manager/process/detail` + 弹 toast `新增成功`。
 - `/ai-manager/process/detail`：`保存` 按钮（`hr-button wf-save`）→ 点击发 POST `/api/process/saveOrModifyProcessData`。
 
+## 画布通路（`/ai-manager/process/detail` 尾部加法，全场景渲染；wf-add-node）
+
+> 事实源：真机二号探针实采（2026-07-07，LogicFlow 画布：`添加节点` 钮开面板、`.node-item` 21 项、mouse 三段式拖落 `.lf-node`、单击/双击不落）。
+
+详情页尾部固定渲染假画布（LogicFlow 形态）：`添加节点` 按钮（`<button>` role=button name=`添加节点`、class `lf-add-node-btn`）+ 画布容器 `.lf-graph`（带 `data-node-count`，内含铺满的 `.lf-canvas-overlay`）。既有场景（含 `ambiguous` 双保存钮、`drift` 换 class）无人碰画布 → 零行为差（先例：wf-open-smoke 的可点行名）。`pageerror` 在渲染画布前已抛，不受影响。
+
+四条行为契约：
+
+1. 按钮开面板：点 `添加节点` → 出现 `.node-panel`，内 `.node-item` 恰 21 项；前 4 名为真机实采名（`开始节点`/`结束节点`/`脚本转换`/`模型节点`），余 17 为合成名凑真机项数（绝不引真机全清单，合成值即可，护栏 #7 同理）。再点收起（toggle）。
+2. 拖落节点：mouse 三段式——`mousedown` 在 `.node-item` 上、`mousemove` 位移 ≥ 12px（曼哈顿距离阈值）、`mouseup` 落点在 `.lf-graph` 界内 → `.lf-canvas-overlay` 内新增一个 `.lf-node`（id `lf_node_<seq>`，落点定位），其 `.lf-node-content` 文本 = 面板项节点名。
+3. 点击不落（否定行为，金牌反证用）：单击/双击 `.node-item` 不产生 `.lf-node`；微动（位移 < 12px）或落点出画布界同样不落。机制：位移阈值 + 落点界内双守卫，二者缺一不落。
+4. 计数一致：`.lf-node` 的 DOM 实数 = 成功拖落次数；`.lf-graph[data-node-count]` 每次落节点后按 DOM 实数刷新（golden 双向可数：locator count 与属性值互证）。
+
+分工与边界（沿既有条款）：
+
+- 画布交互纯 DOM 零网络——落节点不发任何请求，进不了 `watchNetworkForensics` 取证；wf-add-node 的裁定证据走 DOM 断言（`.lf-node-content` 文本可见、计数）。
+- 拖拽监听 `mousedown` 时才挂 document 级 `mousemove`/`mouseup`、`mouseup` 即卸，重渲不累积监听；`nodeSeq` 跨重渲递增，节点 id 不复用；路由切换重渲后画布清零（`data-node-count` 回 `0`）。
+- 类名对齐真机接缝：`.lf-graph` / `.lf-canvas-overlay` / `.lf-node` / `.lf-node-content` / `.node-item`；真机 `.lf-node` 是 SVG `<g>`，假 SUT 用 div 复刻类名 + 文本语义这条接缝，不复刻 SVG 标签结构。
+
 ## 后端路由 × 场景（10 态，复现 verdict-cases 全八案）
 
 > save 信封一律 `status` 形态：成功 `{status:200}`、软失败 HTTP 200 但 `body.status≠200`（`通道剖面` successField=`status`/successValue=200，复现 ADR-0006/observed-reality 的 Heren 接缝，绝不用旧 `{code}`）。

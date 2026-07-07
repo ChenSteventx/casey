@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "task": "wf-add-node（full）：画布维度首原子 workflow.addNode 编译知识建成（COMPILE_KNOWN_ATOMS 13→14），解锁 R9 坐标 flow 首步。真机二号探针（2026-07-07）证伪甲案（面板项单击/双击不落节点）、实证乙案（mouse 三段式拖拽落 .lf-node）→ 新增 dragTo 动作类：events.schema action 枚举 + 三姊妹 schema 全等镜像 + 双 fixture 治理条目（prd-seams-freeze / v2 重签授权已拍）；回放器 dragTo 分支（源身份门 count===1 才拖、画布容器证不出回 false、mouse down→move(steps:12)→300ms→up）+ profile countSelector 计数通道加法；compileWorkflowAddNode（条件步开面板线性化 + customAct 拖拽 + .lf-node 计数 +1 后置核验进 blockers）；fake-sut 画布通路纯加法（prd-p5-replay 重签）；例翻涟漪（flow-bridge C5/C14/C15 + wf-open-smoke C1 反例 workflow.addNode→agent.openToolPicker + 集 13→14，两 prd 重签）；设计条款 :135 修订留痕。决策全录 docs/plans/wf-add-node/proposed/GRILL.md（Steven 四项点选定夺 2026-07-07）。",
+  "specPath": "docs/plans/wf-add-node/plan.md",
+  "testChecksums": {
+    "tests/_golden/wf-add-node.golden.mjs": "431226f0274ee0ddc62260c41b1762bbad9aae26609fd388478f932d673bbc4d"
+  },
+  "observability": [
+    {
+      "dimension": "真机四停站（route:human，需 Steven 在场，可并入下次合并行程）：① 21 面板项文本随版本漂移复核（2026-07-07 实采清单在 GRILL 背景节）；② lf-node 族类名漂移复核；③ 拖拽时序（steps:12 + 300ms）真机负载下稳定性；④ window.lf 图对象口缺席——connectNodes 拓扑取证挂账 SUT 配合暴露图对象。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-atom-and-flip",
+      "desc": "阶段一：compileWorkflowAddNode 建成（条件步开面板 + customAct 拖拽 + 计数核验进 blockers）+ 两金牌例翻（flow-bridge C5/C14/C15、wf-open-smoke C1 反例换 agent.openToolPicker + 集 13→14）+ prd-flow-bridge / prd-wf-open-smoke 重签。红先行：C1「addNode 应可编译/集非 14」、C2/C4a/C4b「暂无编译知识」实锤。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-07T05:31:27.427Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-dragto-seams",
+      "desc": "阶段二：dragTo 动作类入双冻结（events.schema 枚举 + 描述修订 + allOf 落点分支 + ox/oy 语义；action-vocabulary/channel-driver/run-history 三 schema 全等镜像 + maxItems 8；av fixture dragTo 治理条目 + cd fixture web actionSpace）+ 回放器分支（replay-actions doAct dragTo + RH_ACTIONS/RH_INTERACTIVE + profile countSelector 通道）+ seams 双金牌与 p3-compile 金牌联动；prd-seams-freeze / prd-seams-freeze-v2 / prd-p3-compile 重签。红先行：C5 枚举缺 dragTo 实锤。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/seams-freeze-v2.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-07T05:34:15.674Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-fixture-and-chain",
+      "desc": "阶段三：fake-sut 画布通路纯加法（预研补丁 9/9 冒烟绿：添加节点开面板 21 项 / 双守卫拖落 .lf-node / 单击双击微动出界不落 / data-node-count 实数）+ CONTRACT.md 增补 + prd-p5-replay 重签；registry nodeName desc 修至真机 21 名；设计条款 :135 修订 + CONTEXT.md 动作词汇表词条同步；全链回归零行为差。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-07T05:36:59.438Z 全部 acceptance exit 0"
+    }
+  ]
+}

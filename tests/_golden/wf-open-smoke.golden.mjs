@@ -1,6 +1,6 @@
 // wf-open-smoke.golden.mjs —— 飞轮第五条只读暖场（wf-open-smoke，direct）红金牌。实现前红：
 // 两原子无编译知识（C1/C2 exit 65「暂无编译知识」）、夹具行名不可点。决策 docs/plans/wf-open-smoke/proposed/GRILL.md。
-// C1 两原子可编译+集恰 13；C2 compile 全程 events/observed/assertionAtoms 钉死；C3 mini 端到端 verdict 全 PASS；
+// C1 两原子可编译+集恰 14；C2 compile 全程 events/observed/assertionAtoms 钉死；C3 mini 端到端 verdict 全 PASS；
 // C4 只读钉死（动作 ⊆ nav/click、零破坏原子）。真机四停站 route:human（prd observability）。
 import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
@@ -48,11 +48,11 @@ const eventsFile = join(outDir, 'events.json');
 const observedFile = join(outDir, `observed-${CASE_ID}.json`);
 const reportFile = join(outDir, 'compile-report.json');
 
-// ---------- C1 两原子可编译 + 集恰 13 ----------
-await checkAsync('C1 nav.workflowManagement/workflow.open 可编译；COMPILE_KNOWN_ATOMS 恰 13', async () => {
+// ---------- C1 两原子可编译 + 集恰 14 ----------
+await checkAsync('C1 nav.workflowManagement/workflow.open 可编译；COMPILE_KNOWN_ATOMS 恰 14', async () => {
   const ca = await import(`file://${join(ROOT, 'lib', 'compile-atoms.mjs').replace(/\\/g, '/')}`);
   for (const a of ['nav.workflowManagement', 'workflow.open']) if (!ca.isCompilableAtom(a)) throw new Error(`${a} 应可编译（本契约加法）`);
-  if (ca.COMPILE_KNOWN_ATOMS.size !== 13) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 13（11+2），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
+  if (ca.COMPILE_KNOWN_ATOMS.size !== 14) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 14（13+1），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
 });
 
 // ---------- C2 compile 全程（fake-sut happy） ----------

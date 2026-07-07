@@ -52,9 +52,9 @@ if (ev.schemaVersion !== 2 || ev.channel !== 'web') fail('events fixture: schema
 if (!Array.isArray(ev.events) || ev.events.length === 0) fail('events fixture: events 须非空数组');
 for (const [i, e] of ev.events.entries()) {
   if (!e.stepId || !e.intentId || !e.action) fail(`events[${i}]: 缺 stepId/intentId/action`);
-  if (['click', 'dblclick', 'fill', 'selectOption'].includes(e.action)) {
+  if (['click', 'dblclick', 'fill', 'selectOption', 'dragTo'].includes(e.action)) {
     const hasStable = e.semantic || (e.role && e.accessibleName !== undefined) || e.text || e.fieldLabel || e.dropdownUnit;
-    if (!hasStable) fail(`events[${i}] (${e.action}): 纯坐标步——缺稳定定位字段（semantic/role+accessibleName/text/fieldLabel/dropdownUnit）`);
+    if (!hasStable) fail(`events[${i}] (${e.action}): 纯坐标步——缺稳定定位字段（semantic/role+accessibleName/text/fieldLabel/dropdownUnit）；dragTo 落点 ox/oy 是内容参数、源仍须稳定定位（wf-add-node codex R1-F3）`);
   }
 }
 ok();

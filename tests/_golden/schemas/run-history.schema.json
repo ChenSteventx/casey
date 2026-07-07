@@ -63,7 +63,8 @@
             "selectOption",
             "press",
             "nav",
-            "newpage"
+            "newpage",
+            "dragTo"
           ],
           "description": "动作类型，字段名与枚举均跟随已冻 events.schema.json 的 action(决策 1.2：ADR-0005 统一语言，下游证据接缝不为同一概念另起别名 method)。"
         },
@@ -169,7 +170,7 @@
           }
         },
         {
-          "description": "交互动作(click/dblclick/fill/selectOption)恒有定位需求，locatorResolution 须非 null(codex R11-F3)。",
+          "description": "交互动作(click/dblclick/fill/selectOption/dragTo)恒有定位需求，locatorResolution 须非 null(codex R11-F3；dragTo 源有语义定位 → 归位本支)。",
           "if": {
             "properties": {
               "action": {
@@ -177,7 +178,8 @@
                   "click",
                   "dblclick",
                   "fill",
-                  "selectOption"
+                  "selectOption",
+                  "dragTo"
                 ]
               }
             },

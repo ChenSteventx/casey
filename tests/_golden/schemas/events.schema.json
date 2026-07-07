@@ -90,9 +90,10 @@
             "selectOption",
             "press",
             "nav",
-            "newpage"
+            "newpage",
+            "dragTo"
           ],
-          "description": "确定性可回放动作集；画布 drag/connect 等本质不可复现步走 route:human、不入此 spec；nodeConfigFill 是 overlay 运行期注入产物、非冻结 event"
+          "description": "确定性可回放动作集；画布拖拽经 dragTo 动作类封装为确定性动作——源经语义定位器+点击身份门定位，落点坐标（ox/oy）是内容参数而非定位兜底；禁纯坐标步语义不变；无法封装的本质不可复现步仍走 route:human（wf-add-node GRILL D2，2026-07-07 真机实证）；nodeConfigFill 是 overlay 运行期注入产物、非冻结 event"
         },
         "tagName": {
           "type": "string"
@@ -169,10 +170,12 @@
           "type": "number"
         },
         "ox": {
-          "type": "number"
+          "type": "number",
+          "description": "dragTo 落点：相对画布容器（.lf-graph）左上角的内容参数（registry x/y 直译）；其余动作维持 autotester 遗产语义"
         },
         "oy": {
-          "type": "number"
+          "type": "number",
+          "description": "dragTo 落点：相对画布容器（.lf-graph）左上角的内容参数（registry x/y 直译）；其余动作维持 autotester 遗产语义"
         },
         "pre": {
           "$ref": "#/definitions/snap"
@@ -245,11 +248,29 @@
           "if": {
             "properties": {
               "action": {
+                "const": "dragTo"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "ox",
+              "oy",
+              "semantic"
+            ],
+            "description": "dragTo 必带 ox/oy 落点（相对画布容器左上角的内容参数）与 semantic 源语义定位器（身份门源）——落点是内容参数而非定位兜底（wf-add-node GRILL D2）"
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "action": {
                 "enum": [
                   "click",
                   "dblclick",
                   "fill",
-                  "selectOption"
+                  "selectOption",
+                  "dragTo"
                 ]
               }
             }
