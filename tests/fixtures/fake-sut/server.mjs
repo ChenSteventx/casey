@@ -164,7 +164,7 @@ function clientMain() {
   //   mouse 三段式（mousedown 在面板项 / mousemove 位移过阈值 / mouseup 落在画布界内）落 .lf-node（节点名进 .lf-node-content）；
   //   单击/双击面板项【不】落节点（真机否定行为，金牌拿它当反证）。纯 DOM 零网络（取证中性，进不了 forensics）。
   // 前 4 名为真机实采名（开始节点/结束节点/脚本转换/模型节点），余 17 为合成名凑真机面板项数 21。
-  var NODE_TYPES = ['开始节点', '结束节点', '脚本转换', '模型节点', '条件分支', '循环节点', '并行网关', '汇聚网关', 'HTTP请求', 'SQL查询', '消息推送', '人工审核', '子流程', '定时等待', '数据映射', '知识检索', '意图识别', '文本抽取', '报表输出', '邮件通知', '异常处理'];
+  var NODE_TYPES = ['开始节点', '结束节点', '脚本转换', '模型节点', '真并行网关开始', '循环节点', '并行网关', '汇聚网关', 'HTTP请求', 'SQL查询', '消息推送', '人工审核', '子流程', '定时等待', '数据映射', '知识检索', '意图识别', '文本抽取', '报表输出', '邮件通知', '异常处理'];
   var DRAG_MIN_PX = 12; // 位移阈值：低于它按点击论（单击不落节点的机制保证之一；另一保证是落点须在画布界内）
   var nodeSeq = 0; // 跨重渲递增，节点 id 不复用
 
@@ -185,15 +185,38 @@ function clientMain() {
         var r = graph.getBoundingClientRect();
         var inside = u.clientX >= r.left && u.clientX <= r.right && u.clientY >= r.top && u.clientY <= r.bottom;
         if (!moved || !inside) return; // 单击/双击/微动/落点出画布 → 不落节点（真机否定行为）
-        nodeSeq += 1;
-        var node = el('div', { class: 'lf-node', id: 'lf_node_' + nodeSeq });
-        node.style.left = (u.clientX - r.left) + 'px';
-        node.style.top = (u.clientY - r.top) + 'px';
-        node.appendChild(el('div', { class: 'lf-node-content' }, name));
-        overlay.appendChild(node);
+        var lx = u.clientX - r.left, ty = u.clientY - r.top;
+        // 真并行网关开始：真机一次拖拽生成 start/end 两节点（.lf-node +2）；其余节点 +1（对齐 addNode expectedNodeDelta）。
+        var drops = name === '真并行网关开始'
+          ? [{ nm: '真并行网关开始', dx: 0, dy: 0 }, { nm: '真并行网关结束', dx: 140, dy: 0 }]
+          : [{ nm: name, dx: 0, dy: 0 }];
+        drops.forEach(function (d) {
+          nodeSeq += 1;
+          var node = el('div', { class: 'lf-node', id: 'lf_node_' + nodeSeq });
+          node.style.left = (lx + d.dx) + 'px';
+          node.style.top = (ty + d.dy) + 'px';
+          node.appendChild(el('div', { class: 'lf-node-content' }, d.nm));
+          var anchor = el('div', { class: 'lf-node-anchor-hover' });
+          anchor.addEventListener('mousedown', function (ev3) { beginEdge(node, ev3); });
+          node.appendChild(anchor);
+          overlay.appendChild(node);
+        });
         graph.setAttribute('data-node-count', String(overlay.querySelectorAll('.lf-node').length)); // 计数一致：以 DOM 实数为准
       }
       document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp);
+    }
+
+    function beginEdge(fromNode, ev) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      function onUp(u) {
+        document.removeEventListener('mouseup', onUp);
+        var target = document.elementFromPoint(u.clientX, u.clientY);
+        var toNode = target && target.closest ? target.closest('.lf-node') : null;
+        if (!toNode || toNode === fromNode) return;
+        overlay.appendChild(el('div', { class: 'lf-edge' }));
+      }
       document.addEventListener('mouseup', onUp);
     }
 
@@ -242,7 +265,9 @@ function pageHtml(scenario) {
     + '.node-item{border:1px solid #bbb;padding:4px 8px;cursor:grab;user-select:none}'
     + '.lf-graph{position:relative;height:320px;border:1px solid #ddd;margin-top:8px}'
     + '.lf-canvas-overlay{position:absolute;left:0;top:0;right:0;bottom:0}'
-    + '.lf-node{position:absolute;border:1px solid #567;padding:2px 6px;background:#fff}</style>'
+    + '.lf-node{position:absolute;border:1px solid #567;padding:2px 18px 2px 6px;background:#fff}'
+    + '.lf-node-anchor-hover{position:absolute;right:-6px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:#2f80ed}'
+    + '.lf-edge{position:absolute;left:0;top:0;width:20px;height:1px;background:#888}</style>'
     + versionTag
     + '</head><body><div id="app"></div>'
     + '<script>window.__CFG__=' + cfg + ';</script>'

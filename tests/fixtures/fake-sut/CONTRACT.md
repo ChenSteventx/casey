@@ -24,16 +24,17 @@
 
 四条行为契约：
 
-1. 按钮开面板：点 `添加节点` → 出现 `.node-panel`，内 `.node-item` 恰 21 项；前 4 名为真机实采名（`开始节点`/`结束节点`/`脚本转换`/`模型节点`），余 17 为合成名凑真机项数（绝不引真机全清单，合成值即可，护栏 #7 同理）。再点收起（toggle）。
-2. 拖落节点：mouse 三段式——`mousedown` 在 `.node-item` 上、`mousemove` 位移 ≥ 12px（曼哈顿距离阈值）、`mouseup` 落点在 `.lf-graph` 界内 → `.lf-canvas-overlay` 内新增一个 `.lf-node`（id `lf_node_<seq>`，落点定位），其 `.lf-node-content` 文本 = 面板项节点名。
+1. 按钮开面板：点 `添加节点` → 出现 `.node-panel`，内 `.node-item` 恰 21 项；前 4 名为真机实采名（`开始节点`/`结束节点`/`脚本转换`/`模型节点`）+ 第 5 项 `真并行网关开始`（wf-connect-nodes 用其双节点行为），余 16 为合成名凑真机项数（绝不引真机全清单，合成值即可，护栏 #7 同理）。再点收起（toggle）。
+2. 拖落节点：mouse 三段式——`mousedown` 在 `.node-item` 上、`mousemove` 位移 ≥ 12px（曼哈顿距离阈值）、`mouseup` 落点在 `.lf-graph` 界内 → `.lf-canvas-overlay` 内新增一个 `.lf-node`（id `lf_node_<seq>`，落点定位），其 `.lf-node-content` 文本 = 面板项节点名。例外：`真并行网关开始` 一次拖拽落两节点（`真并行网关开始` + `真并行网关结束`，`.lf-node` +2，对齐 addNode `expectedNodeDelta=2` 的真机实采）。
 3. 点击不落（否定行为，金牌反证用）：单击/双击 `.node-item` 不产生 `.lf-node`；微动（位移 < 12px）或落点出画布界同样不落。机制：位移阈值 + 落点界内双守卫，二者缺一不落。
-4. 计数一致：`.lf-node` 的 DOM 实数 = 成功拖落次数；`.lf-graph[data-node-count]` 每次落节点后按 DOM 实数刷新（golden 双向可数：locator count 与属性值互证）。
+4. 计数一致：`.lf-node` 的 DOM 实数 = 成功拖落次数（真并行网关开始按 +2）；`.lf-graph[data-node-count]` 每次落节点后按 DOM 实数刷新（golden 双向可数：locator count 与属性值互证）。
+5. 连线（wf-connect-nodes）：每个 `.lf-node` 渲 `.lf-node-anchor-hover` 锚点；`mousedown` 锚点 → `mouseup` 落在另一个 `.lf-node`（非自身）→ `.lf-canvas-overlay` 内新增一个 `.lf-edge`。自连（源=目标）或落点非节点 → 不落边（否定行为，连线 fail-closed 反证）。纯 DOM 只断边数增，不携 source/target（连对哪两个的确定性取证挂账真机 window.lf）。
 
 分工与边界（沿既有条款）：
 
-- 画布交互纯 DOM 零网络——落节点不发任何请求，进不了 `watchNetworkForensics` 取证；wf-add-node 的裁定证据走 DOM 断言（`.lf-node-content` 文本可见、计数）。
+- 画布交互纯 DOM 零网络——落节点/连线不发任何请求，进不了 `watchNetworkForensics` 取证；wf-add-node/wf-connect-nodes 的裁定证据走 DOM 断言（`.lf-node-content` 文本可见、`.lf-node`/`.lf-edge` 计数）。
 - 拖拽监听 `mousedown` 时才挂 document 级 `mousemove`/`mouseup`、`mouseup` 即卸，重渲不累积监听；`nodeSeq` 跨重渲递增，节点 id 不复用；路由切换重渲后画布清零（`data-node-count` 回 `0`）。
-- 类名对齐真机接缝：`.lf-graph` / `.lf-canvas-overlay` / `.lf-node` / `.lf-node-content` / `.node-item`；真机 `.lf-node` 是 SVG `<g>`，假 SUT 用 div 复刻类名 + 文本语义这条接缝，不复刻 SVG 标签结构。
+- 类名对齐真机接缝：`.lf-graph` / `.lf-canvas-overlay` / `.lf-node` / `.lf-node-content` / `.node-item` / `.lf-node-anchor-hover` / `.lf-edge`；真机 `.lf-node` 是 SVG `<g>`，假 SUT 用 div 复刻类名 + 文本语义这条接缝，不复刻 SVG 标签结构。
 
 ## 后端路由 × 场景（10 态，复现 verdict-cases 全八案）
 

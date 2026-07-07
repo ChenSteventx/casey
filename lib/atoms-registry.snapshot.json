@@ -182,12 +182,17 @@
           "type": "number",
           "required": false,
           "desc": "落点 y（缺省 280）。"
+        },
+        "expectedNodeDelta": {
+          "type": "number",
+          "required": false,
+          "desc": "预期新增 .lf-node 数；缺省普通节点 +1，真并行网关开始在 Heren 真机一次拖拽生成开始/结束两个节点，默认按 +2 核验。"
         }
       },
       "requires": [
         "画布已开"
       ],
-      "post": "画布节点数 +1（.lf-node 计数增加）。"
+      "post": "画布节点数增加（普通节点 .lf-node +1；真并行网关开始一次拖拽生成开始/结束两个节点，.lf-node +2）。"
     },
     "workflow.openNode": {
       "desc": "点开画布上某节点的配置抽屉（按节点标题定位 .lf-node→点中心→等抽屉打开，点空重点一次）。需先在画布编辑器。",

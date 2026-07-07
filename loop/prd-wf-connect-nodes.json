@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "task": "wf-connect-nodes（full）：并发 session（codex 实现）补收口——workflow.connectNodes 画布连线原子（COMPILE_KNOWN_ATOMS 14→15，复用 dragTo 不扩枚举）+ addNode expectedNodeDelta 精化（真并行网关开始 +2）。补：端到端连线金牌（填覆盖缺口，现仅 C1 注册检查）+ 四漂移棘轮 prd 重签（wf-add-node/flow-bridge/wf-open-smoke/p5-replay）+ fake-sut 真并行网关开始双节点夹具（C4 +2）。修 codex 两健壮性缝（起草子代理二次评审揪出）：F1 doConnectNodes 的 nodeBoxByLabel waitFor 未守卫→节点缺席崩整轮回放；F2 compileWorkflowConnectNodes 目标缺席 workflowNodeBox 抛未捕获→跳产物块无诊断 exit 1；两处 waitFor 逐字重复须同修 + ox/oy :0 兜底收显式 blocker。评审归属反转：codex 实现→Claude 侧对抗评审（异构原则实现方≠评审方）。决策 docs/plans/wf-connect-nodes/proposed/GRILL.md。",
+  "specPath": "docs/plans/wf-connect-nodes/plan.md",
+  "testChecksums": {
+    "tests/_golden/wf-connect-nodes.golden.mjs": "b83f14bfe500ef38553d9ec4856fe505835758982ebe29f68261f16b67cafb01"
+  },
+  "observability": [
+    {
+      "dimension": "真机四停站（route:human）：window.lf 图对象口挂账（纯 DOM 断不出连对哪两个、只断边数增，确定性取证须 SUT 暴露图对象）+ 真机 .lf-node-anchor-hover 类名/拖拽时序漂移复核（同 wf-add-node observability 合并行程一并采）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-connect-atom-and-coverage",
+      "desc": "connectNodes 端到端金牌（C1 集 15 / C2 compile→replay→verdict 全 PASS / C3 fail-closed 反面真缺席用例 / C4 addNode +2 路径）+ fake-sut 真并行网关开始双节点夹具 + 修 codex F1/F2 健壮性缝。红先行：C4 现红（缺 +2 夹具）+ F1/F2 修前节点缺席崩回放/无诊断实锤。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-07T11:06:14.297Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-resign-and-regression",
+      "desc": "四漂移棘轮 prd 重签（wf-add-node/flow-bridge/wf-open-smoke/p5-replay）+ 新金牌冻 prd-wf-connect-nodes；全链回归零行为差。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-07T11:08:50.507Z 全部 acceptance exit 0"
+    }
+  ]
+}

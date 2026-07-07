@@ -3,7 +3,7 @@
 // C5 四 schema 枚举缺 dragTo/maxItems 仍 7。决策全录 docs/plans/wf-add-node/proposed/GRILL.md；
 // 夹具画布行为契约 = 预研 CONTRACT 画布通路增补（「添加节点」开面板 21 项 .node-item、mouse 三段式
 // 双守卫【位移 ≥12px 且落点 .lf-graph 界内】落 .lf-node、单击/双击/微动/出界不落、data-node-count 按 DOM 实数刷新）。
-// C1 addNode 可编译 + COMPILE_KNOWN_ATOMS 恰 14（13+1）+ agent.openToolPicker 不可编译（GRILL D5 继任反例真缝）；
+// C1 addNode 可编译 + COMPILE_KNOWN_ATOMS 恰 15（connectNodes +1）+ agent.openToolPicker 不可编译（GRILL D5 继任反例真缝）；
 // C2 compile 全程（fake-sut happy）：events 序列钉死 [nav, click(open), click(开面板条件步), dragTo]、
 //    dragTo 源语义定位（面板项文本身份门源）+ ox/oy 落点（registry x/y 直译，GRILL D2 (a) 案）、
 //    过 events.schema 结构校验（读 schema 枚举/字段面断言——仓内 hermetic 习惯无 ajv，形制同 seams-freeze）、
@@ -106,10 +106,11 @@ function assertEventsDocAgainstSchema(doc) {
 }
 
 // ---------- C1 编译原子加法 + 例翻反例 ----------
-await checkAsync('C1 workflow.addNode 可编译、COMPILE_KNOWN_ATOMS 恰 14、agent.openToolPicker 不可编译', async () => {
+await checkAsync('C1 workflow.addNode 可编译、COMPILE_KNOWN_ATOMS 恰 15、agent.openToolPicker 不可编译', async () => {
   const ca = await import(`file://${join(ROOT, 'lib', 'compile-atoms.mjs').replace(/\\/g, '/')}`);
   if (!ca.isCompilableAtom('workflow.addNode')) throw new Error('workflow.addNode 应可编译（本契约加法）');
-  if (ca.COMPILE_KNOWN_ATOMS.size !== 14) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 14（13+1），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
+  if (!ca.isCompilableAtom('workflow.connectNodes')) throw new Error('workflow.connectNodes 应可编译（连线原子加法）');
+  if (ca.COMPILE_KNOWN_ATOMS.size !== 15) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 15（connectNodes +1），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
   if (ca.isCompilableAtom('agent.openToolPicker')) throw new Error('agent.openToolPicker 不应可编译（GRILL D5 继任反例真缝——agent_tool 维度整体压后、长寿反例）');
 });
 
