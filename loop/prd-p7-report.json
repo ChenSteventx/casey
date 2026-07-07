@@ -5,7 +5,7 @@
   "testChecksums": {
     "tests/_golden/p7-report.golden.mjs": "1e6b7955dd654f05bec2ea085f93873422dbb317a3a1bb884038fc614b158b76",
     "tests/_golden/fixtures/seams/report-model.fixture.json": "1a9e08871c8e8b756c42daa91c4207b31f520eee784894c0c3cdc9d28b61d32e",
-    "tests/_golden/p7-credgate-coverage.golden.mjs": "9c47793193c5eab397ebff0cb7ce716d6b0d3e9e08e0ade509bde06340917950"
+    "tests/_golden/p7-credgate-coverage.golden.mjs": "549da2350d52f1ab464e49814d903f8b7d8f1691cbba09c9590f2e8dfe641d8f"
   },
   "observability": [
     {
@@ -30,7 +30,7 @@
         "node tests/_golden/p7-report.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-01T07:45:59.806Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-07T07:22:15.257Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-credgate-coverage",
@@ -40,7 +40,7 @@
         "node tests/_golden/p7-credgate-coverage.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-01T07:46:00.452Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-07T07:22:16.131Z 全部 acceptance exit 0"
     }
   ]
 }

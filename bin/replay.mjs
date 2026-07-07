@@ -137,6 +137,13 @@ async function rowCount(page, selector = '.hr-table-row') {
   try { return await page.locator(selector).count(); } catch { return null; }
 }
 
+// 读失败消毒（output-seal 追加缝：AUDIT 未列 events/expected/profile 的裸 JSON.parse，坏 JSON 原流进
+// 兜底 catch 打栈携内容片段——照 sign/draft/compile 同款消毒，只报「不是合法 JSON/不可读」，内容不回显）。
+function readJsonSafe(f, label) {
+  try { return JSON.parse(readFileSync(f, 'utf8')); }
+  catch { console.error(`replay: 读/解析 ${label} 失败（${f}；不是合法 JSON 或不可读，内容不回显）`); process.exit(65); }
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
   for (const k of ['events', 'sut', 'expected', 'profile', 'out']) {
@@ -159,8 +166,8 @@ async function main() {
   const T0 = Date.now();
   const log = (m) => { if (DBG) console.error('[replay +' + (Date.now() - T0) + 'ms] ' + m); };
 
-  const eventsDoc = JSON.parse(readFileSync(args.events, 'utf8'));
-  const expectedDoc = JSON.parse(readFileSync(args.expected, 'utf8'));
+  const eventsDoc = readJsonSafe(args.events, 'events');
+  const expectedDoc = readJsonSafe(args.expected, 'expected');
   // 未签→裁定拒算数前置闸（相2 sign，护栏 #14）：读完 expected、开浏览器前——非空断言契约未签则 exit 65
   // fail-closed（不进「算数」路径、零 axes）。空断言契约 assertSignedContract vacuously ok，零行为差。
   const signCheck = assertSignedContract(expectedDoc);
@@ -172,10 +179,10 @@ async function main() {
   // 否则拒算数（防用 A 的签名给 B 的 events、或删 caseId 绕过绑定）。空契约 vacuously 无需绑定。
   const expHasAssertions = (expectedDoc.intents || []).some((it) => (it.expected || []).length > 0) || (expectedDoc.globalAssertions || []).length > 0;
   if (expHasAssertions && (!expectedDoc.caseId || !eventsDoc.caseId || expectedDoc.caseId !== eventsDoc.caseId)) {
-    console.error(`replay: 已签契约与 events 的 caseId 未双向绑定（expected=${expectedDoc.caseId ?? '(缺)'} / events=${eventsDoc.caseId ?? '(缺)'}），拒算数（fail-closed）`);
+    console.error('replay: 已签契约与 events 的 caseId 未双向绑定（两侧文件值不符或缺，原值不回显——output-seal A10），拒算数（fail-closed）');
     process.exit(65);
   }
-  const profile = JSON.parse(readFileSync(args.profile, 'utf8'));
+  const profile = readJsonSafe(args.profile, 'profile');
   const events = eventsDoc.events || [];
   const caseId = eventsDoc.caseId || expectedDoc.caseId || 'unknown';
   const sut = String(args.sut).replace(/\/$/, '');
@@ -196,7 +203,7 @@ async function main() {
       if (!entryPath && typeof eventsDoc.url === 'string' && eventsDoc.url) entryPath = pathOf(instantiate(eventsDoc.url, ctx));
       loginPrep = { site, creds, startUrl: sut + (entryPath || '/') };
     } catch (e) {
-      console.error('replay: 登录预备动作前置失败（fail-closed）：' + String((e && e.message) || e).slice(0, 300));
+      console.error('replay: 登录预备动作前置失败（fail-closed；凭据/站点配置详情不回显，护栏 #7——output-seal B5）'); // e.message 可携 AT_CREDS_FILE 路径
       process.exit(65);
     }
   }
@@ -271,7 +278,7 @@ async function main() {
         return { origin: location.origin, entries };
       });
     } catch (e) {
-      console.error('replay: 登录预备动作失败（fail-closed）：' + String((e && e.message) || e).slice(0, 300));
+      console.error('replay: 登录预备动作失败（fail-closed；错误详情不回显，Playwright 报文可携 SUT 页面片段/凭据路径，护栏 #7——output-seal B5）'); // codex R1-F1
       clearTimeout(watchdog);
       await discardVideos(context);
       await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
@@ -304,7 +311,7 @@ async function main() {
       loginMark = forensics.records().length;
       log('login bootstrap done');
     } catch (e) {
-      console.error('replay: 登录预备动作失败（fail-closed）：' + String((e && e.message) || e).slice(0, 300));
+      console.error('replay: 登录预备动作失败（fail-closed；错误详情不回显，Playwright 报文可携 SUT 页面片段/凭据路径，护栏 #7——output-seal B5）'); // codex R1-F1
       clearTimeout(watchdog);
       await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
       process.exit(65);
@@ -326,7 +333,7 @@ async function main() {
       loginMark = forensics.records().length;
       log('login bootstrap done (video dance)');
     } catch (e) {
-      console.error('replay: 登录预备动作失败（fail-closed）：' + String((e && e.message) || e).slice(0, 300));
+      console.error('replay: 登录预备动作失败（fail-closed；错误详情不回显，Playwright 报文可携 SUT 页面片段/凭据路径，护栏 #7——output-seal B5）'); // codex R1-F1
       clearTimeout(watchdog);
       await discardVideos(context);
       await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
@@ -706,7 +713,7 @@ async function main() {
 }
 
 main().catch(async (e) => {
-  console.error('replay 失败：' + ((e && e.stack) || e));
+  console.error('replay 失败：' + String((e && e.message) || e).slice(0, 300)); // 剥栈只留消息（output-seal B6）
   // M5 尽力收口（同看门狗，codex R1-F1）：清扫先行 → 尽力关 → 补扫，4s 兜底强退，退出码语义不变。
   const bail = setTimeout(() => process.exit(1), 4000);
   sweepVideos();

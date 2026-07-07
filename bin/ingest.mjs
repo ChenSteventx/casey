@@ -32,7 +32,7 @@ if (!/^[A-Za-z0-9_-]+$/.test(caseId)) die(65, 'caseId 含非法字符（仅限�
 const inText = (() => { try { return readFileSync(String(args.in), 'utf8'); } catch (e) { die(65, `读候选失败（${e.code || 'ERR'}；路径不回显）`); } })();
 // 凭据兜底门前置（同 flow-bridge 先例）：先扫输入原文——命中即 exit 1 零落盘零目录副作用，
 // 也早于闸拒逐条回显（problems 会回显原始值，前置门防敏感值进 stderr）。
-const inCg = credentialGate({ [String(args.in)]: inText });
+const inCg = credentialGate({ '输入候选': inText }); // output-seal C：键用固定标签、不携 --in 原始路径（与 :32/:61「路径不回显」政策一致）
 if (!inCg.ok) { console.error(`ingest: 凭据兜底门拦截输入（护栏 #7）：${inCg.hit}；拒绝处理`); process.exit(1); }
 
 let candidate;

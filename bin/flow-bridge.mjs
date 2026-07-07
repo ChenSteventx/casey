@@ -34,7 +34,7 @@ const tcText = (() => { try { return readFileSync(String(args.testcase), 'utf8')
 const mapText = (() => { try { return readFileSync(String(args.mapping), 'utf8'); } catch (e) { die(65, `读 mapping 失败：${e.message}`); } })();
 // 凭据兜底门前置（codex R1-F4/F5）：先扫输入原文——含凭据即 exit 1 零落盘，早于任何 mkdir、也早于闸拒时
 // 逐条回显问题（validateDraft 的破坏性实体名错误会回显原始值，前置门防敏感值进 stderr）。
-const inCg = credentialGate({ [String(args.testcase)]: tcText, [String(args.mapping)]: mapText });
+const inCg = credentialGate({ '输入 testcase': tcText, '输入 mapping': mapText }); // output-seal C：键用固定标签、不携 --testcase/--mapping 原始路径
 if (!inCg.ok) { console.error(`flow-bridge: 凭据兜底门拦截输入（护栏 #7）：${inCg.hit}；拒绝处理`); process.exit(1); }
 
 let testcase, mapping;

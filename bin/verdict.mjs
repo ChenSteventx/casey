@@ -106,8 +106,8 @@ function main() {
   let input;
   try {
     input = JSON.parse(readFileSync(axes, 'utf8'));
-  } catch (e) {
-    console.error(`verdict: 读/解析 axes 失败：${e.message}`);
+  } catch {
+    console.error('verdict: 读/解析 axes 失败（不是合法 JSON 或不可读，内容不回显——output-seal B8）'); // 消毒：V8 报文携内容片段
     process.exit(65); // 坏数据 fail-closed，区别于内部错误的 exit 1
   }
   if (!input || typeof input !== 'object') {

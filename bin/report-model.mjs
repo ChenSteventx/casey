@@ -96,6 +96,7 @@ try {
   writeFileSync(opts.out, JSON.stringify(model, null, 2) + '\n', 'utf8');
   process.exit(0);
 } catch (e) {
-  console.error('report-model 装配失败：' + ((e && e.message) || e));
+  // output-seal B4：大 catch 吞六路 JSON.parse（case-meta 人给）——V8 报文携内容片段；只报 errno/固定文案，内容不回显。
+  console.error('report-model 装配失败（' + ((e && e.code) || 'ERR') + '；输入不是合法 JSON 或装配异常，内容不回显）');
   process.exit(1);
 }

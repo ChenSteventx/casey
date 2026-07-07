@@ -41,9 +41,11 @@ function parseArgs(argv) {
   return o;
 }
 
+// 读失败消毒（output-seal B3）：V8 JSON.parse 报错自带内容片段——testcase/flow 无输入预扫；
+// 只报「不是合法 JSON/不可读」，内容不回显。
 function readJson(f, label) {
   try { return JSON.parse(readFileSync(f, 'utf8')); }
-  catch (e) { console.error(`compile: 读/解析 ${label} 失败（${f}）：${e.message}`); process.exit(65); }
+  catch { console.error(`compile: 读/解析 ${label} 失败（${f}；不是合法 JSON 或不可读，内容不回显）`); process.exit(65); }
 }
 
 // 落盘统一过凭据门（G5）：任一产物命中即全部拒写、非零退出（fail-closed）。
@@ -57,7 +59,7 @@ function gatedWrite(files) {
 // ── 闸段：flow 草稿 → compile-gate → 落盘等 confirm ─────────────────────────
 function gateMode(caseId, args) {
   const tc = readJson(args.testcase, 'TestCase');
-  if (tc.caseId !== caseId) { console.error(`compile: TestCase.caseId（${tc.caseId}）与命令行 caseId（${caseId}）不一致`); process.exit(65); }
+  if (tc.caseId !== caseId) { console.error(`compile: TestCase.caseId 与命令行 caseId（${caseId}）不一致（文件侧值原值不回显——output-seal A8）`); process.exit(65); }
   if (typeof tc.uniquePrefix !== 'string' || !tc.uniquePrefix.length) { console.error('compile: TestCase.uniquePrefix 缺失/空——破坏性前缀硬闸无锚，拒绝（fail-closed）'); process.exit(65); }
   const flow = readJson(args.flow, 'flow 草稿');
   const registry = readJson(SNAPSHOT_FILE, '原子注册表快照');
@@ -99,7 +101,7 @@ async function executeMode(caseId, args) {
   // 可与 flow 一起自洽伪造——重验锚点一律取 --testcase（不可变 TestCase），不信 flow 文件自带字段。
   const tc = readJson(args.testcase, 'TestCase');
   if (tc.caseId !== caseId || flowDoc.caseId !== caseId) {
-    console.error(`compile: caseId 不一致（命令行 ${caseId} / TestCase ${tc.caseId} / flow ${flowDoc.caseId}），拒跑`);
+    console.error(`compile: caseId 不一致（命令行 ${caseId}；TestCase/flow 侧值不符，原值不回显——output-seal A9），拒跑`);
     process.exit(65);
   }
   if (typeof tc.uniquePrefix !== 'string' || !tc.uniquePrefix.length) {
@@ -165,7 +167,7 @@ async function executeMode(caseId, args) {
     }
     await compileFlow(run, flowDoc.flow);
   } catch (e) {
-    console.error(`compile: 执行失败：${String(e && e.stack || e).slice(0, 500)}`);
+    console.error(`compile: 执行失败：${String((e && e.message) || e).slice(0, 300)}`); // 剥栈只留消息（output-seal B7）
     exitCode = 1;
   } finally {
     await forensics.awaitStreamsSettled(1500);
@@ -292,4 +294,4 @@ async function main() {
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
-if (isMain) main().catch((e) => { console.error('compile 失败：' + ((e && e.stack) || e)); process.exit(1); });
+if (isMain) main().catch((e) => { console.error('compile 失败：' + String((e && e.message) || e).slice(0, 300)); process.exit(1); }); // 剥栈（output-seal B7）

@@ -31,7 +31,13 @@ function main() {
   if (!opts.model || opts.model === true) { console.error('用法: node bin/report.mjs --model <report-model.json> --out <dir>'); process.exit(64); }
   const modelPath = resolve(String(opts.model));
   let model;
-  try { model = JSON.parse(readFileSync(modelPath, 'utf8')); } catch (e) { console.error(`读/解析 report-model 失败：${e.message}`); process.exit(1); }
+  try { model = JSON.parse(readFileSync(modelPath, 'utf8')); } catch { console.error('读/解析 report-model 失败（不是合法 JSON 或不可读，内容不回显）'); process.exit(1); }
+  // output-seal A12（穿越面）：model.caseId 进 <caseId>.report.* 文件名与缺省 outDir 路径构造——五 CLI 的
+  // 字符集闸在这条链集体缺席（report-model 装配处也无校验）。此处补同款 fail-closed 闸：非法即 exit 65 零落盘、原值不回显。
+  if (typeof model?.caseId !== 'string' || !/^[A-Za-z0-9_-]+$/.test(model.caseId)) {
+    console.error('report: report-model.caseId 含非法字符或缺失（仅限字母数字_-，值进文件名/路径构造须防穿越；原值不回显）');
+    process.exit(65);
+  }
 
   // 回放诊断旁件（report-diagnostics 路 B，可选）：不传零行为差；传了但缺/坏 = fail-closed exit 1
   // 零落盘（报告宁缺不糊，M1）。渲染逻辑仍全在 lib（纯函数），本壳只做 IO。

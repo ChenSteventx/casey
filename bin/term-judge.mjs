@@ -18,6 +18,7 @@
 import { readFileSync, appendFileSync, mkdirSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { credentialGate } from '../lib/cred-gate.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_INBOX = join(ROOT, 'loop', 'inbox.md');
@@ -63,9 +64,14 @@ export async function callRealJudge(candidates) {
 
 function routeToHuman(verdict, inboxPath) {
   const target = inboxPath || DEFAULT_INBOX;
-  mkdirSync(dirname(target), { recursive: true });
   const ts = new Date().toISOString();
-  appendFileSync(target, `- [term-judge] ${ts} status=${verdict.status} —— ${verdict.reason}\n`);
+  const line = `- [term-judge] ${ts} status=${verdict.status} —— ${verdict.reason}\n`;
+  // output-seal：inbox 落盘前过凭据兜底门（verdict.reason 内嵌候选回合文本片段，可携贴入的凭据）——
+  // 命中拒写非零退出，与七落盘口同律；门放写之前（追加发现 #3 同族）。命中报文只带关键词、不带原值。
+  const cg = credentialGate({ 'inbox 行': line });
+  if (!cg.ok) { console.error(`term-judge: inbox 写入过凭据兜底门命中（护栏 #7）：${cg.hit}；拒写路由记录`); process.exit(1); }
+  mkdirSync(dirname(target), { recursive: true });
+  appendFileSync(target, line);
   return target;
 }
 

@@ -34,7 +34,10 @@ function parseArgs(argv) {
   return o;
 }
 function die(code, msg) { console.error('sign: ' + msg); process.exit(code); }
-function readJson(f, label) { try { return JSON.parse(readFileSync(f, 'utf8')); } catch (e) { die(65, `读/解析 ${label} 失败（${f}）：${e.message}`); } }
+// 读失败消毒（output-seal B1）：V8 的 JSON.parse 报错自带出错处内容片段（login-bootstrap 实测），
+// 原样上抛会把 draft/prd/verdict-baseline 人编文件内容漏进 stderr——只报「不是合法 JSON/不可读」，内容不回显。
+// SAFE_ID（:25，signer/build 复用）在 A11 键名遮值处也用。
+function readJson(f, label) { try { return JSON.parse(readFileSync(f, 'utf8')); } catch { die(65, `读/解析 ${label} 失败（${f}；不是合法 JSON 或不可读，内容不回显）`); } }
 // 两阶段落盘（codex R1-F3 + R2-F1）：先把全部输出写 .tmp，任一失败清孤儿 tmp 后 fail-closed（真实文件零改动）；
 // 全部 tmp 成功才统一 rename（同 FS near-atomic）。闭合「写前」与「写中（I/O/权限/满盘）」两类失败的半份风险。
 function commitWrites(writes, dirsToMk = []) {
@@ -99,7 +102,7 @@ if (!frozenBase.endsWith('.json') || /^(events|spec)[-.]/.test(frozenBase)) die(
 const draft = readJson(String(args.draft), 'draft');
 // draft schema 严校（codex R1-F4）：坏结构绝不静默降级为空契约。
 if (!draft || typeof draft !== 'object' || Array.isArray(draft)) die(65, 'draft 非对象');
-if (draft.caseId !== caseId) die(65, `caseId 不一致（命令行 ${caseId} / draft ${draft.caseId ?? '(缺)'}），拒签`);
+if (draft.caseId !== caseId) die(65, `caseId 不一致（命令行 ${caseId}；draft 侧值不符或缺，原值不回显——output-seal A4），拒签`);
 if (!Array.isArray(draft.intents)) die(65, 'draft.intents 须为数组（坏 draft 拒签，不静默签成空）');
 for (const it of draft.intents) {
   if (!it || typeof it !== 'object' || typeof it.intentId !== 'string' || !Array.isArray(it.expected)) die(65, 'draft.intents[] 须 {intentId, expected:[]}（坏结构拒签）');
@@ -110,19 +113,22 @@ if (draft.pending !== undefined && !Array.isArray(draft.pending)) die(65, 'draft
 // 冻结期易变字面量 lint（plan-debt-sweep，design §2.1 铁律的冻结面兑现）：草拟闸 validateDraft 已盖，
 // 但手编草稿/重签路径可绕过草拟闸——sign 是冻结落盘唯一口，同款两正则再守一遍（正则与
 // lib/assertion-draft.mjs:126-127 逐字同款；抽公共件另案）。盖全部断言字符串值、不分 op。
-for (const group of [...draft.intents.map((it) => it.expected), draft.globalAssertions || []]) {
-  for (const a of group || []) {
-    if (!a || typeof a.value !== 'string') continue;
-    if (/atl_(?!\{\{uniqueName\}\})/.test(a.value)) die(65, `冻结期字面量 lint：值含未模板化 atl_ 字面量（须 atl_{{uniqueName}} 形态）：${a.value}`);
-    if (/\d{9,}/.test(a.value)) die(65, `冻结期字面量 lint：值含 9+ 位数字长串（时间戳/实体 ID 字面量禁冻）：${a.value}`);
-  }
+// output-seal A1/A2（codex R1-F2 提硬）：lint 命中只报「什么不对 + 结构性索引定位」——绝不回显断言值全文，
+// 也不回显 intentId（文件侧字符串，SAFE_ID 挡不住字母数字种子）；定位用 draft 数组下标（结构位置泄不了）。
+const lintTargets = [];
+draft.intents.forEach((it, ii) => (it.expected || []).forEach((a, ai) => lintTargets.push([`intents[${ii}].expected[${ai}]`, a])));
+(draft.globalAssertions || []).forEach((a, ai) => lintTargets.push([`globalAssertions[${ai}]`, a]));
+for (const [loc, a] of lintTargets) {
+  if (!a || typeof a.value !== 'string') continue;
+  if (/atl_(?!\{\{uniqueName\}\})/.test(a.value)) die(65, `冻结期字面量 lint（${loc}）：值含未模板化 atl_ 字面量（须 atl_{{uniqueName}} 形态；原值不回显）`);
+  if (/\d{9,}/.test(a.value)) die(65, `冻结期字面量 lint（${loc}）：值含 9+ 位数字长串（时间戳/实体 ID 字面量禁冻；原值不回显）`);
 }
 
 const prdPath = String(args.prd);
 const prd = readJson(prdPath, 'prd');
 if (!prd || typeof prd !== 'object' || Array.isArray(prd)) die(65, 'prd 非对象');
 // caseId 端到端绑定（codex R1-F1）：prd.caseId 必与命令行一致，防把 A 的签名塞进 B 的 prd。
-if (prd.caseId !== caseId) die(65, `prd.caseId 不一致（命令行 ${caseId} / prd ${prd.caseId ?? '(缺)'}），拒签`);
+if (prd.caseId !== caseId) die(65, `prd.caseId 不一致（命令行 ${caseId}；prd 侧值不符或缺，原值不回显——output-seal A5），拒签`);
 
 // pending 处置（D2）：非空默认拒签，--force 放行 + 留痕独立旁车（别静默丢）。
 const pending = draft.pending || [];
@@ -135,11 +141,14 @@ let verdictBaseline = null;
 if (args['verdict-baseline']) {
   verdictBaseline = readJson(String(args['verdict-baseline']), 'verdict-baseline');
   if (!verdictBaseline || typeof verdictBaseline !== 'object' || Array.isArray(verdictBaseline)) die(65, 'verdict-baseline 须为 intentId→{verdict,reason} 映射对象');
-  for (const [iid, adj] of Object.entries(verdictBaseline)) {
-    if (!adj || typeof adj !== 'object' || !VERDICT_STATES.has(adj.verdict)) die(65, `verdict-baseline[${iid}].verdict 非法四态`);
-    if (adj.verdict === 'NEEDS_HUMAN') { if (!VERDICT_REASONS.has(adj.reason)) die(65, `verdict-baseline[${iid}] NEEDS_HUMAN 须带 reason 子类（fail-safe 不变量）`); }
-    else if (adj.reason != null) die(65, `verdict-baseline[${iid}] 终判 ${adj.verdict} 的 reason 须为 null（fail-safe 不变量）`);
-  }
+  // output-seal A11（codex R2-F5 提硬）：键名是人编文件任意字符串——SAFE_ID 挡不住字母数字种子（同 F2 论据），
+  // 定位改结构性 entries 下标（结构位置泄不了），绝不回显键名原值。
+  Object.entries(verdictBaseline).forEach(([, adj], i) => {
+    const loc = `verdict-baseline entries[${i}]`;
+    if (!adj || typeof adj !== 'object' || !VERDICT_STATES.has(adj.verdict)) die(65, `${loc}.verdict 非法四态`);
+    if (adj.verdict === 'NEEDS_HUMAN') { if (!VERDICT_REASONS.has(adj.reason)) die(65, `${loc} NEEDS_HUMAN 须带 reason 子类（fail-safe 不变量）`); }
+    else if (adj.reason != null) die(65, `${loc} 终判 ${adj.verdict} 的 reason 须为 null（fail-safe 不变量）`);
+  });
 }
 
 // 盖签署字段（D1）：逐条 intents[].expected[] 与 globalAssertions[]，去 draft-only 的 pending。
@@ -158,8 +167,8 @@ frozen.intents = draft.intents.map((it) => {
 if (draft.globalAssertions !== undefined) frozen.globalAssertions = draft.globalAssertions.map(stamp);
 
 // 自守 1：白名单键（additionalProperties 合规，D5 + 冻结 schema）——intents 与 globalAssertions 同口径（codex R2-F3）。
-for (const it of frozen.intents) for (const a of it.expected) for (const k of Object.keys(a)) if (!FROZEN_ASSERT_KEYS.has(k)) die(65, `断言越界键 ${k}（frozen additionalProperties 合规）`);
-for (const a of (frozen.globalAssertions || [])) for (const k of Object.keys(a)) if (!FROZEN_ASSERT_KEYS.has(k)) die(65, `全局断言越界键 ${k}（frozen additionalProperties 合规）`);
+for (const it of frozen.intents) for (const a of it.expected) for (const k of Object.keys(a)) if (!FROZEN_ASSERT_KEYS.has(k)) die(65, `断言含越界键（frozen additionalProperties 合规；键名原值不回显——output-seal A17）`);
+for (const a of (frozen.globalAssertions || [])) for (const k of Object.keys(a)) if (!FROZEN_ASSERT_KEYS.has(k)) die(65, `全局断言含越界键（frozen additionalProperties 合规；键名原值不回显——output-seal A17）`);
 // 自守 2：读侧门 assertSignedContract 必 ok（签发端与校验端同口径）。
 const sc = assertSignedContract(frozen);
 if (!sc.ok) die(65, `frozen 自守未过 assertSignedContract：${sc.problems.slice(0, 3).join('；')}`);

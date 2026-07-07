@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "task": "output-seal（full）：全仓输出通道封缝——caseid-echo-mask 挂账兑现。High 5 + Med 13 真裸口（A1-A13 + B1-B8 择收）+ C 类点名（ingest/flow-bridge 凭据门产物名键改固定标签）+ inbox/candidates 落盘过门。修法两模板：ingest 遮值句式 / login-bootstrap 消毒重抛；遮值不降诊断（类型词 + intentId/序号定位保留）。决策 docs/plans/output-seal/proposed/GRILL.md D1-D6，缝谱系 proposed/AUDIT.md。",
+  "specPath": "docs/plans/output-seal/plan.md",
+  "testChecksums": {
+    "tests/_golden/output-seal.golden.mjs": "0b9b7528c2134e5bb61cffb8c3d321829f0c04be5a0eae2866db4d355d140bb7"
+  },
+  "observability": [
+    "B5 登录期报文收敛（bin/replay.mjs :274/:307/:329 三处 Playwright 在飞报错面）hermetic 触发不了：哨兵只钉 :199 前置口（AT_CREDS_FILE 缺文件路径种子）；三处在飞面收敛为只留 e.name + 固定文案后须真机验证 route:human。",
+    "B7 bin/compile.mjs:168 执行段 catch 剥栈需真机执行流才可触发：哨兵只钉 :295 main 兜底 catch（mkdir ENOTDIR 可 hermetic 喂）；:168 靠实现同款剥栈 + 评审背书。",
+    "B6 收窄实事：bin/replay.mjs:162-163 对 events/expected 的裸 JSON.parse 未列入 AUDIT 消毒对象，坏 JSON 经 :709 兜底 catch 剥栈留首行后，首行仍是 V8 报文（自带内容片段）——哨兵收窄为「不含多行栈帧」不立种子断言；建议 loop 段照 B1-B3/B8 同款消毒顺收或另案记档。",
+    "红基线注记：A12 两形态（report 坏 caseId 新闸 0→65）与 inbox/candidates 两口（落盘过门 0→非零）红在退出码属预期（新闸语义，plan.md 验收定义内）；其余 20 哨兵红全部集中在「输出含种子」断言，B6/B7 红在「多行栈帧」断言。"
+  ],
+  "stories": [
+    {
+      "id": "s1-output-seal",
+      "desc": "逐封口遮值/消毒 + report 穿越面字符集闸 + inbox/candidates 落盘过门。红先行 0/26（20 种子回显 + 2 多行栈帧 + 4 新闸退出码实锤）；退出码与修前语义一致、遮值不降诊断（类型词 + intentId/序号定位）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/output-seal.golden.mjs",
+        "node bin/casey.mjs selftest --tier1",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/p2-sign.golden.mjs",
+        "node tests/_golden/draft-cli.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/caseid-echo-mask.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-07T07:52:59.417Z 全部 acceptance exit 0"
+    }
+  ]
+}

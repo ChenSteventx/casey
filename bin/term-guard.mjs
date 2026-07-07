@@ -13,6 +13,7 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { parseRegistry } from '../loop-kit/bin/term-lint.mjs';
+import { credentialGate } from '../lib/cred-gate.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
@@ -211,8 +212,12 @@ function main() {
   }
   const { violations, candidates } = evaluate(raw, registry);
   if (opts.emitCandidates) {
+    // output-seal（追加发现 #3）：门放写之前——候选携回合文本片段可含贴入凭据，落盘前过凭据兜底门，命中拒写非零退出。
+    const candText = JSON.stringify(candidates, null, 2);
+    const cg = credentialGate({ 'candidates': candText });
+    if (!cg.ok) { console.error(`term-guard: --emit-candidates 落盘过凭据兜底门命中（护栏 #7）：${cg.hit}；拒写`); process.exit(1); }
     mkdirSync(dirname(resolve(ROOT, opts.emitCandidates)), { recursive: true });
-    writeFileSync(opts.emitCandidates, JSON.stringify(candidates, null, 2));
+    writeFileSync(opts.emitCandidates, candText);
   }
   if (violations.length) {
     console.error('term-guard: ' + violations.length + ' 处统一语言违例：');

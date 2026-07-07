@@ -108,7 +108,7 @@ try {
 
 // ============ ④ 端到端壳层：spawn 真实 bin/report.mjs，验「落盘前 fail-closed」接缝 ============
 // 前三节测纯函数门；本节钉死壳层行为——门在 write 之前拒写。复现 main() 的真实退出码：
-//   缺 --model → exit 2（用法错，bin/report.mjs:62）；门命中 → exit 1（bin/report.mjs:78）；成功 → exit 0（默认返回）。
+//   缺 --model → exit 64（用法错，全仓统一，report-exit64 契约收敛自历史 2）；门命中 → exit 1；成功 → exit 0。
 const TMP = mkdtempSync(join(tmpdir(), 'casey-p7-cg-'));
 function writeModel(name, model) {
   const p = join(TMP, name);
@@ -171,10 +171,10 @@ const dirtyModel = {
   ok();
 }
 
-// ④c 用法错（缺 --model）→ exit 2（与门拦 exit 1、成功 exit 0 区分：退出码分类本身是接缝的一部分）
+// ④c 用法错（缺 --model）→ exit 64（与门拦 exit 1、成功 exit 0 区分；report-exit64 收敛自历史 2）
 {
   const r = spawnSync(process.execPath, [BIN], { encoding: 'utf8' });
-  if (r.status !== 2) fail(`缺 --model 须 exit 2（用法错，实得 ${r.status}）`);
+  if (r.status !== 64) fail(`缺 --model 须 exit 64（用法错，全仓统一，实得 ${r.status}）`);
   ok();
 }
 

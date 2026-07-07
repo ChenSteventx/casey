@@ -25,9 +25,11 @@ function parseArgs(argv) {
   return o;
 }
 
+// 读失败消毒（output-seal B2）：V8 JSON.parse 报错自带内容片段——observed/compile-report/patch 无输入
+// 预扫（patch 是 LLM/人编），原样上抛漏文件内容进 stderr；只报「不是合法 JSON/不可读」，内容不回显。
 function readJson(f, label) {
   try { return JSON.parse(readFileSync(f, 'utf8')); }
-  catch (e) { console.error(`draft: 读/解析 ${label} 失败（${f}）：${e.message}`); process.exit(65); }
+  catch { console.error(`draft: 读/解析 ${label} 失败（${f}；不是合法 JSON 或不可读，内容不回显）`); process.exit(65); }
 }
 
 const args = parseArgs(process.argv.slice(2));
@@ -45,8 +47,8 @@ const observed = readJson(args.observed, '观测现状');
 const report = readJson(args['compile-report'], '编译期核验记录');
 // G3 一致性闸：命令行 caseId 与 observed/compile-report 三方一致（同 compile 先例）；
 // R1-F1：compile-report 缺 caseId = 证不出一致，同拒（fail-closed）。
-if (observed.caseId !== caseId) { console.error(`draft: caseId 不一致（命令行 ${caseId} / observed ${observed.caseId}），拒草拟`); process.exit(65); }
-if (report.caseId !== caseId) { console.error(`draft: caseId 不一致或缺席（命令行 ${caseId} / compile-report ${report.caseId ?? '(缺)'}），拒草拟`); process.exit(65); }
+if (observed.caseId !== caseId) { console.error(`draft: caseId 不一致（命令行 ${caseId}；observed 侧值不符，原值不回显——output-seal A6），拒草拟`); process.exit(65); }
+if (report.caseId !== caseId) { console.error(`draft: caseId 不一致或缺席（命令行 ${caseId}；compile-report 侧值不符或缺，原值不回显——output-seal A7），拒草拟`); process.exit(65); }
 
 const atoms = report?.handoff?.assertionAtoms;
 if (!Array.isArray(atoms)) { console.error('draft: compile-report 缺 handoff.assertionAtoms（P4 交接面既定位），拒草拟'); process.exit(65); }
