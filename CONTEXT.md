@@ -95,6 +95,8 @@
 | 移植 | — | 把 regress 现成 flow 用到的原子在 autotester L1 原语上重表达成吐三轴的纯 mjs、再配观测现状与 verdict golden 的工作；飞轮的主要人力成本。弃用口语简写见别名列（2026-06-29 清零并登记） | 港 |
 | `verdict.json` | 裁定档 | 可复现的机读最小产物：caseId + 逐步 {stepId,intentId,atom,verdict,reason} 五字段（冻结实现，golden 唯一校验对象）；期望对实际字面量与取证引用等富信息在 report-model.json（report-spec §4 两名分离裁决，2026-07-07 词条对齐实现） | — |
 | recorder-as-library | 录制器库化 | 把 autotester 人操作录制器重构成 LLM agent 拥有 context 的库（关人抖动去噪、避导航竞态）。**已被 ADR-0006 的 atoms/flow 编译路线取代**（相1 现实现 = compile-gate + compile-atoms 三段式；本概念仅存「陌生站点孵化」支线，2026-07-07 词条对齐实现） | — |
+| 示教 | Teach-in | 人在真实界面上操作，机器只采集操作语料；借工业机器人示教再现血缘。示教不等于签署，不开直通回放，产物必须经蒸馏、L0 复核和人签门 | 录制直通 |
+| 示教录制包 | Teach-in Capture | `casey record` 产出的人工操作采集包，作为后续蒸馏语料；`signed:false`、`replayReady:false`、`distillRequired:true` 是硬不变量 | — |
 | `fail-safe` | 故障安全 | 失败时退到安全态：机器证不出就路由人（`NEEDS_HUMAN`），绝不默认成可自愈（fail-open 的反面） | — |
 | `fail-open` | 故障放行 | 故障时放行：基础设施/hook 自身故障不阻塞正常工作；仅用于 lint/hook，绝不用于裁定 | — |
 | `fail-closed` | 故障关闭 | 故障时拒绝：校验不过/缺数据时报红拒绝（用于 `parseTestCase` 等准入） | — |

@@ -192,6 +192,8 @@ ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅�
                                           相2 断言草拟：骨架+补缝合并+闸 → expected.draft（未签）
   casey sign    <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--signed-at <iso> --verdict-baseline <f> --resign --force --archive-dir <d>]
                                           相2 人签门：草稿→冻结签署（未签契约会被回放前置闸拒）
+  casey record  <caseId> --sut <本地基址> --out-dir <d> (--login-bootstrap|--no-login) [--from-events <f> --headless --max-ms <ms>]
+                                          示教采集：人工操作→teach-in-capture.json（只作蒸馏语料，不签署、不直通回放）
   casey replay  --events <f> --sut <本地基址> --expected <f> --profile <f> --out <axes.json> [--login-bootstrap ...]
                                           相3 确定性回放 + 录屏 + 取证（未签契约拒回放）
   casey verdict --axes <f> --out <f>      相4 多态裁定（零 LLM 判定树）
@@ -239,6 +241,7 @@ function main() {
     case 'draft': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'draft.mjs'), rest); process.exit(r.code); }
     case 'flow-bridge': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'flow-bridge.mjs'), rest); process.exit(r.code); }
     case 'sign': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'sign.mjs'), rest); process.exit(r.code); }
+    case 'record': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'record.mjs'), rest); process.exit(r.code); }
     // 相3/4/6 直通各自 bin（参数契约归各 bin 自管，同 compile/draft/sign/flow-bridge/ingest 五先例；
     // 此前为桩而底层 bin 早已建成、run 编排内部直连在用——cli-mcp-face 契约接通门面）。
     case 'replay': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'replay.mjs'), rest); process.exit(r.code); }

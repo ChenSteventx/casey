@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "task": "record-capture（full）：示教兜底第一契约，新增 casey record 采集入口，把人工操作落成安全示教录制包；录制物只作蒸馏语料，不算签署、不直通回放。决策 docs/plans/record-capture/proposed/GRILL.md。",
+  "specPath": "docs/plans/record-capture/plan.md",
+  "testChecksums": {
+    "tests/_golden/record-capture.golden.mjs": "bc02f792e8a50f111d6c841f3b9c1163a6ceede3d03a30e2333bd7eeb293e2ab"
+  },
+  "observability": [
+    {
+      "dimension": "真机人工录制 route:human：拉反向隧道，确认唯一许用账户后用 --login-bootstrap 录制一次；检查包内无凭据值、无真实目标地址、无签署假象。",
+      "route": "human"
+    },
+    {
+      "dimension": "dedup：projectUrlSafe（host 安全 URL 投影）record 侧局部复制自 bin/replay.mjs:582 toPathQuery——宜收进 lib/cred-gate.mjs 作 URL 卫生单一事实源（与 stripUrlQuery/maskCredentialRoute 同家），并统一 replay 侧 inline 双身。异构评审 V1 修时局部落地、留此账。",
+      "route": "machine"
+    },
+    {
+      "dimension": "敏感值遮值为关键词启发式（中英双语字段判 + 凭据门字面量兜底）：非敏感命名字段里的裸密钥/新口令/OTP 仍可能明文；--no-login 亦不核登录态。真机人工录制 route:human 目检为最终背书（异构评审 A2/A4/L2 残余）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-record-capture-cli-and-package",
+      "desc": "casey record CLI + 安全示教录制包：help 暴露命令；用法错 exit 64；--from-events 对干净事件产固定路径 teach-in-capture.json；包内 signed:false / replayReady:false / distillRequired:true；全文不含完整 URL；脏事件含凭据关键词时拒写且不留半包；不宣称产正式 events.json / expected.frozen.json。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/record-capture.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-08T11:07:03.619Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-tier1-regression",
+      "desc": "新增 record 门面不得破坏确定性内核与统一语言自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-08T11:07:04.640Z 全部 acceptance exit 0"
+    }
+  ]
+}
