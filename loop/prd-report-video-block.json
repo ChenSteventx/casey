@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "task": "report-video-block（full）：P7 报告第二增量——report-model 装配器 + 渲染器加顶层 replayVideo + 「回放录像」块（置原子操作后、裁定概览前）；无录像明示不静默。决策 docs/plans/report-video-block/proposed/GRILL.md。",
+  "specPath": "docs/plans/report-video-block/plan.md",
+  "testChecksums": {
+    "tests/_golden/report-video-block.golden.mjs": "2a9f28f476dfca5830489b251aaad553944a4c8e70a1f217cf3ab4fa078f350b"
+  },
+  "observability": [
+    {
+      "dimension": "「无录像」缺失原因细分（登录凭据卫生→登录不录/业务步骤录 两上下文文案）数据未在模型内，本增量只标「无录像」——留后续增量。",
+      "route": "machine"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-report-video-block",
+      "desc": "装配器恒产顶层 replayVideo（有 videoMeta→{file}，否则 null）；渲染器 HTML/MD/JSON 出「回放录像」块（原子操作后、裁定概览前）；HTML 用相对 src 可播放 <video> 不引 http 外链；replayVideo=null 明示「无录像」；缺键旧模型零行为差；冻结 schema 加法放行。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/report-video-block.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-08T12:25:10.256Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-tier1-regression",
+      "desc": "新增量不得破坏确定性内核与统一语言自检。既有 report 涟漪金牌另在 loop 手工复跑实证（见 audit）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-08T12:25:11.298Z 全部 acceptance exit 0"
+    }
+  ]
+}

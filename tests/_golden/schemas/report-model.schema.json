@@ -100,6 +100,22 @@
         }
       }
     },
+    "replayVideo": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "file"
+      ],
+      "properties": {
+        "file": {
+          "type": "string"
+        }
+      },
+      "description": "回放录像顶层引用：run 目录内录像文件名（replay-video 已白名单 [A-Za-z0-9._-]）；未产录像为 null，报告显式标「无录像」不静默"
+    },
     "generatedAt": {
       "type": "string",
       "format": "date-time",
