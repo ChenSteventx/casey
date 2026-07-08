@@ -3,7 +3,21 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 当前状态（2026-07-07 下午—晚，真机合并行程首航 + 画布两原子 + 两 C 线契约 + 并发 connectNodes 补收口）
+## 当前状态（2026-07-08，wf-open-node 收口 + 隧道 agent 修复 + 战略重排优先级）
+
+意外关机三连后从会话转录（`ade30962`）恢复现场，补跑评审、收口画布第三原子。两笔提交入 dev，baton 空闲、下一契约直接 `contract init`：
+
+1. `wf-open-node`（light，`657556a`）：画布第三原子 `workflow.openNode` 建成（`COMPILE_KNOWN_ATOMS` 15→16）——单击节点中心开配置抽屉（GRILL D1 单击定案、Steven 拍板否决 HANDOFF「双击」笔误）+ `doOpenNode` 专用回放门（`.lf-canvas-overlay` 域锁 + 域内唯一才点 + 缺席守卫 + 抽屉可见含【精确】标题双证回读）+ `compileWorkflowOpenNode` 编译门同刻 + fake-sut 抽屉夹具。例翻四金牌集 15→16 + 五 prd 重签。评审补跑（关机丢了原评审）：codex 正式异构 FAIL 3 发现 + Claude 五视角 + DDD 视角（Opus 4.8 重跑）。修两真缝——F1（High 抽屉回读子串 `hasText` 假绿：「模型节点副本」含子串被判开对 → 改精确 `filter({ has: getByText(label, exact) })` 两侧同刻，堵「点了没开/开错抽屉」两向假绿）+ F3（Med 缺反面覆盖 → fake-sut 加场景 `drawersuperset`/`drawernone`（弃 URL query——replay nav 走 `pathOf` 剥 query）+ 金牌 C3e（开错抽屉 F1 红证）/C3f（点了不开）+ C3a blocker 收紧）；证伪 F2（编译门=回放门，两 helper 都 `getByText(exact).first()` 同门）+ DDD「未登记新概念」（双证/域锁是点击身份门实例化）。红先行 C3e 改前红改后金牌 9/0；回归八金牌 + tier1 全绿；gate 两 prd GREEN。
+
+2. 隧道 agent 修复（`3d7513c`，dev 工具非产品链路）：反向隧道 Windows 代理连接风暴修复——失败 socket `error`+`close` 双触发把连接池计数 `live` 减成负数 → `fill` 无限开连接耗尽端口打瘫整机网络（含 Clash）。修：一次性 `settled` 守卫 + 失败重连逐步退避（500ms 起、封顶 10s）。沙盒红绿：旧 2.5s 16376 次尝试 `live=-8184` → 新 8s 40 次 `live` 恒正常。隧道现关着、收口不需它。
+
+3. 战略重排（Steven 2026-07-08）：真机 bring-up / 拉隧道那类 route:human 真机趟（含 openNode 真机保真度复核），优先级**低于** item 1 兜底（人录）+ item 3 用户易操作——先做 1 和 3、真机趟往后压攒一趟合并跑。
+
+4. 挂账另立 full 契约（触裁判内核，DDD 视角揪出）：resolution 词表统一——CONTEXT 登记 `resolution` 枚举 + 裁判 `verdict.mjs`/`report-model.mjs` 认已登记的 `ambiguous`（多匹配 → AMBIGUOUS_ACTION）+ 删幽灵 `coord_fallback`（无门吐）+ 统一多匹配字面量口径（compile `multi` / replay `fallback_first` / openNode `ambiguous`）+ 补金牌钉 C3d `reason===AMBIGUOUS_ACTION`。fail-safe 现不破（多匹配仍 NEEDS_HUMAN、仅子类退化 INDETERMINATE）。根因：doOpenNode 是第一个说出 CONTEXT 已登记词 `ambiguous` 的门、反被裁判丢弃。
+
+下一步（按 Steven 优先级）：① item 1 兜底人录（record-capture/intake/distill，参考 autotester；最小应急脚本随关机清、需重建）；② item 3 用户易操作（cli/mcp/skill 说清输入/结果位置 + 如何入 git + 如何接入各家 coding agent：claude code/codex/pi）；③ resolution 词表 full 契约；④ 真机 bring-up 趟（route:human，压后）。
+
+以下为 2026-07-07 下午—晚快照（真机合并行程首航 + 画布两原子 + 两 C 线契约 + 并发 connectNodes 补收口），只溯源：
 
 本 session 五笔提交入 dev，baton 空闲、下一契约直接 `contract init`：
 
