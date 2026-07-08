@@ -10,10 +10,12 @@
 > §7 多用例总目录聚合按原文自留待裁决、未建（非欠账）。
 >
 > **目标态、部分已落地（2026-07-08）**：§3 的「测试用例自然语言块 / 原子操作块 / 回放录像块 / 清理证据块
-> （删除前后命中数）」及 `naturalLanguage` / `atomicSteps` / `replayVideo` / `cleanupEvidence` JSON 字段
-> **已落地**（report-nl-atomic + report-video-block + report-cleanup-evidence；装配器 + 渲染器 HTML/MD/JSON
-> + 冻结 schema 加法 + golden）。余「工作流画布结构有效 / 变量来源默认自定义变量」仍目标态、未落地——各自
-> 后续 P7 增量挂账；实现前报告不得据未落地项判过。
+> （删除前后命中数）/ 工作流画布结构块」及 `naturalLanguage` / `atomicSteps` / `replayVideo` / `cleanupEvidence`
+> / `workflowStructure` JSON 字段**已落地**（report-nl-atomic + report-video-block + report-cleanup-evidence
+> + report-workflow-structure；装配器 + 渲染器 HTML/MD/JSON + 冻结 schema 加法 + golden）。注：#11 工作流画布结构
+> 本增量诚实收缩为三类（节点/连线/节点配置）覆盖判 + 空/半成警示——model 不携开始/结束节点身份，per-node 五项
+> 细分留后续。余「变量来源默认自定义变量（#12，属相1 编译/相2 草拟期规则、非报告渲染）」仍目标态、未落地——
+> 后续挂账；实现前报告不得据未落地项判过。
 
 ## 1. 产物布局：拆分式（照 regress）
 
@@ -46,7 +48,7 @@ loop/reports/<caseId>/
 6. **置顶横幅**：若有「被测缺陷」或「待人裁决」步，红/黄横幅顶到裁定概览附近、点进对应步——同构于 regress 的「安全软期望置顶」（`per-spec-report.ts:356-358`），把该人看的顶上去。
 7. **按裁定态分组**列步骤，每步链到子页。
 
-报告生成器的硬要求（`naturalLanguage` / `atomicSteps` / 回放录像块 / 清理证据块已落地；余「画布结构有效 / 变量默认自定义」仍目标态、各自后续 P7 增量挂账，见顶部对账表；实现前报告不得据未落地项判过）：
+报告生成器的硬要求（`naturalLanguage` / `atomicSteps` / 回放录像块 / 清理证据块 / 工作流画布结构块（三类收缩）已落地；余「变量默认自定义（编译/草拟期、非报告渲染）」仍目标态，见顶部对账表；实现前报告不得据未落地项判过）：
 
 - `HTML` / `Markdown` / `JSON` 三形态都必须携带同一份自然语言用例文本；JSON 字段名用 `naturalLanguage`。
 - 自然语言用例文本必须放在 HTML/Markdown 的顶部区域，且先于录像、结论、验收点、接口取证。

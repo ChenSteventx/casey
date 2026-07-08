@@ -154,6 +154,34 @@
         }
       }
     },
+    "workflowStructure": {
+      "type": [
+        "object",
+        "null"
+      ],
+      "additionalProperties": false,
+      "required": [
+        "hasNodes",
+        "hasConnection",
+        "hasNodeConfig",
+        "structureComplete"
+      ],
+      "properties": {
+        "hasNodes": {
+          "type": "boolean"
+        },
+        "hasConnection": {
+          "type": "boolean"
+        },
+        "hasNodeConfig": {
+          "type": "boolean"
+        },
+        "structureComplete": {
+          "type": "boolean"
+        }
+      },
+      "description": "工作流画布结构证据（report-spec #11）：据画布构造原子 addNode/connectNodes/openNode 的 PASS 覆盖判；非画布构造用例为 null"
+    },
     "generatedAt": {
       "type": "string",
       "format": "date-time",

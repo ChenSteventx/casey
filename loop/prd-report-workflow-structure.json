@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "task": "report-workflow-structure（full）：P7 报告第四增量——report-model 装配器 + 渲染器加顶层 workflowStructure + 「工作流画布结构」块（据画布构造原子 addNode/connectNodes/openNode 判结构覆盖 + 空/半成警示，report-spec #11）。决策 docs/plans/report-workflow-structure/proposed/GRILL.md。",
+  "specPath": "docs/plans/report-workflow-structure/plan.md",
+  "testChecksums": {
+    "tests/_golden/report-workflow-structure.golden.mjs": "84bb5a15d5416760eecf5f87f64b3440e92891225f5f6ea53fcdba399c24d470"
+  },
+  "observability": [
+    {
+      "dimension": "report-spec #11 五项（开始/结束节点、连线、开始/结束配置）本增量诚实收缩成三类（节点/连线/节点配置）——report-model 不携开始/结束节点身份；per-node start/end 区分 + 断言文本兜底属启发式，留后续增量。",
+      "route": "machine"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-report-workflow-structure",
+      "desc": "装配器恒产顶层 workflowStructure（任一画布构造原子在场→{hasNodes,hasConnection,hasNodeConfig,structureComplete}，hasX=该原子步 verdict PASS；否则 null）；渲染器 HTML/MD/JSON 出「工作流画布结构」块（清理证据后、分组步骤前）含 checklist + 不完整警示「不得算满足验收」；缺键/null 旧模型零行为差；冻结 schema 加法放行；不进裁定。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/report-workflow-structure.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-08T13:33:54.787Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-tier1-regression",
+      "desc": "新增量不得破坏确定性内核与统一语言自检。既有 report 涟漪金牌另在 loop 手工复跑实证（见 audit）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-08T13:33:55.768Z 全部 acceptance exit 0"
+    }
+  ]
+}
