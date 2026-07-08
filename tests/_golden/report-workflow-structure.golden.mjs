@@ -64,31 +64,37 @@ function call(vs, as) {
   if (!p.workflowStructure || JSON.stringify(p.workflowStructure.type) !== JSON.stringify(['object', 'null'])) fail('schema workflowStructure 须 type [object,null]');
   const req = p.workflowStructure.required || [];
   for (const k of ['hasNodes', 'hasConnection', 'hasNodeConfig', 'structureComplete']) if (!req.includes(k)) fail(`schema workflowStructure.required 须含 ${k}`);
+  const wp = p.workflowStructure.properties || {};
+  for (const k of ['hasNodes', 'hasConnection', 'hasNodeConfig', 'structureComplete']) if (!wp[k] || wp[k].type !== 'boolean') fail(`schema workflowStructure.properties.${k} 须 type boolean（跨族评审 P3）`);
   if (p.workflowStructure.additionalProperties !== false) fail('schema workflowStructure 须 additionalProperties:false');
   if ((schema.required || []).includes('workflowStructure')) fail('workflowStructure 须加法可选、不入顶层 required');
   ok();
 }
 
-// ---- C-C 渲染：位置 + 逐类 ✓/✗ + 完整/不完整文案两向 ----
+// ---- C-C 渲染：相对位置（清理证据后、分组步骤前）+ 逐类 ✓/✗ + 完整/不完整两向 + 诚实收缩文案 ----
 {
   const a = canvasStep('atstep_0', 'workflow.addNode'), c = canvasStep('atstep_1', 'workflow.connectNodes'), o = canvasStep('atstep_2', 'workflow.openNode');
+  // 加一条 countChange 产 cleanupEvidence，冻结「清理证据后、工作流画布结构」相对顺序（跨族评审 P2）。
+  a.a.postAssertions.push({ kind: 'countChange', op: 'equals', value: '0', actual: '2→0', ok: true, soft: false });
   const { html, markdown } = renderReport(call([a.v, c.v, o.v], [a.a, c.a, o.a]));
   if (!html.includes('工作流画布结构')) fail('HTML 缺「工作流画布结构」块');
-  // 位置：裁定概览 → 工作流画布结构 → 分组步骤
-  const iSum = html.indexOf('class="summary"'), iWS = html.indexOf('工作流画布结构'), iStep = html.indexOf('data-step-id=');
+  if (!html.includes('清理证据')) fail('前提：本案含 countChange，须产清理证据块以验相对顺序');
+  const iSum = html.indexOf('class="summary"'), iClean = html.indexOf('清理证据'), iWS = html.indexOf('工作流画布结构'), iStep = html.indexOf('data-step-id=');
   if (iStep < 0) fail('前提：测试模型含步骤，HTML 须有 data-step-id 容器');
-  if (!(iSum >= 0 && iWS > iSum && iStep > iWS)) fail('HTML 顺序须 裁定概览 → 工作流画布结构 → 分组步骤');
-  // 逐类 ✓/✗ 真渲染（防 glyph 倒置，评审 F1）——全 PASS 三类皆 ✓
+  if (!(iSum >= 0 && iClean > iSum && iWS > iClean && iStep > iWS)) fail('HTML 顺序须 裁定概览 → 清理证据 → 工作流画布结构 → 分组步骤');
+  // 逐类 ✓/✗ 真渲染（防 glyph 倒置）——全 PASS 三类皆 ✓
   if (!html.includes('节点：✓') || !html.includes('连线：✓') || !html.includes('节点配置：✓')) fail('全 PASS 三类须各渲 ✓');
-  // 完整案：OK 结论在场 且 警示缺席（评审 F2）
+  // 完整案：OK 结论在场 + 警示缺席 + 诚实收缩文案（跨族评审 P3：不称「画布结构完整」、须披露开始/结束身份未区分）
   if (!html.includes('均已验证通过') || html.includes('不得算满足验收')) fail('structureComplete 时须 OK 结论在场、警示缺席（HTML）');
-  // MD：块在场 + 位置（评审 F3）+ OK 结论
+  if (html.includes('画布结构完整') || !html.includes('开始/结束节点身份未单独区分')) fail('完整案文案须诚实收缩：不称「画布结构完整」、须披露开始/结束身份未区分（GRILL D3）');
+  // MD：块 + 相对位置 + OK 结论 + 诚实收缩文案
   if (!markdown.includes('## 工作流画布结构')) fail('MD 缺「工作流画布结构」块');
-  const mSum = markdown.indexOf('裁定概览'), mWS = markdown.indexOf('## 工作流画布结构'), mGroup = markdown.indexOf('## 通过');
+  const mSum = markdown.indexOf('裁定概览'), mClean = markdown.indexOf('## 清理证据'), mWS = markdown.indexOf('## 工作流画布结构'), mGroup = markdown.indexOf('## 通过');
   if (mGroup < 0) fail('前提：测试模型含通过步，MD 须有分组标题');
-  if (!(mSum >= 0 && mWS > mSum && mWS < mGroup)) fail('MD 顺序须 裁定概览 → 工作流画布结构 → 分组步骤');
+  if (!(mSum >= 0 && mClean > mSum && mWS > mClean && mWS < mGroup)) fail('MD 顺序须 裁定概览 → 清理证据 → 工作流画布结构 → 分组步骤');
   if (!markdown.includes('均已验证通过') || markdown.includes('不得算满足验收')) fail('structureComplete 时须 OK 结论在场、警示缺席（MD）');
-  // 不完整案：警示在场 且 OK 结论缺席；逐类 ✗ 真渲染
+  if (markdown.includes('画布结构完整') || !markdown.includes('开始/结束节点身份未单独区分')) fail('MD 完整案文案须诚实收缩（不称完整、披露身份未区分）');
+  // 不完整案：警示在场 + OK 结论缺席 + 逐类 ✗/✓ 真渲染
   const inc = renderReport(call([a.v, o.v], [a.a, o.a]));
   if (!inc.html.includes('不得算满足验收') || inc.html.includes('均已验证通过')) fail('结构不完整时须警示在场、OK 结论缺席（HTML）');
   if (!inc.html.includes('连线：✗') || !inc.html.includes('节点：✓')) fail('不完整案逐类 ✓/✗ 须真渲染（连线 ✗、节点 ✓）');

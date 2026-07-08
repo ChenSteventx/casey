@@ -3,7 +3,7 @@
   "task": "report-workflow-structure（full）：P7 报告第四增量——report-model 装配器 + 渲染器加顶层 workflowStructure + 「工作流画布结构」块（据画布构造原子 addNode/connectNodes/openNode 判结构覆盖 + 空/半成警示，report-spec #11）。决策 docs/plans/report-workflow-structure/proposed/GRILL.md。",
   "specPath": "docs/plans/report-workflow-structure/plan.md",
   "testChecksums": {
-    "tests/_golden/report-workflow-structure.golden.mjs": "84bb5a15d5416760eecf5f87f64b3440e92891225f5f6ea53fcdba399c24d470"
+    "tests/_golden/report-workflow-structure.golden.mjs": "f3c378892be5b46bcddd7d6c40fa70b1d2ccce594de607774f46e62dbc6a9d5d"
   },
   "observability": [
     {
@@ -20,7 +20,7 @@
         "node tests/_golden/report-workflow-structure.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-08T13:33:54.787Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-08T13:54:33.182Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-tier1-regression",
@@ -30,7 +30,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-08T13:33:55.768Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-08T13:54:34.216Z 全部 acceptance exit 0"
     }
   ]
 }
