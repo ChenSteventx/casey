@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "task": "report-nl-atomic（full）：P7 报告首增量——report-model 装配器 + 渲染器加 naturalLanguage（用例自然语言块）+ atomicSteps（原子操作清单，稳定编号），HTML/MD/JSON 三形态出块且位于裁定概览之前。决策 docs/plans/report-nl-atomic/proposed/GRILL.md。",
+  "specPath": "docs/plans/report-nl-atomic/plan.md",
+  "testChecksums": {
+    "tests/_golden/report-nl-atomic.golden.mjs": "9c0704910ecf785ec9699b44864ee217fe5abb675331b34f953eefa835a664f9"
+  },
+  "observability": [
+    {
+      "dimension": "GRILL 缺席推定（可否决，交人复核）：D1 naturalLanguage 合成为零 LLM 机械拼接意图原文；D2 atomicSteps 粒度=动作+断言各一条；D3 本增量只保 seq+stepId 可对齐，不做验收点/截图/取证逐类回指 seq 的全量接线。",
+      "route": "human"
+    },
+    {
+      "dimension": "后续增量（report-spec 对账表逐条收缩）：录像置裁定概览前的排序重构 / 清理证据（删除前后命中数）/ 工作流画布结构有效 / 变量默认自定义 / 证据逐类回指 atomicStep seq。",
+      "route": "machine"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-report-nl-atomic",
+      "desc": "report-model 装配器产 naturalLanguage（meta 优先→intentText 合成→null）+ atomicSteps（动作+断言各一条、seq 稳定从 1、挂 stepId/intentId、describe 脱敏）；渲染器 HTML/MD/JSON 出「测试用例」「原子操作」块且位于裁定概览之前；冻结 schema 加法放行两字段；缺字段旧模型渲染零行为差。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/report-nl-atomic.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-08T11:55:34.182Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-tier1-regression",
+      "desc": "新增量不得破坏确定性内核与统一语言自检。既有 report 涟漪金牌另在 loop 手工复跑实证（见 audit）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-08T11:55:35.253Z 全部 acceptance exit 0"
+    }
+  ]
+}

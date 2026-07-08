@@ -54,6 +54,52 @@
       ],
       "description": "gate.mjs 的二值结论旁参（仅展示，绝不在本 model 推断/翻绿）；缺省 null"
     },
+    "naturalLanguage": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "测试用例自然语言表述（用户原文优先，否则由人签 TestCase intents 合成）；报告主页头部之后第一个人读块；未提供为 null"
+    },
+    "atomicSteps": {
+      "type": "array",
+      "description": "原子操作清单：每条只表达一个可观察动作或一个断言，稳定编号，供验收/截图/取证回指",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "seq",
+          "kind",
+          "stepId",
+          "intentId",
+          "describe"
+        ],
+        "properties": {
+          "seq": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "kind": {
+            "enum": [
+              "action",
+              "assertion"
+            ]
+          },
+          "stepId": {
+            "type": "string"
+          },
+          "intentId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "describe": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "generatedAt": {
       "type": "string",
       "format": "date-time",
