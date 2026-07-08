@@ -116,6 +116,44 @@
       },
       "description": "回放录像顶层引用：run 目录内录像文件名（replay-video 已白名单 [A-Za-z0-9._-]）；未产录像为 null，报告显式标「无录像」不静默"
     },
+    "cleanupEvidence": {
+      "type": "array",
+      "description": "清理证据：编辑型用例 countChange 断言的删除前后命中数（report-spec #9），surface 自各步 postAssertions",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "stepId",
+          "op"
+        ],
+        "properties": {
+          "stepId": {
+            "type": "string"
+          },
+          "intentId": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "op": {
+            "type": "string"
+          },
+          "value": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "actual": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      }
+    },
     "generatedAt": {
       "type": "string",
       "format": "date-time",

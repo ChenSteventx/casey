@@ -6,7 +6,7 @@
     "tests/_golden/seams-freeze.golden.mjs": "51899f6428b5f10e6158e8001eb8ae7d8debf88b0f55a2185b58c5fb8cd9c9c7",
     "tests/_golden/schemas/events.schema.json": "097fd45c9e8d43776c03fa1a0be4bf0e329acdae50aef87ca308c720948858d8",
     "tests/_golden/schemas/observed-reality.schema.json": "1c85bbeb8513927f0b5c8584530091dade318d53588c389e119debe7be9b5495",
-    "tests/_golden/schemas/report-model.schema.json": "ed128455ca682b02e59251654dc8e6fdda139b5ae0b79c9cd76f8ace81df6738",
+    "tests/_golden/schemas/report-model.schema.json": "3910a38bf220c0b9ccb28d310d114f99932821e1caaabe4a0a864806f20b14a3",
     "tests/_golden/schemas/drift-patch.schema.json": "f6070a6d8e8729cf9841d2e137f5cc055ee5489dc215ee00ca2e45d6e4a956c2",
     "tests/_golden/schemas/expected-frozen.schema.json": "74e57d7f4abd73b62ab8a0fb06b2fb384098241dc56af26a71183db5ccef46d8",
     "loop/prd.schema.json": "d98f08032c1b140958e5315a16de31db3c8f1a4fd9728709b1f6b342babd0926",
@@ -40,7 +40,7 @@
         "node tests/_golden/seams-freeze.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-08T12:19:16.646Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-08T12:35:18.648Z 全部 acceptance exit 0"
     }
   ]
 }
