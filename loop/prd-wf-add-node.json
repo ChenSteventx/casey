@@ -3,7 +3,7 @@
   "task": "wf-add-node（full）：画布维度首原子 workflow.addNode 编译知识建成（COMPILE_KNOWN_ATOMS 13→14），解锁 R9 坐标 flow 首步。真机二号探针（2026-07-07）证伪甲案（面板项单击/双击不落节点）、实证乙案（mouse 三段式拖拽落 .lf-node）→ 新增 dragTo 动作类：events.schema action 枚举 + 三姊妹 schema 全等镜像 + 双 fixture 治理条目（prd-seams-freeze / v2 重签授权已拍）；回放器 dragTo 分支（源身份门 count===1 才拖、画布容器证不出回 false、mouse down→move(steps:12)→300ms→up）+ profile countSelector 计数通道加法；compileWorkflowAddNode（条件步开面板线性化 + customAct 拖拽 + .lf-node 计数 +1 后置核验进 blockers）；fake-sut 画布通路纯加法（prd-p5-replay 重签）；例翻涟漪（flow-bridge C5/C14/C15 + wf-open-smoke C1 反例 workflow.addNode→agent.openToolPicker + 集 13→14，两 prd 重签）；设计条款 :135 修订留痕。决策全录 docs/plans/wf-add-node/proposed/GRILL.md（Steven 四项点选定夺 2026-07-07）。",
   "specPath": "docs/plans/wf-add-node/plan.md",
   "testChecksums": {
-    "tests/_golden/wf-add-node.golden.mjs": "1f5d9bb403031dc8e77a483e136f79f21f264ded28ae483c16d6071e866750fb"
+    "tests/_golden/wf-add-node.golden.mjs": "a47a6e96b0fcfebaf42b27e50f41b32b5968301313edff4d1529be1cb3ab47f6"
   },
   "observability": [
     {
@@ -22,7 +22,7 @@
         "node tests/_golden/wf-open-smoke.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-07T11:10:46.567Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-07T15:46:37.251Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-dragto-seams",
@@ -36,7 +36,7 @@
         "node tests/_golden/p3-compile.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-07T11:13:52.292Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-07T15:50:31.980Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-fixture-and-chain",
@@ -49,7 +49,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-07T11:16:40.601Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-07T15:54:13.142Z 全部 acceptance exit 0"
     }
   ]
 }

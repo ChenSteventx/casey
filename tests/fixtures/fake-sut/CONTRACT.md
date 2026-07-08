@@ -22,13 +22,14 @@
 
 详情页尾部固定渲染假画布（LogicFlow 形态）：`添加节点` 按钮（`<button>` role=button name=`添加节点`、class `lf-add-node-btn`）+ 画布容器 `.lf-graph`（带 `data-node-count`，内含铺满的 `.lf-canvas-overlay`）。既有场景（含 `ambiguous` 双保存钮、`drift` 换 class）无人碰画布 → 零行为差（先例：wf-open-smoke 的可点行名）。`pageerror` 在渲染画布前已抛，不受影响。
 
-四条行为契约：
+六条行为契约：
 
 1. 按钮开面板：点 `添加节点` → 出现 `.node-panel`，内 `.node-item` 恰 21 项；前 4 名为真机实采名（`开始节点`/`结束节点`/`脚本转换`/`模型节点`）+ 第 5 项 `真并行网关开始`（wf-connect-nodes 用其双节点行为），余 16 为合成名凑真机项数（绝不引真机全清单，合成值即可，护栏 #7 同理）。再点收起（toggle）。
 2. 拖落节点：mouse 三段式——`mousedown` 在 `.node-item` 上、`mousemove` 位移 ≥ 12px（曼哈顿距离阈值）、`mouseup` 落点在 `.lf-graph` 界内 → `.lf-canvas-overlay` 内新增一个 `.lf-node`（id `lf_node_<seq>`，落点定位），其 `.lf-node-content` 文本 = 面板项节点名。例外：`真并行网关开始` 一次拖拽落两节点（`真并行网关开始` + `真并行网关结束`，`.lf-node` +2，对齐 addNode `expectedNodeDelta=2` 的真机实采）。
 3. 点击不落（否定行为，金牌反证用）：单击/双击 `.node-item` 不产生 `.lf-node`；微动（位移 < 12px）或落点出画布界同样不落。机制：位移阈值 + 落点界内双守卫，二者缺一不落。
 4. 计数一致：`.lf-node` 的 DOM 实数 = 成功拖落次数（真并行网关开始按 +2）；`.lf-graph[data-node-count]` 每次落节点后按 DOM 实数刷新（golden 双向可数：locator count 与属性值互证）。
 5. 连线（wf-connect-nodes）：每个 `.lf-node` 渲 `.lf-node-anchor-hover` 锚点；`mousedown` 锚点 → `mouseup` 落在另一个 `.lf-node`（非自身）→ `.lf-canvas-overlay` 内新增一个 `.lf-edge`。自连（源=目标）或落点非节点 → 不落边（否定行为，连线 fail-closed 反证）。纯 DOM 只断边数增，不携 source/target（连对哪两个的确定性取证挂账真机 window.lf）。
+6. 节点配置抽屉（wf-open-node）：单击 `.lf-node` 节点体 → 详情页出现/更新 `.hr-drawer__content-wrapper`（内含 `.lf-node-drawer__title` 文本 = 该节点 `.lf-node-content` 标题）——registry 真机 SOP「点中心开抽屉」最小复现。锚点 `.lf-node-anchor-hover` 单击不开（连线专属）；连线拖拽 down/up 目标不同元素 → click 事件落共同祖先 overlay、`closest('.lf-node')` 不中 → 不误开（DOM 规范行为，对既有通路零干扰）。抽屉与列表页建单抽屉同类名但异页，画布页域内唯一（回放身份回读干净）。抽屉反面模式（评审 F3/coverage）：由场景控反面考场（replay 的 nav 走 `pathOf` 剥 query 不能用 URL query，故用场景）——`drawernone` 单击节点不开抽屉（「点了不开」反面）、`drawersuperset` 抽屉标题 = 节点名 + `副本`（含 label 子串但非精确，钉身份回读须精确非子串）；既有场景一律缺省行为。
 
 分工与边界（沿既有条款）：
 

@@ -6,8 +6,8 @@
     "tests/_golden/p5-replay.golden.mjs": "8a368f628ba19b0d487744e9e74e873966bb0fc4cb4d6d42e7ce1456ed1529c1",
     "tests/_golden/p5-replay-coverage.golden.mjs": "fc84a7f03982039bde1c392e5f1a5f9a727571a56500e2feeaacf975f11dc693",
     "tests/_golden/fixtures/p5/replay-cases.json": "931c708956e6abb0fa2fad0e4ad081b203da884d9a08894dd0828a5e216524b0",
-    "tests/fixtures/fake-sut/server.mjs": "26475ecd620cb138c70986d68bd891dcf8fcdf044298576ebf8fb4438dc8bea7",
-    "tests/fixtures/fake-sut/CONTRACT.md": "ae9738dcdf2cc4396461bc19d6a204d79b3b7d08ba6b9897079940a6c8345bdf",
+    "tests/fixtures/fake-sut/server.mjs": "0bf0c34d6e21e7f02a5ad0c4d5f85c8c8b3a2677a30924d8bf17718a17809d48",
+    "tests/fixtures/fake-sut/CONTRACT.md": "905e0dd72c830ef166f9585eb28587f3b8026b776685824b641026a3658dc598",
     "tests/_golden/fixtures/seams/events.fixture.json": "49545e6efe597c33d9eeaaff65e9f8f9e268e125509533ccf54026a70023dd14"
   },
   "observability": [
@@ -34,7 +34,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-07T11:24:53.128Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-08T06:16:49.163Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-failsafe-coverage",
@@ -44,7 +44,7 @@
         "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-07T11:24:53.782Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-08T06:16:49.606Z 全部 acceptance exit 0"
     }
   ]
 }

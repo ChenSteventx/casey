@@ -14,6 +14,7 @@ const SCENARIOS = new Set([
   'happy', 'inject500', 'envelope200bad', 'background401', 'stream', 'pageerror', 'drift', 'ambiguous',
   'stale_bg401', 'vanished',
   'versioned', // plan-debt-sweep：入口脚本带 ?v= 发版号（capturedAgainstBuild 提取考场，复刻 Heren api-config.js?v=1.1.2 形态）
+  'drawernone', 'drawersuperset', // wf-open-node 评审 F3/coverage：节点抽屉反面（点了不开 / 开错抽屉——标题含 label 子串非精确）
 ]);
 
 // 背景轮询 denylist 的合成形态（绝不引真 site.json，护栏 #7）：watchNetworkForensics 用它把 /auths/poll 归 background。
@@ -219,6 +220,30 @@ function clientMain() {
       }
       document.addEventListener('mouseup', onUp);
     }
+
+    // 节点配置抽屉（wf-open-node，registry 真机 SOP 最小复现）：单击节点体开右侧抽屉（含节点标题）。
+    // 锚点单击不开（连线专属）；连线拖拽 down/up 目标不同元素 → click 落共同祖先 overlay、closest
+    // 不中节点 → 零干扰既有 addNode/connectNodes 通路（DOM 规范行为，纯加法）。
+    var nodeDrawer = null;
+    // 抽屉反面模式（wf-open-node 评审 F3/coverage 覆盖缺口）：由 fixture 场景控反面考场——replay 的 nav 走 pathOf
+    // 剥 query（bin/replay.mjs:382），故不能用 URL query，改用场景（既有场景一律缺省行为、零影响）：
+    //   缺省场景（happy 等）单击节点开抽屉、标题 = 节点名（精确）；
+    //   'drawernone'     单击节点不开抽屉（模拟 app 无响应——「点了不开」反面，钉回放 action_failed）；
+    //   'drawersuperset' 单击节点开抽屉、标题 = 节点名 + '副本'（含 label 子串但非精确——substring 假绿考场，钉 F1 精确回读）。
+    var drawerMode = scenario === 'drawersuperset' ? 'superset' : scenario === 'drawernone' ? 'none' : '';
+    overlay.addEventListener('click', function (e) {
+      var t = e.target;
+      if (!t || !t.closest || t.closest('.lf-node-anchor-hover')) return;
+      var node = t.closest('.lf-node');
+      if (!node) return;
+      if (drawerMode === 'none') return; // 点了不开抽屉
+      var title = node.querySelector('.lf-node-content');
+      var titleText = title ? title.textContent : '';
+      if (drawerMode === 'superset') titleText = titleText + '副本'; // 开错抽屉：标题含 label 非精确
+      if (!nodeDrawer) { nodeDrawer = el('div', { class: 'hr-drawer__content-wrapper' }); wrap.appendChild(nodeDrawer); }
+      nodeDrawer.textContent = '';
+      nodeDrawer.appendChild(el('div', { class: 'lf-node-drawer__title' }, titleText));
+    });
 
     var panel = null;
     var addBtn = el('button', { class: 'lf-add-node-btn', type: 'button' }, '添加节点');
