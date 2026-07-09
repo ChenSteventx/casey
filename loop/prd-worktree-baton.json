@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "task": "worktree-baton（full）：解 roadmap v3 §二「单活契约 baton 真天花板」。实证每 git worktree 各有独立 baton（active-contract.json/.breaker-state.json gitignored 每树一份），零机制改动即 N 路并行。只加 contract.mjs 两个新 CLI case——list（跨树 read-only baton 总览）+ worktree（起树脚手架：slug 校验 + D5 slug 全局唯一硬拒 + git worktree add + 新树立 baton + 部分失败回滚）+ 配套纯函数；不建共享池、不加 LOOP_CONTRACT_FILE 选槽、不加 breaker --state（背红队 1 High + 4 Med）。hook/breaker/现有 contract 子命令逐字节不改。决策 docs/plans/worktree-baton/proposed/GRILL.md（Steven 签核 D5 硬拒 / D6 文档建议 + list 显树数）。",
+  "specPath": "docs/plans/worktree-baton/plan.md",
+  "testChecksums": {
+    "tests/_golden/worktree-baton.golden.mjs": "bfbb5f2d10f233fe2bb70161c293f6d6ecb0d6cb1eabe99cdc980cccd22d3ecc"
+  },
+  "observability": [
+    {
+      "dimension": "真·多树并行一轮真机演练：起 3 树各走一契约 → 各绿 → git-native 合并回 dev（绝不 cp 进 lib/bin）→ 拆树；合并冲突人裁。真机 UAT。",
+      "route": "human"
+    },
+    {
+      "dimension": "建议并发 ≤5 树为文档自律（GUARDRAILS）+ contract list 顺带显示 worktree 数（不拒，只提示）；worktree 数无廉价全局锁（多进程 TOCTOU），硬限收益低且背 worktree 零机制改动初衷（GRILL D6 Steven 签核）。",
+      "route": "human"
+    },
+    {
+      "dimension": "back-compat 逐字节零回归：hook-loop-guard.mjs / breaker.mjs / 现有 contract init·advance·check·show 不改（diff 可验 + 金牌 G6 隔离槽复跑 + tier1）。",
+      "route": "machine"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-worktree-baton-mechanics",
+      "desc": "contract list 跨树只读总览 + contract worktree 起树脚手架 + 纯函数层：isValidSlug/defaultWorktreePath/parseWorktreePorcelain/describeBaton/slugTaken hermetic 直测；G1 起树真落 baton 且主树不变；G2 slug 已占用（prd/plan 存在）硬拒 exit 3 不起树；G3 slug 穿越/斜杠拒 exit 3；G4 跨树 list 列出并行 baton slug + 汇总；G5 list 遇坏契约/无 baton 降级不崩；G6 back-compat：init/show 走隔离槽行为一致且真 active-contract 不被污染；G7 起树后主树 baton 纹丝不动。金牌驱真 contract.mjs CLI + 真 git worktree，用完 worktree remove + branch -D 清理。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/worktree-baton.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T05:38:26.192Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-tier1-regression",
+      "desc": "新增两 CLI case 不得破坏确定性内核与统一语言自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T05:38:26.967Z 全部 acceptance exit 0"
+    }
+  ]
+}

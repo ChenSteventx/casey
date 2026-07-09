@@ -44,6 +44,9 @@
 | Published Language | 发布语言 | 两个系统间共享的、版本化的正式交换格式（DDD 术语） | — |
 | `acceptance-gate` | 验收门禁工序 | 项目 skill：读 plan.md 验收点 → 写红测试（运行验证确实红）→ checksum 登记 → 冻结；ATDD + Test Ratchet 的工序化 | tdd-gate |
 | `loop-kit` | （产品名） | 可复用 loop engineering 工具箱，孵化于 autotester `loop-kit/` 目录，Casey 为其第二消费者；提取/分发策略见 ADR-0001 | — |
+| 并行工作树 baton | Per-Worktree Baton | 每棵 git worktree 各自独立的活契约槽；`active-contract.json` 与熔断态均 gitignored、每树一份、互不共享，故 N 棵 worktree = N 个并行 baton，零机制改动即多路并行落地（取代「单活契约 baton 真天花板」，见 roadmap v3 §二） | — |
+| `contract list` | 跨树 baton 总览 | 枚举所有 worktree 的活 baton 与阶段进度的 read-only 视图（一屏看全并行轨）；遇坏契约/无 baton 降级显示、绝不抛 | — |
+| `contract worktree` | 起树脚手架 | 一条命令起 git worktree + 立 baton，起一条并行开发轨；slug 全局唯一硬拒（防同名骑 gate-绿串味）、落点已存在拒、部分失败回滚 | — |
 
 ## Casey 核心域（文本用例→测试报告域）
 

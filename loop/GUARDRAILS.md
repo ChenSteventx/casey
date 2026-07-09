@@ -38,3 +38,5 @@
     假设：可命令化的验收测不到语义正确性（用例是否真表达意图、真站是否真 bug），这些必须人裁。
 17. **[prose→待enforced]** 裁判按断言种类不可知：`verdict.mjs` 消费已判好的 `StepAxes`，对 `postAssertions` 只 AND 硬断言的 `ok`、忽略 `soft`，绝不按 `kind` 分支；取证缺失子字段当「本步无此特征」、不报解析错；断言 `kind` 的枚举只在 `check.mjs` 一处。
     假设：若 `verdict.mjs` 按 kind 分支，每加一个新维度（对话/发布/画布）都要改裁判内核、重开 accept，飞轮的加法式复利失效；新 kind 应只加 `check.mjs` + 加 golden（岔一，2026-06-29 锁）。
+18. **[prose→待enforced]** 并行工作树纪律（worktree-baton）：多路并行开发碰 `lib`/`bin` 用 git worktree 隔离，每棵树各一独立 baton（`active-contract.json` 与熔断态 gitignored、每树一份、互不共享）——不建共享池、不加 `LOOP_CONTRACT_FILE` 选槽或 `breaker --state`（引入即背红队 1 High + 4 Med）。`contract worktree <slug>` 起树时 slug 全局唯一硬拒（已占用 `loop/prd-<slug>.json` 或 `docs/plans/<slug>/` 即 exit 3），防同名 baton 骑另一 baton 的 gate-绿、覆盖冻结断言；各树自绿后 git-native 合并回 `dev`（`merge`/`cherry-pick`，绝不 `cp` 进 `lib`/`bin`）；`contract list` 跨树一屏看全并行轨；建议并发 ≤5 树；每树 loop 前自己 `breaker --reset`；合并冲突人裁（route:human）。
+    假设：worktree 数无廉价全局锁（多进程 TOCTOU），硬编码上限收益低且背「零机制改动」初衷；合并策略与冲突裁定是纪律非机制，自动合并守卫不建。实证：每 worktree 的 gitignored loop 状态天然隔离，单槽机制每树各跑各的（2026-07-09 实测钉成金牌 G7）。

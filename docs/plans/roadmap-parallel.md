@@ -86,7 +86,7 @@ loop-kit 是单活契约（hook 读主树共享 `loop/active-contract.json` 一�
 - 可无限 fan-out（不碰 `active-contract` 槽、不写 `lib`/`bin`）：研究 / grill 起草 / schema 起草 / golden 起草 / 异构评审 —— 多用子代理。
 - 碰 `lib`/`bin` 的落地：单活 `full` 契约串行；要并行须 worktree 隔离 + git-native 合并（`merge`/`apply`），绝不 `cp` 进 `lib`/`bin`。
 - P5 内部：一契约 + 7 叶子子代理起草 + 主脑串行集成（见 `p5-replay/exec-plan.md`）。
-- 解锁真多轨落地的前提（暂不投）：`LOOP_CONTRACT_FILE` 参数化 + `breaker --state`。
+- 解锁真多轨落地的前提（~~暂不投：`LOOP_CONTRACT_FILE` 参数化 + `breaker --state`~~）：**已于 2026-07-09 由 `worktree-baton` 契约解决，但走的不是这条路**。实测发现每棵 git worktree 的 `loop/active-contract.json` 与 `.breaker-state.json` 都 gitignored、每树一份、互不共享——单槽机制在每棵 worktree 里本就各跑各的，故「N 路并行 = N 棵 worktree」零机制改动即成立。`LOOP_CONTRACT_FILE`/`breaker --state` 那套共享池反而是「多 session 挤同一 checkout」的解、背离 worktree 且经设计红队判 1 High + 4 Med，遂否决。`worktree-baton` 只加 `contract list`（跨树 baton 总览）+ `contract worktree`（起树脚手架）+ 并行纪律（GUARDRAILS #18），操作手册见 `docs/plans/worktree-baton/WORKTREE-PARALLEL.md`。
 
 ## 四、剩余工作重排
 

@@ -2,8 +2,9 @@
 // loop-kit/bin/contract.mjs — Loop Contract 阶段台账：接力棒 + 前置互锁的事实源 + 唯一写入口。
 // 纯函数确定性可测；CLI（init/advance/check/show）做 fs 校验 + 读写 loop/active-contract.json（runtime，gitignored）。
 // 台账 done 只能经 advance 翻、且翻前校验交付物（照 gate.mjs 独占 passes 先例）——人和实现者只读。
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from 'node:fs';
-import { resolve, dirname, join, relative } from 'node:path';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, lstatSync, realpathSync } from 'node:fs';
+import { spawnSync } from 'node:child_process';
+import { resolve, dirname, join, relative, basename, isAbsolute, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 export const STAGES = ['grill', 'plan', 'accept', 'loop', 'review', 'learn'];
@@ -157,6 +158,66 @@ export function actionFromTool(toolName, toolInput = {}) {
   return { kind: null };
 }
 
+// ---- worktree-baton（B 案）：跨树 baton 总览 + 起树脚手架。纯函数零 I/O + CLI 编排；不建共享池、不加 env 选槽。----
+// slug 既做 git 分支名 / worktree 目录名 / baton slug，必须安全（防路径穿越 + 非法 ref）。
+export function isValidSlug(slug) { return typeof slug === 'string' && /^[A-Za-z0-9_-]+$/.test(slug); }
+// 默认 worktree 落点：兄弟目录 ../<repo 目录名>-<slug>（零参数即用；--path 可覆盖）。
+export function defaultWorktreePath(root, slug) { return resolve(root, '..', basename(root) + '-' + slug); }
+// git worktree list --porcelain → [{path, branch|null}]（detached → branch=null）。
+export function parseWorktreePorcelain(text) {
+  const out = [];
+  let cur = null;
+  for (const line of String(text || '').split('\n')) {
+    if (line.startsWith('worktree ')) { if (cur) out.push(cur); cur = { path: line.slice(9).trim(), branch: null }; }
+    else if (line.startsWith('branch ') && cur) { cur.branch = line.slice(7).trim().replace(/^refs\/heads\//, ''); }
+    else if (line === '' && cur) { out.push(cur); cur = null; }
+  }
+  if (cur) out.push(cur);
+  return out;
+}
+// baton 展示行（fail-safe：null/空→无活 baton、坏 JSON→坏契约，绝不抛——list 降级不崩）。
+export function describeBaton(rawTextOrNull) {
+  if (rawTextOrNull == null || String(rawTextOrNull).trim() === '') return { ok: false, label: '(无活 baton)' };
+  let j;
+  try { j = JSON.parse(rawTextOrNull); } catch { return { ok: false, label: '(坏契约)' }; }
+  // 最小 schema 校验（codex R1-F3）：JSON 合法但 slug/lane/stages 不成形也是坏契约，不计活 baton（防可见性假信心）。
+  const slug = j && typeof j.slug === 'string' && j.slug.trim() ? j.slug : null;
+  const lane = j && typeof j.lane === 'string' ? j.lane : null;
+  const stagesOk = j && typeof j.stages === 'object' && j.stages !== null && !Array.isArray(j.stages);
+  if (!slug || !['direct', 'light', 'full'].includes(lane) || !stagesOk) return { ok: false, label: '(坏契约)' };
+  const done = STAGES.filter((s) => j.stages[s] && j.stages[s].done).length;
+  const progress = `${done}/${STAGES.length}`;
+  return { ok: true, slug, lane, progress, label: `${slug} [${lane}] ${progress}` };
+}
+// 目录项存在判定：lstat 不跟随软链——dangling symlink 也算占用（existsSync 跟随、对 dangling 返 false，绕过守卫，codex R1-F2）。
+function entryExists(p) { try { lstatSync(p); return true; } catch { return false; } }
+// D5 守卫：slug 是否已占用入库共享交付物（prd/plan）——同名 baton 会骑另一 baton 的 gate-绿、覆盖冻结断言（红队指出的唯一真串味载体）。
+export function slugTaken(root, slug) {
+  return entryExists(join(root, 'loop', `prd-${slug}.json`)) || entryExists(join(root, 'docs', 'plans', slug));
+}
+// 落点 containment 谓词（codex R3-F1）：target 在 root 内部或等于 root 即 true。只有真父级跳出（rel 恰 '..' 或
+// '../…'）才算外部——`..wt` 这类仓内合法目录名不误判为外部（`startsWith('..')` 的经典假阴性）。
+export function isPathInsideRepo(root, target) {
+  const rel = relative(root, target);
+  if (rel === '') return true;
+  if (isAbsolute(rel)) return false;
+  return rel !== '..' && !rel.startsWith('..' + sep);
+}
+// 投影真实落点（codex R3-F1 #2）：上溯到第一个真实存在的祖先 realpath 它，再把不存在的后缀词法接回——
+// 封「软链父目录别名指回 ROOT」与「软链祖先 + 不存在中间目录」两类 containment 绕过。
+function projectRealPath(p) {
+  let cur = resolve(String(p));
+  const suffix = [];
+  for (;;) {
+    try { const real = realpathSync.native(cur); return suffix.length ? join(real, ...suffix) : real; }
+    catch { /* cur 不存在，继续上溯 */ }
+    const parent = dirname(cur);
+    if (parent === cur) return resolve(String(p)); // 到根仍无法 realpath，退回词法
+    suffix.unshift(basename(cur));
+    cur = parent;
+  }
+}
+
 // ---- CLI ----
 function load() { const f = ACTIVE(); return existsSync(f) ? JSON.parse(readFileSync(f, 'utf8')) : null; }
 function save(c) { const f = ACTIVE(); mkdirSync(dirname(f), { recursive: true }); writeFileSync(f, JSON.stringify(c, null, 2) + '\n'); }
@@ -211,7 +272,52 @@ function main() {
     const d = checkAction(c, action); console.log(JSON.stringify(d)); process.exit(d.allow ? 0 : 2);
   }
   if (cmd === 'show') { console.log(JSON.stringify(load(), null, 2)); return; }
-  console.error('用法: contract <init|advance|check|show> [slug] [--lane ..] [--reason ..] [--artifact ..] [--user-confirmed] [--red-verified]'); process.exit(2);
+  if (cmd === 'list') { // 跨树 baton 总览（read-only；每 worktree 各一 baton，worktree 化并行）
+    const r = spawnSync('git', ['-C', ROOT, 'worktree', 'list', '--porcelain'], { encoding: 'utf8' });
+    if (r.status !== 0) { console.log('worktree baton 总览：git worktree list 不可用（非 git 仓或 git 缺失）'); return; }
+    const trees = parseWorktreePorcelain(r.stdout);
+    let active = 0;
+    console.log(`worktree baton 总览（${trees.length} worktree）：`);
+    for (const t of trees) {
+      let raw = null;
+      try { raw = readFileSync(join(t.path, 'loop', 'active-contract.json'), 'utf8'); } catch { raw = null; }
+      const d = describeBaton(raw);
+      if (d.ok) active += 1; // 只计合法活契约（codex R1-F3 / 兜底复评判据5：合法 JSON 垃圾不虚计）
+      console.log(`  ${t.path} ${t.branch ? '@' + t.branch : '(detached)'}\n    ${d.label}`);
+    }
+    console.log(`合计：${trees.length} worktree / ${active} 活 baton（建议并发 ≤5 树，D6）`);
+    return;
+  }
+  if (cmd === 'worktree') { // 起树脚手架：一条命令起 worktree + 立 baton，起一条并行开发轨
+    const slug = pos[0];
+    if (!isValidSlug(slug)) { console.error('worktree: slug 缺失/非法（仅字母数字_-；不回显）'); process.exit(3); }
+    if (!['direct', 'light', 'full'].includes(opts.lane)) { console.error('worktree: --lane 须为 direct|light|full'); process.exit(3); }
+    if (!opts.reason || !String(opts.reason).trim()) { console.error('worktree: 缺非空 --reason'); process.exit(3); }
+    if (slugTaken(ROOT, slug)) { console.error(`worktree: slug 已被占用（loop/prd-${slug}.json 或 docs/plans/${slug}/ 已存在），换名防串味（D5）`); process.exit(3); }
+    // 规范落点：projectRealPath 投影到真实物理位置（跟随软链、上溯真实祖先，封软链别名 + 不存在中间目录）。
+    // guard 检查、entryExists、git worktree add、baton 落盘全用**同一 canonical 路径**——消除「guard 判定路径 ≠ git 实际落点」
+    // 的理论分歧（codex R4），且 isPathInsideRepo 正确处理 ..name 仓内名（codex R3）。落点在仓库内部即拒（防污染 loop/·docs/·.git/）。
+    const realRoot = (() => { try { return realpathSync.native(ROOT); } catch { return ROOT; } })();
+    const wtPath = projectRealPath(opts.path ? resolve(String(opts.path)) : defaultWorktreePath(ROOT, slug));
+    if (isPathInsideRepo(realRoot, wtPath)) { console.error('worktree: 落点不得落在仓库内部（防污染共享命名空间；真实路径判、封软链别名）；用兄弟目录或仓外路径（codex R1/R2/R3/R4-F1）'); process.exit(3); }
+    if (entryExists(wtPath)) { console.error('worktree: 落点已存在（拒覆盖）'); process.exit(3); }
+    const add = spawnSync('git', ['-C', ROOT, 'worktree', 'add', '-b', slug, wtPath, 'HEAD'], { encoding: 'utf8' });
+    if (add.status !== 0) { console.error(`worktree: git worktree add 失败：${String(add.stderr || '').trim()}`); process.exit(3); }
+    try {
+      const c = initContract({ slug, lane: opts.lane, reason: opts.reason });
+      const f = join(wtPath, 'loop', 'active-contract.json');
+      mkdirSync(dirname(f), { recursive: true });
+      writeFileSync(f, JSON.stringify(c, null, 2) + '\n');
+    } catch (e) { // 部分失败回滚：不留悬挂树/分支
+      try { spawnSync('git', ['-C', ROOT, 'worktree', 'remove', '--force', wtPath], { encoding: 'utf8' }); } catch { /* ignore */ }
+      try { spawnSync('git', ['-C', ROOT, 'branch', '-D', slug], { encoding: 'utf8' }); } catch { /* ignore */ }
+      console.error(`worktree: 新树立 baton 失败，已回滚（errno=${(e && e.code) || 'UNKNOWN'}）`); process.exit(3);
+    }
+    console.log(`✓ 并行轨已起：worktree=${wtPath}（分支 ${slug}），baton 已立（lane=${opts.lane}）`);
+    console.log(`  下一步：cd 到该树 → 走六阶段（grill 起步）；loop 前该树自己 node loop-kit/bin/breaker.mjs --reset。`);
+    return;
+  }
+  console.error('用法: contract <init|advance|check|show|list|worktree> [slug] [--lane ..] [--reason ..] [--artifact ..] [--path ..] [--user-confirmed] [--red-verified]'); process.exit(2);
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
