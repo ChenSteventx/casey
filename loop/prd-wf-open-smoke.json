@@ -3,7 +3,7 @@
   "task": "wf-open-smoke（direct）：飞轮第五条只读零缝暖场。两纯加法编译原子——nav.workflowManagement（路由导航一击即中，镜像 nav.agentManagement；后置锚双布局记录容器可见、仅 unique 才等 G2）+ workflow.open（openName 文本精确点开进详情，只读零破坏；后置 waitForURL detail、仅 unique 才等）；fake-sut 行名 td 可点通路（加法，prd-p5-replay 夹具重签）；flow-bridge 金牌三钉点例翻 workflow.addNode（R9 画布原子长期无知识天然反例）+ 集 11→13 重钉（prd-flow-bridge 重签）。COMPILE_KNOWN_ATOMS 11→13。决策 docs/plans/wf-open-smoke/proposed/GRILL.md。",
   "specPath": "docs/plans/wf-open-smoke/plan.md",
   "testChecksums": {
-    "tests/_golden/wf-open-smoke.golden.mjs": "76ca30a14107508163c1baa589d0013394b50babcb38c3a3eecc369e0f3a67c3"
+    "tests/_golden/wf-open-smoke.golden.mjs": "8ff8170e0560e7714cad7c626adc29f9cd51821d01bc852e8a31a316749cd3cb"
   },
   "observability": [
     {

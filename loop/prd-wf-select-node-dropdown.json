@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "task": "wf-select-node-dropdown（light）：画布维度第四原子 workflow.selectNodeDropdown——节点配置抽屉里选 HEREN「请选择」下拉（GRILL D1/D3/D4/D5）。COMPILE_KNOWN_ATOMS 16→17（分派表加法，纯加法零冻结 schema 改动）：复用 events.action=click 承载（nth 载下拉下标、text 载 option、semantic 载触发器锚），不走 selectOption（冻结 dropdownUnit 无 nth 槽、required fieldLabel/optionText 冲突）。doSelectNodeDropdown 专用回放门按 ev.atom 分发（域锁 .hr-drawer__content-wrapper 内第 nth 个 .hr-select 触发器——nth 路 A 确定性位置消歧 + 限可见浮层 .hr-select-option 作用域唯一才点 + 缺席守卫不抛穿 + 触发器值精确回读不再「请选择」且精确含 option），不复用通用 doSelect（全页 combobox 门必兜空/撞既有分类下拉）。编译门 compileWorkflowSelectNodeDropdown 与回放门同刻（同域锁 + 同可见浮层作用域 + 同精确回读）。fake-sut 节点抽屉「请选择」下拉纯加法夹具 + 反面场景（ddmulti 选项多匹配 / ddabsent 目标缺席 / ddwrong 选错项写错值 / ddtwin 两触发器孪生浮层 / ddempty 抽屉开无下拉）。例翻：五金牌「集 16」翻 17（agent.openToolPicker 不可编译长寿反例不翻、只翻计数）+ 六 prd 重签（flow-bridge/wf-add-node/wf-connect-nodes/wf-open-smoke/wf-open-node 棘轮 + p5-replay 夹具 checksum）。决策 docs/plans/wf-select-node-dropdown/proposed/GRILL.md。",
+  "specPath": "docs/plans/wf-select-node-dropdown/plan.md",
+  "testChecksums": {
+    "tests/_golden/wf-select-node-dropdown.golden.mjs": "9aa7903bcaf27e0fa0f1062a149e7097c262abb58d2ed246e033a3980d389da3"
+  },
+  "observability": [
+    {
+      "dimension": "真机采样（route:human，与 wf-add-node/wf-connect-nodes/wf-open-node observability 合并行程）：① 节点抽屉「请选择」触发器 + 选项浮层真实类名（hermetic 用 .hr-select/.hr-select-option，真机 HEREN 组件库同族假设待核——openNode 抽屉类名假设同挂账）；② 选后触发器值呈现是否精确含 option（D5 回读假设复核）；③ 多下拉抽屉里 nth 定位是否够（D4 分岔复核——真机下拉是否带可锚定区分标签、可否弃 nth 走标签锚，弃 nth 走标签锚是 route:human 复核项、不在本契约 hermetic 收口）；④ 贪心序「本原子解锁哪 9 条 R9 flow、第 9 条是哪条、选哪个 option 解锁下一格」待真机 flow 目录核。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-selectnodedropdown-atom-e2e",
+      "desc": "selectNodeDropdown 端到端金牌（C1 集 17 / C2 compile→replay→verdict 全 PASS 含 ddtwin 钉位——非域锁/全页门必 ambiguous 唯 nth 域锁 + 可见浮层作用域 doSelectNodeDropdown 过 / C3a 编译面双证：未 openNode gate 前置门截 + 无下拉 execute 预检 count=0 blocker exit 65 / C3b nth 越界 blocker exit 65 / C3c 缺席守卫优雅 none / C3d 选项多匹配 ambiguous candidateCount 恰 2 / C3e 选错项精确回读拒认 action_failed / C3f 目标缺席 action_failed）+ fake-sut 节点抽屉下拉夹具。红先行：实现前 1 过 9 败（C1 集 16 + C2×3 无编译知识/回放门 + C3a/b 无预检门 + C3d/e/f 通用门假 unique + ddtwin 非域锁门 fallback_first count=2 实锤）。附五例翻金牌「集 16」翻 17 复跑锁不回退。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-select-node-dropdown.golden.mjs",
+        "node tests/_golden/wf-open-node.golden.mjs",
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T09:35:49.258Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-resign-and-regression",
+      "desc": "六 prd 重签（五例翻棘轮 + p5-replay 夹具 checksum）+ 新金牌冻 prd-wf-select-node-dropdown；全链回归零行为差（fake-sut 节点抽屉下拉 + 五反面场景纯加法、既有场景零影响）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/seams-freeze-v2.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T09:38:17.878Z 全部 acceptance exit 0"
+    }
+  ]
+}
