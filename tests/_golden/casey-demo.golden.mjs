@@ -6,6 +6,13 @@
 // 同 e2e-chain 同级，非 selftest --tier1 的零外部依赖）——本金牌不塞进 tier1。
 // 实现前红：无 casey demo 子命令时门面走 default: exit 64（未知命令），A1/A2/A3/A5/A6/A7 无从谈起；
 // help 无该行，A4 红。A8 现已绿，防退化守（实现后须仍绿）。
+//
+// 收口修订（codex 跨族异构评审两轮 confirmed，本轮补齐）：
+//   - A3 扩：原「:// / 回环 host」门禁只扫三产物，未覆盖 stdout/stderr（凭据形关键词早已扫，唯独这两项漏）；
+//     本轮把两项也并进 stdout/stderr 扫描（med test-coverage）。
+//   - A9 新增：casey demo 是零参入口，但门面 rest 透传、demo.mjs 原不校验多余参数——`casey demo --sut x`
+//     类误用被静默吞、仍出「假 PASS」报告，不按 CLI「用法错→exit 64」纪律（med fail-open）。
+//     实现前红实证：无校验时该用例静默 exit 0（见 A9 检查体注释）——本轮加 demo.mjs 内 process.argv 校验转绿。
 import { readFileSync, existsSync, mkdtempSync, writeFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve, dirname, join } from 'node:path';
@@ -75,12 +82,14 @@ check('A3 三产物 + stdout/stderr 全文零凭据形关键词、零 ://、无�
   scanForbidden('stdout', r1.stdout, offenders);
   scanForbidden('stderr', r1.stderr, offenders);
   if (offenders.length) throw new Error(`凭据形关键词命中：${offenders.join('；')}`);
-  for (const [label, text] of [['report.html', html], ['report.md', md], ['report.json', json]]) {
-    const cnt = (text.match(/:\/\//g) || []).length;
-    if (cnt !== 0) throw new Error(`${label} 含 :// 计数 ${cnt}（应 0，夹具地址不进产物）`);
+  // :// 计数与回环 host 门禁：三产物 + stdout/stderr 一并扫（收口修订——原只扫三产物，漏了命令输出）。
+  const surfaces = [['report.html', html], ['report.md', md], ['report.json', json], ['stdout', r1.stdout], ['stderr', r1.stderr]];
+  for (const [label, text] of surfaces) {
+    const cnt = (String(text || '').match(/:\/\//g) || []).length;
+    if (cnt !== 0) throw new Error(`${label} 含 :// 计数 ${cnt}（应 0，夹具地址不进产物/输出）`);
   }
-  if (/127\.0\.0\.1|localhost/.test(html) || /127\.0\.0\.1|localhost/.test(md) || /127\.0\.0\.1|localhost/.test(json)) {
-    throw new Error('产物含回环 host 明文（127.0.0.1/localhost）');
+  for (const [label, text] of surfaces) {
+    if (/127\.0\.0\.1|localhost/.test(String(text || ''))) throw new Error(`${label} 含回环 host 明文（127.0.0.1/localhost）`);
   }
 });
 
@@ -140,6 +149,12 @@ check('A8 回归锁：cli-mcp-face / handover-pack / e2e-chain 三冻结金牌�
     const r = spawnSync(process.execPath, [join(ROOT, 'tests', '_golden', golden)], { encoding: 'utf8', timeout: 120000 });
     if (r.status !== 0) throw new Error(`${golden} 应仍 exit 0（回归），实际 ${r.status}：${((r.stderr || '') + (r.stdout || '')).slice(-400)}`);
   }
+});
+
+// ---------- A9 casey demo 拒绝多余参数（CLI 用法纪律：零参入口不静默吞参伪造 PASS）----------
+check('A9 casey demo --sut x 类多余参数应 exit 64（用法错），不静默吞参出假 PASS 报告', () => {
+  const r9 = spawnSync(process.execPath, [CASEY, 'demo', '--sut', 'x'], { encoding: 'utf8', timeout: 30000 });
+  if (r9.status !== 64) throw new Error(`应 exit 64（用法错），实际 ${r9.status}：${((r9.stderr || '') + (r9.stdout || '')).slice(-400)}`);
 });
 
 console.log(`casey-demo golden: ${pass} 过 / ${fails.length} 败`);

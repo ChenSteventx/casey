@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-// bin/demo.mjs —— 端到端 hermetic 样例报告生成器（零外部依赖、零真机、零凭据）。
+// bin/demo.mjs —— 端到端 hermetic 样例报告生成器（零真机、零凭据、零外部服务，需本机 chromium）。
+// 依赖诚实定位（GRILL D6）：demo 做真回放（起真 chromium 打夹具 SUT），非「零外部依赖」的
+// selftest --tier1 一级自检，绝不冒充零依赖一句话出报告——环境验收第 2 级伴随位，需先装好 chromium。
 // 用途：一条命令跑出一份可直接打开的 Casey 测试报告样例，验证 replay→verdict→report 整条流水线能用。
 //   node bin/casey.mjs demo   （门面直通；亦可直接 node bin/demo.mjs）
 // 复刻 casey run 的相3→相4→相6 编排（bin/casey.mjs runPipeline），SUT 指向 tests/fixtures/publish-sut
@@ -18,6 +20,15 @@ import { fileURLToPath } from 'node:url';
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
 const bin = (n) => join(ROOT, 'bin', n);
+
+// casey demo 是零参入口（help 表 D7 已明写「零参」）：多余参数一律用法错，绝不静默吞掉误当零参跑
+// （门面把 rest 透传到本脚本，不校验会让 `casey demo --sut x` 类误用悄悄产出一份「假 PASS」样例报告）。
+const EXTRA_ARGS = process.argv.slice(2);
+if (EXTRA_ARGS.length) {
+  console.error(`demo: 零参入口，不接受参数（收到 ${JSON.stringify(EXTRA_ARGS)}）。用法: node bin/casey.mjs demo`);
+  process.exit(64);
+}
+
 const { startPublishSut } = await import(`file://${join(ROOT, 'tests', 'fixtures', 'publish-sut', 'server.mjs').replace(/\\/g, '/')}`);
 
 const CASE_ID = 'tc_wf_publish_sample';

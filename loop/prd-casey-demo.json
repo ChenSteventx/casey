@@ -3,7 +3,7 @@
   "task": "casey-demo（light）：把现成的 scripts/sample-report.mjs 提升为 bin/demo.mjs 并接成 casey demo 子命令——一句话零真机零凭据（需本机 chromium）产出一份可打开的样例测试报告，作为新用户/新同事「先看到 Casey 产物长啥样」的入口（解 usability-audit 摩擦 F1 / 条目 C2）。固定 caseId tc_wf_publish_sample、固定 runDir runs/sample-wf-publish/、清建幂等；样例三件套 + 夹具 SUT + 串既有冻结 bin（相3 replay→相4 verdict→report-model→相6 report，复用渲染零重写）。顺手清两处味道：不再 import 测试件 tests/_golden/_sign-helper.mjs（签署字段内联为样例常量）；打开路径提示不再字面替换 /mnt/d/→D:\\，改用 wslpath 从真实产物路径真转换（非 WSL/wslpath 不可用则只给本机绝对路径）。接线 bin/casey.mjs（case 'demo' 直通 + help 行）、.claude/skills/casey/SKILL.md（三处自然语言入口）、README.md（环境验收第2级伴随位）。决策见 docs/plans/casey-demo/proposed/GRILL.md（D1-D9）。本契约不加 MCP casey_demo（GRILL D8，避免 re-sign cli-mcp-face）；D3 甲致 docs/HANDOFF.md 等历史文档对 scripts/sample-report.mjs 的引用失指——已接受的取舍，未改历史文档。",
   "specPath": "docs/plans/casey-demo/plan.md",
   "testChecksums": {
-    "tests/_golden/casey-demo.golden.mjs": "9ce30aeb6fb6a45f62723228bf44cc955c0f42b32728d348217eaba4b0560860"
+    "tests/_golden/casey-demo.golden.mjs": "bdd39522275d84ad83e87b2091b2ebe67f4a3ce958db9ce9b744dcd0eea6a089"
   },
   "observability": [
     {
@@ -28,7 +28,7 @@
         "node tests/_golden/casey-demo.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T07:27:47.286Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-09T09:54:11.995Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-tier1-regression",
@@ -38,7 +38,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T07:27:48.590Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-09T09:54:12.961Z 全部 acceptance exit 0"
     }
   ]
 }
