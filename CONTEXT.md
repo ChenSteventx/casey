@@ -99,6 +99,9 @@
 | 示教录制包 | Teach-in Capture | `casey record` 产出的人工操作采集包，作为后续蒸馏语料；`signed:false`、`replayReady:false`、`distillRequired:true` 是硬不变量 | — |
 | 示教入账 | Teach-in Intake | `casey intake` 把 示教录制包 经安全复核闸登记进蒸馏前置队列的动作；只复核登记、不转形、不签署、不回放，复核证不出干净合法包一律拒账（fail-closed）。蒸馏由后续 record-distill 消费 | — |
 | 示教入账台账 | Teach-in Intake Ledger | append-only 记录每次 示教入账 accept/reject 的本地台账（`intake-ledger.jsonl`，落 capture 同目录）；显式区分于 失败记录台账（裁定下游）——不进 verdict、不作自愈输入、不改任何裁定（护栏 #13/#15）；拒账只记类别码、绝不落原始脏内容 | — |
+| 示教蒸馏 | Teach-in Distillation | `casey distill` 把已入账 示教录制包 的 events 零 LLM 确定性投影成候选流程（候选 TestCase 骨架 + 候选 mapping + pending + 溯源 manifest）；蒸馏工具零 LLM，LLM 手术刀只在 CLI 外经确定性闸 + 人签入场；重走 ingest→compile→draft→sign，绝不直通回放。v1 全 pending（真机路由跨环境不稳、无可靠静态查表，不臆造脆弱匹配） | — |
+| 蒸馏候选 | Distillation Candidate | `casey distill` 产的非权威候选物（候选 TestCase + 候选 mapping + manifest）；降权标记落 manifest（`artifactKind:'distill-candidate'`）+ 文件名 + 负向不变量，绝不 `signed`/`replayReady`，须重走全链 + 人签才算数 | — |
+| 采集忠实闸 | Capture-Fidelity Gate | 示教蒸馏 的零 LLM L0 闸：校候选 mapping 对 capture 溯源忠实（每候选 atom 有 event 证据、每 event 被覆盖或落 pending）；对位 flow-bridge 投影忠实，对象是 capture 溯源而非 TestCase.steps；fail-closed 全域返回、绝不抛 | — |
 | `fail-safe` | 故障安全 | 失败时退到安全态：机器证不出就路由人（`NEEDS_HUMAN`），绝不默认成可自愈（fail-open 的反面） | — |
 | `fail-open` | 故障放行 | 故障时放行：基础设施/hook 自身故障不阻塞正常工作；仅用于 lint/hook，绝不用于裁定 | — |
 | `fail-closed` | 故障关闭 | 故障时拒绝：校验不过/缺数据时报红拒绝（用于 `parseTestCase` 等准入） | — |

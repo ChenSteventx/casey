@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "task": "record-distill（full）：示教兜底第三契约，新增 casey distill——把已入账 capture 蒸馏成候选流程（v1 零 LLM 全 pending 骨架：候选 TestCase source.kind:'json' + 候选 mapping=[] + pending 清单 + 溯源 manifest）+ intake→distill captureSha256 TOCTOU 硬门（verifyIntaken：NOT_INTAKEN/CAPTURE_SWAPPED + 当前字节重跑 reviewCapture REREVIEW_FAILED）+ 采集忠实闸 validateCaptureFidelity（--verify --mapping）；重走 ingest→compile→draft→sign，绝不直通回放。零冻结 schema 涟漪。决策 docs/plans/record-distill/proposed/GRILL.md（Steven grill 签核 7 项）。",
+  "specPath": "docs/plans/record-distill/plan.md",
+  "testChecksums": {
+    "tests/_golden/record-distill.golden.mjs": "f673665c9db6c558296abc85f8f3028118469320a0ec949fbef1b7b879c9696e"
+  },
+  "observability": [
+    {
+      "dimension": "真机全链趟合并项：record → intake → distill → ingest → flow-bridge → compile → draft → 人签 → replay，确认候选真过闸、pending 真交人、无凭据泄漏、候选 mapping 经 CLI 外 LLM 补后真过 flow-bridge + 采集忠实闸。真机 UAT。",
+      "route": "human"
+    },
+    {
+      "dimension": "v1 零 LLM 投影全 pending（GRILL D8）：高置信 event → 候选 atom 查表留后续增量，届时另开红先行金牌补断言，不在本契约臆造脆弱跨环境路由匹配。",
+      "route": "machine"
+    },
+    {
+      "dimension": "蒸馏候选形态未冻 JSON schema（仅金牌断言字段锁漂移）：若将来跨消费者契约需硬化，另冻 distill-candidate-*.schema.json 并重签；本契约按局部候选处理不预冻（沿用 record-intake 台账未预冻先例）。",
+      "route": "machine"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-distill-toctou-projection-fidelity",
+      "desc": "casey distill CLI + TOCTOU 硬门 + 零 LLM 全 pending 投影 + 采集忠实闸 + 降权不直通：help 暴露；缺参 exit 64；caseId 穿越/凭据 exit 65；happy 真接缝(record→intake→distill)产恰三候选(testcase/mapping/manifest)、1:1 intentId=i+seq、actionHint 忠实、全步 route:human + mapping=[]、manifest sha 三方一致、候选真过 ingest、两次字节一致；TOCTOU NOT_INTAKEN/CAPTURE_SWAPPED/软链/REREVIEW_FAILED 逐条 exit 65 零候选落盘；采集忠实闸 --verify 忠实过/凭空 atom 拒/畸形 fail-closed；降权无 signed·replayReady·target·events.json + manifest 降权 note；输出全文无 :// + 成功不回显绝对路径。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/record-distill.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T03:31:12.591Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-tier1-regression",
+      "desc": "新增 distill 门面不得破坏确定性内核与统一语言自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T03:31:13.653Z 全部 acceptance exit 0"
+    }
+  ]
+}

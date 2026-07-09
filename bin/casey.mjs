@@ -195,6 +195,8 @@ ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅�
   casey record  <caseId> --sut <本地基址> --out-dir <d> (--login-bootstrap|--no-login) [--from-events <f> --headless --max-ms <ms>]
                                           示教采集：人工操作→teach-in-capture.json（只作蒸馏语料，不签署、不直通回放）
   casey intake  <caseId> --capture <f>    示教入账：安全复核录制包 → 登记入账台账（不转形/不签署/不回放；拒账 fail-closed）
+  casey distill <caseId> --capture <f> --out-dir <d> [--verify --mapping <f>]
+                                          示教蒸馏：已入账录制包 → 候选流程 + pending + 溯源（TOCTOU 硬门；v1 零 LLM 全 pending；不签署/不回放；重走 ingest→…→人签）
   casey replay  --events <f> --sut <本地基址> --expected <f> --profile <f> --out <axes.json> [--login-bootstrap ...]
                                           相3 确定性回放 + 录屏 + 取证（未签契约拒回放）
   casey verdict --axes <f> --out <f>      相4 多态裁定（零 LLM 判定树）
@@ -245,6 +247,8 @@ function main() {
     case 'record': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'record.mjs'), rest); process.exit(r.code); }
     // 相0 前段·示教入账：安全复核录制包 → 登记入账台账（不转形/不签署/不回放；蒸馏另立 record-distill）。
     case 'intake': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'intake.mjs'), rest); process.exit(r.code); }
+    // 相0 前段·示教蒸馏：已入账 capture → 候选流程 + pending + 溯源（TOCTOU 硬门；v1 零 LLM 全 pending；重走 ingest→…→人签）。
+    case 'distill': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'distill.mjs'), rest); process.exit(r.code); }
     // 相3/4/6 直通各自 bin（参数契约归各 bin 自管，同 compile/draft/sign/flow-bridge/ingest 五先例；
     // 此前为桩而底层 bin 早已建成、run 编排内部直连在用——cli-mcp-face 契约接通门面）。
     case 'replay': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'replay.mjs'), rest); process.exit(r.code); }
