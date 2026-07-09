@@ -27,15 +27,17 @@ function parseArgs(argv) {
 }
 
 // 点击身份门：从动作原始信号推 actionPerformed ∈ {true, 'ambiguous', false}。
-// 解析唯一 或 点击后身份回读成立 → true；多匹配/坐标兜底 → ambiguous；其余 → false。
+// 解析唯一 或 点击后身份回读成立 → true；多匹配（门吐 resolution==='ambiguous'）→ ambiguous；其余 → false。
 // 只有显式声明的纯断言步（kind==='none'）才视为 true（无动作可失败，由断言驱动）；
 // 缺失/畸形 action 轴 = 无证据，按未做成(false)处理 → 落 fail-safe，绝不当成做对了。
+// resolution 多匹配的唯一合法字面量 = ambiguous（CONTEXT 登记词，三门 emitters 收敛同源）；
+// 收敛前的 fallback_first/multi 死字面量已从识别端删除、幽灵 coord_fallback（无门吐）同删。
 function deriveActionPerformed(action) {
   if (action && action.kind === 'none') return true;
   if (!action || typeof action !== 'object') return false;
   if (action.resolution === 'unique') return true;
   if (action.identityReadback && action.identityReadback.ok === true) return true;
-  if (action.resolution === 'fallback_first' || action.resolution === 'coord_fallback') return 'ambiguous';
+  if (action.resolution === 'ambiguous') return 'ambiguous';
   return false;
 }
 

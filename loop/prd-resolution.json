@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "task": "resolution 词表统一（触裁判内核，full）：把裁判链（点击身份门 → 动作轴 resolution → verdict.mjs）上的多匹配字面量收敛到 CONTEXT 登记词 ambiguous——三门 emitters（编译门 compile-atoms 的 multi / 回放通用门 replay-actions 的 fallback_first / openNode 已是 ambiguous）全吐 ambiguous；裁判识别端 verdict.mjs deriveActionPerformed 与只读复算镜像 report-model.mjs 同刻只认 ambiguous、删幽灵 coord_fallback 死枝（识别端无门吐，行为中性）。fail-safe 不破：多匹配前后恒终判 NEEDS_HUMAN，仅 reason 子类由泛化 INDETERMINATE 提精到 AMBIGUOUS_ACTION，绝不因收敛翻成 PASS/SUT_DEFECT/任何终判——decide() 的 ap==='ambiguous' 短路先于 PASS 支与 backed→SUT_DEFECT 支，只改「谁被认成 ap ambiguous」不动短路顺序。run-history 诊断 schema 的 coord_fallback/fallback_first 是可表征锁（seams-freeze-v2 治理），不动。裁判零 LLM 不破（verdict-purity-guard）。判据 docs/plans/resolution/plan.md + proposed/GRILL.md + GOLDEN-TESTPLAN.md。",
+  "specPath": "docs/plans/resolution/plan.md",
+  "testChecksums": {
+    "tests/_golden/resolution.golden.mjs": "e9e5a12d7474e3961eb54f46237745f916c3c9995eadd7ddec9b1636874cff1a"
+  },
+  "observability": [
+    {
+      "dimension": "真机 openNode 域内多匹配复现（.lf-canvas-overlay 内同名节点 ≥2）：收敛后该路应报 AMBIGUOUS_ACTION 而非 INDETERMINATE，须真机造多匹配态核验（openNode 真机保真度复核家族，压后合并跑）。hermetic 侧由合成动作轴注入 ambiguous 足额覆盖。",
+      "route": "human"
+    },
+    {
+      "dimension": "fake-sut tests/fixtures/fake-sut/server.mjs 注释「resolution=fallback_first」收敛后失准（实为 ambiguous）——因牵动 prd-p5-replay 重签，挂账待下次批量重签窗口顺带修（GRILL D8），非本契约 hermetic 验收面。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-resolution",
+      "desc": "红先行金牌 tests/_golden/resolution.golden.mjs 钉死：A1 根因回归（resolution:'ambiguous' → NEEDS_HUMAN/AMBIGUOUS_ACTION，收敛前 INDETERMINATE 的红证）；A2/A3/A4 fail-safe 三向不破（多匹配 + 全过硬断言 ≠ PASS、+ 本步 5xx 背书 ≠ SUT_DEFECT、+ 无硬断言仍 AMBIGUOUS_ACTION，证 ap==='ambiguous' 短路先于 PASS/SUT_DEFECT 支）；A5 双镜像同判（verdict.mjs ⋈ report-model.mjs expectedVerdict 经 verdict⋈axes 一致性门放行，护栏 #14/#15，只改一处识别端即被逮）；A6 收敛完备（源码级：compile-atoms/replay-actions 不再吐 'multi'/'fallback_first' 作 resolution 值、verdict.mjs/report-model.mjs 识别端无 coord_fallback/'fallback_first'）；A7 非多匹配态零回归（unique→PASS、unique+5xx→SUT_DEFECT、none+drift→HARNESS_ERROR、none/action_failed→INDETERMINATE）。裁判零 LLM 不破（selftest --tier1 含 verdict-purity-guard）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/resolution.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T10:20:40.203Z 全部 acceptance exit 0"
+    }
+  ]
+}

@@ -4,7 +4,7 @@
 //   p5-replay.golden 跑的 10 案不覆盖这些「失败方向」（它走的是 happy/已冻八案）。本文件把修复钉死，
 //   防回退到 fail-open。不重跑真回放——只锁两层确定性不变量：
 //     (1) 断言轴 evaluateAssertions：证不出 / 未实现 kind 一律 ok:false（护栏 #14）。
-//     (2) 动作轴 + 取证 → 已冻 verdict.mjs 四态：action_failed→INDETERMINATE、fallback_first→AMBIGUOUS、
+//     (2) 动作轴 + 取证 → 已冻 verdict.mjs 四态：action_failed→INDETERMINATE、ambiguous→AMBIGUOUS、
 //         归因按本步（背景/别步不背书本步、pageerror 按步不污染）（护栏 #14/#15）。
 // 改本文件 = Test Ratchet 判红。
 import { readFileSync, writeFileSync, mkdtempSync } from 'node:fs';
@@ -58,9 +58,10 @@ const emptyForensics = { network: [], lifecycle: { crashed: false, crashedAtStep
 let v = verdictOf({ stepId: 's1', intentId: 'i1', atom: 'x', action: { resolution: 'action_failed', identityReadback: { ok: false } }, postAssertions: hardPass, forensics: emptyForensics });
 ok('action_failed → NEEDS_HUMAN/INDETERMINATE', v.verdict === 'NEEDS_HUMAN' && v.reason === 'INDETERMINATE');
 
-// finding 2/6：多匹配 → fallback_first → AMBIGUOUS_ACTION（无论断言；且 runner 此分支不点击）
-v = verdictOf({ stepId: 's1', intentId: 'i1', atom: 'x', action: { resolution: 'fallback_first', candidateCount: 2 }, postAssertions: hardPass, forensics: emptyForensics });
-ok('fallback_first → NEEDS_HUMAN/AMBIGUOUS_ACTION', v.verdict === 'NEEDS_HUMAN' && v.reason === 'AMBIGUOUS_ACTION');
+// finding 2/6：多匹配 → ambiguous → AMBIGUOUS_ACTION（无论断言；且 runner 此分支不点击）。收敛前门吐 fallback_first，
+// resolution 词表统一后三门 emitters 多匹配全吐 CONTEXT 登记词 ambiguous、裁判识别端只认 ambiguous。
+v = verdictOf({ stepId: 's1', intentId: 'i1', atom: 'x', action: { resolution: 'ambiguous', candidateCount: 2 }, postAssertions: hardPass, forensics: emptyForensics });
+ok('ambiguous → NEEDS_HUMAN/AMBIGUOUS_ACTION', v.verdict === 'NEEDS_HUMAN' && v.reason === 'AMBIGUOUS_ACTION');
 
 // finding 1/5：背景请求 attributedStepId=null → 不背书（即使 500）：硬断言失败 + 归因 null → 非 SUT_DEFECT
 v = verdictOf({ stepId: 's1', intentId: 'i1', atom: 'x', action: { resolution: 'unique' }, postAssertions: hardFail, forensics: { network: [{ url: '/api/x/poll', status: 500, attributedStepId: null, errorEnvelope: { ok: false } }], lifecycle: emptyForensics.lifecycle } });

@@ -3,7 +3,7 @@
   "task": "noErrorEnvelope 缺席语义修正（light）：lib/replay-assert.mjs 评估器原硬编码「必须找到 /saveOrModifyProcessData/ 好信封」（p5 假 SUT 夹具捷径）——相2 端到端首航真机实证 3/4 步假败 NEEDS_HUMAN(SUT_DEFECT_OR_STALE)。改缺席语义镜像同文件 noPageError：本步归因记录中不存在 errorEnvelope.ok===false 即过、零信封记录即过；坏信封归因本步必败（inject500/HTTP200 软失败方向不变）。连带翻转 p5-replay-coverage.golden 一条冻结检查为缺席语义三向（护栏 #1 契约更新，Steven 批 2026-07-02，GRILL G1 有案）；prd-p5-replay 与本 prd 对该文件 checksum 同步重签。verdict.mjs/forensics 归因零改动。",
   "specPath": "docs/plans/noerrenv-absence/plan.md",
   "testChecksums": {
-    "tests/_golden/p5-replay-coverage.golden.mjs": "fc84a7f03982039bde1c392e5f1a5f9a727571a56500e2feeaacf975f11dc693"
+    "tests/_golden/p5-replay-coverage.golden.mjs": "3e46e9a7fdf6824ed17e3a3c83e406ff55e95a2e5bb279d6bbdb92d67f7e2706"
   },
   "observability": [
     {
@@ -22,7 +22,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-02T13:39:15.031Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-09T10:24:31.070Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-regression-locks",
@@ -33,7 +33,7 @@
         "node tests/_golden/p3-compile.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-02T13:40:33.281Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-09T10:25:50.738Z 全部 acceptance exit 0"
     }
   ]
 }

@@ -4,7 +4,7 @@
   "specPath": "docs/plans/layer3-wiring/plan.md",
   "testChecksums": {
     "tests/_golden/layer3-wiring.golden.mjs": "f94c54cf8799fedff2262e19bca032ef4a530c0f1569e316b8bf68390864acb4",
-    "tests/_golden/layer3-wiring-coverage.golden.mjs": "4c24a35dfe4bb9b1958b404af2b5533c12f2ed3430ea27f83c229af2a73bb196"
+    "tests/_golden/layer3-wiring-coverage.golden.mjs": "14b950296195b12e3e290ec62485f75df0b4fbe9c3780c157d4c50d7612f4f93"
   },
   "observability": [
     {
@@ -29,7 +29,7 @@
         "node tests/_golden/layer3-wiring.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-01T14:53:42.326Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-09T10:27:43.743Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-assembler-failsafe-coverage",
@@ -39,7 +39,7 @@
         "node tests/_golden/layer3-wiring-coverage.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-01T14:53:42.480Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-09T10:27:43.897Z 全部 acceptance exit 0"
     }
   ]
 }

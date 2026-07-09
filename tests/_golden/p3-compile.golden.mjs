@@ -337,7 +337,7 @@ await checkAsync('C8 多匹配拒动作拒产出', async () => {
     if (existsSync(join(dirD, `observed-${CASE_ID}.json`))) throw new Error('非唯一执行不得残留旧 observed（假冒本轮成功）');
     if (!existsSync(join(dirD, 'compile-report.json'))) throw new Error('诊断用 compile-report.json 应照落（route:human 依据）');
     const rep = JSON.parse(readFileSync(join(dirD, 'compile-report.json'), 'utf8'));
-    if (!rep.verification.some((v) => v.resolution === 'multi' && v.acted === false)) throw new Error('多匹配步须记 multi 且 acted=false（绝不点击）');
+    if (!rep.verification.some((v) => v.resolution === 'ambiguous' && v.acted === false)) throw new Error('多匹配步须记 ambiguous 且 acted=false（绝不点击；resolution 词表统一后编译门多匹配收敛到 ambiguous）');
   } finally { if (sutAmb2) await sutAmb2.close(); }
 });
 
