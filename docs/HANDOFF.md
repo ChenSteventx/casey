@@ -3,7 +3,26 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 当前状态（2026-07-09，示教兜底人录收尾 record-intake+distill + worktree-baton 解单 baton 天花板）
+## 当前状态（2026-07-09 晚，「全做」易用性+分发一趟并行落地：六 A-契约 + 画布第四原子 + 裁判词表统一，全合并回 dev）
+
+本 session 走大规模并行（`worktree` fan-out 起草 + subagent 各驻树实现 + `Workflow` 编排逐契约收口评审 + 协调合并），把排队的候选契约与两个新契约一趟落地、全部合并回 `dev`（`b4f5c27`→`44df070`）。dev 现干净：只剩 Steven 的 `M .gitignore`（别动别提交）+ `?? docs/plans/usability-audit/`（母审计草稿、非契约）。八契约 + codex 的 `run-convention` 齐落，逐一 gate 复验绿（各契约 prd + `cli-mcp-face` 全 GREEN、`selftest --tier1` 裁判零 LLM、全部判内核/画布金牌 exit 0）。落地清单：
+
+1. `run-convention`（light，`b4f5c27`，codex 实现）：`casey run <caseId> --sut` 缩八旗标为 `caseId` + `cases/<caseId>/` 约定布局解析（显式旗标恒赢）+ caseId 穿越守卫 + `AT_CASES_DIR` 锚仓根防 cwd 漂移。**两处各做了一份**（并行 codex 会话 + 本会话）——DeepSeek 三轮评审的 codex 版多修了 `AT_CASES_DIR` cwd 漂移（本会话版有同款隐患），Steven 拍板取 codex 版落 dev；Claude 那份（含 HIGH 穿越修 + 红先行金牌 A9）存档在分支 `run-convention-claude`、没丢。
+2. `mcp-parity`（light）：`MCP` 面补 `casey_record`/`casey_intake` 两工具（14 工具）+ 版本单源（`serverInfo.version===package.json.version`）+ 新增 `CLI⊆MCP` 覆盖断言（switch 派生命令集 − `CLI_MCP_EXCLUDED` 须各有 `casey_*` 工具）。keystone——doctor/distribution/集成修都往 `EXCLUDED` 加各自 CLI-only 命令。
+3. `ingest-scaffold`（full）：`casey scaffold-case <caseId> --from-text` 相0 前段脚手架——自由文本零 LLM 包成 schema 合规候选骨架（`source.kind:'freetext'` + 单条 `route:human` 占位步、不臆断切分），开箱过 `parseTestCase`，供 CLI 外 LLM 归一后经 `ingest` 重新入场。CONTEXT 登记三术语（归一脚手架/候选骨架/归一提示模板）。
+4. `casey-demo`（light）：`casey demo` 零真机零凭据（需 chromium）出一份自包含 `PASS` 样例报告——`scripts/sample-report.mjs` 提升为 `bin/demo.mjs` + 门面 + skill/README 自然语言入口。
+5. `casey-doctor`（full）：`casey doctor` 跨平台就绪自检——纯函数层（零 fs/spawn/os）+ 采集壳分离，逐项查 node/playwright/字体/凭据·site.json/隧道，OS 分支修复建议，零凭据值零目标地址（哨兵夹具实证）。
+6. `distribution`（light）：`casey mcp-config --agent <claude|codex>` 自适应挂载配置打印（`PROJECT_ROOT` 派生、无盘符硬编码、serverAbs TOML/shell 转义）+ 仓根 `AGENTS.md` 分家接入 + `docs/runbooks/onboarding.md` 跨平台上手。
+7. `wf-select-node-dropdown`（light）：画布第四原子 `workflow.selectNodeDropdown`——节点抽屉「请选择」下拉 `click`+`nth` 承载（零冻结 `events.schema` 改，`COMPILE_KNOWN_ATOMS` 16→17）+ `doSelectNodeDropdown` 域锁回放门 + 点击身份门（缺 option 多选项浮层绝不点首项、返 `ambiguous`）。
+8. `resolution`（full，触裁判内核）：多匹配 `resolution` 词表统一——裁判识别端 `verdict.mjs` + `report-model.mjs` 一手同步收敛到 CONTEXT 登记词 `ambiguous`（多匹配 → `AMBIGUOUS_ACTION`）+ 三门 emitters（compile `multi`/replay `fallback_first`）收敛 + 删识别端幽灵 `coord_fallback`（run-history 诊断可表征锁保留）。fail-safe 不破（A2/A3/A4 golden 钉死多匹配≠PASS/SUT_DEFECT）+ 裁判零 LLM 不破（`verdict-purity-guard`），Claude 亲核 + codex 评审双 CLEAN。
+
+**异构评审真挣了钱**（gate 全绿的契约里逐个揪出真 bug、红先行修死）：run-convention 路径穿越（HIGH）+ `AT_CASES_DIR` cwd 漂移、`wf-select-node-dropdown` fail-safe 假绿（HIGH，缺 option 误点首项返 unique）、distribution 路径转义、ingest-scaffold output-seal 路径回显、casey-demo 注释违 GRILL D6。另有批一合并集成缝：`scaffold-case`/`demo` 需进 `cli-mcp-face` `EXCLUDED`（各契约单树皆绿、合到一起 `CLI⊆MCP` 断言才逮到）；终版 `EXCLUDED` 九项，三次冲突逐个 3-way 解 + 重签 `prd-cli-mcp-face`。
+
+活契约槽（主树）= `run-convention`（六阶段全 done、baton 空闲，下一契约直接 `contract init`）。八个已合并契约分支保留为存档（`git branch -d` 可清、work 已在 dev 史）。本仓无 git 远端。
+
+本 session 新锁工程纪律：① **长链条走确定性编排**（ultracode/`Workflow`；`CLAUDE.md` 新增「开发工作法」节、Steven 定）——多契约并行落地 + 逐个异构评审 + 分波合并这类别手派一堆 `Agent` 自己盯。② **协调合并手法**：跨契约共改冻结金牌（如 `cli-mcp-face` `EXCLUDED`）走顺序合并 + 3-way 解冲突 + 合并后重签 + 全量复验，绝不各合各的撞多次。③ **栈式起树**：依赖契约（doctor 栈 mcp-parity、distribution 栈 doctor、resolution 栈 D）栈在栈父 `worktree` 分支上起，避免并行改同批文件冲突。
+
+以下为 2026-07-09 早段快照（示教兜底人录收尾 record-intake+distill + worktree-baton），只溯源、勿据其判现状：
 
 本 session 三笔提交入 dev（`46ae7a3`→`ef94da4`），活契约槽 `worktree-baton` 六阶段全 done、baton 空闲，下一契约直接 `contract init`（或起 worktree 并行，见下）。工作树仍剩 Steven 的 `M .gitignore`（别动别提交）+ 七个未跟踪 `docs/plans/` 草稿目录（run-convention / mcp-parity / casey-demo / casey-doctor / distribution / ingest-scaffold / usability-audit——排队的候选契约、未入 git）。收口清单（按提交序）：
 
