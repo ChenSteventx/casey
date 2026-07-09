@@ -258,6 +258,7 @@ ${col(C.cyan, 'loop 机制')}（薄壳直通 loop-kit；纪律已生效）
 
 ${col(C.cyan, '自检')}
   casey selftest --tier1                  hermetic 链路自检（零外部依赖）                 [可用]
+  casey doctor                            跨平台就绪自检（node/playwright/中文字体/凭据·隧道在位），逐项 ok/缺失+建议  [可用]
   casey selftest --tier2                  live smoke（需 site.json + creds，route:human） [P9]
   casey demo                              零真机零凭据产一份样例测试报告（落 runs/sample-wf-publish/，需 chromium）
 
@@ -308,6 +309,10 @@ function main() {
     case 'run':     return runPipeline(pos, opts);
     // 样例入口（casey-demo）：零参零真机零凭据出一份夹具驱动的样例报告，复刻 相3-4-6 编排（需 chromium）。
     case 'demo': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'demo.mjs'), rest); process.exit(r.code); }
+
+    // 跨平台就绪自检（自检类，不进 MCP 面——同 selftest/breaker/contract/heal）：逐项查
+    // node/playwright/中文字体/凭据·site.json/隧道，就绪级任一 fail → exit 1；绝不回显凭据值与真目标地址。
+    case 'doctor': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'doctor.mjs'), rest); process.exit(r.code); }
 
     default:
       console.error(col(C.red, `未知命令：${cmd}`));

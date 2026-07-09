@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "task": "casey-doctor（full）：新增 casey doctor 跨平台就绪自检。纯函数层 lib/doctor.mjs（零 fs/spawn/os/process.*，全靠注入 env）逐项查 node 版本(engines 单源)/@playwright/test 在位·可加载/chromium 在位/中文字体(OS 分支)/site.json·.auth 在位与浅形态/隧道回环端口，各出 {id,status,detail,hint}，status∈{ok,warn,fail,route-human}；runDoctor 聚合 + 就绪级(node/playwright-present/playwright-import/chromium)任一 fail→exit 1，warn/route-human 不翻。采集壳 bin/doctor.mjs 唯一碰真环境处（探 platform+isWSL、读 package.json engines、真 import + chromium.executablePath 存在性、OS 分支字体探测、existsSync 凭据/site.json 浅键名、devProxyUrl 回环端口 TCP 连），全输出零凭据值零目标地址零用户绝对路径。门面 bin/casey.mjs case 'doctor' 直通 + help 自检节一行。跨契约涟漪：doctor 进 cli-mcp-face 的 EXCLUDED（自检类不进 MCP，同 selftest/breaker/contract/heal/distill），不新增 casey_doctor 工具，重签 prd-cli-mcp-face 的 testChecksums（只加严，Test Ratchet 合法）。不自动修/不动真机/不读凭据内容/不接 gate·hook/不替代 selftest。决策 docs/plans/casey-doctor/proposed/GRILL.md（D1-D10）。",
+  "specPath": "docs/plans/casey-doctor/plan.md",
+  "testChecksums": {
+    "tests/_golden/doctor.golden.mjs": "330a9194d8e5cac4f50fef6cd830b2d67887a2f79839a6481ef735950975482f"
+  },
+  "observability": [
+    {
+      "dimension": "隧道 green 端到端（经真反向隧道到真站通）非 hermetic：doctor 只 hermetic 探回环端口在听/不在听 + 耗时；端到端连通须拉真反向隧道（scripts/wsl-reverse-listen.mjs + scripts/win-forward-start.cmd）+ Steven 在场，route:human（审计 R1/R3 家族）。命令本体与红路径（端口不在听）hermetic 可测。",
+      "route": "human"
+    },
+    {
+      "dimension": "各 OS 真机上手核验：doctor 在真 macos/原生 win/纯 linux 上的字体探测与建议文案实机走一遍（route:human，审计 F14 尾巴）。纯层 OS 分支文案由金牌 A9 注入断言，采集壳本机探测由 A10 冒烟顺带覆盖。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-doctor-pure-and-shell",
+      "desc": "纯函数层 + 采集壳 + 门面接线金牌 A1-A10：全就绪 exit 0 逐项 ok（隧道恒 route-human）；缺 playwright/chromium/node 版本过低各 fail 带 hint 非崩 exit 1（含 semver 手写边界 22.12.0 恰等下界 ok / 22.11.9 fail）；字体缺 warn 不翻 exit；凭据/site.json 缺 warn 指 README.md 不翻 exit；OS 分支字体 hint 正确（linux/WSL→fc-list·Noto Sans CJK、macos→PingFang、win→微软雅黑·Fonts+反斜杠）；隧道 route-human 不阻塞主判、detail 零 target 零 ://；采集壳经 AT_SITE_JSON/AT_CREDS_FILE 喂含哨兵密文夹具 → 零哨兵零裸 ://零禁字段关键词零绝对路径；本机 hermetic 冒烟 exit 0/1 + 逐项 8 id 渲染 + 不崩。红先行证据：实现前 lib/doctor.mjs 未建 import 即 ERR_MODULE_NOT_FOUND 全红。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/doctor.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T09:12:15.797Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-ripple-regression",
+      "desc": "涟漪回归锁：新增 doctor 门面 + doctor 进 cli-mcp-face EXCLUDED 不得破坏确定性内核/统一语言自检，且 CLI⊆MCP 覆盖断言全绿（doctor 无对应 casey_doctor 工具误报）。selftest --tier1 无回归；cli-mcp-face 金牌全绿。",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/casey.mjs selftest --tier1",
+        "node tests/_golden/cli-mcp-face.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T09:12:31.744Z 全部 acceptance exit 0"
+    }
+  ]
+}
