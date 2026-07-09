@@ -1,23 +1,39 @@
-// 端到端 hermetic 样例报告生成器（零外部依赖、零真机、零凭据）。
+#!/usr/bin/env node
+// bin/demo.mjs —— 端到端 hermetic 样例报告生成器（零真机、零凭据、零外部服务，需本机 chromium）。
+// 依赖诚实定位（GRILL D6）：demo 做真回放（起真 chromium 打夹具 SUT），非「零外部依赖」的
+// selftest --tier1 一级自检，绝不冒充零依赖一句话出报告——环境验收第 2 级伴随位，需先装好 chromium。
 // 用途：一条命令跑出一份可直接打开的 Casey 测试报告样例，验证 replay→verdict→report 整条流水线能用。
-//   node scripts/sample-report.mjs
-// 复刻 casey run 的相3→相4→相6 编排（bin/casey.mjs），SUT 指向 tests/fixtures/publish-sut happy 夹具，
-// 不改仓库任何 lib/bin/web，只调既有冻结 bin。案例 = 工作流「发布」状态机（六条 buttonState 断言
-// present/absent），现场应全 PASS。产物落 runs/sample-wf-publish/（gitignored），HTML 自包含可离线打开。
-import { mkdirSync, writeFileSync, existsSync, rmSync } from 'node:fs';
+//   node bin/casey.mjs demo   （门面直通；亦可直接 node bin/demo.mjs）
+// 复刻 casey run 的相3→相4→相6 编排（bin/casey.mjs runPipeline），SUT 指向 tests/fixtures/publish-sut
+// happy 夹具，不改仓库任何 lib/bin/web，只调既有冻结 bin。案例 = 工作流「发布」状态机（六条 buttonState
+// 断言 present/absent），现场应全 PASS。产物落 runs/sample-wf-publish/（gitignored），HTML 自包含可离线打开。
+//
+// 提升自 scripts/sample-report.mjs（casey-demo 契约 GRILL D3 甲，编排语义一字不改），顺手清两处味道：
+//   1. 不再 import 测试件 tests/_golden/_sign-helper.mjs（生产 bin 不引测试件）——签署字段内联为样例常量。
+//   2. 打开路径提示不再字面替换某个 WSL 挂载点前缀；改用 wslpath 从真实产物路径真转换（GRILL D5），
+//      非 WSL 环境或 wslpath 不可用则只给本机绝对路径，不臆造盘符。
+import { mkdirSync, writeFileSync, existsSync, rmSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { signExpected } from '../tests/_golden/_sign-helper.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..');
 const bin = (n) => join(ROOT, 'bin', n);
+
+// casey demo 是零参入口（help 表 D7 已明写「零参」）：多余参数一律用法错，绝不静默吞掉误当零参跑
+// （门面把 rest 透传到本脚本，不校验会让 `casey demo --sut x` 类误用悄悄产出一份「假 PASS」样例报告）。
+const EXTRA_ARGS = process.argv.slice(2);
+if (EXTRA_ARGS.length) {
+  console.error(`demo: 零参入口，不接受参数（收到 ${JSON.stringify(EXTRA_ARGS)}）。用法: node bin/casey.mjs demo`);
+  process.exit(64);
+}
+
 const { startPublishSut } = await import(`file://${join(ROOT, 'tests', 'fixtures', 'publish-sut', 'server.mjs').replace(/\\/g, '/')}`);
 
 const CASE_ID = 'tc_wf_publish_sample';
 const runDir = join(ROOT, 'runs', 'sample-wf-publish');
-if (existsSync(runDir)) rmSync(runDir, { recursive: true, force: true });
+if (existsSync(runDir)) rmSync(runDir, { recursive: true, force: true }); // 清建幂等：每次跑落同一处、覆盖上次
 mkdirSync(join(runDir, 'video'), { recursive: true });
 
 // —— 案例三件套（events / expected / profile）：工作流「发布」状态机 happy 场景 ——
@@ -31,16 +47,19 @@ writeFileSync(EVENTS, JSON.stringify({
   ],
 }, null, 2));
 
-const bsa = (op, value) => ({ kind: 'buttonState', op, value, soft: false });
+// 样例签署常量（内联，去 _sign-helper 测试件耦合）：signExpected 原本从「测试专用签署 helper」深盖这三字段
+// 补齐已签契约形态；样例是固定语料、签署值本就恒定，直接把三字段写进断言字面量语义一字不变。
+const SIGN = { signedAt: '2026-07-06T00:00:00.000Z', signedAgainstBuild: 'hermetic-b0', signerId: 'qa.hermetic' };
+const bsa = (op, value) => ({ kind: 'buttonState', op, value, soft: false, ...SIGN });
 const EXPECTED = join(runDir, 'expected.json');
-writeFileSync(EXPECTED, JSON.stringify(signExpected({
+writeFileSync(EXPECTED, JSON.stringify({
   caseId: CASE_ID, channel: 'web',
   intents: [
     { intentId: 'intent_1', expected: [bsa('present', '发布'), bsa('present', '保存'), bsa('absent', '导出')] },
     { intentId: 'intent_2', expected: [bsa('present', '导出'), bsa('present', '新建版本'), bsa('absent', '发布')] },
   ],
   globalAssertions: [],
-}), null, 2));
+}, null, 2));
 
 const PROFILE = join(runDir, 'profile.json');
 writeFileSync(PROFILE, JSON.stringify({
@@ -82,4 +101,10 @@ try {
 const htmlPath = join(runDir, `${CASE_ID}.report.html`);
 console.log('\n样例报告已产出（可直接用浏览器打开）：');
 console.log('  ' + htmlPath);
-console.log('  Windows: ' + htmlPath.replace('/mnt/d/', 'D:\\').replace(/\//g, '\\'));
+// 跨平台路径提示（不字面硬编码挂载点前缀，casey-demo GRILL D5）：WSL 下用 wslpath 从真实产物路径真转换出
+// Windows 形态；非 WSL 或 wslpath 不可用（非 Windows 主机场景）则只给本机绝对路径，不臆造盘符。
+const isWsl = process.platform === 'linux' && existsSync('/proc/version') && /microsoft/i.test(readFileSync('/proc/version', 'utf8'));
+if (isWsl) {
+  const conv = spawnSync('wslpath', ['-w', htmlPath], { encoding: 'utf8' });
+  if (!conv.error && conv.status === 0 && conv.stdout.trim()) console.log('  Windows: ' + conv.stdout.trim());
+}
