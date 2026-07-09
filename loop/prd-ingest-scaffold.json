@@ -3,7 +3,7 @@
   "task": "ingest-scaffold（full）：相0 前段脚手架，新增 casey scaffold-case——把一段自由文本用例零 LLM 包成 schema 合规的候选骨架（source.kind:'freetext' + source.raw 泊原文逐字 + 一条 route:human 占位步，不臆断切分），开箱过 parseTestCase，再配一份归一提示模板（docs/plans/ingest-scaffold/proposed/from-text-candidate.draft.md）+ SKILL 指针，供 CLI 外 LLM 把 source.raw 归一成真实候选后经 casey ingest 重新入场。三件：lib/ingest-scaffold.mjs（纯函数 buildCandidateSkeleton 零 I/O 零 LLM 字节可复现，无时刻字段）+ bin/scaffold-case.mjs（薄壳 fail-closed：缺参/裸旗标 64 / caseId 形状·凭据门·读文件·green-by-construction 自检·落盘 65 / 前置凭据门命中 1 零骨架落盘零目录副作用；复用 parseTestCase + credentialGate 不改冻结件）+ bin/casey.mjs 接线（switch +1 case scaffold-case 直通 runNode + help +1 行不带 --sut <url>）。降权硬不变量：候选非权威、绝不 signed/replayReady、须重走全链 + 人签。零冻结 schema 涟漪、零重签既有 prd。决策全表 docs/plans/ingest-scaffold/proposed/GRILL.md（D1-D15，待 Steven grill 签核开放项 7 条）。",
   "specPath": "docs/plans/ingest-scaffold/plan.md",
   "testChecksums": {
-    "tests/_golden/ingest-scaffold.golden.mjs": "1db26b1c15ba1f5a8309e44d8428570ee090008ca3632874bbd8020e96701cf6"
+    "tests/_golden/ingest-scaffold.golden.mjs": "49f887ffafcc8a7448f4d341eb037813b91b1cec77bcfc331fe2257dd748eef1"
   },
   "observability": [
     {
@@ -32,7 +32,7 @@
         "node tests/_golden/ingest-scaffold.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T06:59:37.349Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-09T09:50:05.525Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-tier1-regression",
@@ -42,7 +42,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T06:59:38.644Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-09T09:50:06.507Z 全部 acceptance exit 0"
     }
   ]
 }

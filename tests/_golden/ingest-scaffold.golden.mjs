@@ -10,7 +10,7 @@
 // C1 门面+用法错；C2 前置凭据门（自由文本头号凭据向量）；C3 候选骨架形态（单占位步不臆断切分/URL 不剥/字节可复现）；
 // C4 候选真过 parseTestCase 闸 + 真被 ingest 收下（骨架直入 + mock LLM 归一后入场）；C5 畸形候选被闸拒（不 create bypass）；
 // C6 不改冻结 schema + 降权硬不变量；C7 输出卫生（output-seal）；C8 门面回归（selftest --tier1）。
-import { mkdtempSync, writeFileSync, readFileSync, existsSync, mkdirSync, readdirSync } from 'node:fs';
+import { mkdtempSync, writeFileSync, readFileSync, existsSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -228,6 +228,41 @@ await checkAsync('C7a 成功 stdout 不回显 --from-text/--out-dir 用户绝对
   const echoed = (HAPPY_R.stdout || '') + (HAPPY_R.stderr || '');
   if (echoed.includes(HAPPY_FT)) throw new Error('stdout 不得回显 --from-text 绝对路径');
   if (echoed.includes(HAPPY_OUT)) throw new Error('stdout 不得回显 --out-dir 绝对路径');
+});
+await checkAsync('C7b 源码守：输出侧凭据门键须为固定标签（不得用 outFile 绝对路径作键，同 :40 输入侧范式）', async () => {
+  const src = readFileSync(join(ROOT, 'bin', 'scaffold-case.mjs'), 'utf8');
+  if (/credentialGate\(\{\s*\[outFile\]/.test(src)) throw new Error('输出侧凭据门键不得用 [outFile] 计算键（命中回显会带出 --out-dir 绝对路径，违 output-seal）');
+  if (!/credentialGate\(\{\s*'[^']+':\s*text\s*\}\)/.test(src)) throw new Error('输出侧凭据门键须为固定字符串标签（镜像 :40 输入侧「输入自由文本」范式）');
+});
+await checkAsync('C7b-hit 运行时守：输出侧凭据门命中不回显 --out-dir 绝对路径（合成非真凭据字面量精确命中输出侧门，前置输入门放行）', async () => {
+  // 精确触发输出侧门（非前置输入门）：把 buildCandidateSkeleton 恒定占位理由文本（lib/ingest-scaffold.mjs
+  // PLACEHOLDER_REASON）的一段子串，合成写进 .auth/site.json 当「非真凭据」敏感字面量（镜像
+  // p7-credgate-coverage.golden.mjs 手法）——该子串不在自由文本原文里，故前置输入门（:40）放行；
+  // 候选骨架落盘前 JSON 必含该固定占位文本 → 输出侧门（:59）命中。绝不触碰预先存在的真凭据文件：
+  // 若 .auth/site.json 已存在（疑似真凭据），跳过本探针合成注入（同 p7-credgate-coverage 纪律）。
+  const AUTH_DIR = join(ROOT, '.auth');
+  const SITE_JSON = join(AUTH_DIR, 'site.json');
+  if (existsSync(SITE_JSON)) { console.error('C7b-hit 跳过：.auth/site.json 已存在（疑似真凭据），不合成注入'); return; }
+  const FAKE_LITERAL = '归一脚手架骨架占位'; // PLACEHOLDER_REASON 的恒定子串，非用户输入
+  const createdAuthDir = !existsSync(AUTH_DIR);
+  let wrote = false;
+  try {
+    if (createdAuthDir) mkdirSync(AUTH_DIR, { recursive: true });
+    writeFileSync(SITE_JSON, JSON.stringify({ probe: FAKE_LITERAL }), 'utf8');
+    wrote = true;
+    const ft = writeText('在页面新增一条名为 atl_probe 的工作流。\n填写名称后点击保存按钮。\n', 'c7b-hit-free-text.txt');
+    const od = join(tmp, 'c7b-hit-outgate');
+    const r = scaffold(CASE_ID, ft, od);
+    const echoed = outText(r);
+    if (r.status !== 1) throw new Error(`合成字面量应精确命中输出侧凭据门 exit 1，实际 ${r.status}：${echoed.slice(-200)}`);
+    if (!/凭据兜底门/.test(echoed)) throw new Error('exit 1 须出自凭据门点名（防与其它非零退出撞码假绿）');
+    if (echoed.includes(od)) throw new Error('输出侧门命中报错不得回显 --out-dir 绝对路径');
+    if (echoed.includes(tmp)) throw new Error('输出侧门命中报错不得回显任何临时目录绝对路径片段');
+    if (existsSync(candPath(od))) throw new Error('输出侧门命中不得落半份候选（fail-closed 零落盘）');
+  } finally {
+    if (wrote) { try { rmSync(SITE_JSON, { force: true }); } catch { /* 净零尽力而为 */ } }
+    if (createdAuthDir && existsSync(AUTH_DIR)) { try { rmSync(AUTH_DIR, { recursive: true, force: true }); } catch { /* 净零尽力而为 */ } }
+  }
 });
 await checkAsync('C7c 候选骨架过 credentialGate（干净原文进、干净原文出）', async () => {
   const { credentialGate } = await import(`file://${join(ROOT, 'lib', 'cred-gate.mjs').replace(/\\/g, '/')}`);

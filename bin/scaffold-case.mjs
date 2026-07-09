@@ -55,8 +55,9 @@ if (!selfCheck.ok) {
 const outFile = join(resolve(String(args['out-dir'])), `scaffold-candidate-${caseId}.json`);
 const text = JSON.stringify(skeleton, null, 2) + '\n';
 // 输出侧凭据门（防御纵深，命中 exit 1 零落盘，镜像 ingest.mjs:55）。source.raw 泊的 authoring URL 是合法内容、
-// 不剥（GRILL D7，与 distill C6a 差异）；凭据值由本门拦。
-const outCg = credentialGate({ [outFile]: text });
+// 不剥（GRILL D7，与 distill C6a 差异）；凭据值由本门拦。output-seal：键用固定标签、不携 --out-dir 绝对路径
+// （同 :40 输入侧范式；outFile 作键会把 --out-dir 全路径经 outCg.hit 打进 stderr）。
+const outCg = credentialGate({ '输出候选骨架': text });
 if (!outCg.ok) { console.error(`scaffold-case: 凭据兜底门拦截（护栏 #7）：${outCg.hit}；拒绝落盘`); process.exit(1); }
 // 落盘异常捕获：未捕获 throw 会把用户可控 out-dir 全路径打进 stderr、且 exit 1 与凭据门码撞车（同 ingest.mjs:58）。
 try {
