@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "task": "casey-demo（light）：把现成的 scripts/sample-report.mjs 提升为 bin/demo.mjs 并接成 casey demo 子命令——一句话零真机零凭据（需本机 chromium）产出一份可打开的样例测试报告，作为新用户/新同事「先看到 Casey 产物长啥样」的入口（解 usability-audit 摩擦 F1 / 条目 C2）。固定 caseId tc_wf_publish_sample、固定 runDir runs/sample-wf-publish/、清建幂等；样例三件套 + 夹具 SUT + 串既有冻结 bin（相3 replay→相4 verdict→report-model→相6 report，复用渲染零重写）。顺手清两处味道：不再 import 测试件 tests/_golden/_sign-helper.mjs（签署字段内联为样例常量）；打开路径提示不再字面替换 /mnt/d/→D:\\，改用 wslpath 从真实产物路径真转换（非 WSL/wslpath 不可用则只给本机绝对路径）。接线 bin/casey.mjs（case 'demo' 直通 + help 行）、.claude/skills/casey/SKILL.md（三处自然语言入口）、README.md（环境验收第2级伴随位）。决策见 docs/plans/casey-demo/proposed/GRILL.md（D1-D9）。本契约不加 MCP casey_demo（GRILL D8，避免 re-sign cli-mcp-face）；D3 甲致 docs/HANDOFF.md 等历史文档对 scripts/sample-report.mjs 的引用失指——已接受的取舍，未改历史文档。",
+  "specPath": "docs/plans/casey-demo/plan.md",
+  "testChecksums": {
+    "tests/_golden/casey-demo.golden.mjs": "9ce30aeb6fb6a45f62723228bf44cc955c0f42b32728d348217eaba4b0560860"
+  },
+  "observability": [
+    {
+      "dimension": "MCP casey_demo 工具是否顺手补，让只走 MCP 的 agent 也能看样例报告——本契约不做（GRILL D8），归 C3/mcp-parity 一并处理。",
+      "route": "human"
+    },
+    {
+      "dimension": "docs/HANDOFF.md、docs/plans/sign|e2e-chain 等历史文档提 scripts/sample-report.mjs 的句子因 D3 甲取舍失指——本契约不改历史文档，留待后续顺手刷新或接受失指。",
+      "route": "human"
+    },
+    {
+      "dimension": "无真机尾巴：本契约 hermetic 完整收口（夹具 SUT + 零凭据 + 零 LLM + 零真机），不排 route:human 真机验收项。",
+      "route": "machine"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-casey-demo-cli-report",
+      "desc": "casey demo 子命令：零参 exit 0 落 runs/sample-wf-publish/ 下 report.{html,md,json}（+ verdict/report-model/axes 旁件）；报告含裁定徽章「通过」、verdict 恰 2 步全 PASS、html 自包含无外链；三产物+stdout/stderr 全文零凭据形关键词零 ://；casey help 暴露 casey demo 且无 handover-pack C2 黑名单 token；连跑两次落同一固定 runDir/caseId、清建幂等；AT_SITE_JSON/AT_CREDS_* 毒化仍 exit 0 零泄漏；bin/demo.mjs 源码零 /mnt/d 字面硬编码、路径提示由真实产物路径推导；cli-mcp-face/handover-pack/e2e-chain 三冻结金牌真跑仍绿（无冻结金牌被 re-sign）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/casey-demo.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T07:27:47.286Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-tier1-regression",
+      "desc": "新增 demo 门面不得破坏确定性内核与统一语言自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T07:27:48.590Z 全部 acceptance exit 0"
+    }
+  ]
+}

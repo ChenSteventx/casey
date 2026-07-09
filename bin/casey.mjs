@@ -213,6 +213,7 @@ ${col(C.cyan, 'loop 机制')}（薄壳直通 loop-kit；纪律已生效）
 ${col(C.cyan, '自检')}
   casey selftest --tier1                  hermetic 链路自检（零外部依赖）                 [可用]
   casey selftest --tier2                  live smoke（需 site.json + creds，route:human） [P9]
+  casey demo                              零真机零凭据产一份样例测试报告（落 runs/sample-wf-publish/，需 chromium）
 
 退出码：0 成功；1 红；2 熔断/互锁；3 该阶段未实现；64 用法错误。
 进度：七相全建（heal 唯一诚实桩）+ hermetic 全链金牌贯通；真机端到端 route:human——权威现状见 docs/HANDOFF.md。`);
@@ -256,6 +257,8 @@ function main() {
     case 'heal':    return notImplemented('相5 heal 自愈', 'P6 自愈准入门 + 非就地有界自愈', '仅对确证 HARNESS_ERROR：重锚 → 写 drift 补丁旁文件（原 spec 不变）→ 人签后应用 → 重跑。');
     case 'report': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'report.mjs'), rest); process.exit(r.code); }
     case 'run':     return runPipeline(pos, opts);
+    // 样例入口（casey-demo）：零参零真机零凭据出一份夹具驱动的样例报告，复刻 相3-4-6 编排（需 chromium）。
+    case 'demo': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'demo.mjs'), rest); process.exit(r.code); }
 
     default:
       console.error(col(C.red, `未知命令：${cmd}`));

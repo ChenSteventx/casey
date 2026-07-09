@@ -32,6 +32,9 @@ WSL 环境另需中文字体（截图/录屏中文空白的根因）：装用户
    ——验确定性内核 + 统一语言，**不验浏览器/凭据/隧道**，全绿不代表能回放。
 2. **hermetic 回放就绪**（验 npm install + chromium）：`node tests/_golden/e2e-chain.golden.mjs`
    ——十站全链集成金牌（文本→报告，约 35 秒），8/8 过即本机可跑全部 hermetic 面。
+   看样例报告：`node bin/casey.mjs demo`——零真机零凭据出一份自包含 `PASS` 报告（含裁定徽章），落
+   `runs/sample-wf-publish/`；与上一级 `selftest --tier1` 的区别：demo 需 chromium、不是零依赖，
+   不冒充「零依赖一句话出报告」。
 3. **真机连通**（需凭据与隧道，见下两节）：`node scripts/win-probe-target.mjs`（Windows 侧）
    只回显状态码不回显目标地址。
 
