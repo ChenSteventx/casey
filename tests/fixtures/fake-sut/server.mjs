@@ -15,6 +15,9 @@ const SCENARIOS = new Set([
   'stale_bg401', 'vanished',
   'versioned', // plan-debt-sweep：入口脚本带 ?v= 发版号（capturedAgainstBuild 提取考场，复刻 Heren api-config.js?v=1.1.2 形态）
   'drawernone', 'drawersuperset', // wf-open-node 评审 F3/coverage：节点抽屉反面（点了不开 / 开错抽屉——标题含 label 子串非精确）
+  // wf-select-node-dropdown：节点抽屉下拉反面（选项多匹配 / 目标缺席 / 选错项写错值 / 两「请选择」孪生浮层 /
+  //   抽屉开但无下拉——节点抽屉已开满足 registry 前置、但域内触发器 count=0，钉 execute 预检的「无下拉」半边）。
+  'ddmulti', 'ddabsent', 'ddwrong', 'ddtwin', 'ddempty',
 ]);
 
 // 背景轮询 denylist 的合成形态（绝不引真 site.json，护栏 #7）：watchNetworkForensics 用它把 /auths/poll 归 background。
@@ -231,6 +234,42 @@ function clientMain() {
     //   'drawernone'     单击节点不开抽屉（模拟 app 无响应——「点了不开」反面，钉回放 action_failed）；
     //   'drawersuperset' 单击节点开抽屉、标题 = 节点名 + '副本'（含 label 子串但非精确——substring 假绿考场，钉 F1 精确回读）。
     var drawerMode = scenario === 'drawersuperset' ? 'superset' : scenario === 'drawernone' ? 'none' : '';
+
+    // —— 节点抽屉「请选择」下拉（wf-select-node-dropdown，registry SOP 最小复现）——
+    // 触发器 = .hr-select（初值「请选择」，值放 .hr-select__value 子 span 便于精确回读）；点触发器弹可见浮层
+    //   .hr-select-option 选项（teleport 到 body，复现真机浮层脱离抽屉、防全局 text 撞列表页）；点选项 →
+    //   触发器值改该选项（身份回读地面真值），并移除浮层（下拉收起）。ddMode 场景控反面（fixture 场景控、
+    //   非 URL query——replay nav 剥 query）：ddmulti 目标选项两处、ddabsent 浮层不含目标、ddwrong 选后值更成
+    //   「选项+副本」（含子串非精确）、ddtwin 抽屉挂两触发器 + 预挂一层 stale 隐藏浮层含目标（两浮层各现一次）。
+    var DD_OPT = '订单库';
+    var ddMode = (scenario === 'ddmulti' || scenario === 'ddabsent' || scenario === 'ddwrong' || scenario === 'ddtwin') ? scenario : '';
+    function ddOptionsFor(mode) {
+      if (mode === 'ddmulti') return [DD_OPT, DD_OPT, '用户库']; // 目标选项浮层内出现两次 → 多匹配
+      if (mode === 'ddabsent') return ['用户库', '日志库'];      // 浮层不含目标 → 缺席
+      return [DD_OPT, '用户库', '日志库'];                        // 缺省/happy/ddwrong/ddtwin：目标唯一
+    }
+    function buildNodeSelect(container, mode) {
+      var trig = el('div', { class: 'hr-select' });
+      var val = el('span', { class: 'hr-select__value' }, '请选择');
+      trig.appendChild(val);
+      var layer = null;
+      trig.addEventListener('click', function () {
+        if (layer) { layer.remove(); layer = null; return; } // 再点收起（toggle）
+        layer = el('div', { class: 'hr-select-dropdown' });
+        var opts = ddOptionsFor(mode);
+        for (var k = 0; k < opts.length; k++) {
+          var o = el('div', { class: 'hr-select-option' }, opts[k]);
+          o.addEventListener('click', (function (txt) { return function () {
+            val.textContent = (mode === 'ddwrong') ? (txt + '副本') : txt; // ddwrong：值含子串非精确
+            if (layer) { layer.remove(); layer = null; }
+          }; })(opts[k]));
+          layer.appendChild(o);
+        }
+        document.body.appendChild(layer); // teleport 到 body（复现真机浮层脱离抽屉）
+      });
+      container.appendChild(trig);
+    }
+
     overlay.addEventListener('click', function (e) {
       var t = e.target;
       if (!t || !t.closest || t.closest('.lf-node-anchor-hover')) return;
@@ -243,6 +282,16 @@ function clientMain() {
       if (!nodeDrawer) { nodeDrawer = el('div', { class: 'hr-drawer__content-wrapper' }); wrap.appendChild(nodeDrawer); }
       nodeDrawer.textContent = '';
       nodeDrawer.appendChild(el('div', { class: 'lf-node-drawer__title' }, titleText));
+      if (scenario === 'ddempty') return; // 抽屉开但无下拉：域内触发器 count=0（execute 预检的「无下拉」半边）
+      // 节点抽屉下拉纯加法：缺省单下拉；ddtwin 挂两触发器 + 预挂一层 stale 隐藏浮层含目标（两浮层各现一次）。
+      buildNodeSelect(nodeDrawer, ddMode);
+      if (ddMode === 'ddtwin') {
+        buildNodeSelect(nodeDrawer, ddMode); // 第二个「请选择」触发器（孪生）
+        var stale = el('div', { class: 'hr-select-dropdown' });
+        stale.setAttribute('style', 'display:none'); // 隐藏 stale 浮层（teleport 未清理）：全页门数得到、可见门数不到
+        stale.appendChild(el('div', { class: 'hr-select-option' }, DD_OPT));
+        document.body.appendChild(stale);
+      }
     });
 
     var panel = null;
@@ -292,7 +341,10 @@ function pageHtml(scenario) {
     + '.lf-canvas-overlay{position:absolute;left:0;top:0;right:0;bottom:0}'
     + '.lf-node{position:absolute;border:1px solid #567;padding:2px 18px 2px 6px;background:#fff}'
     + '.lf-node-anchor-hover{position:absolute;right:-6px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:#2f80ed}'
-    + '.lf-edge{position:absolute;left:0;top:0;width:20px;height:1px;background:#888}</style>'
+    + '.lf-edge{position:absolute;left:0;top:0;width:20px;height:1px;background:#888}'
+    + '.hr-select{display:inline-block;min-width:120px;border:1px solid #bbb;padding:2px 8px;margin-top:6px;cursor:pointer}'
+    + '.hr-select-dropdown{position:fixed;left:8px;bottom:8px;border:1px solid #999;background:#fff;z-index:9}'
+    + '.hr-select-option{padding:2px 8px;cursor:pointer}</style>'
     + versionTag
     + '</head><body><div id="app"></div>'
     + '<script>window.__CFG__=' + cfg + ';</script>'
