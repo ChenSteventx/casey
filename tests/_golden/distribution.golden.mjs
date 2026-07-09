@@ -1,10 +1,16 @@
 #!/usr/bin/env node
 // distribution.golden.mjs —— 分发与接入（distribution，light）红金牌。断言清单见
-// docs/plans/distribution/proposed/GOLDEN-TESTPLAN.md（A1-A8）。
+// docs/plans/distribution/proposed/GOLDEN-TESTPLAN.md（A1-A8；A9-A11 是 codex 跨族评审 mustFix 补丁）。
 // 实现前红基线：无 mcp-config 命令（落 default 未知命令 exit 64、无合法配置）、无仓根 AGENTS.md、
 //   无 docs/runbooks/onboarding.md、cli-mcp-face 的 EXCLUDED 尚无 mcp-config。
 // 不 rig：真跑 casey mcp-config CLI 取真产物（复现真接缝）；路径自适应经独立算的 PROJECT_ROOT 验等
 //   （路径由结构派生，任何 clone 位置都对）；零凭据经 cred-gate 单一事实源扫。
+// mustFix 补丁（A9-A11）：codex 跨族评审确认 serverAbs 未转义直接拼进 TOML/shell 命令，路径含引号/
+//   反斜杠/空格会产坏产物。A9/A10 把真实 bin/mcp-config.mjs + lib/paths.mjs 复制到路径本身含引号/单引号/
+//   空格的临时目录再真跑（PROJECT_ROOT 由 import.meta.url 派生，天然带那些字符），不造假期望值。反斜杠
+//   场景无法这样在 POSIX 上复现——Node ESM 对任何解析路径里的反斜杠一律拒绝加载（已实测钉死：
+//   ERR_INVALID_MODULE_SPECIFIER "must not include encoded / or \ characters"）——A11 改直测导出的
+//   tomlEscape/shellQuote 纯函数（真函数真输入，非另造一遍实现来自证），覆盖 Windows 挂载路径场景。
 import { spawnSync } from 'node:child_process';
 import { readFileSync, existsSync, mkdtempSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
@@ -12,6 +18,8 @@ import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { PROJECT_ROOT } from '../../lib/paths.mjs';
 import { FORBIDDEN_KEYWORDS } from '../../lib/cred-gate.mjs';
+// main() 已加 isDirectRun 门，import 本文件不会触发 process.exit 副作用（护栏对齐见 bin/mcp-config.mjs）。
+import { tomlEscape, shellQuote } from '../../bin/mcp-config.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -77,6 +85,68 @@ function scanLauncherClean(tag, text, out) {
   if (/[\w.-]+:[^\s@/]+@/.test(text)) out.push(`${tag} 挂载配置含 user:pass@ 内嵌凭据形态`);
 }
 
+// ---------- mustFix 补丁（A9-A11）专用助手：真 shell/真 TOML 解码验可逆，不靠子串比较 ----------
+
+// 抽 claude 一行命令「  claude mcp add casey -- node <quoted>」的 <quoted> 尾段（到行尾）。
+function extractClaudeOneLinerTail(text) {
+  const m = text.match(/^ {2}claude mcp add casey -- node (.+)$/m);
+  if (!m) throw new Error('未找到 claude 一行等效命令');
+  return m[1];
+}
+
+// 让真 /bin/sh 解析 quoted 文本并回显——证明产物在真 shell 里能被安全、准确地解析回原串
+//   （不是字符串比较，是真让 shell 做词法分析）。
+function shellRoundTrip(quoted) {
+  const r = spawnSync('/bin/sh', ['-c', `printf '%s' ${quoted}`], { encoding: 'utf8', timeout: 10000 });
+  if (r.status !== 0) throw new Error(`shell 解析失败（exit ${r.status}）：${(r.stderr || '').slice(-200)}`);
+  return r.stdout;
+}
+
+// 抽 codex 输出里单行 `args = ["..."]` 的字符串体（严格锚：body 只能是 (非"非\ | \任意字符)*，
+//   贪不过第一个未转义的 "——未转义的引号/反斜杠会让这条正则直接不匹配，天然拦坏 TOML）。
+function extractCodexArgsBody(text) {
+  const m = text.match(/^args\s*=\s*\[\s*"((?:[^"\\]|\\.)*)"\s*\]\s*$/m);
+  if (!m) throw new Error('未找到合法的 args = ["..."] 行（可能含未转义的 "/\\，TOML 字符串体非法）');
+  return m[1];
+}
+
+// TOML basic string 转义解码（规范子集：只认 \\ 与 \"，其余转义序列判非法）——独立实现，不复用被测
+//   实现，证「解码得回原串」而非「字符串包含子串」这类弱断言。
+function tomlBasicStringDecode(escaped) {
+  let out = '';
+  for (let i = 0; i < escaped.length; i++) {
+    const c = escaped[i];
+    if (c === '\\') {
+      const n = escaped[++i];
+      if (n === '\\') out += '\\';
+      else if (n === '"') out += '"';
+      else throw new Error(`TOML 转义非法：\\${n}`);
+    } else if (c === '"') {
+      throw new Error('basic string 体内出现未转义的 "');
+    } else {
+      out += c;
+    }
+  }
+  return out;
+}
+
+// 把真实 bin/mcp-config.mjs + lib/paths.mjs 复制到一个「路径本身含特殊字符」的临时目录再真跑——
+//   PROJECT_ROOT 由 import.meta.url 派生，serverAbs 天然带那些字符，复现真接缝而非造假期望值。
+function runMcpConfigFromWeirdDir(weirdSegment, agent) {
+  const base = mkdtempSync(join(tmpdir(), 'casey-mcpcfg-weird-'));
+  const projRoot = join(base, weirdSegment);
+  try {
+    mkdirSync(join(projRoot, 'bin'), { recursive: true });
+    mkdirSync(join(projRoot, 'lib'), { recursive: true });
+    writeFileSync(join(projRoot, 'bin', 'mcp-config.mjs'), readFileSync(MCP_CONFIG_BIN, 'utf8'), 'utf8');
+    writeFileSync(join(projRoot, 'lib', 'paths.mjs'), readFileSync(join(ROOT, 'lib', 'paths.mjs'), 'utf8'), 'utf8');
+    const r = spawnSync(process.execPath, [join(projRoot, 'bin', 'mcp-config.mjs'), '--agent', agent], { encoding: 'utf8', timeout: 30000 });
+    return { r, expectAbs: join(projRoot, 'mcp', 'casey-server.mjs') };
+  } finally {
+    rmSync(base, { recursive: true, force: true });
+  }
+}
+
 // ---------- A1 mcp-config --agent claude 产合法 .mcp.json 挂载配置 ----------
 check('A1 mcp-config --agent claude：exit 0 + 合法 .mcp.json 片段（mcpServers.casey.command=node、args 末项=server 绝对路径）+ claude mcp add 行', () => {
   const r = runCli(['mcp-config', '--agent', 'claude']);
@@ -88,8 +158,10 @@ check('A1 mcp-config --agent claude：exit 0 + 合法 .mcp.json 片段（mcpServ
   const last = casey.args[casey.args.length - 1];
   if (!(last.endsWith(join('mcp', 'casey-server.mjs')) || last.endsWith('casey-server.mjs'))) throw new Error(`args 末项应 endsWith mcp/casey-server.mjs，实得 ${last}`);
   if (last !== EXPECT_SERVER) throw new Error(`args 末项应=独立算的 PROJECT_ROOT/mcp/casey-server.mjs（${EXPECT_SERVER}），实得 ${last}`);
-  // 两形态都给：附一行 claude mcp add casey -- node <同一绝对路径>。
-  if (!text.includes(`claude mcp add casey -- node ${EXPECT_SERVER}`)) throw new Error('应含一行 `claude mcp add casey -- node <绝对路径>`（同一路径）');
+  // 两形态都给：附一行 claude mcp add casey -- node <同一绝对路径>（shell-quote 过，经真 shell 解析回原路径）。
+  const oneLinerTail = extractClaudeOneLinerTail(text);
+  const roundTripped = shellRoundTrip(oneLinerTail);
+  if (roundTripped !== EXPECT_SERVER) throw new Error(`一行命令经真 shell 解析后应=${EXPECT_SERVER}，实得 ${roundTripped}（原始尾段：${oneLinerTail}）`);
 });
 
 // ---------- A2 mcp-config --agent codex 产合法 config.toml 段 ----------
@@ -199,6 +271,39 @@ check('A8 cli-mcp-face 的 CLI_MCP_EXCLUDED 含 mcp-config（新命令不进 MCP
   const m = src.match(/CLI_MCP_EXCLUDED\s*=\s*new Set\(\[([^\]]*)\]\)/);
   if (!m) throw new Error('cli-mcp-face 未找到 CLI_MCP_EXCLUDED 声明');
   if (!/['"]mcp-config['"]/.test(m[1])) throw new Error('cli-mcp-face CLI_MCP_EXCLUDED 未含 mcp-config（落地次序须与 mcp-parity 对齐、重签 prd-cli-mcp-face）');
+});
+
+// ---------- A9 TOML 转义：路径含引号/空格（mustFix，codex 跨族评审）----------
+check('A9 TOML 转义：路径含 " 与空格时（真复制到该路径运行），codex 输出仍是合法 TOML 字符串——解码回原路径', () => {
+  const weirdSegment = 'weird "quo" and space clone';
+  const { r, expectAbs } = runMcpConfigFromWeirdDir(weirdSegment, 'codex');
+  if (r.status !== 0) throw new Error(`weird-dir codex 应 exit 0，实得 ${r.status}：${(r.stderr || '').slice(-300)}`);
+  const text = (r.stdout || '') + (r.stderr || '');
+  const body = extractCodexArgsBody(text);
+  const decoded = tomlBasicStringDecode(body);
+  if (decoded !== expectAbs) throw new Error(`TOML 解码后应=${expectAbs}，实得 ${decoded}（原始转义体：${body}）`);
+});
+
+// ---------- A10 shell 转义：路径含单引号/双引号/空格（mustFix，codex 跨族评审）----------
+check('A10 shell 转义：路径含 \'/" 与空格时（真复制到该路径运行），claude 一行命令经真 shell 解析仍还原原路径', () => {
+  const weirdSegment = "it's \"also quoted\" and space clone";
+  const { r, expectAbs } = runMcpConfigFromWeirdDir(weirdSegment, 'claude');
+  if (r.status !== 0) throw new Error(`weird-dir claude 应 exit 0，实得 ${r.status}：${(r.stderr || '').slice(-300)}`);
+  const text = (r.stdout || '') + (r.stderr || '');
+  const tail = extractClaudeOneLinerTail(text);
+  const roundTripped = shellRoundTrip(tail);
+  if (roundTripped !== expectAbs) throw new Error(`shell 解析后应=${expectAbs}，实得 ${roundTripped}（原始尾段：${tail}）`);
+});
+
+// ---------- A11 反斜杠路径（Windows 挂载场景）：直测导出的转义纯函数（mustFix，codex 跨族评审）----------
+check('A11 反斜杠+引号+空格路径：tomlEscape/shellQuote 可逆（POSIX 上 Node ESM 拒绝从反斜杠路径加载模块，无法真落盘复现，故直测导出的纯函数，覆盖 WSL/Windows 挂载路径场景）', () => {
+  const winLike = 'C:\\Users\\a "weird" name\\casey clone\\mcp\\casey-server.mjs';
+  const tomlBody = tomlEscape(winLike);
+  const tomlDecoded = tomlBasicStringDecode(tomlBody);
+  if (tomlDecoded !== winLike) throw new Error(`tomlEscape 应可逆，实得解码 ${tomlDecoded}（转义体：${tomlBody}）`);
+  const shellBody = shellQuote(winLike);
+  const shellDecoded = shellRoundTrip(shellBody);
+  if (shellDecoded !== winLike) throw new Error(`shellQuote 应可逆（真 shell 解析），实得 ${shellDecoded}（quoted：${shellBody}）`);
 });
 
 console.log(`distribution golden: ${pass} 过 / ${fails.length} 败`);

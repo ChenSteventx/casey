@@ -5,9 +5,25 @@
 // 纯打印器：零 LLM、零外部依赖、零真机、不 import/不读 site.json/.auth、结构上不含 --sut/目标地址
 //   （护栏 #7 边界外——挂载配置只含启动器 node + server 脚本路径）。缺/错 --agent → fail-closed exit 64。
 import path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { PROJECT_ROOT } from '../lib/paths.mjs';
 
 const SUPPORTED = ['claude', 'codex'];
+
+// TOML 基本字符串转义（basic string 转义子集，覆盖挂载路径可能出现的字符）：
+//   先转义 `\`（否则下一步为 `"` 补的反斜杠会被当成路径原有反斜杠一起吃进去）、再转义 `"`。
+//   Windows 挂载路径（WSL/Windows 挂载场景）天然含反斜杠分隔符，不转义直接拼进 TOML 字符串会产坏 TOML
+//   （跨族评审 mustFix：bin/mcp-config.mjs codex 段 serverAbs 未转义）。
+export function tomlEscape(s) {
+  return String(s).replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+}
+
+// POSIX shell 单引号转义：单引号包裹后，其内一切字符（空格/双引号/反斜杠等）均为字面量，唯一例外是
+//   单引号本身——标准写法拆成 `'\''`（闭合当前引号、插一个转义单引号、重开新引号）。
+//   （跨族评审 mustFix：bin/mcp-config.mjs claude 段一行命令 serverAbs 未 shell-quote）。
+export function shellQuote(s) {
+  return `'${String(s).replace(/'/g, `'\\''`)}'`;
+}
 
 function parseArgs(argv) {
   const o = {};
@@ -40,7 +56,7 @@ function printClaude(serverAbs) {
   console.log(JSON.stringify(snippet, null, 2));
   console.log('');
   console.log('形态二：一行等效命令（在仓根执行）：');
-  console.log(`  claude mcp add casey -- node ${serverAbs}`);
+  console.log(`  claude mcp add casey -- node ${shellQuote(serverAbs)}`);
   console.log('');
   console.log(WSL_NOTE);
 }
@@ -52,7 +68,7 @@ function printCodex(serverAbs) {
   console.log('');
   console.log('[mcp_servers.casey]');
   console.log('command = "node"');
-  console.log(`args = ["${serverAbs}"]`);
+  console.log(`args = ["${tomlEscape(serverAbs)}"]`);
   console.log('');
   console.log(WSL_NOTE);
 }
@@ -70,4 +86,7 @@ function main() {
   process.exit(0);
 }
 
-main();
+// 仅在被直接当 CLI 执行时跑 main()；被 import（如金牌单测 tomlEscape/shellQuote）时不触发
+//   任何 process.exit 副作用（main() 恒以退出码收尾，import 场景下这会杀掉宿主进程）。
+const isDirectRun = process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href;
+if (isDirectRun) main();

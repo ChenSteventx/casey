@@ -3,7 +3,7 @@
   "task": "distribution（light）：分发与接入最后一环。① 新增 bin/mcp-config.mjs 自适应挂载配置打印器——从 lib/paths.mjs 的 PROJECT_ROOT（import.meta.url 派生）拼挂载脚本绝对路径（绝不硬编码盘符，根治 F10「手抄改路径」），--agent claude 吐 .mcp.json 片段 + claude mcp add 一行、--agent codex 吐 ~/.codex/config.toml 的 [mcp_servers.casey] 段，缺/错 --agent → fail-closed exit 64（列支持项 claude/codex，不静默默认）；纯启动器不含 --sut、不读 site.json/.auth、零凭据零目标地址。② bin/casey.mjs switch 加 case 'mcp-config' 直通 + help 分发/接入一行（不带 --sut <url> 避 handover-pack C2）。③ mcp/casey-server.mjs 头注释写死 /mnt/... 改指 README/casey mcp-config（注释改、行为零变）。④ 仓根新建 AGENTS.md（分家 agent 薄路由 + 内核纪律重述 + 权威源清单，指针不复刻）。⑤ 新建 docs/runbooks/onboarding.md（三 agent 路径 + 四 OS 矩阵 + 隧道仅 WSL + 移交清单带外/不入库）。⑥ README.md MCP 挂载段写死路径改跑 mcp-config + 加 AGENTS.md/onboarding.md 指针。⑦ 跨契约涟漪：cli-mcp-face 的 CLI_MCP_EXCLUDED 加 mcp-config（新命令不进 MCP 面留痕，Test Ratchet 加严）+ 重签 prd-cli-mcp-face testChecksums。决策 docs/plans/distribution/proposed/GRILL.md（D1-D12）、红金牌 GOLDEN-TESTPLAN.md（A1-A8）。",
   "specPath": "docs/plans/distribution/plan.md",
   "testChecksums": {
-    "tests/_golden/distribution.golden.mjs": "f36ded07127209cd34367cc7067955e01754029cd91e65a7d831497d88c70b4b"
+    "tests/_golden/distribution.golden.mjs": "d257a8ef9624a86e5584a4ab6283971f5ff8df704f933949e66f4d14f38b0bb7"
   },
   "observability": [
     {
@@ -14,14 +14,14 @@
   "stories": [
     {
       "id": "s1-mcp-config-and-onboarding",
-      "desc": "mcp-config 命令 + 分家接入·跨平台文档族红金牌 A1-A8：mcp-config 两家产合法挂载配置（.mcp.json JSON.parse 过 + command=node + args 末项=独立算 PROJECT_ROOT/mcp/casey-server.mjs；codex 段合法）；路径自适应当前仓根（源码 grep 无盘符/固定仓根字面量）；零凭据零真目标地址（cred-gate 单一事实源 + 埋种子证不读 site.json/.auth）；缺/错 agent fail-closed exit 64；AGENTS.md 在场且含 CLAUDE.md + 内核纪律锚；onboarding.md 四 OS + 三 agent + 隧道仅 WSL + 字体 + 移交清单带外/不入库；mcp-config ∈ cli-mcp-face EXCLUDED。红先行证据：实现前 1 过 / 7 败（mcp-config 未知命令 exit 64、无 AGENTS.md、无 onboarding.md、EXCLUDED 无 mcp-config）。",
+      "desc": "mcp-config 命令 + 分家接入·跨平台文档族红金牌 A1-A8：mcp-config 两家产合法挂载配置（.mcp.json JSON.parse 过 + command=node + args 末项=独立算 PROJECT_ROOT/mcp/casey-server.mjs；codex 段合法）；路径自适应当前仓根（源码 grep 无盘符/固定仓根字面量）；零凭据零真目标地址（cred-gate 单一事实源 + 埋种子证不读 site.json/.auth）；缺/错 agent fail-closed exit 64；AGENTS.md 在场且含 CLAUDE.md + 内核纪律锚；onboarding.md 四 OS + 三 agent + 隧道仅 WSL + 字体 + 移交清单带外/不入库；mcp-config ∈ cli-mcp-face EXCLUDED。红先行证据：实现前 1 过 / 7 败（mcp-config 未知命令 exit 64、无 AGENTS.md、无 onboarding.md、EXCLUDED 无 mcp-config）。mustFix 补丁（codex 跨族评审 med portability）：codex TOML 段与 claude 一行命令的 serverAbs 原样拼接未转义，路径含 \"/'/\\ 会产坏 TOML/坏 shell 命令；补 tomlEscape（\\\\→\\\\\\\\、\"→\\\\\"）+ shellQuote（单引号包裹、内部 ' → '\\''）修复，加 A9（TOML 引号+空格真复现解码可逆）/A10（shell 引号+空格真复现真 shell 解析可逆）/A11（反斜杠+引号+空格：POSIX 上 Node ESM 拒绝从反斜杠路径加载模块，无法真落盘复现，改直测导出的 tomlEscape/shellQuote 纯函数）红金牌，重签 checksum。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/distribution.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T09:47:40.472Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-09T11:10:56.659Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-ripple-locks",
@@ -32,7 +32,7 @@
         "node tests/_golden/cli-mcp-face.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T09:47:51.194Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-09T11:11:13.809Z 全部 acceptance exit 0"
     }
   ]
 }
