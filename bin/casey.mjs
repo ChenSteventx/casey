@@ -182,6 +182,8 @@ ${col(C.cyan, '端到端')}
                                           --sut 只喂隧道回环基址（site.json 的 devProxyUrl）或夹具地址；真目标地址绝不进命令行（护栏 #7）
 
 ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅助/heal；replay/verdict/report 零 LLM）
+  casey scaffold-case <caseId> --from-text <f> --out-dir <d>
+                                          相0 前段脚手架：自由文本 → 候选骨架（source.kind:freetext + route:human 占位；开箱过 parseTestCase；须 CLI 外 LLM 归一 + 重走 ingest→…→人签；不签署/不回放/门拒 fail-closed）
   casey ingest  <caseId> --in <f> --out-dir <d>
                                           相0 归一：候选（CLI 外 LLM 产）→ 校验 → 规范 TestCase
   casey compile <caseId> --testcase <f> --flow <f> --out-dir <d>
@@ -237,6 +239,9 @@ function main() {
       return selftestTier1();
 
     // 生命周期（当前为诚实桩，逐阶段实现）
+    // 相0 前段·归一脚手架：自由文本 → 零 LLM 候选骨架（source.kind:freetext + route:human 占位，开箱过 parseTestCase）；
+    // 须 CLI 外 LLM 归一 + 重走 ingest→…→人签才算数（不签署/不回放；镜像 ingest/intake 分发先例）。
+    case 'scaffold-case': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'scaffold-case.mjs'), rest); process.exit(r.code); }
     // 相0 归一：LLM 在 CLI 外产候选，本 CLI 是 L0 确定性校验器（parseTestCase，fail-closed）。
     case 'ingest': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'ingest.mjs'), rest); process.exit(r.code); }
     // 相1 编译（P3）：三段式确定性 CLI（闸+confirm 门 / 执行 / 回放核验），LLM 只在 CLI 外产 flow 草稿。

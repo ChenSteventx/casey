@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "task": "ingest-scaffold（full）：相0 前段脚手架，新增 casey scaffold-case——把一段自由文本用例零 LLM 包成 schema 合规的候选骨架（source.kind:'freetext' + source.raw 泊原文逐字 + 一条 route:human 占位步，不臆断切分），开箱过 parseTestCase，再配一份归一提示模板（docs/plans/ingest-scaffold/proposed/from-text-candidate.draft.md）+ SKILL 指针，供 CLI 外 LLM 把 source.raw 归一成真实候选后经 casey ingest 重新入场。三件：lib/ingest-scaffold.mjs（纯函数 buildCandidateSkeleton 零 I/O 零 LLM 字节可复现，无时刻字段）+ bin/scaffold-case.mjs（薄壳 fail-closed：缺参/裸旗标 64 / caseId 形状·凭据门·读文件·green-by-construction 自检·落盘 65 / 前置凭据门命中 1 零骨架落盘零目录副作用；复用 parseTestCase + credentialGate 不改冻结件）+ bin/casey.mjs 接线（switch +1 case scaffold-case 直通 runNode + help +1 行不带 --sut <url>）。降权硬不变量：候选非权威、绝不 signed/replayReady、须重走全链 + 人签。零冻结 schema 涟漪、零重签既有 prd。决策全表 docs/plans/ingest-scaffold/proposed/GRILL.md（D1-D15，待 Steven grill 签核开放项 7 条）。",
+  "specPath": "docs/plans/ingest-scaffold/plan.md",
+  "testChecksums": {
+    "tests/_golden/ingest-scaffold.golden.mjs": "1db26b1c15ba1f5a8309e44d8428570ee090008ca3632874bbd8020e96701cf6"
+  },
+  "observability": [
+    {
+      "dimension": "真机全链趟合并项：自由文本 → scaffold-case → 候选骨架 → CLI 外 LLM 归一 → ingest → flow-bridge → compile（--execute 打真机，隧道 + 凭据）→ draft → 人签 → replay → verdict → report，确认全新用例第一份报告真通。相1 compile --execute 必打真机，故任何全新用例端到端真通固定 route:human。真机 UAT，不在本契约 hermetic 收口。",
+      "route": "human"
+    },
+    {
+      "dimension": "v1 脚手架零 LLM 只发单条 route:human 占位步（GRILL D6 不臆断切分）：自由文本→N 意图步的语义切分是 CLI 外 LLM 的活，脚手架不臆造。将来若登记保守确定性预切分（如按显式编号行），另开红先行金牌补，不在本契约造脆弱切分匹配。",
+      "route": "machine"
+    },
+    {
+      "dimension": "候选骨架形态未冻 JSON schema（仅金牌断言字段锁漂移，且走既有 testcase.schema.json 校验）：本契约按局部候选处理、不预冻新 schema（沿用 record-intake 台账 / distill 候选未预冻先例）。若将来跨消费者契约需硬化，另冻并重签。",
+      "route": "machine"
+    },
+    {
+      "dimension": "归一提示模板的语义质量（切得对不对、actionHint 选得准不准、意图边界划得对不对）不可 hermetic 测，是 route:human 抽检（镜像 llm-patch.draft.md）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-scaffold-case-cli-gates-skeleton",
+      "desc": "casey scaffold-case CLI + 纯函数候选骨架 + 前置/输出双凭据门 + green-by-construction 自检 + 降权不直通：help 暴露命令（不含 --sut <url>）；缺参/裸旗标 exit 64；caseId 穿越/斜杠/凭据门 exit 65 原值不回显；脏自由文本前置凭据门 exit 1 零骨架落盘零目录副作用；happy 真接缝(写自由文本→scaffold-case)产恰候选一件、schemaVersion/caseId/source.kind:freetext/source.raw 逐字节/uniquePrefix:atl_、单条 route:human 占位步(i1)不臆断切分、无 expected/无 target/source 键闭合、URL 不剥、两次字节一致；候选真过 parseTestCase 闸(骨架直入 casey ingest exit 0)、mock LLM 归一后候选真被 ingest 收下(内联夹具绝不烧真 LLM)、畸形候选 ingest 照旧 fail-closed exit 65 零落盘；不改冻结 testcase.schema.json；降权无 signed/replayReady/events/expected.frozen/prd 副产物 + stdout 落地提示(归一+人签)；输出侧凭据门 + 成功不回显绝对路径。金牌 C1-C8（实现前红已核：3 过 / 21 败——C6a schema 自守冻结即绿 + C7a happy stdout 空虚过 + C8 selftest 回归锁；余 21 红在 bin/casey 分发/help 缺席）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/ingest-scaffold.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T06:59:37.349Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-tier1-regression",
+      "desc": "涟漪回归锁：新增 scaffold-case 门面（casey.mjs switch +1 case + help +1 行）不得破坏确定性内核与统一语言双向自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T06:59:38.644Z 全部 acceptance exit 0"
+    }
+  ]
+}
