@@ -64,6 +64,8 @@ description: 用自然语言把测试用例跑成 Casey 测试报告，或启动
 | 相1 编译（三段式：闸→人 confirm→执行） | `node bin/casey.mjs compile <caseId> --testcase <f> --flow <f> --out-dir <d>`；执行段加 `--execute --sut <url> --profile <f>`（须 flow 已 confirm，否则 exit 66） |
 | 相2 草拟断言 | `node bin/casey.mjs draft <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]` |
 | 相2 人签冻结断言 | `node bin/casey.mjs sign <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id>`（**让用户签**，CC 不代签） |
+| 示教录制（相外兜底，产蒸馏语料） | `node bin/casey.mjs record <caseId> --sut <本地基址> --out-dir <d> (--login-bootstrap\|--no-login) [--from-events <f> --headless --max-ms <ms>]`（示教语料，非正式回放输入） |
+| 示教入账（安全复核 → 入账台账） | `node bin/casey.mjs intake <caseId> --capture <f>`（安全复核录制包 → 登记入账台账，拒账 fail-closed） |
 | 相3 确定性回放 | `node bin/casey.mjs replay --events <f> --sut <url> --expected <f> --profile <f> --out <axes.json>`（未签契约拒回放） |
 | 相4 出多态裁定 | `node bin/casey.mjs verdict --axes <f> --out <f>` |
 | 相5 自愈（仅工装漂移） | `node bin/casey.mjs heal <caseId>`（诚实桩 exit 3，相5 只有 lib 件） |

@@ -66,8 +66,8 @@ claude mcp add casey -- node /mnt/d/ctx/heren/casey/mcp/casey-server.mjs
 # 路径按你的 clone 位置替换；必须挂 WSL 侧 node（回放依赖 Linux 侧 playwright）
 ```
 
-12 个工具（`casey_ingest` … `casey_run`），签名与 CLI 真面对齐并有漂移锁金牌盯防
-（`tests/_golden/cli-mcp-face.golden.mjs`）。
+14 个工具（`casey_ingest` … `casey_run`，含示教录制/入账的 `casey_record`/`casey_intake`），签名与 CLI 真面对齐并有漂移锁金牌盯防
+（`tests/_golden/cli-mcp-face.golden.mjs`：工具名集 `deepEq` 钉死，另有「CLI 生命周期命令集 ⊆ MCP 工具集」覆盖断言——CLI 长了新命令而 MCP 没跟即红）。
 
 ## Claude Code hooks 行为预告
 

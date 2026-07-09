@@ -14,12 +14,14 @@
  */
 import { spawnSync } from 'node:child_process';
 import { createInterface } from 'node:readline';
+import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const CLI = path.join(ROOT, 'bin', 'casey.mjs');
-const SERVER_INFO = { name: 'casey', version: '0.2.0' };
+// 版本单源：从 package.json 读（唯一事实源，GRILL D4）——不再写死字面量，日后 bump 一处即两处同步。
+const SERVER_INFO = { name: 'casey', version: JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8')).version };
 const log = (...a) => process.stderr.write(`[casey-mcp] ${a.join(' ')}\n`); // 诊断只走 stderr，绝不污染 stdout 协议流
 
 // 工具目录：每个工具映射成一组 casey CLI 参数（cli-mcp-face 契约对齐 CLI 真面：inputSchema 逐字对齐
@@ -76,6 +78,18 @@ export const TOOLS = [
     description: '相2 人签门：草稿 → 冻结签署（signedAt/signedAgainstBuild/signerId 盖章）+ prd 回写 checksum。pending 非空默认拒（--force 写 sidecar）；未签契约会被 replay 前置闸拒。签署人身份归人、本工具只代跑 CLI。',
     inputSchema: { type: 'object', required: ['caseId', 'draft', 'prd', 'frozenOut', 'signer', 'againstBuild'], properties: { caseId: { type: 'string' }, draft: { type: 'string' }, prd: { type: 'string' }, frozenOut: { type: 'string' }, signer: { type: 'string' }, againstBuild: { type: 'string' }, signedAt: { type: 'string' }, verdictBaseline: { type: 'string' }, resign: { type: 'boolean' }, force: { type: 'boolean' }, archiveDir: { type: 'string' } } },
     toArgs: (a) => ['sign', ...(a.caseId ? [a.caseId] : []), ...flag('draft', a.draft), ...flag('prd', a.prd), ...flag('frozen-out', a.frozenOut), ...flag('signer', a.signer), ...flag('against-build', a.againstBuild), ...flag('signed-at', a.signedAt), ...flag('verdict-baseline', a.verdictBaseline), ...boolFlag('resign', a.resign), ...boolFlag('force', a.force), ...flag('archive-dir', a.archiveDir)],
+  },
+  {
+    name: 'casey_record',
+    description: '示教录制：真浏览器打开 --sut 让人操作，抓成 teach-in-capture.json（signed=false / replayReady=false / distillRequired=true）。只作蒸馏语料，不签署、不直通回放。--login-bootstrap 与 --no-login 互斥（缺或双给由 CLI 落 exit 64）；--from-events 走非浏览器路径（既有事件夹具直接成包，hermetic）。',
+    inputSchema: { type: 'object', required: ['caseId', 'sut', 'outDir'], properties: { caseId: { type: 'string' }, sut: { type: 'string' }, outDir: { type: 'string' }, loginBootstrap: { type: 'boolean' }, noLogin: { type: 'boolean' }, fromEvents: { type: 'string' }, headless: { type: 'boolean' }, maxMs: { type: 'string' } } },
+    toArgs: (a) => ['record', ...(a.caseId ? [a.caseId] : []), ...flag('sut', a.sut), ...flag('out-dir', a.outDir), ...boolFlag('login-bootstrap', a.loginBootstrap), ...boolFlag('no-login', a.noLogin), ...flag('from-events', a.fromEvents), ...boolFlag('headless', a.headless), ...flag('max-ms', a.maxMs)],
+  },
+  {
+    name: 'casey_intake',
+    description: '示教入账：安全复核录制包（凭据门 / URL 泄漏 / 重复键 / 形态 fail-closed）→ 登记入账台账 intake-ledger.jsonl（accepted/rejected + capture sha256）。不转形、不签署、不回放；拒账 fail-closed exit 65。--capture 须落 <caseId>/record-capture/teach-in-capture.json 规范布局。',
+    inputSchema: { type: 'object', required: ['caseId', 'capture'], properties: { caseId: { type: 'string' }, capture: { type: 'string' } } },
+    toArgs: (a) => ['intake', ...(a.caseId ? [a.caseId] : []), ...flag('capture', a.capture)],
   },
   {
     name: 'casey_replay',
