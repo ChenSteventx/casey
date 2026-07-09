@@ -212,6 +212,7 @@ ${col(C.cyan, 'loop 机制')}（薄壳直通 loop-kit；纪律已生效）
 
 ${col(C.cyan, '自检')}
   casey selftest --tier1                  hermetic 链路自检（零外部依赖）                 [可用]
+  casey doctor                            跨平台就绪自检（node/playwright/中文字体/凭据·隧道在位），逐项 ok/缺失+建议  [可用]
   casey selftest --tier2                  live smoke（需 site.json + creds，route:human） [P9]
 
 退出码：0 成功；1 红；2 熔断/互锁；3 该阶段未实现；64 用法错误。
@@ -256,6 +257,10 @@ function main() {
     case 'heal':    return notImplemented('相5 heal 自愈', 'P6 自愈准入门 + 非就地有界自愈', '仅对确证 HARNESS_ERROR：重锚 → 写 drift 补丁旁文件（原 spec 不变）→ 人签后应用 → 重跑。');
     case 'report': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'report.mjs'), rest); process.exit(r.code); }
     case 'run':     return runPipeline(pos, opts);
+
+    // 跨平台就绪自检（自检类，不进 MCP 面——同 selftest/breaker/contract/heal）：逐项查
+    // node/playwright/中文字体/凭据·site.json/隧道，就绪级任一 fail → exit 1；绝不回显凭据值与真目标地址。
+    case 'doctor': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'doctor.mjs'), rest); process.exit(r.code); }
 
     default:
       console.error(col(C.red, `未知命令：${cmd}`));

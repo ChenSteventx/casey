@@ -28,6 +28,8 @@ WSL 环境另需中文字体（截图/录屏中文空白的根因）：装用户
 
 ## 环境验收（三级，逐级递进）
 
+一键就绪自检：`node bin/casey.mjs doctor` —— 逐项查 node/playwright/中文字体/凭据·`site.json`/隧道就绪，逐项 `ok`/缺失+按平台分支给修复建议（就绪级任一缺 exit 1；字体/凭据/隧道缺只提示不阻塞）。绝不回显凭据值与真目标地址；只诊断不自动修。
+
 1. **机制自检**（零外部依赖，npm install 前即可跑）：`node bin/casey.mjs selftest --tier1`
    ——验确定性内核 + 统一语言，**不验浏览器/凭据/隧道**，全绿不代表能回放。
 2. **hermetic 回放就绪**（验 npm install + chromium）：`node tests/_golden/e2e-chain.golden.mjs`

@@ -64,7 +64,8 @@ const LIFECYCLE_EMPTY_EXIT = {
 // 故意不进 MCP 的须在此留痕（GRILL D5，需人过目的小白名单）。help 非生命周期；breaker/contract 属 loop 开发
 // 纪律面（同 MCP 只暴露 lint/gate 不暴露 breaker/contract 的既有取舍）；heal 诚实桩（相5 无 bin，P6 落地后移出）；
 // distill 的 MCP 面由后续易用性契约补（record-distill plan 明列「不接 MCP，需同时补真实可跑用例」），补时移出。
-const CLI_MCP_EXCLUDED = new Set(['help', 'breaker', 'contract', 'heal', 'distill']);
+// doctor 是自检类命令（跨平台就绪自检），同 selftest/breaker/contract 属自检/开发纪律面、不进 MCP 工具目录（casey-doctor 契约 GRILL D9）。
+const CLI_MCP_EXCLUDED = new Set(['help', 'breaker', 'contract', 'heal', 'distill', 'doctor']);
 
 // ---------- C1 CLI 三分发真跑非桩 ----------
 await checkAsync('C1 CLI：replay/verdict/report 零参走真 bin 用法错非桩 exit 3；heal 仍真桩 exit 3', async () => {
