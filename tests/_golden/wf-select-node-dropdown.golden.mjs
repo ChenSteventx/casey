@@ -390,6 +390,32 @@ try {
       if (v.verdict === 'PASS') throw new Error('目标缺席竟 PASS——假 unique（护栏 #14）');
     } finally { await s.close(); }
   });
+
+  // ---------- C3g 回放面·缺 option 多选项浮层（happy 3 项 + 事件不给 option）→ 绝不点首项、ambiguous（fail-safe 不 fail-open）----------
+  // codex 跨族异构评审 confirmed HIGH fail-safe（gate 曾绿漏）：doSelectNodeDropdown 当 option 缺失/未指定时，
+  // 多选项浮层里误点「首个可见选项」还返 unique = 假绿（fail-open 成 PASS），违铁律「fail-safe 不 fail-open」+
+  // 点击身份门 ADR-0007。红先行反例：happy 抽屉下拉 3 项（订单库/用户库/日志库）+ 末步 selectNodeDropdown 事件
+  // 不载 text（缺 option）——修前误返 unique（点了首项）→ verdict 假绿 PASS；修后：多选项浮层无 option 一律
+  // ambiguous 绝不点任何项、candidateCount 恰 3 → 触发器值不变、verdict 不 PASS（本分支裁判 ap=false 兜底落
+  // NEEDS_HUMAN 仍 fail-safe；resolution 契约合并后升级为精确 AMBIGUOUS_ACTION）。仅浮层恰一项、或 option 域内
+  // 唯一命中才 unique 点选（C2-c/C3d 已钉两端）。
+  await checkAsync('C3g 回放面·缺 option 多选项浮层（happy 3 项 + 事件不给 option）：doSelectNodeDropdown 绝不点首项、ambiguous、candidateCount 恰 3、不点任何项 → verdict 不 PASS（修前误返 unique 假绿=fail-open 红证）', async () => {
+    const caseId = 'tc_wf_seldd_c3g';
+    const { axes, verdict } = runReplayVerdict('c3g', sut.url, {
+      schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-09T00:00:00.000Z', authored: false,
+      // 末步不载 text（缺 option）：多选项浮层里没给 option。修前误点首项返 unique（假绿），修后 ambiguous 绝不点。
+      events: [...setupEvents(), { stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.selectNodeDropdown', action: 'click', nth: 0, semantic: { kind: 'text', name: '请选择', exact: true } }],
+    }, {
+      caseId, channel: 'web',
+      intents: [...setupIntents(), { intentId: 'intent_3', expected: [{ kind: 'textVisible', op: 'appears', value: OPT }] }],
+    });
+    const ax = stepOf(axes, 'intent_3');
+    if (!ax.action || ax.action.resolution !== 'ambiguous') throw new Error(`缺 option 多选项浮层应 ambiguous 绝不点首项（修前误返 unique=fail-open 假绿），实际 ${JSON.stringify(ax.action)}`);
+    if (ax.action.candidateCount !== 3) throw new Error(`candidateCount 应恰 3（happy 可见浮层 3 项：订单库/用户库/日志库），实际 ${ax.action.candidateCount}`);
+    if (ax.action.identityReadback && ax.action.identityReadback.ok === true) throw new Error('缺 option 多选项竟 identityReadback ok:true——点了首项假绿（护栏 #14）');
+    const v = stepOf(verdict, 'intent_3');
+    if (v.verdict === 'PASS') throw new Error('缺 option 多选项浮层竟 PASS——fail-open 假绿（多选项无 option 必不点，护栏 #14/ADR-0007）');
+  });
 } finally {
   await sut.close();
 }
