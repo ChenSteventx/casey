@@ -3,7 +3,7 @@
   "task": "cli-mcp-face（light）：CLI/MCP/skill 三面对齐现状。① bin/casey.mjs 的 replay/verdict/report 分发桩换 runNode 直通（底层 bin 早已建成、run 编排内部直连在用；机械镜像 compile/draft/sign/flow-bridge/ingest 五先例）+ help 三行改真实旗标；heal 保持真桩（相5 无 bin）。② mcp/casey-server.mjs 工具目录刷新 0.1.0→0.2.0：新增 casey_ingest/casey_flow_bridge/casey_compile/casey_draft/casey_sign/casey_replay 六工具、修 casey_run inputSchema 为真 runPipeline 签名、casey_verdict/casey_report 去「诚实桩」误标改真实旗标；toArgs 只对在场值拼旗标（空参透传 CLI 落真实用法错码，壳里不预判）；协议/传输零动。③ .claude/skills/casey/SKILL.md 命令映射表逐行改真实旗标 + 进度段改现状（七相全建 + hermetic 全链贯通、heal 唯一桩、真机端到端 route:human）；立场段一字不动。决策 docs/plans/cli-mcp-face/proposed/GRILL.md（D1-D5）。",
   "specPath": "docs/plans/cli-mcp-face/plan.md",
   "testChecksums": {
-    "tests/_golden/cli-mcp-face.golden.mjs": "c726411d48d530f4ac5c9cc3e32e5c949608bccb961a5f28ca87038d4ec5fd9f"
+    "tests/_golden/cli-mcp-face.golden.mjs": "1926d3cbcb0ec9258e40d71685c4cf7390db1266953fe8761e16b04a35861b6f"
   },
   "observability": [
     {

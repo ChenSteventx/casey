@@ -262,6 +262,10 @@ ${col(C.cyan, '自检')}
   casey selftest --tier2                  live smoke（需 site.json + creds，route:human） [P9]
   casey demo                              零真机零凭据产一份样例测试报告（落 runs/sample-wf-publish/，需 chromium）
 
+${col(C.cyan, '分发/接入')}
+  casey mcp-config --agent <claude|codex>  一句吐出各家 MCP 挂载配置（自适应本仓绝对路径，免手抄改盘符）
+  接入指路见 AGENTS.md（分家 agent 入口）与 docs/runbooks/onboarding.md（跨平台上手 + 移交清单）。
+
 退出码：0 成功；1 红；2 熔断/互锁；3 该阶段未实现；64 用法错误。
 进度：七相全建（heal 唯一诚实桩）+ hermetic 全链金牌贯通；真机端到端 route:human——权威现状见 docs/HANDOFF.md。`);
 }
@@ -313,6 +317,10 @@ function main() {
     // 跨平台就绪自检（自检类，不进 MCP 面——同 selftest/breaker/contract/heal）：逐项查
     // node/playwright/中文字体/凭据·site.json/隧道，就绪级任一 fail → exit 1；绝不回显凭据值与真目标地址。
     case 'doctor': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'doctor.mjs'), rest); process.exit(r.code); }
+
+    // 分发/接入：自适应从模块位置解析仓根 → 各家 MCP 挂载配置（纯打印器，不进 MCP 面——挂之前才需要，
+    // 从 MCP 取它是循环依赖，GRILL D11）；结构上不含 --sut/目标地址、不读凭据。缺/错 --agent → exit 64。
+    case 'mcp-config': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'mcp-config.mjs'), rest); process.exit(r.code); }
 
     default:
       console.error(col(C.red, `未知命令：${cmd}`));

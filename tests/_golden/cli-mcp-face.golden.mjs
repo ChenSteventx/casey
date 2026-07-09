@@ -66,7 +66,9 @@ const LIFECYCLE_EMPTY_EXIT = {
 // distill 的 MCP 面由后续易用性契约补（record-distill plan 明列「不接 MCP，需同时补真实可跑用例」），补时移出。
 // scaffold-case（相0 前段脚手架，ingest-scaffold plan 明列不接 MCP）；demo（样例报告入口，casey-demo GRILL D8 不加 casey_demo）——均 CLI-only，批一协调合并时集成补入。
 // doctor 是自检类命令（跨平台就绪自检），同 selftest/breaker/contract 属自检/开发纪律面、不进 MCP 工具目录（casey-doctor 契约 GRILL D9）。
-const CLI_MCP_EXCLUDED = new Set(['help', 'breaker', 'contract', 'heal', 'distill', 'scaffold-case', 'demo', 'doctor']);
+// mcp-config 是分发/接入命令（自适应打印 MCP 挂载配置）：要挂上 MCP 才能调工具，而挂载配置正是「挂之前」需要的东西——
+// 从 MCP 取它是循环依赖，正确面是 CLI + README/AGENTS.md；同 breaker/contract 属 setup/分发面、不暴露为 MCP 工具（distribution 契约 GRILL D11）。
+const CLI_MCP_EXCLUDED = new Set(['help', 'breaker', 'contract', 'heal', 'distill', 'scaffold-case', 'demo', 'doctor', 'mcp-config']);
 
 // ---------- C1 CLI 三分发真跑非桩 ----------
 await checkAsync('C1 CLI：replay/verdict/report 零参走真 bin 用法错非桩 exit 3；heal 仍真桩 exit 3', async () => {

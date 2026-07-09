@@ -66,10 +66,15 @@ WSL 环境另需中文字体（截图/录屏中文空白的根因）：装用户
 
 ## MCP 挂载（WSL 侧）
 
+跑一句自适应吐出本仓正确挂载配置（绝对路径由结构派生，免手抄改盘符——消灭 F10「抄命令改路径」反模式）：
+
 ```bash
-claude mcp add casey -- node /mnt/d/ctx/heren/casey/mcp/casey-server.mjs
-# 路径按你的 clone 位置替换；必须挂 WSL 侧 node（回放依赖 Linux 侧 playwright）
+node bin/casey.mjs mcp-config --agent claude   # claude code：.mcp.json 片段 + 一行 claude mcp add
+node bin/casey.mjs mcp-config --agent codex    # codex：~/.codex/config.toml 的 [mcp_servers.casey] 段
 ```
+
+必须挂 WSL 侧 node（回放依赖 Linux 侧 playwright，Windows 原生侧挂载必败，G6）。分家 agent（codex 等无
+`skill` 自动加载机制）接入入口见 `AGENTS.md`；跨平台上手与同事移交清单见 `docs/runbooks/onboarding.md`。
 
 14 个工具（`casey_ingest` … `casey_run`，含示教录制/入账的 `casey_record`/`casey_intake`），签名与 CLI 真面对齐并有漂移锁金牌盯防
 （`tests/_golden/cli-mcp-face.golden.mjs`：工具名集 `deepEq` 钉死，另有「CLI 生命周期命令集 ⊆ MCP 工具集」覆盖断言——CLI 长了新命令而 MCP 没跟即红）。
