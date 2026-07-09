@@ -64,7 +64,7 @@ expectOk('R1 NEEDS_HUMAN(INDETERMINATE) 合法放行、无 defectTicket（axes �
 // ── C verdict⋈axes 一致性门（第 4 轮 codex：装配器复算 decide 比对，不一致 fail-closed；只比对不重裁定，护栏 #14/#15）──
 const passButFailed = axStep({ postAssertions: [{ kind: 'x', op: 'y', value: 'a', actual: 'b', ok: false, soft: false }] }); // ap=true + 失败硬断言 + 无背书 → 复算 NEEDS_HUMAN(SUT_DEFECT_OR_STALE)
 expectThrow('C1 verdict=PASS 但 axes 有失败硬断言(复算非 PASS) → fail-closed 抛（假绿闭合，High）', () => call([vStep({ verdict: 'PASS' })], [passButFailed]));
-const ambig = axStep({ action: { resolution: 'fallback_first' } }); // ap=ambiguous → 复算 NEEDS_HUMAN(AMBIGUOUS_ACTION)
+const ambig = axStep({ action: { resolution: 'ambiguous' } }); // ap=ambiguous → 复算 NEEDS_HUMAN(AMBIGUOUS_ACTION)（收敛后多匹配唯一合法字面量）
 expectThrow('C2 verdict=PASS 但动作 ambiguous(复算 AMBIGUOUS_ACTION) → fail-closed 抛（与裁判不一致，High）', () => call([vStep({ verdict: 'PASS' })], [ambig]));
 expectOk('C2b verdict=NEEDS_HUMAN(AMBIGUOUS_ACTION) 与 ambiguous 动作一致 → 放行（反误伤）', () => {
   const m = call([vStep({ verdict: 'NEEDS_HUMAN', reason: 'AMBIGUOUS_ACTION' })], [ambig]);
