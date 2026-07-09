@@ -97,6 +97,8 @@
 | recorder-as-library | 录制器库化 | 把 autotester 人操作录制器重构成 LLM agent 拥有 context 的库（关人抖动去噪、避导航竞态）。**已被 ADR-0006 的 atoms/flow 编译路线取代**（相1 现实现 = compile-gate + compile-atoms 三段式；本概念仅存「陌生站点孵化」支线，2026-07-07 词条对齐实现） | — |
 | 示教 | Teach-in | 人在真实界面上操作，机器只采集操作语料；借工业机器人示教再现血缘。示教不等于签署，不开直通回放，产物必须经蒸馏、L0 复核和人签门 | 录制直通 |
 | 示教录制包 | Teach-in Capture | `casey record` 产出的人工操作采集包，作为后续蒸馏语料；`signed:false`、`replayReady:false`、`distillRequired:true` 是硬不变量 | — |
+| 示教入账 | Teach-in Intake | `casey intake` 把 示教录制包 经安全复核闸登记进蒸馏前置队列的动作；只复核登记、不转形、不签署、不回放，复核证不出干净合法包一律拒账（fail-closed）。蒸馏由后续 record-distill 消费 | — |
+| 示教入账台账 | Teach-in Intake Ledger | append-only 记录每次 示教入账 accept/reject 的本地台账（`intake-ledger.jsonl`，落 capture 同目录）；显式区分于 失败记录台账（裁定下游）——不进 verdict、不作自愈输入、不改任何裁定（护栏 #13/#15）；拒账只记类别码、绝不落原始脏内容 | — |
 | `fail-safe` | 故障安全 | 失败时退到安全态：机器证不出就路由人（`NEEDS_HUMAN`），绝不默认成可自愈（fail-open 的反面） | — |
 | `fail-open` | 故障放行 | 故障时放行：基础设施/hook 自身故障不阻塞正常工作；仅用于 lint/hook，绝不用于裁定 | — |
 | `fail-closed` | 故障关闭 | 故障时拒绝：校验不过/缺数据时报红拒绝（用于 `parseTestCase` 等准入） | — |

@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "task": "record-intake（full）：示教兜底第二契约，新增 casey intake——接收 teach-in-capture 经安全复核 8 条 fail-closed 闸 → 登记 append-only 入账台账（accept/reject 类别码、零脏内容），不转形/不签署/不回放。入账台账显式区分于裁定下游 Failure Ledger（CONTEXT:116）。决策 docs/plans/record-intake/proposed/GRILL.md。",
+  "specPath": "docs/plans/record-intake/plan.md",
+  "testChecksums": {
+    "tests/_golden/record-intake.golden.mjs": "9e6d1709061665a7a69a2a80d009b70361cc814d925527577942aed8cb4474c1"
+  },
+  "observability": [
+    {
+      "dimension": "真机人工录制一次后跑 casey intake 一遍：确认真 capture 过闸、台账 accept、无凭据泄漏；属真机趟合并项，非 hermetic 验收。",
+      "route": "human"
+    },
+    {
+      "dimension": "入账台账形态未冻 JSON schema（仅金牌断言字段锁漂移）：distill 契约读『已入账』条目作背书，若跨消费者契约需硬化，届时另冻 intake-ledger-entry.schema.json 并重签。本契约按局部台账处理、不预冻。",
+      "route": "machine"
+    },
+    {
+      "dimension": "F1 TOCTOU 防线只做到 intake 侧绑 captureSha256——record-distill 契约消费『已入账』capture 前必须校验当前 capture 字节哈希匹配 accepted 条目 + 重跑 reviewCapture，否则 intake 后换脏包仍可假背书。此下游义务挂 record-distill grill。",
+      "route": "machine"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-intake-gate-and-ledger",
+      "desc": "casey intake CLI + 安全复核闸 + 入账台账：help 暴露命令；缺参 exit 64；caseId 穿越 exit 65；干净 capture accept exit 0 + 台账 accepted + eventCount 一致 + 不产副本；8 条 fail-closed（ARTIFACT_KIND/SIGNED_FLAG/SCHEMA_VERSION/CASEID_MISMATCH/EMPTY_EVENTS/DIRTY_EVENT/CRED_GATE_HIT/URL_LEAK/SENSITIVE_FIELD）+ PARSE_ERROR 逐条 exit 65 + 台账 reject 类别码 + 零脏内容 + 无 accepted；append-only 首行不变；台账全文无 ://。codex 跨族异构评审 6 加固红先行钉死（F1 accept 绑 captureSha256 防换包 / F2 中文敏感字段未遮值拒 / F3 URL 判据覆盖协议相对 IPv6+百分号编码 / F4 caseId 严格类型 / F5 --capture 规范布局校验 / F6 caseId 凭据关键词子串前置拒）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/record-intake.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T01:24:51.783Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-tier1-regression",
+      "desc": "新增 intake 门面不得破坏确定性内核与统一语言自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T01:24:52.633Z 全部 acceptance exit 0"
+    }
+  ]
+}
