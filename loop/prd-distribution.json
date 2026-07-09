@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "task": "distribution（light）：分发与接入最后一环。① 新增 bin/mcp-config.mjs 自适应挂载配置打印器——从 lib/paths.mjs 的 PROJECT_ROOT（import.meta.url 派生）拼挂载脚本绝对路径（绝不硬编码盘符，根治 F10「手抄改路径」），--agent claude 吐 .mcp.json 片段 + claude mcp add 一行、--agent codex 吐 ~/.codex/config.toml 的 [mcp_servers.casey] 段，缺/错 --agent → fail-closed exit 64（列支持项 claude/codex，不静默默认）；纯启动器不含 --sut、不读 site.json/.auth、零凭据零目标地址。② bin/casey.mjs switch 加 case 'mcp-config' 直通 + help 分发/接入一行（不带 --sut <url> 避 handover-pack C2）。③ mcp/casey-server.mjs 头注释写死 /mnt/... 改指 README/casey mcp-config（注释改、行为零变）。④ 仓根新建 AGENTS.md（分家 agent 薄路由 + 内核纪律重述 + 权威源清单，指针不复刻）。⑤ 新建 docs/runbooks/onboarding.md（三 agent 路径 + 四 OS 矩阵 + 隧道仅 WSL + 移交清单带外/不入库）。⑥ README.md MCP 挂载段写死路径改跑 mcp-config + 加 AGENTS.md/onboarding.md 指针。⑦ 跨契约涟漪：cli-mcp-face 的 CLI_MCP_EXCLUDED 加 mcp-config（新命令不进 MCP 面留痕，Test Ratchet 加严）+ 重签 prd-cli-mcp-face testChecksums。决策 docs/plans/distribution/proposed/GRILL.md（D1-D12）、红金牌 GOLDEN-TESTPLAN.md（A1-A8）。",
+  "specPath": "docs/plans/distribution/plan.md",
+  "testChecksums": {
+    "tests/_golden/distribution.golden.mjs": "f36ded07127209cd34367cc7067955e01754029cd91e65a7d831497d88c70b4b"
+  },
+  "observability": [
+    {
+      "dimension": "真机各 agent 挂载核验（审计 R3）：claude code 与 codex 上用 mcp-config 产的配置真挂 MCP server + tools/call 实跑一条命令，确认能挂能用、无凭据/目标地址泄漏——需各 agent 环境在场，route:human。pi 上手成文路径待 pi 从可驱动环境真机核验（docs/HANDOFF.md 记 pi 从本 WSL 驱不动），onboarding.md 现留位。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-mcp-config-and-onboarding",
+      "desc": "mcp-config 命令 + 分家接入·跨平台文档族红金牌 A1-A8：mcp-config 两家产合法挂载配置（.mcp.json JSON.parse 过 + command=node + args 末项=独立算 PROJECT_ROOT/mcp/casey-server.mjs；codex 段合法）；路径自适应当前仓根（源码 grep 无盘符/固定仓根字面量）；零凭据零真目标地址（cred-gate 单一事实源 + 埋种子证不读 site.json/.auth）；缺/错 agent fail-closed exit 64；AGENTS.md 在场且含 CLAUDE.md + 内核纪律锚；onboarding.md 四 OS + 三 agent + 隧道仅 WSL + 字体 + 移交清单带外/不入库；mcp-config ∈ cli-mcp-face EXCLUDED。红先行证据：实现前 1 过 / 7 败（mcp-config 未知命令 exit 64、无 AGENTS.md、无 onboarding.md、EXCLUDED 无 mcp-config）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/distribution.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T09:47:40.472Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-ripple-locks",
+      "desc": "涟漪回归锁：改 README.md MCP 挂载段 → handover-pack 八节锚 + 凭据卫生 + 无 D:\\ctx 全绿；加 case 'mcp-config' + EXCLUDED 同步 + 重签 → cli-mcp-face（工具名集 deepEq + CLI⊆MCP 派生断言 + argv 映射）复跑仍绿（TOOLS 未动、mcp-config 已留痕 EXCLUDED）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/handover-pack.golden.mjs",
+        "node tests/_golden/cli-mcp-face.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T09:47:51.194Z 全部 acceptance exit 0"
+    }
+  ]
+}
