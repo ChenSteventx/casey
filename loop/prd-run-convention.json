@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "task": "run-convention：casey run <caseId> 约定布局解析",
+  "specPath": "docs/plans/run-convention/plan.md",
+  "testChecksums": {
+    "tests/_golden/run-convention.golden.mjs": "1c73c37f994ea14cbcaeac2bc045a2810b2573064754e26b3ab8d60f82174c23"
+  },
+  "observability": [
+    {
+      "dimension": "真机侧用约定布局跑通",
+      "route": "human",
+      "note": "需要反向隧道、autotest 凭据确认与 Steven 在场；本契约只做 hermetic fake SUT。"
+    },
+    {
+      "dimension": "--sut 从 site.json/devProxyUrl 自动反解",
+      "route": "waived",
+      "note": "跨凭据边界，已在 GRILL 定为非目标；如需自动化另起契约评审。"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-run-convention",
+      "desc": "casey run 在缺文件旗标时按 cases/<caseId>/ 约定解析输入，显式旗标恒赢，缺件 fail-closed 且可选件明示降级。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/run-convention.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-09T10:22:41.055Z 全部 acceptance exit 0"
+    }
+  ]
+}

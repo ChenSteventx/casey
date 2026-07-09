@@ -22,7 +22,7 @@
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { PROJECT_ROOT, CASES_DIR, NODE_EXE, kit, casePaths } from '../lib/paths.mjs';
+import { PROJECT_ROOT, CASES_DIR, NODE_EXE, kit, casePaths, isSafeCaseId } from '../lib/paths.mjs';
 
 const C = { reset: '\x1b[0m', cyan: '\x1b[36m', gray: '\x1b[90m', yellow: '\x1b[33m', green: '\x1b[32m', red: '\x1b[31m', bold: '\x1b[1m' };
 const col = (c, s) => `${c}${s}${C.reset}`;
@@ -66,13 +66,57 @@ function notImplemented(phase, planRef, willDo) {
 // LLM 前段（相0-2 ingest/compile/draft/sign）未建、route:human；本命令喂 compile产物直跑尾段。
 function runPipeline(pos, opts) {
   const caseId = pos[0];
+  const invalidCaseId = Boolean(caseId) && !isSafeCaseId(caseId);
+  const safeCaseId = caseId && !invalidCaseId ? caseId : null;
+  const cp = safeCaseId ? casePaths(safeCaseId) : null;
+  const conventionRel = {
+    events: safeCaseId ? `cases/${safeCaseId}/events.json` : 'cases/<caseId>/events.json',
+    expected: safeCaseId ? `cases/${safeCaseId}/expected.frozen.json` : 'cases/<caseId>/expected.frozen.json',
+    profile: safeCaseId ? `cases/${safeCaseId}/profile.json` : 'cases/<caseId>/profile.json',
+    observed: safeCaseId ? `cases/${safeCaseId}/observed-${safeCaseId}.json` : 'cases/<caseId>/observed-<caseId>.json',
+    caseMeta: safeCaseId ? `cases/${safeCaseId}/testcase.json` : 'cases/<caseId>/testcase.json',
+  };
+  const missing = [];
+  const warnings = [];
+  const existsFile = (p) => {
+    try { return typeof p === 'string' && fs.statSync(p).isFile(); } catch { return false; }
+  };
+  const resolveInput = (optKey, label, conventionPath, relPath, required) => {
+    const explicit = opts[optKey];
+    if (typeof explicit === 'string' && explicit.length > 0) return explicit;
+    if (explicit === true) {
+      missing.push(`--${optKey} 缺值`);
+      return null;
+    }
+    if (safeCaseId && existsFile(conventionPath)) return conventionPath;
+    if (required) missing.push(`${label}（查过 ${relPath}）`);
+    else warnings.push(`${label} 缺失（查过 ${relPath}）`);
+    return null;
+  };
+  const eventsPath = cp ? resolveInput('events', 'events', cp.events, conventionRel.events, true) : null;
+  const expectedPath = cp ? resolveInput('expected', 'expected', cp.expected, conventionRel.expected, true) : null;
+  const profilePath = cp ? resolveInput('profile', 'profile', cp.profile, conventionRel.profile, true) : null;
+  const observedPath = cp ? resolveInput('observed', 'observed', cp.observed, conventionRel.observed, false) : null;
+  const caseMetaPath = cp ? resolveInput('case-meta', 'case-meta', cp.caseMeta, conventionRel.caseMeta, false) : null;
+  const sut = (typeof opts.sut === 'string' && opts.sut.length > 0) ? opts.sut : null;
+  if (!caseId) missing.unshift('<caseId>');
+  if (invalidCaseId) missing.unshift('caseId 不安全：仅允许单段目录名，不得含 /、\\、.. 或绝对路径');
+  if (!sut) missing.push('--sut');
   // 确定性尾段已实现：缺必填参 = 用参错误 → exit 64（非 notImplemented 的 3）。相0-2 LLM 前段未建、route:human。
-  if (!caseId || !opts.events || !opts.expected || !opts.profile || !opts.sut) {
+  if (!caseId || invalidCaseId || !eventsPath || !expectedPath || !profilePath || !sut) {
     console.error(col(C.red, '[run] 缺必填参 → 用参错误(64)'));
+    if (missing.length) {
+      console.error('缺失项：');
+      for (const m of missing) console.error(`  - ${m}`);
+    }
     console.error('LLM 前段(相0-2 ingest/compile/draft/sign)未建、route:human；确定性尾段用法：');
-    console.error('  casey run <caseId> --sut <url> --events <f> --expected <f> --profile <f> [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>] [--login-bootstrap] [--no-video]');
+    console.error('  casey run <caseId> --sut <本地基址> [--events <f>] [--expected <f>] [--profile <f>] [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>] [--login-bootstrap] [--no-video]');
+    console.error('  缺文件旗标时按 cases/<caseId>/events.json、expected.frozen.json、profile.json、observed-<caseId>.json、testcase.json 约定解析。');
     console.error('  串 相3回放 → 相4裁定 → 报表模型装配 → 相6报告，落 runs/<caseId>/<runId>/。');
     process.exit(64);
+  }
+  for (const w of warnings) {
+    console.error(col(C.yellow, `[run] 可选输入缺失，报告将降级：${w}`));
   }
   const runDir = opts['run-dir'] || path.join(PROJECT_ROOT, 'runs', caseId, `run_${Date.now()}`);
   fs.mkdirSync(runDir, { recursive: true });
@@ -97,16 +141,16 @@ function runPipeline(pos, opts) {
   // 仅诊断证据——相4 verdict 只吃 axes.json，绝不喂这两件（护栏 #15/#17）。
   // 录屏缺省开启（replay-video GRILL D4）：--no-video 显式关；视频与元数据旁件落本 runDir
   // （登录期不入镜由 replay 双 page 舞步结构保证）。仅诊断附件，绝不进相4 裁定（M7）。
-  stage('相3 replay 回放', bin('replay.mjs'), ['--events', opts.events, '--sut', opts.sut, '--expected', opts.expected, '--profile', opts.profile, '--out', axesOut,
+  stage('相3 replay 回放', bin('replay.mjs'), ['--events', eventsPath, '--sut', sut, '--expected', expectedPath, '--profile', profilePath, '--out', axesOut,
     '--run-history', path.join(runDir, 'run-history.jsonl'), '--run-metrics', path.join(runDir, 'run-metrics.json'), '--run-id', path.basename(runDir),
     ...(opts['login-bootstrap'] ? ['--login-bootstrap'] : []),
     ...(opts['no-video'] ? [] : ['--video-dir', runDir])]);
   stage('相4 verdict 裁定', bin('verdict.mjs'), ['--axes', axesOut, '--out', verdictOut]);
   // --expected 恒透传（report-fidelity G1）：run 必带该参，装配器读签署字段投影「期望版本/签署人」。
-  const rmArgs = ['--verdict', verdictOut, '--axes', axesOut, '--events', opts.events, '--expected', opts.expected, '--out', modelOut];
-  if (opts.observed) rmArgs.push('--observed', opts.observed);
+  const rmArgs = ['--verdict', verdictOut, '--axes', axesOut, '--events', eventsPath, '--expected', expectedPath, '--out', modelOut];
+  if (observedPath) rmArgs.push('--observed', observedPath);
   if (opts['generated-at']) rmArgs.push('--generated-at', opts['generated-at']);
-  if (opts['case-meta']) rmArgs.push('--case-meta', opts['case-meta']);
+  if (caseMetaPath) rmArgs.push('--case-meta', caseMetaPath);
   // 视频元数据旁件存在才透传（replay-video M5 缺席容忍：收敛失败/--no-video 时零行为差）。
   const videoMetaPath = path.join(runDir, 'video.json');
   if (!opts['no-video'] && fs.existsSync(videoMetaPath)) rmArgs.push('--video-meta', videoMetaPath);
@@ -177,9 +221,9 @@ function help() {
   console.log(`${col(C.bold, 'casey')} —— 文本用例 → 测试报告 自动化测试（loop engineering 驱动）
 
 ${col(C.cyan, '端到端')}
-  casey run <caseId> --sut <本地基址> --events <f> --expected <f> --profile <f> [--run-dir <d> --login-bootstrap --no-video]
-                                          相3-4-6 编排：回放→裁定→装配→报告（相0-2 前段先各自跑完备料）
-                                          --sut 只喂隧道回环基址（site.json 的 devProxyUrl）或夹具地址；真目标地址绝不进命令行（护栏 #7）
+  casey run <caseId> --sut <本地基址> [--events <f> --expected <f> --profile <f>] [--run-dir <d> --login-bootstrap --no-video]
+                                          相3-4-6 编排：回放→裁定→装配→报告；缺文件旗标时按 cases/<caseId>/ 约定解析
+                                          --sut 必填，只喂隧道回环基址（site.json 的 devProxyUrl）或夹具地址；真目标地址绝不进命令行（护栏 #7）
 
 ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅助/heal；replay/verdict/report 零 LLM）
   casey ingest  <caseId> --in <f> --out-dir <d>
