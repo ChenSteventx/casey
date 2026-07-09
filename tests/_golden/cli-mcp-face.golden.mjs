@@ -1,12 +1,15 @@
 // cli-mcp-face.golden.mjs —— CLI/MCP 双面对齐现状（cli-mcp-face，light）红金牌。实现前 C1/C2/C4/C5 红。
 // 现状缝：CLI 的 replay/verdict/report 分发是 notImplemented 桩（底层 bin 早已建成、run 内部直连在用）；
 // MCP 工具目录是 P0 时代（casey_run 参数形态对不上真 runPipeline、verdict/report 误标诚实桩、新命令未暴露）。
-// C1 CLI 三分发真跑非桩（heal 仍真桩）；C2 MCP 握手 + 工具名集钉死（12）；C3 正路 lint 真跑；
+// C1 CLI 三分发真跑非桩（heal 仍真桩）；C2 MCP 握手 + 工具名集钉死（14）+ 版本单源验等（A5：serverInfo.version===package.json.version）；
+// A4 覆盖断言：bin/casey.mjs switch 派生命令集 − EXCLUDED 每条须有对应 casey_* 工具（防 CLI 长了 MCP 没跟）；C3 正路 lint 真跑；
 // C4 反路：未知工具 -32602 + 缺参调用如实回传 [exitCode=…] 非「尚未实现」；C5 漂移锁：逐生命周期工具
-// 空参调用须落各 bin 真实用法错码（64 全仓统一；report 历史例外 2 已由 report-exit64 收敛）——工具映射断线/退化成桩即红。
+// 空参调用须落各 bin 真实用法错码（64 全仓统一；report 历史例外 2 已由 report-exit64 收敛）——工具映射断线/退化成桩即红；
+// A6 MCP 层 intake happy 全管道（真 record --from-events 接缝产 capture → 经协议 casey_intake → 台账 accepted）。
 import { spawnSync, spawn } from 'node:child_process';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -45,16 +48,23 @@ function mcpClient() {
   return { rpc, close: () => { try { child.stdin.end(); child.kill(); } catch { /* 尽力 */ } } };
 }
 
-// 工具名集（钉死 deepEq——目录漂移即红）与逐工具空参用法错码期望（九工具全 64，report-exit64 契约收敛后无例外）。
+// 工具名集（钉死 deepEq——目录漂移即红）与逐工具空参用法错码期望（十一工具全 64，report-exit64 契约收敛后无例外）。
 const EXPECT_TOOL_NAMES = [
   'casey_selftest', 'casey_lint', 'casey_gate',
   'casey_ingest', 'casey_flow_bridge', 'casey_compile', 'casey_draft', 'casey_sign',
+  'casey_record', 'casey_intake',
   'casey_replay', 'casey_verdict', 'casey_report', 'casey_run',
 ];
 const LIFECYCLE_EMPTY_EXIT = {
   casey_ingest: 64, casey_flow_bridge: 64, casey_compile: 64, casey_draft: 64, casey_sign: 64,
+  casey_record: 64, casey_intake: 64,
   casey_replay: 64, casey_verdict: 64, casey_report: 64, casey_run: 64,
 };
+// CLI 生命周期命令集 ⊆ MCP 工具集覆盖断言（A4）的显式排除集：fail-closed——新命令默认必被 MCP 覆盖，
+// 故意不进 MCP 的须在此留痕（GRILL D5，需人过目的小白名单）。help 非生命周期；breaker/contract 属 loop 开发
+// 纪律面（同 MCP 只暴露 lint/gate 不暴露 breaker/contract 的既有取舍）；heal 诚实桩（相5 无 bin，P6 落地后移出）；
+// distill 的 MCP 面由后续易用性契约补（record-distill plan 明列「不接 MCP，需同时补真实可跑用例」），补时移出。
+const CLI_MCP_EXCLUDED = new Set(['help', 'breaker', 'contract', 'heal', 'distill']);
 
 // ---------- C1 CLI 三分发真跑非桩 ----------
 await checkAsync('C1 CLI：replay/verdict/report 零参走真 bin 用法错非桩 exit 3；heal 仍真桩 exit 3', async () => {
@@ -76,14 +86,33 @@ await checkAsync('C1 CLI：replay/verdict/report 零参走真 bin 用法错非�
 
 const mcp = mcpClient();
 try {
-  // ---------- C2 MCP 握手 + 工具名集钉死 ----------
-  await checkAsync('C2 MCP：initialize serverInfo name=casey version=0.2.0；tools/list 工具名集 deepEq 钉死（12 工具）', async () => {
+  // ---------- C2 MCP 握手 + 工具名集钉死 + 版本单源验等（A5）----------
+  await checkAsync('C2 MCP：initialize serverInfo.name=casey + 版本单源验等（serverInfo.version===package.json.version）；tools/list 工具名集 deepEq 钉死（14 工具）', async () => {
     const init = await mcp.rpc('initialize', { protocolVersion: '2025-06-18', capabilities: {} });
     if (!init.result || init.result.serverInfo.name !== 'casey') throw new Error(`initialize 应回 serverInfo.name=casey，实际 ${JSON.stringify(init).slice(0, 200)}`);
-    if (init.result.serverInfo.version !== '0.2.0') throw new Error(`serverInfo.version 应钉 0.2.0（目录刷新版），实际 ${init.result.serverInfo.version}`); // codex R1-F3
+    // A5 版本单源：结构性验等 serverInfo.version === package.json.version（不硬编码字面量，日后 bump 自动流过）。
+    const pkg = JSON.parse(readFileSync(join(ROOT, 'package.json'), 'utf8'));
+    if (!pkg.version || typeof pkg.version !== 'string') throw new Error(`package.json.version 应为非空字符串（防两处同 undefined 假绿），实际 ${JSON.stringify(pkg.version)}`);
+    if (init.result.serverInfo.version !== pkg.version) throw new Error(`版本单源漂移：serverInfo.version=${init.result.serverInfo.version} ≠ package.json.version=${pkg.version}`);
     const list = await mcp.rpc('tools/list', {});
     const names = (list.result.tools || []).map((t) => t.name);
     if (!deepEq(names, EXPECT_TOOL_NAMES)) throw new Error(`工具名集漂移：实际 ${JSON.stringify(names)}`);
+  });
+
+  // ---------- A4 覆盖断言：CLI 生命周期命令集 ⊆ MCP 工具集（防 CLI 长了 MCP 没跟——F7 静默滞后根因锁）----------
+  await checkAsync('A4 覆盖断言：bin/casey.mjs switch 派生命令集 − EXCLUDED 每条须有对应 casey_* 工具（缺即红）', async () => {
+    const src = readFileSync(CASEY, 'utf8');
+    const derived = [...src.matchAll(/case '([a-z][a-z-]*)':/g)].map((m) => m[1]);
+    if (derived.length < 10) throw new Error(`派生命令集异常（仅 ${derived.length} 条），正则或源文件形态漂移`);
+    const list = await mcp.rpc('tools/list', {});
+    const names = new Set((list.result.tools || []).map((t) => t.name));
+    const missing = [];
+    for (const cmd of derived) {
+      if (CLI_MCP_EXCLUDED.has(cmd)) continue;
+      const tool = `casey_${cmd.replace(/-/g, '_')}`;
+      if (!names.has(tool)) missing.push(`${cmd}→${tool}`);
+    }
+    if (missing.length) throw new Error(`CLI 命令未被 MCP 覆盖（且未列 EXCLUDED——新命令须进 MCP 或显式排除）：${missing.join(', ')}`);
   });
 
   // ---------- C3 正路：lint 真跑 ----------
@@ -107,7 +136,7 @@ try {
   });
 
   // ---------- C5 漂移锁：逐生命周期工具空参 → 各 bin 真实用法错码 ----------
-  await checkAsync('C5 漂移锁：九个生命周期工具空参调用逐一落真 bin 用法错码（映射断线/退化成桩即红）', async () => {
+  await checkAsync('C5 漂移锁：十一个生命周期工具空参调用逐一落真 bin 用法错码（映射断线/退化成桩即红）', async () => {
     for (const [tool, code] of Object.entries(LIFECYCLE_EMPTY_EXIT)) {
       const r = await mcp.rpc('tools/call', { name: tool, arguments: {} });
       if (!r.result) throw new Error(`${tool} 应回 result（映射在册），实际 ${JSON.stringify(r).slice(0, 150)}`);
@@ -117,7 +146,7 @@ try {
     }
   });
   // ---------- C6 argv 映射表（codex R1-F1）：逐工具 toArgs 全量旗标 deepEq——拼写/kebab 转换/布尔旗标漂移即红 ----------
-  await checkAsync('C6 argv 映射表：12 工具 toArgs(全量入参) 逐一 deepEq 期望 argv', async () => {
+  await checkAsync('C6 argv 映射表：14 工具 toArgs(全量入参) 逐一 deepEq 期望 argv', async () => {
     const { TOOLS } = await import(`file://${SERVER.replace(/\\/g, '/')}`); // 导入有 rl 副作用，末尾显式 exit 兜
     const CASES = [
       ['casey_selftest', {}, ['selftest', '--tier1']],
@@ -131,6 +160,9 @@ try {
       ['casey_draft', { caseId: 'tc', observed: 'o', compileReport: 'r', outDir: 'd', patch: 'p' }, ['draft', 'tc', '--observed', 'o', '--compile-report', 'r', '--out-dir', 'd', '--patch', 'p']],
       ['casey_sign', { caseId: 'tc', draft: 'dr', prd: 'pr', frozenOut: 'fo', signer: 's', againstBuild: 'b', signedAt: 'at', verdictBaseline: 'vb', resign: true, force: true, archiveDir: 'ad' },
         ['sign', 'tc', '--draft', 'dr', '--prd', 'pr', '--frozen-out', 'fo', '--signer', 's', '--against-build', 'b', '--signed-at', 'at', '--verdict-baseline', 'vb', '--resign', '--force', '--archive-dir', 'ad']],
+      ['casey_record', { caseId: 'tc', sut: 'u', outDir: 'd', loginBootstrap: true, noLogin: false, fromEvents: 'e', headless: true, maxMs: '5000' },
+        ['record', 'tc', '--sut', 'u', '--out-dir', 'd', '--login-bootstrap', '--from-events', 'e', '--headless', '--max-ms', '5000']],
+      ['casey_intake', { caseId: 'tc', capture: 'c.json' }, ['intake', 'tc', '--capture', 'c.json']],
       ['casey_replay', { events: 'e', sut: 'u', expected: 'x', profile: 'p', out: 'o', loginBootstrap: true, runHistory: 'h', runMetrics: 'm', runId: 'id', videoDir: 'v' },
         ['replay', '--events', 'e', '--sut', 'u', '--expected', 'x', '--profile', 'p', '--out', 'o', '--login-bootstrap', '--run-history', 'h', '--run-metrics', 'm', '--run-id', 'id', '--video-dir', 'v']],
       ['casey_verdict', { axes: 'a', out: 'o' }, ['verdict', '--axes', 'a', '--out', 'o']],
@@ -162,6 +194,39 @@ try {
     const text = r.result.content.map((c) => c.text).join('');
     if (!text.includes('[exitCode=0]')) throw new Error('应含 [exitCode=0]');
     if (!existsSync(join(tmp, 'testcase-tc_mcp_face.json'))) throw new Error('MCP 全管道应真落 testcase 产物');
+  });
+
+  // ---------- A6 MCP 层 intake happy 全管道（复现真 record --from-events 接缝产 capture → 经协议 intake → 真台账）----------
+  // 复现冻结接缝、不 rig：干净 capture 由真 casey record --from-events 产（hermetic，无浏览器），不手写伪造 doc 倒着裁到 accept。
+  await checkAsync('A6 MCP intake happy：真 record 接缝产干净 capture → tools/call casey_intake → exit 0 + 台账 accepted、无凭据/无裸 ://、回显无绝对路径', async () => {
+    const { mkdtempSync, writeFileSync, existsSync, readFileSync: rf } = await import('node:fs');
+    const { tmpdir } = await import('node:os');
+    const tmp = mkdtempSync(join(tmpdir(), 'casey-mcp-intake-'));
+    const events = join(tmp, 'clean-events.json');
+    // 全字段无裸 ://、action ∈ {click,dblclick,fill,press,nav}——过 reviewCapture 复核闸。
+    writeFileSync(events, JSON.stringify([{ action: 'click', path: '/atl_x/list', selector: 'button.new', text: '新增' }]));
+    // 真 record --from-events 接缝（非浏览器路径，hermetic）产规范布局 capture（intake 前置守卫认这条路径）。
+    const rec = runCli(['record', 'tc_mcp_intake', '--from-events', events, '--sut', 'http://127.0.0.1:9', '--no-login', '--out-dir', tmp]);
+    if (rec.status !== 0) throw new Error(`record --from-events 接缝应 exit 0，实际 ${rec.status}：${(rec.stderr || '').slice(-200)}`);
+    const capture = join(tmp, 'tc_mcp_intake', 'record-capture', 'teach-in-capture.json');
+    if (!existsSync(capture)) throw new Error('record 接缝应产 teach-in-capture.json 规范布局');
+    // 经协议调用 casey_intake。
+    const r = await mcp.rpc('tools/call', { name: 'casey_intake', arguments: { caseId: 'tc_mcp_intake', capture } });
+    if (!r.result || r.result.isError) throw new Error(`MCP intake happy 应成功（result 且 isError false），实际 ${JSON.stringify(r).slice(0, 300)}`);
+    const text = r.result.content.map((c) => c.text).join('');
+    if (!text.includes('[exitCode=0]')) throw new Error('应含 [exitCode=0] 退出码语义标注');
+    // 真台账落地 + accepted 条目校验（复现真接缝字段，不 rig）。
+    const ledger = join(tmp, 'tc_mcp_intake', 'record-capture', 'intake-ledger.jsonl');
+    if (!existsSync(ledger)) throw new Error('MCP 全管道应真落 intake-ledger.jsonl');
+    const ledgerRaw = rf(ledger, 'utf8');
+    const last = JSON.parse(ledgerRaw.trim().split('\n').filter(Boolean).pop());
+    if (last.intakeStatus !== 'accepted') throw new Error(`末行应 intakeStatus=accepted，实际 ${last.intakeStatus}`);
+    if (last.eventCount !== 1) throw new Error(`eventCount 应与夹具事件数 1 一致，实际 ${last.eventCount}`);
+    if (last.reason !== null) throw new Error(`accepted 条目 reason 应 null，实际 ${JSON.stringify(last.reason)}`);
+    // 台账全文过凭据门口径：无裸 ://（无目标地址泄漏）。
+    if (/:\/\//.test(ledgerRaw)) throw new Error('台账不得含裸 :// 目标地址');
+    // 成功回显不含用户绝对路径（output-seal 纪律——只报定名产物 <case-dir>/…）。
+    if (text.includes(tmp)) throw new Error('MCP intake 成功回显不得含用户绝对路径');
   });
 } finally {
   mcp.close();
