@@ -8,7 +8,7 @@
     "tests/_golden/p2-check-vocab.golden.mjs": "d718f27b4d7f993cb7aac3613b8fca2237541a21ecc5a1294e97f1157c0d3ec4",
     "tests/_golden/p2-compile-gate.golden.mjs": "43c947b3f08b54517a4977473bf473026632bd12f868ca323209ea1c9a58e83e",
     "tests/_golden/p2-reconcile.golden.mjs": "48cea36ee04bbd5024054d7ee79b095fb6ab8fe21c7832d56a095bb09779a00c",
-    "tests/_golden/fixtures/p2/verdict-cases.json": "a3e66a80a1cfc5b69d95c00875dd73d3cdab1a112b8b00b17d6a3f1c46975585",
+    "tests/_golden/fixtures/p2/verdict-cases.json": "a9adb77af80cc943a3340ed87800d0746ae749326a72e69f295f7ca7b0c673f2",
     "tests/_golden/fixtures/p2/compile-cases.json": "85b1a3f0382977d759411ff1728a662e899f00918a279f6fcf8dac85b02ed55c"
   },
   "observability": [

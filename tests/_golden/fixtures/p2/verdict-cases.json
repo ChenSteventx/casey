@@ -39,7 +39,7 @@
       "why": "多匹配 .first() 兜底点击 → actionPerformed=ambiguous → NEEDS_HUMAN(AMBIGUOUS_ACTION)，不记缺陷",
       "input": { "caseId": "tc_synth", "steps": [
         { "stepId": "atstep_0", "intentId": "intent_0", "atom": "workflow.create",
-          "action": { "kind": "click", "resolution": "fallback_first", "identityReadback": null, "driftProbe": null },
+          "action": { "kind": "click", "resolution": "ambiguous", "identityReadback": null, "driftProbe": null },
           "postAssertions": [ { "kind": "urlPathname", "op": "startsWith", "value": "/process/detail", "actual": "/process/detail", "ok": true, "soft": false } ],
           "forensics": { "lifecycle": { "pageerror": [], "crashed": false }, "network": [] } }
       ] },

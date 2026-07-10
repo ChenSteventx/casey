@@ -177,11 +177,11 @@ await checkAsync('C13 凭据门前零目录副作用：leaky mapping + 全新 ou
 });
 
 // ---------- C14 isCompilableAtom 单一事实源语义（codex R1-F1；wf-open-smoke 集 11→13 重钉） ----------
-await checkAsync('C14 isCompilableAtom 语义：17 命名 + login + assert.* 真；册内无知识/未知 假；集恰 17', async () => {
+await checkAsync('C14 isCompilableAtom 语义：18 命名 + login + assert.* 真；册内无知识/未知 假；集恰 18', async () => {
   const ca = await import(`file://${join(ROOT, 'lib', 'compile-atoms.mjs').replace(/\\/g, '/')}`);
   for (const a of ['workflow.create', 'chat.closeTestPanel', 'nav.workflowManagement', 'workflow.open', 'workflow.addNode', 'workflow.connectNodes', 'workflow.openNode', 'login', 'assert.onPage']) if (!ca.isCompilableAtom(a)) throw new Error(`${a} 应可编译`);
   for (const a of ['agent.openToolPicker', 'nonsense.x']) if (ca.isCompilableAtom(a)) throw new Error(`${a} 不应可编译`);
-  if (ca.COMPILE_KNOWN_ATOMS.size !== 17) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 17 个（分派表派生，selectNodeDropdown +1），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
+  if (ca.COMPILE_KNOWN_ATOMS.size !== 18) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 18 个（分派表派生，setNodeField +1），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
 });
 
 // ---------- C15 原型链键 + 导出 Set 可变性（codex R2） ----------

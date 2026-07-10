@@ -3,7 +3,7 @@
   "task": "mcp-parity（light）：MCP 面补齐 record/intake 两工具 + 版本单源 + CLI⊆MCP 覆盖断言 + 三面漂移锁加固。① mcp/casey-server.mjs 的 TOOLS 在 casey_sign 后插 casey_record/casey_intake（inputSchema 逐字对齐 bin/record.mjs、bin/intake.mjs 真旗标；toArgs 只对在场值拼旗标，空参透传 CLI 落真实用法错码，壳里不预判），SERVER_INFO.version 改为从 package.json 读（单一事实源，不再写死字面量）。② package.json version 0.1.0→0.2.0（唯一事实源）。③ tests/_golden/cli-mcp-face.golden.mjs 加严：EXPECT_TOOL_NAMES 12→14 保 deepEq、C6 加 record/intake 全量入参 deepEq、C5 加 record/intake 空参 exit 64、新增 A4 CLI 生命周期命令集（switch 源派生 − EXCLUDED{help,breaker,contract,heal,distill}）⊆ MCP 工具集覆盖断言、A5 版本结构性验等（serverInfo.version===package.json.version）、A6 MCP 层 intake happy 全管道（真 record --from-events 接缝产 capture → 经协议 casey_intake → 台账 accepted）。④ SKILL.md 命令映射表 sign 行后补 record/intake 两行真实签名（立场段不动）。⑤ README.md MCP 挂载段 12→14 工具口径 + 点出 CLI⊆MCP 覆盖断言。不改 bin/casey.mjs 的 CLI 分发（非目标）。决策 docs/plans/mcp-parity/proposed/GRILL.md（D1-D10）。红先行证据：金牌改到 14 工具 + 版本验等后跑，实现前 4 过 / 5 败（C2 版本 0.1.0≠0.2.0 / A4 record·intake 未被 MCP 覆盖 / C5 casey_record 未知工具 / C6 casey_record 不在目录 / A6 casey_intake 未知工具）。",
   "specPath": "docs/plans/mcp-parity/plan.md",
   "testChecksums": {
-    "tests/_golden/cli-mcp-face.golden.mjs": "75f1c4b3dd00fb3e97db0530382fbaa775bdb2016f113abb667441ee413df0ba"
+    "tests/_golden/cli-mcp-face.golden.mjs": "1926d3cbcb0ec9258e40d71685c4cf7390db1266953fe8761e16b04a35861b6f"
   },
   "observability": [
     {

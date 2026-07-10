@@ -48,11 +48,11 @@ const eventsFile = join(outDir, 'events.json');
 const observedFile = join(outDir, `observed-${CASE_ID}.json`);
 const reportFile = join(outDir, 'compile-report.json');
 
-// ---------- C1 两原子可编译 + 集恰 17 ----------
-await checkAsync('C1 nav.workflowManagement/workflow.open 可编译；COMPILE_KNOWN_ATOMS 恰 17', async () => {
+// ---------- C1 两原子可编译 + 集恰 18 ----------
+await checkAsync('C1 nav.workflowManagement/workflow.open 可编译；COMPILE_KNOWN_ATOMS 恰 18', async () => {
   const ca = await import(`file://${join(ROOT, 'lib', 'compile-atoms.mjs').replace(/\\/g, '/')}`);
   for (const a of ['nav.workflowManagement', 'workflow.open']) if (!ca.isCompilableAtom(a)) throw new Error(`${a} 应可编译（本契约加法）`);
-  if (ca.COMPILE_KNOWN_ATOMS.size !== 17) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 17（selectNodeDropdown +1），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
+  if (ca.COMPILE_KNOWN_ATOMS.size !== 18) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 18（setNodeField +1），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
 });
 
 // ---------- C2 compile 全程（fake-sut happy） ----------

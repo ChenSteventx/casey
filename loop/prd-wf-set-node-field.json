@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "task": "wf-set-node-field（light）：画布维度第五原子 workflow.setNodeField——节点配置抽屉里按 placeholder 填某文本字段、填后精确 value 回读（GRILL D1/D3/D4/D5）。COMPILE_KNOWN_ATOMS 17→18（分派表加法，纯加法零冻结 schema 改动）：复用 events.action=fill 承载（value 载填入值、semantic:{kind:label,name:placeholder,exact} 载占位符锚 + 精确开关、nth 仅显式给时载字段下标消歧），冻结 schema 的 allOf 对 fill 只要求 value。doSetNodeField 专用回放门按 ev.atom 分发（域锁 .hr-drawer__content-wrapper 内 getByPlaceholder(placeholder,{exact}) + 字段级唯一闸：未给 nth 时 count===1 才填 / count>1 ambiguous 绝不填首项、显式给 nth 时确定性位置消歧、越界 none + 缺席守卫不抛穿 + 填后 inputValue() 精确等于填入值），不复用通用 doAct（占位符锚不是 semanticLocator 命中口径、通用门必兜空/撞别处同名）。编译门 compileWorkflowSetNodeField 与回放门同刻。value 非文本节点（assert.textVisible 看不到）→ 填值正确性由门内精确 value 回读（动作轴 identityReadback）确定性守住、金牌按动作轴核；判内核纯编译/回放（不新增断言 kind、不碰 verdict/replay 采集，L1 断言 workflow.assertNodeFieldValue = 另契约）。fake-sut 节点抽屉可填字段纯加法夹具 + 反面场景（setmulti 多匹配 / setclash 域锁反例 / 复用 ddempty 无字段）。例翻：六金牌「集 17」翻 18（agent.openToolPicker 不可编译长寿反例不翻、只翻计数）+ 七 prd 重签（flow-bridge/wf-add-node/wf-connect-nodes/wf-open-smoke/wf-open-node/wf-select-node-dropdown 棘轮 + p5-replay 夹具 checksum）。决策 docs/plans/wf-set-node-field/proposed/GRILL.md。",
+  "specPath": "docs/plans/wf-set-node-field/plan.md",
+  "testChecksums": {
+    "tests/_golden/wf-set-node-field.golden.mjs": "83889d46dbfd6dedd84761fb6e0e0ddceee3f1090ae9409f33f7a0480141f13e"
+  },
+  "observability": [
+    {
+      "dimension": "真机采样（route:human，与 openNode/selectNodeDropdown observability 合并行程）：① 节点抽屉可填字段真实类名与 placeholder 文本（hermetic 用 .hr-input/「请输入接口的URL」，真机 HEREN 组件库同族假设待核）；② 各节点类型抽屉的字段清单（哪类节点有哪些 placeholder，hermetic 简化为所有节点同抽屉一字段）；③ 多同占位符字段真机是否带可区分锚（可否弃 nth 走标签锚，D4 分岔复核）；④ 贪心序本原子解锁哪些 R9 flow。另：workflow.assertNodeFieldValue（registry :339 L1 断言，读 value 属性的独立断言 kind + 采集通道 + 词表 + assert.* 映射）= 另契约，本契约判内核纯编译/回放不做，填值正确性由门内精确 value 回读守住。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-setnodefield-atom-e2e",
+      "desc": "setNodeField 端到端金牌（C1 集 18 / C2 compile→replay→verdict 全 PASS 含 setclash 钉位——全页 getByPlaceholder count=2 必 ambiguous 唯域锁 doSetNodeField count=1 unique 填入 + 动作轴 identityReadback ok 门内 value 精确回读 / C3a 编译面双证：未 openNode gate 前置门截 + 无字段 execute 预检 count=0 blocker exit 65 / C3b 多匹配未给 nth ambiguous blocker exit 65 绝不填首项 / C3c nth 越界 blocker exit 65 / C3d 缺席守卫优雅 none / C3e 多匹配未给 nth ambiguous candidateCount 恰 2）+ fake-sut 节点抽屉可填字段夹具。红先行：实现前 1 过 8 败（C1 集 17 + C2/C3 无编译知识/回放门/夹具场景 + setclash 非域锁门实锤）。附六例翻金牌「集 17」翻 18 复跑锁不回退。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-set-node-field.golden.mjs",
+        "node tests/_golden/wf-select-node-dropdown.golden.mjs",
+        "node tests/_golden/wf-open-node.golden.mjs",
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-10T04:48:05.788Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-resign-and-regression",
+      "desc": "七 prd 重签（六例翻棘轮 + p5-replay 夹具 checksum）+ 新金牌冻 prd-wf-set-node-field；全链回归零行为差（fake-sut 节点抽屉可填字段 + setmulti/setclash 场景纯加法、既有场景零影响）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/seams-freeze-v2.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-10T04:51:05.079Z 全部 acceptance exit 0"
+    }
+  ]
+}
