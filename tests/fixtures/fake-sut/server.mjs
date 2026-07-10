@@ -18,6 +18,11 @@ const SCENARIOS = new Set([
   // wf-select-node-dropdown：节点抽屉下拉反面（选项多匹配 / 目标缺席 / 选错项写错值 / 两「请选择」孪生浮层 /
   //   抽屉开但无下拉——节点抽屉已开满足 registry 前置、但域内触发器 count=0，钉 execute 预检的「无下拉」半边）。
   'ddmulti', 'ddabsent', 'ddwrong', 'ddtwin', 'ddempty',
+  // wf-set-node-field：节点抽屉可填字段反面（同占位符字段多匹配 / 域锁反例——抽屉外再挂同占位符 input；
+  //   复用 ddempty 作「抽屉开但无字段」缺席半边——域内 getByPlaceholder count=0）。
+  //   setsuffix：字段 input 事件追加尾巴 → 填后 inputValue() 成填入值的【超集】（含 want 非等 want）——
+  //   钉精确回读律（inputValue()===want 而非 includes 子串）；修前若把回读退成 includes 会误判填对假绿。
+  'setmulti', 'setclash', 'setsuffix',
 ]);
 
 // 背景轮询 denylist 的合成形态（绝不引真 site.json，护栏 #7）：watchNetworkForensics 用它把 /auths/poll 归 background。
@@ -242,6 +247,7 @@ function clientMain() {
     //   非 URL query——replay nav 剥 query）：ddmulti 目标选项两处、ddabsent 浮层不含目标、ddwrong 选后值更成
     //   「选项+副本」（含子串非精确）、ddtwin 抽屉挂两触发器 + 预挂一层 stale 隐藏浮层含目标（两浮层各现一次）。
     var DD_OPT = '订单库';
+    var SET_FIELD_PLACEHOLDER = '请输入接口的URL'; // registry :252 setNodeField 占位符例（HTTP 节点 URL 字段）
     var ddMode = (scenario === 'ddmulti' || scenario === 'ddabsent' || scenario === 'ddwrong' || scenario === 'ddtwin') ? scenario : '';
     function ddOptionsFor(mode) {
       if (mode === 'ddmulti') return [DD_OPT, DD_OPT, '用户库']; // 目标选项浮层内出现两次 → 多匹配
@@ -292,6 +298,21 @@ function clientMain() {
         stale.appendChild(el('div', { class: 'hr-select-option' }, DD_OPT));
         document.body.appendChild(stale);
       }
+      // —— 节点抽屉可填字段（wf-set-node-field，registry SOP 最小复现）——纯加法：抽屉里渲一个可填 input
+      //   （.hr-input，placeholder「请输入接口的URL」= registry HTTP 节点 URL 字段例）；真 input 元素，
+      //   Playwright .fill() 直改其 .value → inputValue() 回读地面真值。setmulti 挂两个同占位符 input →
+      //   域内 count=2（多匹配未给 nth ambiguous 绝不填首项）；setclash 抽屉内单字段（域外另有孪生，见下）。
+      var setInp = el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER });
+      if (scenario === 'setsuffix') {
+        // 精确回读律钉桩：input 事件里给 value 追加尾巴 → Playwright .fill(want) 后 inputValue() 成 want+'#tail'
+        //   （含 want 的超集、非等 want）。精确门 got!==want → action_failed（拒认）；若退成 includes 会误判填对假绿。
+        setInp.addEventListener('input', function () {
+          var SUF = '#tail';
+          if (setInp.value && setInp.value.indexOf(SUF) === -1) setInp.value = setInp.value + SUF;
+        });
+      }
+      nodeDrawer.appendChild(setInp);
+      if (scenario === 'setmulti') nodeDrawer.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
     });
 
     var panel = null;
@@ -309,6 +330,10 @@ function clientMain() {
 
     wrap.appendChild(addBtn);
     wrap.appendChild(graph);
+    // setclash（域锁反例，selectNodeDropdown ddtwin 的填值版）：详情页在抽屉【外】再挂一个同占位符 input →
+    //   全页 getByPlaceholder count=2 必 ambiguous、唯域锁 .hr-drawer__content-wrapper 内 count=1 才 unique，
+    //   钉「回放走域锁专用门 doSetNodeField、非全页门」。纯加法、只 setclash 场景挂、既有场景零影响。
+    if (scenario === 'setclash') wrap.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
     app.appendChild(wrap);
   }
 
