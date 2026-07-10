@@ -4,7 +4,7 @@
   "specPath": "docs/plans/replay-nth-visible-hardening/plan.md",
   "testChecksums": {
     "tests/_golden/replay-nth-visible-hardening.golden.mjs": "3f447bfe78c1c8abbf819da9abc0d70c36d2a3c7d45681cab73f7aac3b124790",
-    "tests/fixtures/fake-sut/server.mjs": "c0a283764653acbfe8a5ffbac11bb479a0c8b9f3b4056f55097e5d9208607950"
+    "tests/fixtures/fake-sut/server.mjs": "a1c4266905bb6022bc1c8612ca0cc66eb36cad7cfaf6be36c9b8e3c2ce11e00f"
   },
   "stories": [
     {
@@ -15,7 +15,7 @@
         "node tests/_golden/replay-nth-visible-hardening.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-10T03:16:52.072Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-10T05:07:12.178Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-resign-and-regression",
@@ -34,7 +34,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-10T03:25:19.750Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-10T05:16:07.837Z 全部 acceptance exit 0"
     }
   ]
 }

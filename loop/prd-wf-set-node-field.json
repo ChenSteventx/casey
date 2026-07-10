@@ -26,7 +26,7 @@
         "node tests/_golden/wf-open-smoke.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-10T03:45:45.549Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-10T04:48:05.788Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-resign-and-regression",
@@ -43,7 +43,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-10T03:48:28.904Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-10T04:51:05.079Z 全部 acceptance exit 0"
     }
   ]
 }
