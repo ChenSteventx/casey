@@ -93,6 +93,7 @@ description: 用自然语言把测试用例跑成 Casey 测试报告，或启动
 
 ## 执行边界（重要）
 
+- **用户用例运行只驱真机**（Steven 2026-07-10 定，强制执行）：面对用户的用例运行（`casey run` / 回放 / 复跑已签用例）一律驱真机——`--sut` 只喂隧道回环基址（`site.json` 的 `devProxyUrl`，形如 `http://127.0.0.1:15519`），绝不用假被测系统（`fake-sut`）或 `casey demo` 顶替真机运行。前置 = 相位0 三关（`casey doctor` 就绪 / Steven 带外确认 `.auth` = `autotest` / 反向隧道单实例；全流程见 `docs/runbooks/real-uat-runbook.md`；隧道两命令：`WSL` 侧 `node scripts/wsl-reverse-listen.mjs`、`Windows` 侧 `node scripts/win-reverse-agent.mjs`，顺序先 `WSL` 后 `Windows`）。此条仅约束用户用例运行；引擎自检（`golden` / `gate` / `selftest --tier1` 用假被测系统验 Casey 自身代码对错）是护栏 #1/#15/#16 机制强制、照跑不误。
 - **凭据让用户设**：`.auth/`、`site.json` 是凭据，CC 不把账号密码写进命令行/文件/报告。
 - **冻结断言只读**：人签后改断言 = Test Ratchet 判红，别去改。
 - 改实现先 `contract`：动 `lib`/`bin` 前先 `node loop-kit/bin/contract.mjs init <slug> --lane <...> --reason "..."`，否则 hook 拦截。
