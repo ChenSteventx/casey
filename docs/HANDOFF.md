@@ -3,6 +3,25 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 当前状态（2026-07-10，三契约 + 漂移收口合并回 dev：画布第五原子 setNodeField + replay-nth 硬化 + regress scope A + 两处既有漂移收口）
+
+本 session 承接上个 session 起好的三棵 codex worktree 在制品，走「Claude 补齐/评审 + 多 subagent 编排 + codex 异构评审 + 协调合并 + 全量复验」，三契约 + 一漂移收口契约齐落 `dev`（`68f1fe0`→`ff73011`）。dev 全量复验绿：全仓 115 条 ratchet 全 MATCH + `selftest --tier1` 裁判零 LLM GREEN。落地清单：
+
+1. `wf-set-node-field`（light，画布第五原子 `workflow.setNodeField`，merge `6f021a4`）：节点抽屉按 placeholder 填值（域锁 `.hr-drawer__content-wrapper` 内 `getByPlaceholder` + nth + 填后 `inputValue` 精确回读身份门）+ 专用回放门 `doSetNodeField` + fake-sut 字段夹具，`COMPILE_KNOWN_ATOMS` 17→18。codex-sol@xhigh 异构冗余评审揪出 HIGH（显式非法 nth 静默降级 index0 fail-open——我 subagent 补齐时照抄了旧写法）+ 3 MED 硬化，红先行修毕。原 codex 半成品 impl 因误判被弃、由 Claude subagent 从冻结 spec 全新实现（详见历史层教训）。
+2. `replay-nth-visible-hardening`（light，merge `cb084aa`）：`selectNodeDropdown` 同域三修（非法 nth 硬阻断 fail-closed / 触发器域锁补 `:visible` / fake-sut 注释订正）+ 编译门 `waitFor` 时序修（codex 自查 F2、恢复两门同刻）。codex 实现→Claude 3 视角异构冗余评审（fail-safe / golden 真伪 / 时序对称）2 CLEAN + 1 弃用词订正。
+3. `resign-drift-closure`（light，`791cef1`）：收口八契约遗留两处「共享冻结文件只签一处」的 ratchet 漂移——① `p2-verdict` 陈旧夹具 `verdict-cases.json` line42 `fallback_first`→`ambiguous`（resolution 收敛漏改该 sha256 冻结夹具，致 `ambiguous_action` 落 INDETERMINATE 非 AMBIGUOUS_ACTION）+ 重签 `prd-p2-intent-compile`；② 重签 `prd-mcp-parity` 的 `cli-mcp-face.golden` checksum（casey-doctor/distribution 改金牌加 EXCLUDED 漏签它）。红先行 `p2-verdict.golden` RED→GREEN(8/8)，`gpt-5.6-terra`@max 异构评审零 findings（网络提断未盖形式化章）+ Claude 亲核 + Steven 人签（触裁判内核冻结面 ADR-0004）。
+4. `regress-promptset`（full，merge `0333f83`）：regress scope A 数据驱动被测参数 overlay（N 行 prompt 灌进一条冻结 chat flow 参数槽展开成 N caseId）+ 内置注入向量库 `prompts/_lib`（boundary/security）+ 多用例聚合报告。铁不变量：裁判零 LLM/冻结核零改——content-match（软期望）只作报告 soft 黄标、绝不进裁判进程、绝不判红；`verdict.mjs` 字节未改。codex 实现→Claude 3 视角评审（裁判纯度 CLEAN + 正确性 MED `report.mjs` 聚合非确定性 + spec-golden），round-2 修毕。
+5. 合并收尾三笔：B+D 合并后重签 `prd-replay-nth-visible-hardening` 的 server.mjs checksum（`2481309`）；C 合并收尾重签 `prd-seams-freeze` 的 report-model.schema.json checksum（C 兼容加 promptset 报告块 40+/0-，seams-freeze 金牌不变量全过，`89b29e3`）；B 的 codex-sol MED#2（域锁跨抽屉边界）补挂账进 observability（`ff73011`）。
+
+本 session 关键教训（已并入准则）：合并收尾必跑全仓 ratchet 总核（遍历每 prd testChecksums 对实际文件 sha256）——逮出 3 处「共享冻结文件只在一个 prd 重签、漏签另一个」的复发债（D-prd server.mjs / prd-mcp-parity / prd-seams-freeze），单靠各 prd 的 gate 逮不到跨契约漂移。异构冗余评审真挣钱：codex-sol 逮出 Claude 实现的真 HIGH。**过程踩坑并诚实纠正**：曾把「codex 昨晚做完没提交」误判成「停摆」而误起 Workflow 重实现，wf-set-node-field 的 codex 原 impl 因此被弃（spec 蓝图未丢、由 Claude subagent 全新实现顶上，功能等价）；崩溃两次（内存泄漏）都从 git + 磁盘恢复零丢活。
+
+活契约槽（主树）= `resign-drift-closure`（六阶段全 done、baton 空闲，下一契约直接 `contract init`）。未提交现场：`M .gitignore`（Steven 的）+ `M loop/prd-selftest.json`（无关 gate 时间戳）+ `?? docs/codex/`（并行 codex 会话的 handoff 功能产物、别碰）+ 两草稿目录。codex 升级到 0.144.1（走 GitHub release 手动装，chatgpt.com 在 WSL 抖动），异构评审可用 `gpt-5.6-sol/terra/luna`@xhigh/max。
+
+**下一步**（详见 `docs/NEXT-SESSION.md` 下一步节）：A 真机 UAT（route:human，最高优先，需 Steven 在场 + 隧道 + `.auth`=autotest）/ B 画布三原子域锁硬化契约（MED#2 挂账）/ C regress gen-prompts（scope C LLM 合成，刻意延后）/ D 归档分支清理。
+
+---
+以下为 2026-07-09 晚快照，只溯源、勿据其判现状：
+
 ## 当前状态（2026-07-09 晚，「全做」易用性+分发一趟并行落地：六 A-契约 + 画布第四原子 + 裁判词表统一，全合并回 dev）
 
 本 session 走大规模并行（`worktree` fan-out 起草 + subagent 各驻树实现 + `Workflow` 编排逐契约收口评审 + 协调合并），把排队的候选契约与两个新契约一趟落地、全部合并回 `dev`（`b4f5c27`→`44df070`）。dev 现干净：只剩 Steven 的 `M .gitignore`（别动别提交）+ `?? docs/plans/usability-audit/`（母审计草稿、非契约）。八契约 + codex 的 `run-convention` 齐落，逐一 gate 复验绿（各契约 prd + `cli-mcp-face` 全 GREEN、`selftest --tier1` 裁判零 LLM、全部判内核/画布金牌 exit 0）。落地清单：
