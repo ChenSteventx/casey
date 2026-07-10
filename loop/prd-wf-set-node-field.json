@@ -9,6 +9,10 @@
     {
       "dimension": "真机采样（route:human，与 openNode/selectNodeDropdown observability 合并行程）：① 节点抽屉可填字段真实类名与 placeholder 文本（hermetic 用 .hr-input/「请输入接口的URL」，真机 HEREN 组件库同族假设待核）；② 各节点类型抽屉的字段清单（哪类节点有哪些 placeholder，hermetic 简化为所有节点同抽屉一字段）；③ 多同占位符字段真机是否带可区分锚（可否弃 nth 走标签锚，D4 分岔复核）；④ 贪心序本原子解锁哪些 R9 flow。另：workflow.assertNodeFieldValue（registry :339 L1 断言，读 value 属性的独立断言 kind + 采集通道 + 词表 + assert.* 映射）= 另契约，本契约判内核纯编译/回放不做，填值正确性由门内精确 value 回读守住。",
       "route": "human"
+    },
+    {
+      "dimension": "域锁跨抽屉边界硬化（codex-sol 异构冗余评审 MED#2，2026-07-10 挂账）：doSetNodeField（replay-actions.mjs:232）/ compileWorkflowSetNodeField（compile-atoms.mjs:671）的域锁用宽 .hr-drawer__content-wrapper，匹配所有抽屉而非当前节点配置抽屉——若另一可见抽屉恰有唯一同 placeholder 字段，域内 count===1 会填错抽屉的字段、精确回读仍成立→假绿。同 openNode/selectNodeDropdown 三原子同型设计局限（真机通常单抽屉在场、field-level 唯一闸 + 精确 value 回读兜底，故 codex 评为 MED 非 HIGH）。修法 = 三原子一起把域锁收窄到当前节点抽屉专属锚（如 .lf-node-drawer 域），须 fake-sut 加两可见抽屉同 placeholder 反面场景红先行。本 session round-2 只修了 HIGH（非法 nth fail-open）+ golden 硬化，此 MED 未修、挂账另起 canvas-atoms 域锁硬化契约。",
+      "route": "human"
     }
   ],
   "stories": [
