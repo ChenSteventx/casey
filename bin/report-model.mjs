@@ -49,7 +49,7 @@ function parseArgs(argv) {
 
 const opts = parseArgs(process.argv.slice(2));
 if (!opts.verdict || !opts.axes || !opts.out) {
-  console.error('用法: report-model --verdict <f> --axes <f> --out <f> [--observed <f>] [--events <f>] [--expected <f>] [--case-meta <f>] [--generated-at <iso>] [--video-meta <f>]');
+  console.error('用法: report-model --verdict <f> --axes <f> --out <f> [--observed <f>] [--events <f>] [--expected <f>] [--case-meta <f>] [--generated-at <iso>] [--video-meta <f>] [--promptset-meta <f>]');
   process.exit(64);
 }
 
@@ -62,6 +62,10 @@ try {
   // 视频元数据旁件：读 + 语义校验（坏 JSON/坏形状均落 catch → exit 1 零落盘）；缺席零行为差。
   const videoMeta = opts['video-meta'] && typeof opts['video-meta'] === 'string'
     ? validateVideoMeta(JSON.parse(readFileSync(opts['video-meta'], 'utf8')))
+    : null;
+  // 被测参数元数据（regress-promptset）：投影 promptset 块（脱敏由装配器 projectPromptset 兜；坏形状 fail-closed）。
+  const promptsetMeta = opts['promptset-meta'] && typeof opts['promptset-meta'] === 'string'
+    ? JSON.parse(readFileSync(opts['promptset-meta'], 'utf8'))
     : null;
   const meta = { generatedAt: opts['generated-at'] || new Date().toISOString(), ...caseMeta };
   // G1 签署投影：全签且均一才投影；case-meta 显式优先（expected 只补缺）；否则不投影（如实「未签」）。
@@ -92,6 +96,7 @@ try {
     events,
     meta,
     videoMeta,
+    promptsetMeta,
   });
   writeFileSync(opts.out, JSON.stringify(model, null, 2) + '\n', 'utf8');
   process.exit(0);

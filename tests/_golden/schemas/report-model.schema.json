@@ -182,6 +182,46 @@
       },
       "description": "工作流画布结构证据（report-spec #11）：据画布构造原子 addNode/connectNodes/openNode 的 PASS 覆盖判；非画布构造用例为 null"
     },
+    "promptset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "promptId",
+        "category",
+        "source",
+        "promptText"
+      ],
+      "properties": {
+        "promptId": {
+          "type": "string",
+          "description": "被测参数行 id（^[a-z0-9_]+$）；多用例聚合据此区分同 caseId 的各行"
+        },
+        "category": {
+          "enum": [
+            "normal",
+            "boundary",
+            "security"
+          ]
+        },
+        "source": {
+          "enum": [
+            "user",
+            "builtin"
+          ]
+        },
+        "promptText": {
+          "type": "string",
+          "description": "被测参数文本（脱敏后，护栏 #7）；报告标注「测了哪条被测参数」"
+        },
+        "note": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      },
+      "description": "被测参数块（regress-promptset，兑现数据驱动）：数据驱动行的标识/类别/来源 + 脱敏被测参数；非数据驱动用例无此键（可选）"
+    },
     "generatedAt": {
       "type": "string",
       "format": "date-time",

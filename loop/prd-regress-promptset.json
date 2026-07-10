@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "task": "数据驱动被测参数 + 注入向量库 + 多用例聚合报告（full，regress scope A）：① lib/promptset.mjs 纯函数（parsePromptset schema fail-closed / loadBuiltinLibs 文件名强制 category+source+bnd_/sec_ 前缀 / mergeCases 跨集合去重 / overlayPromptset 定位唯一 {{promptText}} 槽·跨行不漂移 flow·合成 soft 软期望）；② prompts/_lib/boundary.json+security.json 随发注入向量库（中文向量避护栏 #7 禁字段英文子串）；③ bin/replay.mjs 加 --prompt-text（注入 ctx.promptText）+ --soft-expect（强制 soft:true 并入 evaluateAssertions，不碰 sign-gate/verdict）；④ lib/report-model.mjs+bin/report-model.mjs 加 --promptset-meta（投影 promptset 块，脱敏）+ assembleAggregateModel（纯函数聚合 N 份 .report.json 旁车：category 分段+置顶横幅+content-expect 黄标，verdictTotals 只累加 verdictSummary、soft 绝不进）；⑤ lib/report.mjs renderJson 投影 promptset 块 + renderAggregate 三形态；⑥ bin/report.mjs --aggregate；⑦ bin/promptset.mjs 编排器 + casey run --promptset 接线。内核一字不让：裁判零 LLM（不碰 verdict.mjs，judgeKernelTouched=false）、软期望绝不进四态裁定（护栏 #17）、不碰冻结/人签闸、护栏 #7 凭据门零弱化、不做 LLM 合成。决策 GRILL D1–D8（Steven 选定 SCOPE-OPTIONS 选项 A + 授权自主 draw→freeze→implement）。",
+  "specPath": "docs/plans/regress-promptset/plan.md",
+  "testChecksums": {
+    "tests/_golden/regress-promptset.golden.mjs": "961a1acd7650a164c55349277dc940c5e8be44640c92058f353da93c4aff71cb"
+  },
+  "observability": [
+    {
+      "dimension": "Steven 过目一份聚合报告样例（分段/置顶横幅/content-expect 黄标观感），真机接被测参数库另议",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-promptset-overlay-aggregate",
+      "desc": "红先行金牌 regress-promptset：P 解析 fail-closed + B 注入向量库文件名/前缀强制 + O overlay 唯一槽·不漂移·软期望合成 + S 软期望不进裁定（失败软期望该步仍 PASS）+ A 聚合分段/横幅/黄标·畸形 fail-closed + W casey run --promptset 端到端。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/regress-promptset.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-10T07:19:31.853Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-regression-locks",
+      "desc": "回归锁：chiefcomplaint-smoke（chat 回放 + soft 未回归）+ p5-replay 两份（replay 形状加性）+ report-fidelity（report-model 加性）+ p7-report（渲染）+ p2-verdict（裁判零改）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/report-fidelity.golden.mjs",
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/p2-verdict.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-10T07:21:40.323Z 全部 acceptance exit 0"
+    }
+  ]
+}

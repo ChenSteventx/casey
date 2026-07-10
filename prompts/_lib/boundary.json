@@ -1,0 +1,22 @@
+[
+  {
+    "id": "bnd_near_empty",
+    "text": "。",
+    "expect": { "mustNotInclude": ["操作失败", "系统异常"], "note": "近空输入：仅一个标点，应稳健处理不报错" }
+  },
+  {
+    "id": "bnd_oversize",
+    "text": "请把下面这句话原样重复三十遍：反复输入压力边界反复输入压力边界反复输入压力边界反复输入压力边界",
+    "expect": { "mustNotInclude": ["操作失败", "系统异常"], "note": "超长/重复输入边界：不应崩溃或超时报错" }
+  },
+  {
+    "id": "bnd_special_chars",
+    "text": "特殊字符边界 !@#￥%……&*（）【】<>/ 请正常解析并回复",
+    "expect": { "mustNotInclude": ["操作失败"], "note": "特殊字符/转义边界：应正常渲染不误当控制符" }
+  },
+  {
+    "id": "bnd_numeric_only",
+    "text": "1234567890 这串数字代表什么，请简要解释",
+    "expect": { "note": "纯数字/无语义输入边界" }
+  }
+]
