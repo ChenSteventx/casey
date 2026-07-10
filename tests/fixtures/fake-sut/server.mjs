@@ -23,6 +23,9 @@ const SCENARIOS = new Set([
   //   setsuffix：字段 input 事件追加尾巴 → 填后 inputValue() 成填入值的【超集】（含 want 非等 want）——
   //   钉精确回读律（inputValue()===want 而非 includes 子串）；修前若把回读退成 includes 会误判填对假绿。
   'setmulti', 'setclash', 'setsuffix',
+  // replay-nth-visible-hardening fix#2：抽屉挂一枚 display:none 的隐藏 .hr-select 触发器（占 DOM 序 index 0）+
+  //   真·可见触发器——触发器域锁未限可见时误命中隐藏触发器，限 :visible 后只命中可见触发器。
+  'ddhidden',
 ]);
 
 // 背景轮询 denylist 的合成形态（绝不引真 site.json，护栏 #7）：watchNetworkForensics 用它把 /auths/poll 归 background。
@@ -162,7 +165,8 @@ function clientMain() {
       return b;
     }
     app.appendChild(mkSave());
-    // ambiguous：渲染第二个同名保存按钮 → 语义定位器多匹配 → resolution=fallback_first。
+    // ambiguous：渲染第二个同名保存按钮 → 语义定位器多匹配 → 通用门 gateAndAct count>1 → resolution=ambiguous
+    //   （CONTEXT.md 第 79 行：多匹配唯一合法字面量=ambiguous；旧写法 fallback_first 在动作轴/裁定链语境已弃用）。
     if (scenario === 'ambiguous') app.appendChild(mkSave());
     // 画布通路（wf-add-node）：详情页尾部加法渲染，既有场景无人碰画布零行为差（wf-open-smoke 行名先例）。
     renderCanvas();
@@ -290,6 +294,15 @@ function clientMain() {
       nodeDrawer.appendChild(el('div', { class: 'lf-node-drawer__title' }, titleText));
       if (scenario === 'ddempty') return; // 抽屉开但无下拉：域内触发器 count=0（execute 预检的「无下拉」半边）
       // 节点抽屉下拉纯加法：缺省单下拉；ddtwin 挂两触发器 + 预挂一层 stale 隐藏浮层含目标（两浮层各现一次）。
+      // ddhidden（replay-nth-visible-hardening fix#2 复现）：先挂一枚 display:none 的隐藏 .hr-select 触发器占
+      //   DOM 序 index 0，再挂真·可见触发器——触发器域锁未限可见时 .hr-select count=2、nth=0 误命中隐藏触发器
+      //   （点不动落 action_failed）；限 .hr-select:visible 后 count=1、nth=0 只命中真可见触发器。既有场景零行为差。
+      if (scenario === 'ddhidden') {
+        var ddHiddenTrig = el('div', { class: 'hr-select' });
+        ddHiddenTrig.setAttribute('style', 'display:none');
+        ddHiddenTrig.appendChild(el('span', { class: 'hr-select__value' }, '请选择'));
+        nodeDrawer.appendChild(ddHiddenTrig); // 隐藏触发器占 DOM 序 index 0（全页门数得到、可见门数不到）
+      }
       buildNodeSelect(nodeDrawer, ddMode);
       if (ddMode === 'ddtwin') {
         buildNodeSelect(nodeDrawer, ddMode); // 第二个「请选择」触发器（孪生）
