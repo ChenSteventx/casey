@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "task": "漂移收口（light）：收口八契约遗留的两处共享冻结文件漏签。① tests/_golden/fixtures/p2/verdict-cases.json 的 ambiguous_action 用例 line42 resolution 由旧死字面量 fallback_first 改为 ambiguous（对齐 resolution 契约 0f79adf 收敛后词表；deriveActionPerformed 认 ambiguous 出 AMBIGUOUS_ACTION，改前认不出旧值落 INDETERMINATE）+ 重签 prd-p2-intent-compile 的该夹具 checksum。② 重签 prd-mcp-parity 的 cli-mcp-face.golden.mjs checksum（casey-doctor/distribution 改该漂移锁金牌加 EXCLUDED 后重签了 prd-cli-mcp-face 却漏签 prd-mcp-parity，金牌语义仍通 9 过 0 败、纯 checksum 台账漏签）。不碰 bin/verdict.mjs 裁定逻辑、不改 cli-mcp-face 金牌本体、不动 run-history schema 的 fallback_first 台账枚举。红先行：p2-verdict.golden 改前 RED 改后 GREEN。人签门：verdict-cases.json 是裁判内核冻结地面真值，须人核对齐收敛词表非弱化裁定后人签。判据 docs/plans/resign-drift-closure/plan.md + proposed/GRILL.md。",
+  "specPath": "docs/plans/resign-drift-closure/plan.md",
+  "testChecksums": {
+    "tests/_golden/fixtures/p2/verdict-cases.json": "a9adb77af80cc943a3340ed87800d0746ae749326a72e69f295f7ca7b0c673f2"
+  },
+  "stories": [
+    {
+      "id": "s1-resign-drift-closure",
+      "desc": "两处漏签重签收口 + 红先行验非语义回归。p2-verdict.golden 改前 RED（ambiguous_action 期望 AMBIGUOUS_ACTION 实得 INDETERMINATE）改后 GREEN（8/8 四态全中）；cli-mcp-face.golden 改前后皆 GREEN（9 过 0 败，证 mcp-parity 漂移是纯 checksum 台账非语义回归）；裁判零 LLM 不破（tier1）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p2-verdict.golden.mjs",
+        "node tests/_golden/cli-mcp-face.golden.mjs",
+        "node tests/_golden/p2-compile-gate.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-10T05:30:00.352Z 全部 acceptance exit 0"
+    }
+  ]
+}
