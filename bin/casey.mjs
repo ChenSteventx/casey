@@ -310,7 +310,10 @@ function main() {
     case 'verdict': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'verdict.mjs'), rest); process.exit(r.code); }
     case 'heal':    return notImplemented('相5 heal 自愈', 'P6 自愈准入门 + 非就地有界自愈', '仅对确证 HARNESS_ERROR：重锚 → 写 drift 补丁旁文件（原 spec 不变）→ 人签后应用 → 重跑。');
     case 'report': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'report.mjs'), rest); process.exit(r.code); }
-    case 'run':     return runPipeline(pos, opts);
+    // run --promptset（regress-promptset）：数据驱动被测参数直通编排器 bin/promptset.mjs（一条冻结 flow 跑 N 行 + 聚合）。
+    case 'run':
+      if (opts.promptset) { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'promptset.mjs'), rest); process.exit(r.code); }
+      return runPipeline(pos, opts);
     // 样例入口（casey-demo）：零参零真机零凭据出一份夹具驱动的样例报告，复刻 相3-4-6 编排（需 chromium）。
     case 'demo': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'demo.mjs'), rest); process.exit(r.code); }
 

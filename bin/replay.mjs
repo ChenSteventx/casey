@@ -41,6 +41,10 @@ function parseArgs(argv) {
     else if (a === '--run-metrics') o.runMetrics = argv[++i];
     else if (a === '--run-id') o.runId = argv[++i];
     else if (a === '--video-dir') o.videoDir = argv[++i];
+    // regress-promptset：--prompt-text 注入 ctx.promptText（回填冻结 flow 的 {{promptText}} 提示槽）；
+    // --soft-expect 非签署软期望通道（强制 soft:true 并入按 intent 断言表，绝不进裁定、不过 sign-gate）。
+    else if (a === '--prompt-text') o.promptText = argv[++i];
+    else if (a === '--soft-expect') o.softExpect = argv[++i];
   }
   return o;
 }
@@ -188,7 +192,9 @@ async function main() {
   const sut = String(args.sut).replace(/\/$/, '');
   // 确定性令牌（可 golden）；真机由 compile-gate 注入带 Reserved Prefix 的实体名。
   // baseUrl：G6 分岔三取 C——events url 走 {{baseUrl}} 占位符，回放期回填 --sut（对完整 URL 的旧 fixture 是 no-op）。
-  const ctx = { uniqueName: 'r1', baseUrl: sut };
+  // promptText（regress-promptset）：被测参数经 --prompt-text 注入，回填 fill 步的 {{promptText}} 提示槽（护栏 #6
+  // 冻占位符不冻字面量）；RH_PLACEHOLDER 已覆盖 {{promptText}}——回放历史始终显占位符、绝不落真被测参数（护栏 #7）。
+  const ctx = { uniqueName: 'r1', baseUrl: sut, ...(args.promptText != null ? { promptText: String(args.promptText) } : {}) };
 
   // 登录预备动作前置（GRILL 人签取 A）：凭据/站点配置在开浏览器前加载，任一失败 exit 65（fail-closed）。
   // 登录入口 = --sut 基址 + site.target.startUrl 路径段（真机实采教训：裸基址不渲染登录表单，SPA 判据
@@ -243,8 +249,25 @@ async function main() {
     intentEvents.get(ev.intentId).push(ev);
   }
   const reprStepOf = new Map(intentOrder.map((iid) => [iid, intentEvents.get(iid).slice(-1)[0].stepId]));
-  const expectedByIntent = new Map((expectedDoc.intents || []).map((it) => [it.intentId, it.expected || []]));
-  const globalAssertions = expectedDoc.globalAssertions || [];
+  const expectedByIntent = new Map((expectedDoc.intents || []).map((it) => [it.intentId, [...(it.expected || [])]]));
+  const globalAssertions = [...(expectedDoc.globalAssertions || [])];
+  // 软期望通道（regress-promptset）：--soft-expect 的断言强制 soft:true 并入按 intent 断言表——本通道定义即软、
+  // 绝不注入影响裁定的硬断言（护栏 #17：verdict 只 AND 硬断言、忽略 soft），故合法不过 sign-gate（人签保护进裁定的断言）。
+  // 在 sign-gate（170–184，只核签署 expected）之后并入，签署契约原样不变。caseId 有断言时同源核对，防跨 case 拼合。
+  if (args.softExpect) {
+    const softDoc = readJsonSafe(args.softExpect, 'soft-expect');
+    const softHas = (softDoc.intents || []).some((it) => (it.expected || []).length > 0) || (softDoc.globalAssertions || []).length > 0;
+    if (softHas && softDoc.caseId && caseId !== 'unknown' && softDoc.caseId !== caseId) {
+      console.error('replay: --soft-expect caseId 与 events 不同源（原值不回显），拒算数（fail-closed）');
+      process.exit(65);
+    }
+    const forceSoft = (a) => ({ ...a, soft: true });
+    for (const it of softDoc.intents || []) {
+      const cur = expectedByIntent.get(it.intentId) || [];
+      expectedByIntent.set(it.intentId, [...cur, ...(it.expected || []).map(forceSoft)]);
+    }
+    for (const a of softDoc.globalAssertions || []) globalAssertions.push(forceSoft(a));
+  }
   const allStepIds = new Set(events.map((e) => e.stepId));
 
   const browser = await chromium.launch({ headless: true });

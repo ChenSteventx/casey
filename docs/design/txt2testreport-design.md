@@ -326,3 +326,50 @@ elif actionPerformed===false:                                     # 这步没做
 **loop-fidelity**：① typed 断言 vs acceptance=命令 阻抗失配 → 编译成 check 命令（§5）；② gate 二值 vs 多态 → gate 写 passes、verdict.mjs 写枚举（§5/§8）；③ 单活契约 vs N 用例并发 → MVP 串行（§3.1）；④ 契约路径 vs hook 正则 → 扁平 loop/（§2）；⑤ 冻结边界 whole-file → 断言/ spec 物理分文件（§5）。
 
 **buildability**：① 网络取证是全新建非照搬（§9.1）；② recorder 是人操作捕获器、需重构成 library（§9.2）；③ P5 裁定与 P6 自愈循环依赖 → 拆**只读漂移探针**(P5) 与**写回自愈动作**(P6)；④ 取证窗口须确定性定义（§4.2）；⑤ observedReality 须首类化（§9.3）；⑥ selftest「零依赖」与「真站 SUT_DEFECT 覆盖」冲突 → 两层 selftest（计划 P9）；⑦ stepId 两义 → intentId vs stepId（§2）。
+
+---
+
+## 13. 数据驱动被测参数（`promptset` + 注入向量库，regress scope A）
+
+> 姊妹项目 regress 的「数据驱动回归」子系统迁到 Casey：一条冻结 `chat` flow 复用成 N 条独立用例，每行喂一段不同的 `被测参数`（打进 `chat.sendAndWait` 的 `prompt` 槽的消息文本），聚合成一份报告。术语见 CONTEXT.md（`promptset`/`被测参数`/`注入向量库`/`软期望`/`被测参数 overlay`/`多用例聚合报告`）。**只做数据驱动 + 随发注入向量库 + 聚合报告，不做 LLM 合成**（authoring 属后续独立契约）。
+
+### 13.1 消歧（这一维度到底是什么）
+
+- **「参数化」= 数据驱动多行 `被测参数`**，不是 `caseId` 并发参数化（`worktree-baton` 已解、否决共享池，§3.1/护栏 #18），也不是 `entityNameParam` 前缀参数化（R12/`compile-gate` 已落，唯一名令牌破坏性硬闸）。
+- **「内置提示词」= 随工具发的 `注入向量库`**（喂给 SUT 的边界/安全测试输入），不是 Casey 自身归一/编译/草拟/自愈的工装提示词（那些委托 CLI 外 LLM、仓内无落地模板，见 `归一提示模板` 词条）。
+
+### 13.2 `promptset` schema（`lib/promptset.mjs`，零 LLM，fail-closed）
+
+```jsonc
+[ { "id": "p01_normal",           // ^[a-z0-9_]+$，唯一 + 文件系统安全（作 caseId slug 与 trace 名）
+    "text": "头疼三天，伴轻微恶心",   // 被测参数：打进 chat.sendAndWait 的 prompt 槽
+    "source": "user",              // user（人写）| builtin（随库发）；缺省 user
+    "category": "normal",          // normal | boundary | security；缺省 normal（库由文件名强制）
+    "expect": {                    // 软期望（可选）——只标注、绝不判红
+      "mustInclude": ["建议"], "mustNotInclude": ["操作失败"], "note": "正常问诊应给建议" } } ]
+```
+
+`parsePromptset` 确定性校验，任一不合（非数组/空/id 非法或重复/text 空/source·category 枚举错/expect 形状错）fail-closed 抛——宁在收集期早失败，不产半成品报告（镜像 regress `parseCaseFile`）。
+
+### 13.3 被测参数 overlay（复用现成占位槽，不漂移 spec）
+
+冻结 flow 的 `chat.sendAndWait` fill event 带 `value:"{{promptText}}"`（占位符、不冻字面量，护栏 #6）。`overlayPromptset` 定位 flow 里**唯一**一个 `{{promptText}}` 槽（0 或 >1 fail-closed——数据驱动无确定锚），**绝不改 flow**：跨行共享同一冻结 events，逐行只把 `ctx.promptText` 换成本行 `text`，`bin/replay.mjs` 既有 `instantiate(ev.value, ctx)` 在 fill 时回填（新增 `--prompt-text` 把本行文本注入 `ctx`）。`RH_PLACEHOLDER` 已覆盖 `{{promptText}}`——回放历史始终显 `{{promptText}}`、绝不落真被测参数（护栏 #7）。这就是「硬断言跨行同一冻结 flow 集、不因行不同而漂移 spec」的机制落点。overlay 是**新纯函数**，不照搬 regress `overlayRow`（其拒 authored 场景，Casey 编译产物形同 authored）。
+
+### 13.4 软期望走现成 soft 通道（绝不进裁判）
+
+`expect` 合成 `soft:true` 断言（`mustInclude→replyContains`；`mustNotInclude→replyMatches` 负向环视），经 `bin/replay.mjs` 新 `--soft-expect` 通道并入 `evaluateAssertions`：
+
+- 该通道**强制 `soft:true`**——本通道定义即软、绝不注入影响裁定的硬断言，故合法不过人签闸（人签保护的是进裁定的断言，护栏 #16），**不碰 `lib/sign-gate.mjs`**（签署 `expected` 契约原样全签闸不变）。
+- soft 断言落 axes → `verdict.mjs` 按护栏 #17 只 AND 硬断言 `ok`、忽略 soft（**裁判零改**）→ `report-model` 既有 `projectPost` 带 soft → 报告黄标。
+
+内核不变量逐条守：裁判零 LLM（不碰 `verdict.mjs`）、fail-safe（全链 fail-closed）、不碰冻结/人签闸（冻的是母体 flow + 结构硬断言、非 N 份；soft 另立通道）。
+
+### 13.5 注入向量库（随发、可编辑扩展）
+
+`prompts/_lib/boundary.json` + `security.json` 随仓发。category 由文件名强制、`source` 强制 `builtin`、id 前缀 `bnd_`/`sec_` 强制（缺前缀 fail-closed，防撞）；`overlayPromptset` 按开关（默认并入、`--no-builtin` 关）把两库并进每个数据驱动用例集，跨集合 id 全局唯一硬拒。逐字对标 regress 共享库语义。
+
+> **护栏 #7 优先（凭据门零弱化）**：`credentialGate` 对 token/password/secret/cookie/… 做子串 fail-closed。被测参数必进报告，故随库发的向量**避开这些英文子串**（用中文注入向量：忽略上文/越权/系统提示词回显/超长/角色混淆——对中台 SUT 也更贴切）。用户自写含禁字段英文子串的被测参数，报告落盘 fail-closed（由用户改写消解）。展示字段（promptText/name/note）另走 `redactScalar` 纵深防御。
+
+### 13.6 多用例聚合报告（兑现 report-spec §7）
+
+逐行落各自 run 子目录（`runs/<caseId>/promptset/<promptId>/`）——冻结 events 的 `caseId` 固定、`report-model` 同源校验要求 verdict/axes/events caseId 一致，故逐行 model `caseId` 诚实 = 母体 id、**不伪造**；行与行由 `promptset` 块的 `promptId` 区分（非文件名）。`report-model` 加可选 `--promptset-meta` 投影 `promptset` 块进 `.report.json` 旁车。`assembleAggregateModel` 吃 N 份旁车 → 按 category 分段 + 置顶横幅（`verdictSummary` 有 `SUT_DEFECT`/`NEEDS_HUMAN` 的行顶上去）+ content-expect 黄标（从旁车 `steps[].assertions` 的 `soft===true` 项取，**绝不进裁定**：聚合 `verdictTotals` 只累加旁车自带 `verdictSummary`、其本身已排除 soft）；畸形旁车 fail-closed。`bin/report.mjs --aggregate` 扫旁车 → 装配 → 渲染（`renderAggregate` 三形态）→ 过 `credentialGate` → 落 `index.report.{html,md,json}`。`casey run --promptset` 直通编排器 `bin/promptset.mjs`：逐行 replay→verdict→report-model→report，末了聚合。
