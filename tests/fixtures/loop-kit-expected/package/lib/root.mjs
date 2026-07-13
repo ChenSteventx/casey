@@ -48,7 +48,7 @@
 //   writeClaimed()，属性仍可写，外部随后可再悄悄改写成另一个同样合法的 ROOT——两次合法值之间的静默
 //   切换，独立探针实测复现（同一主线程进程先后接受两个不同的真实合法目录）。修复：不再只在「从空槽
 //   写入」时冻结，而是在任何代码路径打算把某个槽值当「已认领」使用（幂等复用 revalidateClaimed()、
-//   同值复用 claimAtomic()）之前，先查属性描述符是否已是本模块产生的冻结形态（isFrozenBySelf()），
+//   同值复用 claimAtomic()）之前，先查属性描述符是否已不可写/不可配置（isClaimSlotFrozen()），
 //   不是则当场补冻结（adoptAndFreezeIfNeeded()）——把「首次被信任使用的时刻」当作认领时刻，不局限于
 //   「首次从空槽写入」这一种途径，堵死「两个合法值之间来回切换」的窗口。
 import { existsSync, realpathSync } from 'node:fs';
@@ -83,21 +83,26 @@ function writeClaimed(v) {
   }
 }
 
-// 槽是否已是本模块自身产生的冻结形态（round-2 第二轮实现审 codex HIGH 采信）。缺口：外部若在本模块
-// 首次认领前，用普通赋值预置一个「合法、规范化」的 ROOT（存在 + 有根标记 + 已是 realpath），
+// 槽当前是否已是不可写/不可配置的冻结形态（round-2 第二轮实现审 codex HIGH 采信）。缺口：外部若在
+// 本模块首次认领前，用普通赋值预置一个「合法、规范化」的 ROOT（存在 + 有根标记 + 已是 realpath），
 // revalidateClaimed()/claimAtomic() 的「同值直接复用」分支会校验通过并接受它——但从未经过
 // writeClaimed()，属性仍是 writable:true/configurable:true，外部随后可再次悄悄改写成另一个同样合法
 // 的 ROOT，下次复用又校验通过、静默换根，「首次认领后不可变」名存实亡（codex 独立探针实测复现：同一
-// 主线程进程先后接受两个不同合法 ROOT）。修复：任何代码路径只要打算把某个槽值当「已认领」使用，先确认
-// 该属性已是本模块产生的冻结描述符；不是则就地补冻结（把「首次真正被信任使用的时刻」当认领时刻，而不是
-// 只认「经由 claimAtomic 从空槽写入」这一条路径），此后同样不可被普通赋值覆盖。
-function isFrozenBySelf() {
+// 主线程进程先后接受两个不同合法 ROOT）。修复：任何代码路径只要打算把某个槽值当「已认领」使用，先检查
+// 该属性是否已不可写/不可配置；不是则就地补冻结（把「首次真正被信任使用的时刻」当认领时刻，而不是只认
+// 「经由 claimAtomic 从空槽写入」这一条路径），此后同样不可被普通赋值覆盖。
+// 命名说明（round-2 第三轮实现审 codex LOW 采信）：本函数只能证明「属性当前已不可写/不可配置」，不能
+// 证明该冻结确由本模块的 writeClaimed() 产生——外部代码理论上可以构造出描述符完全相同（仅
+// enumerable 等无关字段可能不同）的「假冻结」。但这不构成漏洞：任何 writable:false+configurable:false
+// 的描述符，不论来源，都同样拒绝后续改写，「两个合法值间来回切换」的窗口一样被堵死；本函数命名与注释
+// 因此不再声称「本模块自身产生」，只如实描述「当前是否已冻结」这一可观察状态。
+function isClaimSlotFrozen() {
   const desc = Object.getOwnPropertyDescriptor(globalThis, CLAIM_KEY);
   return !!desc && desc.writable === false && desc.configurable === false;
 }
 
 function adoptAndFreezeIfNeeded(value) {
-  if (!isFrozenBySelf()) writeClaimed(value);
+  if (!isClaimSlotFrozen()) writeClaimed(value);
 }
 
 function hasRootMarker(dir) {
