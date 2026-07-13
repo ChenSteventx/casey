@@ -6,7 +6,7 @@
 //       C3 布局与跨树 / C4 故障族矩阵 / C5 shim 模板逐字比对 / C6 存量零重签 / C7 根语义组。
 import { createHash } from 'node:crypto';
 import {
-  cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, symlinkSync, unlinkSync, writeFileSync,
+  cpSync, existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, unlinkSync, writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
@@ -1209,7 +1209,10 @@ console.log(JSON.stringify({
     assert(r.status === 0, `探针子进程应正常退出，实得 ${r.status}\nstderr=${r.stderr}`);
     const out = lastJson(r.stdout);
     assert(out.beforeWasWritable, '外部普通赋值预置的属性理应是可写的（测试前提校验）');
-    assert(out.first.includes('a'), `幂等复用应接受外部预置的合法值 dirA，实得 ${out.first}`);
+    // round-2 第四轮实现审 codex LOW 采信：改用精确 realpath 相等，不用 .includes('a') 子串匹配——
+    // markerRootDir 统一落在名为 marker-root 的子目录，"marker-root" 字面就含字母 a，即使误得 dirB
+    // 该断言也会巧合通过，测不出「到底认领的是哪一个」；精确比对才能钉死。
+    assert(out.first === realpathSync.native(dirA), `幂等复用应接受外部预置的合法值 dirA，实得 ${out.first}（期望 ${realpathSync.native(dirA)}）`);
     assert(out.afterIsFrozen, '幂等复用一个此前未被本模块冻结的合法值后，该属性此刻起应已是冻结形态');
     assert(out.swapThrew, '冻结之后尝试换成另一个同样合法的 ROOT 应被拒绝（抛错），实际未抛——两个合法值之间的静默切换窗口未关闭');
     assert(out.stillClaimed === out.first, `认领值应保持为最初信任使用的那个值，实得 ${out.stillClaimed}（应为 ${out.first}）`);
@@ -1248,7 +1251,8 @@ console.log(JSON.stringify({
     assert(r.status === 0, `探针子进程应正常退出，实得 ${r.status}\nstderr=${r.stderr}`);
     const out = lastJson(r.stdout);
     assert(out.beforeWasWritable, '外部普通赋值预置的属性理应是可写的（测试前提校验）');
-    assert(out.first.includes('a'), `显式 envRoot 同值分支应接受外部预置的合法值 dirA，实得 ${out.first}`);
+    // 同上一检查理由（round-2 第四轮实现审 codex LOW 采信）：精确 realpath 相等，不用子串匹配。
+    assert(out.first === realpathSync.native(dirA), `显式 envRoot 同值分支应接受外部预置的合法值 dirA，实得 ${out.first}（期望 ${realpathSync.native(dirA)}）`);
     assert(out.afterIsFrozen, '显式 envRoot 同值分支复用一个此前未被本模块冻结的合法值后，该属性此刻起应已是冻结形态');
     assert(out.swapThrew, '冻结之后尝试换成另一个同样合法的 ROOT 应被拒绝（抛错），实际未抛——显式 envRoot 路径的静默切换窗口未关闭');
     assert(out.stillClaimed === out.first, `认领值应保持为最初信任使用的那个值，实得 ${out.stillClaimed}（应为 ${out.first}）`);

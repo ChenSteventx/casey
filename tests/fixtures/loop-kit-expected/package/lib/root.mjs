@@ -13,9 +13,10 @@
 //      他树 ROOT、绝不更新认领值。库模式下 boot 在目标模块求值前以显式 envRoot 参数调用本函数完成
 //      认领；随后目标模块自身的裸调用（走 2 的幂等分支）取得同一值，不依赖 cwd 恰好匹配。
 //   5. claimedRoot() 是认领值的只读探针；未认领返回 null。
-//   6. 仅支持 Node 主线程；worker_threads 的独立 Worker 各有独立 globalThis，本机制无法跨 Worker
-//      协调认领（round-2 实现审 A1 采信：见下）——非主线程调用直接拒绝，不产生「各自静默认领互不冲突」
-//      的假象。
+//   6. 「进程唯一」准确表述为「本机制运行所在的默认 Node.js 主 realm 内唯一」——不含 worker_threads
+//      的 Worker、不含 node:vm 的 Context 等任何创建独立 globalThis 的替代执行环境（round-2 实现审
+//      A1 采信：见下）；worker_threads 的 Worker 由 isMainThread 显式拒绝，node:vm 的 Context 因无
+//      可靠运行时判据而只以文档边界记录（见下）。
 //
 //   认领槽存储位置（round-1 实现审 A1 采信后修订）：认领值存在 globalThis[Symbol.for(...)] ——
 //   进程级共享位置，而非本模块的顶层 let 变量。原因：包可能以多个不同的物理目录被加载（如两棵
@@ -51,6 +52,21 @@
 //   同值复用 claimAtomic()）之前，先查属性描述符是否已不可写/不可配置（isClaimSlotFrozen()），
 //   不是则当场补冻结（adoptAndFreezeIfNeeded()）——把「首次被信任使用的时刻」当作认领时刻，不局限于
 //   「首次从空槽写入」这一种途径，堵死「两个合法值之间来回切换」的窗口。
+//
+//   round-2 第四轮实现审记档边界（codex HIGH，文档化范围收窄，非代码修复）：node:vm 的
+//   vm.createContext()/vm.SourceTextModule 可在同进程同主线程内构造出与默认主 realm 完全独立的
+//   globalThis——用它把本文件真实源码分别加载进两个 Context，各自 resolveRoot() 互不冲突地认领不同
+//   ROOT（codex 复现 + 本仓独立复现一致：bothSucceeded:true, different:true）。与 worker_threads
+//   不同，Node 没有对等的、可靠的「我是否运行在非默认 realm」运行时判据（isMainThread 只区分
+//   Worker/主线程，对 vm.Context 恒为 true；试图用「globalThis 上是否存在 process/Buffer 等注入
+//   对象」做启发式判断，可被有意注入这些对象的 Context 绕过，属于虚假安全感，不采用）。范围收窄的
+//   依据：① vm.SourceTextModule 需要 --experimental-vm-modules 显式旗标，不加旗标时 undefined、
+//   不可用——本仓与消费侧任何默认调用方式（node 脚本、spawnSync 转发）都不带此旗标；② 构造该场景
+//   需要攻击者已经在同进程内拥有任意代码执行能力（手工编译 SourceTextModule + 自定义 linker）——
+//   在这一前提成立时，同一攻击者同样可以绕过任何进程内不变量（如 monkey-patch Object.defineProperty
+//   本身），把「同进程」当作可信边界对这类攻击者已无意义；③ 本仓与消费侧均未使用 node:vm（grep 核验
+//   零命中）。因此比照 worker_threads 的既有先例，选择精确文档化边界（语义 6）而非引入虚假防护
+//   的运行时启发式；若未来在默认调用路径上引入 --experimental-vm-modules 消费面，须重新评估。
 import { existsSync, realpathSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { isMainThread } from 'node:worker_threads';
