@@ -55,9 +55,19 @@
 纯文档方案、同步全部权威契约表述）：①`plan.md` §1.2/§1.4 两处「进程唯一 ROOT」补加范围精确表述
 的交叉引用；②`GRILL.md` D4 段补加完整的范围精确表述专节（技术原因+收窄依据+触发重评条件）；③
 `plan.md` 新增 route:human #7（待 Steven 契约收尾人签时一并确认）与对应 §7 挂账条目；④`prd`
-`observability` 新增一条 `route: "human"` 记录，格式对齐既有 R2-L1 先例。`root.mjs` 本身语义 6
-的表述在上一轮已经准确（未再改动，`root.mjs` 头注全文已是「本机制运行所在的默认 Node.js 主 realm
-内唯一」，codex 引用的第 12 行「进程唯一」出现在语义 4——已在语义 6 单独精确说明，两处并存，注释
-内部逻辑一致，非矛盾陈述，但为消除误读风险，本轮同时确认该结构仍成立）。修复涉及 Casey 侧
-`plan.md`/`GRILL.md`/`prd` 三处纯文档变更，不涉及任何代码字节。处置完成后需再跑一轮 `codex` +
-`pi` 双路复核确认收口。
+`observability` 新增一条 `route: "human"` 记录，格式对齐既有 R2-L1 先例；⑤包仓
+`/mnt/d/ctx/heren/loop-kit` 的 `root.mjs` 语义 4 补一行交叉引用「（『进程唯一』的准确范围见语义 6，
+下同）」，消除语义 4 无条件表述与语义 6 精确范围表述并存时的内部表述不一致（语义 6 本身的表述在
+上一轮已经准确、本轮未再改动，仅语义 4 补了指向语义 6 的交叉引用）。修复涉及 Casey 侧
+`plan.md`/`GRILL.md`/`prd` 三处纯文档变更 + 包仓 `root.mjs` 一行注释交叉引用，`resolveRoot`/
+`claimAtomic`/`writeClaimed`/`revalidateClaimed` 等运行时逻辑函数体零字节改动。连带更新：包仓
+`root.mjs` 字节变化 → Casey 侧期望存档副本 `tests/fixtures/loop-kit-expected/package/lib/root.mjs`
+同步复制为逐字节一致 → `loop-kit/kit-lock.json`（全包清单 sha256）随之改变 → `prd` 中对应两条
+`testChecksums`（`loop-kit/kit-lock.json` 与该期望存档副本）同步更新；包仓提交为 `ea5ed85`，Casey
+侧落点提交为 `7349441`。处置完成后需再跑一轮 `codex` + `pi` 双路复核确认收口。
+
+**勘误（round-2 第六次跑，`codex` `MED`，见 `codex-impl-r7.md`）**：本节上一版原文错误地写作
+「`root.mjs` 本身...未再改动」「修复涉及 Casey 侧 `plan.md`/`GRILL.md`/`prd` 三处纯文档变更，不
+涉及任何代码字节」——与实际处置（含包仓 `root.mjs` 语义 4 的注释交叉引用，见包仓 commit
+`ea5ed85`）不符，未准确反映改动范围。本节已按实际处置改写为上述五点，此勘误说明保留以存留原始
+记录与更正过程。
