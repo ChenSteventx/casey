@@ -1178,6 +1178,46 @@ console.log(JSON.stringify({ first, tamperThrew, stillClaimed: claimedRoot() }))
   }
 });
 
+await check('C7', '外部预置合法 ROOT 后再改写另一合法 ROOT：应在首次被信任使用时就地补冻结，不给「两个合法值间来回切换」留窗口（round-2 第二轮实现审 codex HIGH）', () => {
+  // codex round-2 第二轮独立探针实测复现的缺口：此前的冻结只挂在「从空槽写入」这一条路径（claimAtomic
+  // 的 current===null 分支）上——外部若用普通赋值预置一个已经合法、规范化的 ROOT，resolveRoot 的幂等
+  // 复用路径会校验通过并接受它，但从未走到 writeClaimed()，属性仍可写；外部随后可再悄悄换成另一个同样
+  // 合法的 ROOT，下次复用又校验通过——同一进程先后「认领」了两个不同的合法值，违反「首次认领后不可变」。
+  // 本检查钉死修复：只要某个槽值被首次信任使用（无论是从空槽写入、还是幂等复用一个外部预置的合法值），
+  // 该属性此刻起必须已是冻结形态，此后任何改写尝试都应被拒绝。
+  const tmp = mkdtempSync(join(tmpdir(), 'loop-kit-c7-preseed-swap-'));
+  try {
+    const dirA = markerRootDir(join(tmp, 'a'));
+    const dirB = markerRootDir(join(tmp, 'b'));
+    const r = runRootProbe(`
+// 外部普通赋值预置一个合法 ROOT（不经 claimAtomic/writeClaimed）。
+globalThis[Symbol.for('loop-kit:root:claimed')] = ${JSON.stringify(dirA)};
+const before = Object.getOwnPropertyDescriptor(globalThis, Symbol.for('loop-kit:root:claimed'));
+const first = resolveRoot({ envRoot: '', cwd: ${JSON.stringify(tmp)} }); // 幂等复用路径应就地补冻结
+const after = Object.getOwnPropertyDescriptor(globalThis, Symbol.for('loop-kit:root:claimed'));
+let swapThrew = false;
+try {
+  globalThis[Symbol.for('loop-kit:root:claimed')] = ${JSON.stringify(dirB)}; // 尝试换成另一个同样合法的 ROOT
+} catch (e) {
+  swapThrew = true;
+}
+console.log(JSON.stringify({
+  beforeWasWritable: before.writable, first, afterIsFrozen: after.writable === false && after.configurable === false,
+  swapThrew, stillClaimed: claimedRoot(),
+}));
+`);
+    assert(r.status === 0, `探针子进程应正常退出，实得 ${r.status}\nstderr=${r.stderr}`);
+    const out = lastJson(r.stdout);
+    assert(out.beforeWasWritable, '外部普通赋值预置的属性理应是可写的（测试前提校验）');
+    assert(out.first.includes('a'), `幂等复用应接受外部预置的合法值 dirA，实得 ${out.first}`);
+    assert(out.afterIsFrozen, '幂等复用一个此前未被本模块冻结的合法值后，该属性此刻起应已是冻结形态');
+    assert(out.swapThrew, '冻结之后尝试换成另一个同样合法的 ROOT 应被拒绝（抛错），实际未抛——两个合法值之间的静默切换窗口未关闭');
+    assert(out.stillClaimed === out.first, `认领值应保持为最初信任使用的那个值，实得 ${out.stillClaimed}（应为 ${out.first}）`);
+  } finally {
+    rmrf(tmp);
+  }
+});
+
 await check('C7', '非主线程拒绝：worker_threads 内调用 resolveRoot() 应显式拒绝，不静默各自认领（round-2 实现审 A1）', () => {
   // worker_threads 的每个 Worker 有独立 globalThis，本机制无法跨 Worker 协调认领——codex round-2 用两个
   // Worker 各自成功认领不同 ROOT、零冲突复现了这一点。本仓与消费侧均未使用 worker_threads（已 grep

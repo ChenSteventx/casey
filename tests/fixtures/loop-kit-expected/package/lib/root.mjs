@@ -41,6 +41,16 @@
 //      b) 幂等复用路径（语义 2）每次复用前都重新对槽内容跑一遍与首次认领相同的校验（存在性 + 根标记 +
 //      realpath），槽内容不存在/无标记/被非常规篡改会在复用时立即抛错，不会被当成「已验证过」而照单
 //      全收。两者合力：认领后无法被同进程其它代码静默替换，认领前的伪造值也过不了复用校验。
+//
+//   round-2 第二轮实现审加固（codex HIGH 采信）：上述 ②a 的冻结只挂在「从空槽写入」这一条代码路径
+//   （claimAtomic 的 current===null 分支）上——若外部先用普通赋值预置一个「合法、规范化」的 ROOT
+//   （存在 + 有根标记 + 已是 realpath 形态），复用路径/同值路径会校验通过并接受它，但从未走到
+//   writeClaimed()，属性仍可写，外部随后可再悄悄改写成另一个同样合法的 ROOT——两次合法值之间的静默
+//   切换，独立探针实测复现（同一主线程进程先后接受两个不同的真实合法目录）。修复：不再只在「从空槽
+//   写入」时冻结，而是在任何代码路径打算把某个槽值当「已认领」使用（幂等复用 revalidateClaimed()、
+//   同值复用 claimAtomic()）之前，先查属性描述符是否已是本模块产生的冻结形态（isFrozenBySelf()），
+//   不是则当场补冻结（adoptAndFreezeIfNeeded()）——把「首次被信任使用的时刻」当作认领时刻，不局限于
+//   「首次从空槽写入」这一种途径，堵死「两个合法值之间来回切换」的窗口。
 import { existsSync, realpathSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { isMainThread } from 'node:worker_threads';
@@ -73,6 +83,23 @@ function writeClaimed(v) {
   }
 }
 
+// 槽是否已是本模块自身产生的冻结形态（round-2 第二轮实现审 codex HIGH 采信）。缺口：外部若在本模块
+// 首次认领前，用普通赋值预置一个「合法、规范化」的 ROOT（存在 + 有根标记 + 已是 realpath），
+// revalidateClaimed()/claimAtomic() 的「同值直接复用」分支会校验通过并接受它——但从未经过
+// writeClaimed()，属性仍是 writable:true/configurable:true，外部随后可再次悄悄改写成另一个同样合法
+// 的 ROOT，下次复用又校验通过、静默换根，「首次认领后不可变」名存实亡（codex 独立探针实测复现：同一
+// 主线程进程先后接受两个不同合法 ROOT）。修复：任何代码路径只要打算把某个槽值当「已认领」使用，先确认
+// 该属性已是本模块产生的冻结描述符；不是则就地补冻结（把「首次真正被信任使用的时刻」当认领时刻，而不是
+// 只认「经由 claimAtomic 从空槽写入」这一条路径），此后同样不可被普通赋值覆盖。
+function isFrozenBySelf() {
+  const desc = Object.getOwnPropertyDescriptor(globalThis, CLAIM_KEY);
+  return !!desc && desc.writable === false && desc.configurable === false;
+}
+
+function adoptAndFreezeIfNeeded(value) {
+  if (!isFrozenBySelf()) writeClaimed(value);
+}
+
 function hasRootMarker(dir) {
   return existsSync(join(dir, 'loop', 'config.json'));
 }
@@ -101,6 +128,7 @@ function revalidateClaimed(value) {
   if (revalidated !== value) {
     throw new RootResolutionError(`进程级认领槽内容异常（重新校验后规范化结果与槽内值不一致，疑似被篡改）：槽值「${value}」`);
   }
+  adoptAndFreezeIfNeeded(revalidated); // 本次校验通过即视为「被信任使用」，就地补冻结（见上）
   return revalidated;
 }
 
@@ -131,6 +159,9 @@ function claimAtomic(candidate) {
       `ROOT 认领冲突：进程已认领「${current}」，此次解析得「${candidate}」——同进程跨树不支持，绝不静默采用其一`
     );
   }
+  // 同值分支（round-2 第二轮实现审 codex HIGH 采信）：current 可能来自外部普通赋值预置（同一显式
+  // envRoot 恰好与之相等），此时槽未必已冻结——就地补冻结，防止后续被改写成另一个「同样合法」的 ROOT。
+  adoptAndFreezeIfNeeded(current);
   return current;
 }
 
