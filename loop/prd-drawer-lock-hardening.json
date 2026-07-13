@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "task": "drawer-lock-hardening（light）：画布三原子 workflow.openNode/selectNodeDropdown/setNodeField 域锁跨抽屉边界硬化。挂账：codex-sol 异构冗余评审 MED#2（2026-07-10，loop/prd-wf-set-node-field.json observability 第二条）——doSetNodeField（lib/replay-actions.mjs）/compileWorkflowSetNodeField（lib/compile-atoms.mjs）的域锁用宽 .hr-drawer__content-wrapper，匹配所有抽屉而非当前节点配置抽屉；若另一可见抽屉恰有唯一同 placeholder 字段，域内 count===1 会填错抽屉的字段、精确回读仍成立→假绿；openNode/selectNodeDropdown/setNodeField 三原子同型设计局限。修法（GRILL D1-D8 决策全录）：编译门与回放门同刻把域锁收窄到当前节点抽屉专属锚——标题锚 = 可见的 .hr-drawer__content-wrapper 且内含【自身也可见】的当前节点标题精确文本（D2，复用 openNode 已冻双证回读锚下沉为三原子共用域锁，评审修订加『标题文本自身可见』内层限定，堵 wrapper 可见但标题藏在隐藏节点的假命中）；nodeName 供给通道 = 编译期 run 态 nodeDrawerLabel（openNode 成功开抽屉后写入，纳入 createCompileRun 的 mark()/rollback() 快照）+ 回放期事件既有冻结字段 nodeName（D3，零 schema 改动）；nodeName 缺席判据 = 字段缺席/非 string/trim() 后为空三者任一 → 硬阻断 action_failed，绝不回落宽域锁（D4 修订）；openNode 侧加预点基线归因守卫（单击前先数可见且含精确标题的抽屉，count>0 即证不出点后归因）+ 点后域内恰一（D5）；select/set 两原子先过抽屉域三态（count===0→none、>1→ambiguous、===1→字段/触发器级既有闸一字不动，D6）；fake-sut 加五个纯加法反面场景 twinfield/twinboth/twintitle/twinlate/twinghost（D7，画布外挂第二个可见 .hr-drawer__content-wrapper 冒牌抽屉，字段/触发器与真节点抽屉共用构建函数不特判）。红先行金牌 tests/_golden/drawer-lock-hardening.golden.mjs（G1-G11，拆 20 条独立子用例：G3a/b、G7a/b/c-1/c-2、G8a/b、G9a/b/c/d、G10a/b）——反面用例一律钉精确路由 NEEDS_HUMAN（不只断不 PASS）；涉冒牌字段/触发器的用例一律加宽域候选零落笔/唯一落笔取证断言（wideCandidateValues/wideTriggerValues，纯加法证据字段，axes 无冻结 schema 约束）。红先行实证：改前 20/20 败（旧宽域锁/旧回读命中冒牌抽屉、旧编译门 exit 0 产 events 等假绿实锤，红证留存）。既有三金牌（wf-set-node-field/wf-select-node-dropdown/replay-nth-visible-hardening）手编 select/set 回放 events 补 nodeName + 编译产物断言加严一条 nodeName 钉位（D8，棘轮只加严）；波及 fake-sut server.mjs/CONTRACT.md 的既有冻结 prd（prd-p5-replay/prd-replay-nth-visible-hardening）与既有三原子 prd（prd-wf-set-node-field/prd-wf-select-node-dropdown）一并重签。不做：workflow.assertNodeFieldValue（另契约）；不碰 bin/verdict.mjs 四态判定树（裁判零 LLM、裁定语义零改动）；不碰 events.schema.json（零改动）；不驱真机（纯 hermetic）。决策全录 docs/plans/drawer-lock-hardening/proposed/GRILL.md（含设计评审修订，codex-sol@max 2026-07-14，处置录 docs/plans/drawer-lock-hardening/review/）。",
+  "specPath": "docs/plans/drawer-lock-hardening/plan.md",
+  "testChecksums": {
+    "tests/_golden/drawer-lock-hardening.golden.mjs": "71d7a8255ee8c3f9b50be62b7cfdafc77dafb98aafba46e725fb176a0fec8eec",
+    "tests/fixtures/fake-sut/server.mjs": "84b8b5ab1861f3577b6a2cc239228e9551f19f184607a46076134f7038508e75",
+    "tests/fixtures/fake-sut/CONTRACT.md": "88d335faa58735ba980cb15f53726faf96621acbe570eaa2f86edac8ab72a7ab"
+  },
+  "observability": [
+    {
+      "dimension": "真机采样（route:human，与既有 openNode/selectNodeDropdown/setNodeField observability 合并行程，行程本身不因本契约新起）：节点抽屉真实容器类名/字段清单/多同占位符字段真机锚点仍未采样。标题锚承袭 openNode 已冻真机假设（节点抽屉显示节点标题、精确文本可命中），本契约不新增假设面。残余假设面（评审修订明示）：可见地展示当前节点精确标题的抽屉即视为该节点的抽屉（身份锚模型）——若某冒牌抽屉可见正文恰含该精确标题且域内恰一，身份锚原理上不可分辨；要再收窄只能靠真机采样节点抽屉专属结构锚（已拒夹具自造类锚 .lf-node-drawer，D2），该采样仍挂本行程。若真机标题带前后缀，openNode 本就开不出 unique——属既有暴露面、非本契约新增。",
+      "route": "human"
+    },
+    {
+      "dimension": "挂账原文处置：codex-sol 异构冗余评审 MED#2（2026-07-10，loop/prd-wf-set-node-field.json observability 第二条）——doSetNodeField/compileWorkflowSetNodeField 域锁用宽 .hr-drawer__content-wrapper 匹配所有抽屉、跨抽屉误命中假绿——本契约在此收口：三原子编译门与回放门同刻收窄到标题锚域锁，G1-G11 红先行金牌逐条钉住旧实现的假绿路径并在新实现下转绿。此条挂账标记为已处置（非再挂账）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-drawer-lock-hardening-e2e",
+      "desc": "G1-G11（21 条独立子用例，checkAsync 隔离防短路）红先行金牌：G1/G2/G3a/G3b（twinfield 跨抽屉误命中反面）、G4/G11（twinboth 域内唯一才动手正面半边）、G5/G6（twintitle 开错抽屉归因反面）、G8a/G8b/G9a/G9b/G9c/G9d（twinlate 点后歧义+域级多匹配）、G10a/G10b（twinghost 隐藏标题文本拒认）、G7a/G7b/G7c-1/G7c-2/G7d（happy 场景缺/空串/纯空白/非 string nodeName fail-closed 钉桩）。反面用例精确钉 verdict 恰 NEEDS_HUMAN（INDETERMINATE/AMBIGUOUS_ACTION 分场景钉 reason）；涉冒牌字段/触发器用例加宽域候选零落笔/唯一落笔取证（含 length 钉位，防空数组对 .some() 恒假通过）。fake-sut 五反面场景（twinfield/twinboth/twintitle/twinlate/twinghost，纯加法，既有场景零行为差）+ CONTRACT.md 登记。既有三金牌（wf-set-node-field/wf-select-node-dropdown/replay-nth-visible-hardening）补 nodeName + 编译产物 nodeName 钉位加严；wf-open-node/画布族涟漪（wf-add-node/wf-connect-nodes/wf-open-smoke/flow-bridge）零行为差复跑。红先行：实现前 tests/_golden/drawer-lock-hardening.golden.mjs 20/20 败（红证留存运行输出，逐条对应旧实现的具体假绿路径——旧宽域锁/旧回读命中冒牌抽屉返 unique、旧编译门 exit 0 产 events 等）；accept 收口后 --red-verified 通过。loop 内 codex-sol@medium L2 测试质量咨询（非裁判）指出 G9a/G9b 宽域候选快照断言漏 length 钉位（空数组对 `.some()` 恒假通过）+ G7 缺「非 string」nodeName 分支覆盖，均属真发现、已补 G9a/G9b length 钉位 + 新增 G7d（20→21 条），复跑仍全绿；另指出编译侧 domain>1/隐藏标题分支未被『不经 openNode 级联』的用例直接命中（仅经 run 态缺失级联间接触达）——记为已知残余覆盖缺口，未在本轮补（需新夹具场景或新测试手法，超出本契约已批准范围，留档待下一轮决策）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/drawer-lock-hardening.golden.mjs",
+        "node tests/_golden/wf-set-node-field.golden.mjs",
+        "node tests/_golden/wf-select-node-dropdown.golden.mjs",
+        "node tests/_golden/replay-nth-visible-hardening.golden.mjs",
+        "node tests/_golden/wf-open-node.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-13T23:01:29.751Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-regression-and-selftest",
+      "desc": "全链回归零行为差（fake-sut 双冻文件影响面：p5-replay 夹具回归 + p5-replay-coverage fail-safe 不变量 + e2e-chain 全链 + report-workflow-structure 集 18 COMPILE_KNOWN_ATOMS 不变）+ 裁判零 LLM 链路自检 selftest --tier1。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/report-workflow-structure.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-13T23:02:49.318Z 全部 acceptance exit 0"
+    }
+  ]
+}

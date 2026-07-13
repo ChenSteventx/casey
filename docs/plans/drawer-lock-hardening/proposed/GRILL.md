@@ -3,6 +3,11 @@
 > 挂账原文：`loop/prd-wf-set-node-field.json` observability 第二条（codex-sol 异构冗余评审 MED#2，
 > 2026-07-10 挂账）；候选契约登记 `docs/NEXT-SESSION.md` 下一步 B。
 > 凭据：Steven 2026-07-13 在主会话点选本契约开工，范围即挂账原文修法，无新分岔（grill 据此 user-confirmed）。
+>
+> **设计评审修订**（codex-sol@max，2026-07-14）：D2 标题锚加「标题文本自身可见」内层限定、D4 缺失
+> 判据扩空串/纯空白、D5 点后歧义补专属红钉、D7 场景三扩五（`twinlate`/`twinghost`）+ twinboth 冒牌
+> 补触发器、风险 1 明示身份锚残余假设面。处置全录 `docs/plans/drawer-lock-hardening/review/`；
+> 金牌矩阵与断言升级见 plan.md。
 
 ## 问题（挂账复述，不改写）
 
@@ -58,6 +63,13 @@
   再锁它 = 夹具倒裁（测试夹具不许倒着裁到预定裁定；已冻接缝是唯一事实源、要复现不要另造），且真机若无
   此类名，三原子将全量 fail-closed 变废原子。标题锚是**身份锚**（锁「这个节点的抽屉」）而非类型锚
   （锁「节点抽屉这类」），严格更强：两个节点抽屉并存的假想场景也分得开。
+- 评审修订（codex-sol@max 2026-07-14 采信）：`filter({has})` 不查内层可见性、`:visible` 只约束
+  wrapper——wrapper 可见但标题文本藏在隐藏节点（display:none 模板等）也会命中，是假绿向的洞
+  （ddhidden 场景「全页门数得到、可见门数不到」同一心智模型）。**收紧：标题锚的内层文本锚同限可见**
+  （标题文本自身可见才算命中），编译门回放门同刻；配 `twinghost` 反面场景红钉（plan G10）。此收紧
+  不新增真机假设（节点抽屉展示的标题本就可见），fail-safe 方向。评审另提「文本须位于标题元素内」
+  ——驳回：结构/类锚即上文已拒的类锚（真机标题元素类未采样、`.lf-node-drawer__title` 属夹具自造），
+  残余假设面在风险 1 明示。
 - 真机假设申报：标题锚承袭 openNode 双证回读的既有真机假设（节点抽屉显示节点标题），**不新增**假设面；
   该假设的真机核验仍走既有 route:human 采样挂账（与 openNode/selectNodeDropdown/setNodeField 合并行程），
   本契约在重签的 prd observability 里保留该行程不动。
@@ -80,6 +92,10 @@
   fail-open」。波及面已核：三原子无任何真机已签 spec（hermetic 金牌手编 events 是全部存量，本契约
   一并补 `nodeName` 并重签）；外部旧 spec 若有，落 `NEEDS_HUMAN` 重编译，诚实且可恢复。新金牌加
   负向钉桩锁死此门（防后人加「legacy 回落」削弱）。
+- 评审修订（codex-sol@max 2026-07-14 采信）：冻结 schema 只约束 `nodeName` 为 string——空串与纯空白
+  类型合法但语义非法，直接进 `getByText(...,{exact:true})` 行为不可证。**缺失判据扩展为三者任一：
+  字段缺席、非 string、`trim()` 后为空**，命中一律同 D4 硬阻断；编译侧 run 态标题空白同判 blocker。
+  G7 拆三独立子用例覆盖（plan G7a/G7b/G7c）。
 
 ### D5 openNode 侧的收窄形态：预点基线归因守卫 + 点后域内恰一
 
@@ -91,6 +107,10 @@
   2. **点后恰一**：回读要求域内恰 1（`>1` 同样证不出归因）。
 - 代价申报（fail-safe 方向的收紧）：「同一节点抽屉已开着再重开」这类罕见流会因预点基线落
   `NEEDS_HUMAN`——证不出归因就交人，不假绿；既有夹具与 e2e 流全部是「开前无同标题抽屉」，零行为差。
+- 评审修订（codex-sol@max 2026-07-14 采信）：`twintitle` 只覆盖「冒牌点击前已存在」（预点基线半边）；
+  「点击后才出现的冒牌」走点后恰一半边，原计划无专属红钉。补 `twinlate` 场景（单击开真抽屉同刻
+  出现含标题冒牌）钉两处：openNode 点后域内 count=2 → `action_failed`/blocker（plan G8）；点击已
+  发生后两抽屉在场，select/set 域级 `count>1` → `ambiguous`（plan G9，D6 三态的 >1 分支实钉）。
 
 ### D6 抽屉域三态与字段/触发器级既有闸的分层
 
@@ -101,9 +121,9 @@
   既有场景（`setclash`/`setmulti`/`setsuffix`/`ddempty`/`ddtwin`/`ddhidden`/`ddmulti`/`ddabsent`/`ddwrong`）
   在新域锁下判定全部不变（各场景只有节点抽屉一个可见抽屉、且都含节点标题）——涟漪金牌复跑锁零行为差。
 
-### D7 夹具反面场景：三个纯加法场景、复现挂账接缝、不倒裁
+### D7 夹具反面场景：五个纯加法场景、复现挂账接缝、不倒裁
 
-- 定夺：fake-sut 详情页加三个场景（场景名实现期定稿并登记 `tests/fixtures/fake-sut/CONTRACT.md`；
+- 定夺（评审修订后三扩五）：fake-sut 详情页加五个场景（场景名实现期定稿并登记 `tests/fixtures/fake-sut/CONTRACT.md`；
   下文用工作名）。冒牌抽屉 = 详情页**画布外**挂的第二个可见 `.hr-drawer__content-wrapper`（复现
   「另一可见抽屉」——真机形态如同页测试面板/新增抽屉并存）：
   1. `twinfield`：节点抽屉正常开但**无** URL 字段、无下拉（ddempty 形态）；冒牌抽屉（不含节点标题）
@@ -112,10 +132,19 @@
      回读成立 → `unique` 假绿（红证）；新标题锚域内字段/触发器 `count===0` → `none`/blocker。
   2. `twinboth`：节点抽屉与冒牌抽屉**都**有同 placeholder 字段（各一）。钉「域内唯一才动手」的正面半边：
      旧宽域锁 `count===2` → `ambiguous`；新标题锚锁进节点抽屉 `count===1` → `unique` 真填对、verdict `PASS`。
-     （证明收窄不是无脑全关：能证出归属时照常干活。）
+     （证明收窄不是无脑全关：能证出归属时照常干活。）评审修订：冒牌抽屉补挂一个「请选择」触发器
+     ——select 的同型正面半边（plan G11）需要「宽域两触发器、冒牌 DOM 序更前」考场，钉旧门 nth=0
+     误点冒牌 + 新门锁进真抽屉。
   3. `twintitle`：单击节点**不开**抽屉（drawernone 形态）+ 冒牌抽屉含节点标题精确文本。钉 openNode
      回读假绿：旧回读命中冒牌抽屉 → `unique` 假绿（红证）；新预点基线 `count>0` 证不出归因 →
      `action_failed`/blocker。
+  4. `twinlate`（评审修订新增）：单击节点**开**真抽屉（ddempty 形态：无字段无下拉），**同刻**挂出
+     含节点标题精确可见文本的冒牌抽屉（带同 placeholder 字段 + 「请选择」触发器）。钉「点击后才
+     出现的冒牌」：openNode 预点基线 0 过、点后域内 `count===2` 证不出归因（plan G8）；点击已发生后
+     select/set 域级 `count===2` → `ambiguous`（plan G9）。
+  5. `twinghost`（评审修订新增）：单击节点**不开**抽屉（drawernone 半形态）+ 冒牌抽屉含节点标题精确
+     文本但该文本 display:none 隐藏。钉「隐藏文本命中」假绿：旧 `filter({has})` 不查内层可见性 →
+     wrapper 可见即 `unique` 假绿（红证）；新锚标题文本自身须可见 → 不命中、fail-closed（plan G10）。
   - 纪律：纯加法、既有场景零行为差；场景行为 = 挂账描述的接缝复现，不为金牌预定裁定倒着裁
     （冒牌抽屉的字段/触发器行为与真节点抽屉同源共用构建函数，不做特判）。
 
@@ -138,15 +167,25 @@
 | 4 | `twinboth` 回放 setNodeField | 宽域锁 count=2 → `ambiguous`（干不了活） | 标题锚锁进节点抽屉 count=1 → `unique` 真填对 + `PASS` |
 | 5 | `twintitle` 回放 openNode | 回读命中冒牌抽屉 → `unique` 假绿 | 预点基线 count>0 证不出归因 → `action_failed`、不 `PASS` |
 | 6 | `twintitle` 编译 openNode | emit 等到冒牌抽屉可见 + 后置核验过 → exit 0 假绿 | 预点基线 blocker exit 65 零 events |
-| 7 | happy 回放 select/set 事件缺 `nodeName` | 宽域锁照常 `unique`+`PASS` | 硬阻断 `action_failed`、不 `PASS`（D4 钉桩） |
+| 7 | happy 回放 select/set 事件缺 `nodeName`（缺席/空串/纯空白三态，D4 修订） | 宽域锁照常 `unique`+`PASS` | 硬阻断 `action_failed`、恰 `NEEDS_HUMAN`（D4 钉桩） |
+| 8 | `twinlate` 回放+编译 openNode（点后冒牌） | 回读 first 可见即过 → `unique` 假绿 / 编译 exit 0 | 点后域内 count=2 → `action_failed`/blocker、恰 `NEEDS_HUMAN` |
+| 9 | `twinlate` 回放 set/select（两含标题抽屉在场） | 宽域锁 count=1 命中冒牌 → `unique`+`PASS` 假绿 | 域级 count=2 → `ambiguous`+`candidateCount 2`、零落笔、恰 `NEEDS_HUMAN` |
+| 10 | `twinghost` 回放 openNode/set（隐藏标题文本） | `filter({has})` 命中隐藏文本 → `unique` 假绿 | 标题文本不可见不算命中 → `action_failed`/`none`、恰 `NEEDS_HUMAN` |
+| 11 | `twinboth` 回放 selectNodeDropdown（正面半边） | 宽域 nth=0 误点冒牌触发器（同为 `unique`+`PASS`，红在取证断言） | 锁进真抽屉触发器选对 → `unique`+`PASS`+冒牌零落笔取证 |
 
 每条先在旧实现上跑红（断言写新行为、旧代码必败），再动手；改后全绿 + 涟漪金牌零行为差。
+评审修订后的断言总纪律（精确 `NEEDS_HUMAN` 路由 + 宽域候选零落笔取证 + 独立子用例隔离）见 plan.md
+金牌清单。
 
 ## 风险
 
 1. **真机标题锚假设**：承袭 openNode 已冻假设（节点抽屉显示节点标题、精确文本可命中），不新增假设面；
    真机核验走既有 route:human 采样行程（重签 prd 的 observability 保留）。若真机标题带前后缀，openNode
-   本就开不出 `unique`——属既有暴露面、非本契约新增。
+   本就开不出 `unique`——属既有暴露面、非本契约新增。评审修订明示残余假设面：**可见地展示当前节点
+   精确标题的抽屉即视为该节点的抽屉**（身份锚模型）——若某冒牌抽屉可见正文恰含该精确标题且域内
+   恰一，身份锚原理上不可分辨；要再收窄只能靠真机采样节点抽屉专属结构锚（已拒夹具自造类锚），
+   该采样仍挂既有 route:human 行程。本契约把可证分辨的面全部收死（隐藏文本、点后歧义、多抽屉），
+   证不出的一律 `NEEDS_HUMAN`，不假绿。
 2. **旧 spec 兼容断崖**：缺 `nodeName` 的旧事件回放一律 `action_failed`（D4）。存量已核尽（仅三份金牌
    手编 events，本契约补齐）；风险余量 = 仓外未知 spec，落 `NEEDS_HUMAN` 可恢复，接受。
 3. **重开同节点流收紧**（D5 代价）：`NEEDS_HUMAN` 而非假绿，方向正确；真机若实证「重开」是常见流，

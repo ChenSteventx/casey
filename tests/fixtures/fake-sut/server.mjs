@@ -26,14 +26,23 @@ const SCENARIOS = new Set([
   // replay-nth-visible-hardening fix#2：抽屉挂一枚 display:none 的隐藏 .hr-select 触发器（占 DOM 序 index 0）+
   //   真·可见触发器——触发器域锁未限可见时误命中隐藏触发器，限 :visible 后只命中可见触发器。
   'ddhidden',
-  // drawer-lock-hardening（GRILL D7）：详情页画布外挂第二个可见 .hr-drawer__content-wrapper 冒牌抽屉，
-  //   钉 openNode/selectNodeDropdown/setNodeField 三原子域锁跨抽屉边界（codex-sol MED#2 挂账）。
-  //   冒牌抽屉字段/触发器与真节点抽屉共用构建函数不特判，纯加法、既有场景零行为差。
+  // drawer-lock-hardening（GRILL D7，设计评审修订三扩五）：详情页画布外挂第二个可见
+  //   .hr-drawer__content-wrapper 冒牌抽屉，钉 openNode/selectNodeDropdown/setNodeField 三原子域锁
+  //   跨抽屉边界（codex-sol MED#2 挂账）。冒牌抽屉字段/触发器与真节点抽屉共用构建函数不特判，
+  //   纯加法、既有场景零行为差。
   //   twinfield：真节点抽屉 ddempty 形态（无字段无下拉）+ 冒牌抽屉挂唯一同 placeholder 字段与「请选择」触发器
   //     （可点可选可回读）——钉 setNodeField/selectNodeDropdown 跨抽屉误命中；
-  //   twinboth：真节点抽屉与冒牌抽屉各挂一个同 placeholder 字段——钉「域内唯一才动手」正面半边；
-  //   twintitle：单击节点不开抽屉（drawernone 半形态）+ 冒牌抽屉含节点标题精确文本——钉 openNode 开错抽屉归因假绿。
-  'twinfield', 'twinboth', 'twintitle',
+  //   twinboth：真节点抽屉与冒牌抽屉各挂一个同 placeholder 字段 + 各一「请选择」触发器（评审修订：冒牌
+  //     补挂触发器）——钉「域内唯一才动手」正面半边（set 与 select 各自的正面半边）；
+  //   twintitle：单击节点不开抽屉（drawernone 半形态）+ 冒牌抽屉（画布外、预挂）含节点标题精确文本——
+  //     钉 openNode 开错抽屉归因假绿（只覆盖『点击前已存在』的冒牌）；
+  //   twinlate（评审修订新增）：单击节点开真抽屉（ddempty 形态：无字段无下拉），同刻（同一次点击的
+  //     同一事件处理器内）动态挂出含该节点标题精确可见文本的冒牌抽屉（带同 placeholder 字段 + 「请选择」
+  //     触发器）——钉『点击后才出现的冒牌』：openNode 预点基线 0 过、点后域内 count=2 证不出归因；
+  //     set/select 域级 count=2 → ambiguous；
+  //   twinghost（评审修订新增）：单击节点不开抽屉（drawernone 半形态，画布外预挂冒牌）+ 冒牌抽屉含节点
+  //     标题精确文本但该文本 display:none 隐藏——钉『隐藏文本命中』假绿（标题文本自身须可见才算命中）。
+  'twinfield', 'twinboth', 'twintitle', 'twinlate', 'twinghost',
 ]);
 
 // 背景轮询 denylist 的合成形态（绝不引真 site.json，护栏 #7）：watchNetworkForensics 用它把 /auths/poll 归 background。
@@ -251,7 +260,9 @@ function clientMain() {
     //   'drawernone'     单击节点不开抽屉（模拟 app 无响应——「点了不开」反面，钉回放 action_failed）；
     //   'drawersuperset' 单击节点开抽屉、标题 = 节点名 + '副本'（含 label 子串但非精确——substring 假绿考场，钉 F1 精确回读）；
     //   'twintitle'      单击节点不开抽屉（drawernone 半形态复用）——冒牌抽屉另含节点标题精确文本钉 openNode 开错抽屉归因假绿。
-    var drawerMode = scenario === 'drawersuperset' ? 'superset' : (scenario === 'drawernone' || scenario === 'twintitle') ? 'none' : '';
+    //   'twinghost'      单击节点不开抽屉（drawernone 半形态复用）——冒牌抽屉另含节点标题精确文本但该文本 display:none 隐藏。
+    var drawerMode = scenario === 'drawersuperset' ? 'superset' : (scenario === 'drawernone' || scenario === 'twintitle' || scenario === 'twinghost') ? 'none' : '';
+    var twinlateFakeDrawer = null; // twinlate：点击同刻动态挂出的冒牌抽屉（点击前不存在，与预挂的 twinfield/twinboth/twintitle/twinghost 冒牌不同）
 
     // —— 节点抽屉「请选择」下拉（wf-select-node-dropdown，registry SOP 最小复现）——
     // 触发器 = .hr-select（初值「请选择」，值放 .hr-select__value 子 span 便于精确回读）；点触发器弹可见浮层
@@ -301,9 +312,19 @@ function clientMain() {
       if (!nodeDrawer) { nodeDrawer = el('div', { class: 'hr-drawer__content-wrapper' }); wrap.appendChild(nodeDrawer); }
       nodeDrawer.textContent = '';
       nodeDrawer.appendChild(el('div', { class: 'lf-node-drawer__title' }, titleText));
-      // ddempty/twinfield：抽屉开但无字段无下拉——域内触发器/字段 count=0（execute 预检的「无下拉/无字段」半边；
-      //   twinfield 复用此缺席半边，真节点抽屉空、跨抽屉误命中的唯一候选靠冒牌抽屉，D7 定）。
-      if (scenario === 'ddempty' || scenario === 'twinfield') return;
+      // twinlate（D7 评审修订新增）：真抽屉打开的同一次点击事件处理器内，同刻动态挂出含该节点标题
+      //   精确可见文本的冒牌抽屉（点击前不存在——与 twinfield/twinboth/twintitle/twinghost 的『预挂』
+      //   冒牌不同，钉『点击后才出现的冒牌』这条评审新增支线）。只挂一次（singleton，同 nodeDrawer 先例）。
+      if (scenario === 'twinlate' && !twinlateFakeDrawer) {
+        twinlateFakeDrawer = el('div', { class: 'hr-drawer__content-wrapper' });
+        twinlateFakeDrawer.appendChild(el('div', { class: 'fake-node-title' }, titleText));
+        twinlateFakeDrawer.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
+        buildNodeSelect(twinlateFakeDrawer, '');
+        wrap.appendChild(twinlateFakeDrawer);
+      }
+      // ddempty/twinfield/twinlate：抽屉开但无字段无下拉——域内触发器/字段 count=0（execute 预检的「无下拉/无字段」半边；
+      //   twinfield/twinlate 复用此缺席半边，真节点抽屉空、跨抽屉误命中的唯一候选靠冒牌抽屉，D7 定）。
+      if (scenario === 'ddempty' || scenario === 'twinfield' || scenario === 'twinlate') return;
       // 节点抽屉下拉纯加法：缺省单下拉；ddtwin 挂两触发器 + 预挂一层 stale 隐藏浮层含目标（两浮层各现一次）。
       // ddhidden（replay-nth-visible-hardening fix#2 复现）：先挂一枚 display:none 的隐藏 .hr-select 触发器占
       //   DOM 序 index 0，再挂真·可见触发器——触发器域锁未限可见时 .hr-select count=2、nth=0 误命中隐藏触发器
@@ -360,20 +381,34 @@ function clientMain() {
     if (scenario === 'setclash') wrap.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
     // —— 冒牌抽屉（drawer-lock-hardening D7，纯加法反面场景）——详情页画布外（挂 wrap，同 setclash 位置
     //   先例）再挂第二个可见 .hr-drawer__content-wrapper，真机形态如同页测试面板/新增抽屉并存；字段/
-    //   触发器与真节点抽屉共用构建函数 buildNodeSelect 不特判。只 twin* 三场景挂，既有场景零行为差。
-    var TWIN_TITLE_NODE = '模型节点'; // twintitle 冒牌抽屉标题固定复用面板项名（金牌据此选同名节点考场）
-    if (scenario === 'twinfield' || scenario === 'twinboth' || scenario === 'twintitle') {
+    //   触发器与真节点抽屉共用构建函数 buildNodeSelect 不特判。本块只覆盖『点击前已预挂』的四场景
+    //   （twinfield/twinboth/twintitle/twinghost）；twinlate 的冒牌是点击同刻动态挂出，见上方 overlay
+    //   click 处理器内 twinlateFakeDrawer。既有场景（非 twin*）零行为差。
+    var TWIN_TITLE_NODE = '模型节点'; // twintitle/twinghost 冒牌抽屉标题固定复用面板项名（金牌据此选同名节点考场）
+    if (scenario === 'twinfield' || scenario === 'twinboth' || scenario === 'twintitle' || scenario === 'twinghost') {
       var fakeDrawer = el('div', { class: 'hr-drawer__content-wrapper' });
       if (scenario === 'twintitle') {
         // 冒牌抽屉含节点标题精确文本——钉 openNode 回读假绿：另一可见抽屉恰含 label（不含字段/触发器，
         // 本场景只考 openNode 自身，select/set 两原子不会被前置门放行到达）。
         fakeDrawer.appendChild(el('div', { class: 'fake-node-title' }, TWIN_TITLE_NODE));
+      } else if (scenario === 'twinghost') {
+        // twinghost（评审修订新增）：冒牌抽屉含节点标题精确文本，但该文本节点自身 display:none 隐藏
+        // ——wrapper 可见但文本不可见，钉『标题文本自身须可见』收紧（D2 修订）。同时补挂一个同 placeholder
+        // 字段 + 一个「请选择」触发器（与 twinfield 同构）：若只挂隐藏标题不挂字段/触发器，旧宽域锁在这
+        // 具体夹具里也会因「压根没有字段」而巧合吐 none——不构成红证；补字段/触发器后，旧宽域锁（不问
+        // 标题、只问「抽屉可见」）会真把这唯一字段/触发器当成домen 命中，走完全程真假绿，红证成立。
+        var titleEl = el('div', { class: 'fake-node-title' }, TWIN_TITLE_NODE);
+        titleEl.setAttribute('style', 'display:none');
+        fakeDrawer.appendChild(titleEl);
+        fakeDrawer.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
+        buildNodeSelect(fakeDrawer, '');
       } else {
         // twinfield/twinboth：冒牌抽屉不含节点标题，只挂同 placeholder 字段（钉 setNodeField/
-        // selectNodeDropdown 跨抽屉误命中）；twinfield 再挂一个「请选择」触发器（可点可选可回读，
-        // 让旧宽域锁走完全程真假绿——真节点抽屉此时是 ddempty 形态，无字段无下拉）。
+        // selectNodeDropdown 跨抽屉误命中）+ 一个「请选择」触发器（可点可选可回读，让旧宽域锁走完
+        // 全程真假绿；评审修订：twinboth 冒牌也补挂触发器，钉 selectNodeDropdown 域内唯一才动手的
+        // 正面半边——真节点抽屉此时是 ddempty 形态，无字段无下拉）。
         fakeDrawer.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
-        if (scenario === 'twinfield') buildNodeSelect(fakeDrawer, '');
+        if (scenario === 'twinfield' || scenario === 'twinboth') buildNodeSelect(fakeDrawer, '');
       }
       wrap.appendChild(fakeDrawer);
     }

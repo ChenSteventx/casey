@@ -98,7 +98,7 @@ await checkAsync('C1 fix#1 replay·非法 nth（happy + 事件 nth=-1 在场但�
     const { axes, verdict } = runReplayVerdict('c1', s.url, {
       schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-09T00:00:00.000Z', authored: false,
       // 事件 nth=-1（在场但非非负整数）+ 载 option DD_OPT：修前 coerce 0 点 index 0 真选中回 unique（假绿）。
-      events: [...setupEvents(), { stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.selectNodeDropdown', action: 'click', nth: -1, text: DD_OPT, semantic: { kind: 'text', name: '请选择', exact: true } }],
+      events: [...setupEvents(), { stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.selectNodeDropdown', action: 'click', nth: -1, text: DD_OPT, semantic: { kind: 'text', name: '请选择', exact: true }, nodeName: NODE }],
     }, {
       caseId, channel: 'web',
       intents: [...setupIntents(), { intentId: 'intent_3', expected: [{ kind: 'textVisible', op: 'appears', value: DD_OPT }] }],
@@ -139,7 +139,7 @@ await checkAsync('C3 fix#2 replay·隐藏触发器（ddhidden：抽屉先挂 dis
     const caseId = 'tc_rnvh_c3';
     const { axes, verdict } = runReplayVerdict('c3', s.url, {
       schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-09T00:00:00.000Z', authored: false,
-      events: [...setupEvents(), { stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.selectNodeDropdown', action: 'click', nth: 0, text: DD_OPT, semantic: { kind: 'text', name: '请选择', exact: true } }],
+      events: [...setupEvents(), { stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.selectNodeDropdown', action: 'click', nth: 0, text: DD_OPT, semantic: { kind: 'text', name: '请选择', exact: true }, nodeName: NODE }],
     }, {
       caseId, channel: 'web',
       intents: [...setupIntents(), { intentId: 'intent_3', expected: [{ kind: 'textVisible', op: 'appears', value: DD_OPT }] }],
