@@ -22,7 +22,7 @@
         "node loop-kit/bin/ratchet.mjs index"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-13T05:52:28.107Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-13T06:34:46.501Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-regression",
@@ -32,7 +32,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-13T05:52:28.969Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-13T06:34:47.566Z 全部 acceptance exit 0"
     }
   ]
 }
