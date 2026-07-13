@@ -106,7 +106,7 @@
 | `trace` | 回放追踪档 | Playwright 逐帧追踪归档（.zip）；报告里不内嵌、复制到 `trace/` 加下载链接与 show-trace 提示。**未建挂账**（2026-07-07 审计核实：全链无 tracing 调用、报告 traceRef 恒 null；设计文档「已知偏离」表有账） | — |
 | `channel` | 通道 | 回放目标类型：`web`（Heren 中台）/`cef`（Hi小助）/`arbitrary`（任意站点）；裁定/报告/熔断/契约层 channel 无关 | — |
 | `chat` | 对话流 | 飞轮排期第二维度：覆盖 catalog 维度碰不到的流式回复取证（`streamReplyReceived`、`waitForReplyByStream` 底座）与 `replyContains`；骑 regress `chiefcomplaint_smoke` 语料（`echo_default_on` 经 2026-07-03 摸底实证属画布维度错档：测节点抽屉开关、带坐标拖拽，不走对话流） | — |
-| `promptset` | 提示词集 | 数据驱动回归的被测参数输入层：一份 JSON 数组 `[{id,text,source,category,expect?}]`，把一条冻结 `chat` flow 复用成 N 条独立用例（每行一 caseId/录屏/裁定），聚合成一份报告；血缘 xUnit 数据驱动测试（data-driven testing）。忠实对标 regress `_promptset.ts`（字段名 `text`、`source` 枚举 `user\|builtin` 按本仓 scope 取值） | — |
+| `promptset` | 提示词集 | 数据驱动回归的被测参数输入层：一份 JSON 数组 `[{id,text,source,category,expect?}]`，把一条冻结 `chat` flow 复用成 N 条独立用例（每行一 caseId/录屏/裁定），聚合成一份报告；血缘 xUnit 数据驱动测试（data-driven testing）。忠实对标 regress `_promptset.ts`（字段名 `text`）。`source` 枚举 `user`（人写）\|`builtin`（随 注入向量库 发）\|`llm`（`gen-prompts` 契约扩容：CLI 外 LLM 合成，经 `promptset-freeze` 强制标注） | — |
 | 被测参数 | Prompt Parameter | `promptset` 每行的 `text`——真正打进 SUT 对话框、喂给 `chat.sendAndWait` 的 `prompt` 槽的消息文本；数据驱动多行参数化的「参数」。**消歧**：本项「参数化」专指此，显式区别于 `caseId` 并发参数化（`worktree-baton` 已解）与 `entityNameParam` 前缀参数化（R12/`compile-gate` 已落） | — |
 | 注入向量库 | Injection Vector Library | 随工具发、用户可编辑扩展的通用边界/安全被测参数库（`prompts/_lib/boundary.json` + `security.json`）；category 由文件名强制、`source` 强制 `builtin`、id 前缀 `bnd_`/`sec_` 防撞，`被测参数 overlay` 按开关并入每个数据驱动用例集；血缘安全测试注入向量 + 模糊测试语料。**消歧**：本项「内置提示词」专指此，显式区别于 Casey 自身归一/编译工装提示词（委托 CLI 外 LLM、仓内无实体，见 `归一提示模板`） | — |
 | 软期望 | Soft Expectation | `promptset` 行的 `expect{mustInclude?,mustNotInclude?,note?}`——只在报告里标命中与否的 soft 断言，绝不进多态裁定树、绝不判红（护栏 #17）；非确定性 LLM 输出不做 exact 硬断言。落地 = 强制 `soft:true` 的 `replyContains`/`replyMatches`，经 `--soft-expect` 通道并入现成 soft 链路进报告黄标（不碰 `sign-gate`、不进裁判） | — |
@@ -125,6 +125,9 @@
 | 归一脚手架 | Normalization Scaffold | 相0 归一的前段脚手架——把一段自由文本用例零 LLM 包成 schema 合规的 候选骨架 + 归一提示模板，供 CLI 外 LLM 归一成真实候选后经 `parseTestCase` 重新入场；脚手架零 LLM，LLM 手术刀只在 CLI 外经确定性闸 + 人签入场。喂料源是自由文本（无 events），显式区分于 示教蒸馏（喂料源是 示教录制包、有 events 可 1:1 投影） | — |
 | 候选骨架 | Candidate Skeleton | `casey scaffold-case` 产的非权威候选物；开箱过 `parseTestCase`（全 `route:human` 兜底基线），降权标记落文件名 `scaffold-candidate-<caseId>.json` + 落地提示 + 负向不变量，绝不 `signed`/`replayReady`，须 CLI 外 LLM 归一 + 重走全链 + 人签才算数；显式区分于 蒸馏候选（喂料源是 示教录制包 而非自由文本） | — |
 | 归一提示模板 | Normalization Prompt Template | 指导 CLI 外 LLM 把 `source.raw` 自由文本归一成真实候选 `TestCase` 的提示 + schema 约束（镜像 `llm-patch.draft.md` 相2 补缝模板范式）；产物必过 `parseTestCase`，违规 fail-closed 退回；语义质量 `route:human` 抽检 | — |
+| 合成种子模板 | Synthesis Seed Template | `casey promptset-seed` 零 LLM 产的给 CLI 外 LLM 看的生成指引 + 候选产物格式说明；字节稳定确定性（同输入同字节，无时刻字段）；镜像 归一提示模板 先例，喂料源是种子信息（被测 agent 名 / 可选内嵌系统提示词）而非自由文本用例（`gen-prompts` 契约） | — |
+| 被测参数候选 | Prompt Candidate | 粒度定死：**单条** `{id,text,category,expect?}` 条目；其 JSON 数组整体称**候选批**（两粒度不混用）。CLI 外 LLM 按 合成种子模板 合成、非权威，须过 `casey promptset-freeze` 校验闸 + 幂等冻结 才进 `promptset.json`，冻结时一律强制 `source:'llm'` 可追溯；显式区分于 候选骨架（喂料源与产物域都不同，`gen-prompts` 契约） | — |
+| 幂等冻结 | Idempotent Freeze | `casey promptset-freeze` 的写盘纪律：已存在 id 绝不覆盖（候选规范化后与既有条目深等则跳过，内容或来源冲突则整批拒绝）、任何失败不写盘不留半份、原子写；血缘幂等性（分布式系统术语）+ regress `gen-prompts` 冻结语义。**消歧**：与既有「冻结断言契约」体系（`sign`/`lib/sign-gate.mjs` 人签冻结）**无关**——本词条无人签、无 checksum、可持续追加，只承诺已有 id 不覆盖与失败不写盘；两者都叫「冻结」但语义完全不同，并列词条防混淆（`gen-prompts` 契约） | — |
 | `fail-safe` | 故障安全 | 失败时退到安全态：机器证不出就路由人（`NEEDS_HUMAN`），绝不默认成可自愈（fail-open 的反面） | — |
 | `fail-open` | 故障放行 | 故障时放行：基础设施/hook 自身故障不阻塞正常工作；仅用于 lint/hook，绝不用于裁定 | — |
 | `fail-closed` | 故障关闭 | 故障时拒绝：校验不过/缺数据时报红拒绝（用于 `parseTestCase` 等准入） | — |
