@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "task": "ratchet-reverse-index：只读构建冻结文件到全部引用 PRD 的反向索引，并核验全仓 Test Ratchet 一致性",
+  "specPath": "docs/plans/ratchet-reverse-index/plan.md",
+  "testChecksums": {
+    "tests/_golden/ratchet-reverse-index.golden.mjs": "8b76c9a1b8bfb07d87e4ec1b6088d44cc544045d94780738a30667f0f701bbd5"
+  },
+  "observability": [
+    {
+      "dimension": "本契约只提供只读索引、全仓 checksum 核验与 affected 查询；批量重签、gate 分层、测试缓存和统一状态机均不在本契约范围",
+      "route": "waived",
+      "note": "任何写 testChecksums 或改强制层裁判的需求须另开 kernel 级契约并经人签"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-read-only-reverse-index",
+      "desc": "从所有 PRD 的 testChecksums 确定性构建反向索引，核验缺文件、实际漂移、冲突声明、坏 PRD 与路径逃逸，并查询变更文件影响的全部 PRD；实现不拥有文件写能力",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/ratchet-reverse-index.golden.mjs",
+        "node loop-kit/bin/ratchet.mjs index"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-13T06:34:46.501Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-regression",
+      "desc": "现有确定性内核与统一语言零回归",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-13T06:34:47.566Z 全部 acceptance exit 0"
+    }
+  ]
+}

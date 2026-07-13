@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "_doc": "切换前观测基线的逐案录制清单（plan.md D7 C2、GRILL D4/D5）。次序即执行次序；env 是相对夹具根的覆盖（LOOP_CONTRACT_FILE 等）；reset 是案前重置步骤（当前只有 rm，忽略文件不存在）；stdin 支持 {{TREE_ROOT}} 占位替换为隔离树绝对根。cwd 固定为隔离树根。",
+  "cases": [
+    { "id": "term-lint-registry", "script": "term-lint.mjs", "args": ["--registry"], "note": "术语表完整性检查，干净夹具应过" },
+    { "id": "term-lint-file-clean", "script": "term-lint.mjs", "args": ["--file", "loop/GUARDRAILS.md"], "note": "干净文件检查" },
+    { "id": "term-lint-file-violation", "script": "term-lint.mjs", "args": ["--file", "fixtures-extra/violation.md"], "note": "命中弃用别名，黑名单方向判红" },
+    { "id": "term-lint-stdin-clean", "script": "term-lint.mjs", "args": ["--stdin"], "stdin": "这是一段干净的说明文字。\n", "note": "stdin 检查干净文本" },
+    { "id": "breaker-reset", "script": "breaker.mjs", "args": ["--reset"], "note": "熔断器清零，写 .breaker-state.json（startedAt 需规范化）" },
+    { "id": "breaker-round-ok", "script": "breaker.mjs", "args": ["--round"], "note": "正常记账一轮，继续" },
+    { "id": "breaker-round-error", "script": "breaker.mjs", "args": ["--round", "--error", "boom"], "note": "带错误摘要记账一轮，仍继续（未达阈值）" },
+    { "id": "gate-dry", "script": "gate.mjs", "args": ["--prd", "loop/prd-baseline.json", "--dry"], "note": "dry 模式列出 acceptance 命令，不落盘" },
+    { "id": "ratchet-index", "script": "ratchet.mjs", "args": ["index"], "note": "只读反向索引，夹具 prd 的 testChecksums 应一致（0 issue）" },
+    { "id": "contract-init-light", "script": "contract.mjs", "args": ["init", "demo-light", "--lane", "light", "--reason", "baseline 录制演练"], "env": { "LOOP_CONTRACT_FILE": "loop/active-contract-cli-demo.json" }, "note": "隔离槽建 light 车道契约" },
+    { "id": "contract-show-after-init", "script": "contract.mjs", "args": ["show"], "env": { "LOOP_CONTRACT_FILE": "loop/active-contract-cli-demo.json" }, "note": "show 隔离槽刚建的契约" },
+    { "id": "contract-check-writeprd-before-plan", "script": "contract.mjs", "args": ["check", "write-prd"], "env": { "LOOP_CONTRACT_FILE": "loop/active-contract-cli-demo.json" }, "note": "plan 未 done，write-prd 应拒（exit 2）" },
+    { "id": "contract-advance-grill", "script": "contract.mjs", "args": ["advance", "grill", "--artifact", "loop/grill-baseline.md", "--user-confirmed"], "env": { "LOOP_CONTRACT_FILE": "loop/active-contract-cli-demo.json" }, "note": "推进 grill 阶段" },
+    { "id": "contract-advance-plan", "script": "contract.mjs", "args": ["advance", "plan", "--artifact", "docs/plans/demo-light/plan.md"], "env": { "LOOP_CONTRACT_FILE": "loop/active-contract-cli-demo.json" }, "note": "推进 plan 阶段" },
+    { "id": "contract-check-writeprd-after-plan", "script": "contract.mjs", "args": ["check", "write-prd"], "env": { "LOOP_CONTRACT_FILE": "loop/active-contract-cli-demo.json" }, "note": "plan 已 done，write-prd 应许（exit 0）" },
+    { "id": "contract-list-no-git", "script": "contract.mjs", "args": ["list"], "note": "夹具非 git 仓，list 应走确定性降级文案" },
+    { "id": "hook-loop-triage-noop", "script": "hook-loop-triage.mjs", "stdin": "{\"prompt\":\"你好\"}", "note": "无实现意图，静默放行" },
+    { "id": "hook-loop-triage-hit", "script": "hook-loop-triage.mjs", "stdin": "{\"prompt\":\"帮我实现一个新功能\"}", "note": "命中实现意图，注入检查单" },
+    { "id": "hook-loop-guard-noop-nonimpl", "script": "hook-loop-guard.mjs", "stdin": "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"docs/notes.md\"}}", "reset": [{ "op": "rm", "path": "loop/active-contract.json" }], "note": "非实现路径写入，放行（不判 action）" },
+    { "id": "hook-loop-guard-block-no-contract", "script": "hook-loop-guard.mjs", "stdin": "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"lib/x.mjs\"}}", "note": "无活动 contract，拦（exit 2）" },
+    { "id": "contract-init-full-for-guard", "script": "contract.mjs", "args": ["init", "guard-demo", "--lane", "full", "--reason", "guard 演练"], "note": "默认槽建 full 车道契约，供后续 guard 案使用" },
+    { "id": "hook-loop-guard-block-stage-missing", "script": "hook-loop-guard.mjs", "stdin": "{\"tool_name\":\"Write\",\"tool_input\":{\"file_path\":\"lib/x.mjs\"}}", "note": "full 车道未过 accept，edit-impl 拦（exit 2）" },
+    { "id": "hook-posttool-clean", "script": "hook-posttool.mjs", "stdin": "{\"tool_input\":{\"file_path\":\"loop/GUARDRAILS.md\"}}", "note": "PostToolUse 扫干净文件" },
+    { "id": "hook-posttool-violation", "script": "hook-posttool.mjs", "stdin": "{\"tool_input\":{\"file_path\":\"fixtures-extra/violation.md\"}}", "note": "PostToolUse 扫违例文件（exit 2）" },
+    { "id": "hook-stop-clean", "script": "hook-stop.mjs", "stdin": "{\"transcript_path\":\"{{TREE_ROOT}}/loop-fixtures/transcript-clean.jsonl\",\"stop_hook_active\":false}", "note": "Stop 扫干净回合输出" },
+    { "id": "hook-stop-violation", "script": "hook-stop.mjs", "stdin": "{\"transcript_path\":\"{{TREE_ROOT}}/loop-fixtures/transcript-violation.jsonl\",\"stop_hook_active\":false}", "note": "Stop 扫违例回合输出（exit 2）" }
+  ]
+}
