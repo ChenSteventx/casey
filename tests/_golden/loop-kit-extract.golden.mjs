@@ -447,6 +447,13 @@ async function lockMatching(dir) {
 function writeLock(path, lockObj) {
   writeFileSync(path, JSON.stringify(lockObj), 'utf8');
 }
+// round-2 实现审 codex LOW 采信：`${dir}.lock.json` 落在 dir 之外（故意，见各处注释），单独 rmrf(dir)
+// 不会删到它——多次跑金牌会在 tmpdir 残留多份孤儿锁文件。清理时锁文件路径与 buildMarkerPkg/mkdtempSync
+// 生成的 dir 同源拼出，一并回收。
+function rmrfWithLock(dir) {
+  rmrf(dir);
+  try { unlinkSync(`${dir}.lock.json`); } catch { /* ignore */ }
+}
 
 // 直接调用 boot 的 runCli/loadLib（不经 shim 文件），用 pkgDirOverride/lockPathOverride 注入故障——
 // 这是「测试走独立受测锁注入接缝」的实现方式：生产 shim 从不传这些 override，此路径仅测试可达。
@@ -469,6 +476,37 @@ async function assertDegradesAllKinds(name, faultFn) {
   }
 }
 
+// round-2 实现审 codex HIGH 采信：只断言退出码（64/2/0）不足以区分 D5 矩阵里判据不同但退出码相同的
+// 分支——例如 SPAWN_ERROR 与 NO_STATUS 在 cli/guard/lint 三态下的归一码完全一样，若生产代码误删
+// `if (r.error) {...}` 分支、让 r.error 桩落进 status===null 判据（两者都会把 status/signal 设为
+// null），退出码断言会照绿而测不出真实分支已经变了。改为额外捕获 degrade() 打到 console.log/error 的
+// 诊断文本，用 reasonPattern 断言其确实含该故障类别的判据字样（各 BootError.message 逐类不同），
+// 与退出码断言一并做「codes + reason」双重锁定。
+async function assertDegradesAllKindsWithReason(name, faultFn, reasonPattern) {
+  for (const kind of KINDS) {
+    await check('C4', `${name}（kind=${kind} → ${EXPECT_DEGRADE[kind]}，含降级判据文本核验）`, async () => {
+      const origLog = console.log;
+      const origError = console.error;
+      const captured = [];
+      console.log = (...args) => { captured.push(args.join(' ')); };
+      console.error = (...args) => { captured.push(args.join(' ')); };
+      let code;
+      try {
+        code = await faultFn(kind);
+      } finally {
+        console.log = origLog;
+        console.error = origError;
+      }
+      assert(code === EXPECT_DEGRADE[kind], `期望 ${EXPECT_DEGRADE[kind]}，实得 ${code}`);
+      const text = captured.join('\n');
+      assert(
+        reasonPattern.test(text),
+        `降级判据文本应匹配 ${reasonPattern}（与其它同码故障类别区分），实际捕获输出：${text || '(空，未捕获到任何诊断文本)'}`
+      );
+    });
+  }
+}
+
 await assertDegradesAllKinds('缺包目录', (kind) =>
   runCliDirect({ kind, pkgDirOverride: join(tmpdir(), 'loop-kit-does-not-exist-xyz'), lockPathOverride: KIT_LOCK }));
 
@@ -486,7 +524,7 @@ await check('C4', '身份锁失配（伪造漂移包）设置准备', async () =
       assert(code === EXPECT_DEGRADE[kind], `身份锁失配 kind=${kind} 期望 ${EXPECT_DEGRADE[kind]}，实得 ${code}`);
     }
   } finally {
-    rmrf(dir);
+    rmrfWithLock(dir);
   }
 });
 
@@ -502,7 +540,7 @@ await check('C4', '清单外多余文件判失配', async () => {
       assert(code === EXPECT_DEGRADE[kind], `清单外多余文件 kind=${kind} 期望 ${EXPECT_DEGRADE[kind]}，实得 ${code}`);
     }
   } finally {
-    rmrf(dir);
+    rmrfWithLock(dir);
   }
 });
 
@@ -519,7 +557,7 @@ await check('C4', '缺目标脚本（锁与包内容一致，但请求的脚本�
       assert(code === EXPECT_DEGRADE[kind], `缺目标脚本 kind=${kind} 期望 ${EXPECT_DEGRADE[kind]}，实得 ${code}`);
     }
   } finally {
-    rmrf(dir);
+    rmrfWithLock(dir);
   }
 });
 
@@ -533,7 +571,7 @@ await check('C4', '锁 JSON 损坏', async () => {
       assert(code === EXPECT_DEGRADE[kind], `锁 JSON 损坏 kind=${kind} 期望 ${EXPECT_DEGRADE[kind]}，实得 ${code}`);
     }
   } finally {
-    rmrf(dir);
+    rmrfWithLock(dir);
   }
 });
 
@@ -552,7 +590,7 @@ await check('C4', '意外退出码（数值码，非 0/2）：cli 类原码透�
     const lintCode = await runCliDirect({ kind: 'lint', script: 'oddexit.mjs', pkgDirOverride: dir, lockPathOverride: lockPath });
     assert(lintCode === 0, `lint 类应归一 0，实得 ${lintCode}`);
   } finally {
-    rmrf(dir);
+    rmrfWithLock(dir);
   }
 });
 
@@ -567,7 +605,7 @@ await check('C4', '「锁冻错」残余代价：锁与语法损坏脚本一致�
     const code = await runCliDirect({ kind: 'cli', script: 'broken.mjs', pkgDirOverride: dir, lockPathOverride: lockPath });
     assert(code === 1, `语法损坏脚本对 Node 的默认退出码是 1，cli 类应原码透传，实得 ${code}`);
   } finally {
-    rmrf(dir);
+    rmrfWithLock(dir);
   }
 });
 
@@ -597,7 +635,7 @@ process.exit(code);
       `boot.runCli 应以子进程收到的同信号（SIGTERM）终止外层包装进程，实得 signal=${r.signal} status=${r.status}\nstdout=${r.stdout}\nstderr=${r.stderr}`
     );
   } finally {
-    rmrf(dir);
+    rmrfWithLock(dir);
     try { unlinkSync(wrapperPath); } catch { /* ignore */ }
   }
 });
@@ -628,7 +666,7 @@ console.log(JSON.stringify({ code }));
     const { code } = JSON.parse(r.stdout.trim().split('\n').pop());
     assert(code === 128 + 15, `SIGTERM 自终失败兜底码应为 128+15=143（shell 语义），实得 ${code}`);
   } finally {
-    rmrf(dir);
+    rmrfWithLock(dir);
     try { unlinkSync(wrapperPath); } catch { /* ignore */ }
   }
 });
@@ -709,21 +747,32 @@ await check('C4', 'boot 调用前中抛错：shim 最小内联 try/catch 兜住 
 // 在真实 OS 上无法跨平台确定性构造（process.execPath 派生自身几乎不会失败；status===null 且无信号
 // 无 error 是 Node 文档列出的极端边缘态）。改走桩注入接缝（spawnImpl，仅测试可达、生产零跳过口，
 // 与 pkgDirOverride/lockPathOverride 同类）在真实 runCli 代码路径上行为级验证，取代此前的源码字符串断言。
-await assertDegradesAllKinds('spawnSync 派生失败（r.error，桩注入行为级验证）', (kind) =>
-  runCliDirect({
+// round-2 实现审 codex HIGH 采信：这两态在 cli/guard/lint 三态下的归一退出码彼此相同（64/2/0）——
+// 只断言退出码时，若生产代码误删 `if (r.error) {...}` 分支、让 r.error 桩落进下面的
+// `typeof r.status !== 'number'` 判据（两者都会把 status 置为非 number），退出码完全不变、测试仍绿
+// （这正是 round-1 要消除的「删掉对应分支测试仍过」）。改用 assertDegradesAllKindsWithReason 额外核验
+// degrade() 打到 console 的诊断文本确实含各自专属判据字样，二者互斥、彼此不可混淆。
+await assertDegradesAllKindsWithReason(
+  'spawnSync 派生失败（r.error，桩注入行为级验证）',
+  (kind) => runCliDirect({
     kind,
     pkgDirOverride: EXPECTED_DIR,
     lockPathOverride: KIT_LOCK,
     spawnImpl: () => ({ error: new Error('模拟 spawn 派生失败'), status: null, signal: null }),
-  }));
+  }),
+  /SPAWN_ERROR|子进程派生失败/
+);
 
-await assertDegradesAllKinds('status===null 且无信号无 error（桩注入行为级验证，取代源码字符串断言）', (kind) =>
-  runCliDirect({
+await assertDegradesAllKindsWithReason(
+  'status===null 且无信号无 error（桩注入行为级验证，取代源码字符串断言）',
+  (kind) => runCliDirect({
     kind,
     pkgDirOverride: EXPECTED_DIR,
     lockPathOverride: KIT_LOCK,
     spawnImpl: () => ({ error: null, status: null, signal: null }),
-  }));
+  }),
+  /NO_STATUS|status=null 且无信号无 error/
+);
 
 await check('C4', '目标模块 import 抛错：boot.loadLib 原样冒泡该错误（不吞、不误判为其它降级类别）', async () => {
   // plan §3 S3「目标模块 import 抛错」场景：库模式无 exit code 概念，抛错应直接向上冒泡给调用方
@@ -750,7 +799,7 @@ await check('C4', '目标模块 import 抛错：boot.loadLib 原样冒泡该错�
     assert(threw, '目标模块 import 期间抛错应原样冒泡给调用方（库模式无 exit code 概念），不应被吞');
     assert(/模拟目标模块 import 抛错/.test(String(threw && threw.message)), `应原样冒泡目标模块的错误，实得：${threw && threw.message}`);
   } finally {
-    rmrf(dir);
+    rmrfWithLock(dir);
   }
 });
 
@@ -811,6 +860,31 @@ console.log(JSON.stringify({ threw }));
     try { unlinkSync(sentinelLockPath); } catch { /* ignore */ }
     try { unlinkSync(sentinelMarkerPath); } catch { /* ignore */ }
     try { unlinkSync(wrapperPath); } catch { /* ignore */ }
+  }
+});
+
+await check('C4', '特殊字符包路径（空格/#/%）：boot.loadLib 正确 import root.mjs 与目标模块（round-2 实现审 A6 回归测试）', async () => {
+  // round-1 A6 修复本身（file://${dir}/ 字符串拼接改 pathToFileURL(join(...))）是对的，但 round-1 未
+  // 真正补上「补空格/#/%路径用例」——round-2 实现审 codex MED 指出：若日后有人把 loadLib 退回字符串
+  // 拼接 URL，当前金牌仍会全绿。本检查把包放在同时含空格、#、% 的物理路径下，驱动 boot.loadLib 真实
+  // import root.mjs 与目标模块，钉死「两者都必须成功」这一行为，防止该退化再次悄悄发生。
+  assert(existsSync(PKG_DIR), '真包不存在（需要真包的 lib/root.mjs 供本测试包借用）');
+  const specialDir = join(tmpdir(), `loop-kit c4 special #pkg%2Fdir ${Date.now()}-${Math.random().toString(36).slice(2)}`);
+  const specialLockPath = `${specialDir}.lock.json`;
+  try {
+    mkdirSync(join(specialDir, 'bin'), { recursive: true });
+    mkdirSync(join(specialDir, 'lib'), { recursive: true });
+    cpSync(join(PKG_DIR, 'lib', 'root.mjs'), join(specialDir, 'lib', 'root.mjs'));
+    writeFileSync(join(specialDir, 'bin', 'marker.mjs'), 'export const MARKER = "special-path-ok";\n', 'utf8');
+    const { hashTree } = await import(pathToFileURL(HASH_TREE_PATH).href);
+    const { files } = hashTree(specialDir);
+    writeFileSync(specialLockPath, JSON.stringify({ schemaVersion: 1, files }), 'utf8');
+    const boot = await import(pathToFileURL(BOOT_PATH).href + '?c4special=' + Math.random());
+    const mod = await boot.loadLib({ script: 'marker.mjs', pkgDirOverride: specialDir, lockPathOverride: specialLockPath });
+    assert(mod.MARKER === 'special-path-ok', `应正确 import 特殊字符路径下的目标模块，实得 ${JSON.stringify(Object.keys(mod))}`);
+  } finally {
+    rmrf(specialDir);
+    try { unlinkSync(specialLockPath); } catch { /* ignore */ }
   }
 });
 
@@ -1056,6 +1130,89 @@ console.log(JSON.stringify(results));
     assert(out.omittedReusesClaim, '已认领时省略 envRoot 应直接复用认领值，不依赖 cwd 上溯');
   } finally {
     rmrf(tmp);
+  }
+});
+
+await check('C7', '槽内容不可信防线：外部预置的无效值不被幂等复用照单全收（round-2 实现审 A1）', () => {
+  // codex round-2 实测复现：globalThis[Symbol.for('loop-kit:root:claimed')] = '/preseeded' 后，
+  // resolveRoot({envRoot:''}) 旧版会直接返回未经校验的 '/preseeded'。本检查钉死修复后的行为：
+  // 复用前重新校验，槽内容不存在/无根标记时立即抛错，不会被当成「已验证过」而照单全收。
+  const r = runRootProbe(`
+let threw = false, message = '';
+globalThis[Symbol.for('loop-kit:root:claimed')] = '/this-path-almost-certainly-does-not-exist-xyz';
+try {
+  resolveRoot({ envRoot: '', cwd: '/tmp' });
+} catch (e) {
+  threw = true; message = String(e.message);
+}
+console.log(JSON.stringify({ threw, message }));
+`);
+  assert(r.status === 0, `探针子进程应正常退出，实得 ${r.status}\nstderr=${r.stderr}`);
+  const { threw, message } = lastJson(r.stdout);
+  assert(threw, '外部预置的无效槽值在幂等复用时应被拒绝，不应静默返回');
+  assert(/RootResolutionError|不存在/.test(message), `应为结构化错误，实得：${message}`);
+});
+
+await check('C7', '认领后不可变：外部直接改写 globalThis 槽会被冻结拒绝（round-2 实现审 A1）', () => {
+  // globalThis[Symbol.for(...)] 一旦公开，同进程任何代码都能读写——首次认领后必须冻结该属性，
+  // 否则「认领后不可变」只是本模块自身遵守的君子协定，同进程其它代码仍可静默替换认领值。
+  const tmp = mkdtempSync(join(tmpdir(), 'loop-kit-c7-freeze-'));
+  try {
+    const dirA = markerRootDir(tmp);
+    const r = runRootProbe(`
+const first = resolveRoot({ envRoot: ${JSON.stringify(dirA)}, cwd: ${JSON.stringify(tmp)} });
+let tamperThrew = false;
+try {
+  globalThis[Symbol.for('loop-kit:root:claimed')] = '/tampered-after-claim';
+} catch (e) {
+  tamperThrew = true;
+}
+console.log(JSON.stringify({ first, tamperThrew, stillClaimed: claimedRoot() }));
+`);
+    assert(r.status === 0, `探针子进程应正常退出，实得 ${r.status}\nstderr=${r.stderr}`);
+    const out = lastJson(r.stdout);
+    assert(out.tamperThrew, '首认领后，同进程其它代码直接改写 globalThis 槽应被冻结拒绝（抛错），实际未抛');
+    assert(out.stillClaimed === out.first, `认领值应在改写尝试后保持不变，实得 ${out.stillClaimed}（应为 ${out.first}）`);
+  } finally {
+    rmrf(tmp);
+  }
+});
+
+await check('C7', '非主线程拒绝：worker_threads 内调用 resolveRoot() 应显式拒绝，不静默各自认领（round-2 实现审 A1）', () => {
+  // worker_threads 的每个 Worker 有独立 globalThis，本机制无法跨 Worker 协调认领——codex round-2 用两个
+  // Worker 各自成功认领不同 ROOT、零冲突复现了这一点。本仓与消费侧均未使用 worker_threads（已 grep
+  // 核验零命中），修复方向是让非主线程调用显式失败，而不是让各 Worker 静默各自认领造成假象。
+  assert(existsSync(PKG_DIR), '真包不存在');
+  const workerSrc = `import { parentPort } from 'node:worker_threads';
+import { pathToFileURL } from 'node:url';
+const rootMod = await import(pathToFileURL(${JSON.stringify(join(PKG_DIR, 'lib', 'root.mjs'))}).href);
+let threw = null;
+try {
+  rootMod.resolveRoot({ envRoot: process.env.LOOP_KIT_ROOT || '', cwd: process.cwd() });
+} catch (e) {
+  threw = String(e && e.message);
+}
+parentPort.postMessage({ threw });
+`;
+  const workerPath = join(tmpdir(), `loop-kit-c7-worker-${Date.now()}-${Math.random().toString(36).slice(2)}.mjs`);
+  const mainSrc = `import { Worker } from 'node:worker_threads';
+const w = new Worker(${JSON.stringify(workerPath)});
+w.on('message', (msg) => { console.log(JSON.stringify(msg)); w.terminate(); });
+w.on('error', (e) => { console.log(JSON.stringify({ workerError: String(e && e.message) })); });
+`;
+  const mainPath = join(tmpdir(), `loop-kit-c7-worker-main-${Date.now()}-${Math.random().toString(36).slice(2)}.mjs`);
+  writeFileSync(workerPath, workerSrc, 'utf8');
+  writeFileSync(mainPath, mainSrc, 'utf8');
+  try {
+    const r = spawnSync(process.execPath, [mainPath], { encoding: 'utf8' });
+    assert(r.status === 0, `外层进程应正常退出，实得 ${r.status}\nstdout=${r.stdout}\nstderr=${r.stderr}`);
+    const out = lastJson(r.stdout);
+    assert(!out.workerError, `Worker 自身不应崩溃（应是 resolveRoot 内部抛错并被捕获回传），实得 workerError=${out.workerError}`);
+    assert(out.threw, 'worker_threads 内调用 resolveRoot() 应抛错拒绝，不应静默返回某个认领值');
+    assert(/主线程|worker_threads|isMainThread/.test(out.threw), `应为「仅支持主线程」的结构化错误，实得：${out.threw}`);
+  } finally {
+    try { unlinkSync(workerPath); } catch { /* ignore */ }
+    try { unlinkSync(mainPath); } catch { /* ignore */ }
   }
 });
 
