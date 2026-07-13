@@ -1,5 +1,7 @@
 # Casey loop 与 DDD 治理改造 —— 设计与实施计划（草案 v0.1，待确认）
 
+> **已被取代（SUPERSEDED，2026-07-13）**：Steven 已显式批准 `docs/plans/loop-dual-profile-reform/PROPOSAL.md`（批准记录见其第 0 节）为唯一活动改革设计源。本文自此仅作历史设计输入，不再是执行依据；其 findings 与 backlog 已并入该提案（backlog 行完成度以实时代码与 git 历史核验为准——本文 §十一 的 countChange 行已被证实陈旧，见该提案 P0-9 政策与 `FABLE-REVIEW-DISPOSITION.md`）。
+
 > 状态：设计稿，**未经确认不开始大规模实现**（用户明令）。
 > 目标不是「再加一套规范」，而是三个转变：① 双状态源 → 唯一 durable workflow；② 全任务重治理 → 风险自适应治理；③「术语一致即 DDD」→ 上下文/聚合/不变量/交换协议皆可验证。
 > 本稿产出：findings（带行号）→ 目标架构与状态机 → 分阶段计划与迁移 → 保留/替换/废弃 → 剩余业务 backlog。术语以 `CONTEXT.md` 为准；本稿新词落地前先登记。

@@ -1,5 +1,7 @@
 # 下一次 session：loop 编排改革提案
 
+> **已被取代（SUPERSEDED，2026-07-13）**：本文批准记录中的决策 ①（B/C 先行）与 ③（本期不以 `state.json` 替代）已被 Steven 显式批准的 `docs/plans/loop-dual-profile-reform/PROPOSAL.md`（第 0 节批准记录）反转取代；未被反转的其余决策（护栏 #18 不推翻·合并人裁、强制层改动 `kernel` 级治理、默认 2 限界上下文、backlog drop 须 Steven 确认等）由该提案对应条款延续。本文自此仅作历史背景，不再是活动执行序。
+
 > 本文是下一次开发的候选执行方案，不授权当前 session 直接改实现。
 >
 > **批准记录（2026-07-13，Steven）**：按下方「方案审查结论」的修订顺序执行，七项决策——① 先收 B/C 在制契约再做大改革；② 不推翻护栏 #18：不建共享 worktree registry、共享状态池、自动 merge queue，合并冲突保持人裁；③ 增量扩展现有 contract 台账（更强证据 + checkpoint 字段），本期不新建 `state.json` 替代；④ `gate.mjs`/`contract.mjs`/`hook-loop-guard.mjs`/`term-lint.mjs`/签名与 checksum 写路径等强制层代码改动一律按 kernel 级治理；⑤ 默认保持既有 2 个限界上下文，Replay/Verdict/Reporting 等按模块表达，另立上下文须具体实证；⑥ round-2 复核只对 HIGH/MED findings 强制，LOW 记 debt（多条叠加成高风险除外）；⑦ 任何 backlog 项 drop/archive 须 Steven 明确批准。`docs/plans/loop-ddd-overhaul/DESIGN.md` 为唯一设计源，本文只作评审后的执行摘要。

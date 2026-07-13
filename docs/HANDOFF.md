@@ -3,6 +3,17 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 当前状态（2026-07-13 晚，loop 双 profile 改革批准激活：PROPOSAL 为唯一设计源、B/C 冻结延后、ratchet 验证器已落主树）
+
+1. **批准落盘**：Steven 显式批准 `docs/plans/loop-dual-profile-reform/PROPOSAL.md` 反转旧决策 ①（B/C 先行）与 ③（本期不建 `state.json`）——B/C 延后、采纳 16 节点 `Durable Workflow State`、该提案为唯一活动改革设计源（批准记录在其 §0，溯源按 §4.2 标 user-asserted）。`loop-ddd-overhaul/DESIGN.md` 与 `loop-orchestration-reform/NEXT-SESSION-PROPOSAL.md` 已标 `SUPERSEDED` 只作历史。中文决策摘要 = `DECISION-SUMMARY.zh.md`；`CONTEXT.md` 登记七新术语（`Execution Profile` / `Durable Workflow State` / `Ownership Lease` / `kernel` 车道 / `Review Receipt` / `Readiness View` / `Fitness Function`），term-lint 0 提示。
+2. **评审链闭环**：Fable 只读仓地架构审 `PASS WITH REQUIRED CHANGES`（HIGH-1 治理取代记账 + MED-1..5 全并入提案文本）→ 聚焦复核四收窄 ACCEPT → codex 事实更正（`countChange` 候选已于 `dbc0d0d` 落地、被当前代码证伪；P0-9 自托管候选改为 intake 时按实时代码/git 历史选定）终态 `ACCEPT WITH FACTUAL CORRECTION`。完整处置账在 `FABLE-REVIEW-DISPOSITION.md`。教训已入工作记忆：backlog 行承重引用前必核当前代码。
+3. **本 session 已落 dev**：文档收口 `7a2ce6d`；`ratchet-reverse-index` 只读反向索引验证器合并 `164636e` + 主树复验 `e81ce7f`（gate GREEN 2/2、全仓核验 68 PRD/103 冻结文件/0 问题；该契约六阶段全 done、pi+deepseek 异构冗余评审 round-2 PASS；已按惯例移树删支）。
+4. **P0-2 已执行**（两子代理并行、各驻一树）：B `drawer-lock-hardening` 冻结提交 `178408b`（fake-sut WIP +33/-3 零字节改动入分支 + plan 产物 + checkpoint 台账，显式非 merge-ready）；C `gen-prompts` 冻结提交 `33c382a`（plan 产物含早间编排中断遗留的 `planreview-material.md` + checkpoint 台账）。两树 baton 保持 2/6、基点仍 `1e3c8cc`（落后 dev 属预期，恢复时按 P1-3 实算分叉）。
+5. **早间 B/C 编排已停**（Steven 改序）：Workflow run `wf_25ac75de-8f2` 已停止；B/C 恢复走 PROPOSAL P1（经新 loop），不再直接续跑 `bc-contracts-workflow.js`。
+6. **下一步（按 PROPOSAL §14）**：P0-3 loop-kit 提取 vs 显式分叉决策（Steven 拍板、落新 ADR；注意 `gate.mjs` 等 8 份脚本仍与 autotester 字节一致，动它们前必须先定所有权）→ P0-4a 状态引擎 / P0-4b gate 分层（每项单独验收的 `kernel` 车道契约、旧 loop 互锁下执行、隔离 worktree 顺序合并）→ … → P0-12 有界切换。多 subagent/`Workflow` 编排为默认工作法（Steven 2026-07-13 重申）。A 真机 UAT 继续挂 route:human。主树活契约槽 = `loop-reform-p0-docs`（direct，纯文档收口用）。
+
+以下为 2026-07-13 早间快照，只溯源、勿据其判现状（其「先收 B/C」执行序已被上节批准反转）：
+
 ## 当前状态（2026-07-13，B/C 在制 + loop 改革方案评审批准：先收 B/C 后启改革）
 
 上一 session（2026-07-13 上午）因 `wsl --shutdown` 根治隧道中继强制重启，A+B+C+D 四线（Steven 拍板全做）中断点如下（执行指令见 `docs/plans/_session-resume/RESUME-2026-07-13.md`，本笔已入 git）：

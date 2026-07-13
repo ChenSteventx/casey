@@ -2,7 +2,7 @@
 
 > 用法：下次开新 session 只需 `/starter`（等价于说「读 `docs/NEXT-SESSION.md` 接着干」）——把本文件内容当开场提示词读进来、按其【下一步】执行。本文件是给接续 Claude 的执行指令；状态事实以 `docs/HANDOFF.md` 为准，二者冲突时信 HANDOFF。本文件由 `/session-handoff` 自动刷新（整节替换为最新开场提示词，剪掉过期内容）。
 >
-> **2026-07-13 增补**：本文下方「下一步」四选一已被当日批准的执行序取代——B/C 在制契约先收（重起 `docs/plans/_session-resume/bc-contracts-workflow.js`）→ 只读 ratchet 反向索引验证器（light）→ 合并收尾 → loop 改革按 `docs/plans/loop-ddd-overhaul/DESIGN.md` Phase 1 立项。权威现状见 `docs/HANDOFF.md` 2026-07-13 节与 `docs/plans/loop-orchestration-reform/NEXT-SESSION-PROPOSAL.md` 批准记录。
+> **2026-07-13 晚二次增补（取代本日早间增补）**：Steven 已批准 `docs/plans/loop-dual-profile-reform/PROPOSAL.md` 为唯一活动改革设计源（批准记录在其 §0）：B/C 延后（P0-2 冻结 checkpoint 已入各自分支、非 merge-ready），采用 16 节点 `Durable Workflow State`。早间「B/C 先收」执行序与 `loop-ddd-overhaul/DESIGN.md`、`loop-orchestration-reform/NEXT-SESSION-PROPOSAL.md` 均已 `SUPERSEDED` 只作历史。接续者按 PROPOSAL §14 执行：下一步 = P0-3 loop-kit 提取 vs 显式分叉决策（Steven 拍板、落新 ADR）→ P0-4a/P0-4b 起每项单独验收的 `kernel` 车道契约（旧 loop 互锁下执行）。权威现状见 `docs/HANDOFF.md` 2026-07-13 晚节。
 
 ## 开场提示词
 

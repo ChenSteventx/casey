@@ -47,6 +47,13 @@
 | 并行工作树 baton | Per-Worktree Baton | 每棵 git worktree 各自独立的活契约槽；`active-contract.json` 与熔断态均 gitignored、每树一份、互不共享，故 N 棵 worktree = N 个并行 baton，零机制改动即多路并行落地（取代「单活契约 baton 真天花板」，见 roadmap v3 §二） | — |
 | `contract list` | 跨树 baton 总览 | 枚举所有 worktree 的活 baton 与阶段进度的 read-only 视图（一屏看全并行轨）；遇坏契约/无 baton 降级显示、绝不抛 | — |
 | `contract worktree` | 起树脚手架 | 一条命令起 git worktree + 立 baton，起一条并行开发轨；slug 全局唯一硬拒（防同名骑 gate-绿串味）、落点已存在拒、部分失败回滚 | — |
+| Execution Profile | 执行剖面 | 同一工作流内核下可互换的执行面配置：`claude-code`（主）与 `codex`（接续，配额受限时顶上），同状态/同门禁/同完成判据；切换只在已过节点边界或配额中断协议下发生（loop 双 profile 改革 §6）。与 Casey 域「通道剖面」无关 | — |
+| Durable Workflow State | 持久工作流状态 | 每 worktree 一份的 16 节点机读工作流状态（`loop/state.json` + `loop/events.jsonl`，gitignored），经有界切换后成为唯一可写的当前工作流真相；六阶段台账降为其只读投影；只有 `workflow-state.mjs` 有转移写权（改革 §3/§4） | — |
+| Ownership Lease | 所有权租约 | 同一节点尝试同时至多一个写者的租约；配额中断时旧尝试封存 blocked 并释放租约，新剖面开新尝试、可复用字节但绝不继承未经验证的通过结果；两租约绝不同时有效（改革 §6.3/§9） | — |
+| `kernel` 车道 | Kernel Lane | 入口分流第四车道：触 verdict/sign/凭据门/fail-safe/冻结协议/强制层（gate/contract/hook/签名写路径/批量重签写面）的改动，强制双设计审 + 异构冗余实现审 + round-2 + 全仓门禁 + 人签（改革 §5）；车道只许升不许降 | — |
+| Review Receipt | 评审收据 | 版本化结构化评审证据（`docs/plans/<slug>/reviews/`）：绑 plan/验收/diff/门禁证据 hash 与作者·评审双方家族及 requested/reported 模型身份；被绑输入一变即失效；同族、家族测不出、超时无有效产出一律不满足异构门（改革 §7） | — |
+| Readiness View | 就绪视图 | 从 `git worktree list` 与各树只读投影派生的调度视图：只读、无全局可写队列文件、无合并权，调度注解只经转移引擎写入（护栏 #18 兼容，改革 §11） | — |
+| Fitness Function | 适应度函数 | 可执行的架构结构规则检查（演进式架构学科术语）：如 loop-kit 不得依赖 Casey 核心域、report 不得写 verdict、只有 gate 写 `passes`；复用 `verdict-purity-guard` 依赖闭包范式，查不了的规则显式留作评审义务（改革 §12） | — |
 
 ## Casey 核心域（文本用例→测试报告域）
 
