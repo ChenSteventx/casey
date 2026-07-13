@@ -1,5 +1,6 @@
 # loop-kit-extract — loop-kit 提取独立包 + Casey 兼容迁移（full/kernel 级加严）
 
+> 设计评审修订（codex-sol@max，2026-07-13）：异构冗余设计评审 9 条发现（3 `HIGH` / 5 `MED` / 1 `LOW`，`docs/plans/loop-kit-extract/review/planreview-codex.md`）已逐条裁定——8 条采信修入本文与 GRILL.md，1 条（M5）部分采信；逐条处置与反证见 `docs/plans/loop-kit-extract/review/planreview-disposition.md`。
 > baton 已立于本 worktree（lane full）。决策全集见 `docs/plans/loop-kit-extract/proposed/GRILL.md`（D1–D10）；本文是计划骨架 + 验收点。实现开工前置：Steven 对本设计的 kernel 级人签（未签不动任何实现字节）。
 > 决策依据：ADR-0008（路线①立即提取，已定不翻）、`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §12.1/§13/§14、Casey ADR-0001（分界线与数据契约锚定原则继续有效）、autotester ADR-0001（分发形态：独立仓 + npm 本地路径依赖 + 个人 skill 编排层）。
 
@@ -16,6 +17,7 @@
 - prd acceptance 命令：`loop/prd-p2-intent-compile.json`（`node loop-kit/bin/term-lint.mjs --registry`、`node loop-kit/bin/term-lint.mjs --file ...` 两条）、`loop/prd-ratchet-reverse-index.json`（`node loop-kit/bin/ratchet.mjs index` 一条）——命令路径经 `shim` 原样生效；`loop/prd-model-lane-guard.json` 仅 dimension 散文提及、无命令。**重签清单 = 空。**
 - 其余：`loop/config.json` 的 `review.fallbackRunner`（`loop-kit/bin/review-deepseek.mjs`）、`package.json` scripts 三条（`term-lint`/`gate`/`breaker`）、`CLAUDE.md` 常用命令、`.claude/skills/*` 文档命令——全零改动。
 - `testChecksums` 勘定：全仓 68 个 prd 无一冻结 `loop-kit/bin` 文件（脚本核验 0 命中）——原地替换为 `shim` 不触任何既有棘轮；`gate` 以 `cwd=ROOT` 执行 acceptance，树内相对路径命令语义不变。
+- 涟漪反查扩面（评审 M4 采信，2026-07-13 本树实测）：对本契约**全部待改路径**——`CLAUDE.md`/`CONTEXT.md`/`docs/HANDOFF.md`/`docs/NEXT-SESSION.md`/`package.json`/`package-lock.json`——反查 68 个 prd 的 `testChecksums` 与 acceptance 命令：`testChecksums` 0 命中；文本提及（`prd-distribution`/`prd-plan-debt-sweep`/`prd-casey-demo` 等 8 份）均为 dimension 散文、不构成冻结面。两个运行时耦合点记档：① `CONTEXT.md` 被 `prd-p2-intent-compile` 的 `term-lint --registry` acceptance 活读——登记新词是运行时门禁面（写坏即红），不是重签面；② `tests/_golden/term-guard.golden.mjs` 第 122 行 `parseRegistry()` 活读 `CONTEXT.md` 的弃用别名名单——新增词条不删既有条目、C6 复跑兜底。**重签清单仍为空**，且此结论现在有全路径反查证据、不再只覆盖 `loop-kit/bin` 字面路径。
 - CLI 主模式判据：`contract`/`term-lint`/`ratchet` 以 `argv[1]` 对齐自身路径判 CLI——`shim` 主模式必须 spawn 包内脚本，不能纯 re-export（GRILL 背景，金牌 C2 钉转发证明）。
 - 术语纪律：新词见 §6 待登记；英文一律代码体、加粗只给中文；写入过 `term-lint` 双 hook。
 
@@ -24,24 +26,25 @@
 A. 包仓侧（`/mnt/d/ctx/heren/loop-kit`，新独立 git 仓，fresh init）
 
 1. `bin/` 十脚本迁入，字节保真：唯一允许差异 = ROOT 锚定行换 `resolveRoot()`（涉及 `breaker`/`contract`/`gate`/`hook-loop-guard`/`hook-posttool`/`term-lint`/`ratchet` 七件）；`hook-stop`/`hook-loop-triage`/`review-deepseek` 逐字节照搬。`contract.mjs` 以 Casey 版为准（含 `worktree` baton 全套）；`ratchet.mjs` Casey 独有件入包。CLI 尾块（`isMain` 判据）零改动。
-2. `lib/root.mjs`（新，全案唯一新逻辑）：`resolveRoot()` 单点——`LOOP_KIT_ROOT` 环境变量（目录存在校验）→ 自 `process.cwd()` 上溯找 `loop/config.json` → stderr 补救 + exit 64。
+2. `lib/root.mjs`（新，包内唯一新逻辑，契约按评审 M2/M3 收严）：`resolveRoot()` 单点——`LOOP_KIT_ROOT` 在场则必须有效（目录存在 + 含 `loop/config.json` 根标记 + `realpath` 规范化），无效**立即失败**、绝不静默回退；变量缺席才自 `process.cwd()` 上溯找根标记（同样校验 + 规范化）；两路皆空抛**结构化错误**——库函数绝不 `process.exit` 终止宿主进程，exit 64 + stderr 补救提示由 Casey 侧引导层在受支持入口给出（受支持入口总先注入有效 ROOT，包内解析失败在受支持路径不可达）。另导出**进程级已解析根探针**（只读查询口），供消费侧核对 ESM 缓存中包模块实际锚定的树。
 3. `package.json`（name `loop-kit`、private、`type: module`、engines node>=22.12、零依赖）+ `README.md`（出处 SHA、双消费者、ADR-0008 与 autotester ADR-0001 指针、兄弟目录布局约定）。
 
 B. Casey 侧（单提交切换点，GRILL D9）
 
-4. `loop-kit/bin/*.mjs` 十件原地换同名 `shim`（GRILL D4 协议：包定位 `LOOP_KIT_PKG` → 兄弟约定；ROOT 无条件注入自锚；主模式 spawn 退出码透传；库模式显式名单 re-export，`contract` 18 名 / `term-lint` 3 名 / `ratchet` 4 名；GRILL D5 降级矩阵）。
-5. `tests/fixtures/loop-kit-expected/`：期望包内容存档（对提取前 HEAD 十脚本机械替换 ROOT 行 + `lib/root.mjs` 期望件；人审 diff 后随 prd 冻结；惰性数据绝不执行）。
-6. `tests/_golden/loop-kit-extract.golden.mjs`：C0–C6（见 §3）。
-7. `loop/prd-loop-kit-extract.json`：冻结金牌 + 期望存档 checksum；stories 见 §3。
-8. `CLAUDE.md` 新增 bootstrap 一段（包为兄弟目录独立包、新机器先 clone；常用命令不变）+ `CONTEXT.md`（`loop-kit` 词条白话解释更新、`shim` 词条登记，§6）。
-9. `docs/HANDOFF.md`、`docs/NEXT-SESSION.md` 刷新（文档先于 dev 提交）。
+4. `loop-kit/bin/*.mjs` 十件原地换同名 `shim` + 新增共享引导助手 `loop-kit/lib/boot.mjs`（Casey 侧新文件：包定位、身份锁校验、env 注入、转发与降级逻辑**单点化**，十个 `shim` 只调它，防十份复制各自漂）。协议按 GRILL D4/D5（评审 H1/H2/M2 采信后版本）：包定位 `LOOP_KIT_PKG`（显式逃生口，跳过身份锁）→ 兄弟约定（隐式路径，**每次转发前**对 `kit-lock.json` 全清单 sha256 校验，失配视同包缺失按 D5 逐入口降级）；CLI 主模式 `spawnSync` 转发、`LOOP_KIT_ROOT` 经 `spawnSync` 的 env 选项注入子进程，**绝不改写宿主进程环境**；库模式设 env → 动态 import → `finally` 恢复，import 后以 `lib/root.mjs` 探针核对包模块实际 ROOT、失配抛结构化错误（同进程跨树绝不静默采用他树 ROOT）；库模式显式名单 re-export（`contract` 18 名 / `term-lint` 3 名 / `ratchet` 4 名）；退出码按 D5 全故障域矩阵归一。
+5. `loop-kit/kit-lock.json`（**包身份锁**，git 跟踪，评审 H2 采信新增）：记包每文件 sha256 + 包仓 commit。信任根 = Casey git 树内的 `shim` + `boot` + `kit-lock`（全部被本 prd 冻结面钉住），校验发生在转发层、先于任何包代码执行——`gate` 自证的循环信任由此解除。包任何改动必先更新期望存档 + `kit-lock` + 重签本 prd（跨仓棘轮一并覆盖，route:human #5）。
+6. `tests/fixtures/loop-kit-expected/`：期望包内容存档（对提取前 HEAD 十脚本机械替换 ROOT 行 + `lib/root.mjs` 期望件；人审 diff 后随 prd 冻结；惰性数据绝不执行）+ `baseline/` **切换前观测基线**（评审 H3 采信新增：于提取前 HEAD 录制命令矩阵与四 hook 正常路径的完整 exit code、规范化 stdout/stderr 全文、文件系统差量；C2 的比对锚）。
+7. `tests/_golden/loop-kit-extract.golden.mjs`：C0–C7（见 §3）。
+8. `loop/prd-loop-kit-extract.json`：冻结金牌 + 期望存档/`kit-lock`/基线 checksum；stories 见 §3。
+9. `CLAUDE.md` 新增 bootstrap 一段（评审 L1 采信：先写拓扑关系——包是消费树的**兄弟目录**独立包，任何机器任何 OS 同构；`/mnt/d/ctx/heren/loop-kit` 只作当前环境示例；并注明 `hook-loop-guard` 缺包 fail-closed 会连带拦住修复用的工具调用，恢复动作——clone 包或设 `LOOP_KIT_PKG`——须在 hook 触发范围之外人工完成）+ `CONTEXT.md`（`loop-kit` 词条白话解释更新、`shim`/`kit-lock` 词条登记，§6）。
+10. `docs/HANDOFF.md`、`docs/NEXT-SESSION.md` 刷新（文档先于 dev 提交）。
 
 ## 2. 实现次序（红先行）
 
 0. 前置：Steven kernel 级设计人签（对 GRILL + 本 plan 整体）。未签不进下一步。
-1. accept 阶段（本树）：生成期望存档（§1.5）+ 写金牌（§1.6）→ 跑**红基线**（C0 红=包不存在；C2 转发证明红=全量引擎无视 `LOOP_KIT_PKG`；C4 红=无降级协议；C5 红=现文件非 `shim`；C6 照绿=非回归钉）→ 建 `loop/prd-loop-kit-extract.json` 冻结 → `contract advance accept --red-verified`。
-2. 落包仓（§1.1–1.3）：casey 树零改动，旧 in-repo 拷贝仍唯一生效源；包首提交后 C0/C1 转绿。
-3. Casey 侧单提交切换（§1.4–1.9 同一提交）：C2–C5 转绿。
+1. accept 阶段（本树）：于提取前 HEAD 录制**切换前观测基线** + 生成期望存档与 `kit-lock.json`（§1.5–1.6）+ 写金牌（§1.7）→ 跑**红基线**（C0 红=包不存在；C2 转发证明红=全量引擎无视 `LOOP_KIT_PKG`；C4 红=无降级协议；C5 红=现文件非 `shim`；C7 红=包不存在、无 `resolveRoot()` 可测；C6 照绿=非回归钉）→ 建 `loop/prd-loop-kit-extract.json` 冻结 → `contract advance accept --red-verified`。
+2. 落包仓（§1.1–1.3）：casey 树零改动，旧 in-repo 拷贝仍唯一生效源；包首提交后 C0/C1/C7 转绿。
+3. Casey 侧单提交切换（§1.4–1.10 同一提交）：C2–C5 转绿。
 4. 全仓复验：`node loop-kit/bin/gate.mjs --prd loop/prd-loop-kit-extract.json` 全绿；三份存量金牌所属 prd 的 gate 复跑 GREEN；`node loop-kit/bin/ratchet.mjs index` 复验；`node bin/casey.mjs selftest --tier1` 无回归。
 5. `contract advance loop` → 异构冗余实现审（codex 评 Claude 实现；输入只给 spec+diff+门禁证据，护栏 #9）→ `advance review` → Steven 人签收尾 → `advance learn`。
 
@@ -49,20 +52,21 @@ B. Casey 侧（单提交切换点，GRILL D9）
 
 story 划分与红/绿判据：
 
-- S1 包保真（C0+C1）：**红** = 包不存在；**绿** = 包内 `bin/*.mjs` + `lib/root.mjs` 对期望存档逐文件 sha256 相等，且经 `shim` import 的 `contract`/`term-lint`/`ratchet` 导出名集合对提取前快照（18/3/4 名）deepEq。C0 兼作跨仓棘轮：日后任何包改动必先改期望存档 + 重签本 prd。
-- S2 切换等价（C2+C5）：**红** = 提取前全量引擎无视 `LOOP_KIT_PKG`（转发证明不成立）、文件非 `shim` 模板形状；**绿** = 标记包证明真转发 + `gate --dry`/`contract init·advance·check·show·list`/`breaker --reset·--round`/`term-lint --registry·--file·--stdin`/`ratchet index` 逐命令 exit code 与关键输出对钉死期望相等 + 十件匹配 `shim` 模板（行数上限、必含转发标志、不含引擎特征串）。
-- S3 新树与降级（C3+C4）：**红** = 提取前无降级协议（模拟包缺失时不出 D5 矩阵行为）；**绿** = 临时 git `worktree`（无 `node_modules`）内 `hook-loop-guard` 互锁与 `gate`/`contract` 行为与主树等价、跨树派生时 ROOT 以被执行 `shim` 位置自锚（树 B baton 落树 B）+ 包缺失矩阵逐格命中（CLI exit 64 补救提示 / `hook-loop-guard` exit 2 / lint 三 hook exit 0+WARN）。
-- S4 存量零重签（C6，非回归钉）：`worktree-baton`/`term-guard`/`ratchet-reverse-index` 三金牌与其 prd **零字节改动**、经 `shim` 复跑照绿；全仓 gate 复验 GREEN。红基线豁免：本 story 守「既有绿不许变红」，无「先红」语义，豁免理由随 prd 记档。
+- S1 包保真与根语义（C0+C1+C7）：**红** = 包不存在；**绿** = C0 包内 `bin/*.mjs` + `lib/root.mjs` 对期望存档逐文件 sha256 相等，且期望存档、`kit-lock.json`、真包**三方一致**（评审 H2）；C1 经 `shim` import 的 `contract`/`term-lint`/`ratchet` 导出名集合对提取前快照（18/3/4 名）deepEq **且逐名 `typeof` 相等**（行为面由 C2 完整基线 + C6 存量金牌复跑承担，评审 H3）；C7 `resolveRoot()` 语义组（评审 M3）：env 有效命中 / env 无效**立即失败不回退** / 上溯命中根标记 / 上溯无标记抛结构化错误（不终止宿主进程）/ `realpath` 规范化 / 探针回报实际锚定树。C0 兼作跨仓棘轮：日后任何包改动必先改期望存档 + `kit-lock` + 重签本 prd。
+- S2 切换等价（C2+C5）：**红** = 提取前全量引擎无视 `LOOP_KIT_PKG`（转发证明不成立）、文件非 `shim` 模板形状；**绿** = 标记包证明真转发 + `gate --dry`/`contract init·advance·check·show·list`/`breaker --reset·--round`/`term-lint --registry·--file·--stdin`/`ratchet index` 及四 hook 正常路径（合成 stdin JSON）逐条对**切换前冻结的观测基线**比对：exit code + 规范化 stdout/stderr **全文** + 文件系统差量（`loop/` 运行态产物字节），废除「关键输出」启发式（评审 H3）；C5 十件 `shim` 由**单一模板 + 每件参数**展开生成，金牌对展开结果**逐字比对**，废除行数上限/特征串启发式（评审 H3）。
+- S3 布局、降级与跨树（C3+C4）：**红** = 提取前无降级协议（模拟包缺失时不出 D5 矩阵行为）；**绿** = C3 三布局场景（评审 M1）：① 同层默认布局（临时 git `worktree`、无 `node_modules`）内 `hook-loop-guard` 互锁与 `gate`/`contract` 行为与主树等价；② 异地树 + 显式 `LOOP_KIT_PKG` 可跑；③ 异地树无覆盖 → 按 D5 安全失败。跨树两态（评审 M2）：CLI 派生时 ROOT 以被执行 `shim` 位置自锚（树 B baton 落树 B）；同进程先 import 树 A `shim` 再 import 树 B `shim` → 结构化错误（绝不静默采用树 A 的 ROOT）。C4 从空目录单场景扩为**故障族矩阵**（评审 H1）：缺包目录 / 身份锁失配（伪造漂移包）/ 缺目标脚本 / 语法损坏脚本 / 信号终止 / `spawnSync` 报 error / 意外退出码，逐入口断言 D5 归一（CLI 64 或同信号自终 / `hook-loop-guard` 一律 2 / lint 三 hook 一律 WARN+0）；本环境（DrvFs）不可确定性复现的权限类，以引导层单元桩钉协议并记档豁免。
+- S4 存量零重签（C6，非回归钉）：`worktree-baton`/`term-guard`/`ratchet-reverse-index` 三金牌与其 prd **零字节改动**、经 `shim` 复跑照绿；金牌内写死三金牌与其 prd 的**切换前 git blob SHA**，断言当前字节等于该锚——「零字节改动」有独立基线可证、不只「跑绿」（评审 H3）；全仓 gate 复验 GREEN。红基线豁免：本 story 守「既有绿不许变红」，无「先红」语义，豁免理由随 prd 记档。
 
-验收命令在 acceptance 冻结时定稿，形如：`node tests/_golden/loop-kit-extract.golden.mjs`（内分 C0–C6 checks）；`node loop-kit/bin/gate.mjs --prd loop/prd-loop-kit-extract.json`。
+验收命令在 acceptance 冻结时定稿，形如：`node tests/_golden/loop-kit-extract.golden.mjs`（内分 C0–C7 checks）；`node loop-kit/bin/gate.mjs --prd loop/prd-loop-kit-extract.json`。
 
 ## 4. route:human（须 Steven 拍板）
 
 1. **实现开工闸**：对 GRILL D1–D10 + 本 plan 的 kernel 级设计人签（双设计审后）。
-2. **D5 降级加严**：`hook-loop-guard` 在包缺失时 fail-closed（exit 2 拦）——对既有「hook 自身故障不阻塞」约定的定向加严；代价是忘配包的新 clone 会被拦到配好为止。
+2. **D5 降级加严（评审 H1 采信后扩围）**：`hook-loop-guard` 的 `shim` 对合法态 0/2 之外的**一切**引导失败与子进程异常态——包缺失、身份锁失配、目标脚本缺失/不可读、解析期崩溃（exit 1）、Node 不兼容、信号终止、`spawnSync` 报 error——一律归一 exit 2 拦。这是对既有「hook 自身故障不阻塞」约定的定向加严；代价一：忘配包的新 clone 被拦到配好为止；代价二：guard fail-closed 会连带拦住修复用的工具调用，恢复须在 hook 触发范围之外人工完成（`CLAUDE.md` bootstrap 段明示）。
 3. **D2 包仓历史**：fresh `git init` 不携两仓历史，出处以 SHA 记包 `README.md`。
-4. **D8 依赖声明**：casey `package.json` 是否加 `"loop-kit": "file:../loop-kit"`（兑现 ADR 预定形态 vs 实际解析走兄弟约定、声明近乎装饰）。
-5. **C0 跨仓棘轮形态**：包字节 pin 进 Casey 期望存档 = 未来每刀包改动（含 autotester 侧发起）都触 Casey 重签——ADR-0008 已认「兼容金牌负担前置」，此处确认其机制形态。
+4. **D8 依赖声明（评审 M5 采信后收紧为二选一，装饰性声明不可接受）**：甲=本契约单出口、只走兄弟约定，`package.json` 不加 `"loop-kit": "file:../loop-kit"`——ADR-0008 决策 1 原文「最终以提取契约 GRILL 定案为准」，GRILL 定案即被授权、无需回改 ADR，npm 本地路径依赖列为后续可选出口（**plan 默认建议**）；乙=加声明，则它必须成为真实受测解析分支（`boot` 解析顺序显式加 `node_modules` 步 + 金牌覆盖）且纳入 `package-lock.json` 涟漪复审。
+5. **C0 跨仓棘轮形态**：包字节 pin 进 Casey 期望存档 + `kit-lock.json` = 未来每刀包改动（含 autotester 侧发起）都触 Casey 存档与 `kit-lock` 更新 + prd 重签——ADR-0008 已认「兼容金牌负担前置」，此处确认其机制形态。连带后果（D9）：包升级后，未同步 `kit-lock` 的在飞旧分支树会被身份锁按 D5 降级拦下，补救 = 合并 dev 或显式 `LOOP_KIT_PKG`。
+6. **运行时包身份锁（评审 H2 采信新增机制）**：隐式兄弟解析在每次转发前对 `kit-lock.json` 全清单 sha256 校验（毫秒级、每次 hook/CLI 调用都发生），失配视同包缺失逐入口降级；显式 `LOOP_KIT_PKG` 为操作者逃生口、跳过身份锁。确认接受这层每调用校验成本与拦截行为。
 
 ## 5. 非目标（本契约不做）
 
@@ -74,5 +78,7 @@ story 划分与红/绿判据：
 
 ## 6. 待登记术语（`CONTEXT.md`，随切换提交落、先登记后使用）
 
-- `shim`（垫片）：只做包定位、ROOT 注入与命令/导出转发的薄层，零业务逻辑；提取后 in-repo `loop-kit/bin/*.mjs` 的形态；其模板形状由兼容金牌钉死，防转发层长出第三变体。
-- `loop-kit` 既有词条白话解释更新：「孵化于 autotester `loop-kit/` 目录」→「已提取为独立包（ADR-0008），Casey 与 autotester 双消费者；分发 = 兄弟目录直解析 + npm 本地路径依赖」。
+- `shim`（垫片）：只做包定位、ROOT 注入与命令/导出转发的薄层，零业务逻辑（校验与降级逻辑单点收在 `loop-kit/lib/boot.mjs` 引导助手，`shim` 只调它）；提取后 in-repo `loop-kit/bin/*.mjs` 的形态；由单一模板展开生成、金牌逐字比对钉死，防转发层长出第三变体。
+- `kit-lock`（**包身份锁**）：Casey 侧 git 跟踪的包内容清单（逐文件 sha256 + 包仓 commit），隐式解析每次转发前校验，失配按降级矩阵处置；Casey→包方向的版本锁，与包 `README.md` 记出处 SHA 的反向出处相区分。
+- **观测基线**：切换前于旧引擎录制的规范化行为存档（完整 exit code / stdout / stderr / 文件系统差量），行为等价断言的比对锚——既有学科词（golden master 范式），登记取其本仓专义。
+- `loop-kit` 既有词条白话解释更新：「孵化于 autotester `loop-kit/` 目录」→「已提取为独立包（ADR-0008），Casey 与 autotester 双消费者；分发 = 兄弟目录直解析（正式前置条件：包与消费树同层），npm 本地路径依赖按 route:human #4 定夺」。
