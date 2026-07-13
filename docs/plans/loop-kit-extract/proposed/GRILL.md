@@ -2,6 +2,7 @@
 
 > 设计评审修订（codex-sol@max，2026-07-13）：D2/D4/D5/D7/D8/D9 已按异构冗余设计评审 9 条发现修订（8 条采信、1 条部分采信），逐条处置见 `../review/planreview-disposition.md`。
 > baton 已立于本 worktree（lane full，理由见台账）；本文与 `plan.md` 是 grill/plan 两阶段交付物。授权凭据：Steven 2026-07-13 主会话点选路线① + ADR-0008 已接受。实现开工另被 kernel 级设计人签门阻断——本轮只规划，不动任何实现字节。
+> Steven 2026-07-13 四裁定（本轮 AskUserQuestion 点选落盘，逐处标记）：① route:human #1 总签字 = **有条件签署**，条件 = 本轮 round-2 codex 设计审收口；② route:human #4（D8）取甲，不加 npm 本地路径依赖声明；③ route:human #2（D5）**加严接受**，代价条款照录；④ route:human #3（D2）取 fresh `git init`。route:human #5/#6 不在本轮裁定范围、仍待续裁。
 > 事实源：`docs/adr/0008-loop-kit-extraction.md`（路线①已定，本文不翻案）、`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §12.1/§13/§14、Casey `docs/adr/0001-reuse-loop-kit.md`、autotester `docs/adr/0001-loop-kit-incubation.md`（预定分发形态）、`loop-kit/bin/` 十脚本头注、`.claude/settings.json`、全仓 grep 勘定（清单见 `plan.md` §0）。
 
 ## 背景（勘定实证，2026-07-13 本树 HEAD=0e7c415）
@@ -15,15 +16,15 @@
 ## D1 车道与治理
 
 - full 车道 + kernel 级加严约定（ADR-0008 决策 4，`resolution` 契约先例）：双设计审 + 异构冗余实现审 + 全仓门禁 + Steven 人签；`kernel` 车道机制建成前以 full 承载。
-- 本 baton 以此立（laneReason 记档）。grill/plan 由本轮交付；accept 起的每一步以 Steven 对本设计的人签为前置（route:human #1）。
+- 本 baton 以此立（laneReason 记档）。grill/plan 由本轮交付；accept 起的每一步以 Steven 对本设计的人签为前置——route:human #1 已裁定（Steven 2026-07-13）：**有条件签署**，条件 = 本轮 round-2 codex 设计审收口；round-2 未收口前不得进 accept。
 
 ## D2 包仓落点与形态
 
 - 落点：`/mnt/d/ctx/heren/loop-kit`，独立 git 仓（ADR-0008 默认落点 + autotester ADR-0001 预定形态）。它与 casey 主仓、各并行 `worktree` 天然同层——`contract worktree` 的默认落点就是兄弟目录 `../<仓名>-<slug>`（`contract.mjs` 实证），这是 D4 兄弟目录解析成立的结构前提。
 - **同层是正式前置条件，不是普遍保证**（评审 M1 采信）：「新树零安装可跑」只对主仓与 `contract worktree` 默认落点成立；任意路径 `git worktree add`、IDE 建树、异地 clone 不在保证内——异地树必须显式设 `LOOP_KIT_PKG`，两无则按 D5 安全失败。三种布局各有金牌用例（C3）。文档表述一律拓扑优先（包 = 消费树兄弟目录），绝对路径只作当前环境示例（评审 L1 采信）。
-- 新仓 fresh `git init`、不搬两仓历史；出处以 SHA 记入包 `README.md`（提取自 casey@切换点 SHA；8 份与 autotester 字节一致件的对齐基线一并记档）。（route:human #3）
+- 新仓 fresh `git init`、不搬两仓历史；出处以 SHA 记入包 `README.md`（提取自 casey@切换点 SHA；8 份与 autotester 字节一致件的对齐基线一并记档）。route:human #3 已裁定（Steven 2026-07-13）：**取 fresh git init**，包仓不携两仓历史。
 - 包 `package.json`：name `loop-kit`、`private: true`、`type: module`、engines node>=22.12、零第三方依赖（内核「零依赖、纯 node」纪律不变）。
-- 分发双出口（autotester ADR-0001 决策 3）：npm 本地路径依赖（`file:../loop-kit`，声明层，route:human #4）+ 兄弟目录直解析（实际生效层，见 D4——新 `worktree` 无 `node_modules` 也零安装可跑）。「个人 skill 编排层」这第二出口不在本契约（D10）。
+- 分发双出口（autotester ADR-0001 决策 3）：npm 本地路径依赖（`file:../loop-kit`，声明层，route:human #4，裁定见 D8——本契约取单出口、不加此依赖声明）+ 兄弟目录直解析（实际生效层，见 D4——新 `worktree` 无 `node_modules` 也零安装可跑，本契约唯一生效出口）。「个人 skill 编排层」这第二出口不在本契约（D10）。
 - 凭据仍走 `~/.loop-kit/`（仓外），一字不动。
 
 ## D3 消费形态三选一（核心裁量）——选 in-repo 薄转发层
@@ -55,7 +56,7 @@
 | 入口 | 合法态 | 全部引导失败与异常态 | 理由 |
 |---|---|---|---|
 | CLI `shim`（`gate`/`contract`/`breaker`/`term-lint`/`ratchet`/`review-deepseek`） | 子进程任何正常退出码**原码透传**（`gate` 的 RED、`term-lint` 的违例码等语义不折损） | 引导失败（缺包/锁失配/缺目标/`spawnSync` error）→ exit 64 + stderr 补救提示（clone 包到兄弟目录，或设 `LOOP_KIT_PKG`）；子进程信号终止 → 以同信号自终（保留 shell `128+n` 语义） | 与门禁「默认 FAIL、凭证据翻绿」同族：引擎证不出在场就不给任何绿；正常码透传保「逐命令等价」 |
-| `hook-loop-guard` `shim` | 0（放行）/ 2（拦）原样透传 | **其余一切**（含子进程 exit 1 崩溃、信号、`status === null`、`spawnSync` error、缺包、锁失配、缺目标、损坏脚本）一律归一 exit 2 拦 + stderr 说明 | 这些全是可确定性判死的环境错误，不是意外异常：若沿用 fail-open，新 clone 忘配包或包漂移 = 阶段互锁静默失守（护栏 #11 掉牙、冻结面裸奔）。对「hook 自身故障不阻塞」既有约定的**定向加严**（route:human #2，含扩围） |
+| `hook-loop-guard` `shim` | 0（放行）/ 2（拦）原样透传 | **其余一切**（含子进程 exit 1 崩溃、信号、`status === null`、`spawnSync` error、缺包、锁失配、缺目标、损坏脚本）一律归一 exit 2 拦 + stderr 说明 | 这些全是可确定性判死的环境错误，不是意外异常：若沿用 fail-open，新 clone 忘配包或包漂移 = 阶段互锁静默失守（护栏 #11 掉牙、冻结面裸奔）。对「hook 自身故障不阻塞」既有约定的**定向加严**（route:human #2，含扩围）；route:human #2 已裁定（Steven 2026-07-13）：**加严接受**——代价条款照录（新 clone 拦到配好为止、在飞旧树被锁拦、修复须在 hook 触发范围之外人工完成） |
 | `hook-stop`/`hook-posttool`/`hook-loop-triage` `shim` | 0 / 2 原样透传 | **其余一切**（同上各态）一律一行 WARN + exit 0 | 沿用 ADR-0005 已文档化立场：lint 监督层永不阻塞正常工作（fail-open 仅限 lint/hook，护栏语义原文） |
 
 包内脚本自身的既有 fail-open/fail-closed 语义（各头注约定）一律不动；上表只约束 Casey 侧 `shim`/`boot` 引导层在「包解析/校验/派生失败」这一新增故障面的行为。金牌 C4 按故障族逐入口断言（plan §3 S3）；本环境（DrvFs）不可确定性复现的权限类，以引导层单元桩钉协议并记档豁免。
@@ -86,7 +87,7 @@
 - `CLAUDE.md`：常用命令零改动；新增一段「`loop-kit` 已提取为兄弟目录独立包（ADR-0008），新机器 bootstrap 需先把包 clone 到 `/mnt/d/ctx/heren/loop-kit`」。**归本契约收尾**、不另开小契约——一段纯文档不值一个 baton，且与切换同提交才不出现文档与事实脱节窗口。
 - prd acceptance 涟漪 grep 全量（证据见 plan §0）：`prd-p2-intent-compile`（2 条 `term-lint` 命令）、`prd-ratchet-reverse-index`（1 条 `ratchet index` 命令）——路径经 `shim` 原样生效，命令零改动；`prd-model-lane-guard` 仅 dimension 散文提及、无命令。
 - 涟漪反查扩面（评审 M4 采信，2026-07-13 实测）：本契约全部待改路径（`CLAUDE.md`/`CONTEXT.md`/`docs/HANDOFF.md`/`docs/NEXT-SESSION.md`/`package.json`/`package-lock.json`）对 68 个 prd 的 `testChecksums` 与 acceptance 反查 0 冻结命中；`CONTEXT.md` 的 `--registry` 运行时门禁与 `term-guard` 金牌活读弃用别名名单两个耦合点记档（详见 plan §0）。**重签清单为空**（全路径反查证据在案）。
-- `loop/config.json` 的 `review.fallbackRunner` 路径不变；`package.json` scripts 三条不变。依赖声明按评审 M5 采信后收紧为**二选一、装饰性声明不可接受**（route:human #4）：甲=本契约单出口只走兄弟约定、不加 `"loop-kit": "file:../loop-kit"`（plan 默认建议；ADR-0008 决策 1 原文「最终以提取契约 GRILL 定案为准」，GRILL 定案即被授权、无需回改 ADR）；乙=加声明，则必须成为真实受测解析分支（`boot` 解析顺序显式加 `node_modules` 步 + 金牌覆盖）并纳入 `package-lock.json` 涟漪复审。
+- `loop/config.json` 的 `review.fallbackRunner` 路径不变；`package.json` scripts 三条不变。依赖声明按评审 M5 采信后收紧为**二选一、装饰性声明不可接受**——route:human #4 已裁定（Steven 2026-07-13）：**取甲**，casey `package.json` 不加 `"loop-kit": "file:../loop-kit"` 本地路径依赖、本契约单出口只走兄弟目录约定（ADR-0008 决策 1 原文「最终以提取契约 GRILL 定案为准」，本裁定即完成该定案、无需回改 ADR）；乙案（加声明并使其成为真实受测解析分支，纳入 `package-lock.json` 涟漪复审）标弃，不入本契约实现范围——如后续确需 npm 本地路径依赖出口，另立契约评估。
 - `CONTEXT.md`：更新 `loop-kit` 词条白话解释（提取已发生、指 ADR-0008）+ 登记 `shim` 新词（四列制，见 plan §6）；随切换提交落，先于任何使用。
 
 ## D9 切换点单提交可回滚

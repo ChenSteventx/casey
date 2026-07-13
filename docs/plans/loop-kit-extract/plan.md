@@ -1,7 +1,8 @@
 # loop-kit-extract — loop-kit 提取独立包 + Casey 兼容迁移（full/kernel 级加严）
 
 > 设计评审修订（codex-sol@max，2026-07-13）：异构冗余设计评审 9 条发现（3 `HIGH` / 5 `MED` / 1 `LOW`，`docs/plans/loop-kit-extract/review/planreview-codex.md`）已逐条裁定——8 条采信修入本文与 GRILL.md，1 条（M5）部分采信；逐条处置与反证见 `docs/plans/loop-kit-extract/review/planreview-disposition.md`。
-> baton 已立于本 worktree（lane full）。决策全集见 `docs/plans/loop-kit-extract/proposed/GRILL.md`（D1–D10）；本文是计划骨架 + 验收点。实现开工前置：Steven 对本设计的 kernel 级人签（未签不动任何实现字节）。
+> baton 已立于本 worktree（lane full）。决策全集见 `docs/plans/loop-kit-extract/proposed/GRILL.md`（D1–D10）；本文是计划骨架 + 验收点。实现开工前置：Steven 对本设计的 kernel 级人签（未签不动任何实现字节）。route:human #1 已裁定（Steven 2026-07-13）：**有条件签署**，条件 = 本轮 round-2 codex 设计审收口——round-2 未收口前仍不动任何实现字节。
+> Steven 2026-07-13 四裁定汇总（各处标记见 GRILL.md 与本文 §4）：① route:human #1 有条件签署（条件=round-2）；② route:human #4（D8）取甲；③ route:human #2（D5）加严接受；④ route:human #3（D2）取 fresh `git init`。route:human #5/#6 不在本轮裁定范围。
 > 决策依据：ADR-0008（路线①立即提取，已定不翻）、`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §12.1/§13/§14、Casey ADR-0001（分界线与数据契约锚定原则继续有效）、autotester ADR-0001（分发形态：独立仓 + npm 本地路径依赖 + 个人 skill 编排层）。
 
 ## 背景
@@ -59,12 +60,12 @@ story 划分与红/绿判据：
 
 验收命令在 acceptance 冻结时定稿，形如：`node tests/_golden/loop-kit-extract.golden.mjs`（内分 C0–C7 checks）；`node loop-kit/bin/gate.mjs --prd loop/prd-loop-kit-extract.json`。
 
-## 4. route:human（须 Steven 拍板）
+## 4. route:human（须 Steven 拍板；1–4 已由 Steven 2026-07-13 裁定，5–6 待续裁）
 
-1. **实现开工闸**：对 GRILL D1–D10 + 本 plan 的 kernel 级设计人签（双设计审后）。
-2. **D5 降级加严（评审 H1 采信后扩围）**：`hook-loop-guard` 的 `shim` 对合法态 0/2 之外的**一切**引导失败与子进程异常态——包缺失、身份锁失配、目标脚本缺失/不可读、解析期崩溃（exit 1）、Node 不兼容、信号终止、`spawnSync` 报 error——一律归一 exit 2 拦。这是对既有「hook 自身故障不阻塞」约定的定向加严；代价一：忘配包的新 clone 被拦到配好为止；代价二：guard fail-closed 会连带拦住修复用的工具调用，恢复须在 hook 触发范围之外人工完成（`CLAUDE.md` bootstrap 段明示）。
-3. **D2 包仓历史**：fresh `git init` 不携两仓历史，出处以 SHA 记包 `README.md`。
-4. **D8 依赖声明（评审 M5 采信后收紧为二选一，装饰性声明不可接受）**：甲=本契约单出口、只走兄弟约定，`package.json` 不加 `"loop-kit": "file:../loop-kit"`——ADR-0008 决策 1 原文「最终以提取契约 GRILL 定案为准」，GRILL 定案即被授权、无需回改 ADR，npm 本地路径依赖列为后续可选出口（**plan 默认建议**）；乙=加声明，则它必须成为真实受测解析分支（`boot` 解析顺序显式加 `node_modules` 步 + 金牌覆盖）且纳入 `package-lock.json` 涟漪复审。
+1. **实现开工闸**——Steven 2026-07-13 裁定：**有条件签署**，条件 = 本轮 round-2 codex 设计审收口。对 GRILL D1–D10 + 本 plan 的 kernel 级设计人签在 round-2 收口后即完成；round-2 未收口前不进 accept、不动任何实现字节。
+2. **D5 降级加严（评审 H1 采信后扩围）**——Steven 2026-07-13 裁定：**加严接受**，代价条款照录：`hook-loop-guard` 的 `shim` 对合法态 0/2 之外的**一切**引导失败与子进程异常态——包缺失、身份锁失配、目标脚本缺失/不可读、解析期崩溃（exit 1）、Node 不兼容、信号终止、`spawnSync` 报 error——一律归一 exit 2 拦。这是对既有「hook 自身故障不阻塞」约定的定向加严；代价一：忘配包的新 clone 被拦到配好为止；代价二：guard fail-closed 会连带拦住修复用的工具调用，恢复须在 hook 触发范围之外人工完成（`CLAUDE.md` bootstrap 段明示）。
+3. **D2 包仓历史**——Steven 2026-07-13 裁定：**取 fresh git init**，不携两仓历史，出处以 SHA 记包 `README.md`。
+4. **D8 依赖声明（评审 M5 采信后收紧为二选一，装饰性声明不可接受）**——Steven 2026-07-13 裁定：**取甲**——本契约单出口、只走兄弟约定，`package.json` 不加 `"loop-kit": "file:../loop-kit"`（ADR-0008 决策 1 原文「最终以提取契约 GRILL 定案为准」，本裁定即完成该定案、无需回改 ADR）；乙案（加声明并使其成为真实受测解析分支、纳入 `package-lock.json` 涟漪复审）标弃，不入本契约实现范围。
 5. **C0 跨仓棘轮形态**：包字节 pin 进 Casey 期望存档 + `kit-lock.json` = 未来每刀包改动（含 autotester 侧发起）都触 Casey 存档与 `kit-lock` 更新 + prd 重签——ADR-0008 已认「兼容金牌负担前置」，此处确认其机制形态。连带后果（D9）：包升级后，未同步 `kit-lock` 的在飞旧分支树会被身份锁按 D5 降级拦下，补救 = 合并 dev 或显式 `LOOP_KIT_PKG`。
 6. **运行时包身份锁（评审 H2 采信新增机制）**：隐式兄弟解析在每次转发前对 `kit-lock.json` 全清单 sha256 校验（毫秒级、每次 hook/CLI 调用都发生），失配视同包缺失逐入口降级；显式 `LOOP_KIT_PKG` 为操作者逃生口、跳过身份锁。确认接受这层每调用校验成本与拦截行为。
 
@@ -81,4 +82,4 @@ story 划分与红/绿判据：
 - `shim`（垫片）：只做包定位、ROOT 注入与命令/导出转发的薄层，零业务逻辑（校验与降级逻辑单点收在 `loop-kit/lib/boot.mjs` 引导助手，`shim` 只调它）；提取后 in-repo `loop-kit/bin/*.mjs` 的形态；由单一模板展开生成、金牌逐字比对钉死，防转发层长出第三变体。
 - `kit-lock`（**包身份锁**）：Casey 侧 git 跟踪的包内容清单（逐文件 sha256 + 包仓 commit），隐式解析每次转发前校验，失配按降级矩阵处置；Casey→包方向的版本锁，与包 `README.md` 记出处 SHA 的反向出处相区分。
 - **观测基线**：切换前于旧引擎录制的规范化行为存档（完整 exit code / stdout / stderr / 文件系统差量），行为等价断言的比对锚——既有学科词（golden master 范式），登记取其本仓专义。
-- `loop-kit` 既有词条白话解释更新：「孵化于 autotester `loop-kit/` 目录」→「已提取为独立包（ADR-0008），Casey 与 autotester 双消费者；分发 = 兄弟目录直解析（正式前置条件：包与消费树同层），npm 本地路径依赖按 route:human #4 定夺」。
+- `loop-kit` 既有词条白话解释更新：「孵化于 autotester `loop-kit/` 目录」→「已提取为独立包（ADR-0008），Casey 与 autotester 双消费者；分发 = 兄弟目录直解析（正式前置条件：包与消费树同层）；npm 本地路径依赖出口按 route:human #4 已裁定取甲、本契约不采用」。
