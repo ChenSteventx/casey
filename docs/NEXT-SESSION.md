@@ -1,6 +1,8 @@
 # 下个 session 接续提示词（Casey）
 
 > 用法：下次开新 session 只需 `/starter`（等价于说「读 `docs/NEXT-SESSION.md` 接着干」）——把本文件内容当开场提示词读进来、按其【下一步】执行。本文件是给接续 Claude 的执行指令；状态事实以 `docs/HANDOFF.md` 为准，二者冲突时信 HANDOFF。本文件由 `/session-handoff` 自动刷新（整节替换为最新开场提示词，剪掉过期内容）。
+>
+> **2026-07-13 增补**：本文下方「下一步」四选一已被当日批准的执行序取代——B/C 在制契约先收（重起 `docs/plans/_session-resume/bc-contracts-workflow.js`）→ 只读 ratchet 反向索引验证器（light）→ 合并收尾 → loop 改革按 `docs/plans/loop-ddd-overhaul/DESIGN.md` Phase 1 立项。权威现状见 `docs/HANDOFF.md` 2026-07-13 节与 `docs/plans/loop-orchestration-reform/NEXT-SESSION-PROPOSAL.md` 批准记录。
 
 ## 开场提示词
 
@@ -100,7 +102,7 @@ D. 画布维度续建下一原子（贪心序）或收尾挂账清理（归档�
 - worktree 并行：全新 worktree 无 node_modules（gitignored 不随 HEAD 进树）——需 playwright 的金牌在树内会红，软链主树 node_modules 进去（ln -sfn）。契约草稿 docs/plans/<slug>/ 未入 git、不随 HEAD 进树，实现 subagent 需自己 cp 进本树。
 - gate 慢（每 golden 真起 chromium + 假 SUT ~30-60s，一契约十来个 golden 十几分钟）——后台跑、别前台等超时；单条命令别拼重定向免 loop-guard 误判。
 - scratchpad（/tmp）重启即清：崩溃丢的活去 ~/.claude/projects/*.jsonl 或后台任务输出捞；重要归档打 git tag（持久）别只放 scratchpad。
-- codex 异构评审：codex exec --skip-git-repo-check -C <dir> -s read-only -m gpt-5.6-terra -c model_reasoning_effort=max - < 评审料.md；chatgpt.com 网络会中途提断（model-refresh/transport timeout），料压小 + 后台跑更稳。pi 从本 WSL 驱不动，别试。
+- codex 异构评审：codex exec --skip-git-repo-check -C <dir> -s read-only -m gpt-5.6-terra -c model_reasoning_effort=max - < 评审料.md；chatgpt.com 网络会中途提断（model-refresh/transport timeout），料压小 + 后台跑更稳。pi 已可从本 WSL 驱（v0.80.3 起实测通，2026-07-13 订正；旧「驱不动」记录作废）——先一句话 smoke 验通再跑正式，缺席不阻塞。
 - 真机唯一许用账户 = autotest（Steven 禁令）：任何真机动作前须 Steven 带外确认 .auth/credentials.json 已是 autotest；未确认只做 hermetic。
 
 【硬约束（贯穿全程）】

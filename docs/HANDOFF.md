@@ -3,6 +3,19 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 当前状态（2026-07-13，B/C 在制 + loop 改革方案评审批准：先收 B/C 后启改革）
+
+上一 session（2026-07-13 上午）因 `wsl --shutdown` 根治隧道中继强制重启，A+B+C+D 四线（Steven 拍板全做）中断点如下（执行指令见 `docs/plans/_session-resume/RESUME-2026-07-13.md`，本笔已入 git）：
+
+1. D 归档清理**已完成**：三棵已合并契约旧 worktree 移除 + 十个已核实合并分支删除；保留 `run-convention-claude` 存档分支 + 三 `archive/codex-wip-*` tags。
+2. B `drawer-lock-hardening`（light）与 C `gen-prompts`（full）两棵 worktree **在制**：baton 各 2/6（grill+plan done、产物落盘），`dev..分支` 零提交（Build 被关机丢失，需重起编排续跑）；B 树有未提交红先行夹具半成品（`M tests/fixtures/fake-sut/server.mjs`，续接勿重敲）。编排脚本 `docs/plans/_session-resume/bc-contracts-workflow.js`（8 段，Plan 段读盘幂等，跨 session 重 launch 非 resume）。
+3. A 真机 UAT 卡相位0 关三（wslrelay 隧道数据面），重启后按 `docs/runbooks/real-uat-runbook.md` 重拉标准隧道；route:human，需 Steven 在场。
+4. **loop 编排改革两份文档评审毕、Steven 批准**（2026-07-13）：`docs/plans/loop-ddd-overhaul/DESIGN.md` = 唯一设计源；`docs/plans/loop-orchestration-reform/NEXT-SESSION-PROPOSAL.md` = 评审后执行摘要（内含 Claude 方案审查 HIGH×4/MED×6/LOW×4 与批准记录七决策）。要点：B/C 先行；护栏 #18 不推翻（无共享 registry/自动 merge queue）；扩展现有 contract 台账、不建 `state.json`；强制层（gate/contract/hook/term-lint/签名写路径）改动按 kernel 治理；默认 2 限界上下文；round-2 只 HIGH/MED 强制；backlog drop 须 Steven 确认。
+5. 本 session 执行序：Phase1 文档收口（本笔）→ Phase2 重起 bc-contracts 编排收 B/C → Phase3 主树落**只读** ratchet 反向索引验证器（light 契约，不写 testChecksums/passes/签名，批量重签写面=未来单独 kernel 契约）→ Phase4 顺序合并收尾（人裁冲突 + 既有流程重签 + 验证器全仓总核 + tier1 + 刷新交接文档）→ Phase5 改革按 DESIGN.md Phase 1 范围正式立项（16 节点迁移不并入、另行提案）。
+6. 未提交现场保持不动：`M .gitignore`（Steven 的）+ `M loop/prd-selftest.json`（gate 时间戳漂移、不并提交）+ `docs/codex/`（并行 codex 会话产物）+ `docs/plans/regress-strategy/`、`docs/plans/usability-audit/` 草稿。
+
+以下为 2026-07-10 快照，只溯源、勿据其判现状：
+
 ## 当前状态（2026-07-10，三契约 + 漂移收口合并回 dev：画布第五原子 setNodeField + replay-nth 硬化 + regress scope A + 两处既有漂移收口）
 
 本 session 承接上个 session 起好的三棵 codex worktree 在制品，走「Claude 补齐/评审 + 多 subagent 编排 + codex 异构评审 + 协调合并 + 全量复验」，三契约 + 一漂移收口契约齐落 `dev`（`68f1fe0`→`ff73011`）。dev 全量复验绿：全仓 115 条 ratchet 全 MATCH + `selftest --tier1` 裁判零 LLM GREEN。落地清单：
