@@ -26,6 +26,14 @@ const SCENARIOS = new Set([
   // replay-nth-visible-hardening fix#2：抽屉挂一枚 display:none 的隐藏 .hr-select 触发器（占 DOM 序 index 0）+
   //   真·可见触发器——触发器域锁未限可见时误命中隐藏触发器，限 :visible 后只命中可见触发器。
   'ddhidden',
+  // drawer-lock-hardening（GRILL D7）：详情页画布外挂第二个可见 .hr-drawer__content-wrapper 冒牌抽屉，
+  //   钉 openNode/selectNodeDropdown/setNodeField 三原子域锁跨抽屉边界（codex-sol MED#2 挂账）。
+  //   冒牌抽屉字段/触发器与真节点抽屉共用构建函数不特判，纯加法、既有场景零行为差。
+  //   twinfield：真节点抽屉 ddempty 形态（无字段无下拉）+ 冒牌抽屉挂唯一同 placeholder 字段与「请选择」触发器
+  //     （可点可选可回读）——钉 setNodeField/selectNodeDropdown 跨抽屉误命中；
+  //   twinboth：真节点抽屉与冒牌抽屉各挂一个同 placeholder 字段——钉「域内唯一才动手」正面半边；
+  //   twintitle：单击节点不开抽屉（drawernone 半形态）+ 冒牌抽屉含节点标题精确文本——钉 openNode 开错抽屉归因假绿。
+  'twinfield', 'twinboth', 'twintitle',
 ]);
 
 // 背景轮询 denylist 的合成形态（绝不引真 site.json，护栏 #7）：watchNetworkForensics 用它把 /auths/poll 归 background。
@@ -241,8 +249,9 @@ function clientMain() {
     // 剥 query（bin/replay.mjs:382），故不能用 URL query，改用场景（既有场景一律缺省行为、零影响）：
     //   缺省场景（happy 等）单击节点开抽屉、标题 = 节点名（精确）；
     //   'drawernone'     单击节点不开抽屉（模拟 app 无响应——「点了不开」反面，钉回放 action_failed）；
-    //   'drawersuperset' 单击节点开抽屉、标题 = 节点名 + '副本'（含 label 子串但非精确——substring 假绿考场，钉 F1 精确回读）。
-    var drawerMode = scenario === 'drawersuperset' ? 'superset' : scenario === 'drawernone' ? 'none' : '';
+    //   'drawersuperset' 单击节点开抽屉、标题 = 节点名 + '副本'（含 label 子串但非精确——substring 假绿考场，钉 F1 精确回读）；
+    //   'twintitle'      单击节点不开抽屉（drawernone 半形态复用）——冒牌抽屉另含节点标题精确文本钉 openNode 开错抽屉归因假绿。
+    var drawerMode = scenario === 'drawersuperset' ? 'superset' : (scenario === 'drawernone' || scenario === 'twintitle') ? 'none' : '';
 
     // —— 节点抽屉「请选择」下拉（wf-select-node-dropdown，registry SOP 最小复现）——
     // 触发器 = .hr-select（初值「请选择」，值放 .hr-select__value 子 span 便于精确回读）；点触发器弹可见浮层
@@ -292,7 +301,9 @@ function clientMain() {
       if (!nodeDrawer) { nodeDrawer = el('div', { class: 'hr-drawer__content-wrapper' }); wrap.appendChild(nodeDrawer); }
       nodeDrawer.textContent = '';
       nodeDrawer.appendChild(el('div', { class: 'lf-node-drawer__title' }, titleText));
-      if (scenario === 'ddempty') return; // 抽屉开但无下拉：域内触发器 count=0（execute 预检的「无下拉」半边）
+      // ddempty/twinfield：抽屉开但无字段无下拉——域内触发器/字段 count=0（execute 预检的「无下拉/无字段」半边；
+      //   twinfield 复用此缺席半边，真节点抽屉空、跨抽屉误命中的唯一候选靠冒牌抽屉，D7 定）。
+      if (scenario === 'ddempty' || scenario === 'twinfield') return;
       // 节点抽屉下拉纯加法：缺省单下拉；ddtwin 挂两触发器 + 预挂一层 stale 隐藏浮层含目标（两浮层各现一次）。
       // ddhidden（replay-nth-visible-hardening fix#2 复现）：先挂一枚 display:none 的隐藏 .hr-select 触发器占
       //   DOM 序 index 0，再挂真·可见触发器——触发器域锁未限可见时 .hr-select count=2、nth=0 误命中隐藏触发器
@@ -347,6 +358,25 @@ function clientMain() {
     //   全页 getByPlaceholder count=2 必 ambiguous、唯域锁 .hr-drawer__content-wrapper 内 count=1 才 unique，
     //   钉「回放走域锁专用门 doSetNodeField、非全页门」。纯加法、只 setclash 场景挂、既有场景零影响。
     if (scenario === 'setclash') wrap.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
+    // —— 冒牌抽屉（drawer-lock-hardening D7，纯加法反面场景）——详情页画布外（挂 wrap，同 setclash 位置
+    //   先例）再挂第二个可见 .hr-drawer__content-wrapper，真机形态如同页测试面板/新增抽屉并存；字段/
+    //   触发器与真节点抽屉共用构建函数 buildNodeSelect 不特判。只 twin* 三场景挂，既有场景零行为差。
+    var TWIN_TITLE_NODE = '模型节点'; // twintitle 冒牌抽屉标题固定复用面板项名（金牌据此选同名节点考场）
+    if (scenario === 'twinfield' || scenario === 'twinboth' || scenario === 'twintitle') {
+      var fakeDrawer = el('div', { class: 'hr-drawer__content-wrapper' });
+      if (scenario === 'twintitle') {
+        // 冒牌抽屉含节点标题精确文本——钉 openNode 回读假绿：另一可见抽屉恰含 label（不含字段/触发器，
+        // 本场景只考 openNode 自身，select/set 两原子不会被前置门放行到达）。
+        fakeDrawer.appendChild(el('div', { class: 'fake-node-title' }, TWIN_TITLE_NODE));
+      } else {
+        // twinfield/twinboth：冒牌抽屉不含节点标题，只挂同 placeholder 字段（钉 setNodeField/
+        // selectNodeDropdown 跨抽屉误命中）；twinfield 再挂一个「请选择」触发器（可点可选可回读，
+        // 让旧宽域锁走完全程真假绿——真节点抽屉此时是 ddempty 形态，无字段无下拉）。
+        fakeDrawer.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
+        if (scenario === 'twinfield') buildNodeSelect(fakeDrawer, '');
+      }
+      wrap.appendChild(fakeDrawer);
+    }
     app.appendChild(wrap);
   }
 
