@@ -1,0 +1,180 @@
+{
+  "schemaVersion": 1,
+  "task": "loop-kit-extract（full，kernel 级加严）：loop-kit 通用内核提取为独立包 /mnt/d/ctx/heren/loop-kit（兄弟目录，fresh git init，出处记 casey@f9f9019）+ Casey 侧十文件原地换薄转发层（shim）+ 新增共享引导助手 loop-kit/lib/boot.mjs（包定位/kit-lock 包身份锁校验/env 注入/CLI 转发与库模式 re-export/D5 全故障域降级单点）。内核行为一字不让——提取前后逐命令等价（切换前观测基线钉死）。决策依据：docs/plans/loop-kit-extract/plan.md、proposed/GRILL.md（D1–D10）、Steven 2026-07-13 四裁定（route:human #1 有条件签署已满足 / #4 D8 取甲不加依赖声明 / #2 D5 加严接受 / #3 D2 取 fresh git init）。",
+  "specPath": "docs/plans/loop-kit-extract/plan.md",
+  "testChecksums": {
+    "loop-kit/kit-lock.json": "1c952af1eca9b5e2799080e691b25deae3405efc414a528c8aee7b954b1cbde5",
+    "loop-kit/lib/boot.mjs": "9e0cf9ccf0d79975d07676139a30782b31f54411f7f7b64cbcb7b3dc58f89720",
+    "loop/prd-ratchet-reverse-index.json": "5e8c093c2c72128bec40c0e8cae769e7eb3d4f28b093aa0158471f26b32e8199",
+    "loop/prd-term-guard.json": "227157bb517a0e8af2173ff231acbfa799bae922c33cc935a35d2ef9e0cc5b6f",
+    "loop/prd-worktree-baton.json": "9086f24fb10f8f95ef22657783f1af93971d5657a66bac965dc08084311ff770",
+    "tests/_golden/loop-kit-extract.golden.mjs": "0addc8a84aa80b9561780437179661591a0e7bf98e5be9637449134f5968a7a6",
+    "tests/_golden/ratchet-reverse-index.golden.mjs": "8b76c9a1b8bfb07d87e4ec1b6088d44cc544045d94780738a30667f0f701bbd5",
+    "tests/_golden/term-guard.golden.mjs": "d7fba4fa8f87d8e407e926bdeb02798492658f4d924d2943e28b330353fba80a",
+    "tests/_golden/worktree-baton.golden.mjs": "bfbb5f2d10f233fe2bb70161c293f6d6ecb0d6cb1eabe99cdc980cccd22d3ecc",
+    "tests/fixtures/loop-kit-expected/baseline/c6-rerun-anchor.json": "6632c06342beef9e3693134004cb8589c95f62d2734f38936774e3f35017d8ab",
+    "tests/fixtures/loop-kit-expected/baseline/commands.json": "721a51bcff8496a94a6f9977d717f65c94e91a5581842dfa40f68466a6471c21",
+    "tests/fixtures/loop-kit-expected/baseline/fixture/CONTEXT.md": "df0e053109799267e33cad91d708c298a7db57a2880131d9bd6795782fd7568e",
+    "tests/fixtures/loop-kit-expected/baseline/fixture/docs/plans/demo-light/plan.md": "91c3436da5aba2f2b2ca70f406cbd9b178d9eb74c179fdcc271420c03d8c50bc",
+    "tests/fixtures/loop-kit-expected/baseline/fixture/fixtures-extra/violation.md": "f693bd57205d1fc18bc06c0868ed221d090459b66a3d643e3e446689f5ef21ed",
+    "tests/fixtures/loop-kit-expected/baseline/fixture/frozen-fixture.txt": "16d73f200ec0a55c1c38e4e2b5b8150e353a1a6b7ca6de3af63fff1be3ef3015",
+    "tests/fixtures/loop-kit-expected/baseline/fixture/loop-fixtures/transcript-clean.jsonl": "a175b2b05dbcf250a8f1d6f8e13d67dcc0d951e83236f9343131fbc298be0603",
+    "tests/fixtures/loop-kit-expected/baseline/fixture/loop-fixtures/transcript-violation.jsonl": "a78306967a638a6f52e45d233a8ba4463cf5b880886664cd1f701a811f4e04ca",
+    "tests/fixtures/loop-kit-expected/baseline/fixture/loop/GUARDRAILS.md": "ae93e7484e95e93340b9f650d654b6ca1e99c240d53c9261b0d9f87511d451f7",
+    "tests/fixtures/loop-kit-expected/baseline/fixture/loop/config.json": "9c808952589e5a80b06cf4ebd9cd1c8d864438a0350f8df12457e612adf89c91",
+    "tests/fixtures/loop-kit-expected/baseline/fixture/loop/grill-baseline.md": "b5359a6e99719cc26286b0b43a5318c88dccb7f842a48f39baf998f46be2fccf",
+    "tests/fixtures/loop-kit-expected/baseline/fixture/loop/prd-baseline.json": "8e54ac39ba4c30db520427d5ac98a245db4497085cb73b80a0768e4504765f3b",
+    "tests/fixtures/loop-kit-expected/baseline/normalize.mjs": "87e6d3fa04d61853cda78166839c2f24ca34831dcc1985ff3b004fc542c87f2f",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/breaker-reset.json": "5ca5c09b2eab6a10c27a61986d9ae6e774efeee55dba50afcb13e58d270be904",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/breaker-round-error.json": "accfb4a3f2dfe4f5cff702eb5543eeaaa5fc3a2652e3dd08c1a2c334540b9cad",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/breaker-round-ok.json": "757c291fd1854edc1ad07e58d497a27e17ed8c2cb3261c9fff80b46a9e70a385",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/contract-advance-grill.json": "61571205d20dcd56dec32b8dc1d916fc3b4b07318c53c2f525cf2011fb4458df",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/contract-advance-plan.json": "6c0f78583ffb096a53144777aa9d1b127314cc3d8fe6db52d088b4d946d391e3",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/contract-check-writeprd-after-plan.json": "2b06d75db17484795d8f47af3fca9d91f2d462c825c309360ab3f993bba98525",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/contract-check-writeprd-before-plan.json": "1f5ecf8929f4bc3d7b374176b577811a4829943214f0809fb93c57fa67a44d53",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/contract-init-full-for-guard.json": "3df0837eb90ddd8843724a010f2380cda66a36a847405f886380536a596f5f7a",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/contract-init-light.json": "52e0f33b3a58c628ce5d5915051f3ec0fd0d3a486e909cd1e7725ac3c25cbc61",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/contract-list-no-git.json": "45525ec43f9da9b51118a13901521d7ccaecfc8d4e0849f321545392d5fcbc2b",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/contract-show-after-init.json": "2c3d6a3fb6f919a18b64c3e0a48128e0309a16afcf8437dea2865390075460ee",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/gate-dry.json": "09996d803e71d0e700b9ebcff5ee906b70193852e07e4c5ef08831ed4a82bbd8",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/hook-loop-guard-block-no-contract.json": "026af1d99d8189f416e737f69ee53cd95cce1c748344166e5340fa818826aa9f",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/hook-loop-guard-block-stage-missing.json": "1cba21500e07d500f28ef81fbcd87975c8e826eca383724761df36958fd51458",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/hook-loop-guard-noop-nonimpl.json": "b324e5928a3bea645e8aec6acbae8c125e9a4ad9b95d72bd3abf4499a500dcc1",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/hook-loop-triage-hit.json": "aa1e609b88f84099918e7822828dd8d00de0453b8e2b56f3227990a1097378e2",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/hook-loop-triage-noop.json": "6c2bce61d75faefa01620d0dae2ff53e513252a6f62f9c7cf73e6ff8f721b1f0",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/hook-posttool-clean.json": "b8c856fa5259fe3f06f178a9ca7034fa45d4fa36386e471cd34e1e33a71ea680",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/hook-posttool-violation.json": "c646bf33d240a1a73357e1711588d7cea06b6df06f21a4dba90399ede763578e",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/hook-stop-clean.json": "865efa7c9f847710a0e5b8186b81383249794ab2397f277d27789290bcd5a6b2",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/hook-stop-violation.json": "5bd68eead26188e153b32a0d6ea8ca9d0a60dc97f739547d9e7c0760d819e904",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/ratchet-index.json": "1d30d2a7d798d7a1845913589b7f4536828202f1feb9ae6bd538db08419029ee",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/term-lint-file-clean.json": "69bc31e803acb12e61f7a3689882ca349dcd9e830e7fa95fdb67bff64209b9d7",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/term-lint-file-violation.json": "3f7d18247505d485a88e317e90c4aa977505b28f85a7bcaa7d8f3f0e34dae823",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/term-lint-registry.json": "95a39c35c3ab39f8582d6d3eeb50dacd861bea758a2cb3eeb21c215f98eb8c95",
+    "tests/fixtures/loop-kit-expected/baseline/normalized/term-lint-stdin-clean.json": "41db11ae8bc789c0681049020e24672def673e6fe6b76655c5f089b577558489",
+    "tests/fixtures/loop-kit-expected/baseline/raw/breaker-reset.json": "7389c09cdf9e8a8de1bca302801ab70312f58316b3c32b31c725c98f71003692",
+    "tests/fixtures/loop-kit-expected/baseline/raw/breaker-round-error.json": "4ced462798657f3fa83c0c979e78457189d9171a45dee695068dcd2327a1fdb6",
+    "tests/fixtures/loop-kit-expected/baseline/raw/breaker-round-ok.json": "2b0d3215b3967abe3c78f40c91fbc7b22a8c9da1a86297be70f0f33ac6a5d4a0",
+    "tests/fixtures/loop-kit-expected/baseline/raw/contract-advance-grill.json": "8d3b388531c7989e191a066bf1d4acc2fb7525a9217df7f15627ed98808a1d3c",
+    "tests/fixtures/loop-kit-expected/baseline/raw/contract-advance-plan.json": "40b2bf5c6afeb73b7ce77ca6b8942433f3981ea5187015c4ec56fc38951d3d86",
+    "tests/fixtures/loop-kit-expected/baseline/raw/contract-check-writeprd-after-plan.json": "4811b96efea79c79d207af2346d9da0828c44eb8c2e774989c933bd1540c8d88",
+    "tests/fixtures/loop-kit-expected/baseline/raw/contract-check-writeprd-before-plan.json": "c9867c49e1e467785d19fc9f60611a8dd7a480691f2198849629d8734a80f5dc",
+    "tests/fixtures/loop-kit-expected/baseline/raw/contract-init-full-for-guard.json": "2ff8d9876e4e1a307362da000618dfa10491950a16b29d336647d54c44cbab53",
+    "tests/fixtures/loop-kit-expected/baseline/raw/contract-init-light.json": "56d9cbbb2027c246b4d87c55800e1a2cbbebe6e2af304d33bdf03e33e4a95836",
+    "tests/fixtures/loop-kit-expected/baseline/raw/contract-list-no-git.json": "54cbe7074dac83f786a1f882f5ea70715293501791801189032cfdafc869b3cc",
+    "tests/fixtures/loop-kit-expected/baseline/raw/contract-show-after-init.json": "1b115824dcb0fe23141687a5ec69cb8325f15baf1f7d22eb57a1da5b6d95adf8",
+    "tests/fixtures/loop-kit-expected/baseline/raw/gate-dry.json": "b6f18dbd7478b776183fc0e812e4da000cf5a30f65756f8025f6f6c271c89736",
+    "tests/fixtures/loop-kit-expected/baseline/raw/hook-loop-guard-block-no-contract.json": "229707ffe5aade6100d474dc491ed47b7e6d814d02e741623175c87ebccb76ce",
+    "tests/fixtures/loop-kit-expected/baseline/raw/hook-loop-guard-block-stage-missing.json": "0a0e19d776ba9e0ca201c2cca89cb160de8e625eaaa9ea3df2b3edbd58aabc8a",
+    "tests/fixtures/loop-kit-expected/baseline/raw/hook-loop-guard-noop-nonimpl.json": "2a20b672941974b6a065f47c33bd0301f11f3f033ca7588a84bb84b8919d034e",
+    "tests/fixtures/loop-kit-expected/baseline/raw/hook-loop-triage-hit.json": "17c142662a19f5617e0b8979eb72243dc84fbe16b1c3792b8e4ea710529b3d15",
+    "tests/fixtures/loop-kit-expected/baseline/raw/hook-loop-triage-noop.json": "999f1ef46e1e7bc0dbaaee2a41f5855a4d583f0ceffba7b030f9129c3e3e62b6",
+    "tests/fixtures/loop-kit-expected/baseline/raw/hook-posttool-clean.json": "89f6ccc180957ff76ecb88a394a4b40349add492959a209e0c5f2b9843cc2cf8",
+    "tests/fixtures/loop-kit-expected/baseline/raw/hook-posttool-violation.json": "372efc08023dfed9a9a9bf1e648fd3510ccd153fd0f97418cd8ed25c10438e7d",
+    "tests/fixtures/loop-kit-expected/baseline/raw/hook-stop-clean.json": "ddfc1d261a2892e6621327d6a0ac1ff83dc3a4afd73bb4fc07f50347bab527eb",
+    "tests/fixtures/loop-kit-expected/baseline/raw/hook-stop-violation.json": "d5b467725c65aa63a5e2bf864e593ab0fbbf1bcc335ee9f1c2699bfa178bee42",
+    "tests/fixtures/loop-kit-expected/baseline/raw/ratchet-index.json": "49a943bf17f9610949e0439eec309b48e59d3ccc1d766a97bdd8945759c87f4c",
+    "tests/fixtures/loop-kit-expected/baseline/raw/term-lint-file-clean.json": "69bc31e803acb12e61f7a3689882ca349dcd9e830e7fa95fdb67bff64209b9d7",
+    "tests/fixtures/loop-kit-expected/baseline/raw/term-lint-file-violation.json": "3f7d18247505d485a88e317e90c4aa977505b28f85a7bcaa7d8f3f0e34dae823",
+    "tests/fixtures/loop-kit-expected/baseline/raw/term-lint-registry.json": "95a39c35c3ab39f8582d6d3eeb50dacd861bea758a2cb3eeb21c215f98eb8c95",
+    "tests/fixtures/loop-kit-expected/baseline/raw/term-lint-stdin-clean.json": "41db11ae8bc789c0681049020e24672def673e6fe6b76655c5f089b577558489",
+    "tests/fixtures/loop-kit-expected/baseline/record.mjs": "577b1d23c6a4dee84ce447f7452dbfd1b48ee769a9cdb9975a1785341ab153a2",
+    "tests/fixtures/loop-kit-expected/hash-tree.mjs": "d8592360f42aa0a4ea3bd66510a35cf25299669e6a3c489ddfceeee7c3dc4486",
+    "tests/fixtures/loop-kit-expected/package/README.md": "73324a00ce15b52552fd4a867d731f45ff926a7dff716f6c17830037bf9d2963",
+    "tests/fixtures/loop-kit-expected/package/bin/breaker.mjs": "361f4735d7023e7bd4d8dbb8ab1269d584f11572cfe109b34b18df0c7cdce83b",
+    "tests/fixtures/loop-kit-expected/package/bin/contract.mjs": "3a27cf86109633c2379936ddd6a25aec5e977172f38a042667a66c445106e7af",
+    "tests/fixtures/loop-kit-expected/package/bin/gate.mjs": "e55569206fdd8f8f28c0a66a8c704d13c60486a53dda27d21fa41856dac13bb4",
+    "tests/fixtures/loop-kit-expected/package/bin/hook-loop-guard.mjs": "ce1dc94fa4ab5e29fc2e3263e12e0f9f8510811c5e922ac8efb3f1a7a548c560",
+    "tests/fixtures/loop-kit-expected/package/bin/hook-loop-triage.mjs": "cf621f4cd554182290b1905a07764a0e9c7b4611e978d4bb8ea6e1040f750819",
+    "tests/fixtures/loop-kit-expected/package/bin/hook-posttool.mjs": "2c09f3014f0bc42cc9b5452377acba9aa9f8c566a4e4902cbc05fcfedd9bbcde",
+    "tests/fixtures/loop-kit-expected/package/bin/hook-stop.mjs": "087090a4f4eceed831adc07112ae499b5e804236943f6bf5806585302d5673b5",
+    "tests/fixtures/loop-kit-expected/package/bin/ratchet.mjs": "bc0389a1b6951154af961520d728eeaf06a31b9da7d4072ac7731297b7c70f3b",
+    "tests/fixtures/loop-kit-expected/package/bin/review-deepseek.mjs": "11ed6d0aa25d650004f545febe31ebaa2ee018d33b979da72476d58ce2a36e09",
+    "tests/fixtures/loop-kit-expected/package/bin/term-lint.mjs": "802b71d7ca27c8db2ff91bc5f1108e1ded6d233ebfe89021824ec57d14554cf0",
+    "tests/fixtures/loop-kit-expected/package/lib/root.mjs": "f94d84365dbf681c06426b86f2ced61bc512a5787e85257f140eefc57c3153e6",
+    "tests/fixtures/loop-kit-expected/package/package.json": "1f435d74bae0b8db750cdd85033b3364b6431212d3b24702c7e4f6a0cf1b1279",
+    "tests/fixtures/loop-kit-expected/shim-template.mjs": "57d2271c6b9608445d24f45af84e4c23be14993d00c292c38f67a3b65c3dfb13"
+  },
+  "observability": [
+    {
+      "dimension": "全仓 Test Ratchet 反向索引现状含两条与本契约无关的既有缺口：loop/prd-tc_wf_history_version.json 与 loop/prd-tc_wf_publish_states.json 冻结的 cases/tc_wf_history_version/expected.frozen.json、cases/tc_wf_publish_states/expected.frozen.json 属真机运行产物（cases/ 按 .gitignore 不入库），本次全新检出的工作树本就不含它们，早于本契约（commit 24865f4）、与提取改动无关。故 s4 story 不把 ratchet verify 纳入 acceptance（会永久红于本环境），改作全量复验的独立手动步骤：确认其余问题清零、仅剩这两条已知既有缺口。",
+      "route": "waived",
+      "note": "若在曾真机跑过这两条用例、cases/ 目录完整的工作树上复验，这两条也会清零；本记录只说明本次落地环境下的真实现状。"
+    },
+    {
+      "dimension": "R2-L1 性能债（route:human #6）：每调用对 kit-lock.json 全清单 sha256 校验的性能预算未量化收口。codex round-2 异构冗余设计审实测指示值：本树十脚本约 64 KB，DrvFs 冷态下空 Node 启动约 0.02 秒、逐文件读取并 sha256 约 0.17 秒，一次编辑可能触发多个 hook、成本叠加。实现期未补冷/热缓存与完整包全清单的实测数据；禁止为提速引入削弱完整性的 mtime 缓存。",
+      "route": "human",
+      "note": "需 Steven 审阅本树实测数据后给出可接受预算上限；在给出前，现状（无缓存、每调用全量 sha256）按 D5 加严裁定原样生效，不视为阻塞项。"
+    },
+    {
+      "dimension": "C0 跨仓棘轮机制形态（route:human #5 确认项，非待决）：包字节 pin 进 tests/fixtures/loop-kit-expected/ + loop-kit/kit-lock.json，二者与真包三方一致由 C0 钉死；未来任何包改动（含 autotester 侧发起）必先更新期望存档 + kit-lock + 重签本 prd 才能通过 gate——ADR-0008「兼容金牌负担前置」的机制形态在本次落地中确认成立，机器可验，非待人裁事项。",
+      "route": "machine"
+    },
+    {
+      "dimension": "round-1 实现审 A2 采信后收窄：此前本条把「并发导入/目标模块 import 抛错/认领 API 抛错/status===null 且无信号无 error」四态自行标 waived——设计签署时唯一授权的豁免是「DrvFs 不可确定性复现的权限类」（plan §3 S3 末句），此扩面无设计授权、已回收。现状：四态均已补真实用例（C3「并发导入」用 Promise.all 交织两棵异根树验证 claimAtomic 的原子性；C4「目标模块 import 抛错」与「认领 API 抛错」用真实错误脚本/真实跨树冲突场景直接驱动 boot.loadLib；C4「status===null 且无信号无 error」与「spawnSync 派生失败 r.error」改用测试专用 spawnImpl 注入桩在真实 runCli 代码路径上行为级验证，取代此前的源码字符串断言）。仍务实取舍、未扩面到设计未授权范围之外的：跨树交错导入覆盖 A→B(term-lint)→B(contract) 一种代表性序列而非穷举全部库件×全部排列组合；本环境（DrvFs/WSL）不可确定性复现的权限类故障沿用既有豁免协议——这是 plan 唯一授权的豁免。",
+      "route": "waived",
+      "note": "回收范围见上；剩余两项（交错序列取代表性样本、DrvFs 权限类）与设计签署时的授权豁免一致，不构成新的扩面。"
+    },
+    {
+      "dimension": "C6「经 shim 复跑照绿」的锚点选择：worktree-baton.golden.mjs 自身含一条与「本 worktree 活动 contract slug 恰为 worktree-baton」耦合的断言（G6），与 loop-kit-extract 无关且该金牌字节冻结不可改；本 worktree 活动 slug 是 loop-kit-extract，故其复跑现状是 exit 1（非本契约引入的回归）。C6 因此比对「切换前后复跑结果一致」（零回归）而非绝对要求 exit 0，锚值见 tests/fixtures/loop-kit-expected/baseline/c6-rerun-anchor.json。",
+      "route": "waived",
+      "note": "若日后在「worktree-baton」为活动任务的 worktree 里跑本金牌，三者应全绿；本记录只说明本次落地环境下的真实复跑现状与比对口径。"
+    },
+    {
+      "dimension": "「进程唯一 ROOT」范围精确化（route:human #7）：kernel 级人签时 GRILL D4/plan §1.2 对「进程唯一 ROOT」的表述无条件；round-2 实现审第四轮 codex 独立复现：node:vm 的 Context 各有独立 globalThis 且其中 isMainThread 恒为 true，与 worker_threads 不同、Node 无对等可靠运行时判据可拒绝，该场景下「进程唯一」不成立。实现方已把准确范围收窄为「本机制运行所在的默认 Node.js 主 realm 内唯一」，plan.md/GRILL.md/loop-kit/lib/root.mjs 头注已同步该表述，选择精确文档化边界而非引入可被绕过的运行时启发式检测。范围收窄依据：① 触发需 --experimental-vm-modules 显式旗标，本仓与消费侧任何默认调用路径均不带此旗标、该 API 默认不可用；② 构造该场景要求攻击者已在同进程内拥有任意代码执行能力，此前提成立时同进程本就不是可信边界；③ grep 核验本仓与消费侧零 node:vm 使用。",
+      "route": "human",
+      "note": "此为实现阶段发现对已签设计表述的收紧，非重开设计讨论——待 Steven 契约收尾人签时一并确认是否接受该范围表述，或要求改走 codex 建议的备选方案（跨 cooperative VM loader 共享宿主对象保存槽 + 补 VM 回归测试）。触发重新评估的条件：任何一方引入 node:vm 消费面，或 VM Modules 转为 Node 默认可用（不只是加装实验旗标）。在 Steven 确认前，现状（文档化边界、无运行时防护）按本记录原样生效，不视为阻塞项。"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-package-fidelity-and-root-semantics",
+      "desc": "C0 包保真+三方一致+跨仓棘轮：包内除 .git 外全清单对期望存档逐文件 sha256 相等且集合严格相等，期望存档/kit-lock.json/真包三方一致。C1 API 面 deepEq：经 shim 库模式 import 的 contract/term-lint/ratchet 导出名集合对提取前快照（18/3/4 名）deepEq 且逐名 typeof 相等。C7 根语义组：resolveRoot() 独立语义——env 有效命中/env 无效立即失败不回退/上溯命中根标记/上溯无标记抛结构化错误/realpath 规范化/原子认领（首认领成立、同根幂等、异根立即抛、认领后不可变）/探针回报认领值。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/loop-kit-extract.golden.mjs --group C0,C1,C7"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-13T20:05:07.887Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-switch-equivalence",
+      "desc": "C2 转发证明+完整观测基线等价：LOOP_KIT_PKG 指向标记包时真转发（锁校验不豁免）；隔离测试树内完整命令矩阵（gate --dry/contract 全子命令/breaker/term-lint/ratchet/四 hook）规范化输出与切换前冻结基线逐案比对（exit code + stdout/stderr 全文 + 声明写集之外零变化）；反向扰动用例证明规范化不吞真实差异。C5 shim 模板逐字比对：十个 shim 由单一模板 + 每件参数展开，金牌对展开结果逐字比对；loop-kit/lib/boot.mjs 存在且语法合法。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/loop-kit-extract.golden.mjs --group C2,C5"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-13T20:05:20.071Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-layout-degrade-cross-tree",
+      "desc": "C3 布局与跨树：①同层默认布局零安装可跑（含 hook-loop-guard 互锁）；②异地树+显式 LOOP_KIT_PKG 可跑；③异地树无覆盖按 D5 安全失败；同进程跨树先后 import 两树 shim 得结构化错误（求值前认领拦下，含交错排列）。C4 故障族矩阵：缺包目录/身份锁失配/清单外多余文件/缺目标脚本/boot 缺失/boot 语法损坏/boot 依赖装载失败/锁 JSON 损坏/boot 调用前中抛错/「锁冻错」残余代价透传/信号终止/意外退出码，逐故障×逐入口（cli 64、guard 2、lint 0）断言 D5 矩阵。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/loop-kit-extract.golden.mjs --group C3,C4"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-13T20:05:36.130Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4-legacy-zero-resign",
+      "desc": "C6 存量零重签（非回归钉）：三份既有冻结金牌（worktree-baton/term-guard/ratchet-reverse-index）与其 prd 字节等于切换前 git blob 锚，经 shim 复跑结果与切换前锚一致（零回归，非绝对要求 exit 0——见 observability）。全仓 Test Ratchet 反向索引复验作为本 prd gate 之外的全量复验手动步骤跑（非本 story acceptance——全仓 ratchet verify 现状含两条与本契约无关的既有缺口：cases/tc_wf_history_version 与 cases/tc_wf_publish_states 的 expected.frozen.json 属未入库运行产物缺失，早于本契约、与提取改动无关，详见交付说明）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/loop-kit-extract.golden.mjs --group C6"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-13T20:06:18.096Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s5-tier1-regression",
+      "desc": "提取与切换不得破坏确定性内核与统一语言自检（hermetic 全链路自检零外部依赖）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-13T20:06:21.263Z 全部 acceptance exit 0"
+    }
+  ]
+}

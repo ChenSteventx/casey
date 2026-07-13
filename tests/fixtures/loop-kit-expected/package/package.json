@@ -1,0 +1,11 @@
+{
+  "name": "loop-kit",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "loop engineering 工具箱：契约/质量门禁/熔断器/统一语言/异构冗余评审的确定性内核。提取自 casey（ADR-0008），Casey 与 autotester 双消费者。",
+  "engines": {
+    "node": ">=22.12"
+  },
+  "dependencies": {}
+}

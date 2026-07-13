@@ -2,7 +2,7 @@
 
 > 用法：下次开新 session 只需 `/starter`（等价于说「读 `docs/NEXT-SESSION.md` 接着干」）——把本文件内容当开场提示词读进来、按其【下一步】执行。本文件是给接续 Claude 的执行指令；状态事实以 `docs/HANDOFF.md` 为准，二者冲突时信 HANDOFF。本文件由 `/session-handoff` 自动刷新（整节替换为最新开场提示词，剪掉过期内容）。
 >
-> **2026-07-13 晚二次增补（取代本日早间增补）**：Steven 已批准 `docs/plans/loop-dual-profile-reform/PROPOSAL.md` 为唯一活动改革设计源（批准记录在其 §0）：B/C 延后（P0-2 冻结 checkpoint 已入各自分支、非 merge-ready），采用 16 节点 `Durable Workflow State`。早间「B/C 先收」执行序与 `loop-ddd-overhaul/DESIGN.md`、`loop-orchestration-reform/NEXT-SESSION-PROPOSAL.md` 均已 `SUPERSEDED` 只作历史。接续者按 PROPOSAL §14 执行：下一步 = P0-3 loop-kit 提取 vs 显式分叉决策（Steven 拍板、落新 ADR）→ P0-4a/P0-4b 起每项单独验收的 `kernel` 车道契约（旧 loop 互锁下执行）。权威现状见 `docs/HANDOFF.md` 2026-07-13 晚节。
+> **2026-07-13 深夜三次增补（取代本日晚间增补）**：P0-3 已收口——`loop-kit` 提取为独立包 `/mnt/d/ctx/heren/loop-kit`（兄弟目录，ADR-0008 路线①）+ Casey 侧十文件换 `shim` + 新增 `loop-kit/lib/boot.mjs` 单提交切换，`loop-kit-extract` 契约 gate GREEN（5/5 story）、C0–C7 兼容性金牌 55/55、三存量金牌零重签。契约 worktree `casey-loop-kit-extract` 待 `contract advance loop` → 异构冗余实现审 → Steven 人签 → `advance learn`；随后续 P0-4a（状态引擎）/ P0-4b（gate 分层）。权威现状见 `docs/HANDOFF.md` 2026-07-13 深夜节。
 
 ## 开场提示词
 
@@ -34,7 +34,8 @@ CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
 - ADR-0005 统一语言强制（term-lint + 双 hook + 门禁）：四列制术语表白/黑名单唯一源、术语须加粗或反引号、三执行点、造词先登记、中文一律简体。
 - ADR-0006 Casey = autotester 与 regress 分层融合（方向已接受、实施待 P2 重定义）。
 - ADR-0007 P5 回放基座（@playwright/test）+ 取证按 CDP 真发起方归因 + 三轴裁定单元 = intent + hermetic 假 SUT。
-- 里程碑时间线（近→远）：2026-07-10 三契约（B 画布第五原子 setNodeField / D replay-nth 收尾硬化 / C regress scope A）+ 漂移收口（p2-verdict 陈旧夹具 + prd-mcp-parity 漏签）合并回 dev（68f1fe0→ff73011），异构冗余评审真挣钱（codex-sol 揪 B 的 HIGH）、全仓 ratchet 总核逮 3 处共享冻结文件漏签；
+- 里程碑时间线（近→远）：2026-07-13 深夜 `loop-kit-extract` 契约（P0-3）——`loop-kit` 通用内核提取为独立包 `/mnt/d/ctx/heren/loop-kit`（ADR-0008 路线①，fresh init，出处 casey@f9f9019）+ Casey 侧十文件换 `shim` + 新增 `loop-kit/lib/boot.mjs` 单提交切换，C0–C7 兼容性金牌 55/55（红先行走完）+ 三存量金牌零重签 + gate GREEN 5/5；
+  2026-07-10 三契约（B 画布第五原子 setNodeField / D replay-nth 收尾硬化 / C regress scope A）+ 漂移收口（p2-verdict 陈旧夹具 + prd-mcp-parity 漏签）合并回 dev（68f1fe0→ff73011），异构冗余评审真挣钱（codex-sol 揪 B 的 HIGH）、全仓 ratchet 总核逮 3 处共享冻结文件漏签；
   2026-07-09 晚 「全做」八契约一趟并行落地合并回 dev（b4f5c27→44df070）；
   2026-07-09 早 record-intake + record-distill 收尾示教兜底人录三环 + worktree-baton 解单 baton 天花板；
   2026-07-08 record-capture 首环 + 用户易操作文档 + P7 报告五增量 + wf-open-node 画布第三原子；
@@ -82,17 +83,18 @@ CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
 - 并行硬规则：碰 lib/bin 走 worktree 隔离 + git-native 合并；不碰 baton 的活（研究/grill/schema/golden 起草/异构评审）无限 fan-out 子代理。
 
 【当前契约 / 状态】
-- dev = ff73011：本 session 三契约 + 漂移收口齐落、全量复验绿（115 条 ratchet 全 MATCH、selftest --tier1 裁判零 LLM GREEN）。提交链 68f1fe0→ff73011。
-- 活契约槽（主树）= resign-drift-closure（六阶段全 done、baton 空闲，下一契约直接 contract init）。本仓无 git 远端。
-- 未提交现场（git status --short）：M .gitignore（Steven 的，别动别提交）+ M loop/prd-selftest.json（无关 gate 时间戳，别并入契约提交）+ ?? docs/codex/（并行 codex 会话的 handoff 功能产物，别碰）+ ?? docs/plans/regress-strategy/ 与 docs/plans/usability-audit/（草稿、非契约）。
-- 本 session 落地清单：① B 画布第五原子 setNodeField（补齐半成品 + codex-sol 揪 HIGH 非法 nth fail-open 修毕 + 3 MED 硬化，COMPILE_KNOWN_ATOMS 17→18，merge 6f021a4）；② D replay-nth-visible-hardening 三修 + 编译门 waitFor 时序修（Claude 3 视角评审 CLEAN，merge cb084aa）；③ 漂移收口 p2-verdict 陈旧夹具对齐收敛词 + prd-mcp-parity 漏签补签（gpt-5.6-terra 异构评审 + 人签，791cef1）；④ C regress-promptset scope A 数据驱动被测参数 overlay + 内置库 + 聚合报告（merge 0333f83）；⑤ 两处合并后重签 + 一处 C 合并收尾（prd-seams-freeze）+ B MED#2 域锁挂账。
-- 最新工程纪律（2026-07-10 加）：① 合并收尾必跑全仓 ratchet 总核（逮跨契约共享冻结文件漏签复发债——本 session 逮 3 处：D-prd server.mjs / prd-mcp-parity / prd-seams-freeze）；② codex 升级走 GitHub release 手动装（WSL chatgpt.com 抖动）、评审可用 gpt-5.6-sol/terra/luna @ xhigh/max；③ 并发 codex 会话共用主树时两边提交都只显式路径绝不 -A。此前已锁：长链条走 Workflow 编排；协调合并手法；worktree 栈式；模型分层主环 Opus + subagent 分工；触裁判内核自己亲核 + 人签。
+- 契约 worktree `casey-loop-kit-extract`（分支 loop-kit-extract，lane full）：`loop-kit-extract` 契约 gate GREEN（5/5 story），六阶段进度 grill+plan+accept+loop 已 done，待 `contract advance loop`（若尚未推进）→ review → learn。dev 主树仍在 `resign-drift-closure` 之后的状态，本契约完成 review+learn 后按护栏 #18 git-native 合并回 dev（绝不 cp 进 lib/bin）。
+- `/mnt/d/ctx/heren/loop-kit` 独立包仓已建成（首提交 `0f34cc0`，出处 casey@f9f9019）——新机器/新树 bootstrap 见 `CLAUDE.md` Bootstrap 段：包须与消费树同层（兄弟目录）或显式设 `LOOP_KIT_PKG`；`hook-loop-guard` 缺包/`kit-lock.json` 失配 fail-closed，恢复动作须在 hook 触发范围之外完成。
+- 本 session（loop-kit-extract 契约）落地清单：① 包仓提取（十脚本 + 新增 `lib/root.mjs`）；② Casey 侧十 `shim` + `loop-kit/lib/boot.mjs` 单提交切换；③ `tests/_golden/loop-kit-extract.golden.mjs`（C0–C7，55 检查）红先行走完；④ 切换前观测基线（`tests/fixtures/loop-kit-expected/baseline/`，26 案）；⑤ 三存量金牌零重签核验；⑥ `CONTEXT.md`/`CLAUDE.md`/`HANDOFF.md`/`NEXT-SESSION.md` 同步。
+- 未提交现场（本次提交前 git status --short，主树 `casey` 视角，未变）：M .gitignore（Steven 的，别动别提交）+ M loop/prd-selftest.json（无关 gate 时间戳，别并入契约提交）+ ?? docs/codex/（并行 codex 会话的 handoff 功能产物，别碰）+ ?? docs/plans/regress-strategy/ 与 docs/plans/usability-audit/（草稿、非契约）。
+- 最新工程纪律（2026-07-13 深夜加）：① 提取类契约红先行验红须先备份原实现字节，待金牌与红证落定后再生成新实现，防「验红」环节被自己提前生成的实现悄悄跳过；② 金牌自身是 testChecksums 冻结面一员时，若在 accept→loop 同一连续会话内发现测试自身 bug，允许原地修复 + 更新 checksum（非外部签署后事后改测），须在提交说明与交接文档中如实记录；③ 环境变量继承链（shim spawnSync 注入 env → 内层脚本 execSync 继承）会让子孙进程意外看到 `LOOP_KIT_ROOT` 等变量，测试中用显式空字符串（而非 `undefined`）强制走「视为缺席」分支，不依赖环境干净。此前已锁：长链条走 Workflow 编排；协调合并手法；worktree 栈式；模型分层主环 Opus + subagent 分工；触裁判内核自己亲核 + 人签。
 
 【下一步（任选其一，先对齐再动手）】
-A. 真机 UAT / 第3层集成（route:human，最高优先真机项，需 Steven 在场 + 拉隧道 + 先带外确认 .auth 为 autotest）：runbook docs/runbooks/real-uat-runbook.md 四子项就绪（历史绿转非绿追因 / 示教兜底人录三环 / ingest-scaffold 全新用例端到端 / 各家 agent MCP 挂载核验）。真机唯一许用账户 = autotest。
-B. 画布原子域锁硬化契约（codex-sol MED#2 挂账，prd-wf-set-node-field observability 已记）：openNode/selectNodeDropdown/setNodeField 三原子域锁都用宽 .hr-drawer__content-wrapper（匹配所有抽屉），另一可见抽屉有同 placeholder/触发器时跨抽屉误命中隐患。三原子一起收窄到节点抽屉专属锚（如 .lf-node-drawer 域），fake-sut 加两可见抽屉反面场景红先行。
-C. regress gen-prompts（scope C，LLM 合成 authoring）：按 agent 名/内嵌系统提示词合成 N 条被测参数幂等冻结进 promptset.json，绝不进回放/裁定进程，凭据经现成 cred-gate（scope A 已落，本项刻意延后、性价比看真机 promptset 用例需求）。
-D. 画布维度续建下一原子（贪心序）或收尾挂账清理（归档分支 archive/codex-wip-* tags + 已合并 wf-set-node-field/replay-nth/regress-promptset 分支；低风险）。
+A. `loop-kit-extract` 契约收尾：`contract advance loop`（若未推进）→ 异构冗余实现审（codex 评 Claude 实现，仅喂 spec+diff+门禁证据）→ Steven 人签 → `advance learn` → git-native 合并回 dev。
+B. P0-4a 状态引擎 / P0-4b gate 分层（`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §14 排期，均为触强制层的 `kernel` 车道契约，旧 loop 互锁下执行、隔离 worktree 顺序合并）——须待 A 收尾、`loop-kit` 包仓与 Casey 侧切换已是稳定基座。
+C. 真机 UAT / 第3层集成（route:human，最高优先真机项，需 Steven 在场 + 拉隧道 + 先带外确认 .auth 为 autotest）：runbook docs/runbooks/real-uat-runbook.md 四子项就绪。真机唯一许用账户 = autotest。
+D. 画布原子域锁硬化契约（codex-sol MED#2 挂账，prd-wf-set-node-field observability 已记）：openNode/selectNodeDropdown/setNodeField 三原子域锁收窄到节点抽屉专属锚。
+E. autotester 侧 loop-kit 迁移对齐（非本仓契约，另一有界工作流）/ npm 本地路径依赖出口（route:human #4 已裁定不采用，如后续确需另立契约）/ R2-L1 每调用锁校验性能预算收口（route:human #6 待 Steven 续裁）。
 （选任一先 contract init 或 contract worktree 声明入口分流；决策分岔用可点选项呈现、别散文长问。）
 
 【环境坑（WSL）】
