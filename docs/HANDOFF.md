@@ -3,6 +3,16 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 当前状态（2026-07-14 凌晨，提取契约全收口并入 dev：新 loop 现役，B/C 已在新引擎下恢复执行中）
+
+1. **`loop-kit-extract` 六阶段全 done 并入 dev**：实现审走 codex sol@medium ∥ pi deepseek-v4pro@high 双路共八轮到双 PASS（round-1 逮 7 条含 3 HIGH：ROOT 认领槽须进程级 `globalThis` 共享、`boot.mjs` 补入 `testChecksums` 冻结面、D5 故障域金牌补行为级——全部红先行修死；末三轮教训：评审记录自身准确性也要被复核）。主会话独立复验（gate 5/5 + tier1 + ratchet + 核心 `bin`/`lib` 零触碰 diff 实证）后合并 `b3a0f64`、主树复验提交 `976a414`（gate 经 `shim`→包 5/5 GREEN、全仓 ratchet 69 PRD/190 冻结文件/0 问题）。提取树与分支已按惯例清理。包仓 `/mnt/d/ctx/heren/loop-kit`@`ea5ed85`。
+2. **待 Steven 终签三项**（learn.md 与 prd observability 有账，不阻塞后续）：route:human #5 跨仓棘轮形态确认 / #6 每调用 `kit-lock` 校验性能预算（实测全清单 sha256 约 130-145ms、端到端约 480-510ms，建议预算 150-200ms、禁 mtime 缓存）/ #7 进程唯一 ROOT 对 `node:vm` 场景的范围表述。
+3. **B/C 已在新引擎下恢复执行**（Steven 2026-07-14 指令：loop 完成即直通 B/C 不再请示）：两树先并 dev 对账（B `f4bae4f` / C `95b44d8`，零冲突，新引擎跨树自锚实证 OK）；编排 v2 `docs/plans/_session-resume/bc-contracts-workflow-v2.js`（对原版打异构硬门补丁：plan 设计审必须真 codex、同族兜底判 blocked——原 `endsWith('PASS')` 放行洞已封）在跑，run `wf_dfd25052-144`，八段到 learn，合并收尾归主会话。
+4. **异构评审硬规则**（Steven 2026-07-13 定，已入记忆与 v2 脚本）：plan/设计评审无兜底、必须异构本尊出结论，不通即 blocked；代码实现审仍允许「全断时诚实末位同族兜底 + 挂账」。
+5. **下一步**：B/C 各自 mergeReady 后顺序合并（3-way 人裁冲突 + 既有 sign 流程重签共享冻结 + 全仓 ratchet 总核 + tier1）→ 改革续 P0-4a/P0-4b（`kernel` 车道契约）。A 真机 UAT 照旧 route:human 挂账。autotester 侧迁移 = 另一有界工作流未启动。
+
+以下为 2026-07-13 深夜快照（提取契约实现期，其「下一步」已被上节完成），只溯源、勿据其判现状：
+
 ## 当前状态（2026-07-13 深夜，`loop-kit-extract` 契约收口：`loop-kit` 提取为独立包 + Casey 切换完成，gate GREEN）
 
 P0-3（`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §14 排期）在本次 session 于契约 worktree `casey-loop-kit-extract`（分支 `loop-kit-extract`，lane full，kernel 级加严）落地收口：

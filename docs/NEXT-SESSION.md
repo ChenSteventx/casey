@@ -2,7 +2,7 @@
 
 > 用法：下次开新 session 只需 `/starter`（等价于说「读 `docs/NEXT-SESSION.md` 接着干」）——把本文件内容当开场提示词读进来、按其【下一步】执行。本文件是给接续 Claude 的执行指令；状态事实以 `docs/HANDOFF.md` 为准，二者冲突时信 HANDOFF。本文件由 `/session-handoff` 自动刷新（整节替换为最新开场提示词，剪掉过期内容）。
 >
-> **2026-07-13 深夜三次增补（取代本日晚间增补）**：P0-3 已收口——`loop-kit` 提取为独立包 `/mnt/d/ctx/heren/loop-kit`（兄弟目录，ADR-0008 路线①）+ Casey 侧十文件换 `shim` + 新增 `loop-kit/lib/boot.mjs` 单提交切换，`loop-kit-extract` 契约 gate GREEN（5/5 story）、C0–C7 兼容性金牌 55/55、三存量金牌零重签。契约 worktree `casey-loop-kit-extract` 待 `contract advance loop` → 异构冗余实现审 → Steven 人签 → `advance learn`；随后续 P0-4a（状态引擎）/ P0-4b（gate 分层）。权威现状见 `docs/HANDOFF.md` 2026-07-13 深夜节。
+> **2026-07-14 凌晨四次增补（取代深夜增补）**：`loop-kit-extract` 已六阶段全收口并入 dev（合并 `b3a0f64` + 主树复验 `976a414`，双路实现审八轮双 PASS，提取树已清）——新 loop 现役。B/C 已按 Steven 直通指令在新引擎下恢复执行（两树并 dev 对账毕，编排 v2 `bc-contracts-workflow-v2.js` 在跑，run `wf_dfd25052-144`；v2 = plan 设计审异构硬门无兜底）。接续者：若编排已完成→做 B/C 顺序合并收尾（3-way 人裁 + 重签 + 全仓 ratchet + tier1）；若中断→读盘核对两树 baton/产物后用同脚本重 launch。待 Steven 终签：route:human #5/#6/#7（见 `docs/plans/loop-kit-extract/learn.md`）。权威现状见 `docs/HANDOFF.md` 2026-07-14 凌晨节。
 
 ## 开场提示词
 
