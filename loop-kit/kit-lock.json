@@ -12,7 +12,7 @@
     "bin/ratchet.mjs": "bc0389a1b6951154af961520d728eeaf06a31b9da7d4072ac7731297b7c70f3b",
     "bin/review-deepseek.mjs": "11ed6d0aa25d650004f545febe31ebaa2ee018d33b979da72476d58ce2a36e09",
     "bin/term-lint.mjs": "802b71d7ca27c8db2ff91bc5f1108e1ded6d233ebfe89021824ec57d14554cf0",
-    "lib/root.mjs": "2f2caf693c7d6aa07b82c6b0f998c311922cdc04eef1b7895b86ca3bf1541b04",
+    "lib/root.mjs": "f94d84365dbf681c06426b86f2ced61bc512a5787e85257f140eefc57c3153e6",
     "package.json": "1f435d74bae0b8db750cdd85033b3364b6431212d3b24702c7e4f6a0cf1b1279"
   }
 }

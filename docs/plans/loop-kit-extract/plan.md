@@ -28,12 +28,12 @@
 A. 包仓侧（`/mnt/d/ctx/heren/loop-kit`，新独立 git 仓，fresh init）
 
 1. `bin/` 十脚本迁入，字节保真：唯一允许差异 = ROOT 锚定行换 `resolveRoot()`（涉及 `breaker`/`contract`/`gate`/`hook-loop-guard`/`hook-posttool`/`term-lint`/`ratchet` 七件）；`hook-stop`/`hook-loop-triage`/`review-deepseek` 逐字节照搬。`contract.mjs` 以 Casey 版为准（含 `worktree` baton 全套）；`ratchet.mjs` Casey 独有件入包。CLI 尾块（`isMain` 判据）零改动。
-2. `lib/root.mjs`（新，包内唯一新逻辑，契约按评审 M2/M3 收严）：`resolveRoot()` 单点——`LOOP_KIT_ROOT` 在场则必须有效（目录存在 + 含 `loop/config.json` 根标记 + `realpath` 规范化），无效**立即失败**、绝不静默回退；变量缺席才自 `process.cwd()` 上溯找根标记（同样校验 + 规范化）；两路皆空抛**结构化错误**——库函数绝不 `process.exit` 终止宿主进程，exit 64 + stderr 补救提示由 Casey 侧引导层在受支持入口给出（受支持入口总先注入有效 ROOT，包内解析失败在受支持路径不可达）。解析成功即**原子认领**进程唯一 ROOT（首次认领后不可变、同根幂等，库模式由 `boot` 在目标模块求值前经显式 API 认领），异根解析/认领立即抛结构化错误；另导出探针 = 认领值只读查询口（评审 R2-H3 采信，取代 round-1「import 后核对探针」）。
+2. `lib/root.mjs`（新，包内唯一新逻辑，契约按评审 M2/M3 收严）：`resolveRoot()` 单点——`LOOP_KIT_ROOT` 在场则必须有效（目录存在 + 含 `loop/config.json` 根标记 + `realpath` 规范化），无效**立即失败**、绝不静默回退；变量缺席才自 `process.cwd()` 上溯找根标记（同样校验 + 规范化）；两路皆空抛**结构化错误**——库函数绝不 `process.exit` 终止宿主进程，exit 64 + stderr 补救提示由 Casey 侧引导层在受支持入口给出（受支持入口总先注入有效 ROOT，包内解析失败在受支持路径不可达）。解析成功即**原子认领**进程唯一 ROOT（首次认领后不可变、同根幂等，库模式由 `boot` 在目标模块求值前经显式 API 认领），异根解析/认领立即抛结构化错误；另导出探针 = 认领值只读查询口（评审 R2-H3 采信，取代 round-1「import 后核对探针」）。「进程唯一」范围精确表述见 GRILL.md D4 附注（round-2 实现审第四轮 codex 采信：准确范围是默认 Node.js 主 realm 内唯一，不含 `worker_threads`/`node:vm` 等替代执行环境，route:human #7 待续裁）。
 3. `package.json`（name `loop-kit`、private、`type: module`、engines node>=22.12、零依赖）+ `README.md`（出处 SHA、双消费者、ADR-0008 与 autotester ADR-0001 指针、兄弟目录布局约定）。
 
 B. Casey 侧（单提交切换点，GRILL D9）
 
-4. `loop-kit/bin/*.mjs` 十件原地换同名 `shim` + 新增共享引导助手 `loop-kit/lib/boot.mjs`（Casey 侧新文件：包定位、身份锁校验、env 注入、转发与降级逻辑**单点化**，十个 `shim` 只调它，防十份复制各自漂）。协议按 GRILL D4/D5（round-1 H1/H2/M2 + round-2 R2-H1/H2/H3/M1 采信后版本）：包定位 `LOOP_KIT_PKG`（显式定位口，**只改位置、不豁免校验**——评审 R2-H2）→ 兄弟约定（隐式路径），**两路一体**每次转发前对 `kit-lock.json` 全清单 sha256 校验（严格集合相等），失配视同包缺失按 D5 逐入口降级，测试走独立受测锁注入接缝（锁位置参数化、校验逻辑不变）；`shim` 模板内最小内联 `try/catch` 包住 `boot` 的动态 import 与调用，`boot` 自身缺失/损坏/抛错同入 D5 矩阵（评审 R2-H1）；CLI 主模式 `spawnSync` 转发、`LOOP_KIT_ROOT` 经 `spawnSync` 的 env 选项注入子进程，**绝不改写宿主进程环境**，spawn 前可侦测引导失败归 64、子进程派生后数值退出码一律原码透传（分类按侦测点——评审 R2-M1）；库模式**零环境突变**——`boot` 经包 `lib/root.mjs` 显式 API 在目标模块求值前原子认领进程唯一 ROOT，异根立即抛结构化错误（同进程跨树绝不静默采用他树 ROOT——评审 R2-H3）；库模式显式名单 re-export（`contract` 18 名 / `term-lint` 3 名 / `ratchet` 4 名）。
+4. `loop-kit/bin/*.mjs` 十件原地换同名 `shim` + 新增共享引导助手 `loop-kit/lib/boot.mjs`（Casey 侧新文件：包定位、身份锁校验、env 注入、转发与降级逻辑**单点化**，十个 `shim` 只调它，防十份复制各自漂）。协议按 GRILL D4/D5（round-1 H1/H2/M2 + round-2 R2-H1/H2/H3/M1 采信后版本）：包定位 `LOOP_KIT_PKG`（显式定位口，**只改位置、不豁免校验**——评审 R2-H2）→ 兄弟约定（隐式路径），**两路一体**每次转发前对 `kit-lock.json` 全清单 sha256 校验（严格集合相等），失配视同包缺失按 D5 逐入口降级，测试走独立受测锁注入接缝（锁位置参数化、校验逻辑不变）；`shim` 模板内最小内联 `try/catch` 包住 `boot` 的动态 import 与调用，`boot` 自身缺失/损坏/抛错同入 D5 矩阵（评审 R2-H1）；CLI 主模式 `spawnSync` 转发、`LOOP_KIT_ROOT` 经 `spawnSync` 的 env 选项注入子进程，**绝不改写宿主进程环境**，spawn 前可侦测引导失败归 64、子进程派生后数值退出码一律原码透传（分类按侦测点——评审 R2-M1）；库模式**零环境突变**——`boot` 经包 `lib/root.mjs` 显式 API 在目标模块求值前原子认领进程唯一 ROOT（范围精确表述见 GRILL.md D4 附注），异根立即抛结构化错误（同进程跨树绝不静默采用他树 ROOT——评审 R2-H3）；库模式显式名单 re-export（`contract` 18 名 / `term-lint` 3 名 / `ratchet` 4 名）。
 5. `loop-kit/kit-lock.json`（**包身份锁**，git 跟踪，评审 H2 + R2-M2/R2-M3 采信后版本）：记包除 `.git` 外**全清单**逐文件 sha256，语义 = 严格集合相等（缺件/多件/哈希失配/软链接等非常规文件均判失配，路径限界包根）；**纯内容寻址、自期望存档预计算**、不含包仓 commit——commit 降为包 `README.md` 出处信息、运行时不校验。信任根 = Casey git 树内的 `shim` + `boot` + `kit-lock`（全部被本 prd 冻结面钉住），校验发生在转发层、先于任何包代码执行、对兄弟约定与 `LOOP_KIT_PKG` 两种定位一体适用（评审 R2-H2）——`gate` 自证的循环信任在全部受支持布局解除。威胁模型：防漂移与误配，不防校验后毫秒窗口的主动替换（检查—执行竞态单人本机记档接受）。包任何改动必先更新期望存档 + `kit-lock` + 重签本 prd（跨仓棘轮一并覆盖，route:human #5）。
 6. `tests/fixtures/loop-kit-expected/`：期望包内容存档（对提取前 HEAD 十脚本机械替换 ROOT 行 + `lib/root.mjs` 期望件；人审 diff 后随 prd 冻结；惰性数据绝不执行）+ `baseline/` **切换前观测基线**（评审 H3 + R2-H4 采信后协议：于提取前 HEAD 按冻结的逐案录制清单——初始树夹具、完整命令 argv、stdin 字节、env 白名单、执行次序、案间重置步骤——在隔离测试树录制命令矩阵与四 hook 正常路径；原始输出与规范化输出并存；规范化 = 字段级白名单、规范化器自身入 prd 冻结面；比对范围 = exit code + 规范化 stdout/stderr 全文 + 整个测试根路径与字节差量、声明写集之外零变化；含语义扰动反向用例；C2 的比对锚）。
 7. `tests/_golden/loop-kit-extract.golden.mjs`：C0–C7（见 §3）。
@@ -61,7 +61,7 @@ story 划分与红/绿判据：
 
 验收命令在 acceptance 冻结时定稿，形如：`node tests/_golden/loop-kit-extract.golden.mjs`（内分 C0–C7 checks）；`node loop-kit/bin/gate.mjs --prd loop/prd-loop-kit-extract.json`。
 
-## 4. route:human（须 Steven 拍板；1–4 已由 Steven 2026-07-13 裁定，5–6 待续裁）
+## 4. route:human（须 Steven 拍板；1–4 已由 Steven 2026-07-13 裁定，5–7 待续裁）
 
 1. **实现开工闸**——Steven 2026-07-13 裁定：**有条件签署**，条件 = 本轮 round-2 codex 设计审收口。对 GRILL D1–D10 + 本 plan 的 kernel 级设计人签在 round-2 收口后即完成；round-2 未收口前不进 accept、不动任何实现字节。
 2. **D5 降级加严（评审 H1 采信后扩围）**——Steven 2026-07-13 裁定：**加严接受**，代价条款照录：`hook-loop-guard` 的 `shim` 对合法态 0/2 之外的**一切**引导失败与子进程异常态——包缺失、身份锁失配、目标脚本缺失/不可读、解析期崩溃（exit 1）、Node 不兼容、信号终止、`spawnSync` 报 error——一律归一 exit 2 拦。这是对既有「hook 自身故障不阻塞」约定的定向加严；代价一：忘配包的新 clone 被拦到配好为止；代价二：guard fail-closed 会连带拦住修复用的工具调用，恢复须在 hook 触发范围之外人工完成（`CLAUDE.md` bootstrap 段明示）。
@@ -69,6 +69,7 @@ story 划分与红/绿判据：
 4. **D8 依赖声明（评审 M5 采信后收紧为二选一，装饰性声明不可接受）**——Steven 2026-07-13 裁定：**取甲**——本契约单出口、只走兄弟约定，`package.json` 不加 `"loop-kit": "file:../loop-kit"`（ADR-0008 决策 1 原文「最终以提取契约 GRILL 定案为准」，本裁定即完成该定案、无需回改 ADR）；乙案（加声明并使其成为真实受测解析分支、纳入 `package-lock.json` 涟漪复审）标弃，不入本契约实现范围。
 5. **C0 跨仓棘轮形态**：包字节 pin 进 Casey 期望存档 + `kit-lock.json` = 未来每刀包改动（含 autotester 侧发起）都触 Casey 存档与 `kit-lock` 更新 + prd 重签——ADR-0008 已认「兼容金牌负担前置」，此处确认其机制形态。连带后果（D9）：包升级后，未同步 `kit-lock` 的在飞旧分支树会被身份锁按 D5 降级拦下，补救 = 合并 dev 或显式 `LOOP_KIT_PKG`。
 6. **运行时包身份锁（评审 H2 采信新增机制，round-2 R2-H2/R2-L1 修订后）**：任何定位方式（兄弟约定与显式 `LOOP_KIT_PKG`）每次转发前均对 `kit-lock.json` 全清单 sha256 校验、失配视同包缺失逐入口降级——`LOOP_KIT_PKG` 只改包位置、不再豁免校验（评审 R2-H2，生产入口零无校验通道）。成本量化（评审 R2-L1，codex 实测指示值）：本树十脚本约 64 KB，DrvFs 冷态下空 Node 启动约 0.02 秒、逐文件读取并 sha256 约 0.17 秒，一次编辑可能触发多个 hook、成本叠加；实现期补冷/热缓存与完整包全清单实测并给出可接受预算（§7 挂账），禁以 `mtime`（文件修改时间戳）缓存换速——会削弱完整性。确认接受这层每调用校验成本与拦截行为。
+7. **「进程唯一 ROOT」范围精确化（round-2 实现审第四轮 codex 采信，实现阶段发现，非设计阶段决策）**：kernel 级人签时的 GRILL D4/plan §1.2 原文对「进程唯一 ROOT」无条件表述；实现阶段 round-2 第四轮实现审 `codex` 独立复现：`node:vm` 的 `Context` 各有独立 `globalThis` 且其中 `isMainThread` 恒为 `true`，与 `worker_threads` 不同、Node 无对等可靠运行时判据可拒绝，故该场景下「进程唯一」不成立。实现方已把准确范围收窄为「本机制运行所在的默认 Node.js 主 realm 内唯一」，选择精确文档化边界（`loop-kit/lib/root.mjs` 头注 + 本文件 + GRILL.md D4 均已同步）而非引入可被绕过的运行时启发式检测，理由：① 触发需 `--experimental-vm-modules` 显式旗标，本仓与消费侧任何默认调用路径均不带此旗标、该 API 默认不可用；② 构造该场景要求攻击者已在同进程内拥有任意代码执行能力，此前提成立时同进程本就不是可信边界；③ `grep` 核验本仓与消费侧零 `node:vm` 使用。此为实现阶段发现对已签设计的表述收紧，非重开设计讨论——待 Steven 在契约收尾人签时一并确认是否接受该范围表述，或要求改走 codex 建议的备选方案（跨 cooperative VM loader 共享宿主对象 + 补 VM 回归测试）。
 
 ## 5. 非目标（本契约不做）
 
@@ -88,3 +89,4 @@ story 划分与红/绿判据：
 ## 7. 挂账（已记债务，不阻塞开工）
 
 - R2-L1（round-2 异构冗余设计审，`LOW`）：每调用锁校验的性能预算未量化收口。codex 实测指示值已录（§4 #6：DrvFs 冷态十脚本约 64 KB、空 Node 启动约 0.02 秒、逐文件 sha256 约 0.17 秒，多 hook 叠加放大）；实现期须补冷/热缓存与完整包全清单的实测数据、给出可接受预算，随 route:human #6 呈 Steven 裁定；禁止为提速引入削弱完整性的 `mtime` 缓存。
+- 实现审第四轮记债（round-2 实现审，`codex`，见 §4 #7）：「进程唯一 ROOT」范围收窄为「默认 Node.js 主 realm 内唯一」，`node:vm` 的 `Context` 场景以文档化边界处置、非运行时防护；触发重新评估的条件——任何一方引入 `node:vm` 消费面，或 VM Modules 转为 Node 默认可用（不只是加装 `--experimental-vm-modules` 实验旗标）；待 Steven 契约收尾人签时一并确认。
