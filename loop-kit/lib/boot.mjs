@@ -12,7 +12,8 @@ import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { spawnSync } from 'node:child_process';
 import { join, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { constants as OS_CONSTANTS } from 'node:os';
 
 // 本文件位于 <tree>/loop-kit/lib/boot.mjs；TREE_ROOT = 消费树根；DEFAULT_PKG_DIR = 静态兄弟约定
 // new URL('../../../loop-kit', import.meta.url)（GRILL D4 字面表述，逐字采用）。
@@ -137,10 +138,21 @@ function degrade(kind, err, { silent = false } = {}) {
   return code;
 }
 
+// 信号名 → 数值编号（POSIX，Node os.constants.signals），供下方自终失败兜底码换算 128+n 用。
+function signalNumber(signalName) {
+  const n = OS_CONSTANTS && OS_CONSTANTS.signals ? OS_CONSTANTS.signals[signalName] : undefined;
+  return typeof n === 'number' ? n : null;
+}
+
 // ---- CLI 转发 ----
 // kind: 'cli'（gate/contract/breaker/term-lint/ratchet/review-deepseek）| 'guard'（hook-loop-guard）|
 //       'lint'（hook-stop/hook-posttool/hook-loop-triage）。三类降级语义见 D5 矩阵、plan.md GRILL.md。
-export function runCli({ script, kind, argv = process.argv.slice(2), pkgDirOverride, lockPathOverride } = {}) {
+// spawnImpl：测试专用注入口（round-1 实现审 A2 采信新增）——默认真实 spawnSync；生产 shim 从不传参，
+// 与 pkgDirOverride/lockPathOverride 同类「生产零跳过口、测试唯一可达」的接缝，供确定性制造
+// spawnSync 的 r.error / status===null 等否则无法跨平台稳定复现的返回态。
+export function runCli({
+  script, kind, argv = process.argv.slice(2), pkgDirOverride, lockPathOverride, spawnImpl = spawnSync,
+} = {}) {
   let dir;
   try {
     dir = resolveVerifiedPkg({ pkgDirOverride, lockPathOverride });
@@ -151,7 +163,7 @@ export function runCli({ script, kind, argv = process.argv.slice(2), pkgDirOverr
   if (!existsSync(target)) {
     return degrade(kind, new BootError(`包内目标脚本缺失：${script}`, { code: 'TARGET_MISSING' }));
   }
-  const r = spawnSync(process.execPath, [target, ...argv], {
+  const r = spawnImpl(process.execPath, [target, ...argv], {
     stdio: 'inherit',
     env: { ...process.env, LOOP_KIT_ROOT: TREE_ROOT },
   });
@@ -161,8 +173,15 @@ export function runCli({ script, kind, argv = process.argv.slice(2), pkgDirOverr
   if (r.signal) {
     if (kind === 'cli') {
       // 子进程信号终止 → 以同信号自终，保留 shell 128+n 语义（D5 CLI 行）。
-      try { process.kill(process.pid, r.signal); } catch { /* ignore */ }
-      return 1; // 若信号未能实际终止本进程（极端环境），仍给一个非零兜底码
+      try {
+        process.kill(process.pid, r.signal);
+      } catch {
+        // 若信号未能实际终止本进程（极端环境，如信号名无法投递），兜底码仍遵循 shell 128+n 语义
+        // （round-1 实现审 A7 采信：不用普通业务失败码 1，避免与真实业务 RED 混淆）。
+        const n = signalNumber(r.signal);
+        return n === null ? 1 : 128 + n; // 连编号都查不到时才退回 1（极端兜底之兜底）
+      }
+      return 1; // 正常路径：process.kill 已成功投递，本进程即将真的被同信号终止，这里的返回值不会被观察到
     }
     return degrade(kind, new BootError(`子进程被信号终止：${r.signal}`, { code: 'SIGNALED' }));
   }
@@ -176,11 +195,13 @@ export function runCli({ script, kind, argv = process.argv.slice(2), pkgDirOverr
 
 // ---- 库模式：动态 import 包内模块 + 求值前原子认领本树 ROOT（评审 R2-H3）----
 // 抛错直接向上冒泡——库模式无 exit code 概念，由调用方（shim 的 else 分支）决定是否再抛。
+// URL 构造统一走 pathToFileURL（round-1 实现审 A6 采信）——字符串拼接 file://${dir}/ 在 dir 含 # / % /
+// 空格等字符时会被误当 URL fragment/转义序列，锁校验通过后仍可能 import 到错误路径。
 export async function loadLib({ script, pkgDirOverride, lockPathOverride } = {}) {
   const dir = resolveVerifiedPkg({ pkgDirOverride, lockPathOverride });
-  const rootMod = await import(new URL('lib/root.mjs', `file://${dir}/`).href);
+  const rootMod = await import(pathToFileURL(join(dir, 'lib', 'root.mjs')).href);
   rootMod.resolveRoot({ envRoot: TREE_ROOT }); // 显式参数认领——目标模块随后裸调用走幂等分支，不依赖 cwd
-  return import(new URL(`bin/${script}`, `file://${dir}/`).href);
+  return import(pathToFileURL(join(dir, 'bin', script)).href);
 }
 
 // 仅供测试探查默认位置（不改变行为，探针性质）。
