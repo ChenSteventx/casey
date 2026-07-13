@@ -134,7 +134,7 @@
         "node tests/_golden/loop-kit-extract.golden.mjs --group C0,C1,C7"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-13T19:54:24.771Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-13T20:05:07.887Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-switch-equivalence",
@@ -144,7 +144,7 @@
         "node tests/_golden/loop-kit-extract.golden.mjs --group C2,C5"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-13T19:54:36.308Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-13T20:05:20.071Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-layout-degrade-cross-tree",
@@ -154,7 +154,7 @@
         "node tests/_golden/loop-kit-extract.golden.mjs --group C3,C4"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-13T19:54:52.250Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-13T20:05:36.130Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-legacy-zero-resign",
@@ -164,7 +164,7 @@
         "node tests/_golden/loop-kit-extract.golden.mjs --group C6"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-13T19:55:34.111Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-13T20:06:18.096Z 全部 acceptance exit 0"
     },
     {
       "id": "s5-tier1-regression",
@@ -174,7 +174,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-13T19:55:37.087Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-13T20:06:21.263Z 全部 acceptance exit 0"
     }
   ]
 }
