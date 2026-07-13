@@ -1,0 +1,44 @@
+{
+  "caseId": "term-lint-registry",
+  "exitCode": 0,
+  "signal": null,
+  "error": null,
+  "stdout": "term-lint: 通过（0 个提示）\n",
+  "stderr": "",
+  "tree": {
+    "hashes": {
+      "CONTEXT.md": "df0e053109799267e33cad91d708c298a7db57a2880131d9bd6795782fd7568e",
+      "docs/plans/demo-light/plan.md": "91c3436da5aba2f2b2ca70f406cbd9b178d9eb74c179fdcc271420c03d8c50bc",
+      "fixtures-extra/violation.md": "f693bd57205d1fc18bc06c0868ed221d090459b66a3d643e3e446689f5ef21ed",
+      "frozen-fixture.txt": "16d73f200ec0a55c1c38e4e2b5b8150e353a1a6b7ca6de3af63fff1be3ef3015",
+      "loop/GUARDRAILS.md": "ae93e7484e95e93340b9f650d654b6ca1e99c240d53c9261b0d9f87511d451f7",
+      "loop/config.json": "9c808952589e5a80b06cf4ebd9cd1c8d864438a0350f8df12457e612adf89c91",
+      "loop/grill-baseline.md": "b5359a6e99719cc26286b0b43a5318c88dccb7f842a48f39baf998f46be2fccf",
+      "loop/prd-baseline.json": "8e54ac39ba4c30db520427d5ac98a245db4497085cb73b80a0768e4504765f3b",
+      "loop-fixtures/transcript-clean.jsonl": "a175b2b05dbcf250a8f1d6f8e13d67dcc0d951e83236f9343131fbc298be0603",
+      "loop-fixtures/transcript-violation.jsonl": "a78306967a638a6f52e45d233a8ba4463cf5b880886664cd1f701a811f4e04ca",
+      "loop-kit/bin/breaker.mjs": "b685956de351c789ac65e9a087bd84cfa569b22b3f97bc28cb815cad482a3ea4",
+      "loop-kit/bin/contract.mjs": "67e31fbf79b527179408f6c484a366bedb34063688e9c40e1a465364c55bfbe9",
+      "loop-kit/bin/gate.mjs": "9380e89f93895acd8ea41fd86b50b3b62c149cb177730c529588cab3dc160bfd",
+      "loop-kit/bin/hook-loop-guard.mjs": "ae2ee2cdf608143d4eff5ceebed4068cedef308bc81ea2a1a41f9543d871c131",
+      "loop-kit/bin/hook-loop-triage.mjs": "cf621f4cd554182290b1905a07764a0e9c7b4611e978d4bb8ea6e1040f750819",
+      "loop-kit/bin/hook-posttool.mjs": "a824f3384723d5693f44e750cc6baa158cc70cb7a66919f1e1ce670069610c5e",
+      "loop-kit/bin/hook-stop.mjs": "087090a4f4eceed831adc07112ae499b5e804236943f6bf5806585302d5673b5",
+      "loop-kit/bin/ratchet.mjs": "b5924dfb9547ce18d19dfc1273b9ee1452885768efc7ded920eabc15fc8a3464",
+      "loop-kit/bin/review-deepseek.mjs": "11ed6d0aa25d650004f545febe31ebaa2ee018d33b979da72476d58ce2a36e09",
+      "loop-kit/bin/term-lint.mjs": "a92c56dacc590119314248752d02309ccd216eab2d018c1bf6356de886b2c013"
+    },
+    "contents": {
+      "CONTEXT.md": "# CONTEXT（baseline 录制夹具·术语表）\n\n本文件是 loop-kit-extract 契约「切换前观测基线」用的隔离测试树夹具，与仓库根 CONTEXT.md 无关。\n\n| 术语 | 中文译名 | 白话解释 | 弃用别名 |\n|---|---|---|---|\n| Sample Term | 示例术语 | 供 baseline 录制用的占位术语，验证 term-lint 白名单/黑名单双向有效 | 旧称示例 |\n",
+      "docs/plans/demo-light/plan.md": "# demo-light 计划占位（baseline 录制夹具）\n\n验收：`node -e \"process.exit(0)\"` 即视为过。\n",
+      "fixtures-extra/violation.md": "这里出现了弃用别名「旧称示例」，应当判红。\n",
+      "frozen-fixture.txt": "baseline 冻结样例内容。\n",
+      "loop/GUARDRAILS.md": "# GUARDRAILS（baseline 录制夹具）\n\n1. 示例护栏条目，供 term-lint 扫描干净文本，不含任何弃用别名。\n",
+      "loop/config.json": "{\n  \"schemaVersion\": 1,\n  \"lanes\": {\n    \"toil\": { \"model\": \"stub\", \"effort\": \"low\" },\n    \"implementation\": { \"model\": \"stub\", \"effort\": \"low\" },\n    \"review\": { \"model\": \"stub\", \"effort\": \"low\" }\n  },\n  \"circuitBreaker\": { \"maxIterations\": 20, \"zeroCommitRounds\": 3, \"sameErrorRounds\": 5, \"maxHours\": 8 },\n  \"qualityGate\": { \"prd\": \"loop/prd-baseline.json\", \"termLint\": true, \"commandTimeoutMs\": 300000 },\n  \"escalation\": { \"inbox\": \"loop/inbox.md\", \"notify\": [\"toast\"] }\n}\n",
+      "loop/grill-baseline.md": "# demo-light grill 占位（baseline 录制夹具）\n\n供 `contract advance grill` 的交付物冒烟：非空文本即可，无需真做过 grill。\n",
+      "loop/prd-baseline.json": "{\n  \"schemaVersion\": 1,\n  \"task\": \"baseline 录制夹具：最小 1-story 契约，供 gate --dry / ratchet index 使用\",\n  \"testChecksums\": {\n    \"frozen-fixture.txt\": \"16d73f200ec0a55c1c38e4e2b5b8150e353a1a6b7ca6de3af63fff1be3ef3015\"\n  },\n  \"stories\": [\n    {\n      \"id\": \"s1-baseline\",\n      \"desc\": \"baseline 占位 story\",\n      \"lane\": \"implementation\",\n      \"acceptance\": [\"node -e \\\"process.exit(0)\\\"\"],\n      \"passes\": false\n    }\n  ]\n}\n",
+      "loop-fixtures/transcript-clean.jsonl": "{\"type\":\"assistant\",\"message\":{\"content\":[{\"type\":\"text\",\"text\":\"这是一段干净的回合输出，不含任何弃用别名。\"}]}}\n",
+      "loop-fixtures/transcript-violation.jsonl": "{\"type\":\"assistant\",\"message\":{\"content\":[{\"type\":\"text\",\"text\":\"这里出现了弃用别名「旧称示例」，应当判红。\"}]}}\n"
+    }
+  }
+}

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "files": {
+    "README.md": "73324a00ce15b52552fd4a867d731f45ff926a7dff716f6c17830037bf9d2963",
+    "bin/breaker.mjs": "361f4735d7023e7bd4d8dbb8ab1269d584f11572cfe109b34b18df0c7cdce83b",
+    "bin/contract.mjs": "3a27cf86109633c2379936ddd6a25aec5e977172f38a042667a66c445106e7af",
+    "bin/gate.mjs": "e55569206fdd8f8f28c0a66a8c704d13c60486a53dda27d21fa41856dac13bb4",
+    "bin/hook-loop-guard.mjs": "ce1dc94fa4ab5e29fc2e3263e12e0f9f8510811c5e922ac8efb3f1a7a548c560",
+    "bin/hook-loop-triage.mjs": "cf621f4cd554182290b1905a07764a0e9c7b4611e978d4bb8ea6e1040f750819",
+    "bin/hook-posttool.mjs": "2c09f3014f0bc42cc9b5452377acba9aa9f8c566a4e4902cbc05fcfedd9bbcde",
+    "bin/hook-stop.mjs": "087090a4f4eceed831adc07112ae499b5e804236943f6bf5806585302d5673b5",
+    "bin/ratchet.mjs": "bc0389a1b6951154af961520d728eeaf06a31b9da7d4072ac7731297b7c70f3b",
+    "bin/review-deepseek.mjs": "11ed6d0aa25d650004f545febe31ebaa2ee018d33b979da72476d58ce2a36e09",
+    "bin/term-lint.mjs": "802b71d7ca27c8db2ff91bc5f1108e1ded6d233ebfe89021824ec57d14554cf0",
+    "lib/root.mjs": "512dc7f82a1f56817dbf79e93c3a245c06e6be85c2213d6e11922938cb40c9a1",
+    "package.json": "1f435d74bae0b8db750cdd85033b3364b6431212d3b24702c7e4f6a0cf1b1279"
+  }
+}

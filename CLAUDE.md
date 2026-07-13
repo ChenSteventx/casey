@@ -11,6 +11,12 @@
 3. `docs/plans/bootstrap/plan.md` —— 落地计划（P0–P9 里程碑）；
 4. `loop/GUARDRAILS.md` —— 护栏清单，逐条有效（1–12 迁移，13–16 Casey 新增）。
 
+## Bootstrap（`loop-kit` 兄弟目录）
+
+`loop-kit` 已提取为独立包（ADR-0008）：Casey 与 autotester 双消费者。拓扑关系优先于绝对路径——包是消费树的**兄弟目录**独立仓（`../loop-kit` 与 `../<本仓目录名>` 平级），任何机器、任何 OS 同构；`/mnt/d/ctx/heren/loop-kit` 只是当前环境下的一个实例位置，不是必须坐落的路径。新机器 bootstrap：把包 clone 到消费树的兄弟目录；非同层布局须显式设 `LOOP_KIT_PKG` 指向实际位置（只改包位置，不豁免身份锁校验）。
+
+注意：`hook-loop-guard` 遇包缺失或身份锁（`kit-lock.json`）失配会 fail-closed（拦，见护栏与 D5 降级矩阵），这会连带拦住用来修复现场的工具调用本身——恢复动作（clone 包或设 `LOOP_KIT_PKG`）须在 hook 触发范围之外（人工终端等）完成，不能指望在被拦的同一回合里用工具调用修。
+
 ## 硬规则（由机制强制，不是建议）
 
 - 双 hook 在 `.claude/settings.json` 生效：回合输出与写入的 md/json 都会被 `loop-kit/bin/term-lint.mjs` 扫描，术语违例与繁体字会被拦截（ADR-0005）。新概念先查既有学科术语，造词必须先登记 CONTEXT.md；英文术语首次出现附中文白话解释。

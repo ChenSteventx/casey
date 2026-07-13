@@ -1,42 +1,40 @@
 #!/usr/bin/env node
-// Stop hook —— 在 Claude 结束回合前扫描其本回合输出的术语违例（ADR-0004 执行点 A）。
-// 输入：stdin JSON（Claude Code Stop hook 协议，含 transcript_path / stop_hook_active）。
-// 行为：黑名单/白名单 ERROR → exit 2（阻塞结束，stderr 反馈给 Claude 自纠）；
-//       WARN 或基础设施异常 → exit 0（lint 永不阻塞正常工作）。
+// loop-kit/bin/hook-stop.mjs —— 薄转发层（shim，由单一模板生成，勿手改；真实现在独立包 loop-kit，兄弟目录
+// 或 LOOP_KIT_PKG 显式指向）。全部包定位/身份锁校验/env 注入/降级逻辑单点收在 loop-kit/lib/boot.mjs，
+// 本文件只调它，并以最小内联 try/catch 兜住 boot 自身故障（评审 R2-H1）。
+// 模板源：tests/fixtures/loop-kit-expected/shim-template.mjs（C5 金牌逐字比对钉死展开结果，勿分叉手改）。
+// 详见 docs/plans/loop-kit-extract/plan.md D4/D5、proposed/GRILL.md。
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-import { readFileSync } from 'node:fs';
-import { parseRegistry, scanText } from './term-lint.mjs';
-
-function lastAssistantText(transcriptPath) {
-  const lines = readFileSync(transcriptPath, 'utf8').split(/\r?\n/).filter(Boolean);
-  for (let i = lines.length - 1; i >= 0; i--) {
-    let entry;
-    try {
-      entry = JSON.parse(lines[i]);
-    } catch {
-      continue;
-    }
-    if (entry.type !== 'assistant') continue;
-    const blocks = entry.message?.content;
-    if (!Array.isArray(blocks)) continue;
-    const text = blocks.filter((b) => b.type === 'text').map((b) => b.text).join('\n');
-    if (text.trim()) return text;
+const __self = fileURLToPath(import.meta.url);
+const isMain = process.argv[1] ? resolve(process.argv[1]) === __self : false;
+const __DEGRADE = { cli: 64, guard: 2, lint: 0 };
+function __fallbackDegrade(kind, err) {
+  const code = __DEGRADE[kind] ?? 64;
+  if (kind === 'lint') {
+    console.log(`WARN  loop-kit 引导失败（lint 监督层不阻塞）：${err && err.message}`);
+    return 0;
   }
-  return '';
+  console.error(`loop-kit shim 引导失败：${err && err.message}\n补救：确认 ../../loop-kit（或 LOOP_KIT_PKG 指向的包）存在且完整，或修复 loop-kit/lib/boot.mjs。`);
+  return code;
 }
 
+let __boot, __bootError;
 try {
-  const input = JSON.parse(readFileSync(0, 'utf8'));
-  if (input.stop_hook_active) process.exit(0); // 防递归阻塞
-  const text = lastAssistantText(input.transcript_path);
-  if (!text) process.exit(0);
-  const { errors, warnings } = scanText(text, { label: '本回合输出', registry: parseRegistry() });
-  for (const w of warnings) console.log(`WARN  ${w}`);
-  if (errors.length) {
-    console.error(`术语违例（ADR-0004）：\n${errors.map((e) => `  ${e}`).join('\n')}\n请改用 CONTEXT.md 已登记术语，或当场四列制补登记后再结束回合。`);
-    process.exit(2);
-  }
-} catch {
-  // 任何解析失败都放行——监督机制自身故障不得瘫痪会话
+  __boot = await import('../lib/boot.mjs');
+} catch (e) {
+  __bootError = e;
 }
-process.exit(0);
+
+if (isMain) {
+  if (__bootError) {
+    process.exitCode = __fallbackDegrade("lint", __bootError);
+  } else {
+    try {
+      process.exitCode = __boot.runCli({ script: "hook-stop.mjs", kind: "lint" });
+    } catch (e) {
+      process.exitCode = __fallbackDegrade("lint", e);
+    }
+  }
+}

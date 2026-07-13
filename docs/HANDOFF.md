@@ -3,6 +3,21 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 当前状态（2026-07-13 深夜，`loop-kit-extract` 契约收口：`loop-kit` 提取为独立包 + Casey 切换完成，gate GREEN）
+
+P0-3（`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §14 排期）在本次 session 于契约 worktree `casey-loop-kit-extract`（分支 `loop-kit-extract`，lane full，kernel 级加严）落地收口：
+
+1. **包仓落成**：`loop-kit` 通用内核提取为独立包 `/mnt/d/ctx/heren/loop-kit`（兄弟目录，`fresh git init` 不携历史，首提交 `0f34cc0`，出处记 `casey@f9f9019`）——十脚本迁入（8 份字节一致件 + `contract.mjs` 以 Casey 版为准含 `worktree` baton 全套 + `ratchet.mjs` Casey 独有件，除 ROOT 锚定行外逐字节照搬），新增 `lib/root.mjs`（提取后唯一新逻辑：`resolveRoot()` 单点解析 + 原子认领，env 有效必须校验/无效不回退/上溯找根标记/`realpath` 规范化/认领后不可变）。
+2. **Casey 侧单提交切换**：`loop-kit/bin/*.mjs` 十文件原地换薄转发层（`shim`，由单一模板 `tests/fixtures/loop-kit-expected/shim-template.mjs` 展开生成、逐字比对钉死）+ 新增共享引导助手 `loop-kit/lib/boot.mjs`（包定位 `LOOP_KIT_PKG`/兄弟约定 → `kit-lock.json` 包身份锁全清单 sha256 校验（两定位方式均不豁免）→ env 注入 → CLI `spawnSync` 转发或库模式动态 import + re-export → D5 全故障域降级：cli 类 64/guard 类 2/lint 类 0）。
+3. **红先行铁律走完**：`tests/_golden/loop-kit-extract.golden.mjs`（C0–C7，55 检查）落地前逐条验红——C0 包不存在、C2 全量引擎无视 `LOOP_KIT_PKG`（转发未生效）、C3 异地布局/跨树部分场景、C4 全部故障族（无降级协议）、C5 现文件非 `shim`；C1（API 面）与 C6（三存量金牌非回归）依设计全程照绿。`contract advance accept --red-verified` 之后才动 `loop-kit/bin` 字节；建成后 55/55 转绿。
+4. **切换前观测基线**：隔离测试树逐案录制 26 个命令/hook 用例（`gate --dry`/`contract` 全子命令/`breaker`/`term-lint`/`ratchet`/四 hook 正常路径），原始与规范化输出并存（`tests/fixtures/loop-kit-expected/baseline/`），规范化器（时间戳 + 隔离树绝对路径两条白名单规则）自身入冻结面；C2 每次复跑与此基线整树比对（exit code + stdout/stderr 全文 + 声明写集之外零变化）、含反向扰动自检证明规范化不吞真实差异。
+5. **三存量金牌零重签**：`worktree-baton`/`term-guard`/`ratchet-reverse-index` 三金牌与其 prd 字节等于切换前 git blob 锚（已逐一核验相等）；经 `shim` 复跑，结果与切换前实测锚一致——`worktree-baton` 因自身含一条与「本 worktree 活动 contract slug 恰为 worktree-baton」耦合的既有断言（G6，与本契约无关、字节冻结不可改），本树（活动 slug 是 `loop-kit-extract`）复跑现状是 exit 1，非本契约引入的回归，详见 prd observability 与 `tests/fixtures/loop-kit-expected/baseline/c6-rerun-anchor.json`。
+6. **全量复验**：`loop/prd-loop-kit-extract.json` gate GREEN（5/5 story）；`node bin/casey.mjs selftest --tier1` GREEN；`node loop-kit/bin/ratchet.mjs verify` 除两条与本契约无关的既有缺口外零问题（`cases/tc_wf_history_version`、`cases/tc_wf_publish_states` 的 `expected.frozen.json` 属未入库真机运行产物缺失，早于本契约 commit `24865f4`）。
+7. **文档同步**：`CONTEXT.md` 登记三术语（`shim`/`kit-lock`/观测基线）+ `loop-kit` 词条白话解释更新（已提取、分发形态、route:human #4 取甲不采用 npm 本地路径依赖）；`CLAUDE.md` 新增 Bootstrap 段（包是消费树兄弟目录、任何机器同构；`hook-loop-guard` 缺包/锁失配 fail-closed 会连带拦住修复用的工具调用，恢复须在 hook 触发范围之外人工完成）。
+8. **下一步**：`contract advance loop` → 异构冗余实现审（codex 评 Claude 实现，仅喂 spec+diff+门禁证据，护栏 #9）→ Steven 人签收尾 → `advance learn`。之后排期续 P0-4a（状态引擎）/ P0-4b（gate 分层），均为触强制层的 `kernel` 车道契约。非本契约范围：autotester 侧迁移与其 `contract.mjs` 对齐（另一有界工作流）、npm 本地路径依赖出口（route:human #4 已裁定不采用，如后续确需另立契约）、R2-L1 每调用锁校验性能预算收口（route:human #6 待 Steven 续裁，codex 实测指示值已挂账）。
+
+以下为 2026-07-13 晚（loop 双 profile 改革批准）快照，只溯源、勿据其判现状：
+
 ## 当前状态（2026-07-13 晚，loop 双 profile 改革批准激活：PROPOSAL 为唯一设计源、B/C 冻结延后、ratchet 验证器已落主树）
 
 1. **批准落盘**：Steven 显式批准 `docs/plans/loop-dual-profile-reform/PROPOSAL.md` 反转旧决策 ①（B/C 先行）与 ③（本期不建 `state.json`）——B/C 延后、采纳 16 节点 `Durable Workflow State`、该提案为唯一活动改革设计源（批准记录在其 §0，溯源按 §4.2 标 user-asserted）。`loop-ddd-overhaul/DESIGN.md` 与 `loop-orchestration-reform/NEXT-SESSION-PROPOSAL.md` 已标 `SUPERSEDED` 只作历史。中文决策摘要 = `DECISION-SUMMARY.zh.md`；`CONTEXT.md` 登记七新术语（`Execution Profile` / `Durable Workflow State` / `Ownership Lease` / `kernel` 车道 / `Review Receipt` / `Readiness View` / `Fitness Function`），term-lint 0 提示。
