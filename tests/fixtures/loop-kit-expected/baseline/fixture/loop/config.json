@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "lanes": {
+    "toil": { "model": "stub", "effort": "low" },
+    "implementation": { "model": "stub", "effort": "low" },
+    "review": { "model": "stub", "effort": "low" }
+  },
+  "circuitBreaker": { "maxIterations": 20, "zeroCommitRounds": 3, "sameErrorRounds": 5, "maxHours": 8 },
+  "qualityGate": { "prd": "loop/prd-baseline.json", "termLint": true, "commandTimeoutMs": 300000 },
+  "escalation": { "inbox": "loop/inbox.md", "notify": ["toast"] }
+}

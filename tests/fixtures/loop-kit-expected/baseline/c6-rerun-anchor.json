@@ -1,0 +1,8 @@
+{
+  "_doc": "C6 存量零重签的复跑退出码锚（plan.md D7 C6）。锚值 = 本 loop-kit-extract 契约切换前，在本 worktree 实测的三金牌复跑退出码——不假设跨 worktree 恒为 0（worktree-baton.golden.mjs 自身有一条与「本树活动 contract slug 恰为 worktree-baton」耦合的断言 G6，这与本契约无关、字节冻结不可改；本树活动 slug 是 loop-kit-extract，故其复跑现状是 exit 1，与 loop-kit-extract 提取改动无关）。C6 的真正断言目标 = 切换前后复跑结果一致（零回归），不是绝对必须 exit 0。",
+  "exitCodes": {
+    "tests/_golden/worktree-baton.golden.mjs": 1,
+    "tests/_golden/term-guard.golden.mjs": 0,
+    "tests/_golden/ratchet-reverse-index.golden.mjs": 0
+  }
+}

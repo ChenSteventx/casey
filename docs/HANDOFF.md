@@ -3,6 +3,45 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 当前状态（2026-07-13 深夜，`loop-kit-extract` 契约收口：`loop-kit` 提取为独立包 + Casey 切换完成，gate GREEN）
+
+P0-3（`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §14 排期）在本次 session 于契约 worktree `casey-loop-kit-extract`（分支 `loop-kit-extract`，lane full，kernel 级加严）落地收口：
+
+1. **包仓落成**：`loop-kit` 通用内核提取为独立包 `/mnt/d/ctx/heren/loop-kit`（兄弟目录，`fresh git init` 不携历史，首提交 `0f34cc0`，出处记 `casey@f9f9019`）——十脚本迁入（8 份字节一致件 + `contract.mjs` 以 Casey 版为准含 `worktree` baton 全套 + `ratchet.mjs` Casey 独有件，除 ROOT 锚定行外逐字节照搬），新增 `lib/root.mjs`（提取后唯一新逻辑：`resolveRoot()` 单点解析 + 原子认领，env 有效必须校验/无效不回退/上溯找根标记/`realpath` 规范化/认领后不可变）。
+2. **Casey 侧单提交切换**：`loop-kit/bin/*.mjs` 十文件原地换薄转发层（`shim`，由单一模板 `tests/fixtures/loop-kit-expected/shim-template.mjs` 展开生成、逐字比对钉死）+ 新增共享引导助手 `loop-kit/lib/boot.mjs`（包定位 `LOOP_KIT_PKG`/兄弟约定 → `kit-lock.json` 包身份锁全清单 sha256 校验（两定位方式均不豁免）→ env 注入 → CLI `spawnSync` 转发或库模式动态 import + re-export → D5 全故障域降级：cli 类 64/guard 类 2/lint 类 0）。
+3. **红先行铁律走完**：`tests/_golden/loop-kit-extract.golden.mjs`（C0–C7，55 检查）落地前逐条验红——C0 包不存在、C2 全量引擎无视 `LOOP_KIT_PKG`（转发未生效）、C3 异地布局/跨树部分场景、C4 全部故障族（无降级协议）、C5 现文件非 `shim`；C1（API 面）与 C6（三存量金牌非回归）依设计全程照绿。`contract advance accept --red-verified` 之后才动 `loop-kit/bin` 字节；建成后 55/55 转绿。
+4. **切换前观测基线**：隔离测试树逐案录制 26 个命令/hook 用例（`gate --dry`/`contract` 全子命令/`breaker`/`term-lint`/`ratchet`/四 hook 正常路径），原始与规范化输出并存（`tests/fixtures/loop-kit-expected/baseline/`），规范化器（时间戳 + 隔离树绝对路径两条白名单规则）自身入冻结面；C2 每次复跑与此基线整树比对（exit code + stdout/stderr 全文 + 声明写集之外零变化）、含反向扰动自检证明规范化不吞真实差异。
+5. **三存量金牌零重签**：`worktree-baton`/`term-guard`/`ratchet-reverse-index` 三金牌与其 prd 字节等于切换前 git blob 锚（已逐一核验相等）；经 `shim` 复跑，结果与切换前实测锚一致——`worktree-baton` 因自身含一条与「本 worktree 活动 contract slug 恰为 worktree-baton」耦合的既有断言（G6，与本契约无关、字节冻结不可改），本树（活动 slug 是 `loop-kit-extract`）复跑现状是 exit 1，非本契约引入的回归，详见 prd observability 与 `tests/fixtures/loop-kit-expected/baseline/c6-rerun-anchor.json`。
+6. **全量复验**：`loop/prd-loop-kit-extract.json` gate GREEN（5/5 story）；`node bin/casey.mjs selftest --tier1` GREEN；`node loop-kit/bin/ratchet.mjs verify` 除两条与本契约无关的既有缺口外零问题（`cases/tc_wf_history_version`、`cases/tc_wf_publish_states` 的 `expected.frozen.json` 属未入库真机运行产物缺失，早于本契约 commit `24865f4`）。
+7. **文档同步**：`CONTEXT.md` 登记三术语（`shim`/`kit-lock`/观测基线）+ `loop-kit` 词条白话解释更新（已提取、分发形态、route:human #4 取甲不采用 npm 本地路径依赖）；`CLAUDE.md` 新增 Bootstrap 段（包是消费树兄弟目录、任何机器同构；`hook-loop-guard` 缺包/锁失配 fail-closed 会连带拦住修复用的工具调用，恢复须在 hook 触发范围之外人工完成）。
+8. **下一步**：`contract advance loop` → 异构冗余实现审（codex 评 Claude 实现，仅喂 spec+diff+门禁证据，护栏 #9）→ Steven 人签收尾 → `advance learn`。之后排期续 P0-4a（状态引擎）/ P0-4b（gate 分层），均为触强制层的 `kernel` 车道契约。非本契约范围：autotester 侧迁移与其 `contract.mjs` 对齐（另一有界工作流）、npm 本地路径依赖出口（route:human #4 已裁定不采用，如后续确需另立契约）、R2-L1 每调用锁校验性能预算收口（route:human #6 待 Steven 续裁，codex 实测指示值已挂账）。
+
+以下为 2026-07-13 晚（loop 双 profile 改革批准）快照，只溯源、勿据其判现状：
+
+## 当前状态（2026-07-13 晚，loop 双 profile 改革批准激活：PROPOSAL 为唯一设计源、B/C 冻结延后、ratchet 验证器已落主树）
+
+1. **批准落盘**：Steven 显式批准 `docs/plans/loop-dual-profile-reform/PROPOSAL.md` 反转旧决策 ①（B/C 先行）与 ③（本期不建 `state.json`）——B/C 延后、采纳 16 节点 `Durable Workflow State`、该提案为唯一活动改革设计源（批准记录在其 §0，溯源按 §4.2 标 user-asserted）。`loop-ddd-overhaul/DESIGN.md` 与 `loop-orchestration-reform/NEXT-SESSION-PROPOSAL.md` 已标 `SUPERSEDED` 只作历史。中文决策摘要 = `DECISION-SUMMARY.zh.md`；`CONTEXT.md` 登记七新术语（`Execution Profile` / `Durable Workflow State` / `Ownership Lease` / `kernel` 车道 / `Review Receipt` / `Readiness View` / `Fitness Function`），term-lint 0 提示。
+2. **评审链闭环**：Fable 只读仓地架构审 `PASS WITH REQUIRED CHANGES`（HIGH-1 治理取代记账 + MED-1..5 全并入提案文本）→ 聚焦复核四收窄 ACCEPT → codex 事实更正（`countChange` 候选已于 `dbc0d0d` 落地、被当前代码证伪；P0-9 自托管候选改为 intake 时按实时代码/git 历史选定）终态 `ACCEPT WITH FACTUAL CORRECTION`。完整处置账在 `FABLE-REVIEW-DISPOSITION.md`。教训已入工作记忆：backlog 行承重引用前必核当前代码。
+3. **本 session 已落 dev**：文档收口 `7a2ce6d`；`ratchet-reverse-index` 只读反向索引验证器合并 `164636e` + 主树复验 `e81ce7f`（gate GREEN 2/2、全仓核验 68 PRD/103 冻结文件/0 问题；该契约六阶段全 done、pi+deepseek 异构冗余评审 round-2 PASS；已按惯例移树删支）。
+4. **P0-2 已执行**（两子代理并行、各驻一树）：B `drawer-lock-hardening` 冻结提交 `178408b`（fake-sut WIP +33/-3 零字节改动入分支 + plan 产物 + checkpoint 台账，显式非 merge-ready）；C `gen-prompts` 冻结提交 `33c382a`（plan 产物含早间编排中断遗留的 `planreview-material.md` + checkpoint 台账）。两树 baton 保持 2/6、基点仍 `1e3c8cc`（落后 dev 属预期，恢复时按 P1-3 实算分叉）。
+5. **早间 B/C 编排已停**（Steven 改序）：Workflow run `wf_25ac75de-8f2` 已停止；B/C 恢复走 PROPOSAL P1（经新 loop），不再直接续跑 `bc-contracts-workflow.js`。
+6. **下一步（按 PROPOSAL §14）**：P0-3 loop-kit 提取 vs 显式分叉决策（Steven 拍板、落新 ADR；注意 `gate.mjs` 等 8 份脚本仍与 autotester 字节一致，动它们前必须先定所有权）→ P0-4a 状态引擎 / P0-4b gate 分层（每项单独验收的 `kernel` 车道契约、旧 loop 互锁下执行、隔离 worktree 顺序合并）→ … → P0-12 有界切换。多 subagent/`Workflow` 编排为默认工作法（Steven 2026-07-13 重申）。A 真机 UAT 继续挂 route:human。主树活契约槽 = `loop-reform-p0-docs`（direct，纯文档收口用）。
+
+以下为 2026-07-13 早间快照，只溯源、勿据其判现状（其「先收 B/C」执行序已被上节批准反转）：
+
+## 当前状态（2026-07-13，B/C 在制 + loop 改革方案评审批准：先收 B/C 后启改革）
+
+上一 session（2026-07-13 上午）因 `wsl --shutdown` 根治隧道中继强制重启，A+B+C+D 四线（Steven 拍板全做）中断点如下（执行指令见 `docs/plans/_session-resume/RESUME-2026-07-13.md`，本笔已入 git）：
+
+1. D 归档清理**已完成**：三棵已合并契约旧 worktree 移除 + 十个已核实合并分支删除；保留 `run-convention-claude` 存档分支 + 三 `archive/codex-wip-*` tags。
+2. B `drawer-lock-hardening`（light）与 C `gen-prompts`（full）两棵 worktree **在制**：baton 各 2/6（grill+plan done、产物落盘），`dev..分支` 零提交（Build 被关机丢失，需重起编排续跑）；B 树有未提交红先行夹具半成品（`M tests/fixtures/fake-sut/server.mjs`，续接勿重敲）。编排脚本 `docs/plans/_session-resume/bc-contracts-workflow.js`（8 段，Plan 段读盘幂等，跨 session 重 launch 非 resume）。
+3. A 真机 UAT 卡相位0 关三（wslrelay 隧道数据面），重启后按 `docs/runbooks/real-uat-runbook.md` 重拉标准隧道；route:human，需 Steven 在场。
+4. **loop 编排改革两份文档评审毕、Steven 批准**（2026-07-13）：`docs/plans/loop-ddd-overhaul/DESIGN.md` = 唯一设计源；`docs/plans/loop-orchestration-reform/NEXT-SESSION-PROPOSAL.md` = 评审后执行摘要（内含 Claude 方案审查 HIGH×4/MED×6/LOW×4 与批准记录七决策）。要点：B/C 先行；护栏 #18 不推翻（无共享 registry/自动 merge queue）；扩展现有 contract 台账、不建 `state.json`；强制层（gate/contract/hook/term-lint/签名写路径）改动按 kernel 治理；默认 2 限界上下文；round-2 只 HIGH/MED 强制；backlog drop 须 Steven 确认。
+5. 本 session 执行序：Phase1 文档收口（本笔）→ Phase2 重起 bc-contracts 编排收 B/C → Phase3 主树落**只读** ratchet 反向索引验证器（light 契约，不写 testChecksums/passes/签名，批量重签写面=未来单独 kernel 契约）→ Phase4 顺序合并收尾（人裁冲突 + 既有流程重签 + 验证器全仓总核 + tier1 + 刷新交接文档）→ Phase5 改革按 DESIGN.md Phase 1 范围正式立项（16 节点迁移不并入、另行提案）。
+6. 未提交现场保持不动：`M .gitignore`（Steven 的）+ `M loop/prd-selftest.json`（gate 时间戳漂移、不并提交）+ `docs/codex/`（并行 codex 会话产物）+ `docs/plans/regress-strategy/`、`docs/plans/usability-audit/` 草稿。
+
+以下为 2026-07-10 快照，只溯源、勿据其判现状：
+
 ## 当前状态（2026-07-10，三契约 + 漂移收口合并回 dev：画布第五原子 setNodeField + replay-nth 硬化 + regress scope A + 两处既有漂移收口）
 
 本 session 承接上个 session 起好的三棵 codex worktree 在制品，走「Claude 补齐/评审 + 多 subagent 编排 + codex 异构评审 + 协调合并 + 全量复验」，三契约 + 一漂移收口契约齐落 `dev`（`68f1fe0`→`ff73011`）。dev 全量复验绿：全仓 115 条 ratchet 全 MATCH + `selftest --tier1` 裁判零 LLM GREEN。落地清单：

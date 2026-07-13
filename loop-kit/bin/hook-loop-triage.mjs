@@ -1,20 +1,40 @@
 #!/usr/bin/env node
-// UserPromptSubmit hook —— 实现意图命中则注入「入口分流 + 六阶段」检查单（软层）。
-// 把 triage 钉在动手前的上下文，治「需要 loop 却不走 loop」的 grill 漏跑。闲聊不注入；hook 故障不阻塞。
-import { readFileSync } from 'node:fs';
+// loop-kit/bin/hook-loop-triage.mjs —— 薄转发层（shim，由单一模板生成，勿手改；真实现在独立包 loop-kit，兄弟目录
+// 或 LOOP_KIT_PKG 显式指向）。全部包定位/身份锁校验/env 注入/降级逻辑单点收在 loop-kit/lib/boot.mjs，
+// 本文件只调它，并以最小内联 try/catch 兜住 boot 自身故障（评审 R2-H1）。
+// 模板源：tests/fixtures/loop-kit-expected/shim-template.mjs（C5 金牌逐字比对钉死展开结果，勿分叉手改）。
+// 详见 docs/plans/loop-kit-extract/plan.md D4/D5、proposed/GRILL.md。
+import { resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const INTENT = /实现|做一个|做个|加个|新增|重构|改造|开发|功能|参数化|移植|返工|流水线|\bloop\b|feature|build|implement|fix|修复/i;
-const CHECKLIST = [
-  '[loop 纪律] 动手前先做入口分流（docs/decisions/2026-06-12-loop-kit.md）：',
-  '改不改数据 / 影响几个文件 / 跑多久 → 直干 | 轻契约 | 全流水线。',
-  '全流水线按序：阶段0 grill-with-docs（决策树清空、落 CONTEXT/ADR）→ 1 to-plan → 2 acceptance-gate（红测试+冻结）',
-  '→ 3 实现 + Quality Gate 绿 → 4 异构冗余评审（Codex 非同族，输入只给 spec+diff+证据）→ 5 沉淀。',
-  '先 node loop-kit/bin/contract.mjs init <slug> --lane <...> 声明入口分流，再动手（硬层 hook 会按 contract 互锁）。',
-].join('\n');
+const __self = fileURLToPath(import.meta.url);
+const isMain = process.argv[1] ? resolve(process.argv[1]) === __self : false;
+const __DEGRADE = { cli: 64, guard: 2, lint: 0 };
+function __fallbackDegrade(kind, err) {
+  const code = __DEGRADE[kind] ?? 64;
+  if (kind === 'lint') {
+    console.log(`WARN  loop-kit 引导失败（lint 监督层不阻塞）：${err && err.message}`);
+    return 0;
+  }
+  console.error(`loop-kit shim 引导失败：${err && err.message}\n补救：确认 ../../loop-kit（或 LOOP_KIT_PKG 指向的包）存在且完整，或修复 loop-kit/lib/boot.mjs。`);
+  return code;
+}
 
+let __boot, __bootError;
 try {
-  const input = JSON.parse(readFileSync(0, 'utf8'));
-  if (!INTENT.test(String(input.prompt || ''))) process.exit(0);
-  process.stdout.write(JSON.stringify({ hookSpecificOutput: { hookEventName: 'UserPromptSubmit', additionalContext: CHECKLIST } }));
-} catch { /* hook 自身故障不阻塞提交 */ }
-process.exit(0);
+  __boot = await import('../lib/boot.mjs');
+} catch (e) {
+  __bootError = e;
+}
+
+if (isMain) {
+  if (__bootError) {
+    process.exitCode = __fallbackDegrade("lint", __bootError);
+  } else {
+    try {
+      process.exitCode = __boot.runCli({ script: "hook-loop-triage.mjs", kind: "lint" });
+    } catch (e) {
+      process.exitCode = __fallbackDegrade("lint", e);
+    }
+  }
+}

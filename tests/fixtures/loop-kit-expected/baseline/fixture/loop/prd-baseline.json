@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "task": "baseline 录制夹具：最小 1-story 契约，供 gate --dry / ratchet index 使用",
+  "testChecksums": {
+    "frozen-fixture.txt": "16d73f200ec0a55c1c38e4e2b5b8150e353a1a6b7ca6de3af63fff1be3ef3015"
+  },
+  "stories": [
+    {
+      "id": "s1-baseline",
+      "desc": "baseline 占位 story",
+      "lane": "implementation",
+      "acceptance": ["node -e \"process.exit(0)\""],
+      "passes": false
+    }
+  ]
+}
