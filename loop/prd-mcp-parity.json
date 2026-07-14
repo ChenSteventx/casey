@@ -21,7 +21,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-13T21:55:56.570Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-14T02:29:41.962Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-ripple-record",
@@ -32,7 +32,7 @@
         "node tests/_golden/record-intake.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-13T21:56:21.303Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-14T02:30:11.113Z 全部 acceptance exit 0"
     }
   ]
 }

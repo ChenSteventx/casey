@@ -21,7 +21,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-13T21:55:53.137Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-14T02:26:22.708Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-ripple-locks",
@@ -36,7 +36,7 @@
         "node tests/_golden/wf-history-version.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-13T21:58:56.629Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-14T02:29:21.232Z 全部 acceptance exit 0"
     }
   ]
 }
