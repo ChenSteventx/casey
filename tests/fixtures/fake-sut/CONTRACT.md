@@ -37,7 +37,7 @@
 - 拖拽监听 `mousedown` 时才挂 document 级 `mousemove`/`mouseup`、`mouseup` 即卸，重渲不累积监听；`nodeSeq` 跨重渲递增，节点 id 不复用；路由切换重渲后画布清零（`data-node-count` 回 `0`）。
 - 类名对齐真机接缝：`.lf-graph` / `.lf-canvas-overlay` / `.lf-node` / `.lf-node-content` / `.node-item` / `.lf-node-anchor-hover` / `.lf-edge`；真机 `.lf-node` 是 SVG `<g>`，假 SUT 用 div 复刻类名 + 文本语义这条接缝，不复刻 SVG 标签结构。
 
-## 后端路由 × 场景（10 态，复现 verdict-cases 全八案）
+## 后端路由 × 场景（前 10 态复现 verdict-cases 全八案；`mountdelay`/`churn` 是回放静默点/走时上界考场，不入八案）
 
 > save 信封一律 `status` 形态：成功 `{status:200}`、软失败 HTTP 200 但 `body.status≠200`（`通道剖面` successField=`status`/successValue=200，复现 ADR-0006/observed-reality 的 Heren 接缝，绝不用旧 `{code}`）。
 
@@ -53,6 +53,8 @@
 | `drift` | 200 `{status:200}` | 200 | 列表只渲目标行 atl_wf_5fa1，脆性 css `.hr-table-row:nth-child(2) .hr-action-delete` 命中空，role=button name=删除 withinRow=atl_wf_5fa1 唯一仍在(count=1) | HARNESS_ERROR |
 | `vanished` | 200 `{status:200}` | 200 | drift 的反面：列表只渲非目标行 atl_目录CRUD_a，脆性 css 同样失配，但目标稳定签名 withinRow=atl_wf_5fa1 已不在(count=0) | NEEDS_HUMAN(INDETERMINATE)；堵漂移信号硬编码成 present:true |
 | `ambiguous` | 200 `{status:200}` | 200 | 渲染两个同名 `保存` 按钮→resolution=fallback_first | NEEDS_HUMAN(AMBIGUOUS_ACTION) |
+| `mountdelay` | 200 `{status:200}` | 200 | 详情页先渲静态占位 `页面加载中` → `fetch /api/process/editorData`（服务端延迟可配 `mountDelayMs` 缺省 800）→ 应答后替换挂载编辑器（保存钮 + 画布）；`新增成功` toast 3000ms 自动消隐 | 回放代表步静默点考场（占位期在途请求撑住复合判据 A，纯两拍判据反例）|
+| `churn` | 200 `{status:200}` | 200 | 编辑器即时挂载后 DOM 每 100ms 追加变长 + 背景轮询 300ms（denylist 内）；两拍稳定永不达成、在途 API 归零 | 走时上界考场（判据 A 归零故 `networkidle` 兜底条件化跳过，最坏走时压回约 2.75s）|
 
 ## 取证归因怎么靠假 SUT 落地（命门）
 
