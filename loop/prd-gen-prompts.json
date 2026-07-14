@@ -3,7 +3,7 @@
   "task": "gen-prompts（full）：被测参数的 CLI 外 LLM 合成 authoring——regress scope C 改形态（Steven 2026-07-13 定案：合成在 coding agent 会话里做，casey CLI 只出两段零 LLM 确定性工作）。① 新建 lib/promptset-authoring.mjs（buildSeedTemplate 出字节稳定合成种子模板：embedded 先 CRLF→LF 规范化、全文过凭据/地址扫描在截断之前、按 Unicode 码点截断 4000 并标「已截断」；freezeMergePromptset 先整批完整校验（闭合白名单 id/text/category/expect、禁 bnd_/sec_ 前缀、批内去重、不许自带 source）再分类幂等/冲突（已有 id 深等跳过、不同内容整批拒）、新条强制 source:llm；atomicWriteFileSync 可注入 write/rename 故障验真原子）。② 新建 bin/promptset-seed.mjs：路径闸（--out 强制 .md、拒覆盖已存在、canonical 化后拒写保护面）+ 双侧凭据门 + 私网地址负向扫描（10/8,172.16/12,192.168/16,127/8,169.254/16,::1,fc00::/7,fe80::/10）+ 零内网地址/--base/--key/--model 字样。③ 新建 bin/promptset-freeze.mjs：路径闸（--promptset 强制 .json）+ 解析前原文扫描（防 JSON.parse 报错携原文走 stderr 旁路）+ 幂等冻结追加 + green-by-construction 自检（parsePromptset+mergeCases）+ 输出侧双门 + 原子写。④ lib/promptset.mjs SOURCES 扩 'llm' + 头注释与报错文案同步（三处口径，报错文案从 SOURCES 派生）。⑤ bin/casey.mjs 两 case + help 两行（标注合成在 CLI 外）。⑥ 涟漪：regress-promptset.golden.mjs 第 61 行 source:llm 负向钉改正向 + 补 robot 未知 source 负向钉（重签 prd-regress-promptset）；cli-mcp-face.golden.mjs 的 CLI_MCP_EXCLUDED 追加两命令 + A4 新增反向断言 CLI_MCP_EXCLUDED ⊆ switch 派生集（双 prd 共冻，prd-cli-mcp-face + prd-mcp-parity 一并重签）；CONTEXT.md 登记合成种子模板/被测参数候选/幂等冻结三词条 + promptset 词条 source 枚举更新；docs/design/txt2testreport-design.md §13 头注改口 + §13.2 注释同步 + 新增 §13.7。铁不变量：authoring 绝不进回放/裁定闭包（N1 静态核 + spawn 边源文本扫描）、verdict.mjs 与 sign-gate.mjs 字节不动（本表同冻两者当前 sha256 基线，把「裁判字节不动」从行为守卫补成机器可验字节锚）、零 API key/零网络/零凭据接线、落盘产物照旧过凭据兜底门。决策见 docs/plans/gen-prompts/proposed/GRILL.md（D1-D9，含 codex-sol@max 设计评审修订）+ plan.md。",
   "specPath": "docs/plans/gen-prompts/plan.md",
   "testChecksums": {
-    "tests/_golden/gen-prompts.golden.mjs": "53689ce80e4cdc301b8f91463ea8769cfc4f7439acf7e3a9b4bd739b6643afe8",
+    "tests/_golden/gen-prompts.golden.mjs": "5509011211d0e2e90812ea115381450b14ec200f19e748d13cf6f564b26f1465",
     "bin/verdict.mjs": "ff0923132193209dc55262a010bc4bdaadfec379445a82a150912f94dcb5cb53",
     "lib/sign-gate.mjs": "a1018927b0465de0df98523aba1e2b15499ecc682477f7cbf3768cc9ddd7f919"
   },
@@ -30,7 +30,7 @@
         "node tests/_golden/gen-prompts.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-14T00:21:41.111Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-14T00:55:59.130Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-tier1-regression",
@@ -40,7 +40,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-14T00:21:44.049Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-14T00:56:01.965Z 全部 acceptance exit 0"
     }
   ]
 }

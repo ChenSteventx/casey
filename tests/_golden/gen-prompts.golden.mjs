@@ -16,9 +16,15 @@
 //
 // round-1 异构冗余评审（codex+pi，fable@xhigh 汇裁，docs/plans/gen-prompts/review/arb-r1.md）修订钉：
 //   A1（金牌自身含姊妹项目真实内网地址）S3f 改合成占位地址 + S3h/S3i 扩自扫描面；A2（错误回显原字段值）
-//   F3o/F4k 不回显钉；A3/A8（固定 .tmp 符号链接可覆写）F4h/F4i；A4（0 新增绕自检）F2d；A5（term-lint
-//   parseRegistry 幽灵别名，both）T1；A6（地址等价编码漏检）F4c 已扩五形态；A7（N1 spawn 扫描面窄）N1b 改
-//   闭包扫描；A9（--dry-run 打全文）F2c 摘要钉；A10（存量藏凭据/地址未钉）F4j。
+//   F3o/F4j 不回显钉；A3/A8（固定 .tmp 符号链接可覆写）F4h/F4i；A4（0 新增绕自检）F2d；A5（term-lint
+//   parseRegistry 幽灵别名，both）T1；A6（地址等价编码漏检）F4c1/F4c2；A7（N1 spawn 扫描面窄）N1b 改闭包
+//   扫描；A9（--dry-run 打全文）F2c2 摘要钉；A10（存量藏凭据/地址未钉）F4j。
+// round-2 codex 复核（docs/plans/gen-prompts/review/codex-r2.md）再修订：A6 补大写十六进制前缀/无分隔符
+//   前导零八进制整串/点分段内混十六进制三处漏检，且把点分形式收紧到恰好四段以堵死"版本号/小数被误判地址"
+//   的新增假阳性（如「产品版本 10.20」）；A7 加 N1c 结构化 spawn 调用点计数（不依赖目标字符串内容，数调用
+//   形态本身，堵住 N1b 可被"目标名字面量藏进会被误当注释吞掉的 /*.../ 形态"绕过的缺口）+ N1d 金丝雀；round-1
+//   处置文档 dispositions-r1.md 里误把已作废真实地址字面量写进"证据"描述本身（自相矛盾：一边修一边在文档里
+//   重新写出同一地址）——已改脱敏描述、不复述具体数值。
 import {
   readFileSync, writeFileSync, existsSync, mkdtempSync, mkdirSync, symlinkSync, readdirSync, rmSync,
 } from 'node:fs';
@@ -812,12 +818,17 @@ check('N1a import 闭包核：bin/replay.mjs / bin/verdict.mjs / bin/promptset.m
 // 去块注释/行注释后再扫（镜像 bin/verdict-purity-guard.mjs 内部 stripComments 的同款近似做法，该函数未导出
 // 故本文件另起一份等价实现）——纯文档性质的交叉引用注释（如"见 lib/promptset-authoring.mjs"）不是 spawn 边，
 // 不该被误判；真正的 spawnSync(...) 调用/字符串拼目标必然落在可执行代码里，去注释后依然会被扫到。
+// 已知局限（round-2 codex 复核指出、如实记账，不夸大本钉效力）：本近似去注释器不辨"字符串字面量内碰巧长得
+// 像块注释的子串"（如 `"/*promptset-freeze*/"`）与真注释——刻意把这类子串误当注释去掉会制造漏检窗口；
+// 更根本地，即便不利用去注释，普通字符串拼接（如 `'promp'+'tset-freeze'`）本就能绕过任何连续子串搜索——
+// 这是本类静态文本扫描的固有局限，非本钉能力范围内可修。本钉仍有价值（能挡住"完整字符串字面量直接出现"
+// 这一类最常见的疏忽退化），但不是对抗式防线；对抗式防线见下方 N1c（结构化计数，不依赖字符串内容本身）。
 function stripCommentsForScan(text) {
   let s = text.replace(/\/\*[\s\S]*?\*\//g, ' ');
   s = s.replace(/([^:'"\\])\/\/[^\n]*/g, '$1');
   return s;
 }
-check('N1b spawn 边扫描：三份回放侧文件的整个 import 闭包（不止入口自身）去注释后零 promptset-seed/promptset-freeze/promptset-authoring 字样（round-1 MED A7 修订：此前只查入口文件自身源文本，helper 转发 spawnSync 可绕；改核闭包内每个文件，去注释防文档性交叉引用误判）', () => {
+check('N1b spawn 边扫描：三份回放侧文件的整个 import 闭包（不止入口自身）去注释后零 promptset-seed/promptset-freeze/promptset-authoring 字样（round-1 MED A7 修订：此前只查入口文件自身源文本，helper 转发 spawnSync 可绕；改核闭包内每个文件，去注释防文档性交叉引用误判；非对抗式防线，见上方局限说明与下方 N1c）', () => {
   for (const [label, entry] of [['replay', REPLAY], ['verdict', VERDICT], ['promptset', PROMPTSET_BIN]]) {
     const { visited } = scanClosure(entry);
     const filesToScan = new Set([resolve(entry), ...visited]);
@@ -828,6 +839,51 @@ check('N1b spawn 边扫描：三份回放侧文件的整个 import 闭包（不�
       }
     }
   }
+});
+// 结构化 spawn 边计数（round-2 codex A7 复核后加固）：N1b 靠字符串内容本身（子串/去注释），可被"拼字符串
+// 拼目标名"绕过（codex 实测复现：`spawnSync(process.execPath, ["/repo/bin/"+marker.slice(2,-2)+".mjs"])`，
+// marker 里目标名字面量藏在会被误当注释去掉的 `/*.../*` 形态里）。本钉换一个不依赖目标字符串内容的角度：
+// 直接数三份闭包里"spawn 家族函数调用形态"（spawnSync(/spawn(/exec(/execSync(/execFile(/execFileSync( 等
+// 调用点，非 import 语句本身——`import { spawnSync }` 不含调用括号，不计入）出现的总次数，与已审计过的
+// 现状基线比对——任何新增调用点（不论其参数字符串如何拼接/混淆）都会让计数超过基线，因为「调用本身的存在」
+// 不像「调用的参数内容」那样能被字符串拼接/注释伪装隐藏。基线：verdict/replay 闭包 0 处；promptset 闭包 1 处
+// （`bin/promptset.mjs` 的 `runNode` helper，编排 replay/verdict/report 三个既有 bin，非本契约新增、非本契约
+// 关注的两个 authoring bin）。仍非无懈可击（动态计算函数名本身，如 `child_process['spawn'+'Sync']`，可再绕；
+// 但那已是完全不同量级的刻意混淆，静态文本分析的公认边界，同「内部域名形态无法穷举」既有口径）。
+const SPAWN_CALL_RE = /\b(?:spawnSync|spawn|execSync|exec|execFileSync|execFile)\s*\(/g;
+const SPAWN_CALL_SITE_BASELINE = { replay: 0, verdict: 0, promptset: 1 };
+check('N1c 结构化 spawn 调用点计数不超基线（round-2 codex A7 复核加固：不依赖拼接目标字符串内容，数调用形态本身出现次数）', () => {
+  for (const [label, entry] of [['replay', REPLAY], ['verdict', VERDICT], ['promptset', PROMPTSET_BIN]]) {
+    const { visited } = scanClosure(entry);
+    const filesToScan = new Set([resolve(entry), ...visited]);
+    let total = 0;
+    for (const file of filesToScan) {
+      let src; try { src = readFileSync(file, 'utf8'); } catch { continue; }
+      const m = src.match(SPAWN_CALL_RE);
+      if (m) total += m.length;
+    }
+    if (total > SPAWN_CALL_SITE_BASELINE[label]) {
+      throw new Error(`${label} 闭包 spawn 调用点计数 ${total} 超过已审计基线 ${SPAWN_CALL_SITE_BASELINE[label]}（新增 spawn 调用点，需人工复核是否碰 authoring 两 bin）`);
+    }
+  }
+});
+check('N1d N1c 金丝雀：闭包内新增一个 spawn 调用点会被 N1c 判红（证明该检查有牙，非摆设；用临时目录合成对照，未改动仓内文件）', () => {
+  const d = freshDir('n1d');
+  const fakeEntry = join(d, 'fake-entry.mjs');
+  // codex round-2 实际给出的绕过写法：目标名字面量藏在会被 N1b 的去注释近似判成"块注释"的 /*.../ 形态里，
+  // 借此证明"即便 N1b 被绕过，N1c 仍能靠调用形态本身兜住"。
+  writeFileSync(fakeEntry, [
+    "import { spawnSync } from 'node:child_process';",
+    "const marker = \"/*promptset-freeze*/\";",
+    "spawnSync(process.execPath, ['/repo/bin/' + marker.slice(2, -2) + '.mjs']);",
+  ].join('\n'));
+  const src = readFileSync(fakeEntry, 'utf8');
+  const m = src.match(SPAWN_CALL_RE);
+  const count = m ? m.length : 0;
+  if (count <= SPAWN_CALL_SITE_BASELINE.verdict) throw new Error(`合成对照应命中 spawn 调用点计数 > 0（verdict 基线 0），实际 ${count}——检查器失能`);
+  // 同时佐证 N1b 的已知局限确实存在（去注释会把这份合成对照里的目标名字面量吞掉），解释为何需要 N1c。
+  const stripped = stripCommentsForScan(src);
+  if (stripped.includes('promptset-freeze')) throw new Error('本条金丝雀预期 N1b 的去注释近似会误吞目标名字面量（用以论证 N1c 存在的必要性）；实际未被吞，说明 stripCommentsForScan 实现已变化，需重新核对本注释的论证是否仍成立');
 });
 
 // ================= C1 CLI 门面（两命令全覆盖） =================
