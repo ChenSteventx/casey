@@ -22,10 +22,14 @@ round-4 双路异构冗余复核：pi（deepseek-v4-pro@high）判「通过」�
 
 **核实**：`execFile` 本身已在 `SPAWN_CALL_RE` 里（`spawnSync|spawn|execSync|exec|execFileSync|execFile|fork`），是否传回调参数不影响函数名本身是否被匹配——pi 在报告里也自己核实了这点（"`execFile` 函数名本身已在正则中，与是否回调无关"）。`worker_threads` 的 `Worker` 确实不在 `child_process` 的 spawn 家族里，是完全不同的并发原语（线程而非进程），当前 authoring/回放/裁定三处代码均未使用 `Worker`，判定为不需要现在处理——若未来有正当理由要用 `Worker` 启动某些逻辑，应作为独立评审事项另议，不在本契约范围内预防性扩大检测面。
 
+## round-5 前置自查追记（准备评审材料时自行发现，未等外部评审指出）
+
+在为本轮修复整理 round-5 评审材料时，主动构造了一批 `URI_AUTHORITY_RE` 的边界场景自测（大小写协议头、`userinfo@` 形态、IPv6 字面量、`ftp://` 等非 http(s) 协议），发现真实缺口：URL 含 `userinfo`（`user:pass@host` 形态）时，正则会在 `userinfo` 内部的冒号处提前截断，误把用户名当主机名、漏过真正的主机（`http://user:pass@10.1/path` 会提取到 `"user"` 而非 `"10.1"`，导致该场景 `hit:false`）。已在同一次收口里修复（`URI_AUTHORITY_RE` 加一个可选非捕获组跳过 `userinfo@` 前缀）+ 金牌 F4c1c 补两条断言（userinfo 场景 + 协议头大小写不敏感场景）+ 红先行验证（`git stash` 复验）。提交 `ca4f230`（父提交 `0eb068c`）。
+
 ## 汇总核验
 
 - 全仓地址字节串检索（脱敏方式核对，排除 `node_modules`）：0 处命中。
 - `node tests/_golden/gen-prompts.golden.mjs`：77 过 / 0 败。
-- `lib/promptset-authoring.mjs` 当前 sha256：`a1e959757968cbc118c9690c3ebfaa642294d03e6bb84e40d0154a84464dac9e`。
-- `tests/_golden/gen-prompts.golden.mjs` 当前 sha256：`1ff9482eb13d1176db2630265fac21108ee009d5bb78c2b1b98b0862325188c1`（`prd-gen-prompts.json` 已同步重签，gate 复跑 GREEN）。
+- `lib/promptset-authoring.mjs` round-4 本体（commit `0eb068c`）sha256：`a1e959757968cbc118c9690c3ebfaa642294d03e6bb84e40d0154a84464dac9e`；round-5 前置自查（commit `ca4f230`）后已更新，最新哈希见该提交。
+- `tests/_golden/gen-prompts.golden.mjs` round-4 本体 sha256：`1ff9482eb13d1176db2630265fac21108ee009d5bb78c2b1b98b0862325188c1`；round-5 前置自查后已更新，最新哈希见该提交，`prd-gen-prompts.json` 已同步重签、gate 复跑 GREEN。
 - `bin/verdict.mjs`、`lib/sign-gate.mjs`、`lib/promptset.mjs`、`bin/promptset.mjs`、`tests/_golden/cli-mcp-face.golden.mjs` 本轮（round-4 修订）仍零改动。
