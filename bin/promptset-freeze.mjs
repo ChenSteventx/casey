@@ -90,9 +90,41 @@ if (candidates.length === 0) die(65, '候选文件须为非空数组');
 const existing = existingRaw === null ? [] : safeJsonParse(existingRaw, '已有 promptset 文件');
 if (!Array.isArray(existing)) die(65, '已有 promptset.json 非数组，拒绝合并（保护人写存量）');
 
+// 候选校验错误 → 只出类别码 + 位置下标 + 固定中文说明，绝不透传 e.message 原文节选（D3 output-seal）：
+// CandidateValidationError.message 内嵌未登记键名/非法字段取值等候选自带内容，即便"干净"（未命中凭据兜底门
+// 关键词）也不该回显——防 LLM 候选借意外字段名/取值本身把内容送进 stderr，绕过只扫值的凭据门（round-1 HIGH A2）。
+const VALIDATION_ERROR_HINT = {
+  SHAPE: '候选须为对象',
+  UNKNOWN_KEY: '候选含未登记键（闭合白名单 id/text/category/expect，不得自带 source）',
+  ID_SHAPE: 'id 非法（须匹配 ^[a-z0-9_]+$）',
+  ID_RESERVED_PREFIX: 'id 撞注入向量库保留前缀（bnd_/sec_）',
+  TEXT_EMPTY: 'text 须为非空字符串',
+  CATEGORY_MISSING: 'category 必填（须 normal|boundary|security）',
+  CATEGORY_ENUM: 'category 非法（须 normal|boundary|security）',
+  EXPECT_SHAPE: 'expect 须为对象',
+  EXPECT_UNKNOWN_KEY: 'expect 含未登记键',
+  EXPECT_FIELD_SHAPE: 'expect 子字段形状非法',
+  BATCH_DUP_ID: '批内 id 重复',
+  ID_CONFLICT: '候选与已有条目冲突（id 已存在但内容或来源不同）',
+};
+function sanitizeFreezeError(e) {
+  // 结构化 code（CandidateValidationError）优先；freezeMergePromptset 里两处普通 Error（BATCH_DUP_ID/
+  // ID_CONFLICT）没有 .code 属性，退化用正则从 message 头部提取方括号类别码——码本身是硬编码字面量、
+  // 永不受候选取值影响（e.g. `候选校验失败[BATCH_DUP_ID]（第 i 条）：...`，方括号内容恒为开发者写死的
+  // 枚举值，不是候选自带数据），故此提取不构成原值回显。
+  const explicitCode = e && typeof e.code === 'string' ? e.code : null;
+  const parsedCode = !explicitCode && e && typeof e.message === 'string' ? (/\[([A-Z_]+)\]/.exec(e.message) || [])[1] : null;
+  const code = explicitCode || parsedCode;
+  if (code && VALIDATION_ERROR_HINT[code]) {
+    const at = Number.isInteger(e && e.index) ? `（第 ${e.index} 条）` : '';
+    return `候选校验失败[${code}]${at}：${VALIDATION_ERROR_HINT[code]}（原始键名/字段取值不回显）`;
+  }
+  return '候选校验或合并失败（fail-closed 拒写；详情不回显，防原始字段取值经报错泄露）';
+}
+
 let merged, fresh, skippedExisting;
 try { ({ merged, fresh, skippedExisting } = freezeMergePromptset({ existing, candidates })); }
-catch (e) { die(65, e.message); }
+catch (e) { die(65, sanitizeFreezeError(e)); }
 
 // 新增候选条目文本零裸 ://（存量条目不追溯，GRILL D3 修订）——覆盖 text 与 expect 全部子字段（mustInclude/
 // mustNotInclude/note），不止 text（漏 note 会放行 expect.note 夹带的裸 :// ）。
@@ -103,21 +135,27 @@ for (const c of fresh) {
   }
 }
 
+// green-by-construction 自检（写盘前对合并结果自跑 parsePromptset + 与随发注入向量库 mergeCases 无撞）——
+// 无论 fresh 是否为空都跑（round-1 HIGH A4 修订：此前 0 新增分支在本自检之前就 exit 0，坏存量——如非法
+// source 值或撞注入向量库保留前缀的既有条目——在幂等 no-op 重跑时被静默判成功，绕过了本应 fail-closed 的
+// 自检）。报错只出固定类别说明，绝不透传 e.message 原文节选（D3 output-seal，round-1 HIGH A2：parsePromptset/
+// mergeCases 的报错会内嵌存量原始字段取值，即便这是自检失败的边缘路径也不例外）。
+try {
+  const cases = parsePromptset(merged);
+  const libs = loadBuiltinLibs(join(PROJECT_ROOT, 'prompts', '_lib'));
+  mergeCases(cases, libs);
+} catch { die(65, 'green-by-construction 自检未过（fail-closed 拒写；详情不回显，可能含存量原始字段取值）'); }
+
 if (fresh.length === 0) {
   console.log(`promptset-freeze: 0 新增（已幂等跳过 ${skippedExisting.length} 条），未写盘。`);
   process.exit(0);
 }
 
-// green-by-construction 自检（写盘前对合并结果自跑 parsePromptset + 与随发注入向量库 mergeCases 无撞）。
-try {
-  const cases = parsePromptset(merged);
-  const libs = loadBuiltinLibs(join(PROJECT_ROOT, 'prompts', '_lib'));
-  mergeCases(cases, libs);
-} catch (e) { die(65, `green-by-construction 自检未过（fail-closed 拒写）：${e.message}`); }
-
 if (dryRun) {
   console.log(`promptset-freeze: --dry-run，新增 ${fresh.length} 条（未写盘）：`);
-  console.log(JSON.stringify(fresh, null, 2));
+  for (const c of fresh) {
+    console.log(`  - ${c.id}（category=${c.category}${c.expect ? '，含 expect 软期望' : ''}）`);
+  }
   process.exit(0);
 }
 

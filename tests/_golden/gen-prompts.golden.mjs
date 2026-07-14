@@ -12,7 +12,13 @@
 //
 // 分组：S1 确定性 | S2 内容契约 | S3 门与负向 | S4 零 LLM/零网络闭包 | S5 seed 路径闸 |
 //       F1 冻结 happy | F2 幂等与冲突 | F3 准入闸 | F4 凭据/地址门与原子性 | F5 freeze 路径闸 |
-//       P1 source 枚举扩展 | N1 不进回放/裁定闭包 | C1 CLI 门面全覆盖
+//       P1 source 枚举扩展 | T1 CONTEXT 词条对 term-lint 解析器无退化 | N1 不进回放/裁定闭包 | C1 CLI 门面全覆盖
+//
+// round-1 异构冗余评审（codex+pi，fable@xhigh 汇裁，docs/plans/gen-prompts/review/arb-r1.md）修订钉：
+//   A1（金牌自身含姊妹项目真实内网地址）S3f 改合成占位地址 + S3h/S3i 扩自扫描面；A2（错误回显原字段值）
+//   F3o/F4k 不回显钉；A3/A8（固定 .tmp 符号链接可覆写）F4h/F4i；A4（0 新增绕自检）F2d；A5（term-lint
+//   parseRegistry 幽灵别名，both）T1；A6（地址等价编码漏检）F4c 已扩五形态；A7（N1 spawn 扫描面窄）N1b 改
+//   闭包扫描；A9（--dry-run 打全文）F2c 摘要钉；A10（存量藏凭据/地址未钉）F4j。
 import {
   readFileSync, writeFileSync, existsSync, mkdtempSync, mkdirSync, symlinkSync, readdirSync, rmSync,
 } from 'node:fs';
@@ -24,6 +30,8 @@ import { createHash } from 'node:crypto';
 import { parsePromptset, loadBuiltinLibs, mergeCases } from '../../lib/promptset.mjs';
 import { credentialGate } from '../../lib/cred-gate.mjs';
 import { scanClosure } from '../../bin/verdict-purity-guard.mjs';
+import { atomicWriteFileSync, scanPrivateAddress } from '../../lib/promptset-authoring.mjs';
+import { parseRegistry } from '../../loop-kit/bin/term-lint.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -39,7 +47,6 @@ const tmp = mkdtempSync(join(tmpdir(), 'casey-gen-prompts-'));
 const fails = [];
 let pass = 0;
 function check(name, fn) { try { fn(); pass++; } catch (e) { fails.push(`${name}: ${String(e && (e.stderr || e.message)).slice(-400)}`); } }
-async function checkAsync(name, fn) { try { await fn(); pass++; } catch (e) { fails.push(`${name}: ${String(e && (e.stderr || e.message)).slice(-400)}`); } }
 
 function run(bin, args) { return spawnSync(process.execPath, [bin, ...args], { encoding: 'utf8', timeout: 60000 }); }
 const runSeed = (args) => run(SEED, args);
@@ -209,7 +216,10 @@ check('S3e 凭据出现在第 4000 码点之后仍拦（先全文过门、后截
 });
 check('S3f embedded 夹私网地址哨兵 → exit 1，零落盘，原地址值不回显（credentialGate 非地址门，靠独立地址扫描拦；覆盖 PRD 声明的全部八类网段）', () => {
   const sentinels = [
-    ['10.0.0.0/8', '系统内网地址 http://10.10.76.237:18000/api 请勿外传', '10.10.76.237'],
+    // 合成占位地址（round-1 HIGH A1 修订：此前用姊妹项目 regress_autotest 真实内网地址逐字节哨兵，违
+    // 「任何内网/真目标地址不许出现在代码与文档」硬约束；改用不对应任何真实主机的合成 10.x 地址，
+    // 覆盖面语义不变——同落 10.0.0.0/8 网段正则）。
+    ['10.0.0.0/8', '系统内网地址 http://10.20.30.40:18000/api 请勿外传', '10.20.30.40'],
     ['172.16.0.0/12', '内部服务 https://172.16.0.5/x', '172.16.0.5'],
     ['192.168.0.0/16', '管理面 http://192.168.1.7/internal', '192.168.1.7'],
     ['127.0.0.0/8', '本机回环 http://127.0.0.1:9000', '127.0.0.1'],
@@ -237,13 +247,30 @@ check('S3g 负向场景 stderr/stdout 不含输入绝对路径', () => {
   if (outText(r).includes(d)) throw new Error('不得回显临时目录绝对路径');
   if (outText(r).includes(emb)) throw new Error('不得回显 --embedded 绝对路径');
 });
-check('S3h 两新 bin 源码零内网地址字样 / 零 --base·--key·--model 旗标字样', () => {
+// regress 直调 API 旧形态的 CLI 旗标/关键词残留字样（已作废不搬）——均为通用词/旗标名，非机密，可安全字面量化；
+// 真实内网地址刻意不进此列表字面量（round-1 HIGH A1）——把「已作废地址」焊进检查器本身，等于把它重新写回仓库，
+// 违「任何内网/真目标地址不许出现在代码与文档」硬约束本身。地址检查改用 scanPrivateAddress 模式扫描（下方），
+// 不依赖任何特定真实地址的字面量即可覆盖任意私网地址。
+const OLD_REGRESS_FLAG_REMNANTS = ['--base', '--key', '--model', 'deepseek', 'AI_API_KEY'];
+check('S3h 两新 bin 源码零内网地址（scanPrivateAddress 模式扫描）/ 零 regress 直调 API 旧形态旗标残留字样', () => {
   const srcSeed = readFileSync(SEED, 'utf8');
   const srcFreeze = readFileSync(FREEZE, 'utf8');
   for (const [label, src] of [['promptset-seed.mjs', srcSeed], ['promptset-freeze.mjs', srcFreeze]]) {
-    for (const banned of ['10.10.76.237', '--base', '--key', '--model', 'deepseek', 'AI_API_KEY']) {
+    for (const banned of OLD_REGRESS_FLAG_REMNANTS) {
       if (src.includes(banned)) throw new Error(`${label} 源码不得含「${banned}」（regress 直调 API 旧形态字样，已作废不搬）`);
     }
+    const addr = scanPrivateAddress(src);
+    if (addr.hit) throw new Error(`${label} 源码不得含任何私网/内网地址字面量（命中 ${addr.kind}；两 bin 零网络零 API 接线，源码不应硬编码任何地址）`);
+  }
+});
+check('S3i 金牌自身源码零 regress 直调 API 旧形态旗标残留字样（此前 S3h 只扫两新 bin、漏扫金牌自身，构成假绿——round-1 HIGH A1）', () => {
+  const selfSrc = readFileSync(fileURLToPath(import.meta.url), 'utf8');
+  for (const banned of OLD_REGRESS_FLAG_REMNANTS) {
+    // 计数而非排除定义行：本文件里每个残留字样只应在 OLD_REGRESS_FLAG_REMNANTS 自身定义处出现恰好 1 次；
+    // 出现 0 次说明清单本身缺失（检查器失能），出现 >1 次说明别处又混入了这些字样（真退化）。
+    const count = selfSrc.split(banned).length - 1;
+    if (count === 0) throw new Error(`gen-prompts.golden.mjs 应在 OLD_REGRESS_FLAG_REMNANTS 定义处含「${banned}」（检查器清单本身缺失）`);
+    if (count > 1) throw new Error(`gen-prompts.golden.mjs 源码含「${banned}」共 ${count} 处，应仅在旗标残留清单定义处出现 1 次（别处出现视为旧形态字样重新混入）`);
   }
 });
 
@@ -406,6 +433,33 @@ check('F2c --dry-run：有新增仍打印摘要且整个工作目录零差量（
   const afterList = readdirSync(d).sort();
   if (JSON.stringify(beforeList) !== JSON.stringify(afterList)) throw new Error('--dry-run 不得在工作目录产生任何新文件');
 });
+check('F2c2 --dry-run 摘要不回显候选正文/软期望原文（只印 id/category 摘要，round-1 LOW A9 修订：此前打印整条 JSON.stringify(fresh) 正文）', () => {
+  const d = freshDir('f2c2');
+  const ps = setupPromptset(d, FROZEN_AFTER_F1);
+  const distinctiveText = 'DRYRUN_FULLTEXT_SHOULD_NOT_BE_ECHOED_ZZQQ';
+  const distinctiveNote = 'DRYRUN_EXPECT_NOTE_SHOULD_NOT_BE_ECHOED_WWEE';
+  const fresh = [{ id: 'p21_dryrun_summary', text: distinctiveText, category: 'normal', expect: { note: distinctiveNote } }];
+  const cand = writeJsonFile(d, 'candidates.json', fresh);
+  const r = runFreeze(['--candidates', cand, '--promptset', ps, '--dry-run']);
+  if (r.status !== 0) throw new Error(`--dry-run happy 应 exit 0，实际 ${r.status}：${outText(r).slice(-300)}`);
+  if (!outText(r).includes('p21_dryrun_summary')) throw new Error('--dry-run 摘要应含新增 id');
+  if (!outText(r).includes('normal')) throw new Error('--dry-run 摘要应含 category');
+  if (outText(r).includes(distinctiveText)) throw new Error('--dry-run 不应回显候选 text 正文（只应打印 id/category 摘要）');
+  if (outText(r).includes(distinctiveNote)) throw new Error('--dry-run 不应回显 expect.note 正文');
+});
+check('F2d 存量含非法数据（source 非法）时即便 0 新增也须过自检、不得放行 exit 0（round-1 HIGH A4：此前 fresh.length===0 在自检之前就提前 exit 0，坏存量在幂等 no-op 重跑时被静默判成功；红先行实测：把本修复回退后此场景 exit 0 未写盘，坏数据放行——证据见 dispositions-r1.md）', () => {
+  const d = freshDir('f2d');
+  const badExisting = [...FROZEN_AFTER_F1, { id: 'p91_bad_source', text: '这条存量数据的 source 已非法（非本工具产生，模拟手改/旧数据混入）', source: 'not_a_real_source', category: 'normal' }];
+  const ps = setupPromptset(d, badExisting);
+  const before = readFileSync(ps);
+  // 候选与 FROZEN_AFTER_F1 部分逐字段等价 → 全部幂等跳过 → 真 0 新增（非"没给候选"）；p91_bad_source 未被
+  // 任何候选触及，只能靠自检（parsePromptset）在 merged 全量上跑才会被发现。
+  const cand = writeJsonFile(d, 'candidates.json', CAND_HAPPY);
+  const r = runFreeze(['--candidates', cand, '--promptset', ps]);
+  if (r.status !== 65) throw new Error(`存量含非法 source 时，即便候选 0 新增也应 exit 65（自检应挡住坏存量），实际 ${r.status}：${outText(r).slice(-300)}`);
+  if (!readFileSync(ps).equals(before)) throw new Error('拒绝时文件应不变（0 新增更不该写盘）');
+  if (outText(r).includes('not_a_real_source')) throw new Error('自检失败报错不应回显存量原始非法取值（round-1 HIGH A2 output-seal）');
+});
 
 // ================= F3 准入闸（整批拒、零写盘、exit 65） =================
 function f3Case(tag, candidates, opts = {}) {
@@ -499,6 +553,14 @@ check('F3n expect 内含未登记键 → 整批拒 exit 65（expect 子键闭合
   if (r.status !== 65) throw new Error(`应 exit 65，实际 ${r.status}：${outText(r).slice(-300)}`);
   if (!readFileSync(ps).equals(before)) throw new Error('拒绝时文件应不变');
 });
+check('F3o 未知键名不回显原键名（即便是干净、非凭据形状的哨兵字符串）——round-1 HIGH A2：此前 die(65,e.message) 把 CandidateValidationError 里内嵌的未登记键名原样带进 stderr', () => {
+  const distinctiveKey = 'ZZQQ_UNREGISTERED_SENTINEL_KEY_9f31';
+  const { r, ps, before } = f3Case('unknown-key-noecho', [{ id: 'p39_x', text: '内容', category: 'normal', [distinctiveKey]: 'value-does-not-matter' }]);
+  if (r.status !== 65) throw new Error(`应 exit 65，实际 ${r.status}：${outText(r).slice(-300)}`);
+  if (!readFileSync(ps).equals(before)) throw new Error('拒绝时文件应不变');
+  if (outText(r).includes(distinctiveKey)) throw new Error('报错不得回显未登记键名原文（即便键名本身干净不含凭据关键词）');
+  if (!outText(r).includes('UNKNOWN_KEY')) throw new Error('报错应含类别码 UNKNOWN_KEY（只出类别码，不透传原键名）');
+});
 
 // ================= F4 凭据门、地址门与原子性 =================
 check('F4a 候选 text 含凭据字面量 → exit 1 零写盘', () => {
@@ -539,6 +601,36 @@ check('F4c 新增候选 text 含私网地址 → exit 1 拒（不写盘），原
     if (!readFileSync(ps).equals(before)) throw new Error(`［${kind}］拒绝时文件应不变`);
   }
 });
+check('F4c1 scanPrivateAddress 覆盖等价编码形态（round-1 MED A6：此前只认标准点分十进制/压缩 IPv6字面量，IPv6 展开回环/八进制前导零/十进制整数/十六进制/百分号编码点号五种等价写法漏检；WHATWG URL 主机解析器归一后核对既有网段正则，非重新枚举网段）', () => {
+  const dirtyCases = [
+    ['IPv6 展开回环', '内部地址 0:0:0:0:0:0:0:1 不应出现'],
+    ['八进制前导零 IPv4', '内部地址 0177.0.0.1 不应出现'],
+    ['十进制整数 IPv4', '内部地址 2130706433 不应出现'],
+    ['十六进制 IPv4', '内部地址 0x7f000001 不应出现'],
+    ['百分号编码点号', '内部地址 127%2e0%2e0%2e1 不应出现'],
+  ];
+  for (const [kind, text] of dirtyCases) {
+    const r = scanPrivateAddress(text);
+    if (!r.hit) throw new Error(`［${kind}］scanPrivateAddress 应命中私网地址，实际 hit=false（文本：${text}）`);
+  }
+  // 干净文本不应因收紧检测而误报（假阳性面佐证：候选提取刻意收窄，不应把无关数字/版本号都判命中）。
+  const cleanCases = ['这是一条常规问句被测参数，问头疼怎么办', '本批共有 2026 条记录，编号从 1 到 2026', '版本号 v1.2.3 不是地址', '订单号是 20260713'];
+  for (const text of cleanCases) {
+    const r = scanPrivateAddress(text);
+    if (r.hit) throw new Error(`干净文本不应误报命中，实际 kind=${r.kind}（文本：${text}）`);
+  }
+});
+check('F4c2 新增候选 text 含等价编码私网地址（十进制整数形态）→ 经真实 freeze CLI 仍 exit 1 拒、原值不回显（端到端验证 A6 修复已接线，不止库函数本身）', () => {
+  const d = freshDir('f4c2');
+  const ps = setupPromptset(d, EXISTING_PS);
+  const before = readFileSync(ps);
+  const cand = writeJsonFile(d, 'candidates.json', [{ id: 'p42b_x', text: '请查看 2130706433 这个数字型主机地址', category: 'normal' }]);
+  const r = runFreeze(['--candidates', cand, '--promptset', ps]);
+  if (r.status !== 1) throw new Error(`十进制整数形态私网地址应 exit 1，实际 ${r.status}：${outText(r).slice(-300)}`);
+  if (!/私网地址扫描拦截/.test(outText(r))) throw new Error('exit 1 须精确出自地址扫描点名（防与相邻分支共享的宽松锚混淆假绿）');
+  if (outText(r).includes('2130706433')) throw new Error('报错不得回显原地址值');
+  if (!readFileSync(ps).equals(before)) throw new Error('拒绝时文件应不变');
+});
 check('F4d 新增候选 text 含裸 :// → exit 65 拒（存量条目不追溯）；expect.note 同禁（此前实现只查 text/mustInclude/mustNotInclude 漏了 note）', () => {
   const d1 = freshDir('f4d');
   const ps1 = setupPromptset(d1, EXISTING_PS);
@@ -556,8 +648,7 @@ check('F4d 新增候选 text 含裸 :// → exit 65 拒（存量条目不追溯�
   if (r2.status !== 65) throw new Error(`expect.note 裸 :// 应 exit 65，实际 ${r2.status}：${outText(r2).slice(-300)}`);
   if (!readFileSync(ps2).equals(before2)) throw new Error('拒绝时文件应不变（expect.note 场景）');
 });
-await checkAsync('F4e atomicWriteFileSync 注入 write 失败：目标原字节保留，无 .tmp 残留', async () => {
-  const { atomicWriteFileSync } = await import(`file://${join(ROOT, 'lib', 'promptset-authoring.mjs').replace(/\\/g, '/')}`);
+check('F4e atomicWriteFileSync 注入 write 失败：目标原字节保留，无残留临时文件（round-1 HIGH A3 修订：tmp 名现改随机唯一，不再假设固定 .tmp 后缀，改扫整个目录）', () => {
   const d = freshDir('f4e');
   const target = join(d, 'atomic.txt');
   writeFileSync(target, 'ORIGINAL-BYTES');
@@ -565,10 +656,10 @@ await checkAsync('F4e atomicWriteFileSync 注入 write 失败：目标原字节�
   try { atomicWriteFileSync(target, 'NEW-BYTES', { writeFn: () => { throw new Error('注入 write 失败'); } }); } catch { threw = true; }
   if (!threw) throw new Error('注入 write 失败应向上抛');
   if (readFileSync(target, 'utf8') !== 'ORIGINAL-BYTES') throw new Error('write 失败后目标原字节应保留');
-  if (existsSync(`${target}.tmp`)) throw new Error('write 失败后不得残留 .tmp');
+  const leftovers = readdirSync(d).filter((f) => f !== 'atomic.txt');
+  if (leftovers.length) throw new Error(`write 失败后不得残留任何临时文件，实际：${leftovers.join(',')}`);
 });
-await checkAsync('F4f atomicWriteFileSync 注入 rename 失败：目标原字节保留，无 .tmp 残留', async () => {
-  const { atomicWriteFileSync } = await import(`file://${join(ROOT, 'lib', 'promptset-authoring.mjs').replace(/\\/g, '/')}`);
+check('F4f atomicWriteFileSync 注入 rename 失败：目标原字节保留，无残留临时文件（同上，改扫整个目录）', () => {
   const d = freshDir('f4f');
   const target = join(d, 'atomic2.txt');
   writeFileSync(target, 'ORIGINAL-BYTES-2');
@@ -576,13 +667,61 @@ await checkAsync('F4f atomicWriteFileSync 注入 rename 失败：目标原字节
   try { atomicWriteFileSync(target, 'NEW-BYTES-2', { renameFn: () => { throw new Error('注入 rename 失败'); } }); } catch { threw = true; }
   if (!threw) throw new Error('注入 rename 失败应向上抛');
   if (readFileSync(target, 'utf8') !== 'ORIGINAL-BYTES-2') throw new Error('rename 失败后目标原字节应保留');
-  if (existsSync(`${target}.tmp`)) throw new Error('rename 失败后不得残留 .tmp（须清理）');
+  const leftovers = readdirSync(d).filter((f) => f !== 'atomic2.txt');
+  if (leftovers.length) throw new Error(`rename 失败后不得残留任何临时文件，实际：${leftovers.join(',')}`);
 });
-check('F4g happy 路径跑完无 .tmp 残留', () => {
-  const d = freshDir('f4g');
-  if (existsSync(`${F1_PS}.tmp`)) throw new Error('F1 happy 之后不应残留 .tmp');
+check('F4g happy 路径跑完无残留临时文件', () => {
   const files = readdirSync(F1_D);
   if (files.some((f) => f.endsWith('.tmp'))) throw new Error(`happy 目录下不应有 .tmp 文件，实际：${files.join(',')}`);
+});
+check('F4h atomicWriteFileSync 每次调用生成互不相同的随机临时文件名（round-1 HIGH A3/A8 修订：此前固定 ${path}.tmp，两次调用/两进程共用同一 tmp 名会互相覆写；实测同目标连打两枪，tmp 名不同）', () => {
+  const d = freshDir('f4h');
+  const target = join(d, 'atomic3.txt');
+  const seenTmpPaths = [];
+  const capture = (p, t) => { seenTmpPaths.push(p); writeFileSync(p, t, { encoding: 'utf8', flag: 'wx' }); };
+  atomicWriteFileSync(target, 'A', { writeFn: capture });
+  atomicWriteFileSync(target, 'B', { writeFn: capture });
+  if (seenTmpPaths.length !== 2) throw new Error(`应各调用一次注入的 writeFn，实际 ${seenTmpPaths.length} 次`);
+  if (seenTmpPaths[0] === seenTmpPaths[1]) throw new Error(`两次调用应使用互不相同的随机临时文件名，实际相同：${seenTmpPaths[0]}`);
+  if (readFileSync(target, 'utf8') !== 'B') throw new Error('两次连续调用后目标应是最后一次写入的内容（正常"后写者赢"语义，非损坏）');
+});
+check('F4i atomicWriteFileSync 防符号链接 sidecar 攻击：黑盒复现——预先在此前固定使用的 legacy tmp 路径（${target}.tmp）落地指向受害文件的符号链接，不注入任何 fs 替身，直接调用默认实现；受害文件字节不变、目标文件正常拿到真实写入内容（round-1 HIGH A3：修复前同一黑盒复现会导致受害文件被截断改写，见 dispositions-r1.md 红证）', () => {
+  const d = freshDir('f4i');
+  const victim = join(d, 'victim.txt');
+  writeFileSync(victim, 'VICTIM-ORIGINAL-BYTES');
+  const target = join(d, 'target.txt');
+  writeFileSync(target, 'TARGET-ORIGINAL-BYTES');
+  const legacyFixedTmpPath = `${target}.tmp`; // 修复前固定使用的 tmp 命名规则——攻击者据此可预先落地符号链接
+  symlinkSync(victim, legacyFixedTmpPath);
+  let threw = false;
+  try { atomicWriteFileSync(target, 'REAL-NEW-CONTENT'); } catch { threw = true; }
+  if (readFileSync(victim, 'utf8') !== 'VICTIM-ORIGINAL-BYTES') throw new Error('受害文件字节不得被改动（符号链接跟随攻击应被随机 tmp 名 + wx 旗标挡住）');
+  if (!threw && readFileSync(target, 'utf8') !== 'REAL-NEW-CONTENT') throw new Error('未抛异常时，目标文件应正常拿到本次真实写入内容（说明写入走的是新随机 tmp 名，未被预置符号链接影响）');
+});
+check('F4j 已有 promptset.json 原文夹带凭据/私网地址 → freeze 拒（exit 1），零写盘、原值不回显（round-1 LOW A10：机制实存但此前金牌未钉覆盖）', () => {
+  const d1 = freshDir('f4j-cred');
+  const ps1 = join(d1, 'promptset.json');
+  const credSentinel = 'ZZQQEXISTINGSECRETSENTINEL';
+  writeFileSync(ps1, JSON.stringify([{ id: 'p92_x', text: `已冻结存量里混进了 password 是 ${credSentinel}`, source: 'user', category: 'normal' }], null, 2) + '\n');
+  const before1 = readFileSync(ps1);
+  const cand1 = writeJsonFile(d1, 'candidates.json', [{ id: 'p93_new', text: '正常新候选', category: 'normal' }]);
+  const r1 = runFreeze(['--candidates', cand1, '--promptset', ps1]);
+  if (r1.status !== 1) throw new Error(`存量原文含凭据应 exit 1，实际 ${r1.status}：${outText(r1).slice(-300)}`);
+  if (!/凭据兜底门拦截/.test(outText(r1))) throw new Error('exit 1 须精确出自凭据兜底门点名（防与相邻分支共享的宽松锚混淆假绿）');
+  if (outText(r1).includes(credSentinel)) throw new Error('报错不得回显存量原文里的凭据哨兵值');
+  if (!readFileSync(ps1).equals(before1)) throw new Error('拒绝时存量文件应不变');
+
+  const d2 = freshDir('f4j-addr');
+  const ps2 = join(d2, 'promptset.json');
+  const addrNeedle = '192.168.44.55';
+  writeFileSync(ps2, JSON.stringify([{ id: 'p94_x', text: `已冻结存量里混进了内部地址 ${addrNeedle}`, source: 'user', category: 'normal' }], null, 2) + '\n');
+  const before2 = readFileSync(ps2);
+  const cand2 = writeJsonFile(d2, 'candidates.json', [{ id: 'p95_new', text: '正常新候选二', category: 'normal' }]);
+  const r2 = runFreeze(['--candidates', cand2, '--promptset', ps2]);
+  if (r2.status !== 1) throw new Error(`存量原文含私网地址应 exit 1，实际 ${r2.status}：${outText(r2).slice(-300)}`);
+  if (!/私网地址扫描拦截/.test(outText(r2))) throw new Error('exit 1 须精确出自地址扫描点名（防与相邻分支共享的宽松锚混淆假绿）');
+  if (outText(r2).includes(addrNeedle)) throw new Error('报错不得回显存量原文里的私网地址值');
+  if (!readFileSync(ps2).equals(before2)) throw new Error('拒绝时存量文件应不变');
 });
 
 // ================= F5 freeze 路径闸 =================
@@ -637,6 +776,30 @@ check('P1 parsePromptset 收 source:llm；未知 source(robot) 仍抛且报错�
   if (!threw) throw new Error('未知 source(robot) 应仍抛');
 });
 
+// ================= T1 CONTEXT 词条对 term-lint 解析器无退化（round-1 MED A5，both 源汇聚） =================
+// parseRegistry 用裸 split('|') 解析四列制注册表、不认 Markdown \| 转义；本契约新增的 promptset 词条
+// source 枚举描述此前用 \| 分隔三选项，被误裂出多余列、把「builtin（随 注入向量库 发）」错判成 promptset
+// 的弃用别名（幽灵别名）。修法：词条改用全角｜分隔（不触发 ASCII split('|')），根因在复用件 loop-kit 的
+// 解析器（保护面，另案），本契约只钉住「己方词条书写不再触发该缺陷」。
+check('T1a CONTEXT.md 的 promptset 词条不产生任何幽灵弃用别名（parseRegistry().deny 不应含 canonical=promptset 的项）', () => {
+  const reg = parseRegistry();
+  const ghost = reg.deny.find((d) => d.canonical === 'promptset');
+  if (ghost) throw new Error(`promptset 词条不应产生任何幽灵别名，实际命中：${JSON.stringify(ghost)}`);
+});
+check('T1b CONTEXT.md 的 promptset 词条 gloss 完整含 user/builtin/llm 三枚举说明（未被误裂截断）、且不再使用 \\| 转义管道', () => {
+  const text = readFileSync(join(ROOT, 'CONTEXT.md'), 'utf8');
+  const line = text.split(/\r?\n/).find((l) => l.startsWith('| `promptset` |'));
+  if (!line) throw new Error('CONTEXT.md 应含 `promptset` 词条行');
+  if (!line.includes('`user`（人写）') || !line.includes('`builtin`（随 注入向量库 发）') || !line.includes('`llm`（`gen-prompts` 契约扩容')) {
+    throw new Error('promptset 词条行应完整含 user/builtin/llm 三枚举说明（未被裂列截断）');
+  }
+  if (line.includes('\\|')) throw new Error('promptset 词条行不应再使用 \\| 转义管道（parseRegistry 裸 split(\'|\') 不认转义会误裂列产生幽灵别名，改用全角｜）');
+});
+check('T1c node loop-kit/bin/term-lint.mjs --registry 经 CLI 实跑 exit 0（防导入态与 CLI 态解析口径分叉）', () => {
+  const r = run(join(ROOT, 'loop-kit', 'bin', 'term-lint.mjs'), ['--registry']);
+  if (r.status !== 0) throw new Error(`--registry 应 exit 0，实际 ${r.status}：${outText(r).slice(-300)}`);
+});
+
 // ================= N1 不进回放/裁定闭包（防退化钉） =================
 check('N1a import 闭包核：bin/replay.mjs / bin/verdict.mjs / bin/promptset.mjs 均不含 authoring 模块', () => {
   for (const [label, entry] of [['replay', REPLAY], ['verdict', VERDICT], ['promptset', PROMPTSET_BIN]]) {
@@ -646,11 +809,23 @@ check('N1a import 闭包核：bin/replay.mjs / bin/verdict.mjs / bin/promptset.m
     }
   }
 });
-check('N1b spawn 边扫描：三份回放侧文件源文本零 promptset-seed/promptset-freeze/promptset-authoring 字样', () => {
+// 去块注释/行注释后再扫（镜像 bin/verdict-purity-guard.mjs 内部 stripComments 的同款近似做法，该函数未导出
+// 故本文件另起一份等价实现）——纯文档性质的交叉引用注释（如"见 lib/promptset-authoring.mjs"）不是 spawn 边，
+// 不该被误判；真正的 spawnSync(...) 调用/字符串拼目标必然落在可执行代码里，去注释后依然会被扫到。
+function stripCommentsForScan(text) {
+  let s = text.replace(/\/\*[\s\S]*?\*\//g, ' ');
+  s = s.replace(/([^:'"\\])\/\/[^\n]*/g, '$1');
+  return s;
+}
+check('N1b spawn 边扫描：三份回放侧文件的整个 import 闭包（不止入口自身）去注释后零 promptset-seed/promptset-freeze/promptset-authoring 字样（round-1 MED A7 修订：此前只查入口文件自身源文本，helper 转发 spawnSync 可绕；改核闭包内每个文件，去注释防文档性交叉引用误判）', () => {
   for (const [label, entry] of [['replay', REPLAY], ['verdict', VERDICT], ['promptset', PROMPTSET_BIN]]) {
-    const src = readFileSync(entry, 'utf8');
-    for (const bad of ['promptset-authoring', 'promptset-seed', 'promptset-freeze']) {
-      if (src.includes(bad)) throw new Error(`${label} 源文本不得含「${bad}」字样（spawn 边防退化）`);
+    const { visited } = scanClosure(entry);
+    const filesToScan = new Set([resolve(entry), ...visited]);
+    for (const file of filesToScan) {
+      let src; try { src = stripCommentsForScan(readFileSync(file, 'utf8')); } catch { continue; }
+      for (const bad of ['promptset-authoring', 'promptset-seed', 'promptset-freeze']) {
+        if (src.includes(bad)) throw new Error(`${label} 闭包内 ${file} 源文本（去注释后）不得含「${bad}」字样（spawn 边防退化）`);
+      }
     }
   }
 });
