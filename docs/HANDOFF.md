@@ -3,6 +3,18 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 当前状态（2026-07-15 凌晨，B/C 双契约收口并入 dev + 保真审计首块落地：drawer-lock-hardening 六轮双 PASS、replay-settle-mount 修计时假阴）
+
+1. **B `drawer-lock-hardening`（light）已合并 dev**（merge `a65ccca` + 复验 `c5789a2`）：画布三原子域锁跨抽屉硬化，codex∥pi 六轮双路复核逐轮逼真缝到双 PASS——r1 域锁 TOCTOU 漂移窗(2 HIGH)/r2 pin 语义/r3 句柄未闭合(fable 汇裁亲读代码坐实 codex、纠 pi 漏报)/r4 空白归一 MED/r5 纯空白 label fail-open/r6 双 PASS。抗漂移绑定(物理句柄快照+pin 挂点第三闸)+run 态失效+任一可见判定。红先行金牌 G18-G20，全量 39/0。家族差异实证：pi 三轮漏报 vs codex 三轮逮到。
+2. **`replay-settle-mount`（full）已合并 dev**（merge `e7b3f79`）：回放侧代表步采断言前补有界静默点，修 buttonState SPA 挂载计时假阴（`tc_wf_publish_states` intent_1 真机误判 NEEDS_HUMAN 的根因——编译侧有 quietPoint、回放侧代表步无等价静默点）。小固定下限 250ms（Steven 批准，仅起步垫）+ 复合条件（在途 API 归零 ∧ DOM 两拍稳定）预算 2500ms 对齐编译期 + networkidle 兜底 + 超预算 fail-safe。codex fast 设计审逮真 HIGH（静默点无硬时间上界/I5 金牌矛盾）、实现审逮真 MED（小固定下限吃掉条件预算——你批的垫引入的 bug，fable 独立复现坐实、pi 漏报），r2/r3 修死到双 PASS。fake-sut 加 mountdelay 忠实复现真机接缝。ADR-0009 甲方案第一块保真缺口。
+3. **合并收尾**：两契约共改 `fake-sut/server.mjs`——冲突人裁取**并集**（B 的 twin*/pin* 11 场景 + 静默点 mountdelay/churn，零重叠纯加法）；4 个冻结 server.mjs/CONTRACT.md 的 prd（drawer/p5-replay/replay-nth/replay-settle-mount）按并集实际字节重签。4 gate 全 GREEN（顺序跑避争用 flake）+ ratchet 72 PRD/195 冻结/0 问题 + tier1 GREEN。
+4. **真机计时修复确认——route:human 挂账（平台侧 blocked）**：真机重跑 `tc_wf_publish_states` 两次连撞平台 `saveOrModifyProcess` **持续 503**——创建工作流失败、走不到编辑器挂载计时场景。机器每次正确判 SUT_DEFECT（503 有取证背书，fail-safe 正确）。计时修复的确定性证明是 hermetic 金牌（mountdelay I1/W1 翻正，已合并）；真机干净翻正确认待平台 save 接口恢复 + Steven 在场。**新挂账：平台 saveOrModifyProcess 503，Steven 带外核（平台瞬时故障或真缺陷）。**
+5. **flake 发现（挂账）**：drawer-lock-hardening 金牌有条计时敏感检查在 chromium/CPU 争用下偶发翻红（本 session 主题的又一实例）——无争用直跑 39/0，值将来硬化（放宽为 settled 判据主）。
+6. **保真审计程序（ADR-0009 甲）**：mountdelay 是第一块补平的保真缺口；剩余 fake-sut 场景（~22 个）逐条对真机采样审计 + 每条回放用例真机 UAT 升必过完成闸——待平台恢复后系统推进。
+7. **未清理债**：B worktree 物理目录删除撞 DrvFs 权限（work 已在 dev、cosmetic 债）；`replay-settle-mount` worktree 待清；隧道 stdio 桥脚本（`scripts/stdio-supply.mjs`/`win-stdio-agent.mjs` + `win-reverse-agent.mjs` 的 CASEY_TUNNEL_HOST 改动）未提交（dev 工具、wslrelay/NAT 挂时的兜底通道，值单独提交）。
+
+以下为 2026-07-14 凌晨快照（提取契约收口），只溯源、勿据其判现状：
+
 ## 当前状态（2026-07-14 凌晨，提取契约全收口并入 dev：新 loop 现役，B/C 已在新引擎下恢复执行中）
 
 1. **`loop-kit-extract` 六阶段全 done 并入 dev**：实现审走 codex sol@medium ∥ pi deepseek-v4pro@high 双路共八轮到双 PASS（round-1 逮 7 条含 3 HIGH：ROOT 认领槽须进程级 `globalThis` 共享、`boot.mjs` 补入 `testChecksums` 冻结面、D5 故障域金牌补行为级——全部红先行修死；末三轮教训：评审记录自身准确性也要被复核）。主会话独立复验（gate 5/5 + tier1 + ratchet + 核心 `bin`/`lib` 零触碰 diff 实证）后合并 `b3a0f64`、主树复验提交 `976a414`（gate 经 `shim`→包 5/5 GREEN、全仓 ratchet 69 PRD/190 冻结文件/0 问题）。提取树与分支已按惯例清理。包仓 `/mnt/d/ctx/heren/loop-kit`@`ea5ed85`。
