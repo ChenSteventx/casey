@@ -13,6 +13,9 @@ const site = JSON.parse(readFileSync(join(HERE, '..', 'site.json'), 'utf8'));
 const target = new URL(site.target.startUrl);
 const TARGET_PORT = Number(target.port || (target.protocol === 'https:' ? 443 : 80));
 const TUNNEL_PORT = 15520;
+// 补给口地址可用 CASEY_TUNNEL_HOST 覆盖（默认 127.0.0.1 零行为差）：wslrelay 回环转发坏时改填 WSL 虚拟网卡
+// IP（WSL 内 hostname -I 取，重启会变）直连绕开中继。该 IP 非目标地址、可回显。
+const TUNNEL_HOST = process.env.CASEY_TUNNEL_HOST || '127.0.0.1';
 const POOL = 8;
 let live = 0;
 let refillDelay = 500; // 失败退避：对端不在时 500ms 起倍增、封顶 10s；配对成功即复位
@@ -20,7 +23,7 @@ let refillDelay = 500; // 失败退避：对端不在时 500ms 起倍增、封�
 function openTunnel() {
   if (live >= POOL) return;
   live++;
-  const tunnel = net.connect(TUNNEL_PORT, '127.0.0.1');
+  const tunnel = net.connect(TUNNEL_PORT, TUNNEL_HOST);
   let upstream = null;
   // done 只许执行一次：失败 socket 会先后触发 error+close 两事件，双执行把 live 减成负数 →
   // fill 视缺口无限大 → 连接风暴耗尽本机临时端口、打瘫整机网络（2026-07-08 实锤，WSL 监听器未起时）。
@@ -51,4 +54,4 @@ function openTunnel() {
 function fill() { while (live < POOL) openTunnel(); }
 fill();
 setInterval(fill, 5000);
-console.log(`反向代理已起：池 ${POOL} 条 → localhost:${TUNNEL_PORT}（目标地址不回显）`);
+console.log(`反向代理已起：池 ${POOL} 条 → ${TUNNEL_HOST}:${TUNNEL_PORT}（目标地址不回显）`);

@@ -31,7 +31,11 @@ const tunnelServer = net.createServer((sock) => {
   sock.on('close', () => { const i = idle.indexOf(sock); if (i >= 0) idle.splice(i, 1); });
   idle.push(sock);
 });
-tunnelServer.listen(TUNNEL_PORT, '127.0.0.1', () => console.log(`隧道补给口 127.0.0.1:${TUNNEL_PORT} 就绪（等 Windows 代理连入）`));
+// 补给口绑定地址可用 CASEY_TUNNEL_BIND 覆盖（默认 127.0.0.1 零行为差）：wslrelay 的 Windows→WSL 回环
+// 转发再度半死时（2026-07-14 复发，2026-07-13 首发），设 0.0.0.0 让 Windows 代理经 WSL 虚拟网卡 IP 直连绕开中继。
+// 客户端口 15519 恒绑回环不放开（casey --sut 只喂回环基址，护栏 #7）。
+const TUNNEL_BIND = process.env.CASEY_TUNNEL_BIND || '127.0.0.1';
+tunnelServer.listen(TUNNEL_PORT, TUNNEL_BIND, () => console.log(`隧道补给口 ${TUNNEL_BIND}:${TUNNEL_PORT} 就绪（等 Windows 代理连入）`));
 
 async function takeTunnel(budgetMs = 4000) {
   const t0 = Date.now();
