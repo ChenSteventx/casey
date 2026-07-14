@@ -240,6 +240,10 @@ ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅�
                                           相2 人签门：草稿→冻结签署（未签契约会被回放前置闸拒）
   casey record  <caseId> --sut <本地基址> --out-dir <d> (--login-bootstrap|--no-login) [--from-events <f> --headless --max-ms <ms>]
                                           示教采集：人工操作→teach-in-capture.json（只作蒸馏语料，不签署、不直通回放）
+  casey promptset-seed --agent-name <被测 agent 中文名> [--embedded <f>] [--n <条数，默认 6>] --out <f.md>
+                                          被测参数 authoring：零 LLM 出合成种子模板（生成指引+格式说明）；合成在 CLI 外（当前会话）完成，本命令零 LLM 零网络
+  casey promptset-freeze --candidates <候选 JSON> --promptset <promptset.json> [--dry-run]
+                                          被测参数 authoring：零 LLM 校验候选 + 幂等冻结追加（已有 id 绝不覆盖，强制标 source:llm；合成在 CLI 外，本命令绝不进回放/裁定）
   casey intake  <caseId> --capture <f>    示教入账：安全复核录制包 → 登记入账台账（不转形/不签署/不回放；拒账 fail-closed）
   casey distill <caseId> --capture <f> --out-dir <d> [--verify --mapping <f>]
                                           示教蒸馏：已入账录制包 → 候选流程 + pending + 溯源（TOCTOU 硬门；v1 零 LLM 全 pending；不签署/不回放；重走 ingest→…→人签）
@@ -300,6 +304,10 @@ function main() {
     case 'flow-bridge': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'flow-bridge.mjs'), rest); process.exit(r.code); }
     case 'sign': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'sign.mjs'), rest); process.exit(r.code); }
     case 'record': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'record.mjs'), rest); process.exit(r.code); }
+    // 被测参数 authoring（gen-prompts 契约，regress scope C 改形态）：合成在 CLI 外（当前会话）完成，
+    // 这两个命令只做零 LLM 确定性工作——出合成种子模板 / 校验候选 + 幂等冻结；绝不进回放/裁定进程。
+    case 'promptset-seed': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'promptset-seed.mjs'), rest); process.exit(r.code); }
+    case 'promptset-freeze': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'promptset-freeze.mjs'), rest); process.exit(r.code); }
     // 相0 前段·示教入账：安全复核录制包 → 登记入账台账（不转形/不签署/不回放；蒸馏另立 record-distill）。
     case 'intake': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'intake.mjs'), rest); process.exit(r.code); }
     // 相0 前段·示教蒸馏：已入账 capture → 候选流程 + pending + 溯源（TOCTOU 硬门；v1 零 LLM 全 pending；重走 ingest→…→人签）。

@@ -68,7 +68,10 @@ const LIFECYCLE_EMPTY_EXIT = {
 // doctor 是自检类命令（跨平台就绪自检），同 selftest/breaker/contract 属自检/开发纪律面、不进 MCP 工具目录（casey-doctor 契约 GRILL D9）。
 // mcp-config 是分发/接入命令（自适应打印 MCP 挂载配置）：要挂上 MCP 才能调工具，而挂载配置正是「挂之前」需要的东西——
 // 从 MCP 取它是循环依赖，正确面是 CLI + README/AGENTS.md；同 breaker/contract 属 setup/分发面、不暴露为 MCP 工具（distribution 契约 GRILL D11）。
-const CLI_MCP_EXCLUDED = new Set(['help', 'breaker', 'contract', 'heal', 'distill', 'scaffold-case', 'demo', 'doctor', 'mcp-config']);
+// promptset-seed/promptset-freeze 是被测参数 authoring 一次性工序（gen-prompts 契约，GRILL D6）：驱动者是仓内
+// 有 shell 的 coding agent（当前会话本身），非跑测试操作面，镜像 scaffold-case「CLI 外 LLM」范式的既有取舍；
+// 后续易用性契约若真机需求起来可补 casey_* 工具并移出（同 distill 挂账法）。
+const CLI_MCP_EXCLUDED = new Set(['help', 'breaker', 'contract', 'heal', 'distill', 'scaffold-case', 'demo', 'doctor', 'mcp-config', 'promptset-seed', 'promptset-freeze']);
 
 // ---------- C1 CLI 三分发真跑非桩 ----------
 await checkAsync('C1 CLI：replay/verdict/report 零参走真 bin 用法错非桩 exit 3；heal 仍真桩 exit 3', async () => {
@@ -117,6 +120,12 @@ try {
       if (!names.has(tool)) missing.push(`${cmd}→${tool}`);
     }
     if (missing.length) throw new Error(`CLI 命令未被 MCP 覆盖（且未列 EXCLUDED——新命令须进 MCP 或显式排除）：${missing.join(', ')}`);
+    // 反向断言（评审加固）：EXCLUDED 里的每个成员必须真在 switch 派生集里——否则 EXCLUDED 里可能混进
+    // 一个 switch 根本没接的幽灵命令（bin 在/help 列/EXCLUDED 加，唯独 switch 漏接），此前 A4 只单向遍历
+    // 派生集、抓不到这类假绿（gen-prompts 契约 GRILL D6 修订）。
+    const derivedSet = new Set(derived);
+    const ghosts = [...CLI_MCP_EXCLUDED].filter((cmd) => !derivedSet.has(cmd));
+    if (ghosts.length) throw new Error(`CLI_MCP_EXCLUDED 含 switch 未接的幽灵命令：${ghosts.join(', ')}`);
   });
 
   // ---------- C3 正路：lint 真跑 ----------

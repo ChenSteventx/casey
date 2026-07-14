@@ -331,7 +331,7 @@ elif actionPerformed===false:                                     # 这步没做
 
 ## 13. 数据驱动被测参数（`promptset` + 注入向量库，regress scope A）
 
-> 姊妹项目 regress 的「数据驱动回归」子系统迁到 Casey：一条冻结 `chat` flow 复用成 N 条独立用例，每行喂一段不同的 `被测参数`（打进 `chat.sendAndWait` 的 `prompt` 槽的消息文本），聚合成一份报告。术语见 CONTEXT.md（`promptset`/`被测参数`/`注入向量库`/`软期望`/`被测参数 overlay`/`多用例聚合报告`）。**只做数据驱动 + 随发注入向量库 + 聚合报告，不做 LLM 合成**（authoring 属后续独立契约）。
+> 姊妹项目 regress 的「数据驱动回归」子系统迁到 Casey：一条冻结 `chat` flow 复用成 N 条独立用例，每行喂一段不同的 `被测参数`（打进 `chat.sendAndWait` 的 `prompt` 槽的消息文本），聚合成一份报告。术语见 CONTEXT.md（`promptset`/`被测参数`/`注入向量库`/`软期望`/`被测参数 overlay`/`多用例聚合报告`）。本节只做数据驱动 + 随发注入向量库 + 聚合报告；被测参数的 **LLM 合成 authoring** 由后续 `gen-prompts` 契约落地——形态是 **CLI 外 LLM**（合成在 coding agent 会话里做，`casey` CLI 只出零 LLM 的合成种子模板 + 幂等冻结校验闸），见 §13.7。
 
 ### 13.1 消歧（这一维度到底是什么）
 
@@ -343,7 +343,7 @@ elif actionPerformed===false:                                     # 这步没做
 ```jsonc
 [ { "id": "p01_normal",           // ^[a-z0-9_]+$，唯一 + 文件系统安全（作 caseId slug 与 trace 名）
     "text": "头疼三天，伴轻微恶心",   // 被测参数：打进 chat.sendAndWait 的 prompt 槽
-    "source": "user",              // user（人写）| builtin（随库发）；缺省 user
+    "source": "user",              // user（人写）| builtin（随库发）| llm（CLI 外 LLM 合成，经 promptset-freeze 强制标注，§13.7）；缺省 user
     "category": "normal",          // normal | boundary | security；缺省 normal（库由文件名强制）
     "expect": {                    // 软期望（可选）——只标注、绝不判红
       "mustInclude": ["建议"], "mustNotInclude": ["操作失败"], "note": "正常问诊应给建议" } } ]
@@ -373,3 +373,20 @@ elif actionPerformed===false:                                     # 这步没做
 ### 13.6 多用例聚合报告（兑现 report-spec §7）
 
 逐行落各自 run 子目录（`runs/<caseId>/promptset/<promptId>/`）——冻结 events 的 `caseId` 固定、`report-model` 同源校验要求 verdict/axes/events caseId 一致，故逐行 model `caseId` 诚实 = 母体 id、**不伪造**；行与行由 `promptset` 块的 `promptId` 区分（非文件名）。`report-model` 加可选 `--promptset-meta` 投影 `promptset` 块进 `.report.json` 旁车。`assembleAggregateModel` 吃 N 份旁车 → 按 category 分段 + 置顶横幅（`verdictSummary` 有 `SUT_DEFECT`/`NEEDS_HUMAN` 的行顶上去）+ content-expect 黄标（从旁车 `steps[].assertions` 的 `soft===true` 项取，**绝不进裁定**：聚合 `verdictTotals` 只累加旁车自带 `verdictSummary`、其本身已排除 soft）；畸形旁车 fail-closed。`bin/report.mjs --aggregate` 扫旁车 → 装配 → 渲染（`renderAggregate` 三形态）→ 过 `credentialGate` → 落 `index.report.{html,md,json}`。`casey run --promptset` 直通编排器 `bin/promptset.mjs`：逐行 replay→verdict→report-model→report，末了聚合。
+
+### 13.7 合成 authoring（CLI 外 LLM，`gen-prompts` 契约）
+
+被测参数的 LLM 合成 authoring：本节 §13.1-13.6 只覆盖数据驱动 + 随发注入向量库 + 聚合报告，`被测参数` 从哪来（人写还是 LLM 合成）不在其列。`gen-prompts` 契约把 regress「用 LLM 批量生成回归测试输入」的能力搬进 Casey，但**改了形态**：不直调 API（regress 旧形态的 `--base`/`--key`/模型 id/内网默认地址一概不搬），改成**合成在 CLI 外**——即当前正在协助用户的 coding agent 会话——完成；`casey` CLI 只做两段零 LLM 确定性工作：
+
+- `casey promptset-seed --agent-name <被测 agent 中文名> [--embedded <系统提示词文件>] [--n <条数，默认 6>] --out <f.md>` —— 零 LLM 出一份 合成种子模板（生成指引 + 候选产物格式说明），交给 CLI 外 LLM 参照合成 被测参数候选；
+- `casey promptset-freeze --candidates <候选 JSON> --promptset <promptset.json> [--dry-run]` —— 零 LLM 校验候选（闭合白名单：`id`/`text`/`category`/`expect?`，禁 `bnd_`/`sec_` 前缀防撞注入向量库，不许自带 `source`）、 幂等冻结 追加进 `promptset.json`（已有 id 深等跳过、内容或来源冲突整批拒、新条强制 `source:'llm'` 可追溯）。
+
+铁不变量（一字不让，机制见 `lib/promptset-authoring.mjs` + 两 `bin`）：
+
+- **authoring 绝不进回放/裁定进程**：`bin/replay.mjs`、`bin/verdict.mjs`、`bin/promptset.mjs` 的 import 闭包与源文本均不含 authoring 模块；authoring 是编写期一次性工序，回放期零 LLM 不变（护栏 #15）；
+- **零 API key、零网络、零凭据接线**：两个新 CLI 依赖闭包只含 `node:` 内置与仓内相对模块（`verdict-purity-guard` + 闭包白名单核双跑），源码零内网地址字面量、零 `--base`/`--key`/`--model` 旗标；
+- **裁判零 LLM**：`bin/verdict.mjs` 字节不动（本契约把这条从行为守卫补成 `testChecksums` 字节锚）；
+- **落盘产物照旧过凭据兜底门**（护栏 #7）：种子模板与冻结后 `promptset.json` 输入输出两侧均过 `credentialGate` + 独立的私网地址负向扫描；
+- **不碰冻结/人签闸**：`promptset.json` 是数据文件、非冻结断言契约，`lib/sign-gate.mjs` 零改。
+
+决策全表见 `docs/plans/gen-prompts/proposed/GRILL.md`（D1-D9）。

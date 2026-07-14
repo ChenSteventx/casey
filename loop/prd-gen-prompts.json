@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "task": "gen-prompts（full）：被测参数的 CLI 外 LLM 合成 authoring——regress scope C 改形态（Steven 2026-07-13 定案：合成在 coding agent 会话里做，casey CLI 只出两段零 LLM 确定性工作）。① 新建 lib/promptset-authoring.mjs（buildSeedTemplate 出字节稳定合成种子模板：embedded 先 CRLF→LF 规范化、全文过凭据/地址扫描在截断之前、按 Unicode 码点截断 4000 并标「已截断」；freezeMergePromptset 先整批完整校验（闭合白名单 id/text/category/expect、禁 bnd_/sec_ 前缀、批内去重、不许自带 source）再分类幂等/冲突（已有 id 深等跳过、不同内容整批拒）、新条强制 source:llm；atomicWriteFileSync 可注入 write/rename 故障验真原子）。② 新建 bin/promptset-seed.mjs：路径闸（--out 强制 .md、拒覆盖已存在、canonical 化后拒写保护面）+ 双侧凭据门 + 私网地址负向扫描（10/8,172.16/12,192.168/16,127/8,169.254/16,::1,fc00::/7,fe80::/10）+ 零内网地址/--base/--key/--model 字样。③ 新建 bin/promptset-freeze.mjs：路径闸（--promptset 强制 .json）+ 解析前原文扫描（防 JSON.parse 报错携原文走 stderr 旁路）+ 幂等冻结追加 + green-by-construction 自检（parsePromptset+mergeCases）+ 输出侧双门 + 原子写。④ lib/promptset.mjs SOURCES 扩 'llm' + 头注释与报错文案同步（三处口径，报错文案从 SOURCES 派生）。⑤ bin/casey.mjs 两 case + help 两行（标注合成在 CLI 外）。⑥ 涟漪：regress-promptset.golden.mjs 第 61 行 source:llm 负向钉改正向 + 补 robot 未知 source 负向钉（重签 prd-regress-promptset）；cli-mcp-face.golden.mjs 的 CLI_MCP_EXCLUDED 追加两命令 + A4 新增反向断言 CLI_MCP_EXCLUDED ⊆ switch 派生集（双 prd 共冻，prd-cli-mcp-face + prd-mcp-parity 一并重签）；CONTEXT.md 登记合成种子模板/被测参数候选/幂等冻结三词条 + promptset 词条 source 枚举更新；docs/design/txt2testreport-design.md §13 头注改口 + §13.2 注释同步 + 新增 §13.7。铁不变量：authoring 绝不进回放/裁定闭包（N1 静态核 + spawn 边源文本扫描）、verdict.mjs 与 sign-gate.mjs 字节不动（本表同冻两者当前 sha256 基线，把「裁判字节不动」从行为守卫补成机器可验字节锚）、零 API key/零网络/零凭据接线、落盘产物照旧过凭据兜底门。决策见 docs/plans/gen-prompts/proposed/GRILL.md（D1-D9，含 codex-sol@max 设计评审修订）+ plan.md。",
+  "specPath": "docs/plans/gen-prompts/plan.md",
+  "testChecksums": {
+    "tests/_golden/gen-prompts.golden.mjs": "2ef73f80ab2464edfffd9628455ddc5e394ecd89df895d9c0225383cba1e82ed",
+    "bin/verdict.mjs": "ff0923132193209dc55262a010bc4bdaadfec379445a82a150912f94dcb5cb53",
+    "lib/sign-gate.mjs": "a1018927b0465de0df98523aba1e2b15499ecc682477f7cbf3768cc9ddd7f919"
+  },
+  "observability": [
+    {
+      "dimension": "候选语义质量（生成的被测参数问得好不好、边界/安全向量设计得贴不贴切）不可 hermetic 测：route:human 抽检一份真实种子模板 + 一次真实会话合成收口的 promptset diff（同 归一提示模板/候选骨架 既有口径）。",
+      "route": "human"
+    },
+    {
+      "dimension": "真机 promptset 用例（含本契约新增候选）端到端趟合并入真机 UAT 一并跑，不在本契约 hermetic 收口（真机隧道 + 凭据，route:human）。",
+      "route": "human"
+    },
+    {
+      "dimension": "内部域名的静态识别证不出（私网地址扫描只覆盖可枚举的保留网段字面量，域名形态无法穷举）：route:human 抽检兜底，不做机器识别（GRILL D3 修订明列非目标）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-gen-prompts-seed-freeze",
+      "desc": "红先行金牌 gen-prompts：S1 种子确定性（双跑字节相同/LF 行尾/CRLF 规范化/emoji 码点边界不裂代理对+已截断标注）+ S2 内容契约（id 正则/禁前缀/三类枚举/软期望申明/字段名/交付步骤/零裸 :///n 条件化三类覆盖文案/credentialGate 自洽）+ S3 门与负向（缺参 64/--n 越界 64/agent-name 凭据门 65/embedded 凭据门 1（含 4000 码点后仍拦）/embedded 私网地址扫描 1/源码零内网地址字样）+ S4 零 LLM/零网络闭包（verdict-purity-guard exit 0 + 闭包白名单核 + 未登记 SDK 金丝雀）+ S5 seed 路径闸（.md 后缀/保护面含符号链接/拒覆盖已存在）+ F1 冻结 happy（3 候选三类各一追加进已有 2 条=5 条、新条 source:llm、既有值保留、过 parsePromptset+mergeCases 无撞）+ F2 幂等与冲突分明（同候选重跑 0 新增字节不变、同 id 不同内容整批拒、--dry-run 零差量）+ F3 准入闸（id 非法/批内重复/bnd_·sec_ 前缀/自带 source/未知键/expect 坏形状/text 空/非数组或空数组/存量坏 JSON/校验先于幂等 逐场景整批拒 exit 65 文件不变）+ F4 凭据门·地址门·原子性（候选凭据字面量 exit 1/malformed JSON 夹哨兵解析前即拦/私网地址 exit 1/atomicWriteFileSync 注入 write·rename 故障验真原子/happy 无 .tmp 残留）+ F5 freeze 路径闸（.json 后缀/保护面含符号链接）+ P1 source 枚举扩展（parsePromptset 收 llm、未知 source 仍抛且报错含 llm）+ N1 不进回放/裁定闭包（import 闭包核 + spawn 边源文本扫描）+ C1 CLI 门面全覆盖（help 含两命令与「合成在 CLI 外」表述、两命令缺参经门面真落各自用法串非「未知命令」桩、--dry-run 经门面 happy）。红先行证据：实现前 6 过 / 50 败（N1a/N1b/S4c 金丝雀/S3g/F4g 属既绿的回归锁与自证性检查，非新增能力项；其余 50 项覆盖 S1-S5/F1-F5/P1/C1 全部新增能力，均因两新 bin 与 lib/promptset-authoring.mjs 缺席、SOURCES 尚无 llm 而红）。loop 内 codex（gpt-5.6-sol@medium）L2 test 质量咨询（不进裁判、只诊断）指出四处真实实现缺口——① category 被静默默认 normal、未按闭合形态 {id,text,category,expect?} 强制必填；② expect 内子键未闭合校验、未登记键被静默丢弃；③ fc00::/7 私网地址正则只认首 hextet 后立即 :: 的退化形态、漏检多 hextet 真实 ULA；④ 新增候选裸 :// 检查漏了 expect.note 子字段——已修复并补 F3l/F3m/F3n/F4c 第二用例/F4d 第二用例红先行验证（先证红于修复前的实现、修复后转绿，红证见会话记录）；另按建议把 S3d/e/f、F4a/b/c 的 exit-1 判定锚从宽松的「凭据|护栏」「地址|护栏」收紧为精确「凭据兜底门拦截」「私网地址扫描拦截」字样，S3f/F4c 扩充覆盖 PRD 声明的全部私网地址网段并断言原值不回显（此过程另发现并修复了 ::1 模式的 kind 标签本身即为匹配原值、报错回显违反 output-seal 的小疵）；S1 补 Date 用法静态佐证、F1 补 expect 深等保留断言、F5c 补符号链接场景 sha256 不变断言。修复后金牌 60 过 / 0 败（S1d/F3l/F3m/F3n/F4d 第二用例等新断言均先验证对修复前实现真红、修复后转绿）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/gen-prompts.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-14T02:12:54.677Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-tier1-regression",
+      "desc": "涟漪回归锁：新增两命令门面（casey.mjs switch +2 case + help +2 行）与 lib/promptset.mjs SOURCES 扩 llm 不得破坏确定性内核与统一语言双向自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-14T02:12:57.405Z 全部 acceptance exit 0"
+    }
+  ]
+}

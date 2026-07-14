@@ -58,7 +58,11 @@ check('P3 id 非法 / 重复 fail-closed', () => {
 });
 check('P4 text 空 / source·category 枚举错 / expect 形状错 fail-closed', () => {
   if (!throws(() => parsePromptset([{ id: 'a', text: '' }]))) throw new Error('text 空应抛');
-  if (!throws(() => parsePromptset([{ id: 'a', text: 'x', source: 'llm' }]))) throw new Error('source=llm（非 user|builtin）应抛');
+  // source=llm 由 gen-prompts 契约扩为合法枚举（GRILL D5：CLI 外 LLM 合成 authoring 经 promptset-freeze 强制标注）——
+  // 枚举扩容，正向钉（曾是负向钉，棘轮只挪边界不松方向：未知 source 仍须抛，见下一行）。
+  const csLlm = parsePromptset([{ id: 'a', text: 'x', source: 'llm' }]);
+  if (csLlm[0].source !== 'llm') throw new Error('source=llm 应被接受（gen-prompts 扩容枚举）');
+  if (!throws(() => parsePromptset([{ id: 'a', text: 'x', source: 'robot' }]))) throw new Error('未知 source=robot（枚举仍闭合，非 user|builtin|llm）应抛');
   if (!throws(() => parsePromptset([{ id: 'a', text: 'x', category: 'weird' }]))) throw new Error('category 枚举错应抛');
   if (!throws(() => parsePromptset([{ id: 'a', text: 'x', expect: { mustInclude: 'notarray' } }]))) throw new Error('expect.mustInclude 非数组应抛');
   if (!throws(() => parsePromptset([{ id: 'a', text: 'x', expect: { mustInclude: [1] } }]))) throw new Error('expect.mustInclude 非字符串项应抛');
