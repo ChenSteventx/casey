@@ -648,11 +648,13 @@ check('F4c1b 无协议头的裸两三段简写是已知、有意的残余缺口�
     if (r.hit) throw new Error(`裸两三段简写「${text}」当前设计不检测，实际却命中——若此断言判红，说明检测面已扩大，请同步更新本条注释与上方取舍说明，不要静默改变这条边界`);
   }
 });
-check('F4c1c 带显式协议头的两三段简写主机改判命中（round-4 codex 复核建议采纳：协议头本身消除"是地址还是自然语言数字"的歧义，不需要再受"恰好四段"限制，且不会重新引入 F4c1b 那类假阳性——协议头 + 纯数字组合在中文自然语言里不会意外出现）', () => {
+check('F4c1c 带显式协议头的两三段简写主机改判命中（round-4 codex 复核建议采纳：协议头本身消除"是地址还是自然语言数字"的歧义，不需要再受"恰好四段"限制，且不会重新引入 F4c1b 那类假阳性——协议头 + 纯数字组合在中文自然语言里不会意外出现。round-5 自查补一处：URL 含 userinfo（user:pass@host）时若不跳过该段会在其内部冒号处提前截断、误把用户名当主机名）', () => {
   const dirtyCases = [
     ['URI authority 两段（http）', '系统文档见 http://10.1/docs 请查阅'],
     ['URI authority 两段（https，含端口）', '内部服务 https://127.1:8080/api 不应出现'],
     ['URI authority 三段', '管理面 http://172.16.5/status'],
+    ['URI authority 含 userinfo（round-5 自查补）', '内部凭据示例 http://user:pass@10.1/path 不应出现', ],
+    ['协议头大小写不敏感（round-5 自查补）', 'HTTP://127.1/x 不应出现'],
   ];
   for (const [kind, text] of dirtyCases) {
     const r = scanPrivateAddress(text);
