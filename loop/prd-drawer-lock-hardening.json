@@ -3,7 +3,7 @@
   "task": "drawer-lock-hardening（light）：画布三原子 workflow.openNode/selectNodeDropdown/setNodeField 域锁跨抽屉边界硬化。挂账：codex-sol 异构冗余评审 MED#2（2026-07-10，loop/prd-wf-set-node-field.json observability 第二条）——doSetNodeField（lib/replay-actions.mjs）/compileWorkflowSetNodeField（lib/compile-atoms.mjs）的域锁用宽 .hr-drawer__content-wrapper，匹配所有抽屉而非当前节点配置抽屉；若另一可见抽屉恰有唯一同 placeholder 字段，域内 count===1 会填错抽屉的字段、精确回读仍成立→假绿；openNode/selectNodeDropdown/setNodeField 三原子同型设计局限。修法（GRILL D1-D8 决策全录）：编译门与回放门同刻把域锁收窄到当前节点抽屉专属锚——标题锚 = 可见的 .hr-drawer__content-wrapper 且内含【自身也可见】的当前节点标题精确文本（D2，复用 openNode 已冻双证回读锚下沉为三原子共用域锁，评审修订加『标题文本自身可见』内层限定，堵 wrapper 可见但标题藏在隐藏节点的假命中）；nodeName 供给通道 = 编译期 run 态 nodeDrawerLabel（openNode 成功开抽屉后写入，纳入 createCompileRun 的 mark()/rollback() 快照）+ 回放期事件既有冻结字段 nodeName（D3，零 schema 改动）；nodeName 缺席判据 = 字段缺席/非 string/trim() 后为空三者任一 → 硬阻断 action_failed，绝不回落宽域锁（D4 修订）；openNode 侧加预点基线归因守卫（单击前先数可见且含精确标题的抽屉，count>0 即证不出点后归因）+ 点后域内恰一（D5）；select/set 两原子先过抽屉域三态（count===0→none、>1→ambiguous、===1→字段/触发器级既有闸一字不动，D6）；fake-sut 加五个纯加法反面场景 twinfield/twinboth/twintitle/twinlate/twinghost（D7，画布外挂第二个可见 .hr-drawer__content-wrapper 冒牌抽屉，字段/触发器与真节点抽屉共用构建函数不特判）。红先行金牌 tests/_golden/drawer-lock-hardening.golden.mjs（G1-G17，现行 33 条独立子用例：G1/G2/G3a/G3b、G4/G11、G5/G6、G7a/b/c-1/c-2/d、G8a/b、G9a/b/c/d、G10a/b、G12a/b/c、G13、G14a/b、G15a/b、G16a/b、G17a/b）——反面用例一律钉精确路由 NEEDS_HUMAN（不只断不 PASS）；涉冒牌字段/触发器的用例一律加宽域候选零落笔/唯一落笔取证断言（wideCandidateValues/wideTriggerValues，纯加法证据字段，axes 无冻结 schema 约束）。红先行实证（五轮累计）：初版改前 20/20 败（旧宽域锁/旧回读命中冒牌抽屉、旧编译门 exit 0 产 events 等假绿实锤，红证留存）；loop 内 L2 咨询补 G7d 成 21 条；实现评审 r1 修复轮再增 6 条（G12a/b/c twindelay 检查后窗口前插、G13 openNode 失败不失效旧 run 态标题、G14a/b ghostdup 隐藏同文案在前合法正面），在 r1 实现上 6/6 败红证留存后修绿；实现评审 r2 修复轮再增 2 条（G15a/b pinclone），在 r1 修复版上 2/2 败红证留存后修绿；实现评审 r3 前置独立审查再增 4 条（G16a/b fieldmove、G17a/b triggermove），在修复前 r2 精确重建态上 0/4 过（两条回放均返 unique 假绿、两条编译均 exit 0 产成功结果）后修绿。实现评审 r1 处置（codex 2 HIGH/1 MED/2 LOW + pi 1 MED，五条全采信全修）：HIGH#1 抗漂移绑定（初版：一次性 pin 属性定根 + 落笔前重判「域内唯一 + pin 一致」，编译门回放门同刻，堵动态 Locator 惰性重解析在检查后窗口漂移到前插冒牌的 TOCTOU 假绿）；HIGH#2 compileWorkflowOpenNode 尝试开始即失效 run.nodeDrawerLabel、仅点后恰一确证成功才写回（堵 A 开成 B 开败后借 A 旧标题过域锁对 A 抽屉落笔的编译期副作用）；MED#1（codex/pi 双路共报）标题可见性判定由只查首命中改为遍历全部命中任一可见即纳入（堵隐藏同文案在前的合法抽屉被误拒假阴）；LOW#1 fake-sut 注释西里尔词改简体；LOW#2 本字段计数对齐现行金牌。实现评审 r2 处置（codex 1 HIGH/1 MED 采信；pi PASS、其 pin 多节点 LOW 观察与 codex HIGH 同缺陷面从严采信）：HIGH——pin 属性可被页面复制、按属性选择器定根口径宽于域判定，加固为物理句柄绑定：绑定时保留被钉抽屉的 ElementHandle，重判改验「域内唯一者与句柄物理同一 + pin 全页恰一」，落笔目标解析成 ElementHandle 并验「物理包含于被钉节点」后直接对句柄落笔、对句柄回读（属性可复制、物理节点不可伪造；选项浮层 teleport 到 body 无祖先可验，靠浮层唯一闸+触发器句柄回读兜底）；MED——twindelay 时基延时无确定性握手且 G12a/b/c 走 count=0 分支触不到落笔前重判，补 pinclone 握手场景（MutationObserver 以 stamp 为相位信号同步复制 pin 到冒牌，零时序依赖）+ G15a/b 直接断言绑定重验识破与零错抽屉落笔。实现评审 r3 前置独立审查处置（2 HIGH/1 MED 全采信）：HIGH#1——字段 focus、触发器 click、选项 click 后若同一物理控件离开被钉抽屉，旧 r2 仍对该句柄落笔并精确回读成 unique；修为字段 focus 后/填后、触发器点击后/选项点击后重验 root 物理同一、pin 全页恰一、候选仍绑定且仍被 root 包含，编译门另检查 run.emit resolution；HIGH#2——count 与 elementHandle 之间仍有惰性 Locator TOCTOU，修为计数成立时立即绑定候选句柄，动作前重验当前位置仍为同一物理节点（无 nth 时连同 count===1）；MED——所有临时与长生命周期 ElementHandle 用 finally 释放，失败路径不泄漏。fake-sut 纯加法新增 twindelay（延时前插冒牌）、ghostdup（隐藏同文案在前合法正面）、pinclone（pin 复制握手）、fieldmove（focus 后字段迁移）、triggermove（click 后触发器迁移）五个实现评审增补场景，CONTRACT.md 同步登记。既有三金牌（wf-set-node-field/wf-select-node-dropdown/replay-nth-visible-hardening）手编 select/set 回放 events 补 nodeName + 编译产物断言加严一条 nodeName 钉位（D8，棘轮只加严）；波及 fake-sut server.mjs/CONTRACT.md 的既有冻结 prd（prd-p5-replay/prd-replay-nth-visible-hardening）与既有三原子 prd（prd-wf-set-node-field/prd-wf-select-node-dropdown）一并重签。不做：workflow.assertNodeFieldValue（另契约）；不碰 bin/verdict.mjs 四态判定树（裁判零 LLM、裁定语义零改动）；不碰 events.schema.json（零改动）；不驱真机（纯 hermetic）。决策全录 docs/plans/drawer-lock-hardening/proposed/GRILL.md（含设计评审修订，codex-sol@max 2026-07-14，处置录 docs/plans/drawer-lock-hardening/review/）。",
   "specPath": "docs/plans/drawer-lock-hardening/plan.md",
   "testChecksums": {
-    "tests/_golden/drawer-lock-hardening.golden.mjs": "d968c9d588e72eabf1cd376e349b7256203b3cba87c520a937db83a1ff587120",
+    "tests/_golden/drawer-lock-hardening.golden.mjs": "1e951ecf9196c304e2cb479a2645ae95181b7d107e9b96e7cd6591f98b07276b",
     "tests/fixtures/fake-sut/server.mjs": "85bdd2f8702a9620667470954ec87c4c05633f89e297f3fcf6fe2d5ee15edb33",
     "tests/fixtures/fake-sut/CONTRACT.md": "ef8ff5d419f7e7a265b78d6cc9974cefc635bd6ee3c81e05d55f7912cdbc0609"
   },
@@ -35,7 +35,7 @@
         "node tests/_golden/flow-bridge.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-14T10:01:02.211Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-14T13:53:13.581Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-regression-and-selftest",
@@ -49,7 +49,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-14T10:02:44.165Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-14T13:54:35.542Z 全部 acceptance exit 0"
     }
   ]
 }

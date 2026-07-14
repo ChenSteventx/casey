@@ -1,4 +1,4 @@
-// drawer-lock-hardening.golden.mjs —— 画布三原子域锁跨抽屉边界硬化红先行金牌（G1–G18，light）。
+// drawer-lock-hardening.golden.mjs —— 画布三原子域锁跨抽屉边界硬化红先行金牌（G1–G19，light）。
 // 决策全录 docs/plans/drawer-lock-hardening/proposed/GRILL.md（D1 方向定案 / D2 标题锚取舍 / D3 nodeName
 // 供给通道 / D4 缺 nodeName fail-closed / D5 openNode 预点基线 / D6 抽屉域三态分层 / D7 夹具反面场景 /
 // D8 金牌形态）+ plan.md 落地步骤与验收。挂账原文：loop/prd-wf-set-node-field.json observability 第二条
@@ -44,6 +44,9 @@
 //   —— 实现评审 r4 汇裁修复轮新增（红先行：在 r3 实现上逐条红后修绿）——
 //   G18a 回放 setNodeField pin 搬到无标题嵌套 wrapper  pinmove（汇裁 A2 HIGH，挂点闸）
 //   G18b 编译 setNodeField pin 搬到无标题嵌套 wrapper  pinmove（汇裁 A2 HIGH，挂点闸）
+//   —— 实现评审 r5 修复轮新增（红先行：在 r4 实现上逐条红后修绿）——
+//   G19a 回放 openNode+setNodeField label 前后空白归一  happy（codex r4 MED，标题两侧归一）
+//   G19b 编译 openNode+setNodeField label 前后空白归一  happy（codex r4 MED，标题两侧归一）
 import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve, dirname, join } from 'node:path';
@@ -61,7 +64,7 @@ const tmp = mkdtempSync(join(tmpdir(), 'casey-drawer-lock-hardening-'));
 
 const fails = [];
 let pass = 0;
-// gate 单命令上限 300s；全量默认仍跑 G1-G18，gate 可按编号分成两条独立命令，断言与夹具不变。
+// gate 单命令上限 300s；全量默认仍跑 G1-G19，gate 可按编号分成两条独立命令，断言与夹具不变。
 const part = process.env.DLH_GOLDEN_PART || 'all';
 async function checkAsync(name, fn) {
   const number = Number((/^G(\d+)/.exec(name) || [])[1]);
@@ -803,6 +806,54 @@ const stdFlow = (tail) => ([
       if (/节点字段已填入/.test(JSON.stringify(rep.notes || []))) throw new Error(`pin 搬移后竟真落笔（notes 现「节点字段已填入」），notes=${JSON.stringify(rep.notes).slice(0, 300)}`);
       const btext = JSON.stringify(rep.blockers || []);
       if (!(rep.blockers || []).length || !/setNodeField/.test(btext) || !/绑定|pin|抗漂移/.test(btext)) throw new Error(`blockers 应点名 setNodeField 抗漂移绑定证不出，实际 ${btext.slice(0, 300)}`);
+    });
+  } finally { await s.close(); }
+}
+
+// ============================================================================================
+// happy 场景（实现评审 r5 修复轮新增，codex r4 MED「标题参数未按 Playwright 规则归一」）：
+// G19a 回放 / G19b 编译。节点画布标题「模型节点」（干净），但事件 label/nodeName 带前后多空白
+// 「  模型节点  」——Playwright getByText(exact) 同时归一查询文本与 DOM 文本，故合法命中；页内标题
+// 判据若只归一 DOM 文本却与原始 lbl 直接比较（norm(node.textContent)===lbl），会把合法抽屉排出域
+// （新增假阴、合法操作被误拒）。修法：norm(node.textContent)===norm(lbl) 两侧归一。红证（r4 raw 比较）
+// = openNode 轮询/点后域内 count=0 → action_failed / blocker exit 65；绿证（norm 两侧）= unique + PASS。
+{
+  const s = await startFakeSut({ scenario: 'happy' });
+  const WS_LABEL = '  ' + NODE + '  '; // 前后各两空白，Playwright exact 归一后等于「模型节点」
+  const openNodeWsEvent = () => ({ stepId: 'atstep_3', intentId: 'intent_2', atom: 'workflow.openNode', action: 'click', semantic: { kind: 'text', name: WS_LABEL, exact: true }, text: WS_LABEL });
+  try {
+    await checkAsync('G19a 回放·openNode+setNodeField label 前后空白归一（happy 正面）：DOM 标题「模型节点」干净、事件 label/nodeName 带前后空白「  模型节点  」→ openNode unique + setNodeField unique + identityReadback ok + verdict PASS（Playwright exact 两侧归一，页内判据须同归一 lbl 才不误拒）。验红：r4 页内只归一 DOM 却比原始 lbl → 域内 count=0 → openNode action_failed / setNodeField none 假阴必红', async () => {
+      const caseId = 'tc_dlh_g19a';
+      const { axes, verdict } = runReplayVerdict('g19a', s.url, {
+        schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-14T00:00:00.000Z', authored: false,
+        events: [...setupEvents(), openNodeWsEvent(), setFieldEvent(WS_LABEL)],
+      }, {
+        caseId, channel: 'web', globalAssertions: GLOBALS,
+        intents: [...setupIntents(), { intentId: 'intent_3', expected: [] }],
+      });
+      const axOpen = stepOf(axes, 'intent_2');
+      if (!axOpen.action || axOpen.action.resolution !== 'unique') throw new Error(`openNode 带前后空白 label 应 unique（Playwright exact 两侧归一），实际 ${JSON.stringify(axOpen.action)}（假阴实锤：页内判据只归一 DOM 却比原始 lbl，合法抽屉被排出域）`);
+      const ax = stepOf(axes, 'intent_3');
+      if (!ax.action || ax.action.resolution !== 'unique') throw new Error(`setNodeField 带前后空白 nodeName 应 unique（合法抽屉入域、域内字段恰 1），实际 ${JSON.stringify(ax.action)}`);
+      if (!(ax.action.identityReadback && ax.action.identityReadback.ok === true)) throw new Error(`应 identityReadback ok:true（字段 value 精确回读），实际 ${JSON.stringify(ax.action.identityReadback)}`);
+      const v = stepOf(verdict, 'intent_3');
+      if (v.verdict !== 'PASS') throw new Error(`应 PASS（空白归一后合法形态不误拒），实际 ${v.verdict}/${v.reason}`);
+    });
+
+    await checkAsync('G19b 编译·openNode+setNodeField label 前后空白归一（happy 正面）：openNode 点后恰一过、setNodeField 域内唯一真填 → exit 0 + events 产出 + 零 blockers。验红：r4 页内 raw 比较致 openNode 点后域 count=0 → blocker exit 65 假阴必红', async () => {
+      const wsFlow = [
+        { atom: 'nav.workflowManagement', params: {} },
+        { atom: 'workflow.open', params: { openName: OPEN_NAME } },
+        { atom: 'workflow.addNode', params: { nodeName: NODE, x: NODE_X, y: NODE_Y } },
+        { atom: 'workflow.openNode', params: { label: WS_LABEL } },
+        { atom: 'workflow.setNodeField', params: { placeholder: PLACEHOLDER, value: VALUE } },
+      ];
+      const { x, od } = compileFlowCase('g19b', 'tc_dlh_g19b', wsFlow, s.url);
+      if (!x || x.status !== 0) throw new Error(`应 exit 0（前后空白 label 归一后合法形态照常编译产 events），实际 ${x && x.status}：${(x && x.stderr || '').slice(-300)}（假阴实锤：r4 页内 raw 比较致 openNode 点后域 count=0 blocker）`);
+      if (!existsSync(join(od, 'events.json'))) throw new Error('应产出 events.json（合法编译全通）');
+      const rep = readJson(join(od, 'compile-report.json'));
+      if ((rep.blockers || []).length) throw new Error(`blockers 应为空，实际 ${JSON.stringify(rep.blockers).slice(0, 300)}`);
+      if (!/节点字段已填入/.test(JSON.stringify(rep.notes || []))) throw new Error(`notes 应含「节点字段已填入」（合法真落笔），实际 ${JSON.stringify(rep.notes).slice(0, 300)}`);
     });
   } finally { await s.close(); }
 }

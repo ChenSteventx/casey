@@ -34,7 +34,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-14T10:08:35.355Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-14T13:55:39.225Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-failsafe-coverage",
@@ -44,7 +44,7 @@
         "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-14T10:08:36.220Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-14T13:55:39.985Z 全部 acceptance exit 0"
     }
   ]
 }
