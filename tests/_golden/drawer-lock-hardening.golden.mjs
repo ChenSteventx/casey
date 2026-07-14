@@ -1,4 +1,4 @@
-// drawer-lock-hardening.golden.mjs —— 画布三原子域锁跨抽屉边界硬化红先行金牌（G1–G11，light）。
+// drawer-lock-hardening.golden.mjs —— 画布三原子域锁跨抽屉边界硬化红先行金牌（G1–G17，light）。
 // 决策全录 docs/plans/drawer-lock-hardening/proposed/GRILL.md（D1 方向定案 / D2 标题锚取舍 / D3 nodeName
 // 供给通道 / D4 缺 nodeName fail-closed / D5 openNode 预点基线 / D6 抽屉域三态分层 / D7 夹具反面场景 /
 // D8 金牌形态）+ plan.md 落地步骤与验收。挂账原文：loop/prd-wf-set-node-field.json observability 第二条
@@ -33,6 +33,14 @@
 //   G13  编译 openNode 失败不失效旧 run 态标题     happy（codex HIGH#2 陈旧 nodeDrawerLabel）
 //   G14a 回放 隐藏同文案在前合法抽屉不误拒（正面）  ghostdup（codex/pi 双路 MED#1）
 //   G14b 编译 隐藏同文案在前合法抽屉不误拒（正面）  ghostdup（codex/pi 双路 MED#1）
+//   —— 实现评审 r2 修复轮新增（红先行：在 r1 修复版 835a8ec 上逐条红后修绿）——
+//   G15a 回放 setNodeField pin 被页面复制拒动       pinclone（codex r2 HIGH，握手确定性）
+//   G15b 编译 setNodeField pin 被页面复制拒动       pinclone（codex r2 HIGH，握手确定性）
+//   —— 实现评审 r3 前置修复轮新增（红先行：在 r2 实现上逐条红后修绿）——
+//   G16a 回放 setNodeField focus 后控件离域拒认      fieldmove（独立审查 HIGH，动作窗口）
+//   G16b 编译 setNodeField focus 后控件离域拒认      fieldmove（独立审查 HIGH，动作窗口）
+//   G17a 回放 selectNodeDropdown click 后触发器离域  triggermove（独立审查 HIGH，动作窗口）
+//   G17b 编译 selectNodeDropdown click 后触发器离域  triggermove（独立审查 HIGH，动作窗口）
 import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve, dirname, join } from 'node:path';
@@ -50,7 +58,13 @@ const tmp = mkdtempSync(join(tmpdir(), 'casey-drawer-lock-hardening-'));
 
 const fails = [];
 let pass = 0;
-async function checkAsync(name, fn) { try { await fn(); pass++; } catch (e) { fails.push(`${name}: ${String(e && (e.stderr || e.message)).slice(-600)}`); } }
+// gate 单命令上限 300s；全量默认仍跑 G1-G17，gate 可按编号分成两条独立命令，断言与夹具不变。
+const part = process.env.DLH_GOLDEN_PART || 'all';
+async function checkAsync(name, fn) {
+  const number = Number((/^G(\d+)/.exec(name) || [])[1]);
+  if ((part === 'base' && number > 11) || (part === 'review' && number <= 11)) return;
+  try { await fn(); pass++; } catch (e) { fails.push(`${name}: ${String(e && (e.stderr || e.message)).slice(-600)}`); }
+}
 const SITE_FILE = join(tmp, 'site.synthetic.json');
 writeFileSync(SITE_FILE, '{}\n');
 function run(args, timeout = 120000) { return spawnSync(process.execPath, args, { encoding: 'utf8', timeout, env: { ...process.env, AT_SITE_JSON: SITE_FILE } }); }
@@ -629,6 +643,122 @@ const stdFlow = (tail) => ([
       if (!existsSync(join(od, 'events.json'))) throw new Error('应产出 events.json（合法编译全通）');
       const rep = readJson(join(od, 'compile-report.json'));
       if ((rep.blockers || []).length) throw new Error(`blockers 应为空，实际 ${JSON.stringify(rep.blockers).slice(0, 300)}`);
+    });
+  } finally { await s.close(); }
+}
+
+// ============================================================================================
+// pinclone 场景（实现评审 r2 修复轮新增，codex r2 HIGH「pin 属性可被页面复制」）：G15a 回放 / G15b 编译。
+// 夹具 MutationObserver 监听 data-casey-domain-pin——真抽屉（ddempty 形态、含标题）一被钉上 pin，同一
+// JS 任务的微任务里同步把 pin 值复制到前插冒牌抽屉（无标题、带唯一同占位符字段+触发器）。显式阶段握手
+// （以 stamp 本身为相位信号）、零时序依赖——评审 r2 MED 对 twindelay 时基延时的确定性补强。钉：按 pin
+// 属性选择器定根且只验「域内唯一者带 pin」的实现（r1 修复版）会把冒牌纳入 pin 根、其唯一字段被当域内
+// 唯一而真落笔+回读成立=假绿；物理句柄绑定（rootHandle 物理同一性）+ pin 全页唯一重验后，复制即被识破。
+// ============================================================================================
+{
+  const s = await startFakeSut({ scenario: 'pinclone' });
+  try {
+    await checkAsync('G15a 回放·setNodeField pin 被页面复制（pinclone 握手）：钉 pin 即同步现身复制了 pin 值的冒牌（无标题、有唯一同占位符字段）→ 物理绑定重验识破（pin 全页非唯一/写目标不在被钉物理节点内）→ resolution action_failed + 宽域候选快照恰 1 项且为空（冒牌字段零落笔）+ verdict 恰 NEEDS_HUMAN/INDETERMINATE。验红：r1 修复版按 pin 属性定根、只验域内唯一者带 pin → 冒牌唯一字段被当域内唯一真落笔+回读成立 → unique 假绿实锤', async () => {
+      const caseId = 'tc_dlh_g15a';
+      const { axes, verdict } = runReplayVerdict('g15a', s.url, {
+        schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-14T00:00:00.000Z', authored: false,
+        events: [...setupEvents(), openNodeEvent(), setFieldEvent(NODE)],
+      }, {
+        caseId, channel: 'web', globalAssertions: GLOBALS,
+        intents: [...setupIntents(), { intentId: 'intent_3', expected: [] }],
+      });
+      const ax = stepOf(axes, 'intent_3');
+      if (!ax.action || ax.action.resolution !== 'action_failed') throw new Error(`pin 被复制须被识破 → 应 action_failed（绑定证不出、绝不落笔），实际 ${JSON.stringify(ax.action)}（挂账假绿：按 pin 属性定根的实现会真填冒牌唯一字段返 unique）`);
+      const wide = ax.action.wideCandidateValues;
+      if (!Array.isArray(wide) || wide.length !== 1 || wide[0] !== '') throw new Error(`宽域候选字段快照应恰 1 项且为空（复制 pin 的冒牌字段零落笔），实际 ${JSON.stringify(wide)}`);
+      const v = stepOf(verdict, 'intent_3');
+      if (v.verdict !== 'NEEDS_HUMAN') throw new Error(`应恰 NEEDS_HUMAN，实际 ${v.verdict}/${v.reason}`);
+      if (v.reason !== 'INDETERMINATE') throw new Error(`reason 应恰 INDETERMINATE，实际 ${v.reason}`);
+    });
+
+    await checkAsync('G15b 编译·setNodeField pin 被页面复制（pinclone 握手）：execute 预检钉 pin 即同步现身复制 pin 的冒牌 → 绑定重验识破 → blocker exit 65 + 零 events + blocker 点名 setNodeField 绑定证不出 + notes 无「节点字段已填入」（零落笔取证）。验红：r1 修复版填冒牌字段回读成立 exit 0 产 events 假绿必红', async () => {
+      const { x, od } = compileFlowCase('g15b', 'tc_dlh_g15b', stdFlow([{ atom: 'workflow.setNodeField', params: { placeholder: PLACEHOLDER, value: VALUE } }]), s.url);
+      if (!x || x.status !== 65) throw new Error(`应 blocker exit 65（pin 被复制、绑定证不出，绝不落笔冒牌），实际 ${x && x.status}：${(x && x.stderr || '').slice(-260)}（挂账假绿：r1 修复版真填冒牌字段回读成立 exit 0 产 events）`);
+      if (existsSync(join(od, 'events.json'))) throw new Error('阻断不得产 events（半份危险）');
+      const rep = readJson(join(od, 'compile-report.json'));
+      if (/节点字段已填入/.test(JSON.stringify(rep.notes || []))) throw new Error(`pin 被复制后竟真落笔（notes 现「节点字段已填入」），notes=${JSON.stringify(rep.notes).slice(0, 300)}`);
+      const btext = JSON.stringify(rep.blockers || []);
+      if (!(rep.blockers || []).length || !/setNodeField/.test(btext) || !/绑定|pin/.test(btext)) throw new Error(`blockers 应点名 setNodeField 抗漂移绑定证不出，实际 ${btext.slice(0, 300)}`);
+    });
+  } finally { await s.close(); }
+}
+
+// ============================================================================================
+// fieldmove 场景（实现评审 r3 前置独立审查 HIGH）：G16a 回放 / G16b 编译。
+// 字段 focus 事件把【同一物理 input】搬到无标题冒牌抽屉。只在 fill 前验 contains、fill 后仍从同句柄
+// 读 value 的实现会真填域外字段且精确回读成立=假绿；动作拆成 focus -> 重验 -> fill 后，focus 后离域即拒填。
+// ============================================================================================
+{
+  const s = await startFakeSut({ scenario: 'fieldmove' });
+  try {
+    await checkAsync('G16a 回放·setNodeField focus 后同一物理字段离域（fieldmove 动作窗口）：focus 触发搬移到无标题冒牌抽屉 → fill 前物理包含重验失败 → resolution action_failed + 宽域候选恰 1 项且仍为空（域外字段零落笔）+ verdict 恰 NEEDS_HUMAN/INDETERMINATE。验红：r2 实现一把 fill 会先 focus 搬移再真填同句柄、精确回读成立返 unique 假绿', async () => {
+      const caseId = 'tc_dlh_g16a';
+      const { axes, verdict } = runReplayVerdict('g16a', s.url, {
+        schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-14T00:00:00.000Z', authored: false,
+        events: [...setupEvents(), openNodeEvent(), setFieldEvent(NODE)],
+      }, {
+        caseId, channel: 'web', globalAssertions: GLOBALS,
+        intents: [...setupIntents(), { intentId: 'intent_3', expected: [] }],
+      });
+      const ax = stepOf(axes, 'intent_3');
+      if (!ax.action || ax.action.resolution !== 'action_failed') throw new Error(`focus 后字段离开被钉抽屉须 action_failed，实际 ${JSON.stringify(ax.action)}（挂账假绿：r2 一把 fill 会填已搬离的同一物理字段并回读 unique）`);
+      const wide = ax.action.wideCandidateValues;
+      if (!Array.isArray(wide) || wide.length !== 1 || wide[0] !== '') throw new Error(`宽域候选字段应恰 1 项且为空（focus 后已搬到冒牌抽屉但 fill 尚未发生），实际 ${JSON.stringify(wide)}`);
+      const v = stepOf(verdict, 'intent_3');
+      if (v.verdict !== 'NEEDS_HUMAN' || v.reason !== 'INDETERMINATE') throw new Error(`应恰 NEEDS_HUMAN/INDETERMINATE，实际 ${v.verdict}/${v.reason}`);
+    });
+
+    await checkAsync('G16b 编译·setNodeField focus 后同一物理字段离域（fieldmove 动作窗口）：execute 拆步 focus 后重验失败 → blocker exit 65 + 零 events + notes 无「节点字段已填入」。验红：r2 一把 fill 真填域外同句柄、精确回读成立 exit 0 产 events 假绿必红', async () => {
+      const { x, od } = compileFlowCase('g16b', 'tc_dlh_g16b', stdFlow([{ atom: 'workflow.setNodeField', params: { placeholder: PLACEHOLDER, value: VALUE } }]), s.url);
+      if (!x || x.status !== 65) throw new Error(`应 blocker exit 65（focus 后字段离域，绝不继续 fill），实际 ${x && x.status}：${(x && x.stderr || '').slice(-260)}`);
+      if (existsSync(join(od, 'events.json'))) throw new Error('阻断不得产 events（半份危险）');
+      const rep = readJson(join(od, 'compile-report.json'));
+      if (/节点字段已填入/.test(JSON.stringify(rep.notes || []))) throw new Error(`字段离域后竟被承认已填入，notes=${JSON.stringify(rep.notes).slice(0, 300)}`);
+      const btext = JSON.stringify(rep.blockers || []);
+      if (!(rep.blockers || []).length || !/setNodeField/.test(btext) || !/后置核验|漂移|离开|绑定/.test(btext)) throw new Error(`blockers 应点名 setNodeField 动作窗口绑定/后置核验失败，实际 ${btext.slice(0, 350)}`);
+    });
+  } finally { await s.close(); }
+}
+
+// ============================================================================================
+// triggermove 场景（实现评审 r3 前置独立审查 HIGH）：G17a 回放 / G17b 编译。
+// 触发器既有 click listener 先开浮层，随后 listener 把【同一物理触发器】搬到无标题冒牌抽屉。只在 click
+// 前验 contains、选项后仍从同句柄回读的实现会真改域外触发器且精确回读成立=假绿；触发器 click 后立即
+// 重验物理包含，离域即不点选项。
+// ============================================================================================
+{
+  const s = await startFakeSut({ scenario: 'triggermove' });
+  try {
+    await checkAsync('G17a 回放·selectNodeDropdown 触发器 click 后同一物理节点离域（triggermove 动作窗口）：浮层已开但触发器被搬到无标题冒牌抽屉 → 点选项前重验失败 → resolution action_failed + 宽域触发器恰 1 项仍「请选择」（零落笔）+ verdict 恰 NEEDS_HUMAN/INDETERMINATE。验红：r2 仍点选项并从搬离同句柄精确回读，返 unique 假绿', async () => {
+      const caseId = 'tc_dlh_g17a';
+      const { axes, verdict } = runReplayVerdict('g17a', s.url, {
+        schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-14T00:00:00.000Z', authored: false,
+        events: [...setupEvents(), openNodeEvent(), selectEvent(NODE)],
+      }, {
+        caseId, channel: 'web', globalAssertions: GLOBALS,
+        intents: [...setupIntents(), { intentId: 'intent_3', expected: [] }],
+      });
+      const ax = stepOf(axes, 'intent_3');
+      if (!ax.action || ax.action.resolution !== 'action_failed') throw new Error(`触发器 click 后离开被钉抽屉须 action_failed，实际 ${JSON.stringify(ax.action)}（挂账假绿：r2 会继续选项并从搬离同句柄回读 unique）`);
+      const wide = ax.action.wideTriggerValues;
+      if (!Array.isArray(wide) || wide.length !== 1 || wide[0] !== '请选择') throw new Error(`宽域触发器应恰 1 项且仍「请选择」（选项未点、零落笔），实际 ${JSON.stringify(wide)}`);
+      const v = stepOf(verdict, 'intent_3');
+      if (v.verdict !== 'NEEDS_HUMAN' || v.reason !== 'INDETERMINATE') throw new Error(`应恰 NEEDS_HUMAN/INDETERMINATE，实际 ${v.verdict}/${v.reason}`);
+    });
+
+    await checkAsync('G17b 编译·selectNodeDropdown 触发器 click 后同一物理节点离域（triggermove 动作窗口）：execute 点选项前重验失败 → blocker exit 65 + 零 events + notes 无「节点下拉已选中」。验红：r2 继续点选项、搬离同句柄精确回读成立 exit 0 产 events 假绿必红', async () => {
+      const { x, od } = compileFlowCase('g17b', 'tc_dlh_g17b', stdFlow([{ atom: 'workflow.selectNodeDropdown', params: { option: OPT } }]), s.url);
+      if (!x || x.status !== 65) throw new Error(`应 blocker exit 65（触发器 click 后离域，绝不点选项），实际 ${x && x.status}：${(x && x.stderr || '').slice(-260)}`);
+      if (existsSync(join(od, 'events.json'))) throw new Error('阻断不得产 events（半份危险）');
+      const rep = readJson(join(od, 'compile-report.json'));
+      if (/节点下拉已选中/.test(JSON.stringify(rep.notes || []))) throw new Error(`触发器离域后竟被承认已选中，notes=${JSON.stringify(rep.notes).slice(0, 300)}`);
+      const btext = JSON.stringify(rep.blockers || []);
+      if (!(rep.blockers || []).length || !/selectNodeDropdown/.test(btext) || !/后置核验|漂移|离开|绑定/.test(btext)) throw new Error(`blockers 应点名 selectNodeDropdown 动作窗口绑定/后置核验失败，实际 ${btext.slice(0, 350)}`);
     });
   } finally { await s.close(); }
 }

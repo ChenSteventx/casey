@@ -12,6 +12,23 @@
 > 唯一部分驳回：「标题须在标题元素内」子项——结构/类锚已被 D2 以实证拒（真机未采样、
 > `.lf-node-drawer__title` 属夹具自造），残余假设面在 GRILL 风险 1 明示并走既有 route:human 采样。
 
+## 实现评审增补（2026-07-14）
+
+下文 G1-G11 是最初批准范围；实现评审按“发现即修、红先行加严”扩为 G1-G17，共 33 条独立
+`checkAsync` 子用例，计数与新增范围以本增补及 `loop/prd-drawer-lock-hardening.json` 为准：
+
+- r1：G12a/b/c 补动态 Locator 检查后窗口，G13 补失败路径旧 `nodeDrawerLabel` 失效，G14a/b 补
+  隐藏同文案在前的合法抽屉。
+- r2：G15a/b 以 `pinclone` 的 `MutationObserver` 握手钉 pin 被页面复制，要求物理 root 同一且 pin
+  全页恰一。
+- r3 前置独立审查：G16a/b 以 `fieldmove` 在字段 `focus` 时迁移同一物理 input；G17a/b 以
+  `triggermove` 在触发器 `click` 后迁移同一物理触发器。两场景都先让初次 root/候选绑定通过，
+  再进入动作窗口，直接钉动作后物理包含重验、候选即时绑定及错误抽屉零落笔。
+
+实现同步补齐 ElementHandle 所有权：临时与长生命周期句柄均在 `finally` 释放；字段动作拆为
+`focus -> 重验 -> fill -> 重验`；下拉在触发器点击、选项绑定/点击后均重验 root、候选物理同一和
+触发器仍位于被钉抽屉。编译门必须检查 `run.emit()` 的 `resolution`，动作失败不得被句柄回读覆盖为成功。
+
 ## 落地步骤
 
 1. **夹具先行**（红证的考场）：`tests/fixtures/fake-sut/server.mjs` 加五场景（GRILL D7 工作名

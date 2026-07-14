@@ -51,7 +51,18 @@ const SCENARIOS = new Set([
   //     标题+字段+下拉都在），但标题元素之前先挂一个 display:none 的同文案隐藏节点（占 DOM 序更早）——
   //     钉『隐藏同文案在前+可见真标题在后』的合法抽屉不得被误拒：可见性判定只查首命中会把该抽屉整个
   //     排出域（fail-closed 假阴），须遍历全部命中任一可见即纳入。
-  'twinfield', 'twinboth', 'twintitle', 'twinlate', 'twinghost', 'twindelay', 'ghostdup',
+  //   pinclone（实现评审 r2 修复新增，codex r2 HIGH）：单击节点开真抽屉（ddempty 形态）；页面装
+  //     MutationObserver 监听 data-casey-domain-pin 属性——真抽屉一被钉上 pin，同一 JS 任务的微任务里
+  //     同步把 pin 值【复制】到画布外新建冒牌抽屉（无标题、带同占位符字段+「请选择」触发器、前插）。
+  //     显式阶段握手（以 stamp 动作本身为相位信号）、零时序依赖。钉『pin 属性可被页面复制』：按属性
+  //     选择器定根且不验物理同一/全页唯一的实现会把冒牌纳入定位、其唯一字段/触发器被当域内唯一而
+  //     落笔（假绿）；物理句柄绑定 + pin 全页唯一重验后复制即被识破、拒动。
+  //   fieldmove（实现评审 r3 前置独立审查 HIGH）：字段 focus 时把同一物理 input 搬到无标题冒牌抽屉，
+  //     钉 fill 动作窗口仍须重验物理包含；拒填后冒牌字段保持空值。
+  //   triggermove（实现评审 r3 前置独立审查 HIGH）：触发器 click 既有监听先开选项浮层，随后监听把
+  //     同一物理触发器搬到无标题冒牌抽屉，钉真正点选项前仍须重验物理包含；拒选后值保持「请选择」。
+  'twinfield', 'twinboth', 'twintitle', 'twinlate', 'twinghost', 'twindelay', 'ghostdup', 'pinclone',
+  'fieldmove', 'triggermove',
 ]);
 
 // 背景轮询 denylist 的合成形态（绝不引真 site.json，护栏 #7）：watchNetworkForensics 用它把 /auths/poll 归 background。
@@ -308,6 +319,14 @@ function clientMain() {
         document.body.appendChild(layer); // teleport 到 body（复现真机浮层脱离抽屉）
       });
       container.appendChild(trig);
+      return trig;
+    }
+
+    function moveTargetToFakeDrawer(target) {
+      if (!target || !target.parentNode) return;
+      var actionFakeDrawer = el('div', { class: 'hr-drawer__content-wrapper action-window-fake' });
+      wrap.insertBefore(actionFakeDrawer, nodeDrawer);
+      actionFakeDrawer.appendChild(target);
     }
 
     overlay.addEventListener('click', function (e) {
@@ -358,9 +377,9 @@ function clientMain() {
         buildNodeSelect(twinlateFakeDrawer, '');
         wrap.appendChild(twinlateFakeDrawer);
       }
-      // ddempty/twinfield/twinlate/twindelay：抽屉开但无字段无下拉——域内触发器/字段 count=0（execute 预检的「无下拉/无字段」半边；
-      //   twinfield/twinlate/twindelay 复用此缺席半边，真节点抽屉空、跨抽屉误命中的唯一候选靠冒牌抽屉，D7 定）。
-      if (scenario === 'ddempty' || scenario === 'twinfield' || scenario === 'twinlate' || scenario === 'twindelay') return;
+      // ddempty/twinfield/twinlate/twindelay/pinclone：抽屉开但无字段无下拉——域内触发器/字段 count=0（execute 预检的「无下拉/无字段」半边；
+      //   twinfield/twinlate/twindelay/pinclone 复用此缺席半边，真节点抽屉空、跨抽屉误命中的唯一候选靠冒牌抽屉，D7 定）。
+      if (scenario === 'ddempty' || scenario === 'twinfield' || scenario === 'twinlate' || scenario === 'twindelay' || scenario === 'pinclone') return;
       // 节点抽屉下拉纯加法：缺省单下拉；ddtwin 挂两触发器 + 预挂一层 stale 隐藏浮层含目标（两浮层各现一次）。
       // ddhidden（replay-nth-visible-hardening fix#2 复现）：先挂一枚 display:none 的隐藏 .hr-select 触发器占
       //   DOM 序 index 0，再挂真·可见触发器——触发器域锁未限可见时 .hr-select count=2、nth=0 误命中隐藏触发器
@@ -371,7 +390,15 @@ function clientMain() {
         ddHiddenTrig.appendChild(el('span', { class: 'hr-select__value' }, '请选择'));
         nodeDrawer.appendChild(ddHiddenTrig); // 隐藏触发器占 DOM 序 index 0（全页门数得到、可见门数不到）
       }
-      buildNodeSelect(nodeDrawer, ddMode);
+      var nodeTrigger = buildNodeSelect(nodeDrawer, ddMode);
+      if (scenario === 'triggermove') {
+        // 动作窗口确定性反例：既有 click listener 先打开浮层，本 listener 随后把同一物理触发器搬到无标题
+        // 冒牌抽屉。只做动作前 contains、动作后仍按同句柄回读的实现会选中并假报 unique。
+        nodeTrigger.addEventListener('click', function moveTriggerOnce() {
+          nodeTrigger.removeEventListener('click', moveTriggerOnce);
+          moveTargetToFakeDrawer(nodeTrigger);
+        });
+      }
       if (ddMode === 'ddtwin') {
         buildNodeSelect(nodeDrawer, ddMode); // 第二个「请选择」触发器（孪生）
         var stale = el('div', { class: 'hr-select-dropdown' });
@@ -384,6 +411,14 @@ function clientMain() {
       //   Playwright .fill() 直改其 .value → inputValue() 回读地面真值。setmulti 挂两个同占位符 input →
       //   域内 count=2（多匹配未给 nth ambiguous 绝不填首项）；setclash 抽屉内单字段（域外另有孪生，见下）。
       var setInp = el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER });
+      if (scenario === 'fieldmove') {
+        // 动作窗口确定性反例：Playwright fill 的 focus 阶段把同一物理字段搬到无标题冒牌抽屉；若只在
+        // fill 前验 contains、fill 后只读同句柄 value，会把写错抽屉误报 unique。
+        setInp.addEventListener('focus', function moveFieldOnce() {
+          setInp.removeEventListener('focus', moveFieldOnce);
+          moveTargetToFakeDrawer(setInp);
+        });
+      }
       if (scenario === 'setsuffix') {
         // 精确回读律钉桩：input 事件里给 value 追加尾巴 → Playwright .fill(want) 后 inputValue() 成 want+'#tail'
         //   （含 want 的超集、非等 want）。精确门 got!==want → action_failed（拒认）；若退成 includes 会误判填对假绿。
@@ -447,6 +482,30 @@ function clientMain() {
         if (scenario === 'twinfield' || scenario === 'twinboth') buildNodeSelect(fakeDrawer, '');
       }
       wrap.appendChild(fakeDrawer);
+    }
+    // pinclone（实现评审 r2 修复新增，codex r2 HIGH『pin 属性可被页面复制』）：MutationObserver 监听
+    //   data-casey-domain-pin 属性变化——真抽屉一被回放/编译门钉上 pin，观察器回调（同一 JS 任务的微任务）
+    //   同步新建冒牌抽屉（无标题、带同占位符字段+「请选择」触发器，字段/触发器共用构建函数不特判）、
+    //   把 pin 值原样复制上去并【前插】到被钉节点之前。以 stamp 动作本身为相位信号 = 显式阶段握手、
+    //   零时序依赖（评审 r2 MED 对 twindelay 时基延时的确定性补强）。只克隆一次（singleton）。
+    if (scenario === 'pinclone') {
+      var pincloneDone = false;
+      new MutationObserver(function (muts) {
+        if (pincloneDone) return;
+        for (var mi = 0; mi < muts.length; mi++) {
+          var mt = muts[mi].target;
+          if (!mt || !mt.getAttribute) continue;
+          var pinVal = mt.getAttribute('data-casey-domain-pin');
+          if (!pinVal) continue;
+          pincloneDone = true;
+          var pinCloneDrawer = el('div', { class: 'hr-drawer__content-wrapper' });
+          pinCloneDrawer.setAttribute('data-casey-domain-pin', pinVal);
+          pinCloneDrawer.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
+          buildNodeSelect(pinCloneDrawer, '');
+          mt.parentNode.insertBefore(pinCloneDrawer, mt);
+          break;
+        }
+      }).observe(wrap, { attributes: true, subtree: true, attributeFilter: ['data-casey-domain-pin'] });
     }
     app.appendChild(wrap);
   }
