@@ -61,8 +61,13 @@ const SCENARIOS = new Set([
   //     钉 fill 动作窗口仍须重验物理包含；拒填后冒牌字段保持空值。
   //   triggermove（实现评审 r3 前置独立审查 HIGH）：触发器 click 既有监听先开选项浮层，随后监听把
   //     同一物理触发器搬到无标题冒牌抽屉，钉真正点选项前仍须重验物理包含；拒选后值保持「请选择」。
+  //   pinmove（实现评审 r4 汇裁 A2 HIGH）：真抽屉 A（可见标题）含两个同占位符字段，其一包在 A 内部
+  //     无标题、同类名 .hr-drawer__content-wrapper 的嵌套子容器 B 里；MutationObserver 监听 pin 属性——
+  //     A 一被钉，同一微任务里摘下 A 的 pin、以同值挂到 B（全页始终恰一，零时序依赖）。钉『pin 搬到
+  //     无标题嵌套 wrapper』：域计数仍唯一（B 无标题不入域）、pin 全页仍恰一，唯挂点闸（唯一 pin 承载者
+  //     须与被钉物理节点同一）能识破；否则 bound.root 按 pin 定位到 B、候选域 2→1 洗成 unique 假绿。
   'twinfield', 'twinboth', 'twintitle', 'twinlate', 'twinghost', 'twindelay', 'ghostdup', 'pinclone',
-  'fieldmove', 'triggermove',
+  'fieldmove', 'triggermove', 'pinmove',
 ]);
 
 // 背景轮询 denylist 的合成形态（绝不引真 site.json，护栏 #7）：watchNetworkForensics 用它把 /auths/poll 归 background。
@@ -284,6 +289,7 @@ function clientMain() {
     var drawerMode = scenario === 'drawersuperset' ? 'superset' : (scenario === 'drawernone' || scenario === 'twintitle' || scenario === 'twinghost') ? 'none' : '';
     var twinlateFakeDrawer = null; // twinlate：点击同刻动态挂出的冒牌抽屉（点击前不存在，与预挂的 twinfield/twinboth/twintitle/twinghost 冒牌不同）
     var twindelayScheduled = false; // twindelay：延时前插冒牌只排程一次（singleton，同 twinlateFakeDrawer 先例）
+    var pinmoveObserving = false; // pinmove：pin 搬移观察器只装一次（singleton，同 pinclone 先例）
 
     // —— 节点抽屉「请选择」下拉（wf-select-node-dropdown，registry SOP 最小复现）——
     // 触发器 = .hr-select（初值「请选择」，值放 .hr-select__value 子 span 便于精确回读）；点触发器弹可见浮层
@@ -350,6 +356,32 @@ function clientMain() {
         nodeDrawer.appendChild(ghostDup);
       }
       nodeDrawer.appendChild(el('div', { class: 'lf-node-drawer__title' }, titleText));
+      // pinmove（实现评审 r4 汇裁 A2 HIGH）：真抽屉 A（含可见标题）挂两个同占位符字段，其一（field1）
+      //   直接在 A 内、另一（field2）包在 A 内部无标题、同类名 .hr-drawer__content-wrapper 的嵌套子容器 B
+      //   里。MutationObserver 监听 A 的 pin 属性——A 一被回放/编译门钉上 pin，同一微任务里摘下 A 的 pin、
+      //   以同值挂到 B（全页始终恰一，以 stamp 为相位信号=确定性握手、零时序依赖）。钉『pin 搬到无标题
+      //   嵌套 wrapper』：域计数仍唯一（B 无标题不入域）、pin 全页仍恰一——唯挂点闸（唯一 pin 承载者须与
+      //   被钉物理节点同一）能识破。修前 bound.root 按 pin 定位到 B、候选域 2→1 洗成 unique 假绿；修后
+      //   下一个重判点即拒（action_failed），两字段零落笔。只装一次观察器（singleton）。
+      if (scenario === 'pinmove') {
+        nodeDrawer.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER })); // field1：直接在 A 内
+        var nestedWrapper = el('div', { class: 'hr-drawer__content-wrapper' }); // B：A 内部无标题嵌套子容器
+        nestedWrapper.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER })); // field2：包在 B 里
+        nodeDrawer.appendChild(nestedWrapper);
+        if (!pinmoveObserving) {
+          pinmoveObserving = true;
+          var pinmoveDone = false;
+          new MutationObserver(function () {
+            if (pinmoveDone) return;
+            var pinVal = nodeDrawer.getAttribute('data-casey-domain-pin');
+            if (!pinVal) return;
+            pinmoveDone = true;
+            nodeDrawer.removeAttribute('data-casey-domain-pin'); // 摘下 A 的 pin
+            nestedWrapper.setAttribute('data-casey-domain-pin', pinVal); // 以同值挂到 B（全页始终恰一）
+          }).observe(nodeDrawer, { attributes: true, attributeFilter: ['data-casey-domain-pin'] });
+        }
+        return;
+      }
       // twindelay（实现评审 r1 修复新增，codex HIGH#1 检查后 TOCTOU 窗口）：真抽屉打开后延时 3000ms 把
       //   含该节点标题精确可见文本的冒牌抽屉【前插】到真抽屉之前（DOM 序更早，wrap.insertBefore）——
       //   与 twinlate 的『同刻挂出、DOM 序更晚』互补，专钉『域计数通过之后、click/fill 之前』动态前插：

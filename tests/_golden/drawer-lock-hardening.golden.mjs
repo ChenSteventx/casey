@@ -1,4 +1,4 @@
-// drawer-lock-hardening.golden.mjs —— 画布三原子域锁跨抽屉边界硬化红先行金牌（G1–G17，light）。
+// drawer-lock-hardening.golden.mjs —— 画布三原子域锁跨抽屉边界硬化红先行金牌（G1–G18，light）。
 // 决策全录 docs/plans/drawer-lock-hardening/proposed/GRILL.md（D1 方向定案 / D2 标题锚取舍 / D3 nodeName
 // 供给通道 / D4 缺 nodeName fail-closed / D5 openNode 预点基线 / D6 抽屉域三态分层 / D7 夹具反面场景 /
 // D8 金牌形态）+ plan.md 落地步骤与验收。挂账原文：loop/prd-wf-set-node-field.json observability 第二条
@@ -41,6 +41,9 @@
 //   G16b 编译 setNodeField focus 后控件离域拒认      fieldmove（独立审查 HIGH，动作窗口）
 //   G17a 回放 selectNodeDropdown click 后触发器离域  triggermove（独立审查 HIGH，动作窗口）
 //   G17b 编译 selectNodeDropdown click 后触发器离域  triggermove（独立审查 HIGH，动作窗口）
+//   —— 实现评审 r4 汇裁修复轮新增（红先行：在 r3 实现上逐条红后修绿）——
+//   G18a 回放 setNodeField pin 搬到无标题嵌套 wrapper  pinmove（汇裁 A2 HIGH，挂点闸）
+//   G18b 编译 setNodeField pin 搬到无标题嵌套 wrapper  pinmove（汇裁 A2 HIGH，挂点闸）
 import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve, dirname, join } from 'node:path';
@@ -58,7 +61,7 @@ const tmp = mkdtempSync(join(tmpdir(), 'casey-drawer-lock-hardening-'));
 
 const fails = [];
 let pass = 0;
-// gate 单命令上限 300s；全量默认仍跑 G1-G17，gate 可按编号分成两条独立命令，断言与夹具不变。
+// gate 单命令上限 300s；全量默认仍跑 G1-G18，gate 可按编号分成两条独立命令，断言与夹具不变。
 const part = process.env.DLH_GOLDEN_PART || 'all';
 async function checkAsync(name, fn) {
   const number = Number((/^G(\d+)/.exec(name) || [])[1]);
@@ -759,6 +762,47 @@ const stdFlow = (tail) => ([
       if (/节点下拉已选中/.test(JSON.stringify(rep.notes || []))) throw new Error(`触发器离域后竟被承认已选中，notes=${JSON.stringify(rep.notes).slice(0, 300)}`);
       const btext = JSON.stringify(rep.blockers || []);
       if (!(rep.blockers || []).length || !/selectNodeDropdown/.test(btext) || !/后置核验|漂移|离开|绑定/.test(btext)) throw new Error(`blockers 应点名 selectNodeDropdown 动作窗口绑定/后置核验失败，实际 ${btext.slice(0, 350)}`);
+    });
+  } finally { await s.close(); }
+}
+
+// ============================================================================================
+// pinmove 场景（实现评审 r4 汇裁 A2 HIGH）：G18a 回放 / G18b 编译。
+// 真抽屉 A（可见标题）含两个同占位符字段，其一（field2）包在 A 内部无标题、同类名
+// .hr-drawer__content-wrapper 的嵌套子容器 B 里。MutationObserver 监听 pin——A 一被钉，同一微任务里
+// 摘下 A 的 pin、以同值挂到 B（全页始终恰一）。r3 实现 verifyPinnedNodeDrawer 只两闸（域内唯一者物理
+// 同一 + pin 全页恰一），pin 搬到 B 后：域计数仍认 A（B 无标题不入域）、pin 全页仍恰一（在 B 上）→
+// 两闸皆过；bound.root 按 pin 定位到 B、候选域 2→1 洗成 unique 假绿。修法（A2）：pin 全页恰一之后补
+// 第三闸——唯一 pin 承载者须与 rootHandle 物理同一，B ≠ A → action_failed。
+{
+  const s = await startFakeSut({ scenario: 'pinmove' });
+  try {
+    await checkAsync('G18a 回放·setNodeField pin 搬到无标题嵌套 wrapper（pinmove 挂点闸）：钉 A 即把 pin 搬到 A 内部无标题嵌套 wrapper B → 挂点闸识破（唯一 pin 承载者 B ≠ 被钉物理节点 A）→ resolution action_failed + 宽域候选快照恰 2 项且全空（两字段零落笔）+ verdict 恰 NEEDS_HUMAN/INDETERMINATE。验红：r3 只验域内唯一者物理同一+pin 全页恰一（皆过）、bound.root 按 pin 定位到 B、B 内唯一字段被当域内唯一真落笔+回读成立 → unique 假绿实锤', async () => {
+      const caseId = 'tc_dlh_g18a';
+      const { axes, verdict } = runReplayVerdict('g18a', s.url, {
+        schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-14T00:00:00.000Z', authored: false,
+        events: [...setupEvents(), openNodeEvent(), setFieldEvent(NODE)],
+      }, {
+        caseId, channel: 'web', globalAssertions: GLOBALS,
+        intents: [...setupIntents(), { intentId: 'intent_3', expected: [] }],
+      });
+      const ax = stepOf(axes, 'intent_3');
+      if (!ax.action || ax.action.resolution !== 'action_failed') throw new Error(`pin 搬到无标题嵌套 wrapper 须被挂点闸识破 → 应 action_failed（绑定证不出、绝不落笔），实际 ${JSON.stringify(ax.action)}（挂账假绿：r3 两闸皆过、bound.root 定位到 B、其唯一字段被当域内唯一真落笔返 unique）`);
+      const wide = ax.action.wideCandidateValues;
+      if (!Array.isArray(wide) || wide.length !== 2 || wide.some((v) => v !== '')) throw new Error(`宽域候选字段快照应恰 2 项且全空（A 内 field1 + 嵌套 B 内 field2 各一同占位符字段，两字段零落笔），实际 ${JSON.stringify(wide)}`);
+      const v = stepOf(verdict, 'intent_3');
+      if (v.verdict !== 'NEEDS_HUMAN') throw new Error(`应恰 NEEDS_HUMAN，实际 ${v.verdict}/${v.reason}`);
+      if (v.reason !== 'INDETERMINATE') throw new Error(`reason 应恰 INDETERMINATE，实际 ${v.reason}`);
+    });
+
+    await checkAsync('G18b 编译·setNodeField pin 搬到无标题嵌套 wrapper（pinmove 挂点闸）：execute 预检钉 A 即把 pin 搬到 B → 挂点闸识破 → blocker exit 65 + 零 events + notes 无「节点字段已填入」（零落笔取证）+ blocker 点名 setNodeField 绑定证不出。验红：r3 两闸皆过、填 B 内字段回读成立 exit 0 产 events 假绿必红', async () => {
+      const { x, od } = compileFlowCase('g18b', 'tc_dlh_g18b', stdFlow([{ atom: 'workflow.setNodeField', params: { placeholder: PLACEHOLDER, value: VALUE } }]), s.url);
+      if (!x || x.status !== 65) throw new Error(`应 blocker exit 65（pin 被搬到无标题嵌套 wrapper、挂点闸识破，绝不落笔 B 内字段），实际 ${x && x.status}：${(x && x.stderr || '').slice(-260)}（挂账假绿：r3 真填 B 内字段回读成立 exit 0 产 events）`);
+      if (existsSync(join(od, 'events.json'))) throw new Error('阻断不得产 events（半份危险）');
+      const rep = readJson(join(od, 'compile-report.json'));
+      if (/节点字段已填入/.test(JSON.stringify(rep.notes || []))) throw new Error(`pin 搬移后竟真落笔（notes 现「节点字段已填入」），notes=${JSON.stringify(rep.notes).slice(0, 300)}`);
+      const btext = JSON.stringify(rep.blockers || []);
+      if (!(rep.blockers || []).length || !/setNodeField/.test(btext) || !/绑定|pin|抗漂移/.test(btext)) throw new Error(`blockers 应点名 setNodeField 抗漂移绑定证不出，实际 ${btext.slice(0, 300)}`);
     });
   } finally { await s.close(); }
 }
