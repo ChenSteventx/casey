@@ -77,14 +77,25 @@ await checkAsync('U1 稳定页快速放行：settled true、waitedMs<800（floor
   if (!(r.waitedMs < 800)) throw new Error(`稳定页应 waitedMs<800（早退），实际 ${r.waitedMs}`);
 });
 
-await checkAsync('U2a 永不稳定 + 在途恒 0：settled false、不抛、waitedMs≥预算、networkidle 桩不被调（兜底条件化跳过）', async () => {
+await checkAsync('U2a 永不稳定 + 在途恒 0：settled false、不抛、waitedMs≥下限+全额预算（条件窗不被下限吃掉）、networkidle 桩不被调（兜底条件化跳过）', async () => {
   const settle = await loadSettle();
   const page = stubPage((k) => 1000 + k * 7); // 每拍递增，永不稳定
-  const r = await settle(page, { inFlight: stubInFlight(0), floorMs: 100, budgetMs: 600 });
+  // 下限(400)刻意大于一拍(120)：buggy 下 t0 早记会让条件窗被下限吃掉，总等待落在 budget+一拍≈640ms；
+  // 修后条件窗独享全额预算，总等待≈floor+budget≈1040ms——两态用「≥下限+全额预算(1000)」清晰可分。
+  const r = await settle(page, { inFlight: stubInFlight(0), floorMs: 400, budgetMs: 600 });
   if (r.settled !== false) throw new Error(`永不稳定应 settled:false，实际 ${r.settled}`);
-  if (!(r.waitedMs >= 600)) throw new Error(`应 waitedMs≥预算(600)，实际 ${r.waitedMs}`);
-  if (!(r.waitedMs < 600 + 100 + 800)) throw new Error(`总耗时应有界(<预算+下限+余量)，实际 ${r.waitedMs}`);
+  // 窗口缩水锁（评审 A1）：条件观察窗须独享全额预算——总等待 ≥ 下限 + 全额预算，绝不因 t0 早记而缩水。
+  if (!(r.waitedMs >= 400 + 600)) throw new Error(`应 waitedMs≥下限+全额预算(1000)，实际 ${r.waitedMs}（条件窗被下限吃掉=红）`);
+  if (!(r.waitedMs < 600 + 400 + 800)) throw new Error(`总耗时应有界(<预算+下限+余量)，实际 ${r.waitedMs}`);
   if (page._calls.waitForLoadState.length !== 0) throw new Error('在途已归零应跳过 networkidle 兜底（条件化），实际被调用');
+});
+
+await checkAsync('U8 小预算下条件轮询仍发生（评审 A1）：floor 缺省 250 + budgetMs 100（I5 同参）→ evaluate 调用≥1、settled false（条件循环独享预算、绝非下限吃完直接兜底）', async () => {
+  const settle = await loadSettle();
+  const page = stubPage((k) => 1000 + k * 7); // 永不稳定
+  const r = await settle(page, { inFlight: stubInFlight(0), budgetMs: 100 }); // floorMs 缺省 250
+  if (r.settled !== false) throw new Error(`小预算永不稳定应 settled:false，实际 ${r.settled}`);
+  if (!(page._calls.evaluate >= 1)) throw new Error(`条件循环须至少跑一拍（evaluate≥1），实际 ${page._calls.evaluate}（下限吃完预算=条件轮询零次=红）`);
 });
 
 await checkAsync('U2b 永不稳定 + 在途恒 1：networkidle 桩被调且带有限 timeout（绝不无限等）、总耗时有界', async () => {
