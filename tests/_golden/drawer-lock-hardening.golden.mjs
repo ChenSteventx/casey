@@ -26,6 +26,13 @@
 //   G8  回放+编译 openNode 点后歧义                twinlate
 //   G9  回放+编译 set/select 域级多匹配            twinlate
 //   G10 回放隐藏标题文本拒认（openNode + set）     twinghost
+//   —— 实现评审 r1 修复轮新增（红先行：在 r1 实现上逐条红后修绿）——
+//   G12a 回放 setNodeField 检查后窗口前插冒牌      twindelay（codex HIGH#1 TOCTOU）
+//   G12b 回放 selectNodeDropdown 检查后窗口前插    twindelay（codex HIGH#1 TOCTOU）
+//   G12c 编译 selectNodeDropdown 检查后窗口前插    twindelay（codex HIGH#1 TOCTOU）
+//   G13  编译 openNode 失败不失效旧 run 态标题     happy（codex HIGH#2 陈旧 nodeDrawerLabel）
+//   G14a 回放 隐藏同文案在前合法抽屉不误拒（正面）  ghostdup（codex/pi 双路 MED#1）
+//   G14b 编译 隐藏同文案在前合法抽屉不误拒（正面）  ghostdup（codex/pi 双路 MED#1）
 import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve, dirname, join } from 'node:path';
@@ -498,6 +505,130 @@ const stdFlow = (tail) => ([
       const v = stepOf(verdict, 'intent_3');
       if (v.verdict !== 'NEEDS_HUMAN') throw new Error(`应恰 NEEDS_HUMAN，实际 ${v.verdict}/${v.reason}`);
       if (v.reason !== 'INDETERMINATE') throw new Error(`reason 应恰 INDETERMINATE，实际 ${v.reason}`);
+    });
+  } finally { await s.close(); }
+}
+
+// ============================================================================================
+// twindelay 场景（实现评审 r1 修复轮新增，codex HIGH#1）：G12a/G12b（回放 set/select 检查后窗口
+// 前插冒牌）/ G12c（编译 select 同窗口）。夹具：点击开真抽屉（ddempty 形态），延时 3000ms 把含同
+// 标题的冒牌抽屉（带字段+触发器）前插到真抽屉之前（DOM 序更早）——初次域计数（点击后约 1s 内）
+// 只见真抽屉、字段/触发器 5s 可见等待期间冒牌现身。旧实现 root=structural.nth(0) 惰性重解析漂移
+// 到冒牌抽屉且不重判三态 → 落笔冒牌+回读成立=假绿；抗漂移绑定后动作只认已钉抽屉，真抽屉无字段/
+// 无触发器 → 5s 等待超时 count=0 → none（fail-closed）。
+// ============================================================================================
+{
+  const s = await startFakeSut({ scenario: 'twindelay' });
+  try {
+    await checkAsync('G12a 回放·setNodeField 检查后窗口前插冒牌（twindelay）：域计数时唯一（真抽屉）、等待字段期间同标题冒牌前插 → 抗漂移绑定只认已钉真抽屉、域内字段 count=0 → resolution none + 宽域候选快照恰 1 项且为空（冒牌字段零落笔）+ verdict 恰 NEEDS_HUMAN/INDETERMINATE。验红：旧动态 root 漂移到冒牌、真填冒牌字段回读成立 → unique+PASS 假绿实锤', async () => {
+      const caseId = 'tc_dlh_g12a';
+      const { axes, verdict } = runReplayVerdict('g12a', s.url, {
+        schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-14T00:00:00.000Z', authored: false,
+        events: [...setupEvents(), openNodeEvent(), setFieldEvent(NODE)],
+      }, {
+        caseId, channel: 'web', globalAssertions: GLOBALS,
+        intents: [...setupIntents(), { intentId: 'intent_3', expected: [] }],
+      });
+      const ax = stepOf(axes, 'intent_3');
+      if (!ax.action || ax.action.resolution !== 'none') throw new Error(`已钉真抽屉内字段应 count=0 → resolution none（冒牌是检查后前插、绝不得漂移过去），实际 ${JSON.stringify(ax.action)}（挂账假绿：旧动态 root 在 5s 字段等待里漂移到前插冒牌、真填其字段回读成立会返 unique+PASS）`);
+      const wide = ax.action.wideCandidateValues;
+      if (!Array.isArray(wide) || wide.length !== 1 || wide[0] !== '') throw new Error(`宽域（不分标题）候选字段快照应恰 1 项且为空（超时后冒牌已在场、其字段零落笔），实际 ${JSON.stringify(wide)}`);
+      const v = stepOf(verdict, 'intent_3');
+      if (v.verdict !== 'NEEDS_HUMAN') throw new Error(`应恰 NEEDS_HUMAN，实际 ${v.verdict}/${v.reason}`);
+      if (v.reason !== 'INDETERMINATE') throw new Error(`reason 应恰 INDETERMINATE，实际 ${v.reason}`);
+    });
+
+    await checkAsync('G12b 回放·selectNodeDropdown 检查后窗口前插冒牌（twindelay）：同 G12a 型——已钉真抽屉内触发器 count=0 → resolution none + 宽域触发器快照恰 1 项仍「请选择」（冒牌触发器零落笔）+ verdict 恰 NEEDS_HUMAN/INDETERMINATE。验红：旧动态 root 漂移点冒牌触发器选中回读成立 → unique+PASS 假绿实锤', async () => {
+      const caseId = 'tc_dlh_g12b';
+      const { axes, verdict } = runReplayVerdict('g12b', s.url, {
+        schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-14T00:00:00.000Z', authored: false,
+        events: [...setupEvents(), openNodeEvent(), selectEvent(NODE)],
+      }, {
+        caseId, channel: 'web', globalAssertions: GLOBALS,
+        intents: [...setupIntents(), { intentId: 'intent_3', expected: [] }],
+      });
+      const ax = stepOf(axes, 'intent_3');
+      if (!ax.action || ax.action.resolution !== 'none') throw new Error(`已钉真抽屉内触发器应 count=0 → resolution none，实际 ${JSON.stringify(ax.action)}（挂账假绿：旧动态 root 漂移到前插冒牌、点其触发器选中回读成立会返 unique+PASS）`);
+      const wide = ax.action.wideTriggerValues;
+      if (!Array.isArray(wide) || wide.length !== 1 || wide[0] !== '请选择') throw new Error(`宽域触发器快照应恰 1 项且仍「请选择」（冒牌触发器零落笔），实际 ${JSON.stringify(wide)}`);
+      const v = stepOf(verdict, 'intent_3');
+      if (v.verdict !== 'NEEDS_HUMAN') throw new Error(`应恰 NEEDS_HUMAN，实际 ${v.verdict}/${v.reason}`);
+      if (v.reason !== 'INDETERMINATE') throw new Error(`reason 应恰 INDETERMINATE，实际 ${v.reason}`);
+    });
+
+    await checkAsync('G12c 编译·selectNodeDropdown 检查后窗口前插冒牌（twindelay）：execute 预检域计数唯一后、触发器 5s 可见等待期间冒牌前插 → 已钉真抽屉内触发器 count=0 → blocker exit 65 + 零 events + blocker 点名触发器 count=0。验红：旧编译门等待期漂移到冒牌触发器、点选回读成立 exit 0 产 events 假绿必红', async () => {
+      const { x, od } = compileFlowCase('g12c', 'tc_dlh_g12c', stdFlow([{ atom: 'workflow.selectNodeDropdown', params: { option: OPT } }]), s.url);
+      if (!x || x.status !== 65) throw new Error(`应 execute 预检 blocker exit 65（已钉真抽屉无触发器，绝不漂移到检查后前插的冒牌），实际 ${x && x.status}：${(x && x.stderr || '').slice(-260)}（挂账假绿：旧编译门在 5s 等待里漂移到冒牌触发器、走完点选回读 exit 0 产 events）`);
+      if (existsSync(join(od, 'events.json'))) throw new Error('阻断不得产 events（半份危险）');
+      const rep = readJson(join(od, 'compile-report.json'));
+      const btext = JSON.stringify(rep.blockers || []);
+      if (!(rep.blockers || []).length || !/selectNodeDropdown/.test(btext) || !/count=0/.test(btext)) throw new Error(`blockers 应点名 selectNodeDropdown 触发器 count=0，实际 ${btext.slice(0, 300)}`);
+    });
+  } finally { await s.close(); }
+}
+
+// ============================================================================================
+// happy 场景（实现评审 r1 修复轮新增，codex HIGH#2）：G13 编译 openNode 尝试即失效旧 run 态标题。
+// A（模型节点，在画布上）开成 → B（SQL查询，从未落画布）开败（画布域 count=0 预检 blocker）→
+// 后续 setNodeField 不得借 A 的旧标题过域锁对 A 抽屉落笔（exit 65 零 events 也不允许编译执行期对
+// 错误抽屉产生副作用，fail-safe）。
+// ============================================================================================
+{
+  const s = await startFakeSut({ scenario: 'happy' });
+  try {
+    await checkAsync('G13 编译·openNode 失败不失效旧 run 态标题（happy）：openNode A 成功后 openNode B 预检 blocker，随后 setNodeField 须 run 态标题缺失 blocker 级联（尝试开始即失效旧值、仅确证成功才写回）→ exit 65 + 零 events + 零落笔（notes 无「节点字段已填入」）。验红：旧实现 B 失败不清 A 旧标题、setNodeField 借 A 标题过域锁真填 A 抽屉字段（notes 现「已填入」、无 setNodeField blocker）必红', async () => {
+      const NODE_B = 'SQL查询'; // 面板项存在但从未拖落画布 → openNode B 画布域 count=0 预检 blocker（确定性开败）
+      const { x, od } = compileFlowCase('g13', 'tc_dlh_g13', stdFlow([
+        { atom: 'workflow.openNode', params: { label: NODE_B } },
+        { atom: 'workflow.setNodeField', params: { placeholder: PLACEHOLDER, value: VALUE } },
+      ]), s.url);
+      if (!x || x.status !== 65) throw new Error(`应 blocker exit 65（openNode B 画布域 count=0），实际 ${x && x.status}：${(x && x.stderr || '').slice(-260)}`);
+      if (existsSync(join(od, 'events.json'))) throw new Error('阻断不得产 events（半份危险）');
+      const rep = readJson(join(od, 'compile-report.json'));
+      const ntext = JSON.stringify(rep.notes || []);
+      if (/节点字段已填入/.test(ntext)) throw new Error(`B 开败后 setNodeField 竟对 A 抽屉真落笔（notes 现「节点字段已填入」）——借旧标题过域锁的编译期副作用假绿（codex HIGH#2 实锤），notes=${ntext.slice(0, 400)}`);
+      const btext = JSON.stringify(rep.blockers || []);
+      if (!/openNode/.test(btext) || !new RegExp(NODE_B).test(btext) || !/count=0/.test(btext)) throw new Error(`blockers 应含 openNode「${NODE_B}」画布域 count=0 的自身 blocker，实际 ${btext.slice(0, 400)}`);
+      if (!/setNodeField/.test(btext) || !/run 态|标题缺失|nodeDrawerLabel/.test(btext)) throw new Error(`blockers 应另含 setNodeField 因 run 态节点抽屉标题缺失而截断的 blocker（尝试开始即失效旧值），实际 ${btext.slice(0, 400)}`);
+    });
+  } finally { await s.close(); }
+}
+
+// ============================================================================================
+// ghostdup 场景（实现评审 r1 修复轮新增，codex/pi 双路 MED#1 合法正面）：G14a 回放 / G14b 编译。
+// 真抽屉合法（标题可见、字段/下拉照常），但可见标题之前有一个 display:none 的同文案隐藏节点占
+// DOM 序更早——可见性判定只查首命中会把合法抽屉整个排出域（fail-closed 假阴、合法操作被误拒）；
+// 须遍历全部命中任一可见即纳入。
+// ============================================================================================
+{
+  const s = await startFakeSut({ scenario: 'ghostdup' });
+  try {
+    await checkAsync('G14a 回放·隐藏同文案在前合法抽屉不误拒（ghostdup 正面）：openNode unique + setNodeField unique + identityReadback ok + 宽域候选快照恰 1 项等于填入值 + verdict PASS（收窄不误伤合法形态）。验红：r1 实现 .first() 只查首命中（隐藏节点）→ 合法抽屉被排出域、openNode action_failed / set none 假阴必红', async () => {
+      const caseId = 'tc_dlh_g14a';
+      const { axes, verdict } = runReplayVerdict('g14a', s.url, {
+        schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-14T00:00:00.000Z', authored: false,
+        events: [...setupEvents(), openNodeEvent(), setFieldEvent(NODE)],
+      }, {
+        caseId, channel: 'web', globalAssertions: GLOBALS,
+        intents: [...setupIntents(), { intentId: 'intent_3', expected: [] }],
+      });
+      const axOpen = stepOf(axes, 'intent_2');
+      if (!axOpen.action || axOpen.action.resolution !== 'unique') throw new Error(`openNode 应 unique（隐藏同文案在前不碍事、可见真标题在后即命中），实际 ${JSON.stringify(axOpen.action)}（假阴实锤：只查首命中把合法抽屉排出域）`);
+      const ax = stepOf(axes, 'intent_3');
+      if (!ax.action || ax.action.resolution !== 'unique') throw new Error(`setNodeField 应 unique（合法抽屉入域、域内字段恰 1），实际 ${JSON.stringify(ax.action)}`);
+      if (!(ax.action.identityReadback && ax.action.identityReadback.ok === true)) throw new Error(`应 identityReadback ok:true，实际 ${JSON.stringify(ax.action.identityReadback)}`);
+      const wide = ax.action.wideCandidateValues;
+      if (!Array.isArray(wide) || wide.length !== 1 || wide[0] !== VALUE) throw new Error(`宽域候选字段快照应恰 1 项且等于填入值「${VALUE}」，实际 ${JSON.stringify(wide)}`);
+      const v = stepOf(verdict, 'intent_3');
+      if (v.verdict !== 'PASS') throw new Error(`应 PASS（合法形态不误拒），实际 ${v.verdict}/${v.reason}`);
+    });
+
+    await checkAsync('G14b 编译·隐藏同文案在前合法抽屉不误拒（ghostdup 正面）：openNode 点后恰一过、setNodeField 域内唯一真填 → exit 0 + events 产出 + 零 blockers。验红：r1 实现 openNode 点后域计数把合法抽屉排出域（count=0）→ blocker exit 65 假阴必红', async () => {
+      const { x, od } = compileFlowCase('g14b', 'tc_dlh_g14b', stdFlow([{ atom: 'workflow.setNodeField', params: { placeholder: PLACEHOLDER, value: VALUE } }]), s.url);
+      if (!x || x.status !== 0) throw new Error(`应 exit 0（合法形态照常编译产 events），实际 ${x && x.status}：${(x && x.stderr || '').slice(-300)}（假阴实锤：只查首命中致 openNode 点后域 count=0 blocker）`);
+      if (!existsSync(join(od, 'events.json'))) throw new Error('应产出 events.json（合法编译全通）');
+      const rep = readJson(join(od, 'compile-report.json'));
+      if ((rep.blockers || []).length) throw new Error(`blockers 应为空，实际 ${JSON.stringify(rep.blockers).slice(0, 300)}`);
     });
   } finally { await s.close(); }
 }

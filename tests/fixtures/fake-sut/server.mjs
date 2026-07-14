@@ -42,7 +42,16 @@ const SCENARIOS = new Set([
   //     set/select 域级 count=2 → ambiguous；
   //   twinghost（评审修订新增）：单击节点不开抽屉（drawernone 半形态，画布外预挂冒牌）+ 冒牌抽屉含节点
   //     标题精确文本但该文本 display:none 隐藏——钉『隐藏文本命中』假绿（标题文本自身须可见才算命中）。
-  'twinfield', 'twinboth', 'twintitle', 'twinlate', 'twinghost',
+  //   twindelay（实现评审 r1 修复新增，codex HIGH#1 检查后窗口）：单击节点开真抽屉（ddempty 形态），
+  //     延时 3000ms 后把含该节点标题精确可见文本的冒牌抽屉（带同 placeholder 字段 + 「请选择」触发器）
+  //     【前插】到真抽屉之前（DOM 序更早）——复现『域计数后到 click/fill 前同标题抽屉动态前插』：
+  //     旧实现 root=structural.nth(0) 惰性重解析会在字段/触发器 5s 可见等待里漂移到冒牌抽屉且不重判
+  //     三态，落笔+回读成立=假绿；延时晚于域计数（点击后约 1s 内发生）、早于 5s 等待超时，落在窗口正中。
+  //   ghostdup（实现评审 r1 修复新增，codex/pi 双路 MED#1 合法正面）：真节点抽屉正常打开（缺省形态：
+  //     标题+字段+下拉都在），但标题元素之前先挂一个 display:none 的同文案隐藏节点（占 DOM 序更早）——
+  //     钉『隐藏同文案在前+可见真标题在后』的合法抽屉不得被误拒：可见性判定只查首命中会把该抽屉整个
+  //     排出域（fail-closed 假阴），须遍历全部命中任一可见即纳入。
+  'twinfield', 'twinboth', 'twintitle', 'twinlate', 'twinghost', 'twindelay', 'ghostdup',
 ]);
 
 // 背景轮询 denylist 的合成形态（绝不引真 site.json，护栏 #7）：watchNetworkForensics 用它把 /auths/poll 归 background。
@@ -263,6 +272,7 @@ function clientMain() {
     //   'twinghost'      单击节点不开抽屉（drawernone 半形态复用）——冒牌抽屉另含节点标题精确文本但该文本 display:none 隐藏。
     var drawerMode = scenario === 'drawersuperset' ? 'superset' : (scenario === 'drawernone' || scenario === 'twintitle' || scenario === 'twinghost') ? 'none' : '';
     var twinlateFakeDrawer = null; // twinlate：点击同刻动态挂出的冒牌抽屉（点击前不存在，与预挂的 twinfield/twinboth/twintitle/twinghost 冒牌不同）
+    var twindelayScheduled = false; // twindelay：延时前插冒牌只排程一次（singleton，同 twinlateFakeDrawer 先例）
 
     // —— 节点抽屉「请选择」下拉（wf-select-node-dropdown，registry SOP 最小复现）——
     // 触发器 = .hr-select（初值「请选择」，值放 .hr-select__value 子 span 便于精确回读）；点触发器弹可见浮层
@@ -311,7 +321,33 @@ function clientMain() {
       if (drawerMode === 'superset') titleText = titleText + '副本'; // 开错抽屉：标题含 label 非精确
       if (!nodeDrawer) { nodeDrawer = el('div', { class: 'hr-drawer__content-wrapper' }); wrap.appendChild(nodeDrawer); }
       nodeDrawer.textContent = '';
+      // ghostdup（实现评审 r1 修复新增，codex/pi 双路 MED#1 合法正面）：真抽屉里、可见标题【之前】先挂
+      //   一个 display:none 的同文案隐藏节点（真机形态如抽屉头部隐藏提示文本/占位副本先于可见标题渲染）。
+      //   抽屉本身完全合法（标题可见、字段/下拉照常）——钉『可见性判定只查首命中』的误拒假阴：首命中是
+      //   隐藏节点时整抽屉被排出域，合法操作被硬阻断；判定须遍历全部命中任一可见即纳入。既有场景零行为差。
+      if (scenario === 'ghostdup') {
+        var ghostDup = el('div', { class: 'lf-node-drawer__ghost' }, titleText);
+        ghostDup.setAttribute('style', 'display:none');
+        nodeDrawer.appendChild(ghostDup);
+      }
       nodeDrawer.appendChild(el('div', { class: 'lf-node-drawer__title' }, titleText));
+      // twindelay（实现评审 r1 修复新增，codex HIGH#1 检查后 TOCTOU 窗口）：真抽屉打开后延时 3000ms 把
+      //   含该节点标题精确可见文本的冒牌抽屉【前插】到真抽屉之前（DOM 序更早，wrap.insertBefore）——
+      //   与 twinlate 的『同刻挂出、DOM 序更晚』互补，专钉『域计数通过之后、click/fill 之前』动态前插：
+      //   旧实现 root=structural.nth(0) 惰性重解析，字段/触发器 5s 可见等待里会漂移到冒牌抽屉且不重判
+      //   三态。冒牌带同 placeholder 字段 + 「请选择」触发器（与 twinlate 冒牌同构，共用构建函数不特判）。
+      //   延时窗口依据：回放/编译门的初次域计数在点击后约 1s 内发生（respWait 600ms + 因果窗 150ms +
+      //   静默点），3000ms 晚于它、早于字段/触发器 5s 可见等待超时（约点击后 6s），落在窗口正中。
+      if (scenario === 'twindelay' && !twindelayScheduled) {
+        twindelayScheduled = true;
+        setTimeout(function () {
+          var lateFake = el('div', { class: 'hr-drawer__content-wrapper' });
+          lateFake.appendChild(el('div', { class: 'fake-node-title' }, titleText));
+          lateFake.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
+          buildNodeSelect(lateFake, '');
+          wrap.insertBefore(lateFake, nodeDrawer);
+        }, 3000);
+      }
       // twinlate（D7 评审修订新增）：真抽屉打开的同一次点击事件处理器内，同刻动态挂出含该节点标题
       //   精确可见文本的冒牌抽屉（点击前不存在——与 twinfield/twinboth/twintitle/twinghost 的『预挂』
       //   冒牌不同，钉『点击后才出现的冒牌』这条评审新增支线）。只挂一次（singleton，同 nodeDrawer 先例）。
@@ -322,9 +358,9 @@ function clientMain() {
         buildNodeSelect(twinlateFakeDrawer, '');
         wrap.appendChild(twinlateFakeDrawer);
       }
-      // ddempty/twinfield/twinlate：抽屉开但无字段无下拉——域内触发器/字段 count=0（execute 预检的「无下拉/无字段」半边；
-      //   twinfield/twinlate 复用此缺席半边，真节点抽屉空、跨抽屉误命中的唯一候选靠冒牌抽屉，D7 定）。
-      if (scenario === 'ddempty' || scenario === 'twinfield' || scenario === 'twinlate') return;
+      // ddempty/twinfield/twinlate/twindelay：抽屉开但无字段无下拉——域内触发器/字段 count=0（execute 预检的「无下拉/无字段」半边；
+      //   twinfield/twinlate/twindelay 复用此缺席半边，真节点抽屉空、跨抽屉误命中的唯一候选靠冒牌抽屉，D7 定）。
+      if (scenario === 'ddempty' || scenario === 'twinfield' || scenario === 'twinlate' || scenario === 'twindelay') return;
       // 节点抽屉下拉纯加法：缺省单下拉；ddtwin 挂两触发器 + 预挂一层 stale 隐藏浮层含目标（两浮层各现一次）。
       // ddhidden（replay-nth-visible-hardening fix#2 复现）：先挂一枚 display:none 的隐藏 .hr-select 触发器占
       //   DOM 序 index 0，再挂真·可见触发器——触发器域锁未限可见时 .hr-select count=2、nth=0 误命中隐藏触发器
@@ -396,7 +432,7 @@ function clientMain() {
         // ——wrapper 可见但文本不可见，钉『标题文本自身须可见』收紧（D2 修订）。同时补挂一个同 placeholder
         // 字段 + 一个「请选择」触发器（与 twinfield 同构）：若只挂隐藏标题不挂字段/触发器，旧宽域锁在这
         // 具体夹具里也会因「压根没有字段」而巧合吐 none——不构成红证；补字段/触发器后，旧宽域锁（不问
-        // 标题、只问「抽屉可见」）会真把这唯一字段/触发器当成домen 命中，走完全程真假绿，红证成立。
+        // 标题、只问「抽屉可见」）会真把这唯一字段/触发器当成域内命中，走完全程真假绿，红证成立。
         var titleEl = el('div', { class: 'fake-node-title' }, TWIN_TITLE_NODE);
         titleEl.setAttribute('style', 'display:none');
         fakeDrawer.appendChild(titleEl);

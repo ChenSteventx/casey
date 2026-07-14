@@ -29,13 +29,14 @@
 3. 点击不落（否定行为，金牌反证用）：单击/双击 `.node-item` 不产生 `.lf-node`；微动（位移 < 12px）或落点出画布界同样不落。机制：位移阈值 + 落点界内双守卫，二者缺一不落。
 4. 计数一致：`.lf-node` 的 DOM 实数 = 成功拖落次数（真并行网关开始按 +2）；`.lf-graph[data-node-count]` 每次落节点后按 DOM 实数刷新（golden 双向可数：locator count 与属性值互证）。
 5. 连线（wf-connect-nodes）：每个 `.lf-node` 渲 `.lf-node-anchor-hover` 锚点；`mousedown` 锚点 → `mouseup` 落在另一个 `.lf-node`（非自身）→ `.lf-canvas-overlay` 内新增一个 `.lf-edge`。自连（源=目标）或落点非节点 → 不落边（否定行为，连线 fail-closed 反证）。纯 DOM 只断边数增，不携 source/target（连对哪两个的确定性取证挂账真机 window.lf）。
-6. 节点配置抽屉（wf-open-node）：单击 `.lf-node` 节点体 → 详情页出现/更新 `.hr-drawer__content-wrapper`（内含 `.lf-node-drawer__title` 文本 = 该节点 `.lf-node-content` 标题）——registry 真机 SOP「点中心开抽屉」最小复现。锚点 `.lf-node-anchor-hover` 单击不开（连线专属）；连线拖拽 down/up 目标不同元素 → click 事件落共同祖先 overlay、`closest('.lf-node')` 不中 → 不误开（DOM 规范行为，对既有通路零干扰）。抽屉与列表页建单抽屉同类名但异页，画布页域内唯一（回放身份回读干净）。抽屉反面模式（评审 F3/coverage）：由场景控反面考场（replay 的 nav 走 `pathOf` 剥 query 不能用 URL query，故用场景）——`drawernone` 单击节点不开抽屉（「点了不开」反面）、`drawersuperset` 抽屉标题 = 节点名 + `副本`（含 label 子串但非精确，钉身份回读须精确非子串）；既有场景一律缺省行为。
-7. 冒牌抽屉跨边界反面场景（drawer-lock-hardening，GRILL D7）：详情页画布外（不在 `.lf-canvas-overlay` 域内）另挂第二个可见 `.hr-drawer__content-wrapper`「冒牌抽屉」，复现挂账描述的「另一可见抽屉」（真机形态如同页测试面板/新增抽屉并存）。冒牌抽屉的字段/触发器与真节点抽屉共用构建函数 `buildNodeSelect`，不做特判；场景行为即挂账接缝复现，不为金牌预定裁定倒着裁。五场景（既有场景一律缺省行为、零影响）：
+6. 节点配置抽屉（wf-open-node）：单击 `.lf-node` 节点体 → 详情页出现/更新 `.hr-drawer__content-wrapper`（内含 `.lf-node-drawer__title` 文本 = 该节点 `.lf-node-content` 标题）——registry 真机 SOP「点中心开抽屉」最小复现。锚点 `.lf-node-anchor-hover` 单击不开（连线专属）；连线拖拽 down/up 目标不同元素 → click 事件落共同祖先 overlay、`closest('.lf-node')` 不中 → 不误开（DOM 规范行为，对既有通路零干扰）。抽屉与列表页建单抽屉同类名但异页，画布页域内唯一（回放身份回读干净）。抽屉反面模式（评审 F3/coverage）：由场景控反面考场（replay 的 nav 走 `pathOf` 剥 query 不能用 URL query，故用场景）——`drawernone` 单击节点不开抽屉（「点了不开」反面）、`drawersuperset` 抽屉标题 = 节点名 + `副本`（含 label 子串但非精确，钉身份回读须精确非子串）、`ghostdup`（实现评审 r1 修复新增，codex/pi 双路 MED#1 合法正面）抽屉正常打开且形态与缺省一致，但可见标题之前先挂一个 `display:none` 的同文案隐藏节点（占 DOM 序更早，真机形态如抽屉头部隐藏提示文本/占位副本）——钉「隐藏同文案在前+可见真标题在后」的合法抽屉不得被误拒（可见性判定须遍历全部命中任一可见即纳入，只查首命中会把合法抽屉整个排出域成 fail-closed 假阴）；既有场景一律缺省行为。
+7. 冒牌抽屉跨边界反面场景（drawer-lock-hardening，GRILL D7）：详情页画布外（不在 `.lf-canvas-overlay` 域内）另挂第二个可见 `.hr-drawer__content-wrapper`「冒牌抽屉」，复现挂账描述的「另一可见抽屉」（真机形态如同页测试面板/新增抽屉并存）。冒牌抽屉的字段/触发器与真节点抽屉共用构建函数 `buildNodeSelect`，不做特判；场景行为即挂账接缝复现，不为金牌预定裁定倒着裁。六场景（既有场景一律缺省行为、零影响）：
    - `twinfield`：真节点抽屉 `ddempty` 形态（点开但无字段无下拉，仍显示该节点标题）；冒牌抽屉画布外预挂（页面初次渲染即出现，早于真抽屉）、不含节点标题，挂一个同占位符「请输入接口的URL」字段 + 一个「请选择」触发器（可点、可选、值可回读）。
    - `twinboth`：真节点抽屉（点击后出现）与冒牌抽屉（画布外预挂，先于真抽屉出现）各挂一个同占位符字段 + 各一个「请选择」触发器；冒牌抽屉不含节点标题。
    - `twintitle`：单击节点不开抽屉（`drawernone` 半形态复用）；冒牌抽屉画布外预挂、含节点标题精确文本（固定复用面板项名「模型节点」）。
    - `twinlate`：单击节点开真抽屉（`ddempty` 形态：无字段无下拉，显示该节点标题）；与开抽屉的同一次点击事件处理器内，同刻动态挂出第二个含该节点标题精确可见文本的冒牌抽屉（带同占位符字段 + 「请选择」触发器）——点击前不存在（DOM 序晚于真抽屉，因同一处理器内先建真抽屉后建冒牌），钉「点击后才出现的冒牌」。
    - `twinghost`：单击节点不开抽屉（`drawernone` 半形态复用）；冒牌抽屉画布外预挂、含节点标题精确文本（该文本节点自身 `display:none` 隐藏——wrapper 可见、标题文本不可见），并同 `twinfield` 一样挂一个同占位符字段 + 一个「请选择」触发器（不挂字段/触发器则「宽域锁不问标题只问抽屉可见」在本场景会因压根没有字段而巧合吐缺席，不构成红证；补上后宽域锁会真把这唯一字段/触发器当命中）。
+   - `twindelay`（实现评审 r1 修复新增，codex HIGH#1 检查后窗口）：单击节点开真抽屉（`ddempty` 形态：无字段无下拉，显示该节点标题）；点击后延时 3000ms 把第二个含该节点标题精确可见文本的冒牌抽屉（带同占位符字段 + 「请选择」触发器）【前插】到真抽屉之前（`insertBefore`，DOM 序更早）——与 `twinlate`（同刻挂出、DOM 序更晚）互补，专钉「域计数通过之后、click/fill 之前」动态前插的 TOCTOU 窗口：惰性重解析的动态 Locator 会在字段/触发器 5s 可见等待里漂移到冒牌抽屉且不重判三态。延时依据：域计数在点击后约 1s 内发生，3000ms 晚于它、早于 5s 等待超时。
 
 分工与边界（沿既有条款）：
 
