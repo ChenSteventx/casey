@@ -82,5 +82,5 @@ pi（deepseek-v4-pro@high）本轮判 PASS，逐条复核 round-1 的 10 项 fin
 - 全仓地址字节串检索（脱敏方式核对，排除 `node_modules`）：0 处命中，含所有新旧评审归档 `.md` 文件。
 - `node tests/_golden/gen-prompts.golden.mjs`：74 过 / 0 败。
 - `lib/promptset-authoring.mjs` 当前 sha256：`19a10fd9a0da4fdc927cf8af57eb968a9da0d3186cd66f247489b1c867f3a8a0`。
-- `tests/_golden/gen-prompts.golden.mjs` 当前 sha256：`5509011211d0e2e90812ea115381450b14ec200f19e748d13cf6f564b26f1465`（`prd-gen-prompts.json` 待同步重签）。
+- `tests/_golden/gen-prompts.golden.mjs` 当前 sha256：`5509011211d0e2e90812ea115381450b14ec200f19e748d13cf6f564b26f1465`（`prd-gen-prompts.json` 已同步重签，gate 复跑 GREEN）。
 - `bin/verdict.mjs`、`lib/sign-gate.mjs`、`lib/promptset.mjs`、`tests/_golden/cli-mcp-face.golden.mjs` 本轮（round-2 修订）仍零改动。

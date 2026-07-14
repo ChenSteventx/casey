@@ -607,23 +607,45 @@ check('F4c 新增候选 text 含私网地址 → exit 1 拒（不写盘），原
     if (!readFileSync(ps).equals(before)) throw new Error(`［${kind}］拒绝时文件应不变`);
   }
 });
-check('F4c1 scanPrivateAddress 覆盖等价编码形态（round-1 MED A6：此前只认标准点分十进制/压缩 IPv6字面量，IPv6 展开回环/八进制前导零/十进制整数/十六进制/百分号编码点号五种等价写法漏检；WHATWG URL 主机解析器归一后核对既有网段正则，非重新枚举网段）', () => {
+check('F4c1 scanPrivateAddress 覆盖等价编码形态（round-1 MED A6 五形态 + round-2 codex 复核后再补三形态：IPv6 展开回环/八进制前导零/十进制整数/十六进制/百分号编码点号/大写十六进制前缀/无分隔符前导零八进制整串/点分段内混十六进制；WHATWG URL 主机解析器归一后核对既有网段正则，非重新枚举网段。round-3 codex 复核指出这批形态此前只在 scratchpad 手工验证、未冻进金牌，本轮补齐冻结，防未来回归悄悄退化）', () => {
   const dirtyCases = [
     ['IPv6 展开回环', '内部地址 0:0:0:0:0:0:0:1 不应出现'],
     ['八进制前导零 IPv4', '内部地址 0177.0.0.1 不应出现'],
     ['十进制整数 IPv4', '内部地址 2130706433 不应出现'],
     ['十六进制 IPv4', '内部地址 0x7f000001 不应出现'],
     ['百分号编码点号', '内部地址 127%2e0%2e0%2e1 不应出现'],
+    ['大写十六进制前缀（round-2 补）', '内部地址 0X7f000001 不应出现'],
+    ['无分隔符前导零八进制整串（round-2 补）', '内部地址 017700000001 不应出现'],
+    ['点分段内混十六进制（round-2 补）', '内部地址 0x7f.0.0.1 不应出现'],
   ];
   for (const [kind, text] of dirtyCases) {
     const r = scanPrivateAddress(text);
     if (!r.hit) throw new Error(`［${kind}］scanPrivateAddress 应命中私网地址，实际 hit=false（文本：${text}）`);
   }
   // 干净文本不应因收紧检测而误报（假阳性面佐证：候选提取刻意收窄，不应把无关数字/版本号都判命中）。
-  const cleanCases = ['这是一条常规问句被测参数，问头疼怎么办', '本批共有 2026 条记录，编号从 1 到 2026', '版本号 v1.2.3 不是地址', '订单号是 20260713'];
+  // round-2 补：产品版本/重量/章节号/价格/日期/时间/软件版本号等两段小数形态，此前收紧点分正则到恰好四段
+  // 之前会误判命中，此处冻结回归钉死不再退化。
+  const cleanCases = [
+    '这是一条常规问句被测参数，问头疼怎么办', '本批共有 2026 条记录，编号从 1 到 2026', '版本号 v1.2.3 不是地址', '订单号是 20260713',
+    '产品版本 10.20', '重量 10.5 公斤', '参见第 13.7 节', '价格是 19.99 元', '现在是 08:00', '版本 v10.2.3 发布',
+  ];
   for (const text of cleanCases) {
     const r = scanPrivateAddress(text);
     if (r.hit) throw new Error(`干净文本不应误报命中，实际 kind=${r.kind}（文本：${text}）`);
+  }
+});
+check('F4c1b 点分两三段简写形态是已知、有意的残余缺口（round-3 codex 复核指出 127.1/10.1 这类 WHATWG CIDR 简写此前也会漏检；本钉不是遗漏，是显式的、有测试佐证的设计取舍——见下方说明，冻结现状防止该取舍被静默改动）', () => {
+  // 取舍说明：两三段点分数字（如"10.1"/"127.1"）在词法上与自然语言里的版本号/小数/比例/章节号（如"10.20"）
+  // 完全没有可靠区分特征——恰好四段之外的候选提取范围一旦放开，F4c1 里"产品版本 10.20"类干净语料就会重新
+  // 被误判（已用 git stash 复验：放开到 1-3 次重复后，"10.20"/"10.5" 会 hit:true）。两三段简写在真实网络请求
+  // 里本就罕见（几乎没人会主动写"http://10.1/"指望它解析成 10.0.0.1），而误伤自然语言数字模式的代价对
+  // authoring 场景（候选文本几乎全是中文自然语言）是系统性的、高频的。故权衡后选择不检测两三段简写，
+  // 靠其它防线兜底（凭据兜底门、四段完整形态、IPv6 形态、route:human 语义质量抽检）。这不同于"内部域名
+  // 无法穷举"（那是真穷举不了）——这里是"能穷举但两种合法解读无法用词法特征区分，两权相害取其轻"。
+  const shorthandCases = ['127.1', '10.1', '172.16.5'];
+  for (const text of shorthandCases) {
+    const r = scanPrivateAddress(text);
+    if (r.hit) throw new Error(`两三段简写「${text}」当前设计不检测，实际却命中——若此断言判红，说明检测面已扩大，请同步更新本条注释与上方取舍说明，不要静默改变这条边界`);
   }
 });
 check('F4c2 新增候选 text 含等价编码私网地址（十进制整数形态）→ 经真实 freeze CLI 仍 exit 1 拒、原值不回显（端到端验证 A6 修复已接线，不止库函数本身）', () => {
@@ -843,14 +865,14 @@ check('N1b spawn 边扫描：三份回放侧文件的整个 import 闭包（不�
 // 结构化 spawn 边计数（round-2 codex A7 复核后加固）：N1b 靠字符串内容本身（子串/去注释），可被"拼字符串
 // 拼目标名"绕过（codex 实测复现：`spawnSync(process.execPath, ["/repo/bin/"+marker.slice(2,-2)+".mjs"])`，
 // marker 里目标名字面量藏在会被误当注释去掉的 `/*.../*` 形态里）。本钉换一个不依赖目标字符串内容的角度：
-// 直接数三份闭包里"spawn 家族函数调用形态"（spawnSync(/spawn(/exec(/execSync(/execFile(/execFileSync( 等
+// 直接数三份闭包里"spawn 家族函数调用形态"（spawnSync(/spawn(/exec(/execSync(/execFile(/execFileSync(/fork( 等
 // 调用点，非 import 语句本身——`import { spawnSync }` 不含调用括号，不计入）出现的总次数，与已审计过的
 // 现状基线比对——任何新增调用点（不论其参数字符串如何拼接/混淆）都会让计数超过基线，因为「调用本身的存在」
 // 不像「调用的参数内容」那样能被字符串拼接/注释伪装隐藏。基线：verdict/replay 闭包 0 处；promptset 闭包 1 处
 // （`bin/promptset.mjs` 的 `runNode` helper，编排 replay/verdict/report 三个既有 bin，非本契约新增、非本契约
 // 关注的两个 authoring bin）。仍非无懈可击（动态计算函数名本身，如 `child_process['spawn'+'Sync']`，可再绕；
 // 但那已是完全不同量级的刻意混淆，静态文本分析的公认边界，同「内部域名形态无法穷举」既有口径）。
-const SPAWN_CALL_RE = /\b(?:spawnSync|spawn|execSync|exec|execFileSync|execFile)\s*\(/g;
+const SPAWN_CALL_RE = /\b(?:spawnSync|spawn|execSync|exec|execFileSync|execFile|fork)\s*\(/g;
 const SPAWN_CALL_SITE_BASELINE = { replay: 0, verdict: 0, promptset: 1 };
 check('N1c 结构化 spawn 调用点计数不超基线（round-2 codex A7 复核加固：不依赖拼接目标字符串内容，数调用形态本身出现次数）', () => {
   for (const [label, entry] of [['replay', REPLAY], ['verdict', VERDICT], ['promptset', PROMPTSET_BIN]]) {
@@ -884,6 +906,28 @@ check('N1d N1c 金丝雀：闭包内新增一个 spawn 调用点会被 N1c 判�
   // 同时佐证 N1b 的已知局限确实存在（去注释会把这份合成对照里的目标名字面量吞掉），解释为何需要 N1c。
   const stripped = stripCommentsForScan(src);
   if (stripped.includes('promptset-freeze')) throw new Error('本条金丝雀预期 N1b 的去注释近似会误吞目标名字面量（用以论证 N1c 存在的必要性）；实际未被吞，说明 stripCommentsForScan 实现已变化，需重新核对本注释的论证是否仍成立');
+});
+// 正向允许清单（round-3 codex 复核指出 N1c 的缺口）：N1c 只数"调用点总数不超基线"，堵不住"复用既有那一个
+// 合法调用点、把它的目标参数改指向 authoring bin"这种改法——调用点计数不变（仍是 1），检查会静默放行。
+// N1e 换个角度堵这个缺口：`bin/promptset.mjs` 是三份闭包里唯一含 spawn 调用点的文件，其编排目标全部经
+// `bin('<名字>.mjs')` 这一固定 helper 字面量传入（见 stage(...) 调用点）——直接对该文件源码做正向允许清单
+// 核对：`bin(...)` 里出现的全部目标名字面量集合，必须恰好等于已审计过的四个既有编排目标
+// {replay.mjs, verdict.mjs, report-model.mjs, report.mjs}，且显式不含两个 authoring bin 名字——任何增删替换
+// 都会被判红，包括"看似还是 4 个名字但其中一个换成了 authoring bin"这种repoint 手法。
+// 仍非终极防线（依旧是文本模式匹配，面对"目标名整体动态计算、不以字面量形式出现在源码里"的更极端混淆手法
+// 无能为力——这需要真正的数据流分析/AST 解释器才能穷尽，超出本契约合理投入；这也是 codex round-3 复核后
+// 如实记账的残余局限，非本钉能力范围内可修，与"内部域名形态无法穷举"同属静态文本分析的公认边界）。
+const PROMPTSET_ORCHESTRATION_ALLOWLIST = new Set(['replay.mjs', 'verdict.mjs', 'report-model.mjs', 'report.mjs']);
+check('N1e bin/promptset.mjs 的 bin(...) 编排目标正向允许清单（round-3 codex 复核加固：堵"复用既有调用点、repoint 目标参数指向 authoring bin"这种 N1c 计数堵不住的改法）', () => {
+  const src = readFileSync(PROMPTSET_BIN, 'utf8');
+  const found = new Set();
+  for (const m of src.matchAll(/\bbin\(\s*'([^']+)'\s*\)/g)) found.add(m[1]);
+  for (const name of found) {
+    if (!PROMPTSET_ORCHESTRATION_ALLOWLIST.has(name)) throw new Error(`bin/promptset.mjs 的 bin(...) 编排目标出现未登记名字「${name}」（须是既有四目标之一，出现未登记名字——尤其是两个 authoring bin——一律判红）`);
+  }
+  for (const expected of PROMPTSET_ORCHESTRATION_ALLOWLIST) {
+    if (!found.has(expected)) throw new Error(`bin/promptset.mjs 应仍编排既有目标「${expected}」，实际未找到（目标集合被意外收窄，需人工复核）`);
+  }
 });
 
 // ================= C1 CLI 门面（两命令全覆盖） =================
