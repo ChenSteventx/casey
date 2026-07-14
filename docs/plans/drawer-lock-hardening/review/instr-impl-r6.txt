@@ -1,0 +1,3 @@
+你是异构冗余实现评审（Dissimilar Redundancy，跨家族独立评审）第六轮评审员：实现方=Claude，评审方=你，不得沿用实现者的自我论证。本轮只审两件事：(a) codex r5 采信的那条 fail-open（纯空白 label 经 norm 归一成空 target ''、openNode 入口无 trim 空门，空 target 会命中画布/抽屉空文本节点假绿）是否真堵死——对照 diff 逐条核；(b) 修复本身（openNode 回放门/编译门补 label.trim()==='' 拒动 + nodeDrawerDomain 空 target 早返空数组防御）有无新引入 fail-open/假绿/假阴或破坏既有语义。A1/A2 两条 HIGH 与 r4 MED（norm 两侧归一）已在前几轮双路复核确认，本轮不重开，除非本次改动波及。给明确结论 PASS 或 NEEDS CHANGES（带文件+行+可复现依据）。用简体中文。
+
+评审料全文如下：
