@@ -4,8 +4,8 @@
   "specPath": "docs/plans/drawer-lock-hardening/plan.md",
   "testChecksums": {
     "tests/_golden/drawer-lock-hardening.golden.mjs": "709cfac6274f0d64d34ff3a06d118c4c01dbfeb3f1948341e8f16df600d3172b",
-    "tests/fixtures/fake-sut/server.mjs": "85bdd2f8702a9620667470954ec87c4c05633f89e297f3fcf6fe2d5ee15edb33",
-    "tests/fixtures/fake-sut/CONTRACT.md": "ef8ff5d419f7e7a265b78d6cc9974cefc635bd6ee3c81e05d55f7912cdbc0609"
+    "tests/fixtures/fake-sut/server.mjs": "b4c4d214b394d6109856b0dea7a13e3c05a32c6d6b51b56ec369dd849c6a313d",
+    "tests/fixtures/fake-sut/CONTRACT.md": "5cc702248a6287247dbc34628f5881ba6c383bccb2c4ccd0fa1e468d2a540b7c"
   },
   "observability": [
     {

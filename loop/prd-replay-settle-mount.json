@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "task": "replay-settle-mount（full）：回放代表步（`isLast`）采集断言输入前补一个有界静默点 `settleBeforeCapture`（新 `lib/replay-settle.mjs`），镜像编译侧 `quietPoint`——让单页应用路由挂载 /「页面加载中」占位消失后再采，堵回放侧计时假阴（真机 `tc_wf_publish_states` 的 `intent_1` 判 `NEEDS_HUMAN`(`SUT_DEFECT_OR_STALE`)/`actual=0`，而 1.5s 后按钮成功点中——按钮一直在、是采集抢在挂载前）。复合判据：判据 A 在途前台请求归零（复用 `watchNetworkForensics` 的 `inFlightApi`，加性暴露 `inFlightCount`；`denylist` 背景轮询天然除外）+ 判据 B DOM 连续两拍稳定（逐字镜像 `quietPoint`），连续两拍相等且两拍均归零（稳定对不跨零点）才放行；固定下限 250ms 起步垫（`REPLAY_SETTLE_FLOOR_MS` 测试缝）+ 预算 2500ms（`REPLAY_SETTLE_BUDGET_MS` 测试缝）耗尽后仅在途仍非零才走 `networkidle` 有界兜底一次（职责=网络尾巴，兜底条件化）。铁不变量：纯观察者、有界、fail-safe（绝不外抛/绝不无限等/超预算按现状采不吞步）；归因语义零动（静默点全程 `currentStepId` 为 null）；`bin/verdict.mjs` 与 `lib/replay-assert.mjs` 字节不动；axes/observed schema 零新键（`run-history.schema.json` 文件字节不动，代表步 `quietPointReached` 只改取值来源为 `navOk && settled`）。夹具加法：`mountdelay`（数据请求驱动的延迟挂载 + 静态占位 + toast 3000ms 自动消隐）与 `churn`（DOM 持续扰动 + 背景轮询）两场景，既有场景零行为差。决策 `docs/plans/replay-settle-mount/plan.md`（改动 1-8，已并入 codex-sol@max 设计评审修订 8 findings）、`proposed/GRILL.md`（D1 方向 / D2 固定下限 / D3 复合判据）。红先行：U1-U7 缺模块红 + I1 `actual=0` 真机同签名红 + I2 垫零红 + W1 `NEEDS_HUMAN` 端到端红（`docs/plans/replay-settle-mount/proposed/red/red-before-impl.txt` 存证）。",
+  "specPath": "docs/plans/replay-settle-mount/plan.md",
+  "testChecksums": {
+    "tests/_golden/replay-settle-mount.golden.mjs": "cf81e01489c627b77a9c2243eda38750b230d16a655f8e151f8f732e03ee3adb",
+    "tests/fixtures/fake-sut/server.mjs": "b4c4d214b394d6109856b0dea7a13e3c05a32c6d6b51b56ec369dd849c6a313d",
+    "tests/fixtures/fake-sut/CONTRACT.md": "5cc702248a6287247dbc34628f5881ba6c383bccb2c4ccd0fa1e468d2a540b7c"
+  },
+  "observability": [
+    {
+      "dimension": "真机 toast 自动消隐窗 vs 采集延后约 0.5-1s：hermetic 夹具以 3000ms 典型窗钉「延采不丢典型 toast」（I1），真机消隐窗时序上浮门禁不可证——失败方向假红（NEEDS_HUMAN）非假绿，真机复验停站观察，频发再议 toast 移静默点前后双采快照",
+      "route": "human"
+    },
+    {
+      "dimension": "script/chunk 型延迟挂载（JS 分包加载）盲区：不进 inFlightApi（只收 XHR/Fetch）、networkidle 兜底对带背景轮询真机不可达——此形态若真机出现按 fail-safe 落 NEEDS_HUMAN（假阴方向非假绿），届时再议加载占位词表判（需人签词表）",
+      "route": "human"
+    },
+    {
+      "dimension": "「响应结束→UI 延迟提交」形态：判据 A 在 loadingFinished 即归零，提交延迟超过稳定对约两拍缓冲（约 240ms）则在占位上放行——失败方向假红非假绿，已确证真机形态（应答即提交）I1 已覆盖，判据侧扩展会假定「应答必改 DOM」恶化最坏走时，本轮不做（GRILL D3 残余）",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-settle-red-golden",
+      "desc": "红先行金牌 replay-settle-mount.golden.mjs：U1-U8 单元向（settleBeforeCapture 桩验——稳定页快速放行 / 永不稳定 fail-safe 两变体（U2a 强化：总等待≥下限+全额预算，钉条件窗不被下限吃掉）/ 固定下限可调 / evaluate 抛错不外抛 / evaluate 永不返回硬上界 / inFlight 抛错降级 / 稳定对不跨零点 / U8 小预算下条件轮询仍发生（evaluate≥1，堵下限吃完预算直接兜底），动态 import 逐案捕获、缺模块各自红签名）；I1 延迟挂载主案（mountdelay → 修前 buttonState actual=0 真机同签名、修后 ok:true/actual≥1 + textHidden/textVisible 全绿）；I2 垫调 0 条件兜住（REPLAY_SETTLE_FLOOR_MS=0 修后仍绿——靠条件非靠垫）；I3 即时渲染回归锁（happy settle waited<1500/settled:true、quietPointReached:true）；I4 观察者不是许愿机（幽灵按钮 ok:false/settled:true）；I5 超预算照采 fail-safe（mountDelayMs 6000 + budget 100 → exit 0/actual:0/quietPointReached:false）；I6 扰动走时上界（churn settled:false/waited<4000）；W1 端到端裁定翻正（casey run mountdelay → 修前 NEEDS_HUMAN 修后 intent_1 PASS + 报告三件）。verdict.mjs/replay-assert.mjs 字节不动。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/replay-settle-mount.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-14T17:37:50.517Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-regression-and-resign",
+      "desc": "影响面复验零行为差 + 重签涟漪 prd。静默点每代表步约 +0.5s（稳定页），受影响 fake-sut 消费金牌族逐个原样绿（p5-replay/p5-replay-coverage/wf-publish-states/wf-open-smoke/kinds-harden/run-history/replay-nth-visible-hardening/e2e-chain）+ selftest --tier1 绿。重签 prd-p5-replay（server.mjs + CONTRACT.md 两条 sha256）、prd-replay-nth-visible-hardening（server.mjs 一条）各自 gate 复验 GREEN（另跑，见重签台账）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/replay-nth-visible-hardening.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-14T17:44:13.033Z 全部 acceptance exit 0"
+    }
+  ]
+}

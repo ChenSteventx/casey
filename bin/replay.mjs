@@ -20,6 +20,7 @@ import pw from '@playwright/test';
 import { performAction } from '../lib/replay-actions.mjs';
 import { instantiate } from '../lib/instantiate.mjs';
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
+import { settleBeforeCapture } from '../lib/replay-settle.mjs';
 import { evaluateAssertions } from '../lib/replay-assert.mjs';
 import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
 import { credentialGate, maskCredentialRoute } from '../lib/cred-gate.mjs';
@@ -75,7 +76,7 @@ const RH_PLACEHOLDER = /^\{\{[A-Za-z0-9_.-]+\}\}$/;
 const RH_INTERACTIVE = new Set(['click', 'dblclick', 'fill', 'selectOption', 'dragTo']); // dragTo 源有定位 → 交互支（wf-add-node）
 const RH_ACTIONS = new Set(['click', 'dblclick', 'fill', 'selectOption', 'press', 'nav', 'newpage', 'dragTo']);
 const RH_LR_ENUM = new Set(['unique', 'none', 'ambiguous', 'fallback_first', 'coord_fallback']); // 冻结枚举透传（codex R1-F2）
-function historyLine(ev, { navOk, navErr, axis, durationMs, caseId }) {
+function historyLine(ev, { navOk, navErr, axis, durationMs, caseId, isLast, settled }) {
   if (!RH_ACTIONS.has(ev.action)) return null; // 冻结枚举外（如纯断言步）不落行
   let locatorResolution = null;
   let result;
@@ -108,7 +109,9 @@ function historyLine(ev, { navOk, navErr, axis, durationMs, caseId }) {
     action: ev.action,
     parameters,
     locatorResolution,
-    quietPointReached: !!navOk,
+    // 代表步（isLast）接静默点结果（replay-settle-mount）：navOk && settled——静默点超时仍记 false
+    //   （schema「false=证据可复现性存疑」口径一致）；非代表步维持既有 !!navOk 口径。值域仍 boolean。
+    quietPointReached: isLast ? (!!navOk && !!settled) : !!navOk,
     durationMs,
     result,
   };
@@ -396,6 +399,7 @@ async function main() {
       // 预导航/上下文恢复期：归因关闭（currentStepId=null），此期请求不系任何步（护栏 #15）。
       state.currentStepId = null;
       const evT0 = Date.now();
+      let reprSettled = false; // 代表步静默点结果（replay-settle-mount）：喂 historyLine 的 quietPointReached
       if (args.videoDir) vSteps.push({ stepId: ev.stepId, videoAt: Math.max(0, evT0 - videoT0) });
       let navOk = true;
       let navErr = null;
@@ -464,6 +468,26 @@ async function main() {
       }
 
       if (isLast) {
+        // 代表步采集前的有界静默点（replay-settle-mount）：镜像编译侧 quietPoint，让 SPA 路由挂载 /
+        //   「页面加载中」占位消失后再采断言输入（intentUrl/intentCount/toast/textHits/buttonHits/buttonSeen/
+        //   reply 同刻性保留）。纯观察者、有界、fail-safe：helper 自身故障照现状采、不吞步；归因此刻已关
+        //   （currentStepId=null），归因语义零动。等待计入 rhQuietWait（诚实记账，不进裁定）。
+        //   下限/预算读 REPLAY_SETTLE_FLOOR_MS/REPLAY_SETTLE_BUDGET_MS（仅测试缝，REPLAY_WATCHDOG_MS 先例，缺省 250/2500）。
+        const settleFloor = Number(process.env.REPLAY_SETTLE_FLOOR_MS);
+        const settleBudget = Number(process.env.REPLAY_SETTLE_BUDGET_MS);
+        const settleT = Date.now();
+        try {
+          const sr = await settleBeforeCapture(page, {
+            inFlight: () => forensics.inFlightCount(),
+            floorMs: Number.isFinite(settleFloor) && settleFloor >= 0 ? settleFloor : undefined,
+            budgetMs: Number.isFinite(settleBudget) && settleBudget > 0 ? settleBudget : undefined,
+            log,
+          });
+          reprSettled = sr.settled;
+          if (DBG) log('settle intent=' + ev.intentId + ' waited=' + sr.waitedMs + ' settled=' + sr.settled);
+        } catch (e) { log('settle helper error (fail-safe, capture as-is): ' + String((e && e.message) || e)); }
+        rhQuietWait += Date.now() - settleT;
+
         intentUrl.set(ev.intentId, pathOf(page.url()));
         const c = intentCount.get(ev.intentId);
         if (c) c.after = await rowCount(page, countSel);
@@ -550,7 +574,7 @@ async function main() {
       }
 
       if (rhOn) {
-        const line = historyLine(ev, { navOk, navErr, axis: ev.action === 'nav' ? null : actionByStep.get(ev.stepId), durationMs: Date.now() - evT0, caseId });
+        const line = historyLine(ev, { navOk, navErr, axis: ev.action === 'nav' ? null : actionByStep.get(ev.stepId), durationMs: Date.now() - evT0, caseId, isLast, settled: reprSettled });
         if (line) rhLines.push(line);
       }
     }

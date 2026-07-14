@@ -4,7 +4,7 @@
   "specPath": "docs/plans/replay-nth-visible-hardening/plan.md",
   "testChecksums": {
     "tests/_golden/replay-nth-visible-hardening.golden.mjs": "78cc7d18fcbf87ecfbe686c6fa37f3ef6410d6d0214ff4c57a5b9b96c5c360c6",
-    "tests/fixtures/fake-sut/server.mjs": "85bdd2f8702a9620667470954ec87c4c05633f89e297f3fcf6fe2d5ee15edb33"
+    "tests/fixtures/fake-sut/server.mjs": "b4c4d214b394d6109856b0dea7a13e3c05a32c6d6b51b56ec369dd849c6a313d"
   },
   "stories": [
     {

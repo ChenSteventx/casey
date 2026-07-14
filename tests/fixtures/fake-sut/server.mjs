@@ -68,6 +68,12 @@ const SCENARIOS = new Set([
   //     须与被钉物理节点同一）能识破；否则 bound.root 按 pin 定位到 B、候选域 2→1 洗成 unique 假绿。
   'twinfield', 'twinboth', 'twintitle', 'twinlate', 'twinghost', 'twindelay', 'ghostdup', 'pinclone',
   'fieldmove', 'triggermove', 'pinmove',
+  // replay-settle-mount：回放代表步采集前有界静默点考场。
+  //   mountdelay：详情页先渲静态占位「页面加载中」→ fetch /api/process/editorData（服务端延迟可配 mountDelayMs
+  //     缺省 800）→ 应答后替换渲染编辑器（保存按钮 + 画布）。复现真机数据请求驱动的 SPA 挂载 + 静态占位
+  //     （占位期 DOM 静止=纯两拍判据反例考场，在途请求撑住复合判据 A）；确认按钮「新增成功」toast 3000ms 自动消隐。
+  //   churn：编辑器即时挂载后 DOM 每 100ms 追加变长 + 背景轮询 300ms（denylist 内）——走时上界考场（判据 A 归零故兜底跳过）。
+  'mountdelay', 'churn',
 ]);
 
 // 背景轮询 denylist 的合成形态（绝不引真 site.json，护栏 #7）：watchNetworkForensics 用它把 /auths/poll 归 background。
@@ -119,6 +125,8 @@ function clientMain() {
   function toast(msg) {
     var t = el('div', { class: 'hr-toast', role: 'status' }, msg);
     document.body.appendChild(t);
+    // mountdelay：复现真机 toast 自动消隐（典型窗 3000ms）——延采不丢典型 toast 的回归锁考场；既有场景 toast 常驻零行为差。
+    if (scenario === 'mountdelay') setTimeout(function () { t.remove(); }, 3000);
   }
   function go(path) { history.pushState({}, '', path); render(); }
 
@@ -193,8 +201,6 @@ function clientMain() {
   function renderDetail() {
     app.innerHTML = '';
     if (scenario === 'pageerror') { throw new Error('注入页面错误（pageerror 场景）'); }
-    // 身份闭环（wf-open-smoke）：经行名打开时渲染被打开名——仅 __OPENED__ 置位才渲，既有通路（抽屉新增→详情）零行为差。
-    if (window.__OPENED__) { app.appendChild(el('div', { class: 'wf-open-title' }, window.__OPENED__)); }
     // drift：保存按钮换 class（录制 fallbackCss button.hr-button.wf-save 失配），但 role=button + name 保存 不变 → 同稳定签名唯一仍在。
     var saveClass = scenario === 'drift' ? 'hr-button wf-save-v2' : 'hr-button wf-save';
     function mkSave() {
@@ -206,12 +212,39 @@ function clientMain() {
       });
       return b;
     }
-    app.appendChild(mkSave());
-    // ambiguous：渲染第二个同名保存按钮 → 语义定位器多匹配 → 通用门 gateAndAct count>1 → resolution=ambiguous
-    //   （CONTEXT.md 第 79 行：多匹配唯一合法字面量=ambiguous；旧写法 fallback_first 在动作轴/裁定链语境已弃用）。
-    if (scenario === 'ambiguous') app.appendChild(mkSave());
-    // 画布通路（wf-add-node）：详情页尾部加法渲染，既有场景无人碰画布零行为差（wf-open-smoke 行名先例）。
-    renderCanvas();
+    // 编辑器挂载（保存按钮 + 画布）——既有场景同步调此挂载，DOM 与旧版逐字一致（零行为差）；
+    //   mountdelay/churn 走各自延迟/扰动分支后再调此挂载（replay-settle-mount 加法）。
+    function mountEditor() {
+      app.innerHTML = '';
+      // 身份闭环（wf-open-smoke）：经行名打开时渲染被打开名——仅 __OPENED__ 置位才渲，既有通路（抽屉新增→详情）零行为差。
+      if (window.__OPENED__) { app.appendChild(el('div', { class: 'wf-open-title' }, window.__OPENED__)); }
+      app.appendChild(mkSave());
+      // ambiguous：渲染第二个同名保存按钮 → 语义定位器多匹配 → 通用门 gateAndAct count>1 → resolution=ambiguous
+      //   （CONTEXT.md 第 79 行：多匹配唯一合法字面量=ambiguous；旧写法 fallback_first 在动作轴/裁定链语境已弃用）。
+      if (scenario === 'ambiguous') app.appendChild(mkSave());
+      // 画布通路（wf-add-node）：详情页尾部加法渲染，既有场景无人碰画布零行为差（wf-open-smoke 行名先例）。
+      renderCanvas();
+    }
+    // mountdelay（replay-settle-mount）：先渲静态占位「页面加载中」→ 数据请求驱动异步挂载编辑器。
+    //   占位期 DOM 静止（纯两拍判据会早退），在途 editorData 请求撑住判据 A——正是复合判据的反例考场。
+    if (scenario === 'mountdelay') {
+      app.appendChild(el('div', { class: 'hr-loading' }, '页面加载中'));
+      fetch('/api/process/editorData').then(function (r) { return r.json(); }).then(function () { mountEditor(); }).catch(function () {});
+      return;
+    }
+    // churn（replay-settle-mount）：编辑器即时挂载后，DOM 每 100ms 追加变长——两拍稳定永不达成、走时上界考场。
+    if (scenario === 'churn') {
+      mountEditor();
+      var grow = 0;
+      setInterval(function () {
+        grow += 1;
+        var pad = '';
+        for (var z = 0; z < grow; z++) pad += '.';
+        app.appendChild(el('div', { class: 'churn-row' }, 'churn-' + grow + pad));
+      }, 100);
+      return;
+    }
+    mountEditor();
   }
 
   // —— 画布通路（wf-add-node，LogicFlow 形态假画布）——
@@ -582,12 +615,18 @@ function pageHtml(scenario) {
     + '</body></html>';
 }
 
-function makeHandler(scenario) {
+function makeHandler(scenario, mountDelayMs = 800) {
   return function handle(req, res) {
     const u = new URL(req.url, 'http://127.0.0.1');
     const p = u.pathname;
     // 后端路由
     if (p === '/api/process/saveOrModifyProcessData' && req.method === 'POST') return saveResponse(res, scenario);
+    // mountdelay：编辑器数据请求，服务端延迟 mountDelayMs 后应答（驱动 SPA 异步挂载；其余场景不发此请求，延迟 0 无副作用）。
+    if (p === '/api/process/editorData') {
+      const delay = scenario === 'mountdelay' ? mountDelayMs : 0;
+      setTimeout(() => json(res, 200, { status: 200, data: { mounted: true } }), delay);
+      return;
+    }
     if (p === '/api/auths/poll') {
       // 背景轮询：background401 与 stale_bg401 回 401（body 用 status 形态、actual=401，复现 observed-reality 的 poll 记录）。
       var poll401 = scenario === 'background401' || scenario === 'stale_bg401';
@@ -609,10 +648,10 @@ function makeHandler(scenario) {
 // 假 SUT 起在【独立子进程】（fork）。关键：golden 用同步 execFileSync 跑 replay 会冻住调用进程的事件循环；
 // 假 SUT 若在同进程内，replay 期间就答不了浏览器请求（goto 卡死）。fork 到独立进程即不受阻塞——
 // 假被测系统本就该是独立进程。行为（8 态路由 + 客户端）一字未改，只把承载进程移出去。
-export function startFakeSut({ scenario = 'happy', port = 0 } = {}) {
+export function startFakeSut({ scenario = 'happy', port = 0, mountDelayMs = 800 } = {}) {
   if (!SCENARIOS.has(scenario)) throw new Error('未知 fixture 场景: ' + scenario + '（合法: ' + [...SCENARIOS].join('/') + '）');
   return new Promise((resolve, reject) => {
-    const child = fork(fileURLToPath(import.meta.url), ['--serve', '--scenario', scenario, '--port', String(port)], { stdio: ['ignore', 'inherit', 'inherit', 'ipc'] });
+    const child = fork(fileURLToPath(import.meta.url), ['--serve', '--scenario', scenario, '--port', String(port), '--mountdelay', String(mountDelayMs)], { stdio: ['ignore', 'inherit', 'inherit', 'ipc'] });
     let settled = false;
     const timer = setTimeout(() => { if (!settled) { settled = true; try { child.kill(); } catch {} reject(new Error('假 SUT 子进程启动超时')); } }, 10000);
     child.once('message', (msg) => {
@@ -641,7 +680,9 @@ function serveMain() {
   const argv = process.argv;
   const scenario = argv[argv.indexOf('--scenario') + 1] || 'happy';
   const port = Number(argv[argv.indexOf('--port') + 1] || 0);
-  const server = http.createServer(makeHandler(scenario));
+  const mdIdx = argv.indexOf('--mountdelay');
+  const mountDelayMs = mdIdx >= 0 && Number.isFinite(Number(argv[mdIdx + 1])) ? Number(argv[mdIdx + 1]) : 800;
+  const server = http.createServer(makeHandler(scenario, mountDelayMs));
   server.listen(port, '127.0.0.1', () => {
     if (process.send) process.send({ ready: true, port: server.address().port });
   });
