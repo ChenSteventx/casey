@@ -21,7 +21,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-13T21:59:53.259Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-14T02:32:06.424Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-regression-locks",
@@ -36,7 +36,7 @@
         "node tests/_golden/p2-verdict.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-13T22:02:04.629Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-14T02:34:06.195Z 全部 acceptance exit 0"
     }
   ]
 }
