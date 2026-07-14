@@ -169,6 +169,7 @@ try {
     if (setf.semantic.exact !== false) throw new Error(`setNodeField exact 缺省应 false（未给 exact 入参），实际 ${setf.semantic.exact}`);
     if (setf.nth !== undefined) throw new Error(`setNodeField 单字段不给 nth（严格唯一，未给 nth 入参不载 nth），实际带 nth=${setf.nth}`);
     if (setf.dropdownUnit !== undefined) throw new Error('setNodeField 不得带 dropdownUnit（走 fill 非 selectOption）');
+    if (setf.nodeName !== NODE) throw new Error(`setNodeField 编译产物应带 nodeName「${NODE}」（drawer-lock-hardening D3 供给通道，编译期 run 态 openNode 成功后写入），实际 ${setf.nodeName}`);
     assertEventsDocAgainstSchema(ev);
     const rep = readJson(reportFile);
     if (!deepEq(rep.blockers || [], [])) throw new Error(`blockers 应空，实际 ${JSON.stringify(rep.blockers)}`);
@@ -231,8 +232,9 @@ try {
     { intentId: 'intent_1', expected: [{ kind: 'textVisible', op: 'appears', value: NODE }] },
     { intentId: 'intent_2', expected: [{ kind: 'countChange', op: 'up', value: 1 }] },
   ]);
-  // setNodeField fill 事件（末步，intent_3）：无 nth（严格唯一/多匹配 ambiguous）；semantic label 载 placeholder + exact。
-  const setFieldEvent = () => ({ stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.setNodeField', action: 'fill', value: VALUE, semantic: { kind: 'label', name: PLACEHOLDER, exact: false } });
+  // setNodeField fill 事件（末步，intent_3）：无 nth（严格唯一/多匹配 ambiguous）；semantic label 载 placeholder + exact；
+  // nodeName 载当前节点标题（drawer-lock-hardening D3/D8：既有金牌手编 events 补齐，供标题锚域锁读取）。
+  const setFieldEvent = () => ({ stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.setNodeField', action: 'fill', value: VALUE, semantic: { kind: 'label', name: PLACEHOLDER, exact: false }, nodeName: NODE });
   // 全局取证（synthesizeSkeleton 缺省加的两条硬断言，手编路径显式带上——setNodeField intent 的 PASS 靠它 + 门内 ap）。
   const GLOBALS = [{ kind: 'noPageError', op: 'absent' }, { kind: 'noErrorEnvelope', op: 'envelopeOk' }];
 
@@ -349,8 +351,9 @@ try {
       schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-09T00:00:00.000Z', authored: false,
       events: [
         { stepId: 'atstep_0', intentId: 'intent_0', atom: 'nav.workflowManagement', action: 'nav', url: '{{baseUrl}}/ai-manager/process/detail' },
-        // 抽屉未开（未 addNode/openNode）→ 字段缺席 → 缺席守卫回 none（waitFor 抛不得穿出崩整轮）。
-        { stepId: 'atstep_1', intentId: 'intent_1', atom: 'workflow.setNodeField', action: 'fill', value: VALUE, semantic: { kind: 'label', name: PLACEHOLDER, exact: false } },
+        // 抽屉未开（未 addNode/openNode）→ 标题锚域内缺席 → 缺席守卫回 none（waitFor 抛不得穿出崩整轮）；
+        // nodeName 载 NODE（drawer-lock-hardening D8 既有金牌补齐）——域内确实无此标题，仍归 none，非 nodeName 缺席那支。
+        { stepId: 'atstep_1', intentId: 'intent_1', atom: 'workflow.setNodeField', action: 'fill', value: VALUE, semantic: { kind: 'label', name: PLACEHOLDER, exact: false }, nodeName: NODE },
       ],
     }, {
       caseId, channel: 'web',

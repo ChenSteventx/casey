@@ -3,8 +3,8 @@
   "task": "replay-nth-visible-hardening（light）：`selectNodeDropdown` 同域收尾三修（两 med backlog + 一条注释失准），全部红先行。fix#1 非法 `nth` 静默降级 index 0 → 硬阻断 fail-closed（`lib/replay-actions.mjs` `doSelectNodeDropdown` 落 `action_failed` 不点、`lib/compile-atoms.mjs` `compileWorkflowSelectNodeDropdown` 落 blocker exit 65 零 events），与「多匹配→ambiguous、越界→blocker」口径一致、绝不猜首项；`nth` 缺省仍默认 0（registry 明载，C2 金牌钉，不动）。fix#2 触发器域锁 `.hr-drawer__content-wrapper .hr-select` 未限可见 → 补 `:visible`（照选项侧已有 `.hr-select-option:visible` 先例，两门同刻），封隐藏/teleport 触发器误命中。fix#3 `tests/fixtures/fake-sut/server.mjs` `ambiguous` 场景注释 `resolution=fallback_first` → `ambiguous` 订正（通用门 `gateAndAct` count>1 吐 `ambiguous`、`p3-compile` 已钉、CONTEXT.md 第 79 行定多匹配唯一合法字面量=`ambiguous`；纯注释无冻结断言）。红先行夹具加法：`ddhidden` 场景（抽屉先挂 `display:none` 隐藏 `.hr-select` 触发器占 DOM 序 index 0、再挂真可见触发器）——既有场景零行为差、破 `prd-p5-replay` 的 `server.mjs` checksum 故重签。本契约与 B 契约都碰 `lib/replay-actions.mjs`/`lib/compile-atoms.mjs`，各自 worktree 隔离、主环 3-way 合并。决策 docs/plans/replay-nth-visible-hardening/proposed/GRILL.md（D1-D3）、验收 plan.md（C1-C5）。",
   "specPath": "docs/plans/replay-nth-visible-hardening/plan.md",
   "testChecksums": {
-    "tests/_golden/replay-nth-visible-hardening.golden.mjs": "3f447bfe78c1c8abbf819da9abc0d70c36d2a3c7d45681cab73f7aac3b124790",
-    "tests/fixtures/fake-sut/server.mjs": "a1c4266905bb6022bc1c8612ca0cc66eb36cad7cfaf6be36c9b8e3c2ce11e00f"
+    "tests/_golden/replay-nth-visible-hardening.golden.mjs": "78cc7d18fcbf87ecfbe686c6fa37f3ef6410d6d0214ff4c57a5b9b96c5c360c6",
+    "tests/fixtures/fake-sut/server.mjs": "85bdd2f8702a9620667470954ec87c4c05633f89e297f3fcf6fe2d5ee15edb33"
   },
   "stories": [
     {
@@ -15,7 +15,7 @@
         "node tests/_golden/replay-nth-visible-hardening.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-10T05:07:12.178Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-14T15:31:30.859Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-resign-and-regression",
@@ -34,7 +34,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-10T05:16:07.837Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-14T15:46:24.920Z 全部 acceptance exit 0"
     }
   ]
 }

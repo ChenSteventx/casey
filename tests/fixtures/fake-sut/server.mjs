@@ -26,6 +26,48 @@ const SCENARIOS = new Set([
   // replay-nth-visible-hardening fix#2：抽屉挂一枚 display:none 的隐藏 .hr-select 触发器（占 DOM 序 index 0）+
   //   真·可见触发器——触发器域锁未限可见时误命中隐藏触发器，限 :visible 后只命中可见触发器。
   'ddhidden',
+  // drawer-lock-hardening（GRILL D7，设计评审修订三扩五）：详情页画布外挂第二个可见
+  //   .hr-drawer__content-wrapper 冒牌抽屉，钉 openNode/selectNodeDropdown/setNodeField 三原子域锁
+  //   跨抽屉边界（codex-sol MED#2 挂账）。冒牌抽屉字段/触发器与真节点抽屉共用构建函数不特判，
+  //   纯加法、既有场景零行为差。
+  //   twinfield：真节点抽屉 ddempty 形态（无字段无下拉）+ 冒牌抽屉挂唯一同 placeholder 字段与「请选择」触发器
+  //     （可点可选可回读）——钉 setNodeField/selectNodeDropdown 跨抽屉误命中；
+  //   twinboth：真节点抽屉与冒牌抽屉各挂一个同 placeholder 字段 + 各一「请选择」触发器（评审修订：冒牌
+  //     补挂触发器）——钉「域内唯一才动手」正面半边（set 与 select 各自的正面半边）；
+  //   twintitle：单击节点不开抽屉（drawernone 半形态）+ 冒牌抽屉（画布外、预挂）含节点标题精确文本——
+  //     钉 openNode 开错抽屉归因假绿（只覆盖『点击前已存在』的冒牌）；
+  //   twinlate（评审修订新增）：单击节点开真抽屉（ddempty 形态：无字段无下拉），同刻（同一次点击的
+  //     同一事件处理器内）动态挂出含该节点标题精确可见文本的冒牌抽屉（带同 placeholder 字段 + 「请选择」
+  //     触发器）——钉『点击后才出现的冒牌』：openNode 预点基线 0 过、点后域内 count=2 证不出归因；
+  //     set/select 域级 count=2 → ambiguous；
+  //   twinghost（评审修订新增）：单击节点不开抽屉（drawernone 半形态，画布外预挂冒牌）+ 冒牌抽屉含节点
+  //     标题精确文本但该文本 display:none 隐藏——钉『隐藏文本命中』假绿（标题文本自身须可见才算命中）。
+  //   twindelay（实现评审 r1 修复新增，codex HIGH#1 检查后窗口）：单击节点开真抽屉（ddempty 形态），
+  //     延时 3000ms 后把含该节点标题精确可见文本的冒牌抽屉（带同 placeholder 字段 + 「请选择」触发器）
+  //     【前插】到真抽屉之前（DOM 序更早）——复现『域计数后到 click/fill 前同标题抽屉动态前插』：
+  //     旧实现 root=structural.nth(0) 惰性重解析会在字段/触发器 5s 可见等待里漂移到冒牌抽屉且不重判
+  //     三态，落笔+回读成立=假绿；延时晚于域计数（点击后约 1s 内发生）、早于 5s 等待超时，落在窗口正中。
+  //   ghostdup（实现评审 r1 修复新增，codex/pi 双路 MED#1 合法正面）：真节点抽屉正常打开（缺省形态：
+  //     标题+字段+下拉都在），但标题元素之前先挂一个 display:none 的同文案隐藏节点（占 DOM 序更早）——
+  //     钉『隐藏同文案在前+可见真标题在后』的合法抽屉不得被误拒：可见性判定只查首命中会把该抽屉整个
+  //     排出域（fail-closed 假阴），须遍历全部命中任一可见即纳入。
+  //   pinclone（实现评审 r2 修复新增，codex r2 HIGH）：单击节点开真抽屉（ddempty 形态）；页面装
+  //     MutationObserver 监听 data-casey-domain-pin 属性——真抽屉一被钉上 pin，同一 JS 任务的微任务里
+  //     同步把 pin 值【复制】到画布外新建冒牌抽屉（无标题、带同占位符字段+「请选择」触发器、前插）。
+  //     显式阶段握手（以 stamp 动作本身为相位信号）、零时序依赖。钉『pin 属性可被页面复制』：按属性
+  //     选择器定根且不验物理同一/全页唯一的实现会把冒牌纳入定位、其唯一字段/触发器被当域内唯一而
+  //     落笔（假绿）；物理句柄绑定 + pin 全页唯一重验后复制即被识破、拒动。
+  //   fieldmove（实现评审 r3 前置独立审查 HIGH）：字段 focus 时把同一物理 input 搬到无标题冒牌抽屉，
+  //     钉 fill 动作窗口仍须重验物理包含；拒填后冒牌字段保持空值。
+  //   triggermove（实现评审 r3 前置独立审查 HIGH）：触发器 click 既有监听先开选项浮层，随后监听把
+  //     同一物理触发器搬到无标题冒牌抽屉，钉真正点选项前仍须重验物理包含；拒选后值保持「请选择」。
+  //   pinmove（实现评审 r4 汇裁 A2 HIGH）：真抽屉 A（可见标题）含两个同占位符字段，其一包在 A 内部
+  //     无标题、同类名 .hr-drawer__content-wrapper 的嵌套子容器 B 里；MutationObserver 监听 pin 属性——
+  //     A 一被钉，同一微任务里摘下 A 的 pin、以同值挂到 B（全页始终恰一，零时序依赖）。钉『pin 搬到
+  //     无标题嵌套 wrapper』：域计数仍唯一（B 无标题不入域）、pin 全页仍恰一，唯挂点闸（唯一 pin 承载者
+  //     须与被钉物理节点同一）能识破；否则 bound.root 按 pin 定位到 B、候选域 2→1 洗成 unique 假绿。
+  'twinfield', 'twinboth', 'twintitle', 'twinlate', 'twinghost', 'twindelay', 'ghostdup', 'pinclone',
+  'fieldmove', 'triggermove', 'pinmove',
 ]);
 
 // 背景轮询 denylist 的合成形态（绝不引真 site.json，护栏 #7）：watchNetworkForensics 用它把 /auths/poll 归 background。
@@ -241,8 +283,13 @@ function clientMain() {
     // 剥 query（bin/replay.mjs:382），故不能用 URL query，改用场景（既有场景一律缺省行为、零影响）：
     //   缺省场景（happy 等）单击节点开抽屉、标题 = 节点名（精确）；
     //   'drawernone'     单击节点不开抽屉（模拟 app 无响应——「点了不开」反面，钉回放 action_failed）；
-    //   'drawersuperset' 单击节点开抽屉、标题 = 节点名 + '副本'（含 label 子串但非精确——substring 假绿考场，钉 F1 精确回读）。
-    var drawerMode = scenario === 'drawersuperset' ? 'superset' : scenario === 'drawernone' ? 'none' : '';
+    //   'drawersuperset' 单击节点开抽屉、标题 = 节点名 + '副本'（含 label 子串但非精确——substring 假绿考场，钉 F1 精确回读）；
+    //   'twintitle'      单击节点不开抽屉（drawernone 半形态复用）——冒牌抽屉另含节点标题精确文本钉 openNode 开错抽屉归因假绿。
+    //   'twinghost'      单击节点不开抽屉（drawernone 半形态复用）——冒牌抽屉另含节点标题精确文本但该文本 display:none 隐藏。
+    var drawerMode = scenario === 'drawersuperset' ? 'superset' : (scenario === 'drawernone' || scenario === 'twintitle' || scenario === 'twinghost') ? 'none' : '';
+    var twinlateFakeDrawer = null; // twinlate：点击同刻动态挂出的冒牌抽屉（点击前不存在，与预挂的 twinfield/twinboth/twintitle/twinghost 冒牌不同）
+    var twindelayScheduled = false; // twindelay：延时前插冒牌只排程一次（singleton，同 twinlateFakeDrawer 先例）
+    var pinmoveObserving = false; // pinmove：pin 搬移观察器只装一次（singleton，同 pinclone 先例）
 
     // —— 节点抽屉「请选择」下拉（wf-select-node-dropdown，registry SOP 最小复现）——
     // 触发器 = .hr-select（初值「请选择」，值放 .hr-select__value 子 span 便于精确回读）；点触发器弹可见浮层
@@ -278,6 +325,14 @@ function clientMain() {
         document.body.appendChild(layer); // teleport 到 body（复现真机浮层脱离抽屉）
       });
       container.appendChild(trig);
+      return trig;
+    }
+
+    function moveTargetToFakeDrawer(target) {
+      if (!target || !target.parentNode) return;
+      var actionFakeDrawer = el('div', { class: 'hr-drawer__content-wrapper action-window-fake' });
+      wrap.insertBefore(actionFakeDrawer, nodeDrawer);
+      actionFakeDrawer.appendChild(target);
     }
 
     overlay.addEventListener('click', function (e) {
@@ -291,8 +346,72 @@ function clientMain() {
       if (drawerMode === 'superset') titleText = titleText + '副本'; // 开错抽屉：标题含 label 非精确
       if (!nodeDrawer) { nodeDrawer = el('div', { class: 'hr-drawer__content-wrapper' }); wrap.appendChild(nodeDrawer); }
       nodeDrawer.textContent = '';
+      // ghostdup（实现评审 r1 修复新增，codex/pi 双路 MED#1 合法正面）：真抽屉里、可见标题【之前】先挂
+      //   一个 display:none 的同文案隐藏节点（真机形态如抽屉头部隐藏提示文本/占位副本先于可见标题渲染）。
+      //   抽屉本身完全合法（标题可见、字段/下拉照常）——钉『可见性判定只查首命中』的误拒假阴：首命中是
+      //   隐藏节点时整抽屉被排出域，合法操作被硬阻断；判定须遍历全部命中任一可见即纳入。既有场景零行为差。
+      if (scenario === 'ghostdup') {
+        var ghostDup = el('div', { class: 'lf-node-drawer__ghost' }, titleText);
+        ghostDup.setAttribute('style', 'display:none');
+        nodeDrawer.appendChild(ghostDup);
+      }
       nodeDrawer.appendChild(el('div', { class: 'lf-node-drawer__title' }, titleText));
-      if (scenario === 'ddempty') return; // 抽屉开但无下拉：域内触发器 count=0（execute 预检的「无下拉」半边）
+      // pinmove（实现评审 r4 汇裁 A2 HIGH）：真抽屉 A（含可见标题）挂两个同占位符字段，其一（field1）
+      //   直接在 A 内、另一（field2）包在 A 内部无标题、同类名 .hr-drawer__content-wrapper 的嵌套子容器 B
+      //   里。MutationObserver 监听 A 的 pin 属性——A 一被回放/编译门钉上 pin，同一微任务里摘下 A 的 pin、
+      //   以同值挂到 B（全页始终恰一，以 stamp 为相位信号=确定性握手、零时序依赖）。钉『pin 搬到无标题
+      //   嵌套 wrapper』：域计数仍唯一（B 无标题不入域）、pin 全页仍恰一——唯挂点闸（唯一 pin 承载者须与
+      //   被钉物理节点同一）能识破。修前 bound.root 按 pin 定位到 B、候选域 2→1 洗成 unique 假绿；修后
+      //   下一个重判点即拒（action_failed），两字段零落笔。只装一次观察器（singleton）。
+      if (scenario === 'pinmove') {
+        nodeDrawer.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER })); // field1：直接在 A 内
+        var nestedWrapper = el('div', { class: 'hr-drawer__content-wrapper' }); // B：A 内部无标题嵌套子容器
+        nestedWrapper.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER })); // field2：包在 B 里
+        nodeDrawer.appendChild(nestedWrapper);
+        if (!pinmoveObserving) {
+          pinmoveObserving = true;
+          var pinmoveDone = false;
+          new MutationObserver(function () {
+            if (pinmoveDone) return;
+            var pinVal = nodeDrawer.getAttribute('data-casey-domain-pin');
+            if (!pinVal) return;
+            pinmoveDone = true;
+            nodeDrawer.removeAttribute('data-casey-domain-pin'); // 摘下 A 的 pin
+            nestedWrapper.setAttribute('data-casey-domain-pin', pinVal); // 以同值挂到 B（全页始终恰一）
+          }).observe(nodeDrawer, { attributes: true, attributeFilter: ['data-casey-domain-pin'] });
+        }
+        return;
+      }
+      // twindelay（实现评审 r1 修复新增，codex HIGH#1 检查后 TOCTOU 窗口）：真抽屉打开后延时 3000ms 把
+      //   含该节点标题精确可见文本的冒牌抽屉【前插】到真抽屉之前（DOM 序更早，wrap.insertBefore）——
+      //   与 twinlate 的『同刻挂出、DOM 序更晚』互补，专钉『域计数通过之后、click/fill 之前』动态前插：
+      //   旧实现 root=structural.nth(0) 惰性重解析，字段/触发器 5s 可见等待里会漂移到冒牌抽屉且不重判
+      //   三态。冒牌带同 placeholder 字段 + 「请选择」触发器（与 twinlate 冒牌同构，共用构建函数不特判）。
+      //   延时窗口依据：回放/编译门的初次域计数在点击后约 1s 内发生（respWait 600ms + 因果窗 150ms +
+      //   静默点），3000ms 晚于它、早于字段/触发器 5s 可见等待超时（约点击后 6s），落在窗口正中。
+      if (scenario === 'twindelay' && !twindelayScheduled) {
+        twindelayScheduled = true;
+        setTimeout(function () {
+          var lateFake = el('div', { class: 'hr-drawer__content-wrapper' });
+          lateFake.appendChild(el('div', { class: 'fake-node-title' }, titleText));
+          lateFake.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
+          buildNodeSelect(lateFake, '');
+          wrap.insertBefore(lateFake, nodeDrawer);
+        }, 3000);
+      }
+      // twinlate（D7 评审修订新增）：真抽屉打开的同一次点击事件处理器内，同刻动态挂出含该节点标题
+      //   精确可见文本的冒牌抽屉（点击前不存在——与 twinfield/twinboth/twintitle/twinghost 的『预挂』
+      //   冒牌不同，钉『点击后才出现的冒牌』这条评审新增支线）。只挂一次（singleton，同 nodeDrawer 先例）。
+      if (scenario === 'twinlate' && !twinlateFakeDrawer) {
+        twinlateFakeDrawer = el('div', { class: 'hr-drawer__content-wrapper' });
+        twinlateFakeDrawer.appendChild(el('div', { class: 'fake-node-title' }, titleText));
+        twinlateFakeDrawer.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
+        buildNodeSelect(twinlateFakeDrawer, '');
+        wrap.appendChild(twinlateFakeDrawer);
+      }
+      // ddempty/twinfield/twinlate/twindelay/pinclone：抽屉开但无字段无下拉——域内触发器/字段 count=0（execute 预检的「无下拉/无字段」半边；
+      //   twinfield/twinlate/twindelay/pinclone 复用此缺席半边，真节点抽屉空、跨抽屉误命中的唯一候选靠冒牌抽屉，D7 定）。
+      if (scenario === 'ddempty' || scenario === 'twinfield' || scenario === 'twinlate' || scenario === 'twindelay' || scenario === 'pinclone') return;
       // 节点抽屉下拉纯加法：缺省单下拉；ddtwin 挂两触发器 + 预挂一层 stale 隐藏浮层含目标（两浮层各现一次）。
       // ddhidden（replay-nth-visible-hardening fix#2 复现）：先挂一枚 display:none 的隐藏 .hr-select 触发器占
       //   DOM 序 index 0，再挂真·可见触发器——触发器域锁未限可见时 .hr-select count=2、nth=0 误命中隐藏触发器
@@ -303,7 +422,15 @@ function clientMain() {
         ddHiddenTrig.appendChild(el('span', { class: 'hr-select__value' }, '请选择'));
         nodeDrawer.appendChild(ddHiddenTrig); // 隐藏触发器占 DOM 序 index 0（全页门数得到、可见门数不到）
       }
-      buildNodeSelect(nodeDrawer, ddMode);
+      var nodeTrigger = buildNodeSelect(nodeDrawer, ddMode);
+      if (scenario === 'triggermove') {
+        // 动作窗口确定性反例：既有 click listener 先打开浮层，本 listener 随后把同一物理触发器搬到无标题
+        // 冒牌抽屉。只做动作前 contains、动作后仍按同句柄回读的实现会选中并假报 unique。
+        nodeTrigger.addEventListener('click', function moveTriggerOnce() {
+          nodeTrigger.removeEventListener('click', moveTriggerOnce);
+          moveTargetToFakeDrawer(nodeTrigger);
+        });
+      }
       if (ddMode === 'ddtwin') {
         buildNodeSelect(nodeDrawer, ddMode); // 第二个「请选择」触发器（孪生）
         var stale = el('div', { class: 'hr-select-dropdown' });
@@ -316,6 +443,14 @@ function clientMain() {
       //   Playwright .fill() 直改其 .value → inputValue() 回读地面真值。setmulti 挂两个同占位符 input →
       //   域内 count=2（多匹配未给 nth ambiguous 绝不填首项）；setclash 抽屉内单字段（域外另有孪生，见下）。
       var setInp = el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER });
+      if (scenario === 'fieldmove') {
+        // 动作窗口确定性反例：Playwright fill 的 focus 阶段把同一物理字段搬到无标题冒牌抽屉；若只在
+        // fill 前验 contains、fill 后只读同句柄 value，会把写错抽屉误报 unique。
+        setInp.addEventListener('focus', function moveFieldOnce() {
+          setInp.removeEventListener('focus', moveFieldOnce);
+          moveTargetToFakeDrawer(setInp);
+        });
+      }
       if (scenario === 'setsuffix') {
         // 精确回读律钉桩：input 事件里给 value 追加尾巴 → Playwright .fill(want) 后 inputValue() 成 want+'#tail'
         //   （含 want 的超集、非等 want）。精确门 got!==want → action_failed（拒认）；若退成 includes 会误判填对假绿。
@@ -347,6 +482,63 @@ function clientMain() {
     //   全页 getByPlaceholder count=2 必 ambiguous、唯域锁 .hr-drawer__content-wrapper 内 count=1 才 unique，
     //   钉「回放走域锁专用门 doSetNodeField、非全页门」。纯加法、只 setclash 场景挂、既有场景零影响。
     if (scenario === 'setclash') wrap.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
+    // —— 冒牌抽屉（drawer-lock-hardening D7，纯加法反面场景）——详情页画布外（挂 wrap，同 setclash 位置
+    //   先例）再挂第二个可见 .hr-drawer__content-wrapper，真机形态如同页测试面板/新增抽屉并存；字段/
+    //   触发器与真节点抽屉共用构建函数 buildNodeSelect 不特判。本块只覆盖『点击前已预挂』的四场景
+    //   （twinfield/twinboth/twintitle/twinghost）；twinlate 的冒牌是点击同刻动态挂出，见上方 overlay
+    //   click 处理器内 twinlateFakeDrawer。既有场景（非 twin*）零行为差。
+    var TWIN_TITLE_NODE = '模型节点'; // twintitle/twinghost 冒牌抽屉标题固定复用面板项名（金牌据此选同名节点考场）
+    if (scenario === 'twinfield' || scenario === 'twinboth' || scenario === 'twintitle' || scenario === 'twinghost') {
+      var fakeDrawer = el('div', { class: 'hr-drawer__content-wrapper' });
+      if (scenario === 'twintitle') {
+        // 冒牌抽屉含节点标题精确文本——钉 openNode 回读假绿：另一可见抽屉恰含 label（不含字段/触发器，
+        // 本场景只考 openNode 自身，select/set 两原子不会被前置门放行到达）。
+        fakeDrawer.appendChild(el('div', { class: 'fake-node-title' }, TWIN_TITLE_NODE));
+      } else if (scenario === 'twinghost') {
+        // twinghost（评审修订新增）：冒牌抽屉含节点标题精确文本，但该文本节点自身 display:none 隐藏
+        // ——wrapper 可见但文本不可见，钉『标题文本自身须可见』收紧（D2 修订）。同时补挂一个同 placeholder
+        // 字段 + 一个「请选择」触发器（与 twinfield 同构）：若只挂隐藏标题不挂字段/触发器，旧宽域锁在这
+        // 具体夹具里也会因「压根没有字段」而巧合吐 none——不构成红证；补字段/触发器后，旧宽域锁（不问
+        // 标题、只问「抽屉可见」）会真把这唯一字段/触发器当成域内命中，走完全程真假绿，红证成立。
+        var titleEl = el('div', { class: 'fake-node-title' }, TWIN_TITLE_NODE);
+        titleEl.setAttribute('style', 'display:none');
+        fakeDrawer.appendChild(titleEl);
+        fakeDrawer.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
+        buildNodeSelect(fakeDrawer, '');
+      } else {
+        // twinfield/twinboth：冒牌抽屉不含节点标题，只挂同 placeholder 字段（钉 setNodeField/
+        // selectNodeDropdown 跨抽屉误命中）+ 一个「请选择」触发器（可点可选可回读，让旧宽域锁走完
+        // 全程真假绿；评审修订：twinboth 冒牌也补挂触发器，钉 selectNodeDropdown 域内唯一才动手的
+        // 正面半边——真节点抽屉此时是 ddempty 形态，无字段无下拉）。
+        fakeDrawer.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
+        if (scenario === 'twinfield' || scenario === 'twinboth') buildNodeSelect(fakeDrawer, '');
+      }
+      wrap.appendChild(fakeDrawer);
+    }
+    // pinclone（实现评审 r2 修复新增，codex r2 HIGH『pin 属性可被页面复制』）：MutationObserver 监听
+    //   data-casey-domain-pin 属性变化——真抽屉一被回放/编译门钉上 pin，观察器回调（同一 JS 任务的微任务）
+    //   同步新建冒牌抽屉（无标题、带同占位符字段+「请选择」触发器，字段/触发器共用构建函数不特判）、
+    //   把 pin 值原样复制上去并【前插】到被钉节点之前。以 stamp 动作本身为相位信号 = 显式阶段握手、
+    //   零时序依赖（评审 r2 MED 对 twindelay 时基延时的确定性补强）。只克隆一次（singleton）。
+    if (scenario === 'pinclone') {
+      var pincloneDone = false;
+      new MutationObserver(function (muts) {
+        if (pincloneDone) return;
+        for (var mi = 0; mi < muts.length; mi++) {
+          var mt = muts[mi].target;
+          if (!mt || !mt.getAttribute) continue;
+          var pinVal = mt.getAttribute('data-casey-domain-pin');
+          if (!pinVal) continue;
+          pincloneDone = true;
+          var pinCloneDrawer = el('div', { class: 'hr-drawer__content-wrapper' });
+          pinCloneDrawer.setAttribute('data-casey-domain-pin', pinVal);
+          pinCloneDrawer.appendChild(el('input', { class: 'hr-input', placeholder: SET_FIELD_PLACEHOLDER }));
+          buildNodeSelect(pinCloneDrawer, '');
+          mt.parentNode.insertBefore(pinCloneDrawer, mt);
+          break;
+        }
+      }).observe(wrap, { attributes: true, subtree: true, attributeFilter: ['data-casey-domain-pin'] });
+    }
     app.appendChild(wrap);
   }
 

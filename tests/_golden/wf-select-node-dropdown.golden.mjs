@@ -155,6 +155,7 @@ try {
     if (sel.text !== OPT) throw new Error(`selectNodeDropdown text 应载 option「${OPT}」，实际 ${sel.text}`);
     if (!sel.semantic || sel.semantic.kind !== 'text' || sel.semantic.name !== '请选择' || sel.semantic.exact !== true) throw new Error(`selectNodeDropdown 应经语义锚触发器「请选择」exact，实际 ${JSON.stringify(sel.semantic)}`);
     if (sel.dropdownUnit !== undefined) throw new Error('selectNodeDropdown 不得带 dropdownUnit（走 click 非 selectOption，零冻结 schema）');
+    if (sel.nodeName !== NODE) throw new Error(`selectNodeDropdown 编译产物应带 nodeName「${NODE}」（drawer-lock-hardening D3 供给通道，编译期 run 态 openNode 成功后写入），实际 ${sel.nodeName}`);
     assertEventsDocAgainstSchema(ev);
     const rep = readJson(reportFile);
     if (!deepEq(rep.blockers || [], [])) throw new Error(`blockers 应空，实际 ${JSON.stringify(rep.blockers)}`);
@@ -225,7 +226,7 @@ try {
       const caseId = 'tc_wf_seldd_ddtwin';
       const { axes, verdict } = runReplayVerdict('ddtwin', s.url, {
         schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-09T00:00:00.000Z', authored: false,
-        events: [...setupEvents(), { stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.selectNodeDropdown', action: 'click', nth: 0, text: OPT, semantic: { kind: 'text', name: '请选择', exact: true } }],
+        events: [...setupEvents(), { stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.selectNodeDropdown', action: 'click', nth: 0, text: OPT, semantic: { kind: 'text', name: '请选择', exact: true }, nodeName: NODE }],
       }, {
         caseId, channel: 'web',
         intents: [...setupIntents(), { intentId: 'intent_3', expected: [{ kind: 'textVisible', op: 'appears', value: OPT }] }],
@@ -317,7 +318,7 @@ try {
       events: [
         { stepId: 'atstep_0', intentId: 'intent_0', atom: 'nav.workflowManagement', action: 'nav', url: '{{baseUrl}}/ai-manager/process/detail' },
         // 抽屉未开（未 addNode/openNode）→ 触发器缺席 → 缺席守卫回 none（waitFor 抛不得穿出崩整轮）。
-        { stepId: 'atstep_1', intentId: 'intent_1', atom: 'workflow.selectNodeDropdown', action: 'click', nth: 0, text: OPT, semantic: { kind: 'text', name: '请选择', exact: true } },
+        { stepId: 'atstep_1', intentId: 'intent_1', atom: 'workflow.selectNodeDropdown', action: 'click', nth: 0, text: OPT, semantic: { kind: 'text', name: '请选择', exact: true }, nodeName: NODE },
       ],
     }, {
       caseId, channel: 'web',
@@ -339,7 +340,7 @@ try {
       const caseId = 'tc_wf_seldd_c3d';
       const { axes, verdict } = runReplayVerdict('c3d', s.url, {
         schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-09T00:00:00.000Z', authored: false,
-        events: [...setupEvents(), { stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.selectNodeDropdown', action: 'click', nth: 0, text: OPT, semantic: { kind: 'text', name: '请选择', exact: true } }],
+        events: [...setupEvents(), { stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.selectNodeDropdown', action: 'click', nth: 0, text: OPT, semantic: { kind: 'text', name: '请选择', exact: true }, nodeName: NODE }],
       }, {
         caseId, channel: 'web',
         intents: [...setupIntents(), { intentId: 'intent_3', expected: [{ kind: 'textVisible', op: 'appears', value: OPT }] }],
@@ -359,7 +360,7 @@ try {
       const caseId = 'tc_wf_seldd_c3e';
       const { axes, verdict } = runReplayVerdict('c3e', s.url, {
         schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-09T00:00:00.000Z', authored: false,
-        events: [...setupEvents(), { stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.selectNodeDropdown', action: 'click', nth: 0, text: OPT, semantic: { kind: 'text', name: '请选择', exact: true } }],
+        events: [...setupEvents(), { stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.selectNodeDropdown', action: 'click', nth: 0, text: OPT, semantic: { kind: 'text', name: '请选择', exact: true }, nodeName: NODE }],
       }, {
         caseId, channel: 'web',
         intents: [...setupIntents(), { intentId: 'intent_3', expected: [{ kind: 'textVisible', op: 'appears', value: OPT }] }],
@@ -379,7 +380,7 @@ try {
       const caseId = 'tc_wf_seldd_c3f';
       const { axes, verdict } = runReplayVerdict('c3f', s.url, {
         schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-09T00:00:00.000Z', authored: false,
-        events: [...setupEvents(), { stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.selectNodeDropdown', action: 'click', nth: 0, text: OPT, semantic: { kind: 'text', name: '请选择', exact: true } }],
+        events: [...setupEvents(), { stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.selectNodeDropdown', action: 'click', nth: 0, text: OPT, semantic: { kind: 'text', name: '请选择', exact: true }, nodeName: NODE }],
       }, {
         caseId, channel: 'web',
         intents: [...setupIntents(), { intentId: 'intent_3', expected: [{ kind: 'textVisible', op: 'appears', value: OPT }] }],
@@ -404,7 +405,7 @@ try {
     const { axes, verdict } = runReplayVerdict('c3g', sut.url, {
       schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-09T00:00:00.000Z', authored: false,
       // 末步不载 text（缺 option）：多选项浮层里没给 option。修前误点首项返 unique（假绿），修后 ambiguous 绝不点。
-      events: [...setupEvents(), { stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.selectNodeDropdown', action: 'click', nth: 0, semantic: { kind: 'text', name: '请选择', exact: true } }],
+      events: [...setupEvents(), { stepId: 'atstep_4', intentId: 'intent_3', atom: 'workflow.selectNodeDropdown', action: 'click', nth: 0, semantic: { kind: 'text', name: '请选择', exact: true }, nodeName: NODE }],
     }, {
       caseId, channel: 'web',
       intents: [...setupIntents(), { intentId: 'intent_3', expected: [{ kind: 'textVisible', op: 'appears', value: OPT }] }],

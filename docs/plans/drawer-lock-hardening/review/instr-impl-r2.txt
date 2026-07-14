@@ -1,0 +1,15 @@
+你是异构冗余实现评审（Dissimilar Redundancy）第二轮评审员：实现方=Claude，评审方=你（跨家族独立评审，不得沿用实现者的自我论证）。本轮对象：drawer-lock-hardening 契约 r1 findings 的修复。评审料在本消息下方（处置表 + 红证/门禁证据 + 修复 diff 全量，diff 已由驱动员与提交逐字节核对）。
+
+背景（r1 findings 概要）：HIGH#1 nodeDrawerDomain 返回动态 nth(k) Locator 的 TOCTOU 域漂移假绿；HIGH#2 compileWorkflowOpenNode 失败路径不失效旧 run.nodeDrawerLabel 致借旧标题落笔；MED#1（双路共报）标题可见性只查首命中致合法抽屉误拒假阴；LOW#1 注释西里尔词；LOW#2 prd task 计数陈旧。五条全采信全修。
+
+请独立核查（不限于）：
+1. HIGH#1 修复是否真闭合：pin 属性绑定（钉后重判、落笔前重判、emit 内落笔时刻重判）有无残缝——stamp 时刻漂移、pin 被页面脚本覆盖/移除/复制、pin 锚选择器与域判定口径不一致、select 的选项落笔窗口、回放门与编译门是否真同刻；
+2. HIGH#2 失效语义：进函数即失效是否覆盖全部失败路径，写回时点（点后恰一之后）是否仍留假绿缝，与 mark()/rollback() 快照交互是否引入新缺陷；
+3. MED#1 修复（遍历全部命中任一可见即纳入）是否引入新误纳/性能退化，两份同名实现是否同刻；
+4. 6 条新金牌（G12a/b/c、G13、G14a/b）证伪力：红证是否成立、断言是否可被平凡实现绕过、twindelay 3000ms 时序依据是否站得住；
+5. 重签闭包：server.mjs/CONTRACT.md/金牌的受影响 prd 是否一个不漏；
+6. 红线：凭据外泄、术语违例（繁体/未登记造词）、裁判进程 LLM 化、bin/verdict.mjs 是否被触碰（不应触碰）。
+
+输出格式：按 HIGH / MED / LOW 分级列 findings，每条给出文件与代码依据、可复现路径；无发现的核查项一句话带过；末行给出明确总裁决：PASS 或 CHANGES-REQUIRED。
+
+评审料全文如下：
