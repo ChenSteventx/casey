@@ -1,0 +1,45 @@
+# 异构冗余实现评审 r5 —— pi 路（deepseek-v4-pro @ thinking high）
+
+- 评审员：deepseek-v4-pro @ thinking high（pi -p --no-session --no-tools --thinking high，@material-impl-r5.md 附料）
+- 实现方=Claude、评审方=DeepSeek，crossFamily 成立；与 codex 路同料同指令；被审=commit a2010df
+- 总裁决：**PASS**（r4 MED 真堵死、norm 两侧无副作用；但对纯空白 label 边缘误判 nodeNameInvalid 已拦——codex 路证其对 openNode 入口不成立、r6 采信 codex 补）
+- pi exit 0；原始件 pi-impl-r5-raw.txt
+
+---
+
+**结论：PASS**
+
+---
+
+**评审分项**
+
+### (a) codex r4 MED 是否真堵死 —— 确认真堵死
+
+- **MED 根因**：`lib/replay-actions.mjs`、`lib/compile-atoms.mjs` 中 `nodeDrawerDomain()` 页内标题判据为 `norm(node.textContent) === lbl`，`lbl` 为原始传入值，未归一化。当 label 携带前后/内部连续空白时（如 `"  模型节点  "`），`norm(node.textContent)` 已 trim + 折叠空白，形成 `"模型节点"`，与未归一化的 `lbl` 失配 → 该抽屉被错误排出 `DrawerDomain` → 回放门退化为 `none/action_failed`，编译门产 blocker 并级联丢失。
+- **堵死验证**：评审件中的红先行金牌 G19a/G19b（r4 lib 上跑）确认为红证（回放 `action_failed`、编译 `exit 65` 级联），修后全绿，回归 G1–G18 全量 37/0。说明修复解除了此假阴，且未破坏已有正确行为。
+- **Playwright `getByText({exact:true})` 行为对齐**：Playwright 内部对查询文本与 DOM 文本**两侧均执行 whitespace normalize**（trim + collapse），原实现只归一单侧，偏离 exact 语义。修复使代码侧行为与浏览器自动化侧一致，逻辑上真堵死。
+
+### (b) 修复（`norm` 两侧同归一）是否引入新问题 —— 无新引入 fail-open/假绿/假阴，未破坏既有语义
+
+1. **假绿风险**：不成立  
+   - `norm` 折叠连续空白为单个空格并去首尾。假如 label=`"ABC"`，DOM 文本=`"A  B  C"`，归一化后分别为 `"ABC"` 与 `"A B C"`，不相等 → 不会误纳。
+   - 仅当 label 自身也带多空白时（如 `"A  B"`），与 DOM 文本归一化后相同，才匹配。这与 Playwright exact 行为一致，是正确行为，非假绿。
+
+2. **假阴风险**：已消除，未引入新假阴  
+   - 干净 label（无多余空白）下，`norm(lbl)` 等于原 `lbl`（幂等），行为与修复前完全相同，不会新增失配。
+   - 边缘情况 `lbl` 为空字符串时，`norm('')` → `''`，理论上可能匹配到空文本节点。但调用链中 `nodeNameInvalid()` 已 trim 判空，空 label 被提前拦截，不会流入此域；且抽屉标题非空白是业务约束，空文本误匹配风险极低且无已知攻击面。
+
+3. **不破坏 ghostdup/twinghost 既有场景**  
+   - 现有逻辑已保证**存在量词语义** + **visible(node) 判定**：遍历 wrapper 内所有元素，取任意可见且文本匹配者。修复仅改变文本比较的归一化方式，未改动 `visible()` 检查与遍历策略，隐藏同文案在前、可见真标题在后的场景仍正确解析为存在匹配。
+
+4. **未波及 A1/A2 HIGH 项**  
+   - A1/A2 问题在 r4 双路复核中已堵死，本次变更范围仅在两处 `nodeDrawerDomain()` 的文本比较表达式，与 A1/A2 涉及的编译器/回放其他逻辑无关，不产生回归。
+
+---
+
+**文件与行对应**
+
+- `lib/replay-actions.mjs`：第 155 行 `const target = norm(lbl);` + 第 158 行 `norm(node.textContent) === target`  
+- `lib/compile-atoms.mjs`：第 171 行 `const target = norm(lbl);` + 第 174 行 `norm(node.textContent) === target`
+
+**最终裁定：PASS** —— MED 真堵死，修复无副作用，与 Playwright exact 语义对齐，无新增风险。

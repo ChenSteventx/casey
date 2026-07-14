@@ -1,4 +1,4 @@
-// drawer-lock-hardening.golden.mjs —— 画布三原子域锁跨抽屉边界硬化红先行金牌（G1–G19，light）。
+// drawer-lock-hardening.golden.mjs —— 画布三原子域锁跨抽屉边界硬化红先行金牌（G1–G20，light）。
 // 决策全录 docs/plans/drawer-lock-hardening/proposed/GRILL.md（D1 方向定案 / D2 标题锚取舍 / D3 nodeName
 // 供给通道 / D4 缺 nodeName fail-closed / D5 openNode 预点基线 / D6 抽屉域三态分层 / D7 夹具反面场景 /
 // D8 金牌形态）+ plan.md 落地步骤与验收。挂账原文：loop/prd-wf-set-node-field.json observability 第二条
@@ -47,6 +47,9 @@
 //   —— 实现评审 r5 修复轮新增（红先行：在 r4 实现上逐条红后修绿）——
 //   G19a 回放 openNode+setNodeField label 前后空白归一  happy（codex r4 MED，标题两侧归一）
 //   G19b 编译 openNode+setNodeField label 前后空白归一  happy（codex r4 MED，标题两侧归一）
+//   —— 实现评审 r6 修复轮新增（红先行：在 r5 实现上逐条红后修绿）——
+//   G20a 回放 openNode 纯空白 label fail-closed          happy（codex r5 fail-open，trim 空门）
+//   G20b 编译 openNode 纯空白 label fail-closed          happy（codex r5 fail-open，trim 空门）
 import { mkdtempSync, writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve, dirname, join } from 'node:path';
@@ -64,7 +67,7 @@ const tmp = mkdtempSync(join(tmpdir(), 'casey-drawer-lock-hardening-'));
 
 const fails = [];
 let pass = 0;
-// gate 单命令上限 300s；全量默认仍跑 G1-G19，gate 可按编号分成两条独立命令，断言与夹具不变。
+// gate 单命令上限 300s；全量默认仍跑 G1-G20，gate 可按编号分成两条独立命令，断言与夹具不变。
 const part = process.env.DLH_GOLDEN_PART || 'all';
 async function checkAsync(name, fn) {
   const number = Number((/^G(\d+)/.exec(name) || [])[1]);
@@ -854,6 +857,51 @@ const stdFlow = (tail) => ([
       const rep = readJson(join(od, 'compile-report.json'));
       if ((rep.blockers || []).length) throw new Error(`blockers 应为空，实际 ${JSON.stringify(rep.blockers).slice(0, 300)}`);
       if (!/节点字段已填入/.test(JSON.stringify(rep.notes || []))) throw new Error(`notes 应含「节点字段已填入」（合法真落笔），实际 ${JSON.stringify(rep.notes).slice(0, 300)}`);
+    });
+  } finally { await s.close(); }
+}
+
+// ============================================================================================
+// happy 场景（实现评审 r6 修复轮新增，codex r5 fail-open「纯空白 label 经 norm 成空 target」）：
+// G20a 回放 / G20b 编译。openNode 的 label 为纯空白「   」——Playwright getByText(exact) 把纯空白查询
+// 归一为空串，可命中画布空文本节点；且 r5 页内判据 target=norm('   ')='' 会让 norm(空 input.textContent)===''
+// 成立、把空控件误当标题（假绿向）。openNode 两入口（回放 doOpenNode 仅 !label、编译 String(params.label||'')）
+// 均无 trim 空门。修法：openNode 回放门与编译门统一拒 label.trim()===''（fail-closed），nodeDrawerDomain
+// 对空 target 早返空数组防御。红证（r5）：纯空白 label 不被拒（openNode 非 action_failed / 编译非 blocker）；
+// 绿证（r6）：openNode resolution action_failed + verdict NEEDS_HUMAN / 编译 blocker exit 65 零 events。
+{
+  const s = await startFakeSut({ scenario: 'happy' });
+  const WS_ONLY = '   '; // 纯三空白，trim 后为空=非法标题
+  const openWsOnlyEvent = () => ({ stepId: 'atstep_3', intentId: 'intent_2', atom: 'workflow.openNode', action: 'click', semantic: { kind: 'text', name: WS_ONLY, exact: true }, text: WS_ONLY });
+  try {
+    await checkAsync('G20a 回放·openNode 纯空白 label fail-closed（happy，codex r5 fail-open）：label「   」trim 后空=非法标题 → resolution action_failed（绝不借空 target 命中画布/抽屉空文本节点假绿）+ verdict 恰 NEEDS_HUMAN。验红：r5 openNode 无 trim 空门、空 target 可命中空文本节点 → 非 action_failed（none/unique）必红', async () => {
+      const caseId = 'tc_dlh_g20a';
+      const { axes, verdict } = runReplayVerdict('g20a', s.url, {
+        schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-14T00:00:00.000Z', authored: false,
+        events: [...setupEvents(), openWsOnlyEvent()],
+      }, {
+        caseId, channel: 'web',
+        intents: [...setupIntents().slice(0, 2), { intentId: 'intent_2', expected: [] }],
+      });
+      const ax = stepOf(axes, 'intent_2');
+      if (!ax.action || ax.action.resolution !== 'action_failed') throw new Error(`纯空白 label 应硬阻断 action_failed（trim 空=非法输入，绝不借空 target 命中空文本节点假绿），实际 ${JSON.stringify(ax.action)}（挂账假绿：r5 openNode 无 trim 空门）`);
+      const v = stepOf(verdict, 'intent_2');
+      if (v.verdict !== 'NEEDS_HUMAN') throw new Error(`应恰 NEEDS_HUMAN，实际 ${v.verdict}/${v.reason}`);
+    });
+
+    await checkAsync('G20b 编译·openNode 纯空白 label fail-closed（happy）：label「   」trim 空 → blocker exit 65 + 零 events + blocker 点名 openNode label 空白。验红：r5 编译门无 trim 空门、空 target 可命中空文本节点致 openNode 后置核验过 exit 0 产 events 必红', async () => {
+      const wsFlow = [
+        { atom: 'nav.workflowManagement', params: {} },
+        { atom: 'workflow.open', params: { openName: OPEN_NAME } },
+        { atom: 'workflow.addNode', params: { nodeName: NODE, x: NODE_X, y: NODE_Y } },
+        { atom: 'workflow.openNode', params: { label: WS_ONLY } },
+      ];
+      const { x, od } = compileFlowCase('g20b', 'tc_dlh_g20b', wsFlow, s.url);
+      if (!x || x.status !== 65) throw new Error(`应 blocker exit 65（纯空白 label 非法，绝不借空 target 命中空文本节点），实际 ${x && x.status}：${(x && x.stderr || '').slice(-260)}（挂账假绿：r5 编译门无 trim 空门）`);
+      if (existsSync(join(od, 'events.json'))) throw new Error('阻断不得产 events（半份危险）');
+      const rep = readJson(join(od, 'compile-report.json'));
+      const btext = JSON.stringify(rep.blockers || []);
+      if (!(rep.blockers || []).length || !/openNode/.test(btext) || !/空白|trim|空/.test(btext)) throw new Error(`blockers 应点名 openNode label 纯空白/trim 空，实际 ${btext.slice(0, 300)}`);
     });
   } finally { await s.close(); }
 }
