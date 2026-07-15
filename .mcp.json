@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "casey": {
+      "command": "node",
+      "args": ["./mcp/casey-server.mjs"],
+      "cwd": "."
+    }
+  }
+}

@@ -1,0 +1,569 @@
+#!/usr/bin/env node
+/**
+ * casey —— LLM 驱动的「文本用例 → 测试报告」自动化测试 CLI。
+ *
+ * 生命周期（设计 §3，LLM 只在相0/1/2/5 出现；相3/4/6 是零 LLM 确定性）：
+ *   相0 ingest   归一(L1)    excel/json/txt/freetext → 规范 TestCase
+ *   相1 compile  编译(L3)    agent 真机跑一遍 → spec/events + observed（地面真值）
+ *   相2 draft    断言草拟(L2) 从 intent + observed 推导带类型 expected[]
+ *   相2 sign     人签门       人签掉冻结断言（gate 绿 ≠ 完成）
+ *   相3 replay   回放(L0)     确定性重放 + 录屏 + 取证（零 LLM）
+ *   相4 verdict  多态裁定(L0) verdict.mjs 判定树 → PASS/SUT_DEFECT/HARNESS_ERROR/NEEDS_HUMAN
+ *   相5 heal     自愈(L3)     仅对确证 HARNESS_ERROR 的非就地有界重锚
+ *   相6 report   报告(L0)     自包含 HTML + 裁定徽章 + 缺陷单
+ *   run          端到端串起以上（MVP 串行单用例）
+ *
+ * loop 机制（薄壳直通 loop-kit）：lint / gate / breaker / contract。
+ * selftest --tier1 = hermetic 链路自检（零外部依赖，验证确定性内核 + 统一语言双向有效）。
+ *
+ * 设计立场：本 CLI 是确定性引擎入口；skill 与 MCP server 都只是它的薄壳。
+ * 退出码：0 成功；1 失败/红；2 熔断/互锁拦截；3 该阶段尚未实现（见计划 Pn）；64 用法错误。
+ */
+import { spawnSync } from 'node:child_process';
+import fs from 'node:fs';
+import path from 'node:path';
+import { PROJECT_ROOT, CASES_DIR, NODE_EXE, kit, casePaths, isSafeCaseId } from '../lib/paths.mjs';
+import {
+  assessFormalDelivery,
+  createRunBinding,
+  inspectVideoConvergence,
+  validateVisualReviewBinding,
+  verifyRunBinding,
+} from '../lib/run-delivery.mjs';
+import { projectVisualReview } from '../lib/report-model.mjs';
+
+const C = { reset: '\x1b[0m', cyan: '\x1b[36m', gray: '\x1b[90m', yellow: '\x1b[33m', green: '\x1b[32m', red: '\x1b[31m', bold: '\x1b[1m' };
+const col = (c, s) => `${c}${s}${C.reset}`;
+const EXIT_NOT_IMPL = 3;
+const RUN_BINDING_REQUIRED = ['axes.json', 'case-meta.json', 'events.json', 'expected.frozen.json', 'run-history.jsonl', 'run-metrics.json', 'verdict.json', 'video.json', 'video.webm'];
+
+function parseArgs(argv) {
+  const opts = {}; const pos = [];
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a.startsWith('--')) {
+      const eq = a.indexOf('=');
+      if (eq >= 0) opts[a.slice(2, eq)] = a.slice(eq + 1);
+      else if (i + 1 < argv.length && !argv[i + 1].startsWith('--')) opts[a.slice(2)] = argv[++i];
+      else opts[a.slice(2)] = true;
+    } else pos.push(a);
+  }
+  return { opts, pos };
+}
+
+function runNode(scriptAbs, args, { quiet = false } = {}) {
+  const r = spawnSync(NODE_EXE, [scriptAbs, ...args], { cwd: PROJECT_ROOT, stdio: quiet ? 'pipe' : 'inherit', encoding: 'utf8' });
+  return { code: r.status ?? 1, stdout: r.stdout || '', stderr: r.stderr || '' };
+}
+
+function collectRunBindingFiles({ runDir, eventsPath, expectedPath, caseMetaPath = null, observedPath = null }) {
+  const files = {
+    'axes.json': fs.readFileSync(path.join(runDir, 'axes.json')),
+    'events.json': fs.readFileSync(eventsPath),
+    'expected.frozen.json': fs.readFileSync(expectedPath),
+    'run-history.jsonl': fs.readFileSync(path.join(runDir, 'run-history.jsonl')),
+    'run-metrics.json': fs.readFileSync(path.join(runDir, 'run-metrics.json')),
+    'verdict.json': fs.readFileSync(path.join(runDir, 'verdict.json')),
+  };
+  if (caseMetaPath) files['case-meta.json'] = fs.readFileSync(caseMetaPath);
+  if (observedPath) files['observed.json'] = fs.readFileSync(observedPath);
+  const videoMeta = path.join(runDir, 'video.json');
+  const video = path.join(runDir, 'video.webm');
+  if (fs.existsSync(videoMeta)) files['video.json'] = fs.readFileSync(videoMeta);
+  if (fs.existsSync(video)) files['video.webm'] = fs.readFileSync(video);
+  return files;
+}
+
+// ── loop 机制薄壳（直通 loop-kit）──────────────────────────────
+function passThrough(kitScript, rest) {
+  const r = runNode(kit(kitScript), rest);
+  process.exit(r.code);
+}
+
+// ── 阶段桩：诚实声明未实现，绝不冒充已完成 ─────────────────────
+function notImplemented(phase, planRef, willDo) {
+  console.error(col(C.yellow, `\n[${phase}] 该阶段尚未实现（${planRef}）。`));
+  console.error(col(C.gray, '本命令计划行为：') + willDo);
+  console.error(col(C.gray, '当前已落地：') + 'P0 引导 loop 机制 + P1 DDD 词表/ADR（loop 纪律已生效）。');
+  console.error(col(C.gray, '能力边界见：') + 'docs/USAGE.md\n');
+  process.exit(EXIT_NOT_IMPL);
+}
+
+function blockedByRealSutOnlyPolicy(command) {
+  console.error(col(C.red, `\n[${command}] 已由真实 SUT only 策略禁用。`));
+  console.error(col(C.gray, 'fake-sut 与夹具 SUT 只允许静态阅读；本入口可能启动历史夹具或执行未经逐条审计的验收命令。'));
+  console.error(col(C.gray, '请直接运行已人工确认不接触任何 SUT 的静态/schema/纯函数检查，或在联网真实目标上运行正式用例。\n'));
+  process.exit(1);
+}
+
+// ── run：确定性尾段编排（相3 回放 → 相4 裁定 → 报表模型装配 → 相6 报告）────
+// LLM 前段（相0-2 ingest/compile/draft/sign）未建、route:human；本命令喂 compile产物直跑尾段。
+function runPipeline(pos, opts) {
+  const caseId = pos[0];
+  const invalidCaseId = Boolean(caseId) && !isSafeCaseId(caseId);
+  const safeCaseId = caseId && !invalidCaseId ? caseId : null;
+  const cp = safeCaseId ? casePaths(safeCaseId) : null;
+  const conventionRel = {
+    events: safeCaseId ? `cases/${safeCaseId}/events.json` : 'cases/<caseId>/events.json',
+    expected: safeCaseId ? `cases/${safeCaseId}/expected.frozen.json` : 'cases/<caseId>/expected.frozen.json',
+    profile: safeCaseId ? `cases/${safeCaseId}/profile.json` : 'cases/<caseId>/profile.json',
+    observed: safeCaseId ? `cases/${safeCaseId}/observed-${safeCaseId}.json` : 'cases/<caseId>/observed-<caseId>.json',
+    caseMeta: safeCaseId ? `cases/${safeCaseId}/testcase.json` : 'cases/<caseId>/testcase.json',
+  };
+  const missing = [];
+  const warnings = [];
+  const existsFile = (p) => {
+    try { return typeof p === 'string' && fs.statSync(p).isFile(); } catch { return false; }
+  };
+  const resolveInput = (optKey, label, conventionPath, relPath, required) => {
+    const explicit = opts[optKey];
+    if (typeof explicit === 'string' && explicit.length > 0) return explicit;
+    if (explicit === true) {
+      missing.push(`--${optKey} 缺值`);
+      return null;
+    }
+    if (safeCaseId && existsFile(conventionPath)) return conventionPath;
+    if (required) missing.push(`${label}（查过 ${relPath}）`);
+    else warnings.push(`${label} 缺失（查过 ${relPath}）`);
+    return null;
+  };
+  const eventsPath = cp ? resolveInput('events', 'events', cp.events, conventionRel.events, true) : null;
+  const expectedPath = cp ? resolveInput('expected', 'expected', cp.expected, conventionRel.expected, true) : null;
+  const profilePath = cp ? resolveInput('profile', 'profile', cp.profile, conventionRel.profile, true) : null;
+  const observedPath = cp ? resolveInput('observed', 'observed', cp.observed, conventionRel.observed, false) : null;
+  const caseMetaPath = cp ? resolveInput('case-meta', 'case-meta', cp.caseMeta, conventionRel.caseMeta, false) : null;
+  const sut = (typeof opts.sut === 'string' && opts.sut.length > 0) ? opts.sut : null;
+  // 视觉结论只能在同次录像产出后由 finalize-run 接入；run 阶段拒绝预置，防止事先盲签。
+  if (Object.prototype.hasOwnProperty.call(opts, 'visual-review')) {
+    console.error(col(C.red, '[run] --visual-review 不允许在回放前接入；请先运行产证，观看同次录像后使用 finalize-run 收口。'));
+    process.exit(64);
+  }
+  if (!caseId) missing.unshift('<caseId>');
+  if (invalidCaseId) missing.unshift('caseId 不安全：仅允许单段目录名，不得含 /、\\、.. 或绝对路径');
+  if (!sut) missing.push('--sut');
+  // 确定性尾段已实现：缺必填参 = 用参错误 → exit 64（非 notImplemented 的 3）。相0-2 LLM 前段未建、route:human。
+  if (!caseId || invalidCaseId || !eventsPath || !expectedPath || !profilePath || !sut) {
+    console.error(col(C.red, '[run] 缺必填参 → 用参错误(64)'));
+    if (missing.length) {
+      console.error('缺失项：');
+      for (const m of missing) console.error(`  - ${m}`);
+    }
+    console.error('LLM 前段(相0-2 ingest/compile/draft/sign)未建、route:human；确定性尾段用法：');
+    console.error('  casey run <caseId> --sut <本地基址> [--events <f>] [--expected <f>] [--profile <f>] [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>] [--login-bootstrap] [--no-video]');
+    console.error('  缺文件旗标时按 cases/<caseId>/events.json、expected.frozen.json、profile.json、observed-<caseId>.json、testcase.json 约定解析。');
+    console.error('  串 相3回放 → 相4裁定 → 报表模型装配 → 相6报告，落 runs/<caseId>/<runId>/。');
+    process.exit(64);
+  }
+  for (const w of warnings) {
+    console.error(col(C.yellow, `[run] 可选输入缺失，报告将降级：${w}`));
+  }
+  const runDir = opts['run-dir'] || path.join(PROJECT_ROOT, 'runs', caseId, `run_${Date.now()}`);
+  fs.mkdirSync(runDir, { recursive: true });
+  const bin = (s) => path.join(PROJECT_ROOT, 'bin', s);
+  const axesOut = path.join(runDir, 'axes.json');
+  const verdictOut = path.join(runDir, 'verdict.json');
+  const modelOut = path.join(runDir, 'report-model.json');
+  const runId = path.basename(runDir);
+
+  // 退出码归一：各阶段自有码（replay 0/1/64、verdict 0/64/65、report 0/1/2）→ casey 统一图例；任一非零 fail-closed。
+  const normCode = (code) => (code === 64 ? 64 : code === 2 ? 2 : 1);
+  const stage = (label, scriptAbs, args) => {
+    const r = runNode(scriptAbs, args, { quiet: true });
+    if (r.code !== 0) {
+      console.error(col(C.red, `[run] 阶段「${label}」非零退出（${r.code}）→ fail-closed`));
+      if (r.stderr) console.error(col(C.gray, r.stderr.slice(-600)));
+      process.exit(normCode(r.code));
+    }
+  };
+
+  // --login-bootstrap 透传（同 compile --verify 先例）：真机跑过登录墙；hermetic 不带旗标零行为差。
+  // 回放历史/回放指标接线（G6）：runId=runDir 目录名（本编排器是 runs/<caseId>/<runId>/ 布局唯一知情者）；
+  // 仅诊断证据——相4 verdict 只吃 axes.json，绝不喂这两件（护栏 #15/#17）。
+  // 录屏缺省开启（replay-video GRILL D4）：--no-video 显式关；视频与元数据旁件落本 runDir
+  // （登录期不入镜由 replay 双 page 舞步结构保证）。仅诊断附件，绝不进相4 裁定（M7）。
+  stage('相3 replay 回放', bin('replay.mjs'), ['--events', eventsPath, '--sut', sut, '--expected', expectedPath, '--profile', profilePath, '--out', axesOut,
+    '--run-history', path.join(runDir, 'run-history.jsonl'), '--run-metrics', path.join(runDir, 'run-metrics.json'), '--run-id', runId,
+    ...(opts['login-bootstrap'] ? ['--login-bootstrap'] : []),
+    ...(opts['no-video'] ? [] : ['--video-dir', runDir])]);
+
+  // 默认正式 run：录像收敛是继续进入裁定/报告的前置条件。replay 过去把录像收敛失败当可选附件缺席；
+  // 在正式交付面必须 fail-closed，避免没有录像仍继续并打印 GREEN。--no-video 是显式非正式例外，允许继续产诊断报告，末尾仍非零。
+  const videoMetaPath = path.join(runDir, 'video.json');
+  const videoPath = path.join(runDir, 'video.webm');
+  let videoMeta = null;
+  let videoBytes = 0;
+  let videoFileNames = [];
+  if (!opts['no-video']) {
+    try {
+      videoMeta = JSON.parse(fs.readFileSync(videoMetaPath, 'utf8'));
+      videoBytes = fs.statSync(videoPath).size;
+      videoFileNames = fs.readdirSync(runDir).filter((name) => name.endsWith('.webm')).sort();
+    } catch { /* 统一交给收敛门，不回显路径或 JSON 内容 */ }
+  }
+  const videoConvergence = inspectVideoConvergence({ noVideo: Boolean(opts['no-video']), videoMeta, videoBytes, videoFileNames });
+  if (!opts['no-video'] && !videoConvergence.ok) {
+    console.error(col(C.red, `[run] FORMAL_DELIVERY_BLOCKED：录像未收敛（${videoConvergence.reason}），停止于 replay 后；未进入裁定/报告，绝不输出 GREEN。`));
+    process.exit(1);
+  }
+
+  stage('相4 verdict 裁定', bin('verdict.mjs'), ['--axes', axesOut, '--out', verdictOut]);
+  // 同 run 产物绑定：收口阶段只接受此时刻已存在文件的摘要集合，杜绝跨 run 拼录像/axes/verdict。
+  // case-meta 缺席时仍可生成第一段报告，但绑定不完整，finalize-run 会按正式交付必需键 fail-closed。
+  let runBinding;
+  try {
+    const bindingFiles = collectRunBindingFiles({ runDir, eventsPath, expectedPath, caseMetaPath, observedPath });
+    runBinding = createRunBinding({ caseId, runId, completedAt: new Date().toISOString(), files: bindingFiles });
+    fs.writeFileSync(path.join(runDir, 'run-binding.json'), JSON.stringify(runBinding, null, 2) + '\n', 'utf8');
+  } catch {
+    console.error(col(C.red, '[run] 同 run 产物绑定失败 → fail-closed（内容不回显）'));
+    process.exit(1);
+  }
+  // --expected 恒透传（report-fidelity G1）：run 必带该参，装配器读签署字段投影「期望版本/签署人」。
+  const rmArgs = ['--verdict', verdictOut, '--axes', axesOut, '--events', eventsPath, '--expected', expectedPath, '--out', modelOut];
+  if (observedPath) rmArgs.push('--observed', observedPath);
+  if (opts['generated-at']) rmArgs.push('--generated-at', opts['generated-at']);
+  if (caseMetaPath) rmArgs.push('--case-meta', caseMetaPath);
+  // 正式 run 走过上面的收敛门才透传；--no-video 明示非正式、无视频旁件。
+  if (!opts['no-video'] && fs.existsSync(videoMetaPath)) rmArgs.push('--video-meta', videoMetaPath);
+  stage('报表模型装配', bin('report-model.mjs'), rmArgs);
+  // 回放诊断呈现（report-diagnostics 路 B）：相3 恒产两旁件于本 runDir，相6 传路径进呈现层——仅诊断不进裁定。
+  stage('相6 report 报告', bin('report.mjs'), ['--model', modelOut, '--out', runDir,
+    '--run-history', path.join(runDir, 'run-history.jsonl'), '--run-metrics', path.join(runDir, 'run-metrics.json')]);
+
+  let verdict;
+  try { verdict = JSON.parse(fs.readFileSync(verdictOut, 'utf8')); }
+  catch {
+    console.error(col(C.red, '[run] 交付门无法读取 verdict → fail-closed（内容不回显）'));
+    process.exit(1);
+  }
+  let delivery;
+  try {
+    delivery = assessFormalDelivery({ caseId, runId, noVideo: Boolean(opts['no-video']), videoConvergence, verdict, visualReview: null, binding: runBinding });
+  } catch {
+    console.error(col(C.red, '[run] 正式交付评估输入损坏或不同源 → fail-closed（内容不回显）'));
+    process.exit(1);
+  }
+
+  if (!delivery.formalDeliveryComplete) {
+    const label = delivery.status === 'NON_FORMAL_RUN' ? 'NON_FORMAL_RUN' : 'FORMAL_DELIVERY_INCOMPLETE';
+    console.error(col(C.yellow, `\n[run] ${label}：报告已生成，但正式交付未完成（${delivery.reasons.join(', ')}）；绝不输出 GREEN。`));
+    process.exit(delivery.exitCode);
+  }
+
+  // run 阶段按设计永远缺事后视觉复核；若未来交付门不慎放行，仍在壳层 fail-closed，正式 GREEN 只属于 finalize-run。
+  console.error(col(C.red, '[run] 内部错误：回放阶段不得直接完成正式交付；请使用 finalize-run。'));
+  process.exit(1);
+}
+
+// ── finalize-run：只读同次 run 既有产物 → 接入事后视觉复核 → 重建报告 → 正式交付门 ──
+// 绝不接 --sut、绝不调用 replay；正式 GREEN 只能从这里产生。
+function finalizeRun(pos, opts) {
+  const caseId = pos[0];
+  const required = ['run-dir', 'events', 'expected', 'case-meta', 'visual-review'];
+  const missing = required.filter((key) => typeof opts[key] !== 'string' || opts[key].length === 0);
+  if (!caseId || !isSafeCaseId(caseId)) missing.unshift('<caseId>（仅允许安全单段名）');
+  if (Object.prototype.hasOwnProperty.call(opts, 'sut')) missing.push('--sut 不属于 finalize-run（收口不得触碰 SUT）');
+  if (missing.length) {
+    console.error(col(C.red, '[finalize-run] 缺/错参数 → 用参错误(64)'));
+    for (const item of missing) console.error(`  - ${item}`);
+    console.error('  casey finalize-run <caseId> --run-dir <d> --events <f> --expected <f> --case-meta <f> --visual-review <f> [--observed <f>] [--generated-at <iso>]');
+    process.exit(64);
+  }
+
+  const runDir = path.resolve(opts['run-dir']);
+  const runId = path.basename(runDir);
+  const axesPath = path.join(runDir, 'axes.json');
+  const verdictPath = path.join(runDir, 'verdict.json');
+  const videoMetaPath = path.join(runDir, 'video.json');
+  const videoPath = path.join(runDir, 'video.webm');
+  const historyPath = path.join(runDir, 'run-history.jsonl');
+  const metricsPath = path.join(runDir, 'run-metrics.json');
+  const bindingPath = path.join(runDir, 'run-binding.json');
+  const modelPath = path.join(runDir, 'report-model.json');
+  const visualOut = path.join(runDir, 'visual-review.json');
+  const readJson = (file) => JSON.parse(fs.readFileSync(file, 'utf8'));
+
+  let binding; let bindingFiles; let axes; let verdict; let metrics; let history; let events; let expected; let caseMeta; let observed = null;
+  let videoMeta; let videoBytes; let videoFileNames; let visualReview; let safeReview;
+  try {
+    if (!fs.statSync(runDir).isDirectory()) throw new Error('run-dir 非目录');
+    binding = readJson(bindingPath);
+    bindingFiles = collectRunBindingFiles({
+      runDir, eventsPath: opts.events, expectedPath: opts.expected, caseMetaPath: opts['case-meta'],
+      observedPath: typeof opts.observed === 'string' ? opts.observed : null,
+    });
+    verifyRunBinding(binding, { caseId, runId, files: bindingFiles, requiredKeys: RUN_BINDING_REQUIRED });
+
+    axes = readJson(axesPath);
+    verdict = readJson(verdictPath);
+    metrics = readJson(metricsPath);
+    history = fs.readFileSync(historyPath, 'utf8').split('\n').filter((line) => line.trim()).map((line) => JSON.parse(line));
+    events = readJson(opts.events);
+    expected = readJson(opts.expected);
+    caseMeta = readJson(opts['case-meta']);
+    if (typeof opts.observed === 'string') observed = readJson(opts.observed);
+    if (axes.caseId !== caseId || verdict.caseId !== caseId || metrics.caseId !== caseId || metrics.runId !== runId
+      || events.caseId !== caseId || expected.caseId !== caseId || caseMeta.caseId !== caseId
+      || (observed && observed.caseId !== caseId) || history.length === 0 || history.some((row) => row?.caseId !== caseId)) {
+      throw new Error('同源字段不匹配');
+    }
+
+    videoMeta = readJson(videoMetaPath);
+    videoBytes = fs.statSync(videoPath).size;
+    videoFileNames = fs.readdirSync(runDir).filter((name) => /\.webm$/i.test(name)).sort();
+    const videoConvergence = inspectVideoConvergence({ videoMeta, videoBytes, videoFileNames });
+    if (!videoConvergence.ok) throw new Error(videoConvergence.reason);
+
+    visualReview = readJson(opts['visual-review']);
+    validateVisualReviewBinding(visualReview, {
+      caseId, runId, completedAt: binding.completedAt,
+      videoSha256: binding.files['video.webm'], verdictSha256: binding.files['verdict.json'],
+    });
+    const projected = projectVisualReview(visualReview);
+    for (const evidence of projected.evidence) {
+      const evidencePath = path.resolve(runDir, evidence.file);
+      if (!evidencePath.startsWith(runDir + path.sep) || !fs.statSync(evidencePath).isFile() || fs.statSync(evidencePath).size <= 0) {
+        throw new Error('视觉证据缺失或越界');
+      }
+    }
+    safeReview = {
+      caseId, runId,
+      videoSha256: binding.files['video.webm'], verdictSha256: binding.files['verdict.json'],
+      ...projected,
+    };
+    fs.writeFileSync(visualOut, JSON.stringify(safeReview, null, 2) + '\n', 'utf8');
+  } catch {
+    console.error(col(C.red, '[finalize-run] 同 run 产物、摘要绑定或视觉复核校验失败 → fail-closed（内容不回显）'));
+    process.exit(1);
+  }
+
+  const bin = (name) => path.join(PROJECT_ROOT, 'bin', name);
+  const stage = (label, script, args) => {
+    const result = runNode(script, args, { quiet: true });
+    if (result.code !== 0) {
+      console.error(col(C.red, `[finalize-run] 阶段「${label}」非零退出（${result.code}）→ fail-closed`));
+      if (result.stderr) console.error(col(C.gray, result.stderr.slice(-600)));
+      process.exit(result.code === 64 ? 64 : result.code === 2 ? 2 : 1);
+    }
+  };
+
+  const modelArgs = ['--verdict', verdictPath, '--axes', axesPath, '--events', opts.events, '--expected', opts.expected,
+    '--case-meta', opts['case-meta'], '--video-meta', videoMetaPath, '--visual-review', visualOut, '--out', modelPath];
+  if (typeof opts.observed === 'string') modelArgs.push('--observed', opts.observed);
+  if (typeof opts['generated-at'] === 'string') modelArgs.push('--generated-at', opts['generated-at']);
+  stage('报表模型重建', bin('report-model.mjs'), modelArgs);
+  stage('报告重建', bin('report.mjs'), ['--model', modelPath, '--out', runDir, '--run-history', historyPath, '--run-metrics', metricsPath]);
+
+  let delivery;
+  try {
+    delivery = assessFormalDelivery({
+      caseId, runId, videoConvergence: inspectVideoConvergence({ videoMeta, videoBytes, videoFileNames }),
+      verdict, visualReview, binding,
+    });
+  } catch {
+    console.error(col(C.red, '[finalize-run] 正式交付评估输入损坏 → fail-closed（内容不回显）'));
+    process.exit(1);
+  }
+  if (!delivery.formalDeliveryComplete) {
+    console.error(col(C.yellow, `\n[finalize-run] FORMAL_DELIVERY_INCOMPLETE：报告已重建，但正式交付未完成（${delivery.reasons.join(', ')}）；绝不输出 GREEN。`));
+    process.exit(delivery.exitCode);
+  }
+  console.log(col(C.green, `\n[finalize-run] FORMAL_DELIVERY GREEN → ${runDir}`));
+  console.log(col(C.gray, `  run-binding.json / visual-review.json / ${caseId}.report.{html,md,json}`));
+  process.exit(0);
+}
+
+// ── selftest tier1：hermetic 链路自检 ─────────────────────────
+function selftestTier1() {
+  console.log(col(C.bold, '\ncasey selftest --tier1 —— hermetic 链路自检（零外部依赖）\n'));
+  let ok = true;
+  const step = (name, fn) => {
+    try { const pass = fn(); ok = ok && pass; console.log(`${pass ? col(C.green, 'ok  ') : col(C.red, 'RED ')} ${name}`); }
+    catch (e) { ok = false; console.log(`${col(C.red, 'RED ')} ${name} —— ${e.message}`); }
+  };
+
+  // 1. 统一语言：注册表完整（白名单方向）
+  step('统一语言注册表完整（term-lint --registry exit 0）', () => runNode(kit('term-lint.mjs'), ['--registry'], { quiet: true }).code === 0);
+
+  // 2. 统一语言：弃用别名被拦（黑名单方向——证明机制真有牙）
+  step('弃用别名被 term-lint 拦红（黑名单方向）', () => {
+    const tmp = path.join(CASES_DIR, '_selftest'); fs.mkdirSync(tmp, { recursive: true });
+    const f = path.join(tmp, 'deny.md');
+    fs.writeFileSync(f, '# 自检\n\n这里故意用一个弃用别名「出口闸」来验证黑名单。\n', 'utf8');
+    const code = runNode(kit('term-lint.mjs'), ['--file', f], { quiet: true }).code;
+    return code === 1; // 命中弃用别名应 exit 1
+  });
+
+  // 3. 熔断器可清零
+  step('熔断器可清零（breaker --reset exit 0）', () => runNode(kit('breaker.mjs'), ['--reset'], { quiet: true }).code === 0);
+
+  // 4. 质量门禁：可执行规格 exit 0 → 确定性裁判翻绿
+  step('质量门禁消费 1-story 契约并翻绿（gate exit 0 + passes 翻 true）', () => {
+    const tmp = path.join(CASES_DIR, '_selftest'); fs.mkdirSync(tmp, { recursive: true });
+    const prd = path.join(tmp, 'prd-_selftest.json');
+    fs.writeFileSync(prd, JSON.stringify({
+      schemaVersion: 1,
+      task: 'tier1 自检：可执行规格 exit 0 即翻绿',
+      stories: [{ id: 'tier1', desc: 'hermetic 自检 story', lane: 'implementation', acceptance: ['node -e "process.exit(0)"'], passes: false }],
+      testChecksums: {},
+    }, null, 2), 'utf8');
+    const code = runNode(kit('gate.mjs'), ['--prd', 'cases/_selftest/prd-_selftest.json'], { quiet: true }).code;
+    const flipped = JSON.parse(fs.readFileSync(prd, 'utf8')).stories[0].passes === true;
+    return code === 0 && flipped;
+  });
+
+  // 5. 裁判零 LLM（护栏 #15，I1）：verdict.mjs 依赖闭包无 LLM/网络客户端（model-lane-guard 契约）
+  step('裁判零 LLM：verdict.mjs 闭包无 LLM/网络客户端（verdict-purity-guard exit 0）', () =>
+    runNode(path.join(PROJECT_ROOT, 'bin', 'verdict-purity-guard.mjs'),
+      ['--entry', path.join(PROJECT_ROOT, 'bin', 'verdict.mjs')], { quiet: true }).code === 0);
+
+  // 清理临时产物
+  try { fs.rmSync(path.join(CASES_DIR, '_selftest'), { recursive: true, force: true }); } catch { /* ignore */ }
+
+  console.log('');
+  if (ok) { console.log(col(C.green, 'selftest --tier1: 全链路 GREEN —— 确定性内核 + 统一语言双向有效。')); process.exit(0); }
+  console.log(col(C.red, 'selftest --tier1: 有红 —— 确定性内核未就绪。')); process.exit(1);
+}
+
+function help() {
+  console.log(`${col(C.bold, 'casey')} —— 文本用例 → 测试报告 自动化测试（loop engineering 驱动）
+
+${col(C.cyan, '端到端')}
+  casey run <caseId> --sut <本地基址> [--events <f> --expected <f> --profile <f>] [--run-dir <d> --login-bootstrap --no-video]
+                                          第一段：回放→裁定→报告；无事后视觉时明确未正式完成
+                                          --sut 必填，只喂隧道回环基址（site.json 的 devProxyUrl）；真目标地址绝不进命令行（护栏 #7）
+  casey finalize-run <caseId> --run-dir <d> --events <f> --expected <f> --case-meta <f> --visual-review <f> [--observed <f>]
+                                          第二段：不触碰 SUT；验同 run 摘要→接视觉复核→重建报告→正式交付门
+
+${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅助/heal；replay/verdict/report 零 LLM）
+  casey scaffold-case <caseId> --from-text <f> --out-dir <d>
+                                          相0 前段脚手架：自由文本 → 候选骨架（source.kind:freetext + route:human 占位；开箱过 parseTestCase；须 CLI 外 LLM 归一 + 重走 ingest→…→人签；不签署/不回放/门拒 fail-closed）
+  casey ingest  <caseId> --in <f> --out-dir <d>
+                                          相0 归一：候选（CLI 外 LLM 产）→ 校验 → 规范 TestCase
+  casey compile <caseId> --testcase <f> --flow <f> --out-dir <d>
+                                          相1 编译闸段（落 flow 待人 confirm）；执行段加 --execute --sut <本地基址> --profile <f> [--skip-login --unique-name <t>]
+  casey flow-bridge <caseId> --testcase <f> --mapping <f> --out-dir <d>
+                                          相1 flow 草拟桥：TestCase + mapping → compile 的 --flow
+  casey draft   <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]
+                                          相2 断言草拟：骨架+补缝合并+闸 → expected.draft（未签）
+  casey sign    <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--signed-at <iso> --verdict-baseline <f> --resign --force --archive-dir <d>]
+                                          相2 人签门：草稿→冻结签署（未签契约会被回放前置闸拒）
+  casey record  <caseId> --sut <本地基址> --out-dir <d> (--login-bootstrap|--no-login) [--from-events <f> --headless --max-ms <ms>]
+                                          示教采集：人工操作→teach-in-capture.json（只作蒸馏语料，不签署、不直通回放）
+  casey cef-record <caseId> --profile <f> --out-dir <d> --safe-session [--max-ms <ms>]
+                                          医生站/Hi 小助 CEF 真人示教：连接已登录窗口，F8 收口，产 capture + screencast；须先确认无真实患者数据
+  casey promptset-seed --agent-name <被测 agent 中文名> [--embedded <f>] [--n <条数，默认 6>] --out <f.md>
+                                          被测参数 authoring：零 LLM 出合成种子模板（生成指引+格式说明）；合成在 CLI 外（当前会话）完成，本命令零 LLM 零网络
+  casey promptset-freeze --candidates <候选 JSON> --promptset <promptset.json> [--dry-run]
+                                          被测参数 authoring：零 LLM 校验候选 + 幂等冻结追加（已有 id 绝不覆盖，强制标 source:llm；合成在 CLI 外，本命令绝不进回放/裁定）
+  casey intake  <caseId> --capture <f>    示教入账：安全复核录制包 → 登记入账台账（不转形/不签署/不回放；拒账 fail-closed）
+  casey distill <caseId> --capture <f> --out-dir <d> [--verify --mapping <f>]
+                                          示教蒸馏：已入账录制包 → 候选流程 + pending + 溯源（TOCTOU 硬门；v1 零 LLM 全 pending；不签署/不回放；重走 ingest→…→人签）
+  casey atom-propose <caseId> --definition <f> --capture <f> --intake-ledger <f> --manifest <f> --mapping <f> --expected <f> --events <f> --axes <f> --verdict <f> --video-meta <f> --video <f> --out-dir <d> [--provenance <f> | 旧产物人见证 --run-id/--link-signer/--link-against-build]
+                                          真实全 PASS 证据 → pending 候选宏原子（LLM 只提议，不写 registry）
+  casey atom-sign <caseId> --candidate <f> --out-dir <d> --signer <id> --against-build <id> --capture <f> --intake-ledger <f> --manifest <f> --mapping <f> --expected <f> --events <f> --axes <f> --verdict <f> --video-meta <f> --video <f> --provenance <f>
+                                          显式人签候选（重验完整原始 evidence/provenance 后绑定；签署不等于晋升）
+  casey atom-promote <caseId> --signed <f> --capture <f> --intake-ledger <f> --manifest <f> --mapping <f> --expected <f> --events <f> --axes <f> --verdict <f> --video-meta <f> --video <f> --provenance <f>
+                                          再次重验完整原始证据 → 学习原子注册表（去重/revision/内置冲突硬拒，不自动发生）
+  casey replay  --events <f> --sut <本地基址> --expected <f> --profile <f> --out <axes.json> [--login-bootstrap ...]
+                                          相3 确定性回放 + 录屏 + 取证（未签契约拒回放）
+  casey cef-replay <caseId> --capture <f> --profile <f> --out-dir <d> --safe-session
+                                          已入账 CEF 示教包机械回放 + 录屏；只产 formalVerdictEligible=false 收据，不产 PASS
+  casey verdict --axes <f> --out <f>      相4 多态裁定（零 LLM 判定树）
+  casey heal    <caseId>                  相5 自愈：仅对确证 HARNESS_ERROR 非就地重锚      [P6]
+  casey report  --model <f> --out <d> [--run-history <f> --run-metrics <f>]
+                                          相6 自包含报告 + 裁定徽章 + 缺陷单
+
+${col(C.cyan, 'loop 机制')}（薄壳直通 loop-kit；纪律已生效）
+  casey lint [--registry|--file <...>]    统一语言检查（term-lint）
+  casey gate     [--prd <path>] [...]     当前禁用：旧 PRD 可能启动 fake-sut；改为逐条审计后直接跑静态/纯函数检查
+  casey breaker  [--reset|--round ...]    熔断器
+  casey contract [init|advance|check|show] ...  Loop Contract 阶段台账
+
+${col(C.cyan, '自检')}
+  casey selftest --tier1                  hermetic 链路自检（零外部依赖）                 [可用]
+  casey doctor                            跨平台就绪自检（node/playwright/中文字体/凭据·隧道在位），逐项 ok/缺失+建议  [可用]
+  casey selftest --tier2                  live smoke（需 site.json + creds，route:human） [P9]
+  casey demo                              当前禁用：历史实现会启动夹具 SUT；只允许读取已有真实报告
+
+${col(C.cyan, '分发/接入')}
+  casey mcp-config --agent <claude|codex>  一句吐出各家 MCP 挂载配置（自适应本仓绝对路径，免手抄改盘符）
+  接入指路见 AGENTS.md（分家 agent 入口）与 docs/runbooks/onboarding.md（跨平台上手 + 移交清单）。
+
+退出码：0 成功；1 红；2 熔断/互锁；3 该阶段未实现；64 用法错误。
+进度：七相命令面已建，heal 仍是 exit 3 的诚实桩；AI 中台历史版本用例已有真实环境 8/8 PASS、同次录像、视觉一致、独立 HTML 与残留 0 证据，其它业务流及医生站/Hi 小助 CEF 仍须逐例真机验收。`);
+}
+
+function main() {
+  const [cmd, ...rest] = process.argv.slice(2);
+  const { opts, pos } = parseArgs(rest);
+
+  switch (cmd) {
+    case undefined: case 'help': case '--help': case '-h': return help();
+
+    // loop 机制直通
+    case 'lint': return passThrough('term-lint.mjs', rest.length ? rest : ['--registry']);
+    case 'gate': return blockedByRealSutOnlyPolicy('gate');
+    case 'breaker': return passThrough('breaker.mjs', rest);
+    case 'contract': return passThrough('contract.mjs', rest);
+
+    // 自检
+    case 'selftest':
+      if (opts.tier2) return notImplemented('selftest --tier2', 'P9 两层 selftest + 真机 UAT', 'live smoke：需 site.json + creds，覆盖 SUT_DEFECT/取证/流式分支，gated route:human。');
+      return selftestTier1();
+
+    // 生命周期（当前为诚实桩，逐阶段实现）
+    // 相0 前段·归一脚手架：自由文本 → 零 LLM 候选骨架（source.kind:freetext + route:human 占位，开箱过 parseTestCase）；
+    // 须 CLI 外 LLM 归一 + 重走 ingest→…→人签才算数（不签署/不回放；镜像 ingest/intake 分发先例）。
+    case 'scaffold-case': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'scaffold-case.mjs'), rest); process.exit(r.code); }
+    // 相0 归一：LLM 在 CLI 外产候选，本 CLI 是 L0 确定性校验器（parseTestCase，fail-closed）。
+    case 'ingest': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'ingest.mjs'), rest); process.exit(r.code); }
+    // 相1 编译（P3）：三段式确定性 CLI（闸+confirm 门 / 执行 / 回放核验），LLM 只在 CLI 外产 flow 草稿。
+    case 'compile': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'compile.mjs'), rest); process.exit(r.code); }
+    case 'draft': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'draft.mjs'), rest); process.exit(r.code); }
+    case 'flow-bridge': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'flow-bridge.mjs'), rest); process.exit(r.code); }
+    case 'sign': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'sign.mjs'), rest); process.exit(r.code); }
+    case 'record': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'record.mjs'), rest); process.exit(r.code); }
+    case 'cef-record': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'cef-record.mjs'), rest); process.exit(r.code); }
+    // 被测参数 authoring（gen-prompts 契约，regress scope C 改形态）：合成在 CLI 外（当前会话）完成，
+    // 这两个命令只做零 LLM 确定性工作——出合成种子模板 / 校验候选 + 幂等冻结；绝不进回放/裁定进程。
+    case 'promptset-seed': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'promptset-seed.mjs'), rest); process.exit(r.code); }
+    case 'promptset-freeze': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'promptset-freeze.mjs'), rest); process.exit(r.code); }
+    // 相0 前段·示教入账：安全复核录制包 → 登记入账台账（不转形/不签署/不回放；蒸馏另立 record-distill）。
+    case 'intake': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'intake.mjs'), rest); process.exit(r.code); }
+    // 相0 前段·示教蒸馏：已入账 capture → 候选流程 + pending + 溯源（TOCTOU 硬门；v1 零 LLM 全 pending；重走 ingest→…→人签）。
+    case 'distill': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'distill.mjs'), rest); process.exit(r.code); }
+    case 'atom-propose': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'atom-propose.mjs'), rest); process.exit(r.code); }
+    case 'atom-sign': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'atom-sign.mjs'), rest); process.exit(r.code); }
+    case 'atom-promote': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'atom-promote.mjs'), rest); process.exit(r.code); }
+    // 相3/4/6 直通各自 bin（参数契约归各 bin 自管，同 compile/draft/sign/flow-bridge/ingest 五先例；
+    // 此前为桩而底层 bin 早已建成、run 编排内部直连在用——cli-mcp-face 契约接通门面）。
+    case 'replay': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'replay.mjs'), rest); process.exit(r.code); }
+    case 'cef-replay': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'cef-replay.mjs'), rest); process.exit(r.code); }
+    case 'verdict': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'verdict.mjs'), rest); process.exit(r.code); }
+    case 'heal':    return notImplemented('相5 heal 自愈', 'P6 自愈准入门 + 非就地有界自愈', '仅对确证 HARNESS_ERROR：重锚 → 写 drift 补丁旁文件（原 spec 不变）→ 人签后应用 → 重跑。');
+    case 'report': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'report.mjs'), rest); process.exit(r.code); }
+    // run --promptset（regress-promptset）：数据驱动被测参数直通编排器 bin/promptset.mjs（一条冻结 flow 跑 N 行 + 聚合）。
+    case 'run':
+      if (opts.promptset) { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'promptset.mjs'), rest); process.exit(r.code); }
+      return runPipeline(pos, opts);
+    case 'finalize-run': return finalizeRun(pos, opts);
+    // 历史 demo 会启动夹具 SUT；Steven 2026-07-15 明确规定 fake/fixture 只读，入口永久 fail-closed。
+    case 'demo': return blockedByRealSutOnlyPolicy('demo');
+
+    // 跨平台就绪自检（自检类，不进 MCP 面——同 selftest/breaker/contract/heal）：逐项查
+    // node/playwright/中文字体/凭据·site.json/隧道，就绪级任一 fail → exit 1；绝不回显凭据值与真目标地址。
+    case 'doctor': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'doctor.mjs'), rest); process.exit(r.code); }
+
+    // 分发/接入：自适应从模块位置解析仓根 → 各家 MCP 挂载配置（纯打印器，不进 MCP 面——挂之前才需要，
+    // 从 MCP 取它是循环依赖，GRILL D11）；结构上不含 --sut/目标地址、不读凭据。缺/错 --agent → exit 64。
+    case 'mcp-config': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'mcp-config.mjs'), rest); process.exit(r.code); }
+
+    default:
+      console.error(col(C.red, `未知命令：${cmd}`));
+      console.error('跑 `casey help` 看命令表。');
+      process.exit(64);
+  }
+}
+
+main();

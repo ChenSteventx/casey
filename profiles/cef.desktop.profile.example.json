@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "channel": "cef",
+  "discovery": {
+    "baseUrlEnv": "CASEY_CEF_BASE_URL",
+    "titlePattern": ".+",
+    "pathPattern": "^/"
+  },
+  "timeouts": {
+    "discoveryMs": 3000,
+    "connectMs": 5000,
+    "commandMs": 15000,
+    "recordMaxMs": 600000,
+    "actionQuietMs": 500
+  },
+  "screencast": {
+    "format": "jpeg",
+    "quality": 70,
+    "maxWidth": 1280,
+    "maxHeight": 720,
+    "everyNthFrame": 1
+  }
+}

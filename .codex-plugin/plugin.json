@@ -1,0 +1,22 @@
+{
+  "name": "casey",
+  "version": "0.2.0",
+  "description": "Casey（测易）：自然语言到真实 SUT 确定性回放与逐用例测试报告。",
+  "author": {
+    "name": "ChenSteventx"
+  },
+  "repository": "https://github.com/ChenSteventx/casey",
+  "homepage": "https://github.com/ChenSteventx/casey#readme",
+  "keywords": ["testing", "real-sut", "replay", "mcp", "cef"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Casey（测易）",
+    "shortDescription": "用自然语言运行真实 SUT 测试并生成独立报告。",
+    "longDescription": "Casey 编排真实环境检查、确定性回放、零 LLM 裁定、录屏和逐用例 HTML；也提供受控的 web/CEF 人工示教入口。",
+    "developerName": "ChenSteventx",
+    "category": "Developer Tools",
+    "capabilities": [],
+    "defaultPrompt": "使用 Casey 在真实 SUT 上执行我描述的测试；若安全的自动化映射失败，转人工示教，并如实区分正式裁定与机械回放。"
+  },
+  "mcpServers": "./.mcp.json"
+}

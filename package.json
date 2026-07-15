@@ -1,0 +1,24 @@
+{
+  "name": "casey",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "Casey（测易）——把自然语言测试用例编译成确定性回放，并生成零 LLM 裁定的逐用例报告。",
+  "bin": {
+    "casey": "bin/casey.mjs"
+  },
+  "engines": {
+    "node": ">=22.12"
+  },
+  "scripts": {
+    "verify:install": "node scripts/verify-install.mjs",
+    "selftest": "node bin/casey.mjs selftest --tier1",
+    "term-lint": "node loop-kit/bin/term-lint.mjs --registry",
+    "gate": "node loop-kit/bin/gate.mjs",
+    "breaker": "node loop-kit/bin/breaker.mjs"
+  },
+  "_dependenciesNote": "@playwright/test 精确固定为 1.60.0；浏览器二进制需另执行 Playwright install。开发用 loop 命令还要求匹配版本的独立 loop-kit，操作员安装检验与正式回放不依赖这些开发命令。",
+  "devDependencies": {
+    "@playwright/test": "1.60.0"
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://casey/loop/prd.schema.json",
+  "title": "loop-kit PRD（任务契约实例）",
+  "description": "由 acceptance-gate 工序生成与冻结。passes 字段只由 gate.mjs（确定性裁判）写入，任何模型无权翻绿。schemaVersion 1 = loop-kit 通用契约（向后兼容，不破坏现有 prd-*.json）；schemaVersion 2 = 加性扩展 Casey 核心域：caseId + channel + expectedFrozenPath（指向冻结断言契约旁车 expected.frozen.json）。冻结的 typed expected[] 与人签元数据落旁车、进 testChecksums，绝不内嵌本文件——护栏 #5 物理隔离（passes 由 gate 写、断言对实现者只读，二者不同文件）。见 docs/design/txt2testreport-design.md §4.3/§5/§8 与 tests/_golden/schemas/expected-frozen.schema.json。",
+  "type": "object",
+  "required": ["schemaVersion", "task", "stories"],
+  "properties": {
+    "schemaVersion": {
+      "enum": [1, 2],
+      "description": "1=loop-kit 通用；2=Casey 冻结断言契约（加性扩展，引用 expected.frozen.json 旁车）"
+    },
+    "task": { "type": "string", "description": "任务名" },
+    "specPath": { "type": "string", "description": "阶段1产物（to-plan 的 plan.md）路径" },
+    "testChecksums": {
+      "type": "object",
+      "description": "Test Ratchet：acceptance-gate 冻结的验收测试/golden 存档文件 sha256；gate 每轮校验，不符即红。schemaVersion 2 下，冻结断言旁车 expected.frozen.json 在此（只冻断言文件，不冻 spec/events——自愈改 locator 合法、改断言触棘轮，设计 §5）。",
+      "additionalProperties": { "type": "string" }
+    },
+    "observability": {
+      "type": "array",
+      "description": "可观测性申报：质量门禁测不到的维度及去向（route=human 走升级路径 / waived 明确豁免）",
+      "items": {
+        "type": "object",
+        "required": ["dimension", "route"],
+        "properties": {
+          "dimension": { "type": "string" },
+          "route": { "enum": ["human", "waived"] },
+          "note": { "type": "string" }
+        }
+      }
+    },
+    "stories": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "desc", "lane", "acceptance", "passes"],
+        "properties": {
+          "id": { "type": "string" },
+          "desc": { "type": "string" },
+          "lane": { "enum": ["toil", "implementation"] },
+          "acceptance": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "type": "string" },
+            "description": "可执行规格：每条都是可运行命令，全部 exit 0 才算过。schemaVersion 2 形状不变（设计 §5/§8：gate 主循环原样）"
+          },
+          "passes": { "type": "boolean" },
+          "evidence": { "type": "string", "description": "gate 翻绿时写入的证据指向（时间戳+命令结果摘要）" },
+          "reviewed": { "type": "boolean", "description": "异构冗余评审是否通过（review 道结论，独立于 passes）" }
+        }
+      }
+    },
+    "caseId": {
+      "type": "string",
+      "description": "schemaVersion 2：TestCase 聚合根 id（扁平契约 loop/prd-<caseId>.json 的 <caseId>）。与 verdict.json/StepAxes/expected.frozen.json 的 caseId 同一标识"
+    },
+    "channel": {
+      "enum": ["web", "cef", "arbitrary"],
+      "description": "schemaVersion 2：回放通道；裁定/报告/契约层 channel 无关，仅影响断言成功字段参数化（错误信封）"
+    },
+    "expectedFrozenPath": {
+      "type": "string",
+      "description": "schemaVersion 2：指向冻结断言契约旁车（tests/_golden/fixtures/<caseId>/expected.frozen.json，符合 expected-frozen.schema.json）。typed expected[] 与人签元数据落旁车、进 testChecksums，不内嵌本文件（护栏 #5）"
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": { "schemaVersion": { "const": 2 } },
+        "required": ["schemaVersion"]
+      },
+      "then": {
+        "required": ["caseId", "expectedFrozenPath"]
+      }
+    }
+  ]
+}

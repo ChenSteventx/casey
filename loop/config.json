@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "_doc": "loop-kit 运行参数（Casey 第二消费者）。决策依据 docs/adr/0001 与 autotester docs/adr/0003 模型分层。阈值为首跑默认值，跑完一轮按实测调整。两类 lane 正交：本表 lanes=模型分层道（toil/implementation/review，谁来跑）；contract.mjs 的 lane=入口分流（direct/light/full，走多重的流程）。",
+  "lanes": {
+    "toil": {
+      "model": "codex:gpt-5.5",
+      "effort": "xhigh",
+      "schedule": "nightly",
+      "maxCallsPerRun": 5,
+      "_doc": "事务性工作道：夜间分诊、机械小修。额度吃紧时本道先降 effort 到 high（review 道永不降）。2026-07-01 曾拟改 Sonnet 5，因暂无夜跑需求撤回，待有 nightly runner 再议（届时重掂 max vs medium）。"
+    },
+    "implementation": {
+      "model": "opus",
+      "effort": "xhigh",
+      "subagent": { "lane": "light", "model": "sonnet", "effort": "max", "escalateTo": { "model": "opus", "effort": "xhigh" }, "escalateOn": "breakerTrip" },
+      "_doc": "契约级实施道：只接走完流水线的任务，spec 一次给全，不切小步。主环 Opus 4.8 跑 ultracode（xhigh effort + 动态工作流编排）当编排器，承 full 车道与碰冻结内核的最难长程活。轻车道的活派给 Sonnet 5 独立 subagent（max effort）——产出被冻结 golden+checksum 棘轮+gate.mjs+codex 异构评审兜底，错了门禁必拦、与谁写无关；切 subagent 而非主环换模型，保 prompt 缓存与上下文隔离；Sonnet 5 用 max 收窄对 Opus 能力差（注意 max 偶有过度思考、边际递减）。三级兜底阶梯：开发任务上 Sonnet 5 卡住（circuitBreaker 判 zeroCommitRounds/sameErrorRounds 跳闸）→ 升 escalateTo 即 Opus 4.8 xhigh（原 plan）重试 → 再卡 → NEEDS_HUMAN 写 inbox（护栏 #14 fail-safe 不 fail-open，绝不静默过）。同 Claude 家族→对 Codex 评审仍异构；1M 上下文承载单长会话。subagent/escalateTo 为操作者约定、暂无 runner 按 lanes 路由；机制锚在 circuitBreaker，watcher 待建（走 spoke，别改 loop-kit engine——ADR-0001 字节一致）。"
+    },
+    "review": {
+      "model": "codex:gpt-5.5",
+      "effort": "xhigh",
+      "fallback": ["deepseek-v4-pro", "sonnet"],
+      "fallbackRunner": "loop-kit/bin/review-deepseek.mjs",
+      "trigger": "story-complete",
+      "freshContext": true,
+      "diversity": "dissimilar",
+      "_doc": "异构冗余评审道：输入=spec+diff+门禁证据，不含实现者推理。主评审 codex:gpt-5.5（OpenAI 族）。降级链 deepseek-v4-pro（跨族，按量计费）→ sonnet（同族末位，audit 标注「同族评审」）。信任非对称：判 FAIL 直接采信，判 PASS 仍需人工真机抽验。凭据类内容严禁进入评审输入。"
+    }
+  },
+  "circuitBreaker": {
+    "maxIterations": 20,
+    "zeroCommitRounds": 3,
+    "sameErrorRounds": 5,
+    "maxHours": 8,
+    "_doc": "Casey 注意：浏览器动作循环里没有每步 commit，照搬 git HEAD 记零进展会误跳闸。回放/自愈 loop 应改喂每步进展哈希经 breaker --round --progress（代码改动，见 design §3.1，P5/P6 接线）。本默认值守的是 loop-kit 自身的实施 loop。"
+  },
+  "qualityGate": {
+    "prd": "loop/prd.json",
+    "termLint": true,
+    "commandTimeoutMs": 300000,
+    "_doc": "默认 prd 路径；Casey 契约扁平在 loop/prd-<slug>.json，用 gate --prd 指定。"
+  },
+  "escalation": {
+    "inbox": "loop/inbox.md",
+    "notify": ["toast"],
+    "_doc": "通知通道当前未实现——熔断只 appendFile 写 inbox.md。首跑为有人值守，靠人看 inbox。凭据类 key 放 ~/.loop-kit/，不入库。"
+  }
+}
