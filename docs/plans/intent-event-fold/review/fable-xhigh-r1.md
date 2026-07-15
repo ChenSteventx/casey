@@ -12,4 +12,4 @@
 
 r2 确认上面三项均已成立，另报 1 MEDIUM：矛盾失败轴若残留 `kind:'none'`，verdict 会在读取 resolution 前直接当成功。采信：`failedAction` 与 `copyFailedAction` 对失败投影删除该假成功位；U11/U12 从折叠层断言升级为折叠→verdict 集成钉，分别锁 `AMBIGUOUS_ACTION` 与 `INDETERMINATE`。
 
-处置后验证：`intent-event-fold` 16/16；完整 PRD gate 8 条 acceptance 全绿并由 gate 重翻 `passes:true`；全仓 ratchet verify 为 73 PRD / 196 冻结文件 / 0 问题。r2 最小复现已由升级后的 U11/U12 直接覆盖。
+处置时曾在开发工作树观察到 16/16 与完整 PRD gate 全绿，但对应测试没有进入提交，且其中含 fake-SUT 运行，因此该证据不再作为当前交付的可复现门禁。2026-07-16 已改由 `tests/_golden/intent-event-fold.zero-sut.golden.mjs` 的 R11/R12/R13 覆盖成功位消毒；新 PRD 从 `passes:false` 起步，定向 gate 已用唯一 zero-SUT acceptance 将它翻为 `true`。

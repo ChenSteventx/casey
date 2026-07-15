@@ -3,7 +3,7 @@
 ## 结果
 
 - 正式回放不再只拿 intent 最后事件当动作事实；`eventActions` 先经纯函数 fail-safe 折叠，再喂既有零 LLM 裁判。
-- 真实事故同构红证已锁：旧代码在 `[ambiguous, unique]` 下明确输出 intent `unique` 与机器 `PASS`；新实现输出 `NEEDS_HUMAN/AMBIGUOUS_ACTION`。
+- 真实事故的脱敏事件投影 `[ambiguous, none, unique]` 已锁为 zero-SUT（零被测系统）回归：新实现输出 `NEEDS_HUMAN/AMBIGUOUS_ACTION`，不再依赖 fake-SUT 复现。
 - 全 unique 正向仍 PASS；纯断言不覆盖真实动作证据；坏轴、普通 miss、drift miss 与矛盾成功位都有确定性边界。
 - `bin/verdict.mjs`、`lib/report-model.mjs`、冻结 schemas 零改动。
 
@@ -16,12 +16,11 @@
 
 ## 验证
 
-- 新 golden 16/16。
-- PRD gate：8 条 acceptance 全绿，`passes` 由 gate 翻 true。
-- tier1 selftest 全绿。
-- ratchet verify：73 PRD / 196 冻结文件 / 0 问题。
-- `git diff --check` 通过。
+- `node --check tests/_golden/intent-event-fold.zero-sut.golden.mjs`：exit 0。
+- `node tests/_golden/intent-event-fold.zero-sut.golden.mjs`：17/17，exit 0；只使用内存动作投影、临时 `axes` 与确定性 `bin/verdict.mjs`。
+- 仅对新 PRD 执行定向 gate：ratchet checksum、术语检查与唯一 zero-SUT acceptance 全绿，`passes` 由 gate 从 `false` 翻为 `true`。本轮没有运行全量 gate、tier1、浏览器、网络、fake-SUT 或真实 `SUT`，因此不声称这些维度已绿。
+- 旧的未跟踪 `tests/_golden/intent-event-fold.golden.mjs` 导入 fake-SUT，不属于交付、未运行、未冻结、未提交。
 
 ## 未完成且不可冒充
 
-本契约完成的是 P0 信任边界实现，不是三条业务真机清理链完成。发布、历史、CRUD 必须等 `workflow.deleteByName` 域锁与签署后置断言合并后串行重跑；每条独立 HTML 必须含自然语言用例、原子操作、同次录屏、附件和视觉复核。带外补救清理不能算该 run 成功。
+本契约完成的是 P0 信任边界实现及其 zero-SUT 回归棘轮，不是三条业务真机清理链完成。发布、历史、CRUD 必须等 `workflow.deleteByName` 域锁与签署后置断言合并后串行重跑；每条独立 HTML 必须含自然语言用例、原子操作、同次录屏、附件和视觉复核。带外补救清理不能算该 run 成功。

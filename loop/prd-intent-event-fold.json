@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "task": "intent-event-fold（full，P0）回归棘轮：实现提交 3c4647c 已让正式回放按 intent 对完整 eventActions 做 fail-safe 折叠，禁止前序 ambiguous、none、action_failed 或坏轴被末事件 unique 洗成 PASS。本 PRD 只冻结后补的 zero-SUT 回归保护测试：使用真实 cleanup 事故的脱敏事件投影，在内存折叠后用临时 axes 驱动确定性 bin/verdict.mjs；不启动回放器、浏览器、服务器或网络，不运行 fake-SUT，不冒充 ATDD 红基线。判据见 docs/plans/intent-event-fold/plan.md。",
+  "specPath": "docs/plans/intent-event-fold/plan.md",
+  "testChecksums": {
+    "tests/_golden/intent-event-fold.zero-sut.golden.mjs": "b94dac60dfbf13daaaf7a4dc9d91f8fc400d58ba292c2912617c2bffb5d3f4f6"
+  },
+  "observability": [
+    {
+      "dimension": "zero-SUT 回归只证明折叠内核与确定性裁判接线，不证明真实页面操作。与 workflow.deleteByName 域锁合流后，发布、历史、CRUD 三条联网真机清理链须逐案核销：cleanup eventActions 全成功、签署后的目标精确计数为 0、机器 verdict 全 PASS、录像和删后截图均无目标实体；每案独立 HTML 含自然语言用例、原子操作、同次录屏和附件。",
+      "route": "human"
+    },
+    {
+      "dimension": "旧的未跟踪 tests/_golden/intent-event-fold.golden.mjs 会导入 fake-SUT，禁止执行、冻结或提交；它的历史运行结果不算当前提交的可复现证据。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-zero-sut-regression-ratchet",
+      "desc": "后补回归保护测试钉住真实事故脱敏投影、fail-safe 优先级、kind:none 与 identityReadback.ok:true 成功位消毒、drift 边界、畸形输入、不修改证据输入、fold 到 verdict 最终四态以及 replay 静态接线。测试只允许内存和操作系统临时目录，不接触任何 SUT。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/intent-event-fold.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-15T16:36:41.696Z 全部 acceptance exit 0"
+    }
+  ]
+}
