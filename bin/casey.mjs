@@ -62,6 +62,13 @@ function notImplemented(phase, planRef, willDo) {
   process.exit(EXIT_NOT_IMPL);
 }
 
+function blockedByRealSutOnlyPolicy(command) {
+  console.error(col(C.red, `\n[${command}] 已由真实 SUT only 策略禁用。`));
+  console.error(col(C.gray, 'fake-sut 与夹具 SUT 只允许静态阅读；本入口可能启动历史夹具或执行未经逐条审计的验收命令。'));
+  console.error(col(C.gray, '请直接运行已人工确认不接触任何 SUT 的静态/schema/纯函数检查，或在联网真实目标上运行正式用例。\n'));
+  process.exit(1);
+}
+
 // ── run：确定性尾段编排（相3 回放 → 相4 裁定 → 报表模型装配 → 相6 报告）────
 // LLM 前段（相0-2 ingest/compile/draft/sign）未建、route:human；本命令喂 compile产物直跑尾段。
 function runPipeline(pos, opts) {
@@ -223,7 +230,7 @@ function help() {
 ${col(C.cyan, '端到端')}
   casey run <caseId> --sut <本地基址> [--events <f> --expected <f> --profile <f>] [--run-dir <d> --login-bootstrap --no-video]
                                           相3-4-6 编排：回放→裁定→装配→报告；缺文件旗标时按 cases/<caseId>/ 约定解析
-                                          --sut 必填，只喂隧道回环基址（site.json 的 devProxyUrl）或夹具地址；真目标地址绝不进命令行（护栏 #7）
+                                          --sut 必填，只喂隧道回环基址（site.json 的 devProxyUrl）；真目标地址绝不进命令行（护栏 #7）
 
 ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅助/heal；replay/verdict/report 零 LLM）
   casey scaffold-case <caseId> --from-text <f> --out-dir <d>
@@ -256,7 +263,7 @@ ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅�
 
 ${col(C.cyan, 'loop 机制')}（薄壳直通 loop-kit；纪律已生效）
   casey lint [--registry|--file <...>]    统一语言检查（term-lint）
-  casey gate     [--prd <path>] [...]     质量门禁（确定性裁判，唯一写 passes）
+  casey gate     [--prd <path>] [...]     当前禁用：旧 PRD 可能启动 fake-sut；改为逐条审计后直接跑静态/纯函数检查
   casey breaker  [--reset|--round ...]    熔断器
   casey contract [init|advance|check|show] ...  Loop Contract 阶段台账
 
@@ -264,7 +271,7 @@ ${col(C.cyan, '自检')}
   casey selftest --tier1                  hermetic 链路自检（零外部依赖）                 [可用]
   casey doctor                            跨平台就绪自检（node/playwright/中文字体/凭据·隧道在位），逐项 ok/缺失+建议  [可用]
   casey selftest --tier2                  live smoke（需 site.json + creds，route:human） [P9]
-  casey demo                              零真机零凭据产一份样例测试报告（落 runs/sample-wf-publish/，需 chromium）
+  casey demo                              当前禁用：历史实现会启动夹具 SUT；只允许读取已有真实报告
 
 ${col(C.cyan, '分发/接入')}
   casey mcp-config --agent <claude|codex>  一句吐出各家 MCP 挂载配置（自适应本仓绝对路径，免手抄改盘符）
@@ -283,7 +290,7 @@ function main() {
 
     // loop 机制直通
     case 'lint': return passThrough('term-lint.mjs', rest.length ? rest : ['--registry']);
-    case 'gate': return passThrough('gate.mjs', rest);
+    case 'gate': return blockedByRealSutOnlyPolicy('gate');
     case 'breaker': return passThrough('breaker.mjs', rest);
     case 'contract': return passThrough('contract.mjs', rest);
 
@@ -322,8 +329,8 @@ function main() {
     case 'run':
       if (opts.promptset) { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'promptset.mjs'), rest); process.exit(r.code); }
       return runPipeline(pos, opts);
-    // 样例入口（casey-demo）：零参零真机零凭据出一份夹具驱动的样例报告，复刻 相3-4-6 编排（需 chromium）。
-    case 'demo': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'demo.mjs'), rest); process.exit(r.code); }
+    // 历史 demo 会启动夹具 SUT；Steven 2026-07-15 明确规定 fake/fixture 只读，入口永久 fail-closed。
+    case 'demo': return blockedByRealSutOnlyPolicy('demo');
 
     // 跨平台就绪自检（自检类，不进 MCP 面——同 selftest/breaker/contract/heal）：逐项查
     // node/playwright/中文字体/凭据·site.json/隧道，就绪级任一 fail → exit 1；绝不回显凭据值与真目标地址。

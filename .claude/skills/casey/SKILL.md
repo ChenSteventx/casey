@@ -35,7 +35,7 @@ description: 用自然语言把测试用例跑成 Casey 测试报告，或启动
 | “把这段文本用例跑成报告” | 若已有完整签署产物则直接跑；否则先产候选 TestCase/flow/expected 草稿并要求用户签署，不能代签。 |
 | “把一段自由文本用例变成候选骨架 / 我要从头写个用例” | 代理内部跑 `scaffold-case` 把自由文本零 LLM 包成候选骨架（`source.kind:freetext` + `route:human` 占位，开箱过 `parseTestCase`），再按归一提示模板 `docs/plans/ingest-scaffold/proposed/from-text-candidate.draft.md` 把 `source.raw` 归一成真实意图步、经 `ingest` 入场；如实说明候选须 LLM 归一 + 人签才算数、不是正式报告，别盲写 JSON。 |
 | “看最近报告” | 在 `runs/` 下找最新 `.report.html`，返回链接和四态摘要。 |
-| “看样例报告/Casey 产物长啥样” | 跑 `casey demo`（零真机零凭据，需 chromium），返回 `runs/sample-wf-publish/` 下 `report.{html,md,json}` 链接与「通过」四态计数。 |
+| “看样例报告/Casey 产物长啥样” | 只返回 `runs/` 下已有的真实回放报告，并标明运行时间与四态；没有真实报告就如实说明。不得运行历史 `casey demo`，因为它会启动夹具 SUT。 |
 
 ## 内核（不可让渡，违反即停）
 
@@ -74,8 +74,8 @@ description: 用自然语言把测试用例跑成 Casey 测试报告，或启动
 | 相4 出多态裁定 | `node bin/casey.mjs verdict --axes <f> --out <f>` |
 | 相5 自愈（仅工装漂移） | `node bin/casey.mjs heal <caseId>`（诚实桩 exit 3，相5 只有 lib 件） |
 | 相6 出报告 | `node bin/casey.mjs report --model <f> --out <d> [--run-history <f> --run-metrics <f>]` |
-| 链路自检 | `node bin/casey.mjs selftest --tier1` |
-| 看样例报告 | `node bin/casey.mjs demo`（零参） |
+| 链路自检 | 仅在逐项确认命令不启动/连接任何 SUT 后，直接运行对应静态、schema 或纯函数检查；不得调用未审计的整包 gate。 |
+| 看样例报告 | 从 `runs/` 读取已有真实报告；`casey demo` 已按 real-SUT-only 策略禁用。 |
 | loop 纪律 | `node bin/casey.mjs lint\|gate\|breaker\|contract ...` |
 
 执行后回给用户的标准格式：
