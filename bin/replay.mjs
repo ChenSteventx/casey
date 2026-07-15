@@ -25,6 +25,7 @@ import { evaluateAssertions } from '../lib/replay-assert.mjs';
 import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
 import { credentialGate, maskCredentialRoute } from '../lib/cred-gate.mjs';
 import { assertSignedContract } from '../lib/sign-gate.mjs';
+import { foldIntentAction } from '../lib/intent-action-fold.mjs';
 
 const { chromium } = pw;
 
@@ -649,6 +650,7 @@ async function main() {
   const steps = intentOrder.map((iid) => {
     const es = intentEvents.get(iid);
     const reprStepId = reprStepOf.get(iid);
+    const eventActions = es.map((e) => ({ stepId: e.stepId, action: actionByStep.get(e.stepId) || { resolution: 'none' } }));
     const stepIds = new Set(es.map((e) => e.stepId));
     const net = allRecords.filter((r) => r.firingStepId != null && stepIds.has(r.firingStepId)).map((r) => projectNet(r, reprStepId));
     const pe = pageErrors.filter((p) => p.attributedStepId != null && stepIds.has(p.attributedStepId)).map((p) => ({ attributedStepId: reprStepId, message: p.message }));
@@ -670,11 +672,10 @@ async function main() {
       stepId: reprStepId,
       intentId: iid,
       atom: es.slice(-1)[0].atom,
-      action: actionByStep.get(reprStepId) || { resolution: 'none' },
-      // 逐 event 动作轴（加性，p3 评审 R1-F4）：intent 卷回只留代表步动作，中间 event 的
-      // ambiguous/失配会被掩盖——编译回放核验（casey compile --verify）须逐 event 扫，故全量外露。
-      // verdict.mjs 只读 action.resolution，不消费本字段。
-      eventActions: es.map((e) => ({ stepId: e.stepId, action: actionByStep.get(e.stepId) || { resolution: 'none' } })),
+      // verdict 仍只消费 intent 级 action；这里先对逐 event 轴 fail-safe 折叠，前序失败不得被末事件洗白。
+      action: foldIntentAction(eventActions),
+      // 完整逐 event 证据继续原样外露，供 compile --verify、报告原子操作和人工诊断消费。
+      eventActions,
       postAssertions: post,
       forensics: { network: net, lifecycle: { crashed: false, crashedAtStepId: null, pageerror: pe } },
     };
