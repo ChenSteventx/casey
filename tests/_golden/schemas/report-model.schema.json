@@ -116,6 +116,46 @@
       },
       "description": "回放录像顶层引用：run 目录内录像文件名（replay-video 已白名单 [A-Za-z0-9._-]）；未产录像为 null，报告显式标「无录像」不静默"
     },
+    "artifacts": {
+      "type": "array",
+      "description": "同一次 run 的单例报告与证据附件清单；HTML 渲染为直接相对链接。",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["kind", "file", "label"],
+        "properties": {
+          "kind": { "type": "string" },
+          "file": { "type": "string" },
+          "label": { "type": "string" }
+        }
+      }
+    },
+    "visualReview": {
+      "type": ["object", "null"],
+      "description": "同次真实回放的视觉复核摘要；仅诊断，不进入或覆盖 verdict。",
+      "additionalProperties": false,
+      "required": ["status", "reviewer", "reviewedAt", "summary", "verdictImpact", "evidence"],
+      "properties": {
+        "status": { "enum": ["CONSISTENT", "INCONSISTENT", "INDETERMINATE"] },
+        "reviewer": { "type": "string" },
+        "reviewedAt": { "type": "string", "format": "date-time" },
+        "summary": { "type": "string" },
+        "verdictImpact": { "const": "none" },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["file", "videoAt", "note"],
+            "properties": {
+              "file": { "type": "string" },
+              "videoAt": { "type": ["number", "null"], "minimum": 0 },
+              "note": { "type": ["string", "null"] }
+            }
+          }
+        }
+      }
+    },
     "cleanupEvidence": {
       "type": "array",
       "description": "清理证据：编辑型用例 countChange 断言的删除前后命中数（report-spec #9），surface 自各步 postAssertions",

@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "task": "real-report-delivery（light）：真机单例报告自然语言、附件清单、视觉复核与聚合链接。",
+  "specPath": "docs/plans/real-report-delivery/plan.md",
+  "testChecksums": {
+    "tests/_golden/real-report-delivery.golden.mjs": "acf57fcea9eef325370e43389b926de26bc42a3b7864a263f7ed8b0831b1d4dc"
+  },
+  "observability": [
+    {
+      "dimension": "visual-review.json 必须来自同次真实回放后的视觉复核；视觉摘要只读且不改 verdict。",
+      "route": "human"
+    },
+    {
+      "dimension": "三条 Heren 用例须在实现集成后串行真机重跑；本契约不运行任何 fake/fixture SUT。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-real-report-delivery",
+      "desc": "case meta 投影自然语言；单例 HTML 附件直链；visualReview 机读与 HTML 落点；聚合目录链接单例 HTML。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/real-report-delivery.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-15T10:07:44.301Z 全部 acceptance exit 0"
+    }
+  ]
+}

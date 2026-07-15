@@ -45,7 +45,12 @@ function aggregateMain(opts) {
     try { files = readdirSync(sub); } catch { continue; }
     for (const f of files.sort()) {
       if (!f.endsWith('.report.json')) continue;
-      try { reports.push(JSON.parse(readFileSync(join(sub, f), 'utf8'))); }
+      try {
+        if (!/^(?!\.+$)[A-Za-z0-9._-]+$/.test(name) || !/^(?!\.+$)[A-Za-z0-9._-]+$/.test(f)) throw new Error('unsafe report path');
+        const report = JSON.parse(readFileSync(join(sub, f), 'utf8'));
+        report.reportHref = `${name}/${f.replace(/\.report\.json$/, '.report.html')}`;
+        reports.push(report);
+      }
       catch { console.error('report --aggregate: 旁车不是合法 JSON（内容不回显），fail-closed'); process.exit(1); }
     }
   }

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // bin/report-model.mjs —— 报表模型装配薄 CLI（相6 上游一步）。零 LLM。
 // 冻结 CLI：node bin/report-model.mjs --verdict <f> --axes <f> --out <report-model.json>
-//           [--observed <f>] [--events <f>] [--case-meta <f>] [--generated-at <iso>] [--video-meta <f>]
+//           [--observed <f>] [--events <f>] [--case-meta <f>] [--generated-at <iso>] [--video-meta <f>] [--visual-review <f>]
 // --case-meta：可选 JSON，含 { caseId?, channel?, title?, signedAgainstBuild?, signerId?, passes?, intentTextByIntent? }
 //   设计取舍（plan §2 原写 --expected）：report-model 的期望侧只需 intentText + 人签字段（signedAgainstBuild/signerId/passes），
 //   均由 case-meta 投影承载；不把整份冻结 expected 契约传进装配器。
@@ -49,7 +49,7 @@ function parseArgs(argv) {
 
 const opts = parseArgs(process.argv.slice(2));
 if (!opts.verdict || !opts.axes || !opts.out) {
-  console.error('用法: report-model --verdict <f> --axes <f> --out <f> [--observed <f>] [--events <f>] [--expected <f>] [--case-meta <f>] [--generated-at <iso>] [--video-meta <f>] [--promptset-meta <f>]');
+  console.error('用法: report-model --verdict <f> --axes <f> --out <f> [--observed <f>] [--events <f>] [--expected <f>] [--case-meta <f>] [--generated-at <iso>] [--video-meta <f>] [--visual-review <f>] [--promptset-meta <f>]');
   process.exit(64);
 }
 
@@ -66,6 +66,9 @@ try {
   // 被测参数元数据（regress-promptset）：投影 promptset 块（脱敏由装配器 projectPromptset 兜；坏形状 fail-closed）。
   const promptsetMeta = opts['promptset-meta'] && typeof opts['promptset-meta'] === 'string'
     ? JSON.parse(readFileSync(opts['promptset-meta'], 'utf8'))
+    : null;
+  const visualReview = opts['visual-review'] && typeof opts['visual-review'] === 'string'
+    ? JSON.parse(readFileSync(opts['visual-review'], 'utf8'))
     : null;
   const meta = { generatedAt: opts['generated-at'] || new Date().toISOString(), ...caseMeta };
   // G1 签署投影：全签且均一才投影；case-meta 显式优先（expected 只补缺）；否则不投影（如实「未签」）。
@@ -97,6 +100,7 @@ try {
     meta,
     videoMeta,
     promptsetMeta,
+    visualReview,
   });
   writeFileSync(opts.out, JSON.stringify(model, null, 2) + '\n', 'utf8');
   process.exit(0);
