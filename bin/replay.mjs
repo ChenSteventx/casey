@@ -26,6 +26,7 @@ import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstra
 import { credentialGate, maskCredentialRoute } from '../lib/cred-gate.mjs';
 import { assertSignedContract } from '../lib/sign-gate.mjs';
 import { foldIntentAction } from '../lib/intent-action-fold.mjs';
+import { validateWorkflowDeleteBindings } from '../lib/workflow-delete-spec.mjs';
 
 const { chromium } = pw;
 
@@ -192,6 +193,14 @@ async function main() {
   }
   const profile = readJsonSafe(args.profile, 'profile');
   const events = eventsDoc.events || [];
+  // 破坏性删除的陈旧 spec 必须在启动浏览器、接触 SUT 前拒绝。否则前序创建/发布已发生后，
+  // 两个无 value 的 click 才 fail-safe，会制造可避免的 atl_ 残留。正确恢复路径是重编译 events，
+  // 绝不从页面状态猜目标、也不放宽 workflow.deleteByName 域锁。
+  const deleteBindingCheck = validateWorkflowDeleteBindings(events);
+  if (!deleteBindingCheck.ok) {
+    console.error(`replay: workflow.deleteByName spec 缺目标绑定（${deleteBindingCheck.problems.length} 步），须先重编译；为避免真实环境残留，本次未启动浏览器（fail-closed）`);
+    process.exit(65);
+  }
   const caseId = eventsDoc.caseId || expectedDoc.caseId || 'unknown';
   const sut = String(args.sut).replace(/\/$/, '');
   // 确定性令牌（可 golden）；真机由 compile-gate 注入带 Reserved Prefix 的实体名。
