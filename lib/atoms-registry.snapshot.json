@@ -506,7 +506,7 @@
       "post": "（给了 expectIncludes 则）回复出现期望内容。"
     },
     "workflow.deleteByName": {
-      "desc": "清理：按名称搜索隔离后删除工作流（搜索后删除按钮恰好 1 个才动手；整段容错，清理失败不连累用例）。",
+      "desc": "清理：读取唯一搜索框当前名称，只在精确目标 table/card 记录域内唯一定位删除，并只在唯一可见确认弹层域内确认；任一域缺席或非唯一均不点击。",
       "params": {
         "name": {
           "type": "string",
@@ -527,7 +527,7 @@
       ],
       "destructive": true,
       "entityNameParam": "name",
-      "post": "（尽力）该工作流被删除。"
+      "post": "删后重搜必须由已签 countChange equals 0 证明；清理失败不改写前序业务 intent，但 cleanup intent 不得 PASS。"
     },
     "agent.searchOpen": {
       "desc": "在「智能体管理」搜索框输入关键词并打开指定智能体详情（搜索+打开合为一个有独立后置断言的业务动作）。",

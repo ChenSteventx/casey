@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 2,
+  "task": "P0 workflow.deleteByName 加固：目标 table/card 记录域锁、唯一确认弹层域锁、TOCTOU 物理身份重验、目标记录删后归零证据；保持原 atom id、原 7-event 形状与编译/回放对称。fake-SUT/fixture 只读，完成只认真机证据。",
+  "specPath": "docs/plans/workflow-delete-by-name-hardening/plan.md",
+  "testChecksums": {
+    "tests/_golden/workflow-delete-real-uat.golden.mjs": "9086724cb79701d6d67e1ea572a824c53cfd6a2e8054f045c9319945ca648ef5"
+  },
+  "observability": [
+    {
+      "dimension": "三份 cleanup 断言已由 Steven 按真实 build 1.1.2 重签；checksum 已刷新。",
+      "route": "waived",
+      "reason": "本轮已完成"
+    },
+    {
+      "dimension": "发布、历史、CRUD 三条破坏性真机链已在共享 atl_r1 上串行执行；逐案 cleanup 动作轴、精确计数与独立残留探针均已核对。",
+      "route": "waived",
+      "reason": "本轮已完成"
+    },
+    {
+      "dimension": "每案独立 HTML 已包含自然语言用例、分解原子、同次录屏、完整附件、视觉复核与清理证据；视觉固定 verdictImpact=none。",
+      "route": "waived",
+      "reason": "本轮已完成"
+    },
+    {
+      "dimension": "合入主干前由跨族模型对规格、实现 diff 和门禁证据作只读评审；HIGH/MED 清零后才合并。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-static-integrity",
+      "desc": "实现模块、编译接线与回放接线通过语法检查；diff 无空白错误。",
+      "lane": "implementation",
+      "acceptance": [
+        "node --check lib/workflow-delete-domain.mjs",
+        "node --check lib/compile-atoms.mjs",
+        "node --check lib/replay-actions.mjs",
+        "git diff --check"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-15T10:39:48.730Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-real-heren-uat",
+      "desc": "读取指定真实 UAT 根目录：三案确定性全 PASS、cleanup 事件全 unique、精确计数归零、录像/视觉/独立 HTML/附件齐全、独立真实浏览器残留为 0；不启动任何 SUT。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/workflow-delete-real-uat.golden.mjs \"$CASEY_REAL_UAT_RUN_ROOT\""
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-15T10:39:49.401Z 全部 acceptance exit 0"
+    }
+  ]
+}
