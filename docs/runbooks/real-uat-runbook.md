@@ -1,15 +1,16 @@
 # real-uat-runbook —— 交钥匙真机 UAT runbook
 
 > 本页是**真机 UAT 现场操作手册**，不是普通用户操作面。普通用户只说自然语言（见 `.claude/skills/casey/SKILL.md` 与 `docs/runbooks/onboarding.md`）。
-> 触真机全程铁律：`--sut` 只喂隧道回环基址（`site.json` 的 `target.devProxyUrl`，形如 `http://127.0.0.1:<port>`）或夹具地址；真目标地址只活在 `site.json`，绝不进命令行、日志、报告（护栏 #7）。凭据（`.auth/`、`site.json`）内容绝不回显。
+> 触真机全程铁律：`--sut` 只喂隧道回环基址（`site.json` 的 `target.devProxyUrl`，形如 `http://127.0.0.1:<port>`）；假被测系统和夹具 `SUT` 只允许读源码作迁移参考，禁止启动、连接或回放。真目标地址只活在 `site.json`，绝不进命令行、日志、报告（护栏 #7）。凭据（`.auth/`、`site.json`）内容绝不回显。
 > 裁定纪律：机器只终判 `PASS` 与有取证背书的 `SUT_DEFECT`；证不出的一律 `NEEDS_HUMAN`（护栏 #14，fail-safe 不 fail-open）。任何 `NEEDS_HUMAN` 都是「机器诚实交人」不是失败，按发起方归因后由人裁。
+> 联网纪律：行为验收必须同时取得 Windows→真实目标与 `WSL` 回环→真实目标两段成功证据；仅端口在听、离线产物、缓存页面或受限网络环境均不算真实联网。任一段不通即停，不得降级为假被测系统。
 > 占位符：`<sut>` = 隧道回环基址；`<caseId>` = 用例标识；`<newCaseId>` = 全新用例标识；`<signer>` = 人签署人标识；`<buildId>` = 被测构建标识。命令里一律用占位符，绝不硬编码真地址。
 
 ---
 
 ## 相位 0：预检 ban 门（三关，任一不过则停）
 
-真机 UAT 开跑前三关全绿才放行；任一不过，立即停下、本轮只做 hermetic（`selftest --tier1` / `demo` / 各 golden），不驱真机。
+真机 UAT 开跑前三关全绿才放行；任一不过，立即停下，本轮只允许静态检查、schema 检查和不接触任何 `SUT` 的纯函数检查；禁止启动、连接或回放假被测系统，也不驱真机。
 
 ### 关一：`casey doctor` 绿
 
@@ -20,7 +21,7 @@ node bin/casey.mjs doctor
 期望：exit 0，逐项 `ok`（node ≥ 22.12 / playwright pin 1.60.0 / chromium / 中文字体 / `site.json` + 凭据在位 / 隧道回环在听）。`doctor` 设计上只诊断不回显凭据值与真目标地址；就绪级任一缺 exit 1，字体/凭据/隧道缺只提示不阻塞——真机 UAT 要求就绪级与真机级都过（隧道 + 凭据在位）。
 现场已知态（本 session）：doctor 全 ok（exit 0）。
 
-fail-safe：exit 1 或任一就绪项缺 → 停，按 doctor 的 OS 分支建议补齐后重跑；补不齐则本轮只做 hermetic。
+fail-safe：exit 1 或任一就绪项缺 → 停，按 doctor 的 OS 分支建议补齐后重跑；补不齐则本轮只做不接触任何 `SUT` 的静态/纯函数检查。
 
 ### 关二：Steven 带外确认 `.auth` 账户 = autotest
 
@@ -41,7 +42,7 @@ pgrep -af wsl-reverse-listen.mjs     # 期望恰好一行（单实例）
 期望：回环端口（现场为 15519）在听；`wsl-reverse-listen.mjs` 单进程、无多实例。现场已知态（本 session）：回环 15519 在听，单隧道进程（pid 现场核），无多实例。
 fail-safe：零进程 → 按 `README.md`「真机链路」先 `WSL` 后 Windows 起隧道（顺序敏感，反了留僵尸）；多进程 → 先收敛到单实例再开跑。
 
-> 三关全绿方进入下面四子项。任一关红：停，本轮 hermetic。
+> 三关全绿方进入下面四子项。任一关红：停，本轮只做不接触任何 `SUT` 的静态/纯函数检查。
 
 ---
 
@@ -81,6 +82,17 @@ node scripts/verify-zero-error-report.mjs runs/tc_wf_publish_states/<run-dir>/tc
 ```
 
 > 若要显式带件（等效长式、约定解析不可用时的回退），五件旗标为 `--events cases/<caseId>/events.json --expected cases/<caseId>/expected.frozen.json --profile cases/<caseId>/profile.json --observed cases/<caseId>/observed-<caseId>.json --case-meta cases/<caseId>/testcase.json`。
+
+### 报告交付硬门（Steven 2026-07-15）
+
+每一个测试用例必须生成一份独立 HTML 正式报告；聚合 HTML 只作索引，不得代替单用例报告。每份独立 HTML 交付前必须同时核齐：
+
+1. **测试用例（自然语言描述）**：已签 `testcase.json` 的前置条件与 intent 原文；缺失要显式标出，不得临场补写后冒充签署原文。
+2. **分解后的原子操作**：同次 run 的 `*.report.json.atomicSteps`，逐条展示顺序、动作/断言、`stepId`/`intentId` 与描述。
+3. **录屏**：报告内可播放，并有 `video.webm` 直接附件链接；除非用户明确要求无录屏，否则 `--no-video` 产物不能作为正式交付。
+4. **附件**：至少索引 HTML/Markdown/JSON 报告、`verdict.json`、`axes.json`、`run-history.jsonl`、`run-metrics.json`、`video.json`；存在截图、trace、文本输出或缺陷单时也必须一并列出。
+
+四项必须来自同一次真机 run。聚合 HTML 逐例链接独立 HTML，可列四态与视觉摘要，但不得复制单例正文形成第二份事实源。只给报告路径、四态计数或摘要不算单例交付完成；真实目标地址、凭据与 Cookie 仍不得进入正文或附件索引。
 
 ### 期望裁定
 - 每步 `verdict` 全 `PASS`、四态摘要 `SUT_DEFECT===0 && HARNESS_ERROR===0 && NEEDS_HUMAN===0` = 历史绿复现，退绿是过去某次的暂态。
@@ -284,18 +296,18 @@ claude code 挂载与核验：
 claude mcp add casey -- node '/mnt/d/ctx/heren/casey/mcp/casey-server.mjs'
 # 或把 mcp-config 吐的 mcpServers 片段粘进仓根 .mcp.json
 ```
-挂上后在 claude code 里真调工具：先调只读/hermetic 工具（如 `casey_selftest` / `casey_doctor`）确认通道活，再调触真机的 `casey_run` 等（`--sut <sut>`，凭据零回显）。
+挂上后在 claude code 里真调工具：先调 `casey_doctor` 等不启动、不连接、不回放任何假 `SUT` 的只读工具确认通道活，再调触真机的 `casey_run` 等（`--sut <sut>`，凭据零回显）。
 
 codex 挂载与核验：
 ```
 # 把 mcp-config 吐的 [mcp_servers.casey] 段追加进 ~/.codex/config.toml，重启 codex 会话
 ```
-codex 会话里真调 `casey_*` 工具，同样先 hermetic 后真机。
+codex 会话里真调 `casey_*` 工具，同样先做不接触任何 `SUT` 的只读检查，再驱真机。
 
 ### 期望裁定
 - `mcp-config` 吐出的绝对路径指向本仓 `mcp/casey-server.mjs`、无盘符硬编码。
 - 各家 agent 挂载后工具清单可见（14 工具，`casey_ingest` … `casey_run`，含 `casey_record` / `casey_intake`）。
-- hermetic 工具真调返回正常；触真机工具真调走通、报告/裁定与 CLI 直跑一致。
+- 不接触任何 `SUT` 的只读工具真调返回正常；触真机工具真调走通、报告/裁定与 CLI 直跑一致。
 
 ### fail-safe 处理
 - Windows 原生侧挂载调回放必败（G6）→ 改挂 `WSL` 侧 node，别在 Windows 侧挂。
@@ -309,4 +321,4 @@ codex 会话里真调 `casey_*` 工具，同样先 hermetic 后真机。
 - `.auth/`、`site.json` 内容绝不进任何命令行、日志、输出、报告、shell 历史；`--sut` 只喂回环基址占位。
 - 取证按发起方归因：`PASS` 免背书；`SUT_DEFECT` 必须有取证背书（截图/录屏/网络信封）；证不出一律 `NEEDS_HUMAN`（fail-safe 不 fail-open）。
 - 自愈（`casey heal`）只对确证 `HARNESS_ERROR` 开闸，不进裁判进程（护栏 #13/#15）；真机 UAT 不为凑绿动自愈。
-- 相位 0 任一关红即停、本轮 hermetic——这是硬门，不是建议。
+- 相位 0 任一关红即停，本轮只做不接触任何 `SUT` 的静态/纯函数检查；假被测系统仍禁止运行——这是硬门，不是建议。

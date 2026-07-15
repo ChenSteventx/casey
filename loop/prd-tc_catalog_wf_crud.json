@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 2,
+  "caseId": "tc_catalog_wf_crud",
+  "task": "tc_catalog_wf_crud 人签断言契约（2026-07-15 真机重签，新增 cleanup countChange equals 0）",
+  "testChecksums": {
+    "cases/tc_catalog_wf_crud/expected.frozen.json": "9af19e922fa482e97341aaaef413d309ad76de1fe2b9893caf87bc52c0810127"
+  },
+  "stories": [],
+  "expectedFrozenPath": "cases/tc_catalog_wf_crud/expected.frozen.json"
+}

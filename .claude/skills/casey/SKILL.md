@@ -87,13 +87,24 @@ description: 用自然语言把测试用例跑成 Casey 测试报告，或启动
 
 > 当前进度：七相全建且 hermetic「文本→报告」全链已由集成金牌贯通（`tests/_golden/e2e-chain.golden.mjs`）；`heal` 是唯一诚实桩（exit 3，相5 未吃过真场景）。真机端到端仍需一次真机 compile bring-up + 人签在场（route:human）。桩返回 exit 3 时**如实告诉用户该阶段未实现**，绝不假装跑完了；全部生命周期命令用法错统一 exit 64（`report` 历史例外 2 已由 report-exit64 契约收敛）。
 
+## 报告交付最低内容（Steven 2026-07-15，硬要求）
+
+每一个测试用例必须生成一份独立 HTML 正式报告；聚合 HTML 只作索引，不承载或替代单用例正文。每份独立 HTML 必须同时包含以下四项；只给四态计数或报告链接不算完整交付：
+
+1. **测试用例（自然语言描述）**：取自已签 `testcase.json` 的前置条件与 intent 文本。字段缺失时必须明确标“缺失/待补”，不得由代理临场编造另一套用例冒充签署原文。
+2. **分解后的原子操作**：逐条列出动作与断言，至少包含顺序号、代表 `stepId`/`intentId` 和原子描述；来源以同次 run 的 `*.report.json.atomicSteps` 为准。
+3. **录屏**：报告内提供可播放的回放录像，并同时给直接附件链接；默认不得用 `--no-video` 生成正式交付，除非用户明确要求无录屏。
+4. **附件**：至少附 HTML/Markdown/JSON 报告、`verdict.json`、`axes.json`、`run-history.jsonl`、`run-metrics.json`、`video.json`；有截图、trace、文本/抓取输出、缺陷单时一并附上。
+
+四项内容必须与同一次真机 run 对齐。聚合 HTML 必须逐例链接到独立 HTML，可列 caseId、四态摘要和视觉复核摘要，但不得复制单例正文形成第二份事实源；凭据、Cookie 和真实目标地址仍绝不进入任一正文或附件索引。
+
 ## 报告里有什么（设计 §6）
 
 操作说明 + 标注（`LLM` 接口/生命周期取证/网络取证）+ 回放录屏(mp4) + 文本/抓取输出（含 `LLM` 的回答原文 + 截图）+ 每步裁定徽章 + 缺陷单（仅 `SUT_DEFECT`）+ trace + 截图。机读产物 `verdict.json` 是 golden 唯一校验对象。
 
 ## 执行边界（重要）
 
-- **用户用例运行只驱真机**（Steven 2026-07-10 定，强制执行）：面对用户的用例运行（`casey run` / 回放 / 复跑已签用例）一律驱真机——`--sut` 只喂隧道回环基址（`site.json` 的 `devProxyUrl`，形如 `http://127.0.0.1:15519`），绝不用假被测系统（`fake-sut`）或 `casey demo` 顶替真机运行。前置 = 相位0 三关（`casey doctor` 就绪 / Steven 带外确认 `.auth` = `autotest` / 反向隧道单实例；全流程见 `docs/runbooks/real-uat-runbook.md`；隧道两命令：`WSL` 侧 `node scripts/wsl-reverse-listen.mjs`、`Windows` 侧 `node scripts/win-reverse-agent.mjs`，顺序先 `WSL` 后 `Windows`）。此条仅约束用户用例运行；引擎自检（`golden` / `gate` / `selftest --tier1` 用假被测系统验 Casey 自身代码对错）是护栏 #1/#15/#16 机制强制、照跑不误。
+- **假被测系统只读，所有行为验收只驱真机**（Steven 2026-07-15 定，强制执行）：假被测系统（`fake-sut`）和夹具 `SUT` 只允许读取源码作为迁移参考，任何代理不得启动、连接或回放它们，也不得用 `casey demo` 顶替真机运行。`golden` / `gate` / `selftest --tier1` 仅在可证明不启动、不连接、不回放任何假 `SUT` 时才允许执行；静态检查、schema 检查和不接触 `SUT` 的纯函数检查可执行。所有浏览器/通道行为测试、回放、复跑与验收一律联网驱真实目标，`--sut` 只喂隧道回环基址（`site.json` 的 `devProxyUrl`，形如 `http://127.0.0.1:15519`）；无网络、仅本地监听、代理池未连真站或网络受限时一律不得开始行为验收。前置 = 相位0 三关（`casey doctor` 就绪 / Steven 带外确认 `.auth` = `autotest` / 反向隧道单实例；全流程见 `docs/runbooks/real-uat-runbook.md`；隧道两命令：`WSL` 侧 `node scripts/wsl-reverse-listen.mjs`、`Windows` 侧 `node scripts/win-reverse-agent.mjs`，顺序先 `WSL` 后 `Windows`）；除 `doctor` 外还必须取得 Windows→真站与 `WSL` 回环→真站两段真实 HTTP 成功证据。没有同次真实回放、确定性 `verdict.json`、录屏、视觉复核和独立单用例 HTML，不得声称行为验收完成。
 - **凭据让用户设**：`.auth/`、`site.json` 是凭据，CC 不把账号密码写进命令行/文件/报告。
 - **冻结断言只读**：人签后改断言 = Test Ratchet 判红，别去改。
 - 改实现先 `contract`：动 `lib`/`bin` 前先 `node loop-kit/bin/contract.mjs init <slug> --lane <...> --reason "..."`，否则 hook 拦截。
