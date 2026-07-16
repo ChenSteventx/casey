@@ -27,7 +27,7 @@
         "node tests/_golden/flow-bridge.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-16T06:02:08.691Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-16T06:04:00.143Z 全部 acceptance exit 0"
     }
   ]
 }
