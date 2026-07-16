@@ -27,11 +27,13 @@ const oldAWrapper = { handle: 'old-a-2', nodeId: 'old-a' };
 const freshB = { handle: 'fresh-b', nodeId: 'fresh-b' };
 const freshC = { handle: 'fresh-c', nodeId: 'fresh-c' };
 
-await check('C0 弹层选择器覆盖 class 属性中非末位的 message-box/popconfirm 标记', () => (
-  source.includes('[class*="message-box"]')
-    && source.includes('[class*="popconfirm"]')
-    && !source.includes('[class$="message-box"]')
-    && !source.includes('[class$="popconfirm"]')
+await check('C0 弹层选择器覆盖多 class 根标记且不裸抓 message-box/popconfirm 子类', () => (
+  source.includes('[class*="message-box "]')
+    && source.includes('[class$="message-box"]')
+    && source.includes('[class*="popconfirm "]')
+    && source.includes('[class$="popconfirm"]')
+    && !source.includes("'[class*=\"message-box\"]'")
+    && !source.includes("'[class*=\"popconfirm\"]'")
 ));
 
 await check('C0 删除触发缺少显式 expectedName 时不读页面并 fail-closed', async () => {

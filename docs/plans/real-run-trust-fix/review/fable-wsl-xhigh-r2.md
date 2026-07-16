@@ -34,3 +34,9 @@
 - aggregate 遇非法子目录名整体 fail-closed，需在使用说明中保留该约束。
 
 本复审不运行浏览器、fixture 或 fake-SUT；真实 SUT 复验由后续独立 UAT 记录背书。
+
+## 真机后追加三审
+
+真实发布链首次复验暴露二审未覆盖的过宽选择器：裸 `[class*="message-box"]` 把同一确认框的 6 个 BEM 内部节点也当成弹层，动作 fail-safe 为 `action_failed`，目标化归零证据正确报 `0→1`。实现随后收窄为“`message-box` / `popconfirm` 片段后接空格或 class 属性结束”的 token 边界；失败残留经独立 cleanup 录像清除。
+
+同一 WSL Linux ELF、Fable xhigh 对最终两文件 diff 三审再次给出 `ACCEPT`：多 class 根节点仍覆盖，`__header/body` 子类不命中，未引入假 PASS 或错删；tab/换行分隔 class 属非阻塞极端漏检，规范 `.hr-message-box` 显式选择器已有覆盖。
