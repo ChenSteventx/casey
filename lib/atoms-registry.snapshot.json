@@ -6,7 +6,7 @@
     "copiedAt": "2026-07-02"
   },
   "version": 2,
-  "_note": "原子动作注册表（复杂操作流 = 原子库 + NL 编译 的骨架，见 PLAN-atomic-flows.md）。编译器只能从这里挑 atomId + 按 params 填参；validateFlow（_flow-runner.ts 收集期 / scripts/lint-flow.mjs 离线）据此校验冻结的 *.flow.json。改原子实现（tests/_atoms/_atoms.ts）务必同步本表与 scripts/lint-flow.mjs。 v2：states=封闭状态词表（标签只能用这里的词，lint 注册表自检兜底）；exclusiveGroups=互斥组（provide 组内状态自动移除组内其它）；每原子可标 requires/provides/removes（缺省[]）/destructive（确认门高亮）/entityNameParam（该参数值必须 ctxtest_ 前缀，建删硬闸）。校验逻辑见 scripts/lint-flow.mjs 闸二 与 _flow-runner.ts:validateFlow（双实现同步）。",
+  "_note": "原子动作注册表（复杂操作流 = 原子库 + NL 编译 的骨架，见 PLAN-atomic-flows.md）。本文件以 snapshotOf 记录的 regress 版本为来源基线，复制后已有 Casey 本地修订（包括 agent.create、agent.delete 与 picker.search），不再声称与上游逐字一致；其中 agent.delete 的后置语义已收紧为同源目标稳定精确归零，任一绑定、加载、计数、窗口或超时证据不足均 fail-closed。编译器只能从这里挑 atomId + 按 params 填参；validateFlow（_flow-runner.ts 收集期 / scripts/lint-flow.mjs 离线）据此校验冻结的 *.flow.json。改原子实现（tests/_atoms/_atoms.ts）务必同步本表与 scripts/lint-flow.mjs。 v2：states=封闭状态词表（标签只能用这里的词，lint 注册表自检兜底）；exclusiveGroups=互斥组（provide 组内状态自动移除组内其它）；每原子可标 requires/provides/removes（缺省[]）/destructive（确认门高亮）/entityNameParam（该参数值必须 ctxtest_ 前缀，建删硬闸）。校验逻辑见 scripts/lint-flow.mjs 闸二 与 _flow-runner.ts:validateFlow（双实现同步）。",
   "states": {
     "已登录": "login 成功进入应用（不再停在 /login）",
     "在智能体管理页": "智能体管理列表（/agent/list）",
@@ -577,27 +577,27 @@
       "post": "提示词区出现全部期望分区标签（系统/用户）。"
     },
     "agent.create": {
-      "desc": "【破坏性·建实体】新增草稿智能体：「新增智能体」下拉→菜单→抽屉填 名称/编码/描述/角色编码(限定 .hr-drawer--open scope) + 选 输出类型/类型 两个必填下拉(HEREN select：点 .hr-select 包裹展开、选项=.hr-select-option) → 确认直达 /agent/detail 草稿态。运行时给名称+编码加唯一后缀(flow.json 冻结不能带时间戳)，实际名写入 ctx.agentName 供 agent.delete 精确清理。",
+      "desc": "【破坏性·建实体】新增草稿智能体：名称基必须带 atl_，编译为 atl_*_{{uniqueName}}；编码编译为 atl_agent_{{uniqueName}}。限定唯一可见抽屉填写名称、编码、角色编码，选择输出类型和类型，确认后须进入 /agent/detail。创建目标模板只在本次编译内存传给 agent.delete。未真机复核时 route:human。",
       "params": {
         "name": {
           "type": "string",
-          "required": false,
-          "desc": "名称基（缺省 ctxtest_工具用例）；运行时自动加唯一后缀。务必 ctxtest_ 前缀便于清理。"
+          "required": true,
+          "desc": "带 atl_ 的名称基；回放期自动追加 {{uniqueName}}。"
         },
         "role": {
           "type": "string",
           "required": false,
-          "desc": "智能体角色编码（缺省 ctxtest_role）。"
+          "desc": "带 atl_ 的测试角色编码；缺省 atl_test_role。"
         },
         "outputType": {
           "type": "string",
-          "required": false,
-          "desc": "输出类型下拉：流式输出(缺省)/非流式输出。"
+          "required": true,
+          "desc": "输出类型下拉：流式输出/非流式输出。"
         },
         "agentType": {
           "type": "string",
-          "required": false,
-          "desc": "类型下拉（数据获取/病历质控/诊后管理/…）；缺省空=第一项。"
+          "required": true,
+          "desc": "类型下拉（数据获取/病历质控/诊后管理/…）；须显式给出，不猜第一项。"
         }
       },
       "requires": [
@@ -626,8 +626,8 @@
       "params": {
         "keyword": {
           "type": "string",
-          "required": false,
-          "desc": "搜索关键字（空=清空过滤）。"
+          "required": true,
+          "desc": "非空搜索关键字；fill 后按 Enter 触发过滤。"
         },
         "expectCount": {
           "type": "number",
@@ -864,12 +864,12 @@
       "post": "页面不出现该文字。"
     },
     "agent.delete": {
-      "desc": "清理：按名称搜索隔离后删除智能体（搜索后删除恰 1 个才动手；name 省略则用 ctx.agentName，即 agent.create 写入的实际唯一名）。整段容错，清理失败不连累用例。",
+      "desc": "【破坏性·清理】按本次 agent.create 的同源名称模板搜索智能体，目标记录恰一才触发删除，只授权该触发动作因果产生的确认弹层，确认后重搜并要求目标记录精确归零。任一绑定或后置回读失败都 fail-closed，不得吞清理失败。",
       "params": {
         "name": {
           "type": "string",
-          "required": false,
-          "desc": "要删的智能体名；省略则用 ctx.agentName（agent.create 的产物）。"
+          "required": true,
+          "desc": "与前序 agent.create 同一 atl_ 名称基；编译器绑定为同一 {{uniqueName}} 模板。"
         }
       },
       "requires": [
@@ -885,7 +885,7 @@
       ],
       "destructive": true,
       "entityNameParam": "name",
-      "post": "（尽力）该智能体被删除。"
+      "post": "同源目标在加载结束后连续 3000 ms 精确计数为零；加载态、目标重现、超时或样本不足均 fail-closed。"
     },
     "chat.sendAndWait": {
       "desc": "逐字符输入消息并发送，等 LLM 流式接口结束 + 助手气泡文本稳定。本 UI send 触发与 wait 不可分，故合并为一个原子（忠于现有实现，不为对齐设计图拆出脆边界）。",

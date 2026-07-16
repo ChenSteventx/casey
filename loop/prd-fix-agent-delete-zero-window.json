@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "task": "修复智能体删除后归零证据计时，使稳定期从连续零窗口起点计算。",
+  "specPath": "docs/plans/fix-agent-delete-zero-window/plan.md",
+  "testChecksums": {
+    "tests/_golden/agent-delete-zero-window.zero-sut.golden.mjs": "ecac627e4256e5ef039f4cbb937f7960274520a64142d53aaa8203d917bda09c"
+  },
+  "observability": [
+    {
+      "dimension": "纯函数验收只证明连续零证据折叠语义，不证明真实页面加载状态、目标删除或真机完成。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-agent-delete-zero-window",
+      "desc": "连续零稳定期从首个零样本起计满 3000ms，busy 或非零重置窗口。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/agent-delete-zero-window.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-16T06:31:45.224Z 全部 acceptance exit 0"
+    }
+  ]
+}

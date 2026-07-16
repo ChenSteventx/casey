@@ -3,7 +3,7 @@
   "task": "wf-connect-nodes（full）：并发 session（codex 实现）补收口——workflow.connectNodes 画布连线原子（COMPILE_KNOWN_ATOMS 14→15，复用 dragTo 不扩枚举）+ addNode expectedNodeDelta 精化（真并行网关开始 +2）。补：端到端连线金牌（填覆盖缺口，现仅 C1 注册检查）+ 四漂移棘轮 prd 重签（wf-add-node/flow-bridge/wf-open-smoke/p5-replay）+ fake-sut 真并行网关开始双节点夹具（C4 +2）。修 codex 两健壮性缝（起草子代理二次评审揪出）：F1 doConnectNodes 的 nodeBoxByLabel waitFor 未守卫→节点缺席崩整轮回放；F2 compileWorkflowConnectNodes 目标缺席 workflowNodeBox 抛未捕获→跳产物块无诊断 exit 1；两处 waitFor 逐字重复须同修 + ox/oy :0 兜底收显式 blocker。评审归属反转：codex 实现→Claude 侧对抗评审（异构原则实现方≠评审方）。决策 docs/plans/wf-connect-nodes/proposed/GRILL.md。",
   "specPath": "docs/plans/wf-connect-nodes/plan.md",
   "testChecksums": {
-    "tests/_golden/wf-connect-nodes.golden.mjs": "cd1a2a3f15d7434996d654257370a88c34784f1e81dbc10535768c002c76447b"
+    "tests/_golden/wf-connect-nodes.golden.mjs": "e71aa86f29417da5f3823474d76477a4696af2a9f522eecc833e0535166b8783"
   },
   "observability": [
     {

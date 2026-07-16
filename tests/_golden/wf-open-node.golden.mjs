@@ -7,7 +7,7 @@
 // 域锁 + 域内唯一才点 + 抽屉可见含标题双证回读）——与全页统一身份门是两扇门：节点标题同时活在左面板
 // .node-item 与画布 .lf-node-content，全页门必撞多匹配卡死合法回放（wf-add-node R1-F2 同型缝）。
 //
-// C1 openNode 可编译 + COMPILE_KNOWN_ATOMS 恰 18（setNodeField +1）+ agent.openToolPicker 不可编译
+// C1 openNode 可编译 + COMPILE_KNOWN_ATOMS 恰 25（智能体工具首纵切 +7）+ agent.selectModel 不可编译
 //    （继任反例真缝，长寿）。
 // C2 端到端开抽屉（fake-sut happy）：compile [nav, open, addNode, openNode] → events 末步是 openNode
 //    的 click（semantic text label）→ 过 events.schema → blockers 空 + compile-report 含抽屉双证 →
@@ -88,11 +88,11 @@ function assertEventsDocAgainstSchema(doc) {
 }
 
 // ---------- C1 编译原子集加法 + 例翻反例 ----------
-await checkAsync('C1 workflow.openNode 可编译、COMPILE_KNOWN_ATOMS 恰 18、agent.openToolPicker 不可编译', async () => {
+await checkAsync('C1 workflow.openNode 可编译、COMPILE_KNOWN_ATOMS 恰 25、agent.selectModel 不可编译', async () => {
   const ca = await import(`file://${join(ROOT, 'lib', 'compile-atoms.mjs').replace(/\\/g, '/')}`);
   if (!ca.isCompilableAtom('workflow.openNode')) throw new Error('workflow.openNode 应可编译（抽屉族前置原子加法）');
-  if (ca.COMPILE_KNOWN_ATOMS.size !== 18) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 18（setNodeField +1），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
-  if (ca.isCompilableAtom('agent.openToolPicker')) throw new Error('agent.openToolPicker 不应可编译（继任反例真缝——agent_tool 维度整体压后、长寿反例）');
+  if (ca.COMPILE_KNOWN_ATOMS.size !== 25) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 25（智能体工具首纵切 +7），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
+  if (ca.isCompilableAtom('agent.selectModel')) throw new Error('agent.selectModel 不应可编译（下一条尚未迁移的智能体原子）');
 });
 
 // ---------- fake-sut happy：C2 端到端 + C3 编译/回放反面 ----------

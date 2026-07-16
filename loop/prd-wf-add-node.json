@@ -3,7 +3,7 @@
   "task": "wf-add-node（full）：画布维度首原子 workflow.addNode 编译知识建成（COMPILE_KNOWN_ATOMS 13→14），解锁 R9 坐标 flow 首步。真机二号探针（2026-07-07）证伪甲案（面板项单击/双击不落节点）、实证乙案（mouse 三段式拖拽落 .lf-node）→ 新增 dragTo 动作类：events.schema action 枚举 + 三姊妹 schema 全等镜像 + 双 fixture 治理条目（prd-seams-freeze / v2 重签授权已拍）；回放器 dragTo 分支（源身份门 count===1 才拖、画布容器证不出回 false、mouse down→move(steps:12)→300ms→up）+ profile countSelector 计数通道加法；compileWorkflowAddNode（条件步开面板线性化 + customAct 拖拽 + .lf-node 计数 +1 后置核验进 blockers）；fake-sut 画布通路纯加法（prd-p5-replay 重签）；例翻涟漪（flow-bridge C5/C14/C15 + wf-open-smoke C1 反例 workflow.addNode→agent.openToolPicker + 集 13→14，两 prd 重签）；设计条款 :135 修订留痕。决策全录 docs/plans/wf-add-node/proposed/GRILL.md（Steven 四项点选定夺 2026-07-07）。",
   "specPath": "docs/plans/wf-add-node/plan.md",
   "testChecksums": {
-    "tests/_golden/wf-add-node.golden.mjs": "24193140fc87d040d424c072020e68bf8cf1a00d11e982c2c22429416e4ace3b"
+    "tests/_golden/wf-add-node.golden.mjs": "c8ad015375ccdb79cadd3e7cf18b26dac72c88aa9500716c9393f4c5c05d227d"
   },
   "observability": [
     {
