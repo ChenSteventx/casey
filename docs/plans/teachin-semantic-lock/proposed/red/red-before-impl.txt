@@ -1,0 +1,5 @@
+command: node tests/_golden/teachin-semantic-lock.zero-sut.golden.mjs
+exit: 1
+result: ERR_MODULE_NOT_FOUND
+missing: lib/entity-semantic-lock.mjs
+meaning: 新的业务对象语义锁内核尚不存在，冻结验收在实现前真实为红；未启动浏览器、网络、fake 或 fixture SUT。
