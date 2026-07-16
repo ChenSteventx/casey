@@ -42,6 +42,7 @@ node bin/casey.mjs selftest --tier1                     # 链路自检（hermeti
 
 - **长链条走确定性编排**：起 subagent 前先估链条长度。短活/单步——直接派 `Agent` 或自己做；长链/多阶段（多契约并行落地 + 逐个异构评审 + 分波合并这类）——走 ultracode 模式（`Workflow` 工具编排：`pipeline` 各契约 + 并行评审 + 对抗式核验 findings + 循环到干），别手派一堆 `Agent` 自己盯完成再手接下一步。已在跑的手派 `Agent` 不为切换而杀重来（浪费），从下一个编排步（某波收口 / 下一波落地）起改走 `Workflow`。（Steven 2026-07-09 定。）
 - 配套既有准则：可并行的活优先 `fan-out` 子代理；碰 `lib`/`bin` 的真并行走 `worktree`（护栏 #18）；异构评审家族≠实现家族（`codex` 评 Claude 实现）。
+- **Claude Code 额度纪律**：评审先跑确定性检查，再用 `pi.dev` 的 `deepseek-v4-pro` high 清普通问题；Claude Code 只审已收敛的高风险小差异。每次只开一个进程，输入必须限定基线、文件白名单、风险清单与现成证据；禁止全仓漫游、派生子代理和无上限续跑。首轮只报 `Critical`/`High`/`Medium`，复审只看已确认 finding 的修复 hunks。额度不可用时，不反复探测；有 Steven 明确授权可由 `pi.dev` 代审，否则诚实挂账。详细操作见 `docs/runbooks/review-model-budget.md`。
 
 ## 决策档案
 
