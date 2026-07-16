@@ -118,6 +118,17 @@ node bin/casey.mjs mcp-config --agent codex
 
 仓库同时是一个 Codex plugin：`.codex-plugin/plugin.json` 把同一份 Casey skill 与 `.mcp.json` 暴露给 Codex。插件安装只解决入口发现，不会替用户生成凭据、真实目标代理或签署测试契约。
 
+## 四 OS 账户安全边界
+
+| OS | 推荐存放位置与权限 | 当前能力边界 |
+|---|---|---|
+| `WSL2` | 优先把仓库和 `.auth/` 放在 WSL 原生 Linux 文件系统；Casey 尽力设置目录 `0700`、文件 `0600`。挂载 Windows 盘时 POSIX mode 可能不等于真实 ACL，不能只看 mode 判断安全。 | AI 中台正式回放路径；账户文件由 WSL 侧 `login-bootstrap` 消费。医生站 / Hi 小助仍由 Windows 桌面人工建立安全会话。 |
+| Linux | `.auth/` 留在当前仓库且 gitignored；Casey 尽力设置目录 `0700`、文件 `0600`，账户文件不要放共享目录。 | 可接组织内真实代理；未有真实目标证据时只算本地账户配置完成。 |
+| macOS | `.auth/` 留在当前仓库且 gitignored；Casey 尽力设置目录 `0700`、文件 `0600`。当前未集成 Keychain。 | 只证明本机文件配置；没有回环代理和真机证据时不能声称可回放。 |
+| Windows 原生 | 正式 Casey 回放应转 WSL；若仅检查公开源码，`.auth/` 受 Windows 本机 ACL 管理，POSIX `0600` 不代表 Windows ACL。不要把仓库放多人可写共享目录。 | Windows 侧只承担网络转发和桌面应用；当前不从 Casey 自动登录医生站 / Hi 小助。 |
+
+推荐从 skill 发起“配置账户”和“检查账户状态”。配置命令默认隐藏输入，非交互只从 stdin 或环境导入；账户值永远不能放 argv。`account status` 和 `doctor` 只看形状与就绪状态，不回显账户值或路径。
+
 ## 开发者附加依赖
 
 操作员执行回放不需要修改 loop 工具。要参与 Casey 源码开发，当前还需要与 Casey 同层的独立 `loop-kit` 仓库，或显式设置 `LOOP_KIT_PKG`。`loop-kit` 不随本仓源码内置；若未取得匹配版本，`gate`、`contract`、`lint` 等开发命令不可用，但不影响安装检验和已签用例的操作员回放路径。

@@ -2,18 +2,19 @@
 // bin/doctor.mjs —— casey doctor 跨平台就绪自检【采集壳】（casey-doctor，GRILL D7）。
 // 唯一碰真环境处：探 platform+isWSL、读 process.version 与 package.json.engines、hasPlaywright() +
 //   真 import('@playwright/test') + chromium.executablePath()→existsSync、OS 分支字体探测、
-//   existsSync 凭据/site.json 浅键名（绝不读值）、devProxyUrl 回环端口 TCP 连（绝不碰 target.startUrl）。
+//   本地账户/site.json 形状检查（值只在内存校验、绝不输出）、devProxyUrl 回环端口 TCP 连（绝不碰 target.startUrl）。
 //   把结果装成 env 喂纯层 lib/doctor.mjs → 渲染逐项行 + process.exit(runDoctor(env).exitCode)。
 // 渲染沿 selftestTier1 的 ok/RED 配色，另加 warn(黄)/route-human(灰)。
 //
 // 凭据纪律（护栏 #7，GRILL D6）：全输出零凭据值、零真目标地址（隧道只述回环端口号）、零裸 ://、
-//   零用户绝对路径（output-seal）。site.json/凭据只 existsSync + JSON.parse 后查顶层键名，值绝不进输出。
+//   零用户绝对路径（output-seal）。site.json/账户文件经 JSON.parse 校验闭合形状，值绝不进输出。
 import { existsSync, readFileSync } from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import net from 'node:net';
 import { join } from 'node:path';
-import { PROJECT_ROOT, CREDS_FILE, hasPlaywright } from '../lib/paths.mjs';
+import { PROJECT_ROOT, AUTH_DIR, hasPlaywright } from '../lib/paths.mjs';
 import { runDoctor } from '../lib/doctor.mjs';
+import { inspectAccountStatus } from '../lib/account-config.mjs';
 
 const C = { reset: '\x1b[0m', green: '\x1b[32m', red: '\x1b[31m', yellow: '\x1b[33m', gray: '\x1b[90m', cyan: '\x1b[36m', bold: '\x1b[1m' };
 const col = (c, s) => `${c}${s}${C.reset}`;
@@ -100,17 +101,6 @@ function loopbackPort(target) {
   } catch { return null; }
 }
 
-// ── 凭据：AT_CREDS_USER/PASS env 在场视同在位；否则 existsSync 文件 + 顶层键名 ──
-function probeCreds() {
-  if (process.env.AT_CREDS_USER && process.env.AT_CREDS_PASS) return { present: true, shapeOk: true };
-  const credsPath = process.env.AT_CREDS_FILE || CREDS_FILE;
-  if (!existsSync(credsPath)) return { present: false, shapeOk: false };
-  try {
-    const j = JSON.parse(readFileSync(credsPath, 'utf8'));
-    return { present: true, shapeOk: !!j && typeof j === 'object' && ('user' in j) && ('pass' in j) }; // 只看键名，值不取
-  } catch { return { present: true, shapeOk: false }; }
-}
-
 // ── 隧道回环端口 TCP 连（只回状态 + 耗时；绝不回显地址）─────────────
 function probeTunnel(proxyPort) {
   return new Promise((res) => {
@@ -135,18 +125,20 @@ async function main() {
   const isWSL = detectWSL();
   const pw = await probePlaywright();
   const site = probeSite();
+  const accounts = inspectAccountStatus({ authDir: AUTH_DIR, env: process.env });
   const env = {
     node: { nodeVersion: process.version, requiredRange: requiredNodeRange() },
     playwright: { present: pw.present, importable: pw.importable },
     chromium: { execResolved: pw.execResolved, execExists: pw.execExists },
     fonts: { platform, isWSL, cjkProbeNonEmpty: probeFonts(platform) },
     siteJson: { present: site.present, shapeOk: site.shapeOk },
-    creds: probeCreds(),
+    creds: { present: accounts.aiMiddle.configured, shapeOk: accounts.aiMiddle.shapeOk },
+    desktopAccount: { present: accounts.desktop.configured, shapeOk: accounts.desktop.shapeOk, ready: accounts.desktop.ready },
     tunnel: await probeTunnel(site.proxyPort),
   };
 
   const { items, exitCode } = runDoctor(env);
-  console.log(col(C.bold, '\ncasey doctor —— 跨平台就绪自检') + col(C.gray, '（node / playwright / 中文字体 / 凭据·site.json / 隧道）') + '\n');
+  console.log(col(C.bold, '\ncasey doctor —— 跨平台就绪自检') + col(C.gray, '（node / playwright / 中文字体 / 账户·site.json / 隧道）') + '\n');
   for (const it of items) {
     const line = `${LABEL[it.status]} ${col(C.cyan, `[${it.id}]`)} ${it.detail}${it.hint ? col(C.gray, '  → ' + it.hint) : ''}`;
     console.log(line);

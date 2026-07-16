@@ -1,6 +1,6 @@
 ---
 name: casey
-description: 用自然语言把真实 SUT 测试用例跑成 Casey 报告，或启动 web/CEF 示教录制与受控原子学习。用户要求测试、测试报告、手动录制、回放、医生站或 Hi 小助时使用。
+description: 用自然语言安全配置或检查 Casey 账户、把真实 SUT 测试用例跑成报告，或启动 web/CEF 示教录制与受控原子学习。用户要求配置账户、检查账户、测试、测试报告、手动录制、回放、医生站或 Hi 小助时使用。
 ---
 
 # Casey Codex plugin 路由
