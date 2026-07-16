@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "task": "迁移 regress 脚本转换节点纵切：补 workflow.assertNodeFieldValue 命名断言原子与 inputReadback 精确回读接缝；不运行假被测系统，真实行为保持 route:human。",
+  "specPath": "docs/plans/regress-wf-node-script/plan.md",
+  "testChecksums": {
+    "tests/_golden/regress-wf-node-script.zero-sut.golden.mjs": "e2120ad2d80192a48967c1a58fcd113ade92ed44e5fe8745a78a53da3c85e3bc"
+  },
+  "observability": [
+    {
+      "dimension": "真实 Heren 工作流画布中“脚本转换”节点的名称、配置抽屉标题、脚本字段 placeholder、写后精确回读、关闭抽屉及删除归零；须联网真机回放、录屏、视觉复核和独立单用例 HTML 后才能核销。",
+      "route": "human"
+    },
+    {
+      "dimension": "公开仓是独立发布树且带 CEF、安装与原子晋升扩展；本提交只提供文件级可移植补丁，不整树覆盖公开仓。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-script-node-input-readback",
+      "desc": "命名断言只留编译期断言原子，草拟为硬 inputReadback equals；回放只从唯一且成功的 setNodeField 同一物理字段动作回读中取 actual，缺失/矛盾/非唯一均 fail-safe。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/regress-wf-node-script.zero-sut.golden.mjs",
+        "node tests/_golden/p4-drafter.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-16T05:55:26.389Z 全部 acceptance exit 0"
+    }
+  ]
+}

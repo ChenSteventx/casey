@@ -21,7 +21,7 @@ import { performAction } from '../lib/replay-actions.mjs';
 import { instantiate } from '../lib/instantiate.mjs';
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { settleBeforeCapture } from '../lib/replay-settle.mjs';
-import { evaluateAssertions } from '../lib/replay-assert.mjs';
+import { evaluateAssertions, inputReadbackFromAction } from '../lib/replay-assert.mjs';
 import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
 import { credentialGate, maskCredentialRoute } from '../lib/cred-gate.mjs';
 import { assertSignedContract } from '../lib/sign-gate.mjs';
@@ -407,6 +407,7 @@ async function main() {
   const intentButtonHits = new Map(); // wf-publish-states：代表步 buttonState 命中合计（role + 可选补采，可见口径）
   const intentButtonSeen = new Map(); // wf-publish-states：代表步全通道可见按钮总数（absent 活性反证，codex R1-F1）
   const intentButtonDisabledHits = new Map(); // btn-enable-ops：代表步命中且判禁用计数（enabled/disabled 判据采集）
+  const intentInputReadback = new Map(); // regress-wf-node-script：代表事件同一物理字段的精确动作回读
 
   // 回放历史 opt-in（run-history）：纯观察者收集，不加任何等待、不改任何时序。
   const rhOn = !!(args.runHistory || args.runMetrics);
@@ -520,6 +521,9 @@ async function main() {
         rhQuietWait += Date.now() - settleT;
 
         intentUrl.set(ev.intentId, pathOf(page.url()));
+        // inputReadback 不另查 DOM：只投影刚执行的代表事件动作轴。动作门未给出 unique + ok:true +
+        // string actual 时存 undefined，断言评估据此 fail-safe 证不出。
+        intentInputReadback.set(ev.intentId, inputReadbackFromAction(actionByStep.get(ev.stepId)));
         const c = intentCount.get(ev.intentId);
         if (c) c.after = await rowCount(page, countSel);
         // kinds-harden（G3）：代表步静默点现场采——事后卷回评估只吃此刻事实（同 intentUrl/intentCount 范式）。
@@ -696,6 +700,7 @@ async function main() {
       buttonSeen: intentButtonSeen.get(iid), // 同刻通道活性（absent 反证前提）；缺采集即 undefined → 证不出
       buttonDisabledHits: intentButtonDisabledHits.get(iid), // btn-enable-ops：缺采集即 undefined → enabled/disabled 证不出
       replyText: intentReply.get(iid),    // chiefcomplaint-smoke：缺采集即 undefined → 证不出
+      inputReadback: intentInputReadback.get(iid), // 脚本/字段值：只认 setNodeField 同一物理字段动作回读
       streamUrlPattern: chatCfg ? chatCfg.streamUrlPattern : undefined,
     });
     return {
