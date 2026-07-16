@@ -28,7 +28,7 @@
         "node tests/_golden/teachin-observation-sidecar.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-16T08:57:44.919Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-16T09:02:05.754Z 全部 acceptance exit 0"
     }
   ]
 }
