@@ -6,8 +6,8 @@
 // 回放门按 ev.atom 分发到 doConnectNodes（源在 .lf-canvas-overlay 按标签解析、.lf-node-anchor-hover
 // 最近锚点、拖目标、.lf-edge 增身份回读）——与 addNode 的 .node-item 面板域门是两扇门（D2）。
 //
-// C1 connectNodes/addNode 可编译 + COMPILE_KNOWN_ATOMS 恰 18（与 wf-add-node C1 一致防漂移，setNodeField +1）+
-//    agent.openToolPicker 不可编译（GRILL D5 继任反例真缝）。
+// C1 connectNodes/addNode 可编译 + COMPILE_KNOWN_ATOMS 恰 25（与 wf-add-node C1 一致防漂移）+
+//    agent.selectModel 不可编译（下一条尚未迁移的智能体原子）。
 // C2 端到端连线（fake-sut happy）：compile [nav, open, addNode×2, connectNodes] → events 末步是
 //    connectNodes 的 dragTo（源语义 fromLabel + nodeName=toLabel + ox/oy 有限数）→ 过 events.schema →
 //    blockers 空 + compile-report notes 含 .lf-edge 0→1 → draft(+patch)→sign→casey run→verdict 恰 5 intent 全 PASS。
@@ -87,12 +87,12 @@ function assertEventsDocAgainstSchema(doc) {
 }
 
 // ---------- C1 编译原子集加法 + 例翻反例 ----------
-await checkAsync('C1 workflow.connectNodes/addNode 可编译、COMPILE_KNOWN_ATOMS 恰 18、agent.openToolPicker 不可编译', async () => {
+await checkAsync('C1 workflow.connectNodes/addNode 可编译、COMPILE_KNOWN_ATOMS 恰 25、agent.selectModel 不可编译', async () => {
   const ca = await import(`file://${join(ROOT, 'lib', 'compile-atoms.mjs').replace(/\\/g, '/')}`);
   if (!ca.isCompilableAtom('workflow.connectNodes')) throw new Error('workflow.connectNodes 应可编译（连线原子加法）');
   if (!ca.isCompilableAtom('workflow.addNode')) throw new Error('workflow.addNode 应可编译（画布维度先例）');
-  if (ca.COMPILE_KNOWN_ATOMS.size !== 18) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 18（与 wf-add-node C1 一致防漂移，setNodeField +1），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
-  if (ca.isCompilableAtom('agent.openToolPicker')) throw new Error('agent.openToolPicker 不应可编译（GRILL D5 继任反例真缝）');
+  if (ca.COMPILE_KNOWN_ATOMS.size !== 25) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 25（与 wf-add-node C1 一致防漂移），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
+  if (ca.isCompilableAtom('agent.selectModel')) throw new Error('agent.selectModel 不应可编译（下一条尚未迁移的智能体原子）');
 });
 
 // ---------- fake-sut happy：C2 端到端 + C3 编译/回放反面 + C4 addNode +2 ----------
