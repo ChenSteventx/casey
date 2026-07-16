@@ -57,6 +57,26 @@ const oneSearch = cleanupEvents().filter((ev) => ev.stepId !== 's5');
 const notRepeated = validateReplayEntityAnchors({ events: oneSearch, expectedDoc: expected(), profile: templatedProfile, ctx });
 check(!notRepeated.ok && notRepeated.problems.some((p) => p.reason === 'cleanup_search_target_not_repeated'), '缺删除后同目标重搜必须拒绝');
 
+const bothSearchesBeforeDelete = [
+  ...cleanupEvents().slice(0, 3),
+  { stepId: 's2b', intentId: 'cleanup', atom: 'workflow.deleteByName', action: 'fill', value: 'atl_{{uniqueName}}' },
+  ...cleanupEvents().slice(3, 5),
+];
+const notOrdered = validateReplayEntityAnchors({
+  events: bothSearchesBeforeDelete, expectedDoc: expected(), profile: templatedProfile, ctx,
+});
+check(!notOrdered.ok && notOrdered.problems.some((p) => p.reason === 'cleanup_search_target_not_ordered'), '两次重搜都在删除前不得冒充删除后复核');
+
+const bothSearchesAfterDelete = [
+  cleanupEvents()[0],
+  ...cleanupEvents().slice(3, 6),
+  { stepId: 's5b', intentId: 'cleanup', atom: 'workflow.deleteByName', action: 'fill', value: 'atl_{{uniqueName}}' },
+];
+const noPreDeleteSearch = validateReplayEntityAnchors({
+  events: bothSearchesAfterDelete, expectedDoc: expected(), profile: templatedProfile, ctx,
+});
+check(!noPreDeleteSearch.ok && noPreDeleteSearch.problems.some((p) => p.reason === 'cleanup_search_target_not_ordered'), '两次重搜都在删除后不得冒充删除前实体锚');
+
 const splitClick = cleanupEvents().map((ev) => ev.stepId === 's4' ? { ...ev, value: 'atl_other' } : ev);
 const split = validateReplayEntityAnchors({ events: splitClick, expectedDoc: expected(), profile: templatedProfile, ctx });
 check(!split.ok && split.problems.some((p) => p.reason === 'cleanup_delete_target_not_unique'), '删除与确认目标分裂必须拒绝');
@@ -85,4 +105,4 @@ const gateAt = replaySource.indexOf('validateReplayEntityAnchors({ events, expec
 const browserAt = replaySource.indexOf('await chromium.launch');
 check(gateAt > 0 && browserAt > gateAt, '实体锚闸必须位于浏览器启动前');
 
-console.log(`replay entity anchor zero-SUT: PASS ${passed}/12`);
+console.log(`replay entity anchor zero-SUT: PASS ${passed}/14`);

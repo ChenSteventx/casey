@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 const ROOT = resolve(fileURLToPath(new URL('../..', import.meta.url)));
 const { summarizeDeleteCountAudit } = await import(new URL('../../lib/compile-atoms.mjs', import.meta.url));
 const { buildArtifactManifest } = await import(new URL('../../lib/report-model.mjs', import.meta.url));
-const { renderReport } = await import(new URL('../../lib/report.mjs', import.meta.url));
+const { renderAggregate, renderReport } = await import(new URL('../../lib/report.mjs', import.meta.url));
 
 const table = summarizeDeleteCountAudit({
   tableRows: 1, targetCards: 0, tableDeleteButtons: 1, targetCardDeleteButtons: null, globalDeleteButtons: 9,
@@ -84,6 +84,44 @@ assert.match(hostileHref.html, /路径非法/);
 const safeRendered = renderReport({ ...baseModel, replayVideo: { file: 'video.webm' } });
 assert.match(safeRendered.html, /src="video\.webm"/);
 assert.match(safeRendered.markdown, /\[video\.webm\]\(video\.webm\)/);
+
+const hostileAggregate = renderAggregate({
+  schemaVersion: 1,
+  generatedAt: '2026-07-16T00:00:00.000Z',
+  caseCount: 1,
+  verdictTotals: { PASS: 1, SUT_DEFECT: 0, HARNESS_ERROR: 0, NEEDS_HUMAN: 0 },
+  banner: [],
+  groups: [{
+    category: 'normal',
+    cases: [{
+      caseId: 'tc_safe', promptId: null, promptText: null, reportHref: 'javascript:alert(1)',
+      verdictSummary: { PASS: 1, SUT_DEFECT: 0, HARNESS_ERROR: 0, NEEDS_HUMAN: 0 },
+      flagged: false, softExpect: [],
+    }],
+  }],
+});
+assert.doesNotMatch(hostileAggregate.html, /href="javascript:/);
+assert.equal(JSON.parse(hostileAggregate.json).groups[0].cases[0].reportHref, null);
+
+const safeAggregateModel = {
+  schemaVersion: 1,
+  generatedAt: '2026-07-16T00:00:00.000Z',
+  caseCount: 1,
+  verdictTotals: { PASS: 1, SUT_DEFECT: 0, HARNESS_ERROR: 0, NEEDS_HUMAN: 0 },
+  banner: [],
+  groups: [{
+    category: 'normal',
+    cases: [{
+      caseId: 'tc_safe', promptId: null, promptText: null, reportHref: 'reports/tc_safe.html',
+      verdictSummary: { PASS: 1, SUT_DEFECT: 0, HARNESS_ERROR: 0, NEEDS_HUMAN: 0 },
+      flagged: false, softExpect: [],
+    }],
+  }],
+};
+const safeAggregateBefore = JSON.stringify(safeAggregateModel);
+const safeAggregate = renderAggregate(safeAggregateModel);
+assert.match(safeAggregate.html, /href="reports\/tc_safe\.html"/);
+assert.equal(JSON.stringify(safeAggregateModel), safeAggregateBefore, '聚合渲染不得改写调用方模型');
 
 const scratch = mkdtempSync(join(tmpdir(), 'casey-p2-report-'));
 try {
