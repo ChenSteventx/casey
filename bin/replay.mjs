@@ -27,6 +27,7 @@ import { credentialGate, maskCredentialRoute } from '../lib/cred-gate.mjs';
 import { assertSignedContract } from '../lib/sign-gate.mjs';
 import { foldIntentAction } from '../lib/intent-action-fold.mjs';
 import { validateWorkflowDeleteBindings } from '../lib/workflow-delete-spec.mjs';
+import { projectReplayAssertion, validateReplayEntityAnchors } from '../lib/replay-entity-anchor.mjs';
 
 const { chromium } = pw;
 
@@ -44,6 +45,7 @@ function parseArgs(argv) {
     else if (a === '--run-metrics') o.runMetrics = argv[++i];
     else if (a === '--run-id') o.runId = argv[++i];
     else if (a === '--video-dir') o.videoDir = argv[++i];
+    else if (a === '--unique-name') o.uniqueName = argv[++i];
     // regress-promptset：--prompt-text 注入 ctx.promptText（回填冻结 flow 的 {{promptText}} 提示槽）；
     // --soft-expect 非签署软期望通道（强制 soft:true 并入按 intent 断言表，绝不进裁定、不过 sign-gate）。
     else if (a === '--prompt-text') o.promptText = argv[++i];
@@ -158,6 +160,11 @@ async function main() {
   for (const k of ['events', 'sut', 'expected', 'profile', 'out']) {
     if (!args[k]) { console.error(`replay: 缺 --${k}`); process.exit(64); }
   }
+  const uniqueName = args.uniqueName == null ? 'r1' : String(args.uniqueName);
+  if (!/^[a-z0-9][a-z0-9_-]{0,63}$/i.test(uniqueName)) {
+    console.error('replay: --unique-name 非法（须为 1-64 位字母数字/下划线/连字符，且以字母数字开头）');
+    process.exit(64);
+  }
   // 看门狗 120s（同 compile 先例；chiefcomplaint-smoke D2：chat 用例含 LLM 流式等待，75s 偏紧）。fail-safe 语义不变。
   // M5 尽力收口（codex R1-F1 采信）：清扫先行（不依赖 close 成败）→ 尽力关 → 关后补扫，4s 兜底强退，
   // 退出码语义不变（仍 1）。REPLAY_WATCHDOG_MS 仅测试缝（golden 钉清扫语义用），缺省 120s 一字不变。
@@ -198,7 +205,7 @@ async function main() {
   // 绝不从页面状态猜目标、也不放宽 workflow.deleteByName 域锁。
   const deleteBindingCheck = validateWorkflowDeleteBindings(events);
   if (!deleteBindingCheck.ok) {
-    console.error(`replay: workflow.deleteByName spec 缺目标绑定（${deleteBindingCheck.problems.length} 步），须先重编译；为避免真实环境残留，本次未启动浏览器（fail-closed）`);
+    console.error(`replay: workflow.deleteByName spec 的 click 文案或目标绑定非法（${deleteBindingCheck.problems.length} 步），须先重编译；为避免真实环境残留，本次未启动浏览器（fail-closed）`);
     process.exit(65);
   }
   const caseId = eventsDoc.caseId || expectedDoc.caseId || 'unknown';
@@ -207,7 +214,7 @@ async function main() {
   // baseUrl：G6 分岔三取 C——events url 走 {{baseUrl}} 占位符，回放期回填 --sut（对完整 URL 的旧 fixture 是 no-op）。
   // promptText（regress-promptset）：被测参数经 --prompt-text 注入，回填 fill 步的 {{promptText}} 提示槽（护栏 #6
   // 冻占位符不冻字面量）；RH_PLACEHOLDER 已覆盖 {{promptText}}——回放历史始终显占位符、绝不落真被测参数（护栏 #7）。
-  const ctx = { uniqueName: 'r1', baseUrl: sut, ...(args.promptText != null ? { promptText: String(args.promptText) } : {}) };
+  const ctx = { uniqueName, baseUrl: sut, ...(args.promptText != null ? { promptText: String(args.promptText) } : {}) };
 
   // 登录预备动作前置（GRILL 人签取 A）：凭据/站点配置在开浏览器前加载，任一失败 exit 65（fail-closed）。
   // 登录入口 = --sut 基址 + site.target.startUrl 路径段（真机实采教训：裸基址不渲染登录表单，SPA 判据
@@ -244,8 +251,9 @@ async function main() {
     buttonsCfg = { extraSelector: b.extraSelector, disabledClass: b.disabledClass === undefined ? null : b.disabledClass.trim() };
   }
 
-  // 计数通道选择器（wf-add-node GRILL D4 (a)，通道剖面非凭据加法）：缺省 .hr-table-row 零行为差；
-  // 给了须非空字符串，形状非法拒跑 fail-closed（buttons/routes 同律）；存 trim 值。
+  // 计数通道选择器（wf-add-node GRILL D4 (a)，通道剖面非凭据加法）：普通用例缺省
+  // .hr-table-row；workflow.deleteByName + 硬 countChange=0 另由实体锚闸强制目标化 selector。
+  // 给了须非空字符串，形状非法拒跑 fail-closed（buttons/routes 同律）。
   let countSel = '.hr-table-row';
   if (profile.countSelector !== undefined) {
     if (typeof profile.countSelector !== 'string' || !profile.countSelector.trim()) {
@@ -255,6 +263,16 @@ async function main() {
     countSel = profile.countSelector.trim();
   }
 
+  // 破坏性 cleanup 实体锚一致性（必须在 chromium.launch 前）：删除/确认 click 目标、前后重搜目标、
+  // 硬归零断言的计数 selector 与 cleanup 内其它实体断言必须同源。支持冻结 selector/assertion 中
+  // atl_{{uniqueName}}，只生成本轮派生值，绝不改写冻结件。
+  const entityAnchorCheck = validateReplayEntityAnchors({ events, expectedDoc, profile, ctx });
+  if (!entityAnchorCheck.ok) {
+    console.error(`replay: cleanup 实体锚不一致（${entityAnchorCheck.problems.length} 项），为避免 count 0→0 假 PASS，本次未启动浏览器（fail-closed）`);
+    process.exit(65);
+  }
+  if (entityAnchorCheck.countSelector != null) countSel = entityAnchorCheck.countSelector;
+
   const intentOrder = [];
   const intentEvents = new Map();
   for (const ev of events) {
@@ -262,7 +280,10 @@ async function main() {
     intentEvents.get(ev.intentId).push(ev);
   }
   const reprStepOf = new Map(intentOrder.map((iid) => [iid, intentEvents.get(iid).slice(-1)[0].stepId]));
-  const expectedByIntent = new Map((expectedDoc.intents || []).map((it) => [it.intentId, [...(it.expected || [])]]));
+  const expectedByIntent = new Map((expectedDoc.intents || []).map((it) => [
+    it.intentId,
+    (it.expected || []).map((assertion) => projectReplayAssertion(assertion, ctx)),
+  ]));
   const globalAssertions = [...(expectedDoc.globalAssertions || [])];
   // 软期望通道（regress-promptset）：--soft-expect 的断言强制 soft:true 并入按 intent 断言表——本通道定义即软、
   // 绝不注入影响裁定的硬断言（护栏 #17：verdict 只 AND 硬断言、忽略 soft），故合法不过 sign-gate（人签保护进裁定的断言）。

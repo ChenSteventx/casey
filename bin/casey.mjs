@@ -149,7 +149,7 @@ function runPipeline(pos, opts) {
       for (const m of missing) console.error(`  - ${m}`);
     }
     console.error('LLM 前段(相0-2 ingest/compile/draft/sign)未建、route:human；确定性尾段用法：');
-    console.error('  casey run <caseId> --sut <本地基址> [--events <f>] [--expected <f>] [--profile <f>] [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>] [--login-bootstrap] [--no-video]');
+    console.error('  casey run <caseId> --sut <本地基址> [--events <f>] [--expected <f>] [--profile <f>] [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>] [--unique-name <token>] [--login-bootstrap] [--no-video]');
     console.error('  缺文件旗标时按 cases/<caseId>/events.json、expected.frozen.json、profile.json、observed-<caseId>.json、testcase.json 约定解析。');
     console.error('  串 相3回放 → 相4裁定 → 报表模型装配 → 相6报告，落 runs/<caseId>/<runId>/。');
     process.exit(64);
@@ -183,6 +183,7 @@ function runPipeline(pos, opts) {
   // （登录期不入镜由 replay 双 page 舞步结构保证）。仅诊断附件，绝不进相4 裁定（M7）。
   stage('相3 replay 回放', bin('replay.mjs'), ['--events', eventsPath, '--sut', sut, '--expected', expectedPath, '--profile', profilePath, '--out', axesOut,
     '--run-history', path.join(runDir, 'run-history.jsonl'), '--run-metrics', path.join(runDir, 'run-metrics.json'), '--run-id', runId,
+    ...(opts['unique-name'] ? ['--unique-name', opts['unique-name']] : []),
     ...(opts['login-bootstrap'] ? ['--login-bootstrap'] : []),
     ...(opts['no-video'] ? [] : ['--video-dir', runDir])]);
 
@@ -429,7 +430,7 @@ function help() {
   console.log(`${col(C.bold, 'casey')} —— 文本用例 → 测试报告 自动化测试（loop engineering 驱动）
 
 ${col(C.cyan, '端到端')}
-  casey run <caseId> --sut <本地基址> [--events <f> --expected <f> --profile <f>] [--run-dir <d> --login-bootstrap --no-video]
+  casey run <caseId> --sut <本地基址> [--events <f> --expected <f> --profile <f>] [--run-dir <d> --unique-name <token> --login-bootstrap --no-video]
                                           第一段：回放→裁定→报告；无事后视觉时明确未正式完成
                                           --sut 必填，只喂隧道回环基址（site.json 的 devProxyUrl）；真目标地址绝不进命令行（护栏 #7）
   casey finalize-run <caseId> --run-dir <d> --events <f> --expected <f> --case-meta <f> --visual-review <f> [--observed <f>]
