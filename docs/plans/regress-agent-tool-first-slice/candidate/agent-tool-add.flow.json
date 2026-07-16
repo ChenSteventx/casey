@@ -1,0 +1,27 @@
+{
+  "id": "agent_tool_add_candidate",
+  "name": "智能体调用工具：添加首个工具后出现工具提示词（候选）",
+  "category": "normal",
+  "steps": [
+    { "atom": "login", "params": {} },
+    { "atom": "nav.agentManagement", "params": {} },
+    {
+      "atom": "agent.create",
+      "params": {
+        "name": "atl_agent_tool_add",
+        "role": "atl_test_role",
+        "outputType": "流式输出",
+        "agentType": "数据获取"
+      }
+    },
+    { "atom": "assert.onPage", "params": { "urlIncludes": "/agent/detail", "label": "草稿智能体详情" } },
+    { "atom": "agent.openToolPicker", "params": {} },
+    { "atom": "picker.search", "params": { "keyword": "预约挂号", "expectCount": 1, "expectName": "预约挂号" } },
+    { "atom": "picker.expandPrimary", "params": { "name": "预约挂号" } },
+    { "atom": "picker.selectFirstTool", "params": {} },
+    { "atom": "agent.confirmToolPicker", "params": {} },
+    { "atom": "assert.textVisible", "params": { "text": "预约挂号" } },
+    { "atom": "assert.textVisible", "params": { "text": "工具调用优化要求" } },
+    { "atom": "agent.delete", "params": { "name": "atl_agent_tool_add" } }
+  ]
+}
