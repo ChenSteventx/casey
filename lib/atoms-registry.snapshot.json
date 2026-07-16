@@ -6,7 +6,7 @@
     "copiedAt": "2026-07-02"
   },
   "version": 2,
-  "_note": "原子动作注册表（复杂操作流 = 原子库 + NL 编译 的骨架，见 PLAN-atomic-flows.md）。编译器只能从这里挑 atomId + 按 params 填参；validateFlow（_flow-runner.ts 收集期 / scripts/lint-flow.mjs 离线）据此校验冻结的 *.flow.json。改原子实现（tests/_atoms/_atoms.ts）务必同步本表与 scripts/lint-flow.mjs。 v2：states=封闭状态词表（标签只能用这里的词，lint 注册表自检兜底）；exclusiveGroups=互斥组（provide 组内状态自动移除组内其它）；每原子可标 requires/provides/removes（缺省[]）/destructive（确认门高亮）/entityNameParam（该参数值必须 ctxtest_ 前缀，建删硬闸）。校验逻辑见 scripts/lint-flow.mjs 闸二 与 _flow-runner.ts:validateFlow（双实现同步）。",
+  "_note": "原子动作注册表（复杂操作流 = 原子库 + NL 编译 的骨架，见 PLAN-atomic-flows.md）。本文件以 snapshotOf 记录的 regress 版本为来源基线，复制后已有 Casey 本地修订（包括 agent.create、agent.delete 与 picker.search），不再声称与上游逐字一致；其中 agent.delete 的后置语义已收紧为同源目标稳定精确归零，任一绑定、加载、计数、窗口或超时证据不足均 fail-closed。编译器只能从这里挑 atomId + 按 params 填参；validateFlow（_flow-runner.ts 收集期 / scripts/lint-flow.mjs 离线）据此校验冻结的 *.flow.json。改原子实现（tests/_atoms/_atoms.ts）务必同步本表与 scripts/lint-flow.mjs。 v2：states=封闭状态词表（标签只能用这里的词，lint 注册表自检兜底）；exclusiveGroups=互斥组（provide 组内状态自动移除组内其它）；每原子可标 requires/provides/removes（缺省[]）/destructive（确认门高亮）/entityNameParam（该参数值必须 ctxtest_ 前缀，建删硬闸）。校验逻辑见 scripts/lint-flow.mjs 闸二 与 _flow-runner.ts:validateFlow（双实现同步）。",
   "states": {
     "已登录": "login 成功进入应用（不再停在 /login）",
     "在智能体管理页": "智能体管理列表（/agent/list）",
@@ -885,7 +885,7 @@
       ],
       "destructive": true,
       "entityNameParam": "name",
-      "post": "（尽力）该智能体被删除。"
+      "post": "同源目标在加载结束后连续 3000 ms 精确计数为零；加载态、目标重现、超时或样本不足均 fail-closed。"
     },
     "chat.sendAndWait": {
       "desc": "逐字符输入消息并发送，等 LLM 流式接口结束 + 助手气泡文本稳定。本 UI send 触发与 wait 不可分，故合并为一个原子（忠于现有实现，不为对齐设计图拆出脆边界）。",
