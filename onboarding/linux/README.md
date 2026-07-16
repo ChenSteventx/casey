@@ -10,7 +10,7 @@ Linux 支持源码安装、Chromium 和零 SUT 检验。真实 web 回放还要�
 - Claude Code：[`PROMPT-CLAUDE-CODE.txt`](PROMPT-CLAUDE-CODE.txt)。选择 Fable + high；不可用时不要静默换模型。
 - pi.dev、WorkBuddy、CodeBuddy、Qoder、Cursor、Grok Build 等：[`PROMPT-GENERIC-AGENT.txt`](PROMPT-GENERIC-AGENT.txt)
 
-agent 会识别发行版、补齐运行时和字体、安装 Casey 与 Chromium、接入真实支持的 skill / 指令入口和 MCP，并把必须由你本人完成的 sudo、隐藏输入或组织代理事项单独列出。
+agent 会识别发行版、补齐运行时和字体、安装 Casey 与 Chromium、接入真实支持的 skill / 指令入口和 MCP。开始前请对照 [`../PERMISSIONS.md`](../PERMISSIONS.md) 核对最小权限；agent 不得索要管理员、全盘访问或 Docker，系统包若确需 sudo 应报告并交给你本人处理。
 
 装好后只需自然语言，例如：“在真实 AI 中台运行已签的用例，逐例生成独立 HTML，并在看完同次录像后正式收口。”
 

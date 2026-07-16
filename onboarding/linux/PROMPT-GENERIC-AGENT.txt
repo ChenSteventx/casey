@@ -4,7 +4,7 @@
 
 1. 识别发行版和架构，检查 Git、Node.js 22.12 或更高版本、npm、fontconfig 和联网条件。缺少时使用发行版官方或组织批准的包管理方式补齐；不要运行来源不明的 curl | shell。
 2. 从 https://github.com/ChenSteventx/casey.git 克隆或更新 Casey，放在当前用户拥有的非共享目录并进入仓根。
-3. 先完整读取仓根 AGENTS.md，再读 README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md 和 .claude/skills/casey/SKILL.md。把 AGENTS.md 与权威 skill 当作操作契约，但不要把“读过文件”冒充当前 agent 已安装 skill。
+3. 先完整读取仓根 AGENTS.md，再读 README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md、onboarding/PERMISSIONS.md 和 .claude/skills/casey/SKILL.md。先输出“可用权限 / 缺失权限 / 仅本任务所需权限”三项最小权限预检；只申请当前步骤缺失的能力，绝不请求管理员、全盘文件访问或 Docker。把 AGENTS.md 与权威 skill 当作操作契约，但不要把“读过文件”冒充当前 agent 已安装 skill。
 4. 查明当前 agent 实际支持的仓库指令、skill 和 stdio MCP 机制。支持 skill 时按该产品官方机制接入；不支持时用 AGENTS.md 作为持久入口。必须在本机运行 mcp-config --agent codex 取得实际 stdio command / args，再只转换为当前 agent 的官方 MCP 配置外壳。刷新并实际枚举工具；产品不支持 stdio MCP 或验证失败时如实报告能力缺口。
 5. 安装 npm 依赖、Playwright Chromium 及 Linux 系统依赖，确认 fc-list :lang=zh 有中文字体，再运行 npm run verify:install。不得启动 fixture、fake-SUT、casey demo 或未审计整包 gate。REAL_SUT NOT_VERIFIED 不是测试 PASS。
 6. 通过本机隐藏输入配置账户；不能隐藏输入就暂停让我在安全终端操作。秘密不得进入聊天、argv、日志或报告。真目标只写 gitignored 的 site.json，命令只使用回环基址。

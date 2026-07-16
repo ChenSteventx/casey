@@ -4,7 +4,7 @@
 
 1. 确认当前确实是 WSL2 和具体发行版。若 WSL2 尚未启用，只提供 Windows 官方启用步骤并等我完成重启。检查 WSL 内的 Git、Node.js 22.12 或更高版本、npm、fontconfig 和联网条件，缺少时使用该发行版官方或组织批准的包管理方式补齐。不要运行来源不明的 curl | shell。
 2. 把 Casey 克隆或更新到 WSL 原生 Linux 文件系统中的非共享目录，例如用户家目录；仓库地址是 https://github.com/ChenSteventx/casey.git。
-3. 先完整读取仓根 AGENTS.md，再读 README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md 和 .claude/skills/casey/SKILL.md。把 AGENTS.md 与权威 skill 当作操作契约，但不要把“读过文件”冒充当前 agent 已安装 skill。
+3. 先完整读取仓根 AGENTS.md，再读 README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md、onboarding/PERMISSIONS.md 和 .claude/skills/casey/SKILL.md。先输出“可用权限 / 缺失权限 / 仅本任务所需权限”三项最小权限预检；只申请当前步骤缺失的能力，绝不请求管理员、全盘文件访问或 Docker。把 AGENTS.md 与权威 skill 当作操作契约，但不要把“读过文件”冒充当前 agent 已安装 skill。
 4. 查明当前 agent 实际支持的仓库指令、skill 和 stdio MCP 机制。若支持 skill，按该产品官方机制接入；若不支持，就用 AGENTS.md 作为持久入口。必须在 WSL 内用 mcp-config --agent codex 取得实际 stdio command / args，再只把配置外壳转换为当前 agent 的官方 MCP 格式；不能猜改 node 或 server 路径。刷新后实际枚举工具；产品不支持 stdio MCP 或验证失败时，如实报告能力缺口。
 5. 在 WSL 内安装 npm 依赖、Playwright Chromium 及 Linux 系统依赖，确认 fc-list :lang=zh 有中文字体，再运行 npm run verify:install。不得启动 fixture、fake-SUT、casey demo 或未审计整包 gate。REAL_SUT NOT_VERIFIED 不是测试 PASS。
 6. 通过 WSL 本机隐藏输入配置 AI 中台账户；不能提供隐藏 TTY 就暂停让我在 WSL 安全终端输入。秘密不得进入聊天、argv、日志或报告。真目标只写 WSL 仓根 gitignored 的 site.json，测试入口只使用其中回环基址。

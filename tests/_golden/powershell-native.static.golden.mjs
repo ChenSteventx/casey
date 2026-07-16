@@ -127,8 +127,34 @@ await check('Windows 持久化路径使用正斜杠且目录保护使用平台�
   assert.match(sign, /split\(path\.sep\)\.join\('\/'\)/);
 });
 
+await check('账户 ACL 只收紧当前用户自有对象，不尝试提权接管 owner', () => {
+  const account = read('lib/account-config.mjs');
+  assert.match(account, /GetOwner\(\[Security\.Principal\.SecurityIdentifier\]\)/);
+  assert.match(account, /owner\.Value\s+-ne\s+\$me\.Value/);
+  assert.doesNotMatch(account, /\.SetOwner\s*\(/);
+});
+
+await check('四 OS 的三类 agent 提示词强制最小权限预检', () => {
+  for (const osName of ['windows', 'wsl', 'linux', 'macos']) {
+    for (const promptName of ['PROMPT-CODEX.txt', 'PROMPT-CLAUDE-CODE.txt', 'PROMPT-GENERIC-AGENT.txt']) {
+      const prompt = read(`onboarding/${osName}/${promptName}`);
+      assert.match(prompt, /onboarding\/PERMISSIONS\.md/, `${osName}/${promptName} 未读取权限说明`);
+      assert.match(prompt, /可用权限\s*\/\s*缺失权限\s*\/\s*仅本任务所需权限/, `${osName}/${promptName} 未要求权限预检`);
+      assert.match(prompt, /只申请当前步骤缺失的能力/, `${osName}/${promptName} 未限制权限申请范围`);
+    }
+  }
+  for (const promptName of ['PROMPT-CODEX.txt', 'PROMPT-CLAUDE-CODE.txt', 'PROMPT-GENERIC-AGENT.txt']) {
+    const prompt = read(`onboarding/windows/${promptName}`);
+    assert.match(prompt, /不得.*Docker Desktop/, `${promptName} 未禁止 Windows 原生 Docker`);
+    assert.match(prompt, /不得要求管理员/, `${promptName} 未限制日常提权`);
+  }
+});
+
 await check('MCP server 可完成 initialize 与 tools/list，且零 SUT', () => {
   const server = join(ROOT, 'mcp', 'casey-server.mjs');
+  const serverSource = read('mcp/casey-server.mjs');
+  assert.match(serverSource, /isError:\s*exitCode\s*!==\s*0\b/);
+  assert.doesNotMatch(serverSource, /exitCode\s*!==\s*3/);
   const input = [
     JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18' } }),
     JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} }),
@@ -143,5 +169,5 @@ await check('MCP server 可完成 initialize 与 tools/list，且零 SUT', () =>
   assert.ok(rows[1].result.tools.length > 0);
 });
 
-console.log(`SUMMARY ${passed}/7 PASS`);
+console.log(`SUMMARY ${passed}/9 PASS`);
 if (process.exitCode) process.exit(process.exitCode);

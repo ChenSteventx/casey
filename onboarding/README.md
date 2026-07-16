@@ -2,6 +2,8 @@
 
 优先使用本目录提供的提示词，让 agent 完成运行环境、本仓、skill / 指令入口、MCP、本机安装检验和安全配置。只有不能使用 agent，或需要人工排障时，才照各 OS 的 `README.md` 后半部手工执行。
 
+开始前先看 [`PERMISSIONS.md`](PERMISSIONS.md)。Casey 日常运行只需要标准用户对本仓、当前用户 agent 配置、Node.js/Chromium 和回环端口的最小权限；权限不足时只补缺失项，不授管理员、Docker 或整盘权限。
+
 先选择 Casey 实际运行在哪个 OS，再选择 agent 类型：
 
 | 运行面 | Codex | Claude Code | 其它 agent |

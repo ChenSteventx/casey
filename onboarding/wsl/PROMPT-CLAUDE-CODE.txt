@@ -4,7 +4,7 @@
 
 1. 确认当前确实是 WSL2 和具体发行版。若 WSL2 尚未启用，只提供 Windows 官方启用步骤并等我完成重启；不要把 WSL1 当 WSL2。检查 WSL 内的 Git、Node.js 22.12 或更高版本、npm、fontconfig 和联网条件，缺少时使用该发行版官方或组织批准的包管理方式补齐。不要运行来源不明的 curl | shell。
 2. 把 Casey 克隆或更新到 WSL 原生 Linux 文件系统中的非共享目录，例如用户家目录；不要以 /mnt/c 下的 Windows 工作树作为默认安装。仓库地址是 https://github.com/ChenSteventx/casey.git，并让 Claude Code 从 WSL 仓根打开项目。
-3. 完整读取 AGENTS.md、README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md 和仓根 .claude/skills/casey/SKILL.md。Claude Code 的权威 Casey skill 就是这一份；不要另造第二份，需在仓根重新发现后确认已加载。
+3. 完整读取 AGENTS.md、README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md、onboarding/PERMISSIONS.md 和仓根 .claude/skills/casey/SKILL.md。先输出“可用权限 / 缺失权限 / 仅本任务所需权限”三项最小权限预检；只申请当前步骤缺失的能力，绝不请求管理员、全盘文件访问或 Docker。Claude Code 的权威 Casey skill 就是这一份；不要另造第二份，需在仓根重新发现后确认已加载。
 4. 在 WSL 内安装 npm 依赖、Playwright Chromium 及 Linux 系统依赖，确认 fc-list :lang=zh 有可用中文字体，再运行 npm run verify:install。不得启动 fixture、fake-SUT、casey demo 或未审计整包 gate。REAL_SUT NOT_VERIFIED 只是本机检验状态。
 5. 在 WSL 内运行 mcp-config --agent claude 生成 WSL node 和仓库绝对路径对应的配置，安全合并项目 MCP 配置并保留原有 MCP；刷新后实际验证 Casey MCP 工具可发现。不要从 Windows PowerShell 生成，不要把 C:\ 路径改写成 /mnt/c 路径。
 6. 通过 WSL 本机隐藏输入配置 AI 中台账户。如果当前界面不能提供隐藏 TTY，就暂停并让我在 WSL 安全终端输入。绝不把账号、口令、Cookie 或 token 放入聊天、argv、日志或报告。真目标地址只允许写入 WSL 仓根 gitignored 的 site.json；CLI 的 SUT 入口只能使用其中的回环基址。

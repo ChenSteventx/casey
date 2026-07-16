@@ -8,7 +8,7 @@
 
 | 环境 | 安装与本机检验 | 真实环境回放 | 当前限制 |
 |---|---|---|---|
-| Windows 11 原生 `PowerShell` | 以系统自带 Windows PowerShell 5.1 为基线；PowerShell 7 仅可选 | 代码与零 SUT 操作面已验；真实回放待完整现场 UAT | `LOCAL_PROXY_READY` 不等于真站可达；未有真实 HTTP + 报告证据前保持 `route:human` |
+| Windows 11 原生 `PowerShell` | 以系统自带 Windows PowerShell 5.1 为基线；PowerShell 7 仅可选；不使用 Docker Desktop | 代码与零 SUT 操作面已验；真实回放待完整现场 UAT | `LOCAL_PROXY_READY` 不等于真站可达；未有真实 HTTP + 报告证据前保持 `route:human` |
 | Windows 11 + `WSL2` | 支持，Casey 命令在 `WSL` 内执行 | AI 中台已有完整真实 UAT 的路径 | Windows 承担真站网络侧转发，Node.js / Chromium / `MCP` 留在 `WSL` |
 | Linux | 支持 | 具备组织内回环代理时可接真实 web 目标 | 本仓没有通用 Linux 真站代理安装器；未在公开环境完成真机验收 |
 | macOS | 支持源码安装与静态检验 | 具备组织内回环代理时才可接真实 web 目标 | 当前没有 macOS 真机验收证据 |
@@ -111,7 +111,7 @@ Windows 原生操作员后续统一使用 `scripts/casey.ps1`；其中 `verify` 
 
 真值不得提交、复制进报告或写进命令行。`--sut` 只使用 `site.json` 中的回环代理基址。
 
-Windows 原生由 `PowerShell` 操作面安全配置账户。两条配置动作都启动隐藏输入，不接受账户值参数：
+Windows 原生由 `PowerShell` 操作面安全配置账户。两条配置动作都启动隐藏输入，不接受账户值参数，也不要求管理员；仓库和 `.auth/` 必须位于当前用户拥有的本地目录：
 
 ```powershell
 & .\scripts\casey.ps1 account-ai
@@ -119,7 +119,7 @@ Windows 原生由 `PowerShell` 操作面安全配置账户。两条配置动作�
 & .\scripts\casey.ps1 account-status
 ```
 
-不要把账户或口令作为命令参数、普通聊天文本或 PowerShell 历史内容。AI 中台账户写入 `.auth/credentials.json` 并由登录预备动作读取；Windows 原生写入同时收紧 ACL。医生站 / Hi 小助动作仍只保存安全账户引用与人工就绪声明，自动登录固定为未验证。
+不要把账户或口令作为命令参数、普通聊天文本或 PowerShell 历史内容。AI 中台账户写入 `.auth/credentials.json` 并由登录预备动作读取；Windows 原生写入同时收紧 ACL。若 ACL 收紧失败，应把仓库移出 `Program Files`、共享盘或公共同步目录，不得通过管理员提权接管。医生站 / Hi 小助动作仍只保存安全账户引用与人工就绪声明，自动登录固定为未验证。
 
 Windows 原生 web 回环代理由同一个脚本管理：
 

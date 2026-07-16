@@ -1,6 +1,6 @@
 # Windows 原生装载与操作
 
-本页以 64 位 Windows 11 和系统自带 Windows PowerShell 5.1 为基线。PowerShell 7 只是可选工具，不是 Casey、Codex 或 Claude Code 的前置条件。
+本页以 64 位 Windows 11 和系统自带 Windows PowerShell 5.1 为基线。PowerShell 7 只是可选工具，不是 Casey、Codex 或 Claude Code 的前置条件。Windows 原生安装不使用 Docker Desktop，也不要求 WSL2。
 
 ## 首选：把安装提示词交给 agent
 
@@ -10,7 +10,7 @@
 - Claude Code：[`PROMPT-CLAUDE-CODE.txt`](PROMPT-CLAUDE-CODE.txt)。开始前选择 Fable 模型和 high 推理强度；不可用时让它明确报告，不要静默换模型。
 - pi.dev、WorkBuddy、CodeBuddy、Qoder、Cursor、Grok Build 等：[`PROMPT-GENERIC-AGENT.txt`](PROMPT-GENERIC-AGENT.txt)
 
-提示词会要求 agent 安装 Git / Node.js、克隆 Casey、安装本体与 Chromium、接入正确的指令入口和 MCP、执行零 SUT 检验，并引导你以隐藏输入配置账户。需要管理员批准或安全输入时，agent 应停下来请你在本机完成；它不应要求你把账户、口令或真实目标地址贴进聊天。
+提示词会要求 agent 安装 Git / Node.js、克隆 Casey、安装本体与 Chromium、接入正确的指令入口和 MCP、执行零 SUT 检验，并引导你以隐藏输入配置账户。开始前请对照 [`../PERMISSIONS.md`](../PERMISSIONS.md) 核对最小权限。Windows 原生不使用 Docker 或 WSL2；Casey 本体、账户配置与日常运行只需标准用户权限，agent 不得索要管理员或全盘访问。它不应要求你把账户、口令或真实目标地址贴进聊天。
 
 安装完成后，日常只需对 agent 说自然语言，例如：“在真实 AI 中台运行已签署的历史版本用例，逐例生成独立 HTML；看完同次录像后再正式收口。” 用户不需要维护底层 CLI 参数。
 
@@ -31,7 +31,7 @@ node.exe --version
 npm.cmd --version
 ```
 
-把仓库放在本机普通工作目录，不要放多人共享目录或公共同步盘：
+把仓库放在当前用户拥有的普通工作目录，不要放 `Program Files`、多人共享目录或公共同步盘：
 
 ```powershell
 git clone https://github.com/ChenSteventx/casey.git casey
@@ -70,6 +70,8 @@ Claude Code 或 Codex 只运行自己对应的一条，并把输出安全合并�
 & .\scripts\casey.ps1 account-ai
 & .\scripts\casey.ps1 account-status
 ```
+
+账户 ACL 收紧只应使用当前标准用户对自己目录的权限，不需要管理员。若这里报权限错误，应把仓库移到当前用户拥有的本地目录后重新配置；不要以管理员身份重跑来接管别人的目录。
 
 医生站 / Hi 小助目前只保存安全账户引用与人工就绪声明，不代表自动登录：
 

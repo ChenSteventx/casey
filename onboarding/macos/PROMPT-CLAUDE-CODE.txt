@@ -4,7 +4,7 @@
 
 1. 识别 macOS 与芯片架构，检查 Git、Node.js 22.12 或更高版本、npm、可读中文字体和联网条件。缺少时使用 Apple、Node.js 官方或组织批准的包管理方式补齐；不要运行来源不明的 curl | shell。安装后复核实际架构和版本。
 2. 从 https://github.com/ChenSteventx/casey.git 克隆或更新 Casey，放在当前用户拥有的非共享目录，并让 Claude Code 从仓根打开项目。
-3. 完整读取 AGENTS.md、README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md 和仓根 .claude/skills/casey/SKILL.md。Claude Code 的权威 Casey skill 就是仓内这一份；不要另造第二份，需在仓根重新发现后确认已加载。
+3. 完整读取 AGENTS.md、README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md、onboarding/PERMISSIONS.md 和仓根 .claude/skills/casey/SKILL.md。先输出“可用权限 / 缺失权限 / 仅本任务所需权限”三项最小权限预检；只申请当前步骤缺失的能力，绝不请求管理员、全盘文件访问或 Docker。Claude Code 的权威 Casey skill 就是仓内这一份；不要另造第二份，需在仓根重新发现后确认已加载。
 4. 安装 npm 依赖与 Playwright Chromium，核实 PingFang 等中文字体可用，再运行 npm run verify:install。不得启动 fixture、fake-SUT、casey demo 或未审计整包 gate。REAL_SUT NOT_VERIFIED 只代表安装检验没有连接 SUT。
 5. 在本机 macOS 运行 mcp-config --agent claude，安全合并生成配置并保留原有 MCP；刷新后实际验证 Casey MCP 工具可发现。不要复制其它 OS 的绝对路径。
 6. 通过本机隐藏输入配置 AI 中台账户；不能提供隐藏 TTY 就暂停让我在安全终端输入。账号、口令、Cookie 和 token 不得进入聊天、argv、日志或报告。真目标只允许写仓根 gitignored 的 site.json，测试命令只使用其中的回环基址。

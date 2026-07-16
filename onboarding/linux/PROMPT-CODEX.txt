@@ -4,7 +4,7 @@
 
 1. 识别实际发行版和架构，检查 Git、Node.js 22.12 或更高版本、npm、fontconfig 和联网条件。缺少时使用该发行版官方或组织批准的包管理方式补齐；不要运行来源不明的 curl | shell。安装后复核实际版本。
 2. 从 https://github.com/ChenSteventx/casey.git 克隆或更新 Casey，放在当前用户拥有的非共享目录并进入仓根。
-3. 完整读取仓根 AGENTS.md、README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md 和 .claude/skills/casey/SKILL.md。
+3. 完整读取仓根 AGENTS.md、README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md、onboarding/PERMISSIONS.md 和 .claude/skills/casey/SKILL.md。先输出“可用权限 / 缺失权限 / 仅本任务所需权限”三项最小权限预检；只申请当前步骤缺失的能力，绝不请求管理员、全盘文件访问或 Docker。
 4. 正确处理 Codex 发现边界：不要假定 Codex 会自动加载 .claude/skills。若当前 Codex 支持仓库 plugin，使用官方 plugin 安装流程安装仓内 .codex-plugin/plugin.json；否则使用 Codex 官方 skill installer 安装仓内 skills/casey。它只是薄路由，任何 Casey 动作仍必须完整读取仓根权威 skill。重新发现入口后才能说已安装。
 5. 安装 npm 依赖、Playwright Chromium 及 Linux 系统依赖，确认 fc-list :lang=zh 有中文字体，再运行 npm run verify:install。不得启动 fixture、fake-SUT、casey demo 或未审计整包 gate。REAL_SUT NOT_VERIFIED 只代表安装检验没有连接 SUT。
 6. 在本机 Linux 运行 mcp-config --agent codex，安全合并生成配置到当前 Linux 用户的 Codex 配置并保留原有 MCP；刷新后实际验证 Casey MCP 工具可发现。不要复制别的 OS 的绝对路径。

@@ -10,7 +10,7 @@
 - Claude Code：[`PROMPT-CLAUDE-CODE.txt`](PROMPT-CLAUDE-CODE.txt)。开始前选择 Fable + high；不可用时不要静默换模型。
 - pi.dev、WorkBuddy、CodeBuddy、Qoder、Cursor、Grok Build 等：[`PROMPT-GENERIC-AGENT.txt`](PROMPT-GENERIC-AGENT.txt)
 
-agent 会检查 WSL2、安装 Linux 侧依赖、把仓库放在 WSL 原生文件系统、配置正确运行面的 skill / 指令入口和 MCP，并引导隐藏输入。管理员动作、Windows 重启和安全输入仍需你本人确认。
+agent 会检查 WSL2、安装 Linux 侧依赖、把仓库放在 WSL 原生文件系统、配置正确运行面的 skill / 指令入口和 MCP，并引导隐藏输入。开始前请对照 [`../PERMISSIONS.md`](../PERMISSIONS.md) 核对最小权限；agent 不得索要管理员、全盘访问或 Docker。若首次启用 WSL2 确实需要系统批准或重启，应由 agent 报告后交给你本人处理。
 
 装好后只需自然语言，例如：“在真实 AI 中台回放已签的工作流历史版本用例，逐例生成独立 HTML，并在观看同次录像后正式收口。”
 

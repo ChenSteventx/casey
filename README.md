@@ -16,6 +16,7 @@ LLM 驱动的「文本用例 → 测试报告」自动化测试系统：一段�
 | macOS | [`onboarding/macos/PROMPT-CODEX.txt`](onboarding/macos/PROMPT-CODEX.txt) | [`onboarding/macos/PROMPT-CLAUDE-CODE.txt`](onboarding/macos/PROMPT-CLAUDE-CODE.txt) | [`onboarding/macos/PROMPT-GENERIC-AGENT.txt`](onboarding/macos/PROMPT-GENERIC-AGENT.txt) |
 
 四套给人读的安装与操作说明、选择规则和能力边界见 [`onboarding/`](onboarding/README.md)。Claude Code 提示词固定要求选择 Fable 模型与 high 推理强度。Windows 原生以系统自带 Windows PowerShell 5.1 为基线，PowerShell 7 仅可选。
+agent 需要的最小权限与不足时的兜底见 [`onboarding/PERMISSIONS.md`](onboarding/PERMISSIONS.md)；Windows 原生不使用 Docker，也不要求管理员常驻或 WSL2。
 
 ## 三面统一标识符 `casey`
 

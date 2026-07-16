@@ -137,7 +137,7 @@ function callCli(args) {
   const body = [r.stdout, r.stderr].filter(Boolean).join('\n').trim() || '(无输出)';
   // 在文本里显式标注退出码语义，让调用方/模型不把 exit 3 桩当成已完成。
   const note = exitCode === 3 ? '\n\n[exitCode=3] 该阶段尚未实现（见 docs/USAGE.md），不是测试结论。' : `\n\n[exitCode=${exitCode}]`;
-  return { content: [{ type: 'text', text: body + note }], isError: exitCode !== 0 && exitCode !== 3 };
+  return { content: [{ type: 'text', text: body + note }], isError: exitCode !== 0 };
 }
 
 function handle(msg) {

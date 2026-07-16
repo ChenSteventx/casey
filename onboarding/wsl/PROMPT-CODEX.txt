@@ -4,7 +4,7 @@
 
 1. 确认当前确实是 WSL2 和具体发行版。若 WSL2 尚未启用，只提供 Windows 官方启用步骤并等我完成重启；不要把 WSL1 当 WSL2。检查 WSL 内的 Git、Node.js 22.12 或更高版本、npm、fontconfig 和联网条件，缺少时使用该发行版官方或组织批准的包管理方式补齐。不要运行来源不明的 curl | shell。
 2. 把 Casey 克隆或更新到 WSL 原生 Linux 文件系统中的非共享目录，例如用户家目录；不要以 /mnt/c 下的 Windows 工作树作为默认安装。仓库地址是 https://github.com/ChenSteventx/casey.git。
-3. 完整读取仓根 AGENTS.md、README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md 和 .claude/skills/casey/SKILL.md。
+3. 完整读取仓根 AGENTS.md、README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md、onboarding/PERMISSIONS.md 和 .claude/skills/casey/SKILL.md。先输出“可用权限 / 缺失权限 / 仅本任务所需权限”三项最小权限预检；只申请当前步骤缺失的能力，绝不请求管理员、全盘文件访问或 Docker。
 4. 正确处理 Codex 发现边界：不要假定 Codex 会自动加载 .claude/skills。若当前 Codex 支持仓库 plugin，使用官方 plugin 安装流程安装仓内 .codex-plugin/plugin.json；否则使用 Codex 官方 skill installer 安装仓内 skills/casey。skills/casey 只是薄路由，任何 Casey 动作仍必须完整读取仓根权威 skill。只有 WSL 侧 Codex 重新发现到入口后才能说已安装。
 5. 在 WSL 内安装 npm 依赖、Playwright Chromium 及 Linux 系统依赖，确认 fc-list :lang=zh 有可用中文字体，再运行 npm run verify:install。不得启动 fixture、fake-SUT、casey demo 或未审计整包 gate。REAL_SUT NOT_VERIFIED 只是本机检验状态。
 6. 在 WSL 内运行 mcp-config --agent codex 生成 WSL node 和仓库绝对路径对应的配置，安全合并 WSL 用户的 Codex 配置并保留原有 MCP；刷新后实际验证 Casey MCP 工具可发现。不要从 Windows PowerShell 生成，不要把 C:\ 路径改写成 /mnt/c 路径。
