@@ -18,6 +18,18 @@ LLM 驱动的「文本用例 → 测试报告」自动化测试系统：一段�
 
 ## 安装
 
+Windows 11 原生 `PowerShell`（Windows PowerShell 5.1 或 PowerShell 7）已有专用安装面：
+
+```powershell
+git clone https://github.com/ChenSteventx/casey.git casey
+Set-Location .\casey
+& .\scripts\install.ps1
+```
+
+脚本固定调用 `npm.cmd` / `npx.cmd`，安装精确依赖与 Windows Chromium，最后执行零 SUT 安装检验。若组织执行策略拦截仓内脚本，应按组织策略批准本地脚本；不要复制到 `Invoke-Expression`，也不要把账户或目标地址拼进命令。
+
+Linux、macOS 与 `WSL2` 继续使用仓内 Node.js 安装面：
+
 ```bash
 # 前置：node >= 22.12（见 package.json engines）
 npm install                          # @playwright/test 精确 pin 1.60.0
@@ -25,13 +37,15 @@ npx playwright install chromium      # 回放/编译执行段硬依赖真浏览�
 npm run verify:install               # 只验安装，不连接任何被测系统
 ```
 
-Windows + `WSL2`、Linux、macOS 的完整步骤与支持边界见 [`docs/INSTALL.md`](docs/INSTALL.md)。Windows 正式路径是在 `WSL` 内安装并运行；Windows 原生终端不承担回放。`WSL` / Linux 另需中文字体，装好后用 `fc-list :lang=zh` 核实。
+四种运行面的完整步骤与支持边界见 [`docs/INSTALL.md`](docs/INSTALL.md)。Windows 原生 `PowerShell` 已覆盖安装、检验、账户配置、诊断、`MCP` 配置与 web 回环代理启停；`WSL2` 路径继续保留。当前已有真实 AI 中台完整 UAT 的仍是既有 `WSL2` 路径，Windows 原生真实回放须取得本机真实 HTTP、真实回放、确定性裁定、同次录屏、视觉复核和独立单用例 HTML 后才可标为已验。`WSL` / Linux 另需中文字体，装好后用 `fc-list :lang=zh` 核实。
 
 ## 环境验收
 
 `npm run verify:install` 检查 Node.js、Playwright、Chromium、中文字体与 `CLI` / `MCP` / `skill` 三面；它不连接任何被测系统。全部通过只代表“本机安装完成”。
 
-`node bin/casey.mjs doctor` 继续检查凭据、`site.json` 与回环端口，但它的 exit 0 只由本机就绪项决定；真机可用还必须有 Windows→真站与 `WSL` 回环→真站两段真实 HTTP 成功证据。没有真实回放、确定性 `verdict.json`、同次录屏、视觉复核和独立单用例 HTML，不得声称行为验收完成。
+Windows 原生可用 `scripts/casey.ps1 verify` 重跑本机安装检验；成功标记仍是 `REAL_SUT NOT_VERIFIED`。`scripts/casey.ps1 doctor` 走真实环境严格模式：缺账户、完整 `site.json`、安全账户 ACL 或回环监听时非零；前置齐备也只输出 `REAL_SUT_HTTP_NOT_VERIFIED`，不会把端口在听冒充真实 HTTP。`WSL2` / Linux / macOS 继续使用 `node bin/casey.mjs doctor`。
+
+真机可用还必须取得运行面经回环到真站的真实 HTTP 成功证据。没有真实回放、确定性 `verdict.json`、同次录屏、视觉复核和独立单用例 HTML，不得声称行为验收完成。
 
 项目中的假被测系统和夹具只允许静态阅读，不作为安装或行为验收命令运行。
 
@@ -42,7 +56,7 @@ Windows + `WSL2`、Linux、macOS 的完整步骤与支持边界见 [`docs/INSTAL
 - `.auth/credentials.json`：`{ "user": "<账号>", "pass": "<口令>" }`。env 覆盖：`AT_CREDS_USER` /
   `AT_CREDS_PASS`（值对）或 `AT_CREDS_FILE`（换文件路径）。
 - `.auth/desktop-account.json`：医生站 / Hi 小助的安全账户引用与人工就绪声明。它不保存或推导登录页面规则，自动登录固定为未验证；真实 CEF 操作仍须人工确认专用账户、已登录且无真实患者数据。
-- `site.json`（仓根）：`target.startUrl`（真机入口地址）与 `target.devProxyUrl`（WSL 内隧道基址，
+- `site.json`（仓根）：`target.startUrl`（真机入口地址）与 `target.devProxyUrl`（当前运行面的回环基址，
   形如 `http://127.0.0.1:15519`）为必备；`login` / `select` 两段可选覆盖内置选择器（深合并，
   字段见 `lib/login-bootstrap.mjs` 的 `DEFAULT_SITE`）。env 覆盖：`AT_SITE_JSON`（换文件路径）。
 
@@ -52,17 +66,31 @@ Windows + `WSL2`、Linux、macOS 的完整步骤与支持边界见 [`docs/INSTAL
 
 `casey account status` 与 `casey doctor` 只报告配置是否存在、形状是否有效和人工就绪状态，不回显账户值、桌面账户引用或本机绝对路径。AI 中台文件沿既有 `login-bootstrap` 原路径消费；医生站 / Hi 小助在真实登录页采样前不宣称自动登录。
 
-## 真机链路（反向隧道，仅真机需要）
+## 真机链路（仅真机需要）
 
-启动顺序敏感（先 WSL 后 Windows，反了会留僵尸连接占池不补）：
+Windows 原生 `PowerShell` 由统一操作脚本管理两个仅绑定回环的 Node.js 进程：
+
+```powershell
+& .\scripts\casey.ps1 proxy-start
+& .\scripts\casey.ps1 proxy-status
+```
+
+`proxy-start` 只从 gitignored `site.json` 读取目标，目标不进参数、状态文件或日志；`proxy-status` 的 `LOCAL_PROXY_READY` 只证明本地进程身份与监听端口成立，不证明真站可达。开始回放前仍须从 Windows 网络侧以及通过 `target.devProxyUrl` 取得真实 HTTP 证据。Windows 原生真实回放目前尚无完整现场 UAT 证据，保持 `route:human`。
+
+完成严格 doctor、真实 HTTP 取证与本次测试后，再收口代理：
+
+```powershell
+& .\scripts\casey.ps1 proxy-stop
+```
+
+`WSL2` 既有反向隧道路径继续支持，启动顺序敏感（先 `WSL` 后 Windows，反了会留僵尸连接占池不补）：
 
 1. WSL 侧：`node scripts/wsl-reverse-listen.mjs`（后台，监听 15519/15520）；
 2. Windows 侧：双击 `scripts/win-forward-start.cmd`。
 
-**真机命令一律 WSL 侧跑**（G6 人签硬约束：Windows 侧回放必败——playwright 浏览器装在 Linux 侧，
-且 Windows 直连需把真目标地址写进命令行、违护栏 #7）。
+选择 `WSL2` 路径时，Casey 命令、Linux Chromium 与 `MCP` 都留在 `WSL` 侧；Windows 只承担网络侧转发。选择 Windows 原生路径时，Casey、Windows Chromium、`MCP` 与回环代理都在同一个 Windows 运行面，`--sut` 仍只喂 `site.json` 的回环基址，绝不改为真目标地址。
 
-## MCP 挂载（WSL 侧）
+## MCP 挂载
 
 跑一句自适应吐出本仓正确挂载配置（绝对路径由结构派生，免手抄改盘符——消灭 F10「抄命令改路径」反模式）：
 
@@ -71,7 +99,7 @@ node bin/casey.mjs mcp-config --agent claude   # claude code：.mcp.json 片段 
 node bin/casey.mjs mcp-config --agent codex    # codex：~/.codex/config.toml 的 [mcp_servers.casey] 段
 ```
 
-必须挂 WSL 侧 node（回放依赖 Linux 侧 playwright，Windows 原生侧挂载必败，G6）。分家 agent（codex 等无
+Windows 原生 `PowerShell` 使用 `scripts/casey.ps1 mcp-config -Agent claude` 或 `-Agent codex`；生成器绑定当前 Windows `node.exe` 并按 PowerShell 安全引用路径。`WSL2` 路径则必须从 `WSL` 侧生成，不能把 Windows 与 `WSL` 两套 Node.js / Playwright 混挂。分家 agent（codex 等无
 `skill` 自动加载机制）接入入口见 `AGENTS.md`；跨平台上手与同事移交清单见 `docs/runbooks/onboarding.md`。
 
 当前有 16 个工具（`casey_ingest` … `casey_run`，含 web 示教、入账及 CEF 示教/机械回放）。正式 web 测试采用二段式交付：`casey_run` 只产同次录像/裁定/待视觉报告，代理看完录像后由 CLI-only `finalize-run` 零 SUT 收口；只有全 PASS + 录像完整 + 视觉一致才 GREEN。`finalize-run`、`casey_distill` 与学习原子的 propose/sign/promote 尚未进入 `MCP` 面，因此这些步骤由 `skill` 在代理内部转调 `CLI`；不能声称三面已经完全同构。

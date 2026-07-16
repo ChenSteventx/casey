@@ -2,6 +2,10 @@
 
 推荐入口是 `skill`：用户只描述测试目标、前置条件、操作和期望，代理负责环境检查、生命周期命令与产物路径。只有用户明确要求命令时才暴露 `CLI` 细节。
 
+Windows 原生也保持同一自然语言入口。用户可以说“在这台 Windows 上安装并检查 Casey”“启动真实 web 回环代理”“安全配置 AI 中台账户”或“停止 Casey 代理”；skill 在 win32 内部优先转调 `scripts/install.ps1` / `scripts/casey.ps1`，不要求用户把底层测试参数、账户值或真目标地址复制出来。
+
+必须区分三层状态：`REAL_SUT NOT_VERIFIED` 只表示本机安装检验结束；`LOCAL_PROXY_READY` 只表示 Windows 回环代理进程和端口就绪；`REAL_SUT_HTTP_NOT_VERIFIED` 表示严格前置检查已完成但尚无真站 HTTP 证据。三者都不是测试 PASS。Windows 原生真实回放当前仍待完整现场 UAT。
+
 ## 通过自然语言配置账户
 
 可直接对代理说“安全配置 AI 中台账户，不要在对话或日志里显示账户值”。skill 应启动本机隐藏输入；若当前界面不能承载隐藏 TTY，只能使用经批准的 stdin 或环境导入并暂停等待安全输入，不能要求用户把账户或口令粘贴进普通聊天。
