@@ -149,7 +149,7 @@ function runPipeline(pos, opts) {
       for (const m of missing) console.error(`  - ${m}`);
     }
     console.error('LLM 前段(相0-2 ingest/compile/draft/sign)未建、route:human；确定性尾段用法：');
-    console.error('  casey run <caseId> --sut <本地基址> [--events <f>] [--expected <f>] [--profile <f>] [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>] [--login-bootstrap] [--no-video]');
+    console.error('  casey run <caseId> --sut <本地基址> [--events <f>] [--expected <f>] [--profile <f>] [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>] [--unique-name <token>] [--login-bootstrap] [--no-video]');
     console.error('  缺文件旗标时按 cases/<caseId>/events.json、expected.frozen.json、profile.json、observed-<caseId>.json、testcase.json 约定解析。');
     console.error('  串 相3回放 → 相4裁定 → 报表模型装配 → 相6报告，落 runs/<caseId>/<runId>/。');
     process.exit(64);
@@ -183,6 +183,7 @@ function runPipeline(pos, opts) {
   // （登录期不入镜由 replay 双 page 舞步结构保证）。仅诊断附件，绝不进相4 裁定（M7）。
   stage('相3 replay 回放', bin('replay.mjs'), ['--events', eventsPath, '--sut', sut, '--expected', expectedPath, '--profile', profilePath, '--out', axesOut,
     '--run-history', path.join(runDir, 'run-history.jsonl'), '--run-metrics', path.join(runDir, 'run-metrics.json'), '--run-id', runId,
+    ...(opts['unique-name'] ? ['--unique-name', opts['unique-name']] : []),
     ...(opts['login-bootstrap'] ? ['--login-bootstrap'] : []),
     ...(opts['no-video'] ? [] : ['--video-dir', runDir])]);
 
@@ -429,13 +430,16 @@ function help() {
   console.log(`${col(C.bold, 'casey')} —— 文本用例 → 测试报告 自动化测试（loop engineering 驱动）
 
 ${col(C.cyan, '端到端')}
-  casey run <caseId> --sut <本地基址> [--events <f> --expected <f> --profile <f>] [--run-dir <d> --login-bootstrap --no-video]
+  casey run <caseId> --sut <本地基址> [--events <f> --expected <f> --profile <f>] [--run-dir <d> --unique-name <token> --login-bootstrap --no-video]
                                           第一段：回放→裁定→报告；无事后视觉时明确未正式完成
                                           --sut 必填，只喂隧道回环基址（site.json 的 devProxyUrl）；真目标地址绝不进命令行（护栏 #7）
   casey finalize-run <caseId> --run-dir <d> --events <f> --expected <f> --case-meta <f> --visual-review <f> [--observed <f>]
                                           第二段：不触碰 SUT；验同 run 摘要→接视觉复核→重建报告→正式交付门
 
 ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅助/heal；replay/verdict/report 零 LLM）
+  casey account configure <ai-middle|doctor-hi> [--from-stdin|--from-env]
+                                          本地账户安全配置：默认隐藏交互；账户值绝不进 argv/stdout，文件只落 .auth
+  casey account status [--json]           只报告存在性、形状与就绪状态，不回显账户值或路径
   casey scaffold-case <caseId> --from-text <f> --out-dir <d>
                                           相0 前段脚手架：自由文本 → 候选骨架（source.kind:freetext + route:human 占位；开箱过 parseTestCase；须 CLI 外 LLM 归一 + 重走 ingest→…→人签；不签署/不回放/门拒 fail-closed）
   casey ingest  <caseId> --in <f> --out-dir <d>
@@ -518,6 +522,7 @@ function main() {
     case 'scaffold-case': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'scaffold-case.mjs'), rest); process.exit(r.code); }
     // 相0 归一：LLM 在 CLI 外产候选，本 CLI 是 L0 确定性校验器（parseTestCase，fail-closed）。
     case 'ingest': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'ingest.mjs'), rest); process.exit(r.code); }
+    case 'account': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'account.mjs'), rest); process.exit(r.code); }
     // 相1 编译（P3）：三段式确定性 CLI（闸+confirm 门 / 执行 / 回放核验），LLM 只在 CLI 外产 flow 草稿。
     case 'compile': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'compile.mjs'), rest); process.exit(r.code); }
     case 'draft': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'draft.mjs'), rest); process.exit(r.code); }

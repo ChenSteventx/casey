@@ -37,10 +37,11 @@ Windows + `WSL2`、Linux、macOS 的完整步骤与支持边界见 [`docs/INSTAL
 
 ## 凭据面（格式说明——真值一律带外交付，绝不入库/提交/回显）
 
-两件均已 gitignored，新环境须自建；本节只写字段形状，不含任何真值：
+推荐直接对 Casey skill 说“安全配置 AI 中台账户”或“检查账户状态”。skill 会启动本机隐藏输入；绝不要把账户或口令粘贴到聊天、命令行参数、工单或报告。配置均已 gitignored，本节只写字段形状，不含任何真值：
 
 - `.auth/credentials.json`：`{ "user": "<账号>", "pass": "<口令>" }`。env 覆盖：`AT_CREDS_USER` /
   `AT_CREDS_PASS`（值对）或 `AT_CREDS_FILE`（换文件路径）。
+- `.auth/desktop-account.json`：医生站 / Hi 小助的安全账户引用与人工就绪声明。它不保存或推导登录页面规则，自动登录固定为未验证；真实 CEF 操作仍须人工确认专用账户、已登录且无真实患者数据。
 - `site.json`（仓根）：`target.startUrl`（真机入口地址）与 `target.devProxyUrl`（WSL 内隧道基址，
   形如 `http://127.0.0.1:15519`）为必备；`login` / `select` 两段可选覆盖内置选择器（深合并，
   字段见 `lib/login-bootstrap.mjs` 的 `DEFAULT_SITE`）。env 覆盖：`AT_SITE_JSON`（换文件路径）。
@@ -48,6 +49,8 @@ Windows + `WSL2`、Linux、macOS 的完整步骤与支持边界见 [`docs/INSTAL
 目标地址只活在 `site.json`，绝不进命令行/日志/输出（护栏 #7）——CLI 的 `--sut` 参数**只喂隧道
 回环基址**（即 `devProxyUrl`，形如 `http://127.0.0.1:15519`），真目标地址
 绝不出现在 shell 历史里。
+
+`casey account status` 与 `casey doctor` 只报告配置是否存在、形状是否有效和人工就绪状态，不回显账户值、桌面账户引用或本机绝对路径。AI 中台文件沿既有 `login-bootstrap` 原路径消费；医生站 / Hi 小助在真实登录页采样前不宣称自动登录。
 
 ## 真机链路（反向隧道，仅真机需要）
 
@@ -72,6 +75,8 @@ node bin/casey.mjs mcp-config --agent codex    # codex：~/.codex/config.toml �
 `skill` 自动加载机制）接入入口见 `AGENTS.md`；跨平台上手与同事移交清单见 `docs/runbooks/onboarding.md`。
 
 当前有 16 个工具（`casey_ingest` … `casey_run`，含 web 示教、入账及 CEF 示教/机械回放）。正式 web 测试采用二段式交付：`casey_run` 只产同次录像/裁定/待视觉报告，代理看完录像后由 CLI-only `finalize-run` 零 SUT 收口；只有全 PASS + 录像完整 + 视觉一致才 GREEN。`finalize-run`、`casey_distill` 与学习原子的 propose/sign/promote 尚未进入 `MCP` 面，因此这些步骤由 `skill` 在代理内部转调 `CLI`；不能声称三面已经完全同构。
+
+账户配置故意不进入 `MCP`：skill 只转调本机 CLI 的隐藏交互、stdin 或环境导入，避免把账户值装进工具参数或协议日志。账户状态同样由 skill 在本机读取安全投影。
 
 自然语言测试、示教兜底、医生站 / Hi 小助与自学习能力边界见 [`docs/USAGE.md`](docs/USAGE.md)。
 

@@ -1,6 +1,6 @@
 ---
 name: casey
-description: 用自然语言把测试用例跑成 Casey 测试报告，或启动示教录制。当用户说"跑一下历史版本用例""把这段用例测一遍""生成测试报告""我要手动录制"时使用。用户操作面必须只收自然语言；底层 CLI/MCP 参数由代理内部处理，绝不要求用户复制命令，绝不把桩当成已完成。
+description: 用自然语言安全配置或检查 Casey 账户、把测试用例跑成测试报告，或启动示教录制。当用户说“配置中台账户”“检查账户状态”“跑一下历史版本用例”“把这段用例测一遍”“生成测试报告”“我要手动录制”时使用。用户操作面必须只收自然语言；底层 CLI/MCP 参数由代理内部处理，绝不要求用户复制命令，绝不把桩当成已完成。
 ---
 
 # casey — 自然语言 → 测试报告
@@ -11,6 +11,8 @@ description: 用自然语言把测试用例跑成 Casey 测试报告，或启动
 
 用户只需要这样说：
 
+- “帮我安全配置 AI 中台账户，不要在对话或日志里显示账户值。”
+- “配置医生站和 Hi 小助的本地账户引用，并检查是否就绪。”
 - “帮我跑刚刚那个历史版本用例，生成测试报告。”
 - “跑一个 0 error 的真实用例给我看报告。”
 - “我要手动录制一个新流程，名字叫采购审批冒烟。”
@@ -39,6 +41,9 @@ description: 用自然语言把测试用例跑成 Casey 测试报告，或启动
 
 | 自然语言意图 | 代理内部动作 |
 |---|---|
+| “配置 AI 中台账户” | 内部启动 `account configure ai-middle` 的隐藏交互；无人可接 TTY 时只允许经安全 stdin 或预置环境导入。绝不要求用户把账户或口令粘贴进聊天，绝不把值放 argv。成功后只回复“已配置且接入登录预备动作”，不回复值或本机路径。 |
+| “配置医生站和 Hi 小助账户” | 只配置安全的本地账户引用与人工就绪布尔，不采集或声称登录页面规则；成功后明确自动登录未验证，真实录制仍须人工安全会话。 |
+| “检查账户状态” | 内部跑 `account status`；只回复中台账户是否在位/形状有效/已接登录预备动作，以及桌面账户引用是否在位/是否人工就绪。不得回复账户名、口令、引用字面量或绝对路径。 |
 | “跑刚刚那个历史版本用例/跑历史版本报告” | 跑 `tc_wf_history_version`，生成报告后用 `verify-zero-error-report` 校验，返回 HTML/MD/JSON 链接。 |
 | “跑一个真实 0 error 用例” | 优先选择最近现场复跑已 0 error 的用例；当前已现场验证的是 `tc_wf_history_version`。不要把历史绿但今天复跑红的用例冒充 0 error。 |
 | “手动录制/示教录制” | 启动 `casey record`，打开浏览器让用户操作；关闭浏览器后返回 `teach-in-capture.json` 路径，并说明它只是蒸馏语料、不是正式报告。 |
@@ -48,7 +53,7 @@ description: 用自然语言把测试用例跑成 Casey 测试报告，或启动
 | “把这段文本用例跑成报告” | 若已有完整签署产物则直接跑；否则先产候选 TestCase/flow/expected 草稿并要求用户签署，不能代签。 |
 | “把一段自由文本用例变成候选骨架 / 我要从头写个用例” | 代理内部跑 `scaffold-case` 把自由文本零 LLM 包成候选骨架（`source.kind:freetext` + `route:human` 占位，开箱过 `parseTestCase`），再按公开归一模板 `docs/templates/free-text-normalization.md` 把 `source.raw` 归一成真实意图步、经 `ingest` 入场；如实说明候选须 LLM 归一 + 人签才算数、不是正式报告，别盲写 JSON。 |
 | “看最近报告” | 在 `runs/` 下找最新 `.report.html`，返回链接和四态摘要。 |
-| “看样例报告/Casey 产物长啥样” | 只返回 `runs/` 下已有的真实回放报告，并标明运行时间与四态；没有真实报告就如实说明。不得运行历史 `casey demo`，因为它会启动夹具 SUT。 |
+| “看样例报告/Casey 产物长啥样” | 只返回 `runs/` 下已有的真实回放报告，并标明运行时间与四态；没有真实报告就如实说明。不得调用旧的 `casey demo`，因为它会启动夹具 SUT。 |
 
 ## 内核（不可让渡，违反即停）
 
@@ -74,6 +79,8 @@ description: 用自然语言把测试用例跑成 Casey 测试报告，或启动
 
 | 用户意图 | 执行 |
 |---|---|
+| 本地账户安全配置 | `account configure` 默认隐藏 TTY；自动化场景只用 `--from-stdin` 或 `--from-env`。账户值不得出现在底层 argv、stdout、日志或报告；本命令只写 gitignored `.auth/`。 |
+| 账户状态 | `account status` 只检查存在性、闭合形状和就绪声明；AI 中台配置写现有 `credentials.json` 并由 `login-bootstrap` 消费，医生站 / Hi 小助自动登录固定为未验证。 |
 | 相3-4-6 第一段（回放→裁定→待视觉报告） | `node bin/casey.mjs run <caseId> --sut <url> --events <f> --expected <f> --profile <f> [--run-dir <d> --login-bootstrap --no-video]`（产同 run 录像、裁定、报告和 `run-binding.json` 后固定未正式完成；不得预置视觉结论） |
 | 相6 正式交付收口 | 代理观看第一段同次录像、写带 video/verdict 摘要绑定的视觉复核后，内部调用 `finalize-run`；它不接触 SUT、不重放，只验同 run 哈希并重建报告。仅全 PASS + 录像完整 + 视觉 `CONSISTENT` 才可 GREEN。参数不得要求用户复制。 |
 | 相0 前段脚手架（自由文本 → 候选骨架） | `node bin/casey.mjs scaffold-case <caseId> --from-text <text-file> --out-dir <d>`（零 LLM 产候选骨架，开箱过 `parseTestCase`；再按公开归一模板 `docs/templates/free-text-normalization.md` 把 `source.raw` 归一成真实意图步 → `ingest` 入场；候选非权威，须归一 + 重走全链 + 人签，门拒 fail-closed） |
@@ -123,6 +130,7 @@ description: 用自然语言把测试用例跑成 Casey 测试报告，或启动
 
 - **假被测系统只读，所有行为验收只驱真机**（强制执行）：假被测系统（`fake-sut`）和夹具 `SUT` 只允许读取源码作为迁移参考，任何代理不得启动、连接或回放它们，也不得用 `casey demo` 顶替真机运行。`golden` / `gate` / `selftest --tier1` 仅在可证明不启动、不连接、不回放任何假 `SUT` 时才允许执行；静态检查、schema 检查和不接触 `SUT` 的纯函数检查可执行。所有浏览器/通道行为测试、回放、复跑与验收一律联网驱真实目标，`--sut` 只喂隧道回环基址（`site.json` 的 `devProxyUrl`，形如 `http://127.0.0.1:15519`）；无网络、仅本地监听、代理池未连真站或网络受限时一律不得开始行为验收。前置 = 相位0 三关（`casey doctor` 就绪 / 维护者带外确认专用测试账户 / 反向隧道单实例；全流程见 `docs/runbooks/real-uat-runbook.md`；隧道两命令：`WSL` 侧 `node scripts/wsl-reverse-listen.mjs`、`Windows` 侧 `node scripts/win-reverse-agent.mjs`，顺序先 `WSL` 后 `Windows`）；除 `doctor` 外还必须取得 Windows→真站与 `WSL` 回环→真站两段真实 HTTP 成功证据。没有同次真实回放、确定性 `verdict.json`、录屏、视觉复核和独立单用例 HTML，不得声称行为验收完成。
 - 医生站/Hi 小助 CEF 入口用独立原始 TCP 中继，不复用 15519 HTTP Host 改写通道；先 Windows 真机确认进程开启远程调试且筛选后恰一 page。机械回放收据只证明动作派发/身份回读，固定 `formalVerdictEligible=false`；LLM 视觉只能写 `CONSISTENT/INCONSISTENT/INDETERMINATE` 建议，绝不进入 `verdict.mjs` 或翻机器结论。
+- 账户输入只走本机安全通道：绝不让用户在普通聊天、命令行参数、工单或报告中提供账户值。交互配置必须隐藏输入；非交互只从 stdin 或环境读。医生站 / Hi 小助真实登录页未采样前只认人工安全会话，不生成或猜测自动登录动作。
 - **凭据让用户设**：`.auth/`、`site.json` 是凭据，CC 不把账号密码写进命令行/文件/报告。
 - **学习不自动晋升**：手录或桌面/CEF 非正式 receipt 只是 provenance，不是 PASS。只有 intake 同哈希 + 已签 expected + 标准 axes/verdict 全 PASS + 录屏 + 同 run 绑定才能产 pending 候选；旧产物无共同 runId 时必须路由人见证整组哈希。LLM/视觉只能提议，人签与晋升两次显式决定，绝不自动污染 registry。
 - **冻结断言只读**：人签后改断言 = Test Ratchet 判红，别去改。

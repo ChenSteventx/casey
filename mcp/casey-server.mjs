@@ -100,8 +100,8 @@ export const TOOLS = [
   {
     name: 'casey_replay',
     description: '相3 确定性回放（零 LLM）：events + 已签 expected + profile → 真浏览器回放 --sut → 三轴 axes.json（+可选录屏/回放历史/回放指标）。未签契约/caseId 不符 exit 65 零 axes。',
-    inputSchema: { type: 'object', required: ['events', 'sut', 'expected', 'profile', 'out'], properties: { events: { type: 'string' }, sut: { type: 'string' }, expected: { type: 'string' }, profile: { type: 'string' }, out: { type: 'string' }, loginBootstrap: { type: 'boolean' }, runHistory: { type: 'string' }, runMetrics: { type: 'string' }, runId: { type: 'string' }, videoDir: { type: 'string' } } },
-    toArgs: (a) => ['replay', ...flag('events', a.events), ...flag('sut', a.sut), ...flag('expected', a.expected), ...flag('profile', a.profile), ...flag('out', a.out), ...boolFlag('login-bootstrap', a.loginBootstrap), ...flag('run-history', a.runHistory), ...flag('run-metrics', a.runMetrics), ...flag('run-id', a.runId), ...flag('video-dir', a.videoDir)],
+    inputSchema: { type: 'object', required: ['events', 'sut', 'expected', 'profile', 'out'], properties: { events: { type: 'string' }, sut: { type: 'string' }, expected: { type: 'string' }, profile: { type: 'string' }, out: { type: 'string' }, loginBootstrap: { type: 'boolean' }, runHistory: { type: 'string' }, runMetrics: { type: 'string' }, runId: { type: 'string' }, videoDir: { type: 'string' }, uniqueName: { type: 'string' } } },
+    toArgs: (a) => ['replay', ...flag('events', a.events), ...flag('sut', a.sut), ...flag('expected', a.expected), ...flag('profile', a.profile), ...flag('out', a.out), ...boolFlag('login-bootstrap', a.loginBootstrap), ...flag('run-history', a.runHistory), ...flag('run-metrics', a.runMetrics), ...flag('run-id', a.runId), ...flag('video-dir', a.videoDir), ...flag('unique-name', a.uniqueName)],
   },
   {
     name: 'casey_cef_replay',
@@ -124,8 +124,8 @@ export const TOOLS = [
   {
     name: 'casey_run',
     description: '正式交付第一段：真实回放 → 裁定 → 待视觉报告 + run-binding，产物落 --run-dir。按设计固定以未正式完成退出；代理观看同次录像后须由 skill 转调 CLI-only finalize-run 零 SUT 收口，只有全 PASS + 录像完整 + 视觉一致才 GREEN。',
-    inputSchema: { type: 'object', required: ['caseId', 'sut', 'events', 'expected', 'profile'], properties: { caseId: { type: 'string' }, sut: { type: 'string' }, events: { type: 'string' }, expected: { type: 'string' }, profile: { type: 'string' }, observed: { type: 'string' }, generatedAt: { type: 'string' }, caseMeta: { type: 'string' }, runDir: { type: 'string' }, loginBootstrap: { type: 'boolean' }, noVideo: { type: 'boolean' } } },
-    toArgs: (a) => ['run', ...(a.caseId ? [a.caseId] : []), ...flag('sut', a.sut), ...flag('events', a.events), ...flag('expected', a.expected), ...flag('profile', a.profile), ...flag('observed', a.observed), ...flag('generated-at', a.generatedAt), ...flag('case-meta', a.caseMeta), ...flag('run-dir', a.runDir), ...boolFlag('login-bootstrap', a.loginBootstrap), ...boolFlag('no-video', a.noVideo)],
+    inputSchema: { type: 'object', required: ['caseId', 'sut', 'events', 'expected', 'profile'], properties: { caseId: { type: 'string' }, sut: { type: 'string' }, events: { type: 'string' }, expected: { type: 'string' }, profile: { type: 'string' }, observed: { type: 'string' }, generatedAt: { type: 'string' }, caseMeta: { type: 'string' }, runDir: { type: 'string' }, loginBootstrap: { type: 'boolean' }, noVideo: { type: 'boolean' }, uniqueName: { type: 'string' } } },
+    toArgs: (a) => ['run', ...(a.caseId ? [a.caseId] : []), ...flag('sut', a.sut), ...flag('events', a.events), ...flag('expected', a.expected), ...flag('profile', a.profile), ...flag('observed', a.observed), ...flag('generated-at', a.generatedAt), ...flag('case-meta', a.caseMeta), ...flag('run-dir', a.runDir), ...boolFlag('login-bootstrap', a.loginBootstrap), ...boolFlag('no-video', a.noVideo), ...flag('unique-name', a.uniqueName)],
   },
 ];
 const TOOL_BY_NAME = new Map(TOOLS.map((t) => [t.name, t]));

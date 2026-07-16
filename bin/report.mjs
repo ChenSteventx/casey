@@ -45,8 +45,11 @@ function aggregateMain(opts) {
     try { files = readdirSync(sub); } catch { continue; }
     for (const f of files.sort()) {
       if (!f.endsWith('.report.json')) continue;
+      if (!/^(?!\.+$)[A-Za-z0-9._-]+$/.test(name) || !/^(?!\.+$)[A-Za-z0-9._-]+$/.test(f)) {
+        console.error('report --aggregate: 旁车路径非法（内容不回显），fail-closed');
+        process.exit(1);
+      }
       try {
-        if (!/^(?!\.+$)[A-Za-z0-9._-]+$/.test(name) || !/^(?!\.+$)[A-Za-z0-9._-]+$/.test(f)) throw new Error('unsafe report path');
         const report = JSON.parse(readFileSync(join(sub, f), 'utf8'));
         report.reportHref = `${name}/${f.replace(/\.report\.json$/, '.report.html')}`;
         reports.push(report);
