@@ -1,0 +1,29 @@
+{
+  "id": "tc_wf_node_script",
+  "name": "工作流脚本转换节点写入与精确回读",
+  "category": "normal",
+  "steps": [
+    { "atom": "login", "params": {} },
+    { "atom": "nav.workflowManagement", "params": {} },
+    {
+      "atom": "workflow.create",
+      "params": {
+        "name": "atl_{{uniqueName}}",
+        "desc": "Casey 脚本转换节点真机验收，可删除",
+        "category": "测试分类"
+      }
+    },
+    { "atom": "workflow.addNode", "params": { "nodeName": "脚本转换", "x": 700, "y": 280 } },
+    { "atom": "workflow.openNode", "params": { "label": "脚本转换" } },
+    {
+      "atom": "workflow.setNodeField",
+      "params": { "placeholder": "请输入python脚本", "exact": true, "value": "result = {'casey': 1}" }
+    },
+    {
+      "atom": "workflow.assertNodeFieldValue",
+      "params": { "nodeName": "脚本转换", "placeholder": "请输入python脚本", "exact": true, "value": "result = {'casey': 1}" }
+    },
+    { "atom": "workflow.closeDrawer", "params": {} },
+    { "atom": "workflow.deleteByName", "params": { "name": "atl_{{uniqueName}}" } }
+  ]
+}

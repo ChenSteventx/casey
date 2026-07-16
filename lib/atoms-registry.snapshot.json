@@ -336,8 +336,13 @@
       "post": "（给了 option 则）该下拉已选中含 option 的项。"
     },
     "workflow.assertNodeFieldValue": {
-      "desc": "L1：断言节点配置抽屉里某字段(按 placeholder 定位 input/textarea)的 value 含期望值——用于验证 setNodeField/脚本等填值生效(value 非文本节点，assert.textVisible 看不到)。",
+      "desc": "L1：断言节点配置抽屉里某字段(按 placeholder 定位 input/textarea)的 value 精确等于期望值——用于验证 setNodeField/脚本等填值完整生效(value 非文本节点，assert.textVisible 看不到)。",
       "params": {
+        "nodeName": {
+          "type": "string",
+          "required": true,
+          "desc": "字段所属节点标题，如 脚本转换；与动作回读一并冻结，防同 placeholder 跨节点串绑。"
+        },
         "placeholder": {
           "type": "string",
           "required": true,
@@ -346,13 +351,18 @@
         "value": {
           "type": "string",
           "required": true,
-          "desc": "期望 value 含的子串。"
+          "desc": "期望的完整 value；严格精确相等，不接受子串或尾缀。"
+        },
+        "exact": {
+          "type": "boolean",
+          "required": false,
+          "desc": "placeholder 是否精确匹配；缺省 false，须与 workflow.setNodeField 同值。"
         }
       },
       "requires": [
         "节点抽屉已开"
       ],
-      "post": "该字段 value 含期望子串。"
+      "post": "该字段 value 精确等于期望值。"
     },
     "workflow.assertEchoByVar": {
       "desc": "L1：断言节点配置抽屉「输出」区里某个输出变量行(按变量名匹配 .request-params-item 第一个 input 的 value)的「回显」开关状态。用于『回显优化』用例：模型/智能体节点默认输出 answer(回显ON) + jsons(回显OFF)——比 assert.switchState(只匹配首个含「回显」的行)更精确，能分别断 answer/jsons。需先 workflow.openNode 打开该节点。",
