@@ -23,6 +23,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { PROJECT_ROOT, CASES_DIR, NODE_EXE, kit, casePaths, isSafeCaseId } from '../lib/paths.mjs';
+import { summarizeRunVerdict } from '../lib/run-outcome.mjs';
 
 const C = { reset: '\x1b[0m', cyan: '\x1b[36m', gray: '\x1b[90m', yellow: '\x1b[33m', green: '\x1b[32m', red: '\x1b[31m', bold: '\x1b[1m' };
 const col = (c, s) => `${c}${s}${C.reset}`;
@@ -117,7 +118,7 @@ function runPipeline(pos, opts) {
       for (const m of missing) console.error(`  - ${m}`);
     }
     console.error('LLM 前段(相0-2 ingest/compile/draft/sign)未建、route:human；确定性尾段用法：');
-    console.error('  casey run <caseId> --sut <本地基址> [--events <f>] [--expected <f>] [--profile <f>] [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>] [--login-bootstrap] [--no-video]');
+    console.error('  casey run <caseId> --sut <本地基址> [--events <f>] [--expected <f>] [--profile <f>] [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>] [--unique-name <token>] [--login-bootstrap] [--no-video]');
     console.error('  缺文件旗标时按 cases/<caseId>/events.json、expected.frozen.json、profile.json、observed-<caseId>.json、testcase.json 约定解析。');
     console.error('  串 相3回放 → 相4裁定 → 报表模型装配 → 相6报告，落 runs/<caseId>/<runId>/。');
     process.exit(64);
@@ -150,6 +151,7 @@ function runPipeline(pos, opts) {
   // （登录期不入镜由 replay 双 page 舞步结构保证）。仅诊断附件，绝不进相4 裁定（M7）。
   stage('相3 replay 回放', bin('replay.mjs'), ['--events', eventsPath, '--sut', sut, '--expected', expectedPath, '--profile', profilePath, '--out', axesOut,
     '--run-history', path.join(runDir, 'run-history.jsonl'), '--run-metrics', path.join(runDir, 'run-metrics.json'), '--run-id', path.basename(runDir),
+    ...(typeof opts['unique-name'] === 'string' ? ['--unique-name', opts['unique-name']] : []),
     ...(opts['login-bootstrap'] ? ['--login-bootstrap'] : []),
     ...(opts['no-video'] ? [] : ['--video-dir', runDir])]);
   stage('相4 verdict 裁定', bin('verdict.mjs'), ['--axes', axesOut, '--out', verdictOut]);
@@ -166,10 +168,15 @@ function runPipeline(pos, opts) {
   stage('相6 report 报告', bin('report.mjs'), ['--model', modelOut, '--out', runDir,
     '--run-history', path.join(runDir, 'run-history.jsonl'), '--run-metrics', path.join(runDir, 'run-metrics.json')]);
 
-  console.log(col(C.green, `\n[run] 端到端（确定性尾段）GREEN → ${runDir}`));
   const videoNote = fs.existsSync(path.join(runDir, 'video.webm')) ? ' / video.webm / video.json' : '';
+  let outcome;
+  try { outcome = summarizeRunVerdict(JSON.parse(fs.readFileSync(verdictOut, 'utf8'))); }
+  catch { outcome = summarizeRunVerdict(null); }
+  const summary = `PASS ${outcome.counts.PASS} / SUT_DEFECT ${outcome.counts.SUT_DEFECT} / HARNESS_ERROR ${outcome.counts.HARNESS_ERROR} / NEEDS_HUMAN ${outcome.counts.NEEDS_HUMAN}`;
+  if (outcome.allPass) console.log(col(C.green, `\n[run] 裁定全 PASS → ${runDir}`));
+  else console.error(col(C.red, `\n[run] 报告已生成，但裁定非全 PASS → ${summary} → ${runDir}`));
   console.log(col(C.gray, `  axes.json / verdict.json / report-model.json / run-history.jsonl / run-metrics.json / ${caseId}.report.{html,md,json}${videoNote}`));
-  process.exit(0);
+  process.exit(outcome.allPass ? 0 : 1);
 }
 
 // ── selftest tier1：hermetic 链路自检 ─────────────────────────
@@ -228,7 +235,7 @@ function help() {
   console.log(`${col(C.bold, 'casey')} —— 文本用例 → 测试报告 自动化测试（loop engineering 驱动）
 
 ${col(C.cyan, '端到端')}
-  casey run <caseId> --sut <本地基址> [--events <f> --expected <f> --profile <f>] [--run-dir <d> --login-bootstrap --no-video]
+  casey run <caseId> --sut <本地基址> [--events <f> --expected <f> --profile <f>] [--run-dir <d> --unique-name <token> --login-bootstrap --no-video]
                                           相3-4-6 编排：回放→裁定→装配→报告；缺文件旗标时按 cases/<caseId>/ 约定解析
                                           --sut 必填，只喂隧道回环基址（site.json 的 devProxyUrl）；真目标地址绝不进命令行（护栏 #7）
 

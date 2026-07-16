@@ -44,6 +44,7 @@ function parseArgs(argv) {
     else if (a === '--run-metrics') o.runMetrics = argv[++i];
     else if (a === '--run-id') o.runId = argv[++i];
     else if (a === '--video-dir') o.videoDir = argv[++i];
+    else if (a === '--unique-name') o.uniqueName = argv[++i];
     // regress-promptset：--prompt-text 注入 ctx.promptText（回填冻结 flow 的 {{promptText}} 提示槽）；
     // --soft-expect 非签署软期望通道（强制 soft:true 并入按 intent 断言表，绝不进裁定、不过 sign-gate）。
     else if (a === '--prompt-text') o.promptText = argv[++i];
@@ -158,6 +159,11 @@ async function main() {
   for (const k of ['events', 'sut', 'expected', 'profile', 'out']) {
     if (!args[k]) { console.error(`replay: 缺 --${k}`); process.exit(64); }
   }
+  const uniqueName = args.uniqueName == null ? 'r1' : String(args.uniqueName);
+  if (!/^[a-z0-9][a-z0-9_-]{0,63}$/i.test(uniqueName)) {
+    console.error('replay: --unique-name 非法（须为 1-64 位字母数字/下划线/连字符，且以字母数字开头）');
+    process.exit(64);
+  }
   // 看门狗 120s（同 compile 先例；chiefcomplaint-smoke D2：chat 用例含 LLM 流式等待，75s 偏紧）。fail-safe 语义不变。
   // M5 尽力收口（codex R1-F1 采信）：清扫先行（不依赖 close 成败）→ 尽力关 → 关后补扫，4s 兜底强退，
   // 退出码语义不变（仍 1）。REPLAY_WATCHDOG_MS 仅测试缝（golden 钉清扫语义用），缺省 120s 一字不变。
@@ -207,7 +213,7 @@ async function main() {
   // baseUrl：G6 分岔三取 C——events url 走 {{baseUrl}} 占位符，回放期回填 --sut（对完整 URL 的旧 fixture 是 no-op）。
   // promptText（regress-promptset）：被测参数经 --prompt-text 注入，回填 fill 步的 {{promptText}} 提示槽（护栏 #6
   // 冻占位符不冻字面量）；RH_PLACEHOLDER 已覆盖 {{promptText}}——回放历史始终显占位符、绝不落真被测参数（护栏 #7）。
-  const ctx = { uniqueName: 'r1', baseUrl: sut, ...(args.promptText != null ? { promptText: String(args.promptText) } : {}) };
+  const ctx = { uniqueName, baseUrl: sut, ...(args.promptText != null ? { promptText: String(args.promptText) } : {}) };
 
   // 登录预备动作前置（GRILL 人签取 A）：凭据/站点配置在开浏览器前加载，任一失败 exit 65（fail-closed）。
   // 登录入口 = --sut 基址 + site.target.startUrl 路径段（真机实采教训：裸基址不渲染登录表单，SPA 判据
