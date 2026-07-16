@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-observation-sidecar（full）：建立闭合、未签、不可回放的身份观察旁车，与示教录制包做 capture/observation 字节 sha256 联合绑定，并提供 intake 换包/软链/未知字段 fail-closed 联合复核基础；缺 code 保持 pending。",
+  "specPath": "docs/plans/teachin-observation-sidecar/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-observation-sidecar.zero-sut.golden.mjs": "2f4e51ab6deb54d4586ca42b5f06e541d6684eeed6cfcb8de91ca92ddea25774"
+  },
+  "observability": [
+    {
+      "dimension": "workflow/agent 在真实 AI 中台上从同一物理记录读取 name+code+platformId，以及其它业务对象 code/parent 的存在性，必须联网真机只读 spike；未证明前保持 pending/UNVERIFIED。",
+      "route": "human"
+    },
+    {
+      "dimension": "bin/record.mjs 页面 adapter 和双文件原子写盘必须在真实浏览器通道验收；本 story 不运行浏览器、SUT、fake 或 fixture。",
+      "route": "human"
+    },
+    {
+      "dimension": "bin/intake.mjs 后续须用 lstat/open/fstat 产出可信 path facts，将两个 hash 和 bundleSha256 同行追加到 intake 台账，并由 distill 消费前重新复核；本 story 只交付纯函数内核与台账投影。",
+      "route": "machine"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-observation-sidecar-core",
+      "desc": "身份观察旁车闭合 schema、缺 code pending、URL/凭据/未知字段拒绝、capture v2 旁车字节 hash 引用、intake 两 hash + bundle hash 联合复核，以及软链/非常规文件/读前后换身份/换包 fail-closed；旁车始终 signed=false/replayReady=false。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-observation-sidecar.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    }
+  ]
+}
