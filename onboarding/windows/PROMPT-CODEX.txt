@@ -1,0 +1,17 @@
+你现在负责在 64 位 Windows 上完整装载 Casey（测易），并把 Codex 配置为它的自然语言操作入口。以系统自带 Windows PowerShell 5.1 为基线；PowerShell 7 只能作为可选项，绝不能要求安装或改用 pwsh。
+
+请直接完成能安全自动完成的工作，不要只给我一串命令。需要系统安装权限、隐藏输入或真实环境信息时再暂停说明。按下面顺序执行：
+
+1. 检查 64 位 Git、Node.js 22.12 或更高版本、npm 和联网条件。缺少时使用 Windows 官方或组织批准的安装方式补齐；不要运行远程 Invoke-Expression，不要永久放宽执行策略。安装后重新检测实际版本。
+2. 从 https://github.com/ChenSteventx/casey.git 克隆或更新 Casey，放在本机非共享、非公共同步目录，并进入仓根。
+3. 完整读取仓根 AGENTS.md、README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md 和 .claude/skills/casey/SKILL.md，以这些文件为执行边界。
+4. 正确处理 Codex 发现边界：不要假定 Codex 会自动加载 .claude/skills。若当前 Codex 支持仓库 plugin，使用官方 plugin 安装流程安装仓内 .codex-plugin/plugin.json；否则使用 Codex 官方 skill installer 安装仓内 skills/casey。skills/casey 只是薄路由，任何 Casey 动作仍必须完整读取仓根 .claude/skills/casey/SKILL.md。只有 Codex 重新发现到入口后才能说 skill/plugin 已安装，不能把“文件存在”冒充安装成功。
+5. 在 Windows PowerShell 5.1 中运行 scripts/install.ps1，完成依赖、Windows Chromium 和零 SUT 安装检验。不得启动 fixture、fake-SUT、casey demo 或未审计整包 gate。末尾 REAL_SUT NOT_VERIFIED 是预期状态，不是测试失败或真机通过。
+6. 用 scripts/casey.ps1 mcp-config -Agent codex 生成当前 Windows node.exe 与仓库绝对路径对应的配置，安全合并到当前用户 Codex 配置，保留原有 MCP；重启或刷新 Codex 后实际验证 Casey MCP 工具可发现。不要手抄、猜测或混入 WSL 路径。
+7. 通过本机隐藏输入配置 AI 中台账户；如果当前界面不能提供隐藏 TTY，就暂停并让我只在本机安全终端输入。绝不让我把账号、口令、Cookie 或 token 粘贴到聊天、命令参数、日志或报告。真目标地址只允许写入仓根 gitignored 的 site.json，不能出现在 shell 历史、MCP 参数或回复中。
+8. 只报告本机安装、Codex 入口、MCP、账户形状和回环代理分别处于什么状态。LOCAL_PROXY_READY、REAL_SUT NOT_VERIFIED 和 REAL_SUT_HTTP_NOT_VERIFIED 都不是测试 PASS。没有 Windows 网络侧和经回环代理到真站的两段真实 HTTP 证据，不要开始正式回放。
+9. 完成后教我只用自然语言操作 Casey，不要求我复制底层 CLI 参数。给出三个例句：安全配置账户、运行一个已签用例、自动编译失败后转人工示教。
+
+以后执行测试时必须遵守：只连接联网的真实 SUT，不得用假被测系统代替；新用例必须先草拟并由人签署；每个用例必须生成独立 HTML，包含已签自然语言用例、动作与断言原子、同次录屏和附件；正式 verdict 只能由零 LLM 的确定性裁定产生，视觉只能复核不能改判；示教录制包、蒸馏候选和 CEF 机械回放都不能冒充正式回放或 PASS；任何缺失能力、exit 3 诚实桩、真机证据不足或工具不兼容都必须如实报告，不得静默绕过。
+
+最后给我一份简短结果：已完成项、需要我安全参与的项、尚未验证项，以及下一句可直接对 Codex 说的自然语言操作。不要回显秘密、真目标或不必要的本机绝对路径。

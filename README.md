@@ -4,6 +4,19 @@ LLM 驱动的「文本用例 → 测试报告」自动化测试系统：一段�
 编译成确定性可回放 spec → 确定性回放（录屏 + 抓输出）→ 零 LLM 多态裁定出严格结论 → 自包含测试报告。
 内核纪律：**确定性是默认、LLM 是手术刀、完成是退出码、裁判零 LLM**（详见 `docs/adr/`）。
 
+## 最快上手：先把提示词交给 agent
+
+先选择 Casey 实际运行的 OS，再把对应提示词全文复制给 agent；它会负责安装运行环境和本体、接入正确的 skill / 仓库指令与 MCP、执行零 SUT 安装检验，并用隐藏输入引导账户配置。只有无法使用 agent 或需要排障时，才照同目录人读说明的后半部手工安装。
+
+| Casey 运行面 | Codex | Claude Code | pi.dev / WorkBuddy / CodeBuddy / Qoder / Cursor / Grok Build 等 |
+|---|---|---|---|
+| Windows 原生 | [`onboarding/windows/PROMPT-CODEX.txt`](onboarding/windows/PROMPT-CODEX.txt) | [`onboarding/windows/PROMPT-CLAUDE-CODE.txt`](onboarding/windows/PROMPT-CLAUDE-CODE.txt) | [`onboarding/windows/PROMPT-GENERIC-AGENT.txt`](onboarding/windows/PROMPT-GENERIC-AGENT.txt) |
+| WSL2 | [`onboarding/wsl/PROMPT-CODEX.txt`](onboarding/wsl/PROMPT-CODEX.txt) | [`onboarding/wsl/PROMPT-CLAUDE-CODE.txt`](onboarding/wsl/PROMPT-CLAUDE-CODE.txt) | [`onboarding/wsl/PROMPT-GENERIC-AGENT.txt`](onboarding/wsl/PROMPT-GENERIC-AGENT.txt) |
+| Linux | [`onboarding/linux/PROMPT-CODEX.txt`](onboarding/linux/PROMPT-CODEX.txt) | [`onboarding/linux/PROMPT-CLAUDE-CODE.txt`](onboarding/linux/PROMPT-CLAUDE-CODE.txt) | [`onboarding/linux/PROMPT-GENERIC-AGENT.txt`](onboarding/linux/PROMPT-GENERIC-AGENT.txt) |
+| macOS | [`onboarding/macos/PROMPT-CODEX.txt`](onboarding/macos/PROMPT-CODEX.txt) | [`onboarding/macos/PROMPT-CLAUDE-CODE.txt`](onboarding/macos/PROMPT-CLAUDE-CODE.txt) | [`onboarding/macos/PROMPT-GENERIC-AGENT.txt`](onboarding/macos/PROMPT-GENERIC-AGENT.txt) |
+
+四套给人读的安装与操作说明、选择规则和能力边界见 [`onboarding/`](onboarding/README.md)。Claude Code 提示词固定要求选择 Fable 模型与 high 推理强度。Windows 原生以系统自带 Windows PowerShell 5.1 为基线，PowerShell 7 仅可选。
+
 ## 三面统一标识符 `casey`
 
 | 面 | 入口 | 用法 |
@@ -16,9 +29,9 @@ LLM 驱动的「文本用例 → 测试报告」自动化测试系统：一段�
 已有命令面；`casey heal` 仍是诚实桩（exit 3），示教蒸馏 v1 也仍把全部步骤交人处理。
 当前能力与限制见 [`docs/USAGE.md`](docs/USAGE.md)。
 
-## 安装
+## 手工安装（agent 不可用或排障时）
 
-Windows 11 原生 `PowerShell`（Windows PowerShell 5.1 或 PowerShell 7）已有专用安装面：
+优先使用上面的 OS + agent 提示词。需要人工兜底时，Windows 11 原生以系统自带 Windows PowerShell 5.1 为基线；PowerShell 7 仅可选，不是前置条件：
 
 ```powershell
 git clone https://github.com/ChenSteventx/casey.git casey

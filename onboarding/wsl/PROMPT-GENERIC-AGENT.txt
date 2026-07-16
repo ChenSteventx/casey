@@ -1,0 +1,16 @@
+你现在负责在 Windows 11 的 WSL2 Linux 发行版中完整装载 Casey（测易），并把当前通用编程 agent 配置为自然语言操作入口。本提示词适用于 pi.dev、WorkBuddy、CodeBuddy、Qoder、Cursor、Grok Build 等，但不能假定任何品牌自动支持 Claude Code skill。Casey、Node.js、Linux Chromium、agent 配置和 MCP 必须全部位于 WSL 侧；Windows 只承担真实目标网络侧转发。
+
+请直接完成能安全自动完成的工作，不要只给我一串命令。需要 Windows 管理员启用 WSL、系统包权限、隐藏输入或真实环境信息时再暂停说明。按下面顺序执行：
+
+1. 确认当前确实是 WSL2 和具体发行版。若 WSL2 尚未启用，只提供 Windows 官方启用步骤并等我完成重启。检查 WSL 内的 Git、Node.js 22.12 或更高版本、npm、fontconfig 和联网条件，缺少时使用该发行版官方或组织批准的包管理方式补齐。不要运行来源不明的 curl | shell。
+2. 把 Casey 克隆或更新到 WSL 原生 Linux 文件系统中的非共享目录，例如用户家目录；仓库地址是 https://github.com/ChenSteventx/casey.git。
+3. 先完整读取仓根 AGENTS.md，再读 README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md 和 .claude/skills/casey/SKILL.md。把 AGENTS.md 与权威 skill 当作操作契约，但不要把“读过文件”冒充当前 agent 已安装 skill。
+4. 查明当前 agent 实际支持的仓库指令、skill 和 stdio MCP 机制。若支持 skill，按该产品官方机制接入；若不支持，就用 AGENTS.md 作为持久入口。必须在 WSL 内用 mcp-config --agent codex 取得实际 stdio command / args，再只把配置外壳转换为当前 agent 的官方 MCP 格式；不能猜改 node 或 server 路径。刷新后实际枚举工具；产品不支持 stdio MCP 或验证失败时，如实报告能力缺口。
+5. 在 WSL 内安装 npm 依赖、Playwright Chromium 及 Linux 系统依赖，确认 fc-list :lang=zh 有中文字体，再运行 npm run verify:install。不得启动 fixture、fake-SUT、casey demo 或未审计整包 gate。REAL_SUT NOT_VERIFIED 不是测试 PASS。
+6. 通过 WSL 本机隐藏输入配置 AI 中台账户；不能提供隐藏 TTY 就暂停让我在 WSL 安全终端输入。秘密不得进入聊天、argv、日志或报告。真目标只写 WSL 仓根 gitignored 的 site.json，测试入口只使用其中回环基址。
+7. 真机前按“先 WSL 监听端、后 Windows 转发端”启动反向隧道，并取得 Windows 网络侧到真站、WSL 经回环到真站的两段真实 HTTP 证据。只看到端口监听不能回放。
+8. 完成后教我只用自然语言操作 Casey，并给出安全配置账户、运行已签用例、失败后转人工示教三个例句。
+
+以后执行测试时必须遵守：只连接联网的真实 SUT；新用例须人签；每例独立 HTML 包含已签自然语言用例、动作与断言原子、同次录屏和附件；正式 verdict 只来自零 LLM 确定性裁定，视觉不能改判；录制、蒸馏候选和 CEF 机械回放不能冒充正式回放或 PASS；缺能力、exit 3、真机证据不足或不兼容必须如实报告。
+
+最后只给简短状态：已完成项、需要我安全参与的项、尚未验证项和下一句自然语言操作。不要回显秘密、真目标或不必要的绝对路径。

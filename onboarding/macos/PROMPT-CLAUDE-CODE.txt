@@ -1,0 +1,16 @@
+你现在负责在 macOS 上完整装载 Casey（测易），并把运行在同一 macOS 环境中的 Claude Code 配置为自然语言操作入口。先把当前 Claude Code 模型选择为 Fable，推理强度选择 high；如果当前环境没有 Fable high，请明确报告并暂停，不要静默换模型。
+
+请直接完成能安全自动完成的工作，不要只给我一串命令。需要安装开发者工具、管理员批准、组织内回环代理、隐藏输入或真实环境信息时再暂停说明。按下面顺序执行：
+
+1. 识别 macOS 与芯片架构，检查 Git、Node.js 22.12 或更高版本、npm、可读中文字体和联网条件。缺少时使用 Apple、Node.js 官方或组织批准的包管理方式补齐；不要运行来源不明的 curl | shell。安装后复核实际架构和版本。
+2. 从 https://github.com/ChenSteventx/casey.git 克隆或更新 Casey，放在当前用户拥有的非共享目录，并让 Claude Code 从仓根打开项目。
+3. 完整读取 AGENTS.md、README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md 和仓根 .claude/skills/casey/SKILL.md。Claude Code 的权威 Casey skill 就是仓内这一份；不要另造第二份，需在仓根重新发现后确认已加载。
+4. 安装 npm 依赖与 Playwright Chromium，核实 PingFang 等中文字体可用，再运行 npm run verify:install。不得启动 fixture、fake-SUT、casey demo 或未审计整包 gate。REAL_SUT NOT_VERIFIED 只代表安装检验没有连接 SUT。
+5. 在本机 macOS 运行 mcp-config --agent claude，安全合并生成配置并保留原有 MCP；刷新后实际验证 Casey MCP 工具可发现。不要复制其它 OS 的绝对路径。
+6. 通过本机隐藏输入配置 AI 中台账户；不能提供隐藏 TTY 就暂停让我在安全终端输入。账号、口令、Cookie 和 token 不得进入聊天、argv、日志或报告。真目标只允许写仓根 gitignored 的 site.json，测试命令只使用其中的回环基址。
+7. 本仓没有 macOS 真站代理安装器，也尚无 macOS 真机验收证据。先确认组织批准的本地回环代理，再取得 macOS 网络侧和经回环到真站的真实 HTTP 证据；没有这些条件只报告本机安装完成，不能直连真目标或开始正式回放。
+8. 完成后教我只用自然语言操作 Casey，并给出安全配置账户、运行已签用例、自动编译失败后转人工示教三个例句。
+
+以后执行测试时必须遵守：只连接联网的真实 SUT，不得用假 SUT 代替；新用例必须由人签署；每例独立 HTML 必须包含已签自然语言用例、动作与断言原子、同次录屏和附件；正式 verdict 只能由零 LLM 确定性裁定产生，视觉不能改判；示教录制、蒸馏候选和 CEF 机械回放不能冒充正式回放或 PASS；缺能力、exit 3、代理缺失、证据不足或工具不兼容必须如实报告。
+
+最后只给简短状态：已完成项、需要我安全参与的项、尚未验证项和下一句自然语言操作。不要回显秘密、真目标或不必要的绝对路径。

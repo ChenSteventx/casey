@@ -1,0 +1,16 @@
+你现在负责在 64 位 Windows 上完整装载 Casey（测易），并把当前通用编程 agent 配置为它的自然语言操作入口。本提示词适用于 pi.dev、WorkBuddy、CodeBuddy、Qoder、Cursor、Grok Build 等，但不能假定任何品牌自动支持 Claude Code skill。以系统自带 Windows PowerShell 5.1 为基线；PowerShell 7 只能作为可选项，绝不能要求安装或改用 pwsh。
+
+请直接完成能安全自动完成的工作，不要只给我一串命令。需要系统安装权限、隐藏输入或真实环境信息时再暂停说明。按下面顺序执行：
+
+1. 检查 64 位 Git、Node.js 22.12 或更高版本、npm 和联网条件。缺少时使用 Windows 官方或组织批准的安装方式补齐；不要运行远程 Invoke-Expression，不要永久放宽执行策略。
+2. 从 https://github.com/ChenSteventx/casey.git 克隆或更新 Casey，放在本机非共享、非公共同步目录，并进入仓根。
+3. 先完整读取仓根 AGENTS.md，再读 README.md、CONTEXT.md、docs/INSTALL.md、docs/USAGE.md 和 .claude/skills/casey/SKILL.md。把 AGENTS.md 与权威 SKILL.md 当作操作契约，但不要把“读过 skill 文件”冒充当前 agent 已安装 skill。
+4. 查明当前 agent 实际支持的仓库指令、skill 和 stdio MCP 机制。若支持 skill，按该产品官方机制接入；若不支持，就用 AGENTS.md 作为持久入口，不伪造 skill 支持。无论哪种情况都必须挂载 Casey MCP：用 scripts/casey.ps1 mcp-config -Agent codex 生成当前 Windows 运行面的 stdio 命令与参数来源，再按当前 agent 官方 MCP 配置格式转换并保存；只能转换配置外壳，不能猜改 node.exe 或 server 路径。重启或刷新后实际枚举 Casey 工具。当前 agent 不支持 stdio MCP 或验证失败时，明确报告能力缺口，不能声称已经挂载。
+5. 在 Windows PowerShell 5.1 中运行 scripts/install.ps1，完成依赖、Windows Chromium 和零 SUT 安装检验。不得启动 fixture、fake-SUT、casey demo 或未审计整包 gate。末尾 REAL_SUT NOT_VERIFIED 是预期状态，不是测试失败或真机通过。
+6. 通过本机隐藏输入配置 AI 中台账户；如果当前界面不能提供隐藏 TTY，就暂停并让我只在本机安全终端输入。绝不让我把账号、口令、Cookie 或 token 粘贴到聊天、命令参数、日志或报告。真目标地址只允许写入仓根 gitignored 的 site.json，不能出现在 shell 历史、MCP 参数或回复中。
+7. 只报告本机安装、agent 指令入口、MCP、账户形状和回环代理分别处于什么状态。LOCAL_PROXY_READY、REAL_SUT NOT_VERIFIED 和 REAL_SUT_HTTP_NOT_VERIFIED 都不是测试 PASS。没有 Windows 网络侧和经回环代理到真站的两段真实 HTTP 证据，不要开始正式回放。
+8. 完成后教我只用自然语言操作 Casey，不要求我复制底层 CLI 参数。给出三个例句：安全配置账户、运行一个已签用例、自动编译失败后转人工示教。
+
+以后执行测试时必须遵守：只连接联网的真实 SUT，不得用假被测系统代替；新用例必须先草拟并由人签署；每个用例必须生成独立 HTML，包含已签自然语言用例、动作与断言原子、同次录屏和附件；正式 verdict 只能由零 LLM 的确定性裁定产生，视觉只能复核不能改判；示教录制包、蒸馏候选和 CEF 机械回放都不能冒充正式回放或 PASS；任何缺失能力、exit 3 诚实桩、真机证据不足或工具不兼容都必须如实报告，不得静默绕过。
+
+最后给我一份简短结果：已完成项、需要我安全参与的项、尚未验证项，以及下一句可直接对当前 agent 说的自然语言操作。不要回显秘密、真目标或不必要的本机绝对路径。

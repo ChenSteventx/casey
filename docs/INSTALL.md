@@ -2,11 +2,13 @@
 
 本页面向从公开源码仓库安装的操作员。安装检验只检查本机运行时、浏览器和 `CLI` / `MCP` / `skill` 三面，不启动、连接或回放任何假被测系统，也不把“安装通过”冒充“真实环境可用”。
 
+推荐先进入 [`../onboarding/`](../onboarding/README.md)，按实际 OS 选择 Codex、Claude Code 或通用 agent 提示词，让 agent 自动完成环境、本体、入口与 MCP 配置；各 OS 人读说明的后半部才是人工安装与操作兜底。本页保留完整的共同事实与验收边界。
+
 ## 支持矩阵
 
 | 环境 | 安装与本机检验 | 真实环境回放 | 当前限制 |
 |---|---|---|---|
-| Windows 11 原生 `PowerShell` | 支持 Windows PowerShell 5.1 / PowerShell 7 安装、检验和操作 | 代码与零 SUT 操作面已验；真实回放待完整现场 UAT | `LOCAL_PROXY_READY` 不等于真站可达；未有真实 HTTP + 报告证据前保持 `route:human` |
+| Windows 11 原生 `PowerShell` | 以系统自带 Windows PowerShell 5.1 为基线；PowerShell 7 仅可选 | 代码与零 SUT 操作面已验；真实回放待完整现场 UAT | `LOCAL_PROXY_READY` 不等于真站可达；未有真实 HTTP + 报告证据前保持 `route:human` |
 | Windows 11 + `WSL2` | 支持，Casey 命令在 `WSL` 内执行 | AI 中台已有完整真实 UAT 的路径 | Windows 承担真站网络侧转发，Node.js / Chromium / `MCP` 留在 `WSL` |
 | Linux | 支持 | 具备组织内回环代理时可接真实 web 目标 | 本仓没有通用 Linux 真站代理安装器；未在公开环境完成真机验收 |
 | macOS | 支持源码安装与静态检验 | 具备组织内回环代理时才可接真实 web 目标 | 当前没有 macOS 真机验收证据 |
@@ -30,7 +32,7 @@ npm install
 
 ### Windows 11 原生 `PowerShell`
 
-前置为 64 位 Windows、64 位 Git、Node.js ≥ 22.12，以及可访问 npm 与 Playwright 浏览器下载源的网络。在 Windows PowerShell 5.1 或 PowerShell 7 中运行：
+前置为 64 位 Windows、64 位 Git、Node.js ≥ 22.12，以及可访问 npm 与 Playwright 浏览器下载源的网络。使用系统自带 Windows PowerShell 5.1 即可；已经安装的 PowerShell 7 也可运行，但不是前置条件：
 
 ```powershell
 git clone https://github.com/ChenSteventx/casey.git casey
