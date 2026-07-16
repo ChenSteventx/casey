@@ -8,9 +8,10 @@
  * 零第三方依赖（不需要 @modelcontextprotocol/sdk）：手写最小 stdio 协议，便于 P0 即可挂载。
  * 退出码语义透传：tools/call 结果里带 exitCode（3 = 该阶段未实现），调用方据此区分「跑完」与「未实现」。
  *
- * 挂载（WSL 侧——回放依赖 Linux 侧 playwright，Windows 侧挂载必败，G6 人签约束）：
+ * 挂载（绑定实际运行面：Windows 原生绑定 Windows node.exe/Playwright；WSL2 绑定 WSL 侧 Node.js/Playwright）：
  *   跑 `casey mcp-config --agent <claude|codex>` 自适应吐出本仓正确挂载配置（免手抄改盘符）；
- *   详见 README「MCP 挂载」与仓根 AGENTS.md。
+ *   Windows 原生也可由 `scripts/casey.ps1 mcp-config` 内部转调；不得混挂 Windows 与 WSL 路径。
+ *   MCP 挂载成功只证明入口可用，不证明真实 SUT HTTP 或正式回放已经完成；详见 README 与 AGENTS.md。
  */
 import { spawnSync } from 'node:child_process';
 import { createInterface } from 'node:readline';

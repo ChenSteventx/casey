@@ -1,57 +1,107 @@
 #!/usr/bin/env node
-// Windows 侧反向隧道代理（开发环境工具，非产品链路）：主动连出到 WSL 的隧道补给口（localhost:15520，
-// Windows→WSL localhost 转发默认放行、无需防火墙/管理员），首包到达时才连目标站并双向桥接。
-// 目标地址只从 site.json 读、绝不出现在命令行/日志（护栏 #7）。
-// 用法（Windows）：在仓根运行 node scripts/win-reverse-agent.mjs。开机重拉：win-forward-start.cmd。
+// Windows 侧反向隧道代理：主动向监听端补充待用连接，收到客户端首块后才连接真实目标。
+// 真目标只从 site.json 读入内存，绝不进入 argv、日志或状态文件（护栏 #7）。
 import net from 'node:net';
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import tls from 'node:tls';
+import { readTunnelConfig } from './tunnel-config.mjs';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const site = JSON.parse(readFileSync(join(HERE, '..', 'site.json'), 'utf8'));
-const target = new URL(site.target.startUrl);
-const TARGET_PORT = Number(target.port || (target.protocol === 'https:' ? 443 : 80));
-const TUNNEL_PORT = 15520;
-// 补给口地址可用 CASEY_TUNNEL_HOST 覆盖（默认 127.0.0.1 零行为差）：wslrelay 回环转发坏时改填 WSL 虚拟网卡
-// IP（WSL 内 hostname -I 取，重启会变）直连绕开中继。该 IP 非目标地址、可回显。
-const TUNNEL_HOST = process.env.CASEY_TUNNEL_HOST || '127.0.0.1';
 const POOL = 8;
-let live = 0;
-let refillDelay = 500; // 失败退避：对端不在时 500ms 起倍增、封顶 10s；配对成功即复位
+const TOKEN_PREFIX = 'CASEY-TUNNEL/1 ';
+
+function sanitizedFatal(message, code = 1) {
+  process.stderr.write(`${message}\n`);
+  process.exit(code);
+}
+
+let config;
+try {
+  config = readTunnelConfig();
+} catch {
+  sanitizedFatal('反向代理启动失败：站点配置无效', 64);
+}
+
+const { target, tunnelPort: TUNNEL_PORT } = config;
+const TARGET_HOST = target.hostname.replace(/^\[|\]$/g, '');
+const TARGET_PORT = Number(target.port || (target.protocol === 'https:' ? 443 : 80));
+const TUNNEL_HOST = process.env.CASEY_TUNNEL_HOST || '127.0.0.1';
+const TUNNEL_TOKEN = process.env.CASEY_TUNNEL_TOKEN || '';
+if (TUNNEL_TOKEN && (!/^[\x21-\x7e]{16,512}$/.test(TUNNEL_TOKEN))) {
+  sanitizedFatal('反向代理启动失败：补给握手配置无效', 64);
+}
+
+let waitingSupplies = 0;
+let refillDelay = 500;
+
+function connectUpstream(onConnected) {
+  if (target.protocol === 'https:') {
+    const options = {
+      host: TARGET_HOST,
+      port: TARGET_PORT,
+      rejectUnauthorized: true,
+      ALPNProtocols: ['http/1.1'],
+    };
+    if (net.isIP(TARGET_HOST) === 0) options.servername = TARGET_HOST;
+    return tls.connect(options, onConnected);
+  }
+  return net.connect(TARGET_PORT, TARGET_HOST, onConnected);
+}
 
 function openTunnel() {
-  if (live >= POOL) return;
-  live++;
+  if (waitingSupplies >= POOL) return;
+  waitingSupplies += 1;
   const tunnel = net.connect(TUNNEL_PORT, TUNNEL_HOST);
   let upstream = null;
-  // done 只许执行一次：失败 socket 会先后触发 error+close 两事件，双执行把 live 减成负数 →
-  // fill 视缺口无限大 → 连接风暴耗尽本机临时端口、打瘫整机网络（2026-07-08 实锤，WSL 监听器未起时）。
+  let supplyHeld = true;
   let settled = false;
+
+  const releaseSupply = () => {
+    if (!supplyHeld) return;
+    supplyHeld = false;
+    waitingSupplies = Math.max(0, waitingSupplies - 1);
+  };
+
+  // error 与 close 可能先后到达；只结算一次，避免计数变负后形成连接风暴。
   const done = (failed) => {
     if (settled) return;
     settled = true;
-    live--;
+    releaseSupply();
     tunnel.destroy();
     if (upstream) upstream.destroy();
     if (failed) refillDelay = Math.min(refillDelay * 2, 10000);
     setTimeout(fill, refillDelay);
   };
+
+  tunnel.on('connect', () => {
+    if (TUNNEL_TOKEN) tunnel.write(`${TOKEN_PREFIX}${TUNNEL_TOKEN}\n`);
+  });
   tunnel.on('error', () => done(true));
   tunnel.on('close', () => done(false));
   tunnel.once('data', (first) => {
-    // 有首包 = 该隧道被配对使用；立即补一条新闲置隧道保持池量。
+    // 首块一到即暂停。否则上游建连期间同一请求的后续块会在无监听器时丢失。
+    tunnel.pause();
+    releaseSupply();
     refillDelay = 500;
-    fill();
-    upstream = net.connect(TARGET_PORT, target.hostname, () => {
+    fill(); // 已消费的待用连接立即补回，不等业务连接关闭。
+
+    upstream = connectUpstream(() => {
+      if (settled) return;
       upstream.write(first);
       tunnel.pipe(upstream);
       upstream.pipe(tunnel);
+      tunnel.resume();
     });
     upstream.on('error', () => done(true));
+    upstream.on('close', () => done(false));
   });
 }
-function fill() { while (live < POOL) openTunnel(); }
+
+function fill() {
+  while (waitingSupplies < POOL) openTunnel();
+}
+
+process.on('uncaughtException', () => sanitizedFatal('反向代理运行失败：详情已抑制'));
+process.on('unhandledRejection', () => sanitizedFatal('反向代理运行失败：详情已抑制'));
+
 fill();
 setInterval(fill, 5000);
-console.log(`反向代理已起：池 ${POOL} 条 → ${TUNNEL_HOST}:${TUNNEL_PORT}（目标地址不回显）`);
+console.log(`反向代理已起：待用补给池 ${POOL} 条（目标地址不回显）`);

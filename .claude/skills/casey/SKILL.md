@@ -5,13 +5,15 @@ description: 用自然语言安全配置或检查 Casey 账户、把测试用例
 
 # casey — 自然语言 → 测试报告
 
-本 skill 的用户操作面只接受自然语言。真正的活由 `bin/casey.mjs` 与 `loop-kit/bin/*` 干（在仓根执行），但命令、路径、参数是代理内部实现细节，不作为用户要手动复制的步骤输出。
+本 skill 的用户操作面只接受自然语言。真正的活由 `bin/casey.mjs`、Windows 原生 `scripts/install.ps1` / `scripts/casey.ps1` 与 `loop-kit/bin/*` 干（在仓根执行），但命令、路径、参数是代理内部实现细节，不作为用户要手动复制的步骤输出。win32 内优先使用 PowerShell 操作面；`WSL2` / Linux / macOS 使用对应 Node.js 运行面，不能混挂两侧 Node.js、Playwright 或 `MCP`。
 
 ## 用户怎么说
 
 用户只需要这样说：
 
 - “帮我安全配置 AI 中台账户，不要在对话或日志里显示账户值。”
+- “在这台 Windows 上安装并检查 Casey；不要连接任何被测系统。”
+- “启动 Windows 回环代理并检查状态；不要把本地端口当成真站已通。”
 - “配置医生站和 Hi 小助的本地账户引用，并检查是否就绪。”
 - “帮我跑刚刚那个历史版本用例，生成测试报告。”
 - “跑一个 0 error 的真实用例给我看报告。”
@@ -27,6 +29,7 @@ description: 用自然语言安全配置或检查 Casey 账户、把测试用例
 2. 自行检查环境：仓根、反向隧道、本地基址、凭据文件是否具备；缺失时用一句自然语言说明缺什么，不输出复杂命令清单。
 3. 自行执行底层命令，最后只给用户报告链接、四态计数、是否 0 error、失败原因摘要。
 4. 用户明确问“给我命令”时才展示命令；否则不要把 CLI 参数当成使用说明。
+5. 严格区分 PowerShell 三层状态：`REAL_SUT NOT_VERIFIED` = 本机安装完成；`LOCAL_PROXY_READY` = 本地代理进程/端口就绪；`REAL_SUT_HTTP_NOT_VERIFIED` = 真实环境前置已检查但尚无 HTTP 证据。三者都不是测试 PASS。
 
 自动化失败后的示教分流（代理编排规则，不进入 `verdict.mjs`）：
 
@@ -41,6 +44,8 @@ description: 用自然语言安全配置或检查 Casey 账户、把测试用例
 
 | 自然语言意图 | 代理内部动作 |
 |---|---|
+| “在 Windows 安装/检查 Casey” | win32 内部调用 PowerShell 安装/检验面；只做零 SUT 安装验收。成功也必须回复 `REAL_SUT NOT_VERIFIED`，不得声称真机可用。 |
+| “启动/检查/停止 Windows 回环代理” | win32 内部分别调用 PowerShell 的 proxy start/status/stop 动作；只接受 `LOCAL_PROXY_READY` 为本地进程状态。启动前真值只从 gitignored `site.json` 读，绝不把目标放入 argv/回复；真实 HTTP 另行取证。 |
 | “配置 AI 中台账户” | 内部启动 `account configure ai-middle` 的隐藏交互；无人可接 TTY 时只允许经安全 stdin 或预置环境导入。绝不要求用户把账户或口令粘贴进聊天，绝不把值放 argv。成功后只回复“已配置且接入登录预备动作”，不回复值或本机路径。 |
 | “配置医生站和 Hi 小助账户” | 只配置安全的本地账户引用与人工就绪布尔，不采集或声称登录页面规则；成功后明确自动登录未验证，真实录制仍须人工安全会话。 |
 | “检查账户状态” | 内部跑 `account status`；只回复中台账户是否在位/形状有效/已接登录预备动作，以及桌面账户引用是否在位/是否人工就绪。不得回复账户名、口令、引用字面量或绝对路径。 |
@@ -79,7 +84,8 @@ description: 用自然语言安全配置或检查 Casey 账户、把测试用例
 
 | 用户意图 | 执行 |
 |---|---|
-| 本地账户安全配置 | `account configure` 默认隐藏 TTY；自动化场景只用 `--from-stdin` 或 `--from-env`。账户值不得出现在底层 argv、stdout、日志或报告；本命令只写 gitignored `.auth/`。 |
+| Windows 原生安装与运维 | win32 内部用 `scripts/install.ps1` 与 `scripts/casey.ps1` 完成 verify / real-SUT doctor / account / MCP / proxy 生命周期；不得把真值拼进 PowerShell 参数。`WSL2` 不调用 Windows 脚本替代 Linux 运行面。 |
+| 本地账户安全配置 | `account configure` 默认隐藏 TTY；win32 经 PowerShell 账户动作进入同一 CLI。自动化场景只用 `--from-stdin` 或 `--from-env`。账户值不得出现在底层 argv、stdout、日志或报告；本命令只写 gitignored `.auth/`。 |
 | 账户状态 | `account status` 只检查存在性、闭合形状和就绪声明；AI 中台配置写现有 `credentials.json` 并由 `login-bootstrap` 消费，医生站 / Hi 小助自动登录固定为未验证。 |
 | 相3-4-6 第一段（回放→裁定→待视觉报告） | `node bin/casey.mjs run <caseId> --sut <url> --events <f> --expected <f> --profile <f> [--run-dir <d> --login-bootstrap --no-video]`（产同 run 录像、裁定、报告和 `run-binding.json` 后固定未正式完成；不得预置视觉结论） |
 | 相6 正式交付收口 | 代理观看第一段同次录像、写带 video/verdict 摘要绑定的视觉复核后，内部调用 `finalize-run`；它不接触 SUT、不重放，只验同 run 哈希并重建报告。仅全 PASS + 录像完整 + 视觉 `CONSISTENT` 才可 GREEN。参数不得要求用户复制。 |
@@ -128,7 +134,7 @@ description: 用自然语言安全配置或检查 Casey 账户、把测试用例
 
 ## 执行边界（重要）
 
-- **假被测系统只读，所有行为验收只驱真机**（强制执行）：假被测系统（`fake-sut`）和夹具 `SUT` 只允许读取源码作为迁移参考，任何代理不得启动、连接或回放它们，也不得用 `casey demo` 顶替真机运行。`golden` / `gate` / `selftest --tier1` 仅在可证明不启动、不连接、不回放任何假 `SUT` 时才允许执行；静态检查、schema 检查和不接触 `SUT` 的纯函数检查可执行。所有浏览器/通道行为测试、回放、复跑与验收一律联网驱真实目标，`--sut` 只喂隧道回环基址（`site.json` 的 `devProxyUrl`，形如 `http://127.0.0.1:15519`）；无网络、仅本地监听、代理池未连真站或网络受限时一律不得开始行为验收。前置 = 相位0 三关（`casey doctor` 就绪 / 维护者带外确认专用测试账户 / 反向隧道单实例；全流程见 `docs/runbooks/real-uat-runbook.md`；隧道两命令：`WSL` 侧 `node scripts/wsl-reverse-listen.mjs`、`Windows` 侧 `node scripts/win-reverse-agent.mjs`，顺序先 `WSL` 后 `Windows`）；除 `doctor` 外还必须取得 Windows→真站与 `WSL` 回环→真站两段真实 HTTP 成功证据。没有同次真实回放、确定性 `verdict.json`、录屏、视觉复核和独立单用例 HTML，不得声称行为验收完成。
+- **假被测系统只读，所有行为验收只驱真机**（强制执行）：假被测系统（`fake-sut`）和夹具 `SUT` 只允许读取源码作为迁移参考，任何代理不得启动、连接或回放它们，也不得用 `casey demo` 顶替真机运行。`golden` / `gate` / `selftest --tier1` 仅在可证明不启动、不连接、不回放任何假 `SUT` 时才允许执行；静态检查、schema 检查和不接触 `SUT` 的纯函数检查可执行。所有浏览器/通道行为测试、回放、复跑与验收一律联网驱真实目标，`--sut` 只喂当前运行面的回环基址（`site.json` 的 `devProxyUrl`，形如 `http://127.0.0.1:15519`）；无网络、仅 `LOCAL_PROXY_READY`、代理池未连真站或网络受限时一律不得开始行为验收。前置 = 相位0 三关（真实环境严格 doctor 就绪 / 维护者带外确认专用测试账户 / 回环代理单实例；全流程见 `docs/runbooks/real-uat-runbook.md`）。Windows 原生由 PowerShell 操作面管理同机代理；`WSL2` 保持先 WSL listener、后 Windows agent。除 doctor 外还必须取得网络侧→真站与 Casey 运行面回环→真站两段真实 HTTP 成功证据。没有同次真实回放、确定性 `verdict.json`、录屏、视觉复核和独立单用例 HTML，不得声称行为验收完成；Windows 原生在拿到该证据前固定保持 `route:human`。
 - 医生站/Hi 小助 CEF 入口用独立原始 TCP 中继，不复用 15519 HTTP Host 改写通道；先 Windows 真机确认进程开启远程调试且筛选后恰一 page。机械回放收据只证明动作派发/身份回读，固定 `formalVerdictEligible=false`；LLM 视觉只能写 `CONSISTENT/INCONSISTENT/INDETERMINATE` 建议，绝不进入 `verdict.mjs` 或翻机器结论。
 - 账户输入只走本机安全通道：绝不让用户在普通聊天、命令行参数、工单或报告中提供账户值。交互配置必须隐藏输入；非交互只从 stdin 或环境读。医生站 / Hi 小助真实登录页未采样前只认人工安全会话，不生成或猜测自动登录动作。
 - **凭据让用户设**：`.auth/`、`site.json` 是凭据，CC 不把账号密码写进命令行/文件/报告。

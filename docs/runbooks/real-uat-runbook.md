@@ -6,16 +6,18 @@
 
 1. `npm run verify:install` 全部通过；它只证明本机安装，不证明真实环境可用。
 2. 维护者已带外准备 `site.json` 与 `.auth/credentials.json`，并确认使用专用测试账户、无真实患者或生产敏感数据。不得回显这些文件的值。
-3. 真实网络链已建立。Windows + WSL2 按“WSL 监听端先启动、Windows 网络代理后连接”的顺序启动反向隧道。
+3. 真实网络链已建立。Windows 原生 `PowerShell` 由 Casey 操作面启停同机回环代理；Windows + `WSL2` 按“WSL 监听端先启动、Windows 网络代理后连接”的顺序启动反向隧道。
 
-然后执行 `node bin/casey.mjs doctor`。逐项检查本机、凭据形状和回环端口；不要只看进程退出码。
+Windows 原生先由代理内部运行 `scripts/casey.ps1 doctor`；缺账户、完整 `site.json`、安全 ACL 或回环监听时必须非零，前置齐备也只给 `REAL_SUT_HTTP_NOT_VERIFIED`。其它运行面执行 `node bin/casey.mjs doctor`。任何环境都不要把诊断退出码或 `LOCAL_PROXY_READY` 当成真实 HTTP。
 
 ## 2. 连通性必须有两段证据
 
-- Windows 网络侧到真实目标返回成功 HTTP 状态；
-- WSL 内通过 `site.json.target.devProxyUrl` 的回环地址到同一真实目标返回成功 HTTP 状态。
+- 当前网络侧到真实目标返回成功 HTTP 状态；
+- Casey 实际运行面通过 `site.json.target.devProxyUrl` 的回环地址到同一真实目标返回成功 HTTP 状态。Windows 原生时两段都在 Windows 取证；`WSL2` 路径的第二段在 `WSL` 取证。
 
 只有端口监听、无真实 HTTP 返回，不算连通。真目标地址只存在 `site.json` 内，不得写进命令行、日志或报告；CLI 的 `--sut` 只接收回环基址。
+
+Windows 原生的安装、账户、`MCP` 和代理生命周期零 SUT 验收已经独立完成，也不能替代本节证据。未完成“真实 HTTP + 正式回放 + 同次录屏 + 视觉复核 + 独立 HTML”前，Windows 原生真实回放状态保持 `route:human`。
 
 ## 3. 正式 web 测试是二段式交付
 

@@ -6,10 +6,10 @@
 
 | 环境 | 安装与本机检验 | 真实环境回放 | 当前限制 |
 |---|---|---|---|
-| Windows 11 + `WSL2` | 支持，所有 Casey 命令在 `WSL` 内执行 | Heren 中台的已验证路径 | Windows 只承担真站网络侧转发；不要在 Windows 原生终端跑回放 |
+| Windows 11 原生 `PowerShell` | 支持 Windows PowerShell 5.1 / PowerShell 7 安装、检验和操作 | 代码与零 SUT 操作面已验；真实回放待完整现场 UAT | `LOCAL_PROXY_READY` 不等于真站可达；未有真实 HTTP + 报告证据前保持 `route:human` |
+| Windows 11 + `WSL2` | 支持，Casey 命令在 `WSL` 内执行 | AI 中台已有完整真实 UAT 的路径 | Windows 承担真站网络侧转发，Node.js / Chromium / `MCP` 留在 `WSL` |
 | Linux | 支持 | 具备组织内回环代理时可接真实 web 目标 | 本仓没有通用 Linux 真站代理安装器；未在公开环境完成真机验收 |
 | macOS | 支持源码安装与静态检验 | 具备组织内回环代理时才可接真实 web 目标 | 当前没有 macOS 真机验收证据 |
-| Windows 原生（无 `WSL2`） | 不作为正式支持路径 | 不支持 | 当前回放、浏览器和反向代理约束均以 `WSL` 侧为准 |
 
 医生站和 Hi 小助若运行在 `CEF` 中，可走独立的 CDP 示教与机械回放入口；这条能力目前只有代码与零 SUT 静态验收，尚无真实医生站 / Hi 小助现场证据。若目标是普通 web，可走 Chromium 通道；若是原生控件或多窗口混合容器，当前版本不支持。不能因为 Casey 本机安装通过就声称这些目标已经真机可用。
 
@@ -27,6 +27,24 @@ git clone https://github.com/ChenSteventx/casey.git casey
 cd casey
 npm install
 ```
+
+### Windows 11 原生 `PowerShell`
+
+前置为 64 位 Windows、64 位 Git、Node.js ≥ 22.12，以及可访问 npm 与 Playwright 浏览器下载源的网络。在 Windows PowerShell 5.1 或 PowerShell 7 中运行：
+
+```powershell
+git clone https://github.com/ChenSteventx/casey.git casey
+Set-Location .\casey
+& .\scripts\install.ps1
+```
+
+安装器使用 `npm.cmd` / `npx.cmd`，避免 PowerShell 执行策略误命中同名 `.ps1` shim；它安装依赖和 Windows Chromium，再运行零 SUT 检验。已安装环境只做复核时可用：
+
+```powershell
+& .\scripts\install.ps1 -VerifyOnly
+```
+
+全部 PASS 只表示 Windows 本机执行面安装完成，末行仍必须是 `REAL_SUT NOT_VERIFIED`。脚本不创建账户、不生成 `site.json`、不探测真站。若组织执行策略阻止本地脚本，应使用组织批准的签名或策略流程，不要改用 `Invoke-Expression`。
 
 ### Windows 11 + `WSL2`
 
@@ -76,6 +94,12 @@ npm run verify:install
 
 全部显示 `PASS` 且进程退出码为 0，才可说“Casey 已安装”。末行始终标记 `REAL_SUT NOT_VERIFIED`，因为该命令故意不接任何被测系统。
 
+Windows 原生操作员后续统一使用 `scripts/casey.ps1`；其中 `verify` 等价于本机零 SUT 安装检验：
+
+```powershell
+& .\scripts\casey.ps1 verify
+```
+
 ## 第二级：真实环境就绪
 
 先准备带外交付、已被 `.gitignore` 排除的两类本地文件：
@@ -85,18 +109,51 @@ npm run verify:install
 
 真值不得提交、复制进报告或写进命令行。`--sut` 只使用 `site.json` 中的回环代理基址。
 
-然后运行：
+Windows 原生由 `PowerShell` 操作面安全配置账户。两条配置动作都启动隐藏输入，不接受账户值参数：
+
+```powershell
+& .\scripts\casey.ps1 account-ai
+& .\scripts\casey.ps1 account-doctor-hi
+& .\scripts\casey.ps1 account-status
+```
+
+不要把账户或口令作为命令参数、普通聊天文本或 PowerShell 历史内容。AI 中台账户写入 `.auth/credentials.json` 并由登录预备动作读取；Windows 原生写入同时收紧 ACL。医生站 / Hi 小助动作仍只保存安全账户引用与人工就绪声明，自动登录固定为未验证。
+
+Windows 原生 web 回环代理由同一个脚本管理：
+
+```powershell
+& .\scripts\casey.ps1 proxy-start
+& .\scripts\casey.ps1 proxy-status
+```
+
+状态 `LOCAL_PROXY_READY` 只证明两个身份绑定的本地进程存活且端口仅在回环监听。目标只从 `site.json` 读，不进参数、状态或日志；真实 HTTP 仍须单独取证。重复 start 会 fail-closed，stop 只收口状态中身份匹配的 Casey 进程。
+
+代理启动后运行真实环境严格诊断：
+
+```powershell
+& .\scripts\casey.ps1 doctor
+```
+
+缺账户、完整 `site.json`、安全账户 ACL 或回环监听时退出非零。即使全部前置到位，摘要仍是 `REAL_SUT_HTTP_NOT_VERIFIED`：本命令不发送真站 HTTP，不能据此开始宣称真机可用。
+
+完成真实 HTTP 取证和本次测试后收口代理：
+
+```powershell
+& .\scripts\casey.ps1 proxy-stop
+```
+
+`WSL2` / Linux / macOS 继续运行：
 
 ```bash
 node bin/casey.mjs doctor
 ```
 
-`doctor` 的退出码只代表 Node.js、Playwright 和 Chromium 的本机就绪项；凭据、站点与隧道仍要逐行确认，不能只看 exit 0。Windows + `WSL2` 的正式路径还必须按顺序启动：
+这些运行面上，`doctor` 的退出码只代表 Node.js、Playwright 和 Chromium 的本机就绪项；凭据、站点与隧道仍要逐行确认，不能只看 exit 0。Windows + `WSL2` 路径还必须按顺序启动：
 
 1. `WSL` 侧 `node scripts/wsl-reverse-listen.mjs`；
 2. Windows 侧 `scripts/win-forward-start.cmd`。
 
-真实环境可用的最终证据必须同时包含：Windows 到真站的 HTTP 成功、`WSL` 回环到真站的 HTTP 成功，以及一次真实回放产生的确定性裁定、录屏和独立单用例 HTML。只看到本地端口在监听，不算真实连通。
+Windows 原生的网络证据是 Windows 网络侧到真站成功、同一 Windows 运行面经 `target.devProxyUrl` 到真站成功；`WSL2` 路径则是 Windows 网络侧成功、`WSL` 经回环到真站成功。最终还必须有一次真实回放产生的确定性裁定、同次录屏、视觉复核和独立单用例 HTML。只看到本地端口在监听，不算真实连通。
 
 ## `skill` 与 `MCP` 安装
 
@@ -116,6 +173,15 @@ node bin/casey.mjs mcp-config --agent codex
 
 在 Windows + `WSL2` 组合中，必须从 `WSL` 侧生成并挂载；否则配置会指向错误运行面。
 
+Windows 原生必须从 Windows `PowerShell` 生成，让配置绑定实际使用的 Windows `node.exe`：
+
+```powershell
+& .\scripts\casey.ps1 mcp-config -Agent claude
+& .\scripts\casey.ps1 mcp-config -Agent codex
+```
+
+两种路径都遵守“在哪一侧运行 Casey，就在哪一侧生成并挂载”；不要混用 Windows 与 `WSL` 的脚本路径或浏览器缓存。
+
 仓库同时是一个 Codex plugin：`.codex-plugin/plugin.json` 把同一份 Casey skill 与 `.mcp.json` 暴露给 Codex。插件安装只解决入口发现，不会替用户生成凭据、真实目标代理或签署测试契约。
 
 ## 四 OS 账户安全边界
@@ -125,7 +191,7 @@ node bin/casey.mjs mcp-config --agent codex
 | `WSL2` | 优先把仓库和 `.auth/` 放在 WSL 原生 Linux 文件系统；Casey 尽力设置目录 `0700`、文件 `0600`。挂载 Windows 盘时 POSIX mode 可能不等于真实 ACL，不能只看 mode 判断安全。 | AI 中台正式回放路径；账户文件由 WSL 侧 `login-bootstrap` 消费。医生站 / Hi 小助仍由 Windows 桌面人工建立安全会话。 |
 | Linux | `.auth/` 留在当前仓库且 gitignored；Casey 尽力设置目录 `0700`、文件 `0600`，账户文件不要放共享目录。 | 可接组织内真实代理；未有真实目标证据时只算本地账户配置完成。 |
 | macOS | `.auth/` 留在当前仓库且 gitignored；Casey 尽力设置目录 `0700`、文件 `0600`。当前未集成 Keychain。 | 只证明本机文件配置；没有回环代理和真机证据时不能声称可回放。 |
-| Windows 原生 | 正式 Casey 回放应转 WSL；若仅检查公开源码，`.auth/` 受 Windows 本机 ACL 管理，POSIX `0600` 不代表 Windows ACL。不要把仓库放多人可写共享目录。 | Windows 侧只承担网络转发和桌面应用；当前不从 Casey 自动登录医生站 / Hi 小助。 |
+| Windows 原生 | PowerShell 账户动作写入后收紧 `.auth/` 与账户文件 ACL，并由严格 `doctor` 检查；仓库仍不要放多人可写共享目录。 | AI 中台登录预备动作已接线，但 Windows 原生真实登录与回放须现场 UAT；医生站 / Hi 小助仍不自动登录。 |
 
 推荐从 skill 发起“配置账户”和“检查账户状态”。配置命令默认隐藏输入，非交互只从 stdin 或环境导入；账户值永远不能放 argv。`account status` 和 `doctor` 只看形状与就绪状态，不回显账户值或路径。
 

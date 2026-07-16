@@ -31,3 +31,6 @@ loop/contracts/
 *.key
 *.deepseek-key
 runs/
+
+# Windows PowerShell local proxy process state and sanitized logs.
+.casey-runtime/

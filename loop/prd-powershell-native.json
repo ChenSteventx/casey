@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "task": "powershell-native",
+  "specPath": "docs/plans/powershell-native/plan.md",
+  "testChecksums": {
+    "tests/_golden/powershell-native.static.golden.mjs": "98a2da0beba9698c8fd9c8487a0ebe6c7e9901db7e0ced6e1ccb2c7a4dcdfd3d",
+    "tests/_golden/powershell-native.zero-sut.golden.ps1": "4f9ad9a1265d55ba79a18564a27dfccc9a298ab29c4d9af5086ecad5d47b69d1",
+    "tests/_golden/powershell-account-acl-helper.mjs": "b07d7c96a6499929ab28ef59db20af94052ff59a5c42eae0a57cc205c1f9b899",
+    "tests/_golden/powershell-proxy-partial-death.zero-sut.golden.ps1": "732d94d926e5a8a3e26510ecbef9db439d16f469215faddd62c23dd557a25a05",
+    "tests/_golden/powershell-proxy-state-safety.zero-sut.golden.ps1": "917223701bf98f8831a8bbef8b8a5b475a4e9a031e6c4215f4428ea54506b258",
+    "tests/_golden/powershell-http-framing.zero-sut.golden.mjs": "046220efdba1d7c22c8e1c7fe8a64f1d14112e1009167cee9df048960dc9b096",
+    "tests/_golden/windows-system-helper-trust.zero-sut.golden.mjs": "741bc120c3fe17d5b1376a5ba64e2f4a4dd00a873d872e5b5d40def1523e6910",
+    "tests/_golden/windows-account-acl-allowlist.zero-sut.golden.mjs": "357f71355effa7b67fcc63211c5ed2e3632279b704adc9cc697bc53a39f98cb9"
+  },
+  "observability": [
+    {
+      "dimension": "Windows PowerShell 默认安装动作实际下载/复用 Chromium 后完成",
+      "route": "human",
+      "note": "本轮在真实 Windows 主机执行一次并记录结果；不放入每轮 gate，避免每次门禁重复联网安装。"
+    },
+    {
+      "dimension": "账户隐藏 TTY 在 Windows Terminal 中不回显",
+      "route": "human",
+      "note": "自动化只验证 stdin/env 不进 argv 与 Windows ACL；ConPTY 屏幕不回显须人工观察。"
+    },
+    {
+      "dimension": "含空格与单引号的真实 clone 路径完成安装和 MCP 挂载",
+      "route": "human",
+      "note": "引号纯函数已命令化覆盖；真实目录安装在发布前抽验。"
+    },
+    {
+      "dimension": "Windows PowerShell 原生真实 SUT 行为验收",
+      "route": "human",
+      "note": "须联网真实目标、专用账户、真实 HTTP、签署用例、确定性裁定、同次录屏、视觉复核与独立单用例 HTML 全齐；本地端口或安装绿不得代替。"
+    },
+    {
+      "dimension": "医生站 / Hi 小助 CEF 自动登录与正式裁定",
+      "route": "human",
+      "note": "不在本契约内；继续维持自动登录未验证、机械回放不具正式裁定资格。"
+    }
+  ],
+  "stories": [
+    {
+      "id": "S1",
+      "desc": "Windows 原生安全配置、代理、doctor、MCP 与路径契约的零 SUT 可执行规格",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/powershell-native.static.golden.mjs",
+        "node tests/_golden/powershell-http-framing.zero-sut.golden.mjs",
+        "node tests/_golden/windows-system-helper-trust.zero-sut.golden.mjs",
+        "node.exe tests/_golden/windows-account-acl-allowlist.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-16T04:26:25.698Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "S2",
+      "desc": "Windows PowerShell 5.1 与 PowerShell 7 真壳安装检验和代理生命周期",
+      "lane": "implementation",
+      "acceptance": [
+        "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tests/_golden/powershell-native.zero-sut.golden.ps1",
+        "pwsh.exe -NoLogo -NoProfile -NonInteractive -File tests/_golden/powershell-native.zero-sut.golden.ps1",
+        "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tests/_golden/powershell-proxy-partial-death.zero-sut.golden.ps1",
+        "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tests/_golden/powershell-proxy-state-safety.zero-sut.golden.ps1",
+        "pwsh.exe -NoLogo -NoProfile -NonInteractive -File tests/_golden/powershell-proxy-state-safety.zero-sut.golden.ps1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-16T04:30:07.976Z 全部 acceptance exit 0"
+    }
+  ]
+}

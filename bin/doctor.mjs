@@ -14,7 +14,7 @@ import net from 'node:net';
 import { join } from 'node:path';
 import { PROJECT_ROOT, AUTH_DIR, hasPlaywright } from '../lib/paths.mjs';
 import { runDoctor } from '../lib/doctor.mjs';
-import { inspectAccountStatus } from '../lib/account-config.mjs';
+import { inspectAccountAcl, inspectAccountStatus } from '../lib/account-config.mjs';
 
 const C = { reset: '\x1b[0m', green: '\x1b[32m', red: '\x1b[31m', yellow: '\x1b[33m', gray: '\x1b[90m', cyan: '\x1b[36m', bold: '\x1b[1m' };
 const col = (c, s) => `${c}${s}${C.reset}`;
@@ -82,7 +82,7 @@ function probeSite() {
     try {
       const j = JSON.parse(readFileSync(sitePath, 'utf8'));
       const t = j && typeof j.target === 'object' && j.target ? j.target : null;
-      shapeOk = !!t && ('startUrl' in t || 'devProxyUrl' in t); // 只看键名，值不取
+      shapeOk = !!t && ('startUrl' in t && 'devProxyUrl' in t); // 只看双键名，值不取
       proxyPort = loopbackPort(t); // 只从 devProxyUrl 取回环端口号，绝不碰 startUrl
     } catch { shapeOk = false; }
   }
@@ -121,6 +121,12 @@ function probeTunnel(proxyPort) {
 }
 
 async function main() {
+  const argv = process.argv.slice(2);
+  if (argv.some((arg) => arg !== '--real-sut')) {
+    console.error('doctor: 只接受可选 --real-sut');
+    process.exit(64);
+  }
+  const realSut = argv.includes('--real-sut');
   const platform = process.platform;
   const isWSL = detectWSL();
   const pw = await probePlaywright();
@@ -134,21 +140,23 @@ async function main() {
     siteJson: { present: site.present, shapeOk: site.shapeOk },
     creds: { present: accounts.aiMiddle.configured, shapeOk: accounts.aiMiddle.shapeOk },
     desktopAccount: { present: accounts.desktop.configured, shapeOk: accounts.desktop.shapeOk, ready: accounts.desktop.ready },
+    accountAcl: accounts.aiMiddle.source === 'environment'
+      ? { applicable: false, safe: true }
+      : inspectAccountAcl({ authDir: AUTH_DIR }),
     tunnel: await probeTunnel(site.proxyPort),
   };
 
-  const { items, exitCode } = runDoctor(env);
+  const { items, exitCode, summary } = runDoctor(env, { realSut });
   console.log(col(C.bold, '\ncasey doctor —— 跨平台就绪自检') + col(C.gray, '（node / playwright / 中文字体 / 账户·site.json / 隧道）') + '\n');
   for (const it of items) {
     const line = `${LABEL[it.status]} ${col(C.cyan, `[${it.id}]`)} ${it.detail}${it.hint ? col(C.gray, '  → ' + it.hint) : ''}`;
     console.log(line);
   }
   console.log('');
-  if (exitCode === 0) {
-    console.log(col(C.green, '就绪级全 ok → hermetic 回放就绪（exit 0）。warn/route-human 项按上方建议自行处理，不阻塞。'));
-  } else {
-    console.log(col(C.red, '就绪级有 RED → 未就绪（exit 1）。按上方建议修复就绪级项后重跑；本命令只诊断不自动修。'));
-  }
+  console.log(col(exitCode === 0 ? C.green : C.red, summary));
+  console.log(col(C.gray, realSut
+    ? '真实环境前置只覆盖本机依赖、账户、ACL 与回环监听；真实 HTTP、回放、裁定、录屏和报告仍须另验。'
+    : '本机安装就绪不等于真实环境可用；行为验收须另跑 --real-sut 前置与完整真实用例。'));
   process.exit(exitCode);
 }
 

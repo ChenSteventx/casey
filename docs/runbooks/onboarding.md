@@ -7,10 +7,12 @@
 ### claude code
 - `skill` 自动加载：打开本仓即可用 `.claude/skills/casey/`，用户操作面只收自然语言。
 - `MCP` 挂载：`casey mcp-config --agent claude` → 取 `.mcp.json` 片段，或一行 `claude mcp add casey -- node <绝对路径>`。
+- Windows 原生由 skill 内部转调 `scripts/casey.ps1 mcp-config -Agent claude`，配置绑定当前 Windows `node.exe`；`WSL2` 则从 `WSL` 侧生成。
 
 ### codex
 - 无 `skill` 自动加载机制，走仓根 `AGENTS.md` 上手。
 - `MCP` 挂载：`casey mcp-config --agent codex` → 把 `[mcp_servers.casey]` 段追加进 `~/.codex/config.toml`。
+- Windows 原生由代理内部转调 `scripts/casey.ps1 mcp-config -Agent codex`；Windows 与 `WSL` 配置不能混用。
 
 ### 其它支持 MCP 的 agent
 - 当前配置生成器只正式支持 Claude Code 与 Codex。其它 agent 可参考 Codex 的 stdio 结构挂载，但必须在该 agent 的真实运行环境单独验证；未验证前不得声称已支持。
@@ -19,25 +21,25 @@
 
 三件事逐 `OS` 就位：node 运行时、中文字体（截图 / 录屏中文不空白）、反向隧道适用性。
 
-| `OS` | node | 中文字体 | 反向隧道 |
+| `OS` | node | 中文字体 | 回环代理 / 反向隧道 |
 |---|---|---|---|
 | `WSL`（Windows 内 Linux） | node ≥ 22.12（Linux 侧） | `fc-list :lang=zh` 核实；缺则装用户级 Noto Sans CJK | 需要（详见下方隧道适用性） |
-| Windows 原生 | 不作为正式运行面 | 系统内置微软雅黑；但回放须走 `WSL` 侧（G6） | 只承担 Windows 网络侧转发 |
+| Windows 原生 `PowerShell` | Windows Node.js ≥ 22.12；专用安装/操作脚本兼容 5.1/7 | 系统内置微软雅黑；Windows Chromium 使用 Windows 字体 | 本仓可在同机启停仅回环 web 代理；代码/零 SUT 面已验，真实回放待现场 UAT |
 | Linux 原生 | node ≥ 22.12 | `fc-list :lang=zh` 核实；缺则装 Noto Sans CJK | 需组织内回环代理；仓库未提供通用直连安装器 |
 | macOS | node ≥ 22.12 | 系统内置 PingFang（苹方）等 CJK 字体；必要时 Font Book 核实 | 需组织内回环代理；尚无真机验收证据 |
 
-隧道适用性（关键）：仓库自带的反向隧道只服务 `WSL` + Windows 组合，把 `WSL` 内回环端口反射到 Windows 侧真机可达网络。Linux / macOS 不使用这组 Windows 脚本，但仍须由部署方提供本地回环代理；`--sut` 只喂该回环基址，真目标地址绝不进命令行（护栏 #7）。真机命令一律 `WSL` 侧跑（G6：Windows 原生侧回放必败——Playwright 浏览器装在 Linux 侧）。
+代理适用性（关键）：Windows 原生 `PowerShell` 在同一主机启动监听端与转发端；`LOCAL_PROXY_READY` 只证明本地进程/回环端口。`WSL2` + Windows 保留既有反向隧道，把 `WSL` 回环反射到 Windows 可达网络。Linux / macOS 不使用这组 Windows 脚本，仍须由部署方提供本地回环代理。所有运行面上的 `--sut` 都只喂该回环基址，真目标地址绝不进命令行（护栏 #7）。
 
-字体一句话：`WSL` / Linux 用 `fc-list :lang=zh` 查、缺则装 Noto Sans CJK；macOS 用内置 PingFang（苹方）；Windows 用内置微软雅黑（但回放在 `WSL` 侧、查 `WSL` 侧字体库）。
+字体一句话：`WSL` / Linux 用 `fc-list :lang=zh` 查、缺则装 Noto Sans CJK；macOS 用内置 PingFang（苹方）；Windows 原生使用微软雅黑等 Windows 字体。选择 `WSL2` 时仍须查 Linux 侧字体库。
 
-安装检验：`npm run verify:install` 不连接任何被测系统，全部 PASS 才代表本机安装完成。`node bin/casey.mjs doctor` 按 `OS` 分支逐项给修复建议，但字体 / 凭据 / 隧道缺只提示不翻退出码；真机可用必须另有真实 HTTP 与真实回放证据。
+安装检验：`npm run verify:install` 或 Windows 原生 `scripts/casey.ps1 verify` 不连接任何被测系统，全部 PASS 也只代表本机安装完成。Windows 原生 `scripts/casey.ps1 doctor` 走真实环境严格模式，前置齐备仍输出 `REAL_SUT_HTTP_NOT_VERIFIED`；其它运行面由 `node bin/casey.mjs doctor` 逐项诊断。真机可用必须另有真实 HTTP 与真实回放证据。
 
 ## 三、同事移交清单（带外补齐，绝不入库）
 
 三件均已 gitignored，新环境须自建、真值带外交付、绝不入库 / 提交 / 回显：
 
 - `.auth/`（凭据）：`.auth/credentials.json` = `{ "user": "<账号>", "pass": "<口令>" }`；env 覆盖 `AT_CREDS_USER` / `AT_CREDS_PASS`（值对）或 `AT_CREDS_FILE`（换文件路径）。
-- `site.json`（站点·目标地址·隧道基址）：`target.startUrl`（真机入口地址）与 `target.devProxyUrl`（`WSL` 内隧道回环基址，形如 `http://127.0.0.1:15519`）为必备；只写字段形状，真值带外补齐。
+- `site.json`（站点·目标地址·回环基址）：`target.startUrl`（真机入口地址）与 `target.devProxyUrl`（当前运行面的回环基址，形如 `http://127.0.0.1:15519`）为必备；只写字段形状，真值带外补齐。
 - `cases/`（用例回放产物目录）：按需带外拷贝或在新环境重新采集。
 
 移交动作（建远端 push / `git bundle` / 整目录拷贝）由维护者定夺；本清单只列「要带外补齐什么」，不写「补成什么值」。目标地址只活在 `site.json`（护栏 #7），本文一律不落真值。

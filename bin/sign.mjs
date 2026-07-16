@@ -12,7 +12,7 @@
 // 任一环节失败绝不产生半份产物。退出码：0 成功；64 缺参；65 输入坏/闸拒；1 凭据兜底门拦截（护栏 #7）。
 import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, rmSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
-import { resolve, relative, dirname, join, basename } from 'node:path';
+import path, { resolve, relative, dirname, join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { credentialGate } from '../lib/cred-gate.mjs';
 import { assertSignedContract } from '../lib/sign-gate.mjs';
@@ -54,7 +54,7 @@ function commitWrites(writes, dirsToMk = []) {
   for (const t of tmps) if (existsSync(t)) die(65, `tmp 路径已存在，拒（防预植 tmp 致写中失败留副作用，codex R5）：${t}`);
   // dirsToMk 不得等于或落在任一 target/tmp 之下（codex R6-F1）：否则 mkdir -p 会把该 tmp/文件路径建成目录。
   // 允许反向（归档文件合法地在 archiveDir 之下），故只查 d===p 或 d 在 p 之下、不查 p 在 d 之下。
-  for (const d of dirs) for (const p of [...targets, ...tmps]) if (d === p || d.startsWith(p + '/')) die(65, `archive-dir 等于或落在某输出/tmp 路径之下，拒（codex R6）：${d} ~ ${p}`);
+  for (const d of dirs) for (const p of [...targets, ...tmps]) if (d === p || d.startsWith(p + path.sep)) die(65, `archive-dir 等于或落在某输出/tmp 路径之下，拒（codex R6）：${d} ~ ${p}`);
   for (const p of targets) { if (existsSync(p)) { let st; try { st = statSync(p); } catch { st = null; } if (st && st.isDirectory()) die(65, `输出目标是既存目录，拒（防 rename 半提交）：${p}`); } }
   // 预检通过才建目录（codex R4-F2/R5/R6：零落盘含目录副作用）；收集本次真新建的全部祖先（浅→深），写中失败逆序全量回滚。
   const createdDirs = [];
@@ -191,7 +191,8 @@ if (existsSync(frozenOut)) {
 // prd checksum 计划（D5）：只加 frozen 断言文件那一条；expectedFrozenPath 规范相对（仓内）。
 const frozenText = JSON.stringify(frozen, null, 2) + '\n';
 const relFrozen = relative(ROOT, resolve(frozenOut));
-const frozenKey = relFrozen.startsWith('..') ? resolve(frozenOut) : relFrozen;
+const frozenOutside = relFrozen === '..' || relFrozen.startsWith(`..${path.sep}`) || path.isAbsolute(relFrozen);
+const frozenKey = (frozenOutside ? resolve(frozenOut) : relFrozen).split(path.sep).join('/');
 const sha = createHash('sha256').update(frozenText).digest('hex');
 const newPrd = { ...prd, schemaVersion: 2, expectedFrozenPath: frozenKey, testChecksums: { ...(prd.testChecksums || {}), [frozenKey]: sha } };
 const prdText = JSON.stringify(newPrd, null, 2) + '\n';
