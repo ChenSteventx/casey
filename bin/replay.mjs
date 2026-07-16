@@ -27,6 +27,7 @@ import { credentialGate, maskCredentialRoute } from '../lib/cred-gate.mjs';
 import { assertSignedContract } from '../lib/sign-gate.mjs';
 import { foldIntentAction } from '../lib/intent-action-fold.mjs';
 import { validateWorkflowDeleteBindings } from '../lib/workflow-delete-spec.mjs';
+import { projectReplayAssertion, validateReplayEntityAnchors } from '../lib/replay-entity-anchor.mjs';
 
 const { chromium } = pw;
 
@@ -204,7 +205,7 @@ async function main() {
   // 绝不从页面状态猜目标、也不放宽 workflow.deleteByName 域锁。
   const deleteBindingCheck = validateWorkflowDeleteBindings(events);
   if (!deleteBindingCheck.ok) {
-    console.error(`replay: workflow.deleteByName spec 缺目标绑定（${deleteBindingCheck.problems.length} 步），须先重编译；为避免真实环境残留，本次未启动浏览器（fail-closed）`);
+    console.error(`replay: workflow.deleteByName spec 的 click 文案或目标绑定非法（${deleteBindingCheck.problems.length} 步），须先重编译；为避免真实环境残留，本次未启动浏览器（fail-closed）`);
     process.exit(65);
   }
   const caseId = eventsDoc.caseId || expectedDoc.caseId || 'unknown';
@@ -250,8 +251,9 @@ async function main() {
     buttonsCfg = { extraSelector: b.extraSelector, disabledClass: b.disabledClass === undefined ? null : b.disabledClass.trim() };
   }
 
-  // 计数通道选择器（wf-add-node GRILL D4 (a)，通道剖面非凭据加法）：缺省 .hr-table-row 零行为差；
-  // 给了须非空字符串，形状非法拒跑 fail-closed（buttons/routes 同律）；存 trim 值。
+  // 计数通道选择器（wf-add-node GRILL D4 (a)，通道剖面非凭据加法）：普通用例缺省
+  // .hr-table-row；workflow.deleteByName + 硬 countChange=0 另由实体锚闸强制目标化 selector。
+  // 给了须非空字符串，形状非法拒跑 fail-closed（buttons/routes 同律）。
   let countSel = '.hr-table-row';
   if (profile.countSelector !== undefined) {
     if (typeof profile.countSelector !== 'string' || !profile.countSelector.trim()) {
@@ -261,6 +263,16 @@ async function main() {
     countSel = profile.countSelector.trim();
   }
 
+  // 破坏性 cleanup 实体锚一致性（必须在 chromium.launch 前）：删除/确认 click 目标、前后重搜目标、
+  // 硬归零断言的计数 selector 与 cleanup 内其它实体断言必须同源。支持冻结 selector/assertion 中
+  // atl_{{uniqueName}}，只生成本轮派生值，绝不改写冻结件。
+  const entityAnchorCheck = validateReplayEntityAnchors({ events, expectedDoc, profile, ctx });
+  if (!entityAnchorCheck.ok) {
+    console.error(`replay: cleanup 实体锚不一致（${entityAnchorCheck.problems.length} 项），为避免 count 0→0 假 PASS，本次未启动浏览器（fail-closed）`);
+    process.exit(65);
+  }
+  if (entityAnchorCheck.countSelector != null) countSel = entityAnchorCheck.countSelector;
+
   const intentOrder = [];
   const intentEvents = new Map();
   for (const ev of events) {
@@ -268,8 +280,11 @@ async function main() {
     intentEvents.get(ev.intentId).push(ev);
   }
   const reprStepOf = new Map(intentOrder.map((iid) => [iid, intentEvents.get(iid).slice(-1)[0].stepId]));
-  const expectedByIntent = new Map((expectedDoc.intents || []).map((it) => [it.intentId, [...(it.expected || [])]]));
-  const globalAssertions = [...(expectedDoc.globalAssertions || [])];
+  const expectedByIntent = new Map((expectedDoc.intents || []).map((it) => [
+    it.intentId,
+    (it.expected || []).map((assertion) => projectReplayAssertion(assertion, ctx)),
+  ]));
+  const globalAssertions = (expectedDoc.globalAssertions || []).map((assertion) => projectReplayAssertion(assertion, ctx));
   // 软期望通道（regress-promptset）：--soft-expect 的断言强制 soft:true 并入按 intent 断言表——本通道定义即软、
   // 绝不注入影响裁定的硬断言（护栏 #17：verdict 只 AND 硬断言、忽略 soft），故合法不过 sign-gate（人签保护进裁定的断言）。
   // 在 sign-gate（170–184，只核签署 expected）之后并入，签署契约原样不变。caseId 有断言时同源核对，防跨 case 拼合。
@@ -280,7 +295,7 @@ async function main() {
       console.error('replay: --soft-expect caseId 与 events 不同源（原值不回显），拒算数（fail-closed）');
       process.exit(65);
     }
-    const forceSoft = (a) => ({ ...a, soft: true });
+    const forceSoft = (a) => ({ ...projectReplayAssertion(a, ctx), soft: true });
     for (const it of softDoc.intents || []) {
       const cur = expectedByIntent.get(it.intentId) || [];
       expectedByIntent.set(it.intentId, [...cur, ...(it.expected || []).map(forceSoft)]);

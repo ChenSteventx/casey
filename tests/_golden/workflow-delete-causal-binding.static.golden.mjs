@@ -27,6 +27,28 @@ const oldAWrapper = { handle: 'old-a-2', nodeId: 'old-a' };
 const freshB = { handle: 'fresh-b', nodeId: 'fresh-b' };
 const freshC = { handle: 'fresh-c', nodeId: 'fresh-c' };
 
+await check('C0 弹层选择器覆盖 class 属性中非末位的 message-box/popconfirm 标记', () => (
+  source.includes('[class*="message-box"]')
+    && source.includes('[class*="popconfirm"]')
+    && !source.includes('[class$="message-box"]')
+    && !source.includes('[class$="popconfirm"]')
+));
+
+await check('C0 删除触发缺少显式 expectedName 时不读页面并 fail-closed', async () => {
+  let pageTouched = false;
+  const page = new Proxy({}, {
+    get() {
+      pageTouched = true;
+      throw new Error('空 expectedName 不得读取页面状态猜目标');
+    },
+  });
+  const result = await mod.performWorkflowDeleteTrigger(page, '   ');
+  return pageTouched === false
+    && result.resolution === 'action_failed'
+    && result.candidateCount === 0
+    && result.identityReadback?.ok === false;
+});
+
 await check('C1 旧弹层的不同句柄包装不算新弹层', async () => {
   const result = await mod.classifyCausalDialog([oldA], [oldAWrapper], samePhysical);
   return result.resolution === 'none' && result.candidateCount === 0 && result.dialog === null;
