@@ -20,15 +20,16 @@
   取值只接受代表事件动作轴中 `resolution=unique`、`identityReadback.ok=true` 且 actual 为同结构规范值的
   同一物理字段回读。任一字段不一致、缺失、矛盾或非唯一一律证不出。
 - `workflow.setNodeField` 已有物理句柄精确回读，在成功动作轴中加性携带 `actual`；不新建第二套 DOM 定位。
-- `inputReadback` 从未实现转已实现后，`p4-drafter` 中唯一相关范例同步从软断言提硬，并更新其原有冻结
-  checksum；不改测试含义，不放宽任何校验。
+- `inputReadback` 从未实现转已实现后，不改既有 `p4-drafter` 冻结文件：其非规范字符串范例继续只允许作
+  soft 占位；本契约自己的零 SUT 金牌另钉规范载荷必须走硬断言、标 soft 必拒，非规范值不得硬入场。
 - 不改 `verdict.mjs`，不新增 schema kind/op，不运行浏览器、夹具或假被测系统。
 
 ## 零 SUT 验收
 
 `tests/_golden/regress-wf-node-script.zero-sut.golden.mjs` 必须验证：命名断言在编译知识允许集中但不进入动作
-分派表；编译只留断言原子、不产事件；草拟结果为硬 `inputReadback equals`；缺参数转人工；动作轴提取和
-断言评估均 fail-safe；迁移候选使用保留前缀与模板，不含旧报告/trace。
+分派表；编译只留断言原子、不产事件；草拟结果为硬 `inputReadback equals`；缺参数转人工；规范模板载荷
+必须硬入场且标 soft 必拒、非规范值不得硬入场；动作轴提取和断言评估均 fail-safe；迁移候选使用保留前缀
+与模板，不含旧报告/trace。
 
 ## 真机验收（route:human）
 

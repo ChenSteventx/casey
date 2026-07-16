@@ -126,6 +126,36 @@ await check('C9 注册表与实现同为精确回读语义', () => {
   if (!atom || !text.includes('精确等于') || text.includes('含期望子串')) throw new Error(`注册表仍与 equals 实现漂移：${text}`);
 });
 
+await check('C10 模板化 inputReadback 须规范编码并走硬断言', () => {
+  const value = replayAssert.encodeInputReadback({
+    nodeName: '脚本转换',
+    placeholder: '请输入python脚本',
+    exact: true,
+    value: 'atl_{{uniqueName}}',
+  });
+  const hard = {
+    caseId: 'tc_wf_node_script',
+    intents: [{ intentId: 'intent_script', expected: [{ kind: 'inputReadback', op: 'equals', value }] }],
+    globalAssertions: [],
+  };
+  const accepted = draft.validateDraft(hard);
+  if (!accepted.ok) throw new Error(`规范模板硬断言应放行：${JSON.stringify(accepted.problems)}`);
+  const bypass = draft.validateDraft({
+    ...hard,
+    intents: [{ intentId: 'intent_script', expected: [{ kind: 'inputReadback', op: 'equals', value, soft: true }] }],
+  });
+  if (bypass.ok || !bypass.problems.some((problem) => problem.includes('不得标 soft'))) {
+    throw new Error('已实现 inputReadback 标 soft:true 应被拒，不能绕过硬裁定');
+  }
+  const malformedHard = draft.validateDraft({
+    ...hard,
+    intents: [{ intentId: 'intent_script', expected: [{ kind: 'inputReadback', op: 'equals', value: 'raw' }] }],
+  });
+  if (malformedHard.ok || !malformedHard.problems.some((problem) => problem.includes('规范载荷'))) {
+    throw new Error('非规范 inputReadback 不得硬入场');
+  }
+});
+
 console.log(`regress-wf-node-script zero-sut golden: ${passed} 过 / ${failures.length} 败`);
 if (failures.length) {
   for (const failure of failures) console.error(`  FAIL ${failure}`);

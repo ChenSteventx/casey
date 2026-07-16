@@ -186,9 +186,7 @@ check('S2h 顶层 globalAssertions 非数组不抛、按契约拒（R2-F2）', (
 });
 
 check('S2c 模板形态 atl_{{uniqueName}} 合法（防过度拒绝）', () => {
-  // regress-wf-node-script：inputReadback 已实现，范例随生命周期提硬；继续标 soft 会绕硬裁定，必须拒。
-  const value = JSON.stringify({ nodeName: '脚本转换', placeholder: '请输入python脚本', exact: true, value: 'atl_{{uniqueName}}' });
-  const d = { caseId: 't', intents: [{ intentId: 'i', expected: [{ kind: 'inputReadback', op: 'equals', value }] }], globalAssertions: [] };
+  const d = { caseId: 't', intents: [{ intentId: 'i', expected: [{ kind: 'inputReadback', op: 'equals', value: 'atl_{{uniqueName}}', soft: true }] }], globalAssertions: [] };
   const r = validateDraft(d);
   if (!r || r.ok !== true) throw new Error(`前缀字面 + 模板化的 equals 应放行，实际 ${JSON.stringify(r).slice(0, 200)}`);
 });
