@@ -141,45 +141,99 @@ function Get-ProcessCommandLine {
   return [string]$row.CommandLine
 }
 
+function Get-ProcessOwnership {
+  param(
+    [Parameter(Mandatory = $true)]$Entry,
+    [Parameter(Mandatory = $true)][string]$ExpectedScript
+  )
+  $pidValue = 0
+  $ticksValue = 0L
+  if (-not [int]::TryParse([string]$Entry.pid, [ref]$pidValue)) {
+    return @{ Kind = 'invalid'; Process = $null }
+  }
+  if (-not [Int64]::TryParse([string]$Entry.startedUtcTicks, [ref]$ticksValue)) {
+    return @{ Kind = 'invalid'; Process = $null }
+  }
+  if ($pidValue -lt 1 -or $ticksValue -lt 1) {
+    return @{ Kind = 'invalid'; Process = $null }
+  }
+
+  try {
+    $process = Get-Process -Id $pidValue -ErrorAction Stop
+  } catch {
+    try {
+      $row = Get-CimInstance Win32_Process -Filter ('ProcessId=' + $pidValue) -ErrorAction Stop
+      if ($null -eq $row) { return @{ Kind = 'absent'; Process = $null } }
+    } catch {
+      return @{ Kind = 'invalid'; Process = $null }
+    }
+    return @{ Kind = 'invalid'; Process = $null }
+  }
+  try {
+    if ($process.StartTime.ToUniversalTime().Ticks -ne $ticksValue) {
+      return @{ Kind = 'mismatch'; Process = $null }
+    }
+    $commandLine = Get-ProcessCommandLine $pidValue
+    $process.Refresh()
+    if ($process.HasExited) {
+      return @{ Kind = 'absent'; Process = $null }
+    }
+    if ($process.StartTime.ToUniversalTime().Ticks -ne $ticksValue) {
+      return @{ Kind = 'mismatch'; Process = $null }
+    }
+    if ($commandLine -notmatch [regex]::Escape($ExpectedScript)) {
+      return @{ Kind = 'mismatch'; Process = $null }
+    }
+    if ($commandLine -notmatch [regex]::Escape($Node)) {
+      return @{ Kind = 'mismatch'; Process = $null }
+    }
+    return @{ Kind = 'owned'; Process = $process }
+  } catch {
+    try {
+      $process.Refresh()
+      if ($process.HasExited) { return @{ Kind = 'absent'; Process = $null } }
+    } catch {
+      return @{ Kind = 'invalid'; Process = $null }
+    }
+    return @{ Kind = 'invalid'; Process = $null }
+  }
+}
+
 function Test-ProcessIdentity {
   param(
     [Parameter(Mandatory = $true)]$Entry,
     [Parameter(Mandatory = $true)][string]$ExpectedScript
   )
-  try {
-    $pidValue = 0
-    $ticksValue = 0L
-    if (-not [int]::TryParse([string]$Entry.pid, [ref]$pidValue)) { return $false }
-    if (-not [Int64]::TryParse([string]$Entry.startedUtcTicks, [ref]$ticksValue)) { return $false }
-    $process = Get-Process -Id $pidValue -ErrorAction Stop
-    if ($process.StartTime.ToUniversalTime().Ticks -ne $ticksValue) { return $false }
-    $commandLine = Get-ProcessCommandLine $pidValue
-    if ($commandLine -notmatch [regex]::Escape($ExpectedScript)) { return $false }
-    if ($commandLine -notmatch [regex]::Escape($Node)) { return $false }
-    return $true
-  } catch {
-    return $false
-  }
+  $ownership = Get-ProcessOwnership $Entry $ExpectedScript
+  return $ownership.Kind -eq 'owned'
 }
 
 function Read-ProxyState {
-  if (-not (Test-Path -LiteralPath $StatePath)) { return $null }
+  if (-not (Test-Path -LiteralPath $StatePath)) {
+    return @{ Kind = 'missing'; State = $null }
+  }
   try {
     $item = Get-Item -LiteralPath $StatePath -Force
     if ($item.PSIsContainer -or (($item.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) -or $item.Length -gt 4096) {
-      return $null
+      return @{ Kind = 'invalid'; State = $null }
     }
     $state = [IO.File]::ReadAllText($StatePath) | ConvertFrom-Json
     $top = @($state.PSObject.Properties.Name | Sort-Object)
-    if (($top -join ',') -ne 'agent,listener,schemaVersion') { return $null }
-    if ([int]$state.schemaVersion -ne 1) { return $null }
+    if (($top -join ',') -ne 'agent,listener,schemaVersion') {
+      return @{ Kind = 'invalid'; State = $null }
+    }
+    if ([int]$state.schemaVersion -ne 1) {
+      return @{ Kind = 'invalid'; State = $null }
+    }
     foreach ($entry in @($state.listener, $state.agent)) {
       $entryKeys = @($entry.PSObject.Properties.Name | Sort-Object)
-      if (($entryKeys -join ',') -ne 'pid,startedUtcTicks') { return $null }
+      if (($entryKeys -join ',') -ne 'pid,startedUtcTicks') {
+        return @{ Kind = 'invalid'; State = $null }
+      }
     }
-    return $state
+    return @{ Kind = 'valid'; State = $state }
   } catch {
-    return $null
+    return @{ Kind = 'invalid'; State = $null }
   }
 }
 
@@ -241,17 +295,28 @@ function Wait-ProxyReady {
   return $false
 }
 
-function Stop-VerifiedProcess {
+function Stop-OwnedProcess {
   param(
     [Parameter(Mandatory = $true)]$Entry,
     [Parameter(Mandatory = $true)][string]$ExpectedScript
   )
-  if (-not (Test-ProcessIdentity $Entry $ExpectedScript)) {
-    throw 'PROXY_IDENTITY_INVALID'
+  $ownership = Get-ProcessOwnership $Entry $ExpectedScript
+  if ($ownership.Kind -eq 'absent') { return 'absent' }
+  if ($ownership.Kind -ne 'owned') { return 'unresolved' }
+  $process = $ownership.Process
+  try {
+    $process.Kill()
+    if (-not $process.WaitForExit(3000)) { return 'unresolved' }
+    return 'stopped'
+  } catch {
+    try {
+      $process.Refresh()
+      if ($process.HasExited) { return 'stopped' }
+    } catch {
+      return 'unresolved'
+    }
+    return 'unresolved'
   }
-  $process = Get-Process -Id ([int]$Entry.pid) -ErrorAction Stop
-  Stop-Process -Id $process.Id -Force -ErrorAction Stop
-  try { $process.WaitForExit(3000) | Out-Null } catch {}
 }
 
 function Stop-StartedProcess {
@@ -260,7 +325,7 @@ function Stop-StartedProcess {
   try {
     $Process.Refresh()
     if (-not $Process.HasExited) {
-      Stop-Process -Id $Process.Id -Force -ErrorAction SilentlyContinue
+      $Process.Kill()
       try { $Process.WaitForExit(3000) | Out-Null } catch {}
     }
   } catch {}
@@ -273,10 +338,26 @@ function Invoke-ProxyStart {
   try {
     Ensure-RuntimeDirectory
     if (Test-Path -LiteralPath $StatePath) {
-      $existing = Read-ProxyState
-      if ($null -ne $existing -and (Test-ProcessIdentity $existing.listener $ListenerScript) -and (Test-ProcessIdentity $existing.agent $AgentScript)) {
+      $stateProbe = Read-ProxyState
+      if ($stateProbe.Kind -eq 'invalid') {
         $preserveExistingState = $true
-        throw 'PROXY_ALREADY_RUNNING'
+        throw 'PROXY_STATE_INVALID'
+      }
+      if ($stateProbe.Kind -eq 'valid') {
+        $existing = $stateProbe.State
+        $listenerProbe = Get-ProcessOwnership $existing.listener $ListenerScript
+        $agentProbe = Get-ProcessOwnership $existing.agent $AgentScript
+        if ($listenerProbe.Kind -in @('invalid', 'mismatch') -or $agentProbe.Kind -in @('invalid', 'mismatch')) {
+          $preserveExistingState = $true
+          throw 'PROXY_IDENTITY_INVALID'
+        }
+        $listenerOwned = $listenerProbe.Kind -eq 'owned'
+        $agentOwned = $agentProbe.Kind -eq 'owned'
+        if ($listenerOwned -or $agentOwned) {
+          $preserveExistingState = $true
+          if ($listenerOwned -and $agentOwned) { throw 'PROXY_ALREADY_RUNNING' }
+          throw 'PROXY_PARTIAL_RUNNING'
+        }
       }
       Remove-Item -LiteralPath $StatePath -Force -ErrorAction SilentlyContinue
     }
@@ -310,7 +391,11 @@ function Invoke-ProxyStart {
     }
     $code = [string]$_.Exception.Message
     if ($code -notmatch '^PROXY_[A-Z0-9_]+$') { $code = 'PROXY_START_FAILED' }
-    if ($code -eq 'PROXY_ALREADY_RUNNING') { [Console]::Out.WriteLine($code) } else { [Console]::Error.WriteLine($code) }
+    if ($code -in @('PROXY_ALREADY_RUNNING', 'PROXY_PARTIAL_RUNNING')) {
+      [Console]::Out.WriteLine($code)
+    } else {
+      [Console]::Error.WriteLine($code)
+    }
     return 1
   }
 }
@@ -318,8 +403,9 @@ function Invoke-ProxyStart {
 function Invoke-ProxyStatus {
   try {
     Ensure-RuntimeDirectory
-    $state = Read-ProxyState
-    if ($null -eq $state) { throw 'PROXY_STATE_INVALID' }
+    $stateProbe = Read-ProxyState
+    if ($stateProbe.Kind -ne 'valid') { throw 'PROXY_STATE_INVALID' }
+    $state = $stateProbe.State
     if (-not (Test-ProcessIdentity $state.listener $ListenerScript)) { throw 'PROXY_IDENTITY_INVALID' }
     if (-not (Test-ProcessIdentity $state.agent $AgentScript)) { throw 'PROXY_IDENTITY_INVALID' }
     $config = Read-ProxyRuntimeConfig
@@ -344,10 +430,14 @@ function Invoke-ProxyStop {
       [Console]::Out.WriteLine('LOCAL_PROXY_STOPPED')
       return 0
     }
-    $state = Read-ProxyState
-    if ($null -eq $state) { throw 'PROXY_STATE_INVALID' }
-    Stop-VerifiedProcess $state.agent $AgentScript
-    Stop-VerifiedProcess $state.listener $ListenerScript
+    $stateProbe = Read-ProxyState
+    if ($stateProbe.Kind -ne 'valid') { throw 'PROXY_STATE_INVALID' }
+    $state = $stateProbe.State
+    $agentStopped = Stop-OwnedProcess $state.agent $AgentScript
+    $listenerStopped = Stop-OwnedProcess $state.listener $ListenerScript
+    if ($agentStopped -eq 'unresolved' -or $listenerStopped -eq 'unresolved') {
+      throw 'PROXY_IDENTITY_INVALID'
+    }
     Remove-Item -LiteralPath $StatePath -Force
     [Console]::Out.WriteLine('LOCAL_PROXY_STOPPED')
     return 0
