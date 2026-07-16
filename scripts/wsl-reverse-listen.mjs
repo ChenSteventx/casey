@@ -11,31 +11,70 @@
 // 不止首个（否则复用连接的后续 API 仍 405）。tunnel→client 方向（响应）原样 pipe、不解析。
 // 用法（WSL）：node scripts/wsl-reverse-listen.mjs 。配套 Windows 侧 scripts/win-reverse-agent.mjs（不变）。
 import net from 'node:net';
-import { readFileSync } from 'node:fs';
-import { dirname, join } from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { timingSafeEqual } from 'node:crypto';
+import { readTunnelConfig } from './tunnel-config.mjs';
 
-const HERE = dirname(fileURLToPath(import.meta.url));
-const site = JSON.parse(readFileSync(join(HERE, '..', 'site.json'), 'utf8'));
-const HOST_HEADER = new URL(site.target.startUrl).host; // host[:port]，只进内存、绝不回显
+function sanitizedFatal(message, code = 1) {
+  process.stderr.write(`${message}\n`);
+  process.exit(code);
+}
 
-const CLIENT_PORT = 15519;
-const TUNNEL_PORT = 15520;
+let config;
+try {
+  config = readTunnelConfig();
+} catch {
+  sanitizedFatal('隧道监听器启动失败：站点配置无效', 64);
+}
+
+const { clientPort: CLIENT_PORT, tunnelPort: TUNNEL_PORT, hostHeader: HOST_HEADER } = config;
 const HEAD_MAX = 65536;
 const idle = [];
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const TUNNEL_TOKEN = process.env.CASEY_TUNNEL_TOKEN || '';
+const TOKEN_PREFIX = 'CASEY-TUNNEL/1 ';
+if (TUNNEL_TOKEN && (!/^[\x21-\x7e]{16,512}$/.test(TUNNEL_TOKEN))) {
+  sanitizedFatal('隧道监听器启动失败：补给握手配置无效', 64);
+}
+
+function admitTunnel(sock) {
+  sock.setTimeout(0);
+  if (!sock.destroyed) idle.push(sock);
+}
+
+function authenticateTunnel(sock) {
+  if (!TUNNEL_TOKEN) {
+    admitTunnel(sock); // 兼容既有 WSL 手工双进程模式。
+    return;
+  }
+
+  const expected = Buffer.from(`${TOKEN_PREFIX}${TUNNEL_TOKEN}\n`, 'utf8');
+  let received = Buffer.alloc(0);
+  sock.setTimeout(3000, () => sock.destroy());
+  const onData = (chunk) => {
+    received = Buffer.concat([received, chunk]);
+    if (received.length < expected.length) return;
+    sock.off('data', onData);
+    if (received.length !== expected.length || !timingSafeEqual(received, expected)) {
+      sock.destroy();
+      return;
+    }
+    admitTunnel(sock);
+  };
+  sock.on('data', onData);
+}
 
 const tunnelServer = net.createServer((sock) => {
   sock.setKeepAlive(true, 15000);
   sock.on('error', () => {});
   sock.on('close', () => { const i = idle.indexOf(sock); if (i >= 0) idle.splice(i, 1); });
-  idle.push(sock);
+  authenticateTunnel(sock);
 });
 // 补给口绑定地址可用 CASEY_TUNNEL_BIND 覆盖（默认 127.0.0.1 零行为差）：wslrelay 的 Windows→WSL 回环
 // 转发再度半死时（2026-07-14 复发，2026-07-13 首发），设 0.0.0.0 让 Windows 代理经 WSL 虚拟网卡 IP 直连绕开中继。
 // 客户端口 15519 恒绑回环不放开（casey --sut 只喂回环基址，护栏 #7）。
 const TUNNEL_BIND = process.env.CASEY_TUNNEL_BIND || '127.0.0.1';
 tunnelServer.listen(TUNNEL_PORT, TUNNEL_BIND, () => console.log(`隧道补给口 ${TUNNEL_BIND}:${TUNNEL_PORT} 就绪（等 Windows 代理连入）`));
+tunnelServer.on('error', () => sanitizedFatal('隧道监听器启动失败：补给口不可用'));
 
 async function takeTunnel(budgetMs = 4000) {
   const t0 = Date.now();
@@ -130,4 +169,8 @@ const clientServer = net.createServer((client) => {
     client.resume();
   })().catch(() => client.destroy());
 });
-clientServer.listen(CLIENT_PORT, '127.0.0.1', () => console.log(`客户端口 127.0.0.1:${CLIENT_PORT} 就绪（WSL 内以此为 baseUrl；逐请求 Host 重写已启用）`));
+clientServer.listen(CLIENT_PORT, '127.0.0.1', () => console.log(`客户端口 127.0.0.1:${CLIENT_PORT} 就绪（逐请求 Host 重写已启用）`));
+clientServer.on('error', () => sanitizedFatal('隧道监听器启动失败：客户端口不可用'));
+
+process.on('uncaughtException', () => sanitizedFatal('隧道监听器运行失败：详情已抑制'));
+process.on('unhandledRejection', () => sanitizedFatal('隧道监听器运行失败：详情已抑制'));
