@@ -1,0 +1,25 @@
+teachin-semantic-lock-wiring 红基线
+capturedAt: 2026-07-16T16:52:51+08:00
+base: teachin-semantic-lock-impl@8f0fbbc
+scope: 零 SUT；未启动浏览器、网络、fake 或 fixture。
+
+1) node tests/_golden/teachin-semantic-lock-artifacts.zero-sut.golden.mjs
+exit: 1
+red: ERR_MODULE_NOT_FOUND lib/entity-semantic-lock-artifacts.mjs
+meaning: record→distill→compile→sign 的确定性身份旁车与冻结 hash 链尚未实现。
+
+2) node tests/_golden/teachin-semantic-lock-runtime.zero-sut.golden.mjs
+exit: 1
+red: ERR_MODULE_NOT_FOUND lib/entity-semantic-lock-runtime.mjs
+meaning: 浏览器前门、登录后 live rebind、mutation 前重验和关系双端锁尚未实现。
+
+3) node tests/_golden/teachin-semantic-lock-cli-wiring.zero-sut.golden.mjs
+exit: 1
+red:
+- record.mjs 缺 createIdentityObservationSidecar / identity-observations.json / sidecarSha256
+- distill.mjs 缺 distillIdentityCandidates / identityCandidates
+- compile.mjs 缺 buildEntityLocksDraft / entity-locks.draft.json / eventsSha256
+- sign.mjs 缺 freezeEntityLocks / entity-locks.frozen.json / eventsSha256
+- replay.mjs 缺 preflightFrozenEntityLocks / rebindEntityLocksAfterLogin / authorizeLockedAction
+- replay preflight 尚未位于 chromium.launch 前，live rebind 尚未位于登录后
+meaning: 五阶段实际 CLI 接线尚不存在；现有纯函数内核不能被当作端到端完成。
