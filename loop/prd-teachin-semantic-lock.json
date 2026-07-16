@@ -27,7 +27,8 @@
       "acceptance": [
         "node tests/_golden/teachin-semantic-lock.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-16T08:44:38.083Z 全部 acceptance exit 0"
     }
   ]
 }
