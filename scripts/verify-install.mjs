@@ -67,6 +67,8 @@ async function main() {
     'bin/casey.mjs',
     'mcp/casey-server.mjs',
     '.claude/skills/casey/SKILL.md',
+    'scripts/install.ps1',
+    'scripts/casey.ps1',
   ].every((p) => existsSync(join(ROOT, p))), 'CLI / MCP / skill 三面文件在位');
 
   const cli = join(ROOT, 'bin', 'casey.mjs');
@@ -78,6 +80,32 @@ async function main() {
   const codex = runNode([cli, 'mcp-config', '--agent', 'codex']);
   add('mcp-config', claude.status === 0 && codex.status === 0,
     `Claude Code / Codex 挂载配置可生成（exit=${claude.status ?? 'null'}/${codex.status ?? 'null'}）`);
+
+  const mcp = spawnSync(process.execPath, [join(ROOT, 'mcp', 'casey-server.mjs')], {
+    cwd: ROOT,
+    input: [
+      JSON.stringify({ jsonrpc: '2.0', id: 1, method: 'initialize', params: { protocolVersion: '2025-06-18' } }),
+      JSON.stringify({ jsonrpc: '2.0', id: 2, method: 'tools/list', params: {} }),
+      '',
+    ].join('\n'),
+    encoding: 'utf8', timeout: 10_000, windowsHide: true,
+  });
+  let mcpReady = false;
+  try {
+    const rows = String(mcp.stdout || '').trim().split(/\r?\n/).map((line) => JSON.parse(line));
+    mcpReady = mcp.status === 0 && rows[0]?.result?.serverInfo?.name === 'casey' && rows[1]?.result?.tools?.length > 0;
+  } catch { mcpReady = false; }
+  add('mcp-handshake', mcpReady, 'MCP initialize / tools-list stdio 握手完成');
+
+  if (process.platform === 'win32') {
+    const files = [join(ROOT, 'scripts', 'install.ps1'), join(ROOT, 'scripts', 'casey.ps1')];
+    const psScript = '$bad=0;foreach($f in $env:CASEY_PS_FILES.Split("|")){$t=$null;$e=$null;[Management.Automation.Language.Parser]::ParseFile($f,[ref]$t,[ref]$e)|Out-Null;if($e.Count){$bad=1}};exit $bad';
+    const ps = spawnSync('powershell.exe', ['-NoLogo', '-NoProfile', '-NonInteractive', '-Command', psScript], {
+      cwd: ROOT, encoding: 'utf8', timeout: 10_000, windowsHide: true,
+      env: { ...process.env, CASEY_PS_FILES: files.join('|') },
+    });
+    add('powershell', ps.status === 0, 'Windows PowerShell 5.1 可解析安装与操作脚本');
+  }
 
   add('cjk-font', hasCjkFont(), '中文字体可用于截图与录屏');
 

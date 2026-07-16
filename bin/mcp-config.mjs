@@ -6,7 +6,7 @@
 //   （护栏 #7 边界外——挂载配置只含启动器 node + server 脚本路径）。缺/错 --agent → fail-closed exit 64。
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { PROJECT_ROOT } from '../lib/paths.mjs';
+import { NODE_EXE, PROJECT_ROOT } from '../lib/paths.mjs';
 
 const SUPPORTED = ['claude', 'codex'];
 
@@ -23,6 +23,10 @@ export function tomlEscape(s) {
 //   （跨族评审 mustFix：bin/mcp-config.mjs claude 段一行命令 serverAbs 未 shell-quote）。
 export function shellQuote(s) {
   return `'${String(s).replace(/'/g, `'\\''`)}'`;
+}
+
+export function powershellQuote(s) {
+  return `'${String(s).replace(/'/g, "''")}'`;
 }
 
 function parseArgs(argv) {
@@ -45,10 +49,12 @@ function dieUsage(msg) {
 }
 
 // WSL 侧运行须知（G6 人签约束复述；不含任何目标地址/凭据）。
-const WSL_NOTE = '须知：回放依赖 Linux 侧 playwright；WSL + Windows 组合务必在 WSL 侧挂载并运行本 server（Windows 原生侧挂载必败，G6）。请在你将实际跑 casey 的那一侧执行本命令。';
+const RUNTIME_NOTE = process.platform === 'win32'
+  ? '当前配置绑定 Windows 原生 Node.js；安装/MCP 可直接使用。真实回放仍须 PowerShell 回环代理与完整真实 UAT 证据。'
+  : '当前配置绑定执行本命令的 Node.js；请始终在实际运行 Casey 的同一 OS/clone 中生成配置。';
 
 function printClaude(serverAbs) {
-  const snippet = { mcpServers: { casey: { command: 'node', args: [serverAbs] } } };
+  const snippet = { mcpServers: { casey: { command: NODE_EXE, args: [serverAbs] } } };
   console.log('casey MCP 挂载配置 —— claude code');
   console.log('');
   console.log('形态一：粘进仓根 .mcp.json 的 mcpServers（项目级）：');
@@ -56,9 +62,11 @@ function printClaude(serverAbs) {
   console.log(JSON.stringify(snippet, null, 2));
   console.log('');
   console.log('形态二：一行等效命令（在仓根执行）：');
-  console.log(`  claude mcp add casey -- node ${shellQuote(serverAbs)}`);
+  console.log(process.platform === 'win32'
+    ? `  claude mcp add casey -- ${powershellQuote(NODE_EXE)} ${powershellQuote(serverAbs)}`
+    : `  claude mcp add casey -- ${shellQuote(NODE_EXE)} ${shellQuote(serverAbs)}`);
   console.log('');
-  console.log(WSL_NOTE);
+  console.log(RUNTIME_NOTE);
 }
 
 function printCodex(serverAbs) {
@@ -67,10 +75,12 @@ function printCodex(serverAbs) {
   console.log('追加到 ~/.codex/config.toml：');
   console.log('');
   console.log('[mcp_servers.casey]');
-  console.log('command = "node"');
+  console.log(`command = "${tomlEscape(NODE_EXE)}"`);
   console.log(`args = ["${tomlEscape(serverAbs)}"]`);
   console.log('');
-  console.log(WSL_NOTE);
+  if (process.platform === 'win32') console.log(`Windows 当前 Node.js 启动器：${NODE_EXE}`);
+  if (process.platform === 'win32') console.log('');
+  console.log(RUNTIME_NOTE);
 }
 
 function main() {

@@ -119,8 +119,17 @@ function Start-ProxyProcess {
   )
   if (Test-Path -LiteralPath $OutLog) { Remove-Item -LiteralPath $OutLog -Force }
   if (Test-Path -LiteralPath $ErrLog) { Remove-Item -LiteralPath $ErrLog -Force }
-  $quotedScript = '"' + $ScriptPath + '"'
-  return Start-Process -FilePath $Node -ArgumentList $quotedScript -WorkingDirectory $Root -WindowStyle Hidden -RedirectStandardOutput $OutLog -RedirectStandardError $ErrLog -PassThru
+  # UseShellExecute prevents the long-lived Node children from retaining a caller's captured
+  # stdout/stderr pipe. Without this, an agent that captures PowerShell output waits forever for EOF.
+  $startInfo = New-Object Diagnostics.ProcessStartInfo
+  $startInfo.FileName = $Node
+  $startInfo.Arguments = '"' + $ScriptPath + '"'
+  $startInfo.WorkingDirectory = $Root
+  $startInfo.UseShellExecute = $true
+  $startInfo.WindowStyle = [Diagnostics.ProcessWindowStyle]::Hidden
+  $process = [Diagnostics.Process]::Start($startInfo)
+  if ($null -eq $process) { throw 'PROXY_PROCESS_START_FAILED' }
+  return $process
 }
 
 function Get-ProcessCommandLine {
@@ -260,11 +269,13 @@ function Stop-StartedProcess {
 function Invoke-ProxyStart {
   $listener = $null
   $agentProcess = $null
+  $preserveExistingState = $false
   try {
     Ensure-RuntimeDirectory
     if (Test-Path -LiteralPath $StatePath) {
       $existing = Read-ProxyState
       if ($null -ne $existing -and (Test-ProcessIdentity $existing.listener $ListenerScript) -and (Test-ProcessIdentity $existing.agent $AgentScript)) {
+        $preserveExistingState = $true
         throw 'PROXY_ALREADY_RUNNING'
       }
       Remove-Item -LiteralPath $StatePath -Force -ErrorAction SilentlyContinue
@@ -289,15 +300,17 @@ function Invoke-ProxyStart {
       throw 'PROXY_NOT_READY'
     }
     Write-ProxyState $listener $agentProcess
-    Write-Output 'LOCAL_PROXY_READY REAL_SUT_HTTP_NOT_VERIFIED'
+    [Console]::Out.WriteLine('LOCAL_PROXY_READY REAL_SUT_HTTP_NOT_VERIFIED')
     return 0
   } catch {
     Stop-StartedProcess $agentProcess
     Stop-StartedProcess $listener
-    if (Test-Path -LiteralPath $StatePath) { Remove-Item -LiteralPath $StatePath -Force -ErrorAction SilentlyContinue }
+    if (-not $preserveExistingState -and (Test-Path -LiteralPath $StatePath)) {
+      Remove-Item -LiteralPath $StatePath -Force -ErrorAction SilentlyContinue
+    }
     $code = [string]$_.Exception.Message
     if ($code -notmatch '^PROXY_[A-Z0-9_]+$') { $code = 'PROXY_START_FAILED' }
-    [Console]::Error.WriteLine($code)
+    if ($code -eq 'PROXY_ALREADY_RUNNING') { [Console]::Out.WriteLine($code) } else { [Console]::Error.WriteLine($code) }
     return 1
   }
 }
@@ -312,7 +325,7 @@ function Invoke-ProxyStatus {
     $config = Read-ProxyRuntimeConfig
     if (-not (Test-ListeningPort $config.ClientPort ([int]$state.listener.pid))) { throw 'PROXY_NOT_READY' }
     if (-not (Test-ListeningPort $config.TunnelPort ([int]$state.listener.pid))) { throw 'PROXY_NOT_READY' }
-    Write-Output 'LOCAL_PROXY_READY REAL_SUT_HTTP_NOT_VERIFIED'
+    [Console]::Out.WriteLine('LOCAL_PROXY_READY REAL_SUT_HTTP_NOT_VERIFIED')
     return 0
   } catch {
     [Console]::Error.WriteLine('LOCAL_PROXY_NOT_READY')
@@ -323,12 +336,12 @@ function Invoke-ProxyStatus {
 function Invoke-ProxyStop {
   try {
     if (-not (Test-Path -LiteralPath $RuntimeDir)) {
-      Write-Output 'LOCAL_PROXY_STOPPED'
+      [Console]::Out.WriteLine('LOCAL_PROXY_STOPPED')
       return 0
     }
     Ensure-RuntimeDirectory
     if (-not (Test-Path -LiteralPath $StatePath)) {
-      Write-Output 'LOCAL_PROXY_STOPPED'
+      [Console]::Out.WriteLine('LOCAL_PROXY_STOPPED')
       return 0
     }
     $state = Read-ProxyState
@@ -336,7 +349,7 @@ function Invoke-ProxyStop {
     Stop-VerifiedProcess $state.agent $AgentScript
     Stop-VerifiedProcess $state.listener $ListenerScript
     Remove-Item -LiteralPath $StatePath -Force
-    Write-Output 'LOCAL_PROXY_STOPPED'
+    [Console]::Out.WriteLine('LOCAL_PROXY_STOPPED')
     return 0
   } catch {
     [Console]::Error.WriteLine('PROXY_STOP_FAILED')

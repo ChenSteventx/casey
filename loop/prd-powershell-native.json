@@ -42,7 +42,8 @@
       "acceptance": [
         "node tests/_golden/powershell-native.static.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-16T03:47:06.965Z 全部 acceptance exit 0"
     },
     {
       "id": "S2",
@@ -52,7 +53,8 @@
         "powershell.exe -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -File tests/_golden/powershell-native.zero-sut.golden.ps1",
         "pwsh.exe -NoLogo -NoProfile -NonInteractive -File tests/_golden/powershell-native.zero-sut.golden.ps1"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-16T03:49:10.107Z 全部 acceptance exit 0"
     }
   ]
 }

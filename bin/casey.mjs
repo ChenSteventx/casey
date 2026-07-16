@@ -486,7 +486,7 @@ ${col(C.cyan, 'loop 机制')}（薄壳直通 loop-kit；纪律已生效）
 
 ${col(C.cyan, '自检')}
   casey selftest --tier1                  hermetic 链路自检（零外部依赖）                 [可用]
-  casey doctor                            跨平台就绪自检（node/playwright/中文字体/凭据·隧道在位），逐项 ok/缺失+建议  [可用]
+  casey doctor [--real-sut]               跨平台就绪自检；--real-sut 把账户/site 双键/ACL/回环监听升为阻塞项  [可用]
   casey selftest --tier2                  live smoke（需 site.json + creds，route:human） [P9]
   casey demo                              当前禁用：历史实现会启动夹具 SUT；只允许读取已有真实报告
 
