@@ -3,7 +3,7 @@
   "task": "wf-select-node-dropdown（light）：画布维度第四原子 workflow.selectNodeDropdown——节点配置抽屉里选 HEREN「请选择」下拉（GRILL D1/D3/D4/D5）。COMPILE_KNOWN_ATOMS 16→17（分派表加法，纯加法零冻结 schema 改动）：复用 events.action=click 承载（nth 载下拉下标、text 载 option、semantic 载触发器锚），不走 selectOption（冻结 dropdownUnit 无 nth 槽、required fieldLabel/optionText 冲突）。doSelectNodeDropdown 专用回放门按 ev.atom 分发（域锁 .hr-drawer__content-wrapper 内第 nth 个 .hr-select 触发器——nth 路 A 确定性位置消歧 + 限可见浮层 .hr-select-option 作用域唯一才点 + 缺席守卫不抛穿 + 触发器值精确回读不再「请选择」且精确含 option），不复用通用 doSelect（全页 combobox 门必兜空/撞既有分类下拉）。编译门 compileWorkflowSelectNodeDropdown 与回放门同刻（同域锁 + 同可见浮层作用域 + 同精确回读）。fake-sut 节点抽屉「请选择」下拉纯加法夹具 + 反面场景（ddmulti 选项多匹配 / ddabsent 目标缺席 / ddwrong 选错项写错值 / ddtwin 两触发器孪生浮层 / ddempty 抽屉开无下拉）。例翻：五金牌「集 16」翻 17（agent.openToolPicker 不可编译长寿反例不翻、只翻计数）+ 六 prd 重签（flow-bridge/wf-add-node/wf-connect-nodes/wf-open-smoke/wf-open-node 棘轮 + p5-replay 夹具 checksum）。决策 docs/plans/wf-select-node-dropdown/proposed/GRILL.md。",
   "specPath": "docs/plans/wf-select-node-dropdown/plan.md",
   "testChecksums": {
-    "tests/_golden/wf-select-node-dropdown.golden.mjs": "75da8db75385ff69d86b9da3b576e47886228ea8e8e9680956b84d21d6a646f0"
+    "tests/_golden/wf-select-node-dropdown.golden.mjs": "4e0cf69975ecb71014c2dc7ed07948046a21261f26a25bb48bf770cdb6aba73f"
   },
   "observability": [
     {

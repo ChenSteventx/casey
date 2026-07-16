@@ -16,7 +16,7 @@
 // PASS（护栏 #14）。判内核纯编译/回放：不新增断言 kind、不碰 bin/verdict.mjs、不碰 bin/replay.mjs 采集通道
 // （L1 断言 workflow.assertNodeFieldValue = 另契约，读 value 属性的独立 kind + 采集通道）。
 //
-// C1 setNodeField 可编译 + COMPILE_KNOWN_ATOMS 恰 25（智能体工具首纵切 +7）+ agent.selectModel 不可编译。
+// C1 setNodeField 可编译 + COMPILE_KNOWN_ATOMS 恰 18（setNodeField +1）+ agent.openToolPicker 不可编译（长寿反例）。
 // C2 端到端开抽屉填字段（fake-sut happy）：compile [nav, open, addNode, openNode, setNodeField(placeholder,value)]
 //    → events 末步是 setNodeField 的 fill（value / semantic label placeholder / 无 nth）→ 过 events.schema →
 //    blockers 空 + compile-report 含字段回读证据 → draft(+patch)→sign→casey run→verdict 恰 5 intent 全 PASS。
@@ -101,11 +101,11 @@ function assertEventsDocAgainstSchema(doc) {
 }
 
 // ---------- C1 编译原子集加法 + 例翻反例 ----------
-await checkAsync('C1 workflow.setNodeField 可编译、COMPILE_KNOWN_ATOMS 恰 25、agent.selectModel 不可编译', async () => {
+await checkAsync('C1 workflow.setNodeField 可编译、COMPILE_KNOWN_ATOMS 恰 18、agent.openToolPicker 不可编译', async () => {
   const ca = await import(`file://${join(ROOT, 'lib', 'compile-atoms.mjs').replace(/\\/g, '/')}`);
   if (!ca.isCompilableAtom('workflow.setNodeField')) throw new Error('workflow.setNodeField 应可编译（抽屉族第三原子加法）');
-  if (ca.COMPILE_KNOWN_ATOMS.size !== 25) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 25（智能体工具首纵切 +7），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
-  if (ca.isCompilableAtom('agent.selectModel')) throw new Error('agent.selectModel 不应可编译（下一条尚未迁移的智能体原子）');
+  if (ca.COMPILE_KNOWN_ATOMS.size !== 18) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 18（setNodeField +1），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
+  if (ca.isCompilableAtom('agent.openToolPicker')) throw new Error('agent.openToolPicker 不应可编译（继任反例真缝——agent_tool 维度整体压后、长寿反例）');
   if (ca.isCompilableAtom('nonsense.x')) throw new Error('nonsense.x 不应可编译');
 });
 

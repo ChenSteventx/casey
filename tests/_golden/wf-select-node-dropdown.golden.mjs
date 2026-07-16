@@ -9,7 +9,7 @@
 // 同型缝）。不走 selectOption：冻结 schema 的 allOf 强制 selectOption 带 dropdownUnit，而 dropdownUnit
 // （additionalProperties:false、required fieldLabel/optionText/scope）无 nth 槽——走它要改冻结 schema。
 //
-// C1 selectNodeDropdown 可编译 + COMPILE_KNOWN_ATOMS 恰 25（智能体工具首纵切 +7）+ agent.selectModel
+// C1 selectNodeDropdown 可编译 + COMPILE_KNOWN_ATOMS 恰 18（setNodeField +1）+ agent.openToolPicker
 //    不可编译（继任反例真缝，长寿——agent_tool 维度整体压后）。
 // C2 端到端开抽屉选下拉（fake-sut happy）：compile [nav, open, addNode, openNode, selectNodeDropdown(option)]
 //    → events 末步是 selectNodeDropdown 的 click（nth:0 / text:OPT / semantic text 请选择）→ 过 events.schema
@@ -89,11 +89,11 @@ function assertEventsDocAgainstSchema(doc) {
 }
 
 // ---------- C1 编译原子集加法 + 例翻反例 ----------
-await checkAsync('C1 workflow.selectNodeDropdown 可编译、COMPILE_KNOWN_ATOMS 恰 25、agent.selectModel 不可编译', async () => {
+await checkAsync('C1 workflow.selectNodeDropdown 可编译、COMPILE_KNOWN_ATOMS 恰 18、agent.openToolPicker 不可编译', async () => {
   const ca = await import(`file://${join(ROOT, 'lib', 'compile-atoms.mjs').replace(/\\/g, '/')}`);
   if (!ca.isCompilableAtom('workflow.selectNodeDropdown')) throw new Error('workflow.selectNodeDropdown 应可编译（抽屉族第二原子加法）');
-  if (ca.COMPILE_KNOWN_ATOMS.size !== 25) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 25（智能体工具首纵切 +7），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
-  if (ca.isCompilableAtom('agent.selectModel')) throw new Error('agent.selectModel 不应可编译（下一条尚未迁移的智能体原子）');
+  if (ca.COMPILE_KNOWN_ATOMS.size !== 18) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 18（setNodeField +1），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
+  if (ca.isCompilableAtom('agent.openToolPicker')) throw new Error('agent.openToolPicker 不应可编译（继任反例真缝——agent_tool 维度整体压后、长寿反例）');
   if (ca.isCompilableAtom('nonsense.x')) throw new Error('nonsense.x 不应可编译');
 });
 

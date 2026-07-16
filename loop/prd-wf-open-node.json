@@ -3,7 +3,7 @@
   "task": "wf-open-node（light）：画布维度第三原子 workflow.openNode——单击节点中心开配置抽屉（GRILL D1：registry 真机 SOP 定案单击、HANDOFF「双击」查无实证按笔误处理，Steven 拍板）。COMPILE_KNOWN_ATOMS 15→16（分派表加法）+ doOpenNode 专用回放门按 ev.atom 分发（.lf-canvas-overlay 域锁 + 域内唯一才点 + 缺席守卫不抛穿 + 抽屉可见含标题双证回读）+ fake-sut 节点抽屉纯加法夹具（overlay 委托 click、锚点不开抽屉、连线拖拽零干扰）。例翻：四金牌「集 15」翻 16 + 五 prd 重签（flow-bridge/wf-add-node/wf-connect-nodes/wf-open-smoke 棘轮 + p5-replay 夹具 checksum）。零冻结 schema 改动（click 已在动作枚举）。决策 docs/plans/wf-open-node/proposed/GRILL.md。",
   "specPath": "docs/plans/wf-open-node/plan.md",
   "testChecksums": {
-    "tests/_golden/wf-open-node.golden.mjs": "dc061b7ea6e393a979ad8d6fda1f2574c49b9680a2a05727ead97c1afebd18cf"
+    "tests/_golden/wf-open-node.golden.mjs": "ffa9c67216fe672213160d0974ade569c3baed2cb91c25850200273b5638558a"
   },
   "observability": [
     {

@@ -3,7 +3,7 @@
   "task": "迁移 regress 脚本转换节点纵切：补 workflow.assertNodeFieldValue 命名断言原子与 inputReadback 精确回读接缝；不运行假被测系统，真实行为保持 route:human。",
   "specPath": "docs/plans/regress-wf-node-script/plan.md",
   "testChecksums": {
-    "tests/_golden/regress-wf-node-script.zero-sut.golden.mjs": "efeca67739380ea858f54e85a6fa60789dea14e0f7d5bcf08e862e37dd478e0d"
+    "tests/_golden/regress-wf-node-script.zero-sut.golden.mjs": "9cda784ee55803acfce2177163486601766ed645b73372fc7ff258e6ae5a69eb"
   },
   "observability": [
     {
@@ -25,7 +25,7 @@
         "node tests/_golden/p4-drafter.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-16T06:43:09.586Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-16T07:17:59.090Z 全部 acceptance exit 0"
     }
   ]
 }
