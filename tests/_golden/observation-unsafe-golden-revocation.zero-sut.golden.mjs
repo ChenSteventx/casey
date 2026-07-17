@@ -5,6 +5,7 @@ import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { spawnSync } from 'node:child_process';
+import { gunzipSync } from 'node:zlib';
 import { acquireCanonicalCaseLease } from './support/canonical-case-lease.mjs';
 
 const ROOT = fileURLToPath(new URL('../../', import.meta.url));
@@ -39,12 +40,10 @@ check('old executable paths are safe fail-fast tombstones and archives preserve 
       throw new Error(`${entry.executablePath} tombstone 含 filesystem 写删能力`);
     }
     if (!existsSync(archive)) throw new Error(`${entry.archivePath} 不存在`);
-    const container = JSON.parse(readFileSync(archive, 'utf8'));
-    if (container?.schemaVersion !== 1 || container?.artifactKind !== 'revoked-golden-byte-archive'
-      || container?.originalPath !== entry.executablePath || container?.decodedSha256 !== entry.originalSha256
-      || typeof container?.originalBase64 !== 'string') throw new Error(`${entry.archivePath} 容器形状/绑定错误`);
-    const decoded = Buffer.from(container.originalBase64, 'base64');
-    if (decoded.toString('base64') !== container.originalBase64 || sha(decoded) !== entry.originalSha256) {
+    let decoded;
+    try { decoded = gunzipSync(readFileSync(archive)); }
+    catch { throw new Error(`${entry.archivePath} 非完整 gzip archive`); }
+    if (sha(decoded) !== entry.originalSha256) {
       throw new Error(`${entry.archivePath} 未保留原始 bytes/hash`);
     }
     tombstones.push(executable);

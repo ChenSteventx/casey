@@ -5,8 +5,8 @@
   "testChecksums": {
     "tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs": "b7bf4d9e7ca51f5d7db7b6e8b45ab67df4dc5556c51237a1b4f51e89a01cbeeb",
     "tests/_golden/observation-temp-commit-integrity.zero-sut.golden.mjs": "3bc162bc9ee12753c78e14b099e6e3335c3a3866b27fb7db5b529f606028d4f5",
-    "tests/_golden/observation-unsafe-golden-revocation.zero-sut.golden.mjs": "83696c878a7f59664aaaba4a6c726701bebee51008162fdd26abc3999b8acea2",
-    "tests/_golden/fixtures/observation-runtime-trust-root/security-revocation.json": "180d6402996789536fc3687e9c2ea3aaf6d845fa39568b297f2e2d6a477307ed",
+    "tests/_golden/observation-unsafe-golden-revocation.zero-sut.golden.mjs": "456661e868cad2de7b7f24ea2f8318d7c4d4a217df093e6ed374526210254f66",
+    "tests/_golden/fixtures/observation-runtime-trust-root/security-revocation.json": "580a6882f0924d0a090964b9199e058c5dc57216e2007bbbfbf6702455de3829",
     "tests/_golden/fixtures/observation-runtime-trust-root/test-driver-publication.mjs": "9a549cd6b2f7b9a841e3dd1f1dbce0d12c914f08964d2e77a20ddee182efaf3a",
     "tests/_golden/fixtures/observation-runtime-trust-root/test-driver-publication-loader.mjs": "93edcd6cf91117d262488872743055b8f20f8ea990b3b58a950c4202404a3124",
     "tests/_golden/support/canonical-case-lease.mjs": "f273c242922cf6e6617173c33fafc64c9c95bb78f4b136989d535c58627fed97",

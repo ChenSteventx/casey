@@ -6,12 +6,12 @@
   "revoked": [
     {
       "executablePath": "tests/_golden/teachin-observation-transaction-root.zero-sut.golden.mjs",
-      "archivePath": "tests/_golden/revoked/teachin-observation-transaction-root.archive.json",
+      "archivePath": "tests/_golden/revoked/teachin-observation-transaction-root.archive.gz",
       "originalSha256": "189065ab86629cbaf8a6e7d8b85464c624144cca00182af33b6e1c6bfd3d8f12"
     },
     {
       "executablePath": "tests/_golden/teachin-observation-driver-canonical-root.zero-sut.golden.mjs",
-      "archivePath": "tests/_golden/revoked/teachin-observation-driver-canonical-root.archive.json",
+      "archivePath": "tests/_golden/revoked/teachin-observation-driver-canonical-root.archive.gz",
       "originalSha256": "fe58a3e41bbeadc534df3ee9d53bbb8ce91720d8fd7de85c56cf38475332bde1"
     }
   ],
@@ -19,6 +19,5 @@
   "successorPrd": "loop/prd-teachin-observation-safe-case-lease-v2.json",
   "successorGolden": "tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs",
   "safeLeaseSupport": "tests/_golden/support/canonical-case-lease.mjs",
-  "oldFrozenAssetPolicy": "explicit-security-exception-base64-json-container-preserves-original-bytes-and-sha"
+  "oldFrozenAssetPolicy": "explicit-security-exception-gzip-binary-container-preserves-original-bytes-and-sha"
 }
-

@@ -18,9 +18,9 @@
 ## 3. P0 unsafe golden security revocation
 
 1. 两份旧 frozen executable golden 属安全撤销例外：不得静默改成 PASS，也不得再次执行旧 body。
-2. 原始 bytes 原样编码进非代码 JSON 容器（`originalBase64` + `decodedSha256`），并记录原路径、archive 路径和原 sha256；不得只改扩展名保存 JS 文本，因为 `node path.txt` 仍可能执行。
+2. 原始 bytes 原样压缩进 gzip 二进制容器，receipt 记录原路径、archive 路径、decoded sha256；不得只改扩展名保存 JS 文本。门禁首版曾使用 Base64 JSON，但实跑发现 Node 直接以 `.json` 为入口会 exit 0，故以显式 amendment 改为 gzip，绝不把该 2/3 结果记绿。
 3. 原 executable path 替换为无 filesystem import/写删动作的 fail-fast tombstone，固定非零退出；新 receipt 明示 `security-revoked-not-pass`，并指向 v2 safe successor。
-4. 新 golden 只在先静态确认 tombstone marker 与 archive 容器后才执行；必须尝试 `node archive.json`，证明其在任何旧 body/filesystem import 前语法拒绝；再用 canonical safe lease 的 sentinel/identity 证明 archive 与 tombstone 都不改、不删 case。
+4. 新 golden 只在先静态确认 tombstone marker 与 gzip archive 可完整解压并匹配原 sha 后才执行；必须尝试 `node archive.gz`，证明其在任何旧 body/filesystem import 前语法/容器拒绝；再用 canonical safe lease 的 sentinel/identity 证明 archive 与 tombstone 都不改、不删 case。
 
 ## 4. Frozen acceptance assets
 
