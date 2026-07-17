@@ -29,7 +29,8 @@
       "acceptance": [
         "node tests/_golden/teachin-semantic-lock-capability-hardening.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T03:28:59.080Z 全部 acceptance exit 0"
     }
   ]
 }
