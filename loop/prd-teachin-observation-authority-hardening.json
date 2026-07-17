@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-observation-authority-hardening（full）：替代并收严身份观察受信契约。plain expectedBinding 永远不得 trusted；新入口只消费 package 联合验证后由 latest accepted 示教入账台账铸造的 opaque authority；eventSeq 不得一证多对象且 action/evidence 必须相关；UTF-8 百分号编码敏感内容及非法/不收敛编码 fail-closed；所有 Proxy 在任何 trap 前由 util.types.isProxy 拒绝。",
+  "specPath": "docs/plans/teachin-observation-authority-hardening/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-observation-authority-hardening.zero-sut.golden.mjs": "86ba03c322376971fd1e7f0bc086b8a131cfea89d67d964fd771b00475608901"
+  },
+  "observability": [
+    {
+      "dimension": "accepted-ledger authority 在真实 I/O 中必须来自固定同级三件套、同一打开文件快照及 append-only 台账最新 accepted 行；纯函数验收不证明文件系统 TOCTOU。",
+      "route": "human"
+    },
+    {
+      "dimension": "workflow、agent 与其它名字+编号业务对象在真实 AI 中台上的 action/evidence 兼容性及同记录双锚读回，必须联网真机逐 case 录屏和视觉复核。",
+      "route": "human"
+    },
+    {
+      "dimension": "本契约不启动 SUT、fake、fixture server、浏览器或网络；真机完成度不得从本纯函数 GREEN 推断。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-observation-authority-hardening",
+      "desc": "普通 expectedBinding 降权；新 verifyAcceptedIdentityObservationBundle 只认 package→verifyIntakenPackage 铸造的 accepted-ledger authority；拒 eventSeq 一证多对象与无关 action/evidence；严格 UTF-8 多轮百分号解码并拒敏感、非法和不收敛值；用 node:util/types.isProxy 在反射前拒顶层与嵌套 Proxy 且零 trap；旧冻结 checksum 不变。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-observation-authority-hardening.zero-sut.golden.mjs"
+      ],
+      "passes": false,
+      "evidence": ""
+    }
+  ]
+}

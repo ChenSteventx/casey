@@ -1,0 +1,16 @@
+FAIL P0 调用者 read factory 不能铸造 SAME/allowAction: 旧冻结正向 authority 不可读: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_NOT_PUBLISHED","nextAction":"RERECORD_AND_RESIGN"}
+ok   HIGH 普通 runKey 对象不能铸 runtime capability
+FAIL HIGH 不同 run context 即使同 runKey 也不能建立 successor: 旧冻结正向 authority 不可读: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_NOT_PUBLISHED","nextAction":"RERECORD_AND_RESIGN"}
+FAIL HIGH 冻结动作角色策略拒绝 relation-source-only: 负 fixture 未由 PRD 发布: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_NOT_PUBLISHED","nextAction":"RERECORD_AND_RESIGN"}
+FAIL HIGH 冻结动作角色策略拒绝 relation-target-only: 负 fixture 未由 PRD 发布: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_NOT_PUBLISHED","nextAction":"RERECORD_AND_RESIGN"}
+FAIL HIGH 冻结动作角色策略拒绝 mutation-empty: 负 fixture 未由 PRD 发布: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_NOT_PUBLISHED","nextAction":"RERECORD_AND_RESIGN"}
+FAIL HIGH 冻结动作角色策略拒绝 unknown-role: 负 fixture 未由 PRD 发布: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_NOT_PUBLISHED","nextAction":"RERECORD_AND_RESIGN"}
+ok   HIGH 同一可写仓内 PRD+lock 不能自封发布权威
+ok   HIGH symlink/realpath 逃逸不能作为发布 trust root
+RED  teachin-semantic-lock-runtime-authority: P0 调用者 read factory 不能铸造 SAME/allowAction: 旧冻结正向 authority 不可读: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_NOT_PUBLISHED","nextAction":"RERECORD_AND_RESIGN"}
+RED  teachin-semantic-lock-runtime-authority: HIGH 不同 run context 即使同 runKey 也不能建立 successor: 旧冻结正向 authority 不可读: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_NOT_PUBLISHED","nextAction":"RERECORD_AND_RESIGN"}
+RED  teachin-semantic-lock-runtime-authority: HIGH 冻结动作角色策略拒绝 relation-source-only: 负 fixture 未由 PRD 发布: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_NOT_PUBLISHED","nextAction":"RERECORD_AND_RESIGN"}
+RED  teachin-semantic-lock-runtime-authority: HIGH 冻结动作角色策略拒绝 relation-target-only: 负 fixture 未由 PRD 发布: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_NOT_PUBLISHED","nextAction":"RERECORD_AND_RESIGN"}
+RED  teachin-semantic-lock-runtime-authority: HIGH 冻结动作角色策略拒绝 mutation-empty: 负 fixture 未由 PRD 发布: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_NOT_PUBLISHED","nextAction":"RERECORD_AND_RESIGN"}
+RED  teachin-semantic-lock-runtime-authority: HIGH 冻结动作角色策略拒绝 unknown-role: 负 fixture 未由 PRD 发布: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_NOT_PUBLISHED","nextAction":"RERECORD_AND_RESIGN"}
+RED  teachin-semantic-lock-runtime-authority/all: 3 过 / 6 红

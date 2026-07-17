@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-observation-transaction-root（full）：替代并收严示教身份观察根的四个 HIGH。append/read 只认固定 PROJECT_ROOT/cases canonical root 并绑定祖先/文件 identity；ledger symlink/hardlink/锁占用/校验拒绝零 accepted 残留，只写有界 committed transaction，consumer 只认 committed；accepted authority 与 receipt 私下共享同 transaction token、三件套 hash 与 ledger generation，跨 package 混搭拒绝；safe-own-data 明确 MAX_ITEMS/MAX_DEPTH/MAX_KEYS/MAX_BYTES，巨大稀疏数组不按 length 分配，identity 复用共享 snapshot。",
+  "specPath": "docs/plans/teachin-observation-transaction-root/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-observation-transaction-root.zero-sut.golden.mjs": "189065ab86629cbaf8a6e7d8b85464c624144cca00182af33b6e1c6bfd3d8f12",
+    "tests/_golden/fixtures/teachin-observation-transaction-root/limits.json": "4cdf0afada5b1f114843b7af25fab448716b5cc55837becdec1f0667aee05385"
+  },
+  "observability": [
+    {
+      "dimension": "父目录在检查与 open/rename/commit 间的跨进程 rename race，Node 在各 OS 缺少统一目录 fd 相对寻址能力；须平台专项审计与并发压力测试，不向生产 API 注入 reader/clock/filesystem 测试旁路。",
+      "route": "human"
+    },
+    {
+      "dimension": "排他锁在进程崩溃、断电、网络文件系统和 Windows/macOS/Linux/WSL 各文件系统上的回收与 durability，须跨平台故障注入。",
+      "route": "human"
+    },
+    {
+      "dimension": "file identity 在 Windows 与 POSIX 的等价性、真实录制 driver 是否在同一次会话消费 committed transaction，须真机审计。",
+      "route": "human"
+    },
+    {
+      "dimension": "本契约不启动 SUT、fake、fixture server、浏览器或网络；zero-SUT GREEN 不得外推成真机闭环。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-observation-transaction-root",
+      "desc": "冻结固定 cases root、ledger symlink/hardlink/拒绝零残留与 committed transaction、accepted+receipt 同事务跨包拒绝、safe-own-data 四维 limits 与 identity 共享 snapshot；父 rename race 明确 route:human；全部旧 frozen 资产保持原 checksum。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-observation-transaction-root.zero-sut.golden.mjs"
+      ],
+      "passes": false,
+      "evidence": ""
+    }
+  ]
+}

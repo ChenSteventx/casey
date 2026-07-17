@@ -1,0 +1,10 @@
+Gate amendment RED (zero-SUT, 2026-07-17)
+command: node tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs
+exit: 1
+
+7 prior groups passed; canonical signed package group failed only at the new same-process identity probe:
+rehydrated identity consumer probe exit=1
+identity consumer rejected: READBACK_DRIVER_PROVENANCE_REQUIRED
+
+cause: rehydrate re-verifies the same signed Ed25519 driver receipt but minted a non-canonical provenance string `signed-driver-ed25519-release-rehydrate`; identity consumer accepts canonical `signed-driver-ed25519`. Rehydrate source already has a separate authority provenance field.
+tamper assertion is frozen in the same probe and must remain rejected after the fix.

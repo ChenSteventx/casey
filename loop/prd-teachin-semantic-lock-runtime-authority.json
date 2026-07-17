@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-semantic-lock-runtime-authority（full）：关闭调用者 read 与字符串 runKey 铸权，按冻结 action policy 补齐对象角色，并把发布权威移出同仓可写 PRD+lock 与 symlink 路径。【2026-07-17 semantic-lock-cert-closure 分面处置：runtime 节三检查此前只能空洞过（adapter 恒拒），迁入 teachin-semantic-lock-runtime-discrimination-successor（s1 验收随迁指向该前瞻红基线）；roles 节改为真可达（发布带 actionPolicy 夹具 + 无策略正控制项）、publication 节 symlink 检查加强到真击中 lstat 守卫。checksum 按纪律②原地重签。】",
+  "specPath": "docs/plans/teachin-semantic-lock-runtime-authority/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-semantic-lock-runtime-authority.zero-sut.golden.mjs": "fa7f8cbaa18209cd48295cb15da369458b49d849810feda2785394f940f9f412",
+    "tests/_golden/teachin-semantic-lock-runtime-discrimination-successor.zero-sut.golden.mjs": "4c707ff196472be21d166450d2252962ceb9b77efe83d10579090a29f6baf29a",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/entity-action-policy.frozen.json": "74f3d362045a4cf0db77a560b218232942280055dbd942beab2728ba2b32955f",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-source-only.events.json": "413432a97a61543413aff2245fd4849bbcc957fb435c6722c95954d94323419d",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-source-only.locks.json": "4440ebfba3bf214e04718899c9f13bd22c89f27db69da0ca23dc8b1d18418c86",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-target-only.events.json": "984f7a1416da57c8f73e3c7a36058050877228d3a97f7a12b43a166658b48e28",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-target-only.locks.json": "28d771f1801886b8a5a016eb6a3ff4afb4391d9e206d41defc05fbf4ba151b08",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/mutation-empty.events.json": "5f888baa18d62b546deea6640fad0caa9f6da9a2c974d9a1d402f35450bd7da4",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/mutation-empty.locks.json": "290a8485016688ed68273e2995511318f66422c27c17c4c72dae61168d9ba6f6",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/unknown-role.events.json": "30ede5dcde6b4e11a99a72960cf609ec4f0b5382f4b283be51122b1789f83416",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/unknown-role.locks.json": "09d50ac939a62c711ac050d2a07e3378f97a9459121daabe13a7168fe170bb14",
+    "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/entity-locks.frozen.json": "027296d2b2bcafc12b69c40891bb4b89c70f04051f9ac77a9e89251a918c020c",
+    "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/events.document.json": "2e7742311fd3516e5461b68e5caed19bc292aa1a3b514c9831188dab40607034"
+  },
+  "observability": [
+    {
+      "dimension": "真实 AI 中台 driver 从受信注册到登录后只读扫描的调用链；联网真机录屏、视觉复核、每用例独立 HTML 与附件。",
+      "route": "human"
+    },
+    {
+      "dimension": "可信 runner 铸造的 run capability 与浏览器/session 生命周期同源，关窗、重连或跨运行后旧能力不可复用。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实 compile 的 mutation/relation event 与冻结动作身份 policy 角色完整对齐。",
+      "route": "human"
+    },
+    {
+      "dimension": "发布清单、公钥或父进程 capability 在 Win PowerShell、WSL、macOS 的分发边界及实际文件替换防护。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-runtime-driver-and-run-authority",
+      "desc": "调用者 read 不能成为 driver 权威；普通 runKey 与相同字符串的不同 context 都不能成为同一运行身份。【检查已迁入前瞻红基线 RA-1..3，随 route:human 判别分岔填绿，本 story 在此之前诚实红。】",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-runtime-discrimination-successor.zero-sut.golden.mjs"
+      ],
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "s2-frozen-action-role-completeness",
+      "desc": "必需对象角色从冻结 action policy 推导，关系缺任一端、mutation 空绑定与未知角色整份拒绝。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-runtime-authority.zero-sut.golden.mjs roles"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T16:08:13.391Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-independent-publication-trust-root",
+      "desc": "同仓可写 PRD+lock 与 symlink/realpath 逃逸不能自封权威，校验根必须独立发布。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-runtime-authority.zero-sut.golden.mjs publication"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T16:08:14.230Z 全部 acceptance exit 0"
+    }
+  ]
+}

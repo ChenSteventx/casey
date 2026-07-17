@@ -1,0 +1,16 @@
+teachin-observation-driver-canonical-root green-before-freeze
+mode: coverage-freeze (existing implementation compatibility lock; no fabricated RED)
+timestamp: 2026-07-17T12:45:03+08:00
+base: edea1f954573c99a10575c9b4df45ff43439e44b
+command: node tests/_golden/teachin-observation-driver-canonical-root.zero-sut.golden.mjs
+exit: 0
+scope: zero-SUT; no browser, network, fixture server, fake SUT or real SUT started
+
+ok   A1 plain source=platform-runtime 在 append 前拒绝且零 accepted residue
+ok   A2 fixed registry 唯一扩根；调用者 key/registry 与自签名在 commit 前拒绝
+ok   B1 signed Ed25519 正向铸造 opaque pair，identity 最终 trusted
+ok   B2 payload/signature/keyId/缺签任一篡改均在 append 前拒且零 residue
+ok   B3 signed receipt 跨 package/case 复制拒绝且零 accepted residue
+ok   C1 append/reader/pair/identity/registry 的 Proxy/accessor 零执行拒绝
+ok   D1 旧 frozen checksum 原样，machine-readable supersession receipt 闭合
+ok   teachin-observation-driver-canonical-root: 7/7 全过（coverage-freeze，零 SUT）

@@ -78,6 +78,8 @@ description: 用自然语言把测试用例跑成 Casey 测试报告，或启动
 | 看样例报告 | 从 `runs/` 读取已有真实报告；`casey demo` 已按 real-SUT-only 策略禁用。 |
 | loop 纪律 | `node bin/casey.mjs lint\|gate\|breaker\|contract ...` |
 
+相1 mapping 的实体角色必须由代理显式写出且经用户/只读候选确认：mutation（变更）原子使用单个 `{candidateId, role:'subject'}`；relation（关系变更）原子同时使用 `{role:'source'}` 与 `{role:'target'}`。candidateId、名称、编号都不得按列表顺序或同名猜测；缺失时 route:human，不得让 flow bridge 代猜或代签。
+
 执行后回给用户的标准格式：
 
 - 报告：`<html 链接>`，必要时附 `<md/json 链接>`。

@@ -1,0 +1,10 @@
+Gate amendment RED (zero-SUT, 2026-07-17)
+command: node tests/_golden/observation-unsafe-golden-revocation.zero-sut.golden.mjs
+exit: 1
+
+ok   revocation receipt explicitly says revoked, not PASS
+ok   old executable paths are safe fail-fast tombstones and archives preserve bytes
+FAIL archives refuse node execution; archives and tombstones preserve canonical leased case: Base64 JSON archive returned exit 0 when used as a Node entry point
+
+result: 2 passed, 1 failed
+decision: Base64 JSON is not an execution-refusing container under Node. Explicitly amend the frozen gate to gzip binary archives; preserve decoded sha and require `node archive.gz` nonzero before closure.

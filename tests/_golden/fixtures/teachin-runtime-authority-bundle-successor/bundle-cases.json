@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 1,
+  "caseId": "tc_semantic_lock_capability",
+  "sourceLock": "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/entity-locks.frozen.json",
+  "sourceEvents": "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/events.document.json",
+  "actionPolicy": {
+    "schemaVersion": 1,
+    "artifactKind": "entity-action-identity-policy",
+    "policies": [
+      {
+        "atom": "workflow.rename",
+        "action": "click",
+        "mutation": true,
+        "relationWrite": false,
+        "roles": [
+          {
+            "role": "subject",
+            "kind": "workflow"
+          }
+        ]
+      }
+    ]
+  },
+  "binding": {
+    "stepId": "atstep_1",
+    "intentId": "intent_1",
+    "atom": "workflow.rename",
+    "role": "subject",
+    "candidate": "candidate-workflow-main",
+    "lockId": "lock-workflow-main"
+  },
+  "candidate": {
+    "physicalId": "runtime-row-1",
+    "kind": "workflow",
+    "name": "审批工作流",
+    "code": "wf-001",
+    "platformId": "90071992547409931234",
+    "scopeSha256": "1111111111111111111111111111111111111111111111111111111111111111",
+    "parentReceiptHash": null,
+    "revisionId": "rev-7"
+  },
+  "transitionId": "rename-main",
+  "previousHeadHash": "0d7294372a5048fa77e194c44fdd145da79dd7f40175964aeeb64550f9177f8b",
+  "roots": [
+    {
+      "rootId": "runtime-root-alpha",
+      "contractId": "runtime-contract-alpha",
+      "adapterId": "runtime-adapter-alpha",
+      "issuerId": "runtime-issuer-alpha"
+    },
+    {
+      "rootId": "runtime-root-beta",
+      "contractId": "runtime-contract-beta",
+      "adapterId": "runtime-adapter-beta",
+      "issuerId": "runtime-issuer-beta"
+    }
+  ]
+}

@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "task": "regress 智能体工具首纵切（full）：只读提取 agent_tool_add 业务语义，新增七个真实编译原子与 fail-closed 动作接缝；不迁旧代码、报告或 trace，不运行任何假 SUT。",
+  "specPath": "docs/plans/regress-agent-tool-first-slice/plan.md",
+  "testChecksums": {
+    "tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs": "2e213e76170046864844c7033a7f6b200c290570dbe88a32ec2cf50fd643ef06",
+    "tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs": "5e41993bb9deaa831c0eafb255455cb5af2d07c8fd26f03e706b98423c4c1dec",
+    "docs/plans/regress-agent-tool-first-slice/candidate/agent-tool-add.flow.json": "544052807f28c27e619cd6eb5c304b691bb222b06ee4e0a3afb2f1ff04ca6cbe"
+  },
+  "observability": [
+    {
+      "dimension": "零 SUT 验收只证明参数、事件配方、编译分派和静态安全边界，不证明真实页面 DOM、MCP 数据或删除后零残留。须在联网真实 SUT 重新编译、人签、回放、录屏、视觉复核并生成独立单用例 HTML。",
+      "route": "human"
+    },
+    {
+      "dimension": "公开发布树有独立正式交付、CEF 与分发接缝；本分支只能逐提交挑拣，禁止整树覆盖。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-agent-tool-add-zero-sut",
+      "desc": "迁移七个原子的纯配方、参数闸、编译/回放接缝与遗产清单；实体模板使用 atl_，删除与创建目标绑定。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs",
+        "node tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-16T07:17:52.686Z 全部 acceptance exit 0"
+    }
+  ]
+}

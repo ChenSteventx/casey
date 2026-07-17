@@ -1,0 +1,5 @@
+$ node tests/_golden/teachin-runtime-provenance-successor.zero-sut.golden.mjs no-execution-and-production
+FAIL P0 release module 含 ambient side effect 也绝不执行: 待核 module 已先执行 1 次
+ok   P0 production registry/publication 继续为空
+RED  teachin-runtime-provenance-successor/no-execution-and-production: 1 过 / 1 红
+exit 1

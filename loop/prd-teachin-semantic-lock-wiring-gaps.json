@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-semantic-lock-wiring-gaps（full）：以第三 package manifest 消除 capture/sidecar 哈希环，并冻结 intake 联合验证、flow 来源角色保真、compile sign 前 mutation 拒旁路、promptset/CLI/MCP 公共入口不绕 frozen locks。",
+  "specPath": "docs/plans/teachin-semantic-lock-wiring-gaps/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-semantic-lock-package-integrity.zero-sut.golden.mjs": "9644a3dea9963cf19d66144fe084e5d0549ebd0557c55676c84ae3e7996e7cbb",
+    "tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs": "b3f5aca99ac1ddf98143a909f7e124e18a8c43f7bdc0943522edced92f85876e",
+    "tests/_golden/teachin-semantic-lock-flow-provenance.zero-sut.golden.mjs": "7e06487f4fbb521d55db0f2df75ab4c604eaf7c74bf657478a980d5aab68d1b9",
+    "tests/_golden/teachin-semantic-lock-presign-bypass.zero-sut.golden.mjs": "fe8e82a7c82f3a30de843ccce1e02da0c6b8cf3c76dac7cf726d8d74b66f626f",
+    "tests/_golden/teachin-semantic-lock-public-bypass.zero-sut.golden.mjs": "aba5fbaeff1a8095c6765163cd8b3138ef4d172938e180dd52fd87cf86b4a3b1"
+  },
+  "observability": [
+    {
+      "dimension": "真实手录关窗后 package 的最终字节完整性、观察数量及其与 UI 对象的一致性；必须联网真机、录屏和视觉复核。",
+      "route": "human"
+    },
+    {
+      "dimension": "pre-execution identity authority 在真实 AI 中台 mutation 前是否覆盖 workflow/agent 及其它名字+编号对象；必须逐 case 人签和真机核对。",
+      "route": "human"
+    },
+    {
+      "dimension": "MCP/skill/CLI 在 Win、macOS、WSL 的 authority/locks 参数端到端传递与拒绝提示；必须跨平台实跑，不以静态测试代替。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-package-final-byte-integrity",
+      "desc": "第三 teach-in-package.json 绑定 capture/sidecar 最终完整字节、固定文件名、caseId、观察数量与版本；二者不互含 hash，篡改和路径走私 fail-closed。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-package-integrity.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s2-intake-three-artifact-joint-gate",
+      "desc": "intake 从规范 capture 同级固定推导 manifest/sidecar，联合验证并在 accepted 台账绑定三 hash；distill 对三份当前字节做 TOCTOU 重验。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s3-flow-source-intent-role-provenance",
+      "desc": "flow-bridge 原样保留 sourceIntentId 与 entityBindings 的 candidateId/source/target role，且不暴露可被调用者 mutation 的引用。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-flow-provenance.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s4-compile-presign-mutation-denial",
+      "desc": "compile execute 以独立签署的 pre-execution authority、verify 以最终 frozen locks 做准入；两门分别早于 chromium.launch 与 replay spawn。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-presign-bypass.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s5-public-entry-lock-propagation",
+      "desc": "promptset、casey run/replay 与 MCP compile/sign/replay/run 显式要求并传递正确 authority/frozen locks，无 unsigned/skip 旁路。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-public-bypass.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    }
+  ]
+}

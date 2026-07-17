@@ -3,7 +3,7 @@
   "task": "相1 LLM flow 草拟桥 flow-bridge（full）：规范 TestCase（嵌套 steps）+ CLI 外 LLM mapping → compile 吃的 flow（原子+参数）。lib/flow-bridge.mjs 纯函数 buildFlow + validateBridge 三闸（投影忠实：每 TestCase.steps[].intentId 被覆盖 + 无凭空 intentId；编译知识允许集：atom 可编译，补 compile-gate 放行册内无编译知识原子的缝——真缝 nav.workflowManagement；复用 compile-gate.validateDraft 结构+破坏性前缀+状态机）；bin/flow-bridge.mjs 薄 CLI（caseId 一致+路径安全+cred-gate，任一闸拒 exit 65 零落盘）；lib/compile-atoms.mjs 加法导出 COMPILE_KNOWN_ATOMS/isCompilableAtom（:259 throw 同源，行为一字不变）；bin/casey.mjs flow-bridge 分发接线。LLM 在 CLI 外产 mapping、进程零 LLM 零真机（测时 mock）。决策全表 docs/plans/flow-bridge/proposed/GRILL.md。",
   "specPath": "docs/plans/flow-bridge/plan.md",
   "testChecksums": {
-    "tests/_golden/flow-bridge.golden.mjs": "589ea4853ad966a05b63cb783a186025499273b378980d18e3ef593444f3deef"
+    "tests/_golden/flow-bridge.golden.mjs": "122977f61e3729b096c832936ec1722f965a9c9734b446e34ffd21a5f2156731"
   },
   "observability": [
     {

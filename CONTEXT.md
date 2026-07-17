@@ -86,6 +86,10 @@
 | `AFFORDANCE_ABSENT` | 入口缺席 | `NEEDS_HUMAN` 子类（人签后）：编译时够到的入口回归时没了，又无漂移信号无取证；走缺陷-或-过程错误分诊 | — |
 | `INDETERMINATE` | 未定 | `NEEDS_HUMAN` 子类：纯未知失败，看证据人判；catch-all 的 fail-safe 默认落点 | — |
 | 点击身份门 | Click Identity Gate | 仅当解析目标唯一（过滤后 count===1）或点击后身份回读成立才置 `actionPerformed=true`；多匹配/坐标兜底 → ambiguous |
+| 业务对象语义锁 | Business Object Semantic Lock | 手录后把工作流、智能体等业务对象从脆弱 DOM 位置提升为冻结身份；回放前重新只读解析并与已签身份收据确定性比较，只有 `SAME` 可重绑定临时 UI 句柄，业务身份变化一律零点击并路由人 | — |
+| 业务对象身份收据 | Entity Identity Receipt | 业务对象语义锁的不可变权威载体：至少锁 `kind + name + code + scopeFingerprint`，平台提供稳定 ID、父对象或版本时一并锁定；收据带内容 hash，外部对象须用户确认、自建对象须平台权威读回，LLM/视觉只可提候选不可确认同一性 | — |
+| 身份观察旁车 | Identity Observation Sidecar | 示教录制期间与操作事件分开落盘的最小业务身份候选；只收 `kind/name/code/platformId/scopeFingerprint/parent/evidenceKind/eventSeq`，永远未签且 `replayReady:false`，与 示教录制包 通过两个字节 hash 的联合绑定防换包；缺编号只保留 pending，绝不升格为权威收据 | — |
+| 身份迁移 | Identity Transition | 已签用例有意改名/改码时声明的 `旧身份 → 变更动作 → 新身份`；动作后须平台权威读回新名称与编号并生成链接旧收据 hash 的 successor，未声明或读回失败不得静默更新锁 | — |
 | `resolution` | 定位解析态 | 点击身份门为每个动作步吐的解析结果（落进 三轴 的动作轴），枚举 `unique`（唯一命中、可动作）/ `ambiguous`（多匹配、点没点对存疑、绝不变更 SUT）/ `none`（录制 locator 全失配、走漂移探针）/ `action_failed`（唯一但动作抛错）/ `absent`（编译期候选零命中）；`verdict.mjs` 据此推 `actionPerformed` 四态。多匹配的唯一合法字面量 = `ambiguous`（点击身份门 count>1 的收口词、三门 emitters 同源）；收敛前的 `multi`（编译门）/`fallback_first`（回放通用门）是旧写法、仅在动作轴/裁定链语境弃用——`fallback_first`/`coord_fallback` 在 run-history 诊断 `locatorResolution` 枚举里仍是合法可表征锁值（seams-freeze-v2 治理），故不登为全仓黑名单弃用别名 | — |
 | 语义定位器 | Semantic Locator | 按 ARIA 角色/可访问名/标签/文本定位（getByRole/getByText/getByLabel），对照 CSS 选择器与坐标兜底；回放定位与点击身份门的基础（迁自 autotester 核心域） | — | — |
 | 网络取证 | Network Forensics | `watchNetworkForensics`：记 response/requestfailed 的 {url,status,initiator} + error-envelope，按请求发起方归因（非时间窗） | — |
@@ -153,7 +157,7 @@
 | 失败指纹 | Failure Fingerprint | 失败记录台账 的可聚类指纹 = sha256(canonicalJSON(fingerprintInputs))，输入只含稳定已模板化字段（channel/verdict/reason/atom/assertionKind/assertionOp/signatureTemplate）；显式排除 caseId/stepId/runId/时间戳/实例名/凭据，故同一失败模式跨用例聚类。零 LLM、可复现、进 golden；聚类粒度 route:human（决策 3.3） | — |
 | 人裁决回填 | Human Resolution | 失败记录台账 条目里由人经签署链路写入的裁决指针（decision/resolvedAt/resolverId/ref）：只读审计引用非执行器，ref 指向权威产物（缺陷单/重签元数据/漂移补丁），绝不复制权威态、绝不改原裁定；decision=drift-healed 仅当 verdict=HARNESS_ERROR 才合法 | — |
 | route:human | 路由人 | 把某项判断/动作显式移交人裁的标注（落 Inbox + 通知，Escalation Path 的标记形态）；Observability 测不到的维度必申报为 route:human | — |
-| 静默点 | Quiet Point | 采集观测现状/落断言输入/做后检查前必达的确定性有界等待条件，替代固定睡眠保可复现（跨阶段通用）。各期判据变体：编译期 DOM 连续两拍稳定（`quietPoint`，`networkidle` 对带背景轮询的单页应用不作判据）；回放代表步在途前台请求归零 + DOM 两拍稳定（稳定对不跨零点、给应答后提交约两拍缓冲），`networkidle` 仅超预算后有界兜底一次（`settleBeforeCapture`）；一律有界、超预算按现状采（fail-safe） | — |
+| 静默点 | Quiet Point | 采集观测现状/落断言输入/做后检查前必达的确定性有界等待条件，替代固定睡眠保可复现（跨阶段通用）。各期判据变体：编译期 DOM 连续两拍稳定（`quietPoint`，`networkidle` 对带背景轮询的单页应用不作判据）；回放代表步在途前台请求归零 + DOM 两拍稳定（稳定对不跨零点、给应答后提交约两拍缓冲），`networkidle` 仅超预算后有界兜底一次（`settleBeforeCapture`）；删除后检查变体要求同源目标在加载结束后连续 3000 ms 精确计数为零，加载态或目标重现必须从新计时，超时或样本不足按 `fail-closed` 拒绝背书；一律有界、超预算按现状采（fail-safe） | — |
 | LLM-judge | LLM 评分员 | 独立异构家族的语义评分器；判 FAIL 可信、判 PASS 仍人抽检；严格踢出确定性裁判（verdict.mjs）之外，绝不写 passes/verdict | — |
 | `CLI` | 命令行接口 | Command-Line Interface：Casey 的确定性引擎入口 `bin/casey.mjs`；skill 与 MCP 都是它的薄壳 | — |
 | `MCP` | 模型上下文协议 | Model Context Protocol：编辑器/agent 驱动工具的协议；`mcp/casey-server.mjs` 是 CLI 的 MCP 薄壳 | — |

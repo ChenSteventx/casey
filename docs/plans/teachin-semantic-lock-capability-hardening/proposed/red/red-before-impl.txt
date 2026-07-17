@@ -1,0 +1,11 @@
+命令：node tests/_golden/teachin-semantic-lock-capability-hardening.zero-sut.golden.mjs
+运行时间：2026-07-17（实现前，branch teachin-semantic-lock-v2@9037899）
+退出码：1
+
+FAIL H4 固定 PRD/checksum reader 是唯一锁 authority 来源，旧 bytes+sha 自签与能力副本均拒绝: 合法 authority 未签发: {"ok":false,"reason":"LOCK_AUTHORITY_READER_MISSING"}
+FAIL H1 只认真实 events 文档，event 三元 binding 必须与锁集精确对齐: 固定 PRD/checksum reader 未签发 authority: {"ok":false,"reason":"LOCK_AUTHORITY_READER_MISSING"}
+FAIL H2 SAME/MISSING 只来自 runtime adapter 不透明能力，重复实际匹配不折叠且保留真实计数: 固定 PRD/checksum reader 未签发 authority: {"ok":false,"reason":"LOCK_AUTHORITY_READER_MISSING"}
+FAIL H3 successor 只吃同一 runtime capability 的读回 proof/run context，普通字段与异源能力不推进 head: 固定 PRD/checksum reader 未签发 authority: {"ok":false,"reason":"LOCK_AUTHORITY_READER_MISSING"}
+RED  teachin-semantic-lock-capability-hardening: 0 过 / 4 红
+
+边界核对：本命令只读冻结 JSON 与内存适配器；未启动浏览器、server，未访问网络、真实 SUT、fake 或 fixture SUT。

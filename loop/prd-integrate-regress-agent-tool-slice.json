@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "task": "把 regress 智能体工具首纵切重放到最新 dev，保留目标基线信任边界并只做零 SUT 集成验收。",
+  "specPath": "docs/plans/integrate-regress-agent-tool-slice/plan.md",
+  "testChecksums": {
+    "tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs": "2e213e76170046864844c7033a7f6b200c290570dbe88a32ec2cf50fd643ef06",
+    "tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs": "5e41993bb9deaa831c0eafb255455cb5af2d07c8fd26f03e706b98423c4c1dec",
+    "tests/_golden/regress-agent-tool-integration-hardening.zero-sut.golden.mjs": "bea7927d8c2f8b9c3491a53237bff6b8168c595cb9fc7e1d3d234c936e479f3d",
+    "tests/_golden/flow-bridge.golden.mjs": "122977f61e3729b096c832936ec1722f965a9c9734b446e34ffd21a5f2156731",
+    "docs/plans/regress-agent-tool-first-slice/candidate/agent-tool-add.flow.json": "544052807f28c27e619cd6eb5c304b691bb222b06ee4e0a3afb2f1ff04ca6cbe"
+  },
+  "observability": [
+    {
+      "dimension": "零 SUT 验收只证明参数、事件配方、编译分派和静态安全边界，不证明真实页面结构、工具数据或删除后零残留。须在联网真实 SUT 完成重新编译、人签、回放、录屏、视觉复核和独立单用例 HTML。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-agent-tool-slice-integration",
+      "desc": "重放七个原子及专用身份门，保留创建清理绑定和删除后归零约束。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs",
+        "node tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs",
+        "node tests/_golden/regress-agent-tool-integration-hardening.zero-sut.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-16T07:17:57.547Z 全部 acceptance exit 0"
+    }
+  ]
+}

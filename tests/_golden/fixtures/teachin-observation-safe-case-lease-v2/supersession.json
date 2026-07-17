@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "acceptance-gate-supersession-receipt",
+  "unsafeTasks": [
+    "teachin-observation-transaction-root",
+    "teachin-observation-driver-canonical-root"
+  ],
+  "unsafeGoldens": [
+    "tests/_golden/teachin-observation-transaction-root.zero-sut.golden.mjs",
+    "tests/_golden/teachin-observation-driver-canonical-root.zero-sut.golden.mjs"
+  ],
+  "unsafeReason": "fixed canonical case directory is recursively removed without exclusive ownership and identity-bound cleanup",
+  "successorTask": "teachin-observation-safe-case-lease-v2",
+  "successorPrd": "loop/prd-teachin-observation-safe-case-lease-v2.json",
+  "successorGolden": "tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs",
+  "safeLeaseSupport": "tests/_golden/support/canonical-case-lease.mjs",
+  "oldFrozenAssetsImmutable": true,
+  "oldUnsafeGoldensExecutable": false
+}

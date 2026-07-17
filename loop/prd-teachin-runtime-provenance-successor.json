@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-runtime-provenance-successor（full）：public readiness 只消费模块私有 opaque inspection；移除待核 executable bundle 的顶层导入，把 release module/dependency 收窄为递归摘要闭合但绝不执行的数据资源图；可靠 parser+loader 未建前始终 unavailable/route:human。",
+  "specPath": "docs/plans/teachin-runtime-provenance-successor/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-runtime-provenance-successor.zero-sut.golden.mjs": "3aee7ca3c9db39634db8732ab06872d5b2f6c5554d0e9a2497603c05ba5eea28",
+    "tests/_golden/fixtures/teachin-runtime-provenance-successor/provenance-cases.json": "108109099414db73bfbdfaf70e016a3b3a0fb18da7a675d8d0fb36a3c95d044a",
+    "docs/plans/teachin-runtime-provenance-successor/proposed/red/opaque-readiness-before-impl.txt": "3cc8f8dd584272df5e1c9d736cc41972dc60c0581eccd89ba8651c50fb3c76b9",
+    "docs/plans/teachin-runtime-provenance-successor/proposed/red/data-provenance-before-impl.txt": "329b59aa180bb22f1eb52235f1f86c8658576a63c2bf9fa02124c3e3b9c22181",
+    "docs/plans/teachin-runtime-provenance-successor/proposed/red/no-execution-before-impl.txt": "58fc08b2f9748167f827a6c8236d46d01bee862b55b37618d9c73bb0d5fab00d",
+    "tests/_golden/fixtures/teachin-runtime-authority-bundle-successor/bundle-cases.json": "05f757783c916570e3036256da20fde3b72bcf93a802661b6af9a5581214f582",
+    "tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs": "c80ef09738bfd28b7465144b2d262679f9d6a43d85da375dc43190c5bd75d123",
+    "tests/_golden/teachin-runtime-readiness-successor.zero-sut.golden.mjs": "404ec3dbd63237ccb89ce0199ed3e09ad8a2786a782f86b537340a9f653214f1",
+    "tests/_golden/fixtures/teachin-runtime-readiness-successor/publication-cases.json": "7cf6b0f24fda76eebeab550531590ebba45a42e94efc0f1ef80c4beaecff478c",
+    "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/entity-locks.frozen.json": "027296d2b2bcafc12b69c40891bb4b89c70f04051f9ac77a9e89251a918c020c",
+    "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/events.document.json": "2e7742311fd3516e5461b68e5caed19bc292aa1a3b514c9831188dab40607034",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/entity-action-policy.frozen.json": "74f3d362045a4cf0db77a560b218232942280055dbd942beab2728ba2b32955f",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-source-only.locks.json": "4440ebfba3bf214e04718899c9f13bd22c89f27db69da0ca23dc8b1d18418c86",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-source-only.events.json": "413432a97a61543413aff2245fd4849bbcc957fb435c6722c95954d94323419d",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-target-only.locks.json": "28d771f1801886b8a5a016eb6a3ff4afb4391d9e206d41defc05fbf4ba151b08",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-target-only.events.json": "984f7a1416da57c8f73e3c7a36058050877228d3a97f7a12b43a166658b48e28",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/mutation-empty.locks.json": "290a8485016688ed68273e2995511318f66422c27c17c4c72dae61168d9ba6f6",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/mutation-empty.events.json": "5f888baa18d62b546deea6640fad0caa9f6da9a2c974d9a1d402f35450bd7da4",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/unknown-role.locks.json": "09d50ac939a62c711ac050d2a07e3378f97a9459121daabe13a7168fe170bb14",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/unknown-role.events.json": "30ede5dcde6b4e11a99a72960cf609ec4f0b5382f4b283be51122b1789f83416"
+  },
+  "observability": [
+    {
+      "dimension": "可靠 JavaScript parser、递归真实 import graph、模块签名、Node/runtime 版本来源及先验 sandboxed executable loader；本轮仅是不执行的数据资源图台账。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实 SUT 上经可靠 loader 装载同根 bundle，得到 SAME 与同源 successor，并附录屏、视觉复核、独立 HTML 与附件。",
+      "route": "human"
+    },
+    {
+      "dimension": "旧 teachin-runtime-authority-bundle-successor 的临时 executable bundle 正向/跨根金牌因不安全的先执行后验被本契约取代，旧 frozen 不修改；production 空表、fail-closed 与 historical/roles 继续执行。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-opaque-readiness",
+      "desc": "public derive 只消费模块私有 WeakMap inspection；普通字符串根、展开副本、Proxy/accessor 不可铸绿；production 空表故障关闭；自守数据 provenance 也保持 unavailable。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-runtime-provenance-successor.zero-sut.golden.mjs opaque-readiness"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:45:42.917Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-recursive-data-provenance",
+      "desc": "三层 release data resource graph 递归摘要闭合但不执行；入口/二层/三层字节漂移、缺 manifest、缺节点、环和不可达节点均拒绝 provenance；健康图也只 provenance-recorded/不可用。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-runtime-provenance-successor.zero-sut.golden.mjs data-provenance"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:45:43.002Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-no-execution-regression",
+      "desc": "含 ambient side effect 的待核 release module 只读 bytes、零执行；production registry/publication 空；既有非真空 fail-closed 与 historical/roles 非空回归继续通过。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-runtime-provenance-successor.zero-sut.golden.mjs no-execution-and-production",
+        "node tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs all",
+        "node tests/_golden/teachin-runtime-readiness-successor.zero-sut.golden.mjs historical-and-roles"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:45:43.139Z 全部 acceptance exit 0"
+    }
+  ]
+}

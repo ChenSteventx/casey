@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-observation-driver-canonical-root（coverage-freeze successor）：在固定 PROJECT_ROOT/cases committed transaction 根上完整复冻 signed driver provenance。plain source拒；只认代码内 fixed Ed25519 registry，调用者 key/registry/自签不能扩根；signed receipt 必须先于 append 并精确绑定全 payload；任一篡改/缺签/跨 package/case 在 commit 前拒且零 accepted residue；正向 opaque authority+receipt 通过私有 transaction pair 后 identity trusted；Proxy/accessor 零执行；机器可读 supersession receipt 与旧 frozen checksum 不变。",
+  "specPath": "docs/plans/teachin-observation-driver-canonical-root/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-observation-driver-canonical-root.zero-sut.golden.mjs": "fe58a3e41bbeadc534df3ee9d53bbb8ce91720d8fd7de85c56cf38475332bde1",
+    "tests/_golden/fixtures/teachin-observation-driver-canonical-root/identity-readback-receipt.signed.json": "e0415ee5e932124f28b3b74e37d4eb29047cfaa6b9bc3af0e12a59636ed87849",
+    "tests/_golden/fixtures/teachin-observation-driver-canonical-root/trusted-driver-public-key.pem": "e93e8f0d33f11fe32adeabf6bb72e87a4168365099c8150205133ff9012d739f",
+    "tests/_golden/fixtures/teachin-observation-driver-canonical-root/supersession.json": "f09e49074d2f82b4240a87390f28a48fc15a1425c51cd5cd79db505640544370"
+  },
+  "observability": [
+    {
+      "dimension": "生产 driver 私钥是否只由真实 driver 进程持有并按策略轮换/吊销；仓库只有公开 signed fixture 与公钥，zero-SUT 不证明私钥保护。",
+      "route": "human"
+    },
+    {
+      "dimension": "signed receipt 是否来自同一次真实 DOM/平台响应读回，以及 sessionNonce 的熵、持久唯一性与跨进程 replay 拒绝，须联网真机进程审计。",
+      "route": "human"
+    },
+    {
+      "dimension": "Ed25519、file identity、atomic rename 与 lock 在 Windows/macOS/Linux/WSL 目标构建及文件系统上的一致性，须跨 OS 故障注入。",
+      "route": "human"
+    },
+    {
+      "dimension": "本门禁不启动 SUT、fake、fixture server、browser 或 network；coverage-freeze GREEN 不得外推为真机 driver 已闭环。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-driver-canonical-root-coverage-freeze",
+      "desc": "coverage-freeze：旧 driver 门禁因 /tmp 前置根失效后，在 PROJECT_ROOT/cases 上复刻其七组安全断言，并加入 receipt-before-append 零残留、opaque transaction pair、identity trusted 与 machine-readable supersession receipt；首次运行现实现即 7/7 绿，不伪造 RED、不改生产。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-observation-driver-canonical-root.zero-sut.golden.mjs"
+      ],
+      "passes": false,
+      "evidence": ""
+    }
+  ]
+}

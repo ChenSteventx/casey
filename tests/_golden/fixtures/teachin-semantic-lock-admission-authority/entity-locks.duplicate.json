@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "entity-locks-frozen",
+  "caseId": "tc-admission-authority",
+  "signed": true,
+  "replayReady": true,
+  "signerId": "fixture-human",
+  "signedAt": "2026-07-17T00:00:00.000Z",
+  "eventsSha256": "sha256:38beca47bfa24918eaec5acda66c82828744164687c37f7aee5b0e49bcf3ed6d",
+  "bindings": [
+    {
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "atom": "workflow.rename",
+      "role": "target",
+      "candidateId": "candidate-workflow-main",
+      "lockId": "lock-workflow-main",
+      "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    },
+    {
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "atom": "workflow.rename",
+      "role": "target",
+      "candidateId": "candidate-workflow-main",
+      "lockId": "lock-workflow-main",
+      "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    }
+  ],
+  "signature": "sha256:05656b7603210e184e8f4c4cf08ff41501a9e7518d9f1e6a5c3d6f385eac4566"
+}

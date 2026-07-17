@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "acceptance-gate-supersession-receipt",
+  "supersededTask": "teachin-observation-driver-provenance",
+  "supersededPrd": "loop/prd-teachin-observation-driver-provenance.json",
+  "supersededGolden": "tests/_golden/teachin-observation-driver-provenance.zero-sut.golden.mjs",
+  "supersededReason": "positive package root is /tmp and is rejected before driver assertions by the fixed PROJECT_ROOT/cases authority root",
+  "successorTask": "teachin-observation-driver-canonical-root",
+  "successorPrd": "loop/prd-teachin-observation-driver-canonical-root.json",
+  "successorGolden": "tests/_golden/teachin-observation-driver-canonical-root.zero-sut.golden.mjs",
+  "composesWith": "teachin-observation-transaction-root",
+  "oldFrozenAssetsImmutable": true
+}

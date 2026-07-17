@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 2,
+  "channel": "web",
+  "caseId": "tc-admission-authority",
+  "url": "{{baseUrl}}/workflow",
+  "recordedAt": "2026-07-17T00:00:00.000Z",
+  "compiledBy": "golden",
+  "authored": false,
+  "events": [
+    {
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "atom": "workflow.rename",
+      "action": "click",
+      "entityBindings": [
+        {
+          "role": "target",
+          "candidateId": "candidate-workflow-main",
+          "lockId": "lock-workflow-main",
+          "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        }
+      ]
+    }
+  ]
+}

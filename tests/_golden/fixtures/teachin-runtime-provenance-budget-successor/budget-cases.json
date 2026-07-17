@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "sourceBundleFixture": "tests/_golden/fixtures/teachin-runtime-authority-bundle-successor/bundle-cases.json",
+  "limits": {
+    "maxManifestBytes": 8388608,
+    "maxNodes": 4096,
+    "maxEdges": 4096,
+    "maxResourceBytes": 1048576,
+    "maxTotalResourceBytes": 8388608
+  },
+  "deepLinearNodeCount": 20000,
+  "denseEdgeNodeCount": 100,
+  "totalResourceCount": 9,
+  "totalResourceBytesEach": 950000
+}

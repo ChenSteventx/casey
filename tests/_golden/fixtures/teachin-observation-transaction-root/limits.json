@@ -1,0 +1,7 @@
+{
+  "maxItems": 1024,
+  "maxDepth": 32,
+  "maxKeys": 256,
+  "maxBytes": 1048576,
+  "maxLedgerLineBytes": 16384
+}

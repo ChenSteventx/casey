@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "task": "observation-runtime-trust-root（P0/HIGH security successor）：CLI intake 只走 fixed canonical append transaction；distill 以 release-published signed driver receipt + committed ledger rehydrate 本进程 opaque pair，transactionSha 不单独授权。production driver registry 默认 empty/DRIVER_NOT_PUBLISHED，测试 key 仅隔离 loader。temp rename 前同 inode 全字节/hash 复核。两份 unsafe frozen golden 以 gzip archive + fail-fast tombstone 显式安全撤销，gunzip 后核原 sha，revoked != PASS。",
+  "amendment": "docs/plans/observation-contract-closure/runtime-trust-root-amendment.json",
+  "specPath": "docs/plans/observation-runtime-trust-root/plan.md",
+  "testChecksums": {
+    "tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs": "bf83f74ac434420f5d3b461f4a3e2cea19df27ebe7dacdc4835fe43db47569cf",
+    "tests/_golden/observation-temp-commit-integrity.zero-sut.golden.mjs": "3bc162bc9ee12753c78e14b099e6e3335c3a3866b27fb7db5b529f606028d4f5",
+    "tests/_golden/observation-unsafe-golden-revocation.zero-sut.golden.mjs": "456661e868cad2de7b7f24ea2f8318d7c4d4a217df093e6ed374526210254f66",
+    "tests/_golden/fixtures/observation-runtime-trust-root/security-revocation.json": "580a6882f0924d0a090964b9199e058c5dc57216e2007bbbfbf6702455de3829",
+    "tests/_golden/fixtures/observation-runtime-trust-root/test-driver-publication.mjs": "9a549cd6b2f7b9a841e3dd1f1dbce0d12c914f08964d2e77a20ddee182efaf3a",
+    "tests/_golden/fixtures/observation-runtime-trust-root/test-driver-publication-loader.mjs": "93edcd6cf91117d262488872743055b8f20f8ea990b3b58a950c4202404a3124",
+    "tests/_golden/fixtures/observation-runtime-trust-root/rehydrate-identity-consumer-probe.mjs": "ad8bdb162ef3622fab48801878d20e129e4607a205699224d913c4ad02c4d024",
+    "tests/_golden/support/canonical-case-lease.mjs": "f273c242922cf6e6617173c33fafc64c9c95bb78f4b136989d535c58627fed97",
+    "tests/_golden/fixtures/teachin-observation-safe-case-lease-v2/identity-readback-receipt.signed.json": "e0415ee5e932124f28b3b74e37d4eb29047cfaa6b9bc3af0e12a59636ed87849",
+    "tests/_golden/fixtures/teachin-observation-safe-case-lease-v2/trusted-driver-public-key.pem": "e93e8f0d33f11fe32adeabf6bb72e87a4168365099c8150205133ff9012d739f",
+    "tests/_golden/observation-active-suite-supersession.zero-sut.golden.mjs": "ed7fb837adc7a323854d656fc70ea9f7cfd800db73389108fff245f28a3d5cc4",
+    "tests/_golden/fixtures/observation-runtime-trust-root/active-suite.json": "546418b41d7e4eca40a02b3b8b0513624812247adaf765388d66a0b05af79b56"
+  },
+  "observability": [
+    {
+      "dimension": "production 真实 driver release publication 尚未交付；默认 DRIVER_NOT_PUBLISHED。真实 public key 只能来自发行资源/签名 manifest，私钥保护、轮换、nonce 防重放与 receipt 真机同源性须联网真机审计。",
+      "route": "human"
+    },
+    {
+      "dimension": "Windows O_NOFOLLOW/file identity/symlink/rename/lock/durability 及 temp 最终重读到 rename 的 race，须 Windows 真机故障注入。",
+      "route": "human"
+    },
+    {
+      "dimension": "canonical lease 最后 identity 对账到递归删除的 race 无统一跨 OS dirfd 原语。",
+      "route": "human"
+    },
+    {
+      "dimension": "本门禁不启动 SUT、fake、browser、server 或 network；GREEN 不得外推成真机业务闭环。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-cli-canonical-authority-rehydrate",
+      "desc": "P0：intake 只走 canonical append；production registry 默认 empty/DRIVER_NOT_PUBLISHED；test key 仅隔离 publication；distill 跨进程重读 fixed package + signed receipt + committed ledger 后 rehydrate opaque transaction pair；伪/legacy/off-root/缺签均拒。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:46:43.233Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-ledger-temp-final-integrity",
+      "desc": "HIGH：temp close 后 rename 前重新 O_NOFOLLOW 打开同 inode，完整读 EOF 并比对 expected bytes/length/hash；same-inode tamper 拒绝且不污染正式 ledger。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/observation-temp-commit-integrity.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:46:43.281Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-unsafe-golden-security-revocation",
+      "desc": "P0 security exception：旧 bytes 进入 originalBase64 JSON 容器且 decoded sha 对原 PRD；旧 executable path 变无 fs 能力 nonzero tombstone；node archive/tombstone 均不能触碰 leased canonical case；状态明确 revoked-not-pass。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/observation-unsafe-golden-revocation.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:46:43.426Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4-active-suite-supersession-ledger",
+      "desc": "coverage-freeze：machine-readable 固定 production default 11/17（11 个仍有效断言）与隔离 test publication 16/17（5 个 key 相关断言继续真跑）；D7 由 s3 取代；旧 PRD 历史 passes 不改、撤销 executable 不执行。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/observation-active-suite-supersession.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:46:43.863Z 全部 acceptance exit 0"
+    }
+  ]
+}

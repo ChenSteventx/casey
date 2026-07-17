@@ -1,0 +1,7 @@
+$ node tests/_golden/teachin-runtime-provenance-budget-successor.zero-sut.golden.mjs bounded-topology
+FAIL P0 20,000 节点线性图不爆栈并在读资源前预算拒绝: public readiness 抛 RangeError: Maximum call stack size exceeded
+FAIL P0 稠密 DAG 超边预算且缺资源也先预算拒绝: dense-edges.reason="RUNTIME_AUTHORITY_PROVENANCE_NOT_VERIFIED"
+RED  teachin-runtime-provenance-budget-successor: P0 20,000 节点线性图不爆栈并在读资源前预算拒绝: public readiness 抛 RangeError: Maximum call stack size exceeded
+RED  teachin-runtime-provenance-budget-successor: P0 稠密 DAG 超边预算且缺资源也先预算拒绝: dense-edges.reason="RUNTIME_AUTHORITY_PROVENANCE_NOT_VERIFIED"
+RED  teachin-runtime-provenance-budget-successor/bounded-topology: 0 过 / 2 红
+exit: 1

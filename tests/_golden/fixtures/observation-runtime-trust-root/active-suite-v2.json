@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 2,
+  "artifactKind": "observation-runtime-trust-root-active-suite",
+  "activePrds": [
+    "loop/prd-observation-runtime-trust-root.json"
+  ],
+  "historicalPrds": [
+    "loop/prd-teachin-observation-safe-case-lease-v2.json"
+  ],
+  "historicalPassesMutation": "forbidden",
+  "executionProfiles": {
+    "productionDefault": {
+      "test": "tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs",
+      "loader": null,
+      "expectedExit": 1,
+      "expectedPassed": 11,
+      "expectedFailed": 6,
+      "retainedAssertions": ["T1", "T2", "T3", "T4", "T5", "T7", "T9", "T10", "D1", "D4", "D5"],
+      "supersededAssertions": ["T6", "T8", "D2", "D3", "D6", "D7"]
+    },
+    "isolatedTestPublication": {
+      "test": "tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs",
+      "loader": "tests/_golden/fixtures/observation-runtime-trust-root/test-driver-publication-loader.mjs",
+      "expectedExit": 1,
+      "expectedPassed": 16,
+      "expectedFailed": 1,
+      "retainedAssertions": ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "D1", "D2", "D3", "D4", "D5", "D6"],
+      "supersededAssertions": ["D7"]
+    }
+  },
+  "revocationReceipt": "tests/_golden/fixtures/observation-runtime-trust-root/security-revocation.json",
+  "revokedExecutablesNeverRun": [
+    "tests/_golden/teachin-observation-transaction-root.zero-sut.golden.mjs",
+    "tests/_golden/teachin-observation-driver-canonical-root.zero-sut.golden.mjs"
+  ],
+  "replacementMap": {
+    "T6": [
+      {
+        "prd": "loop/prd-observation-runtime-trust-root.json",
+        "storyId": "s1-cli-canonical-authority-rehydrate",
+        "testPath": "tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs"
+      }
+    ],
+    "T8": [
+      {
+        "prd": "loop/prd-observation-runtime-trust-root.json",
+        "storyId": "s1-cli-canonical-authority-rehydrate",
+        "testPath": "tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs"
+      }
+    ],
+    "D2": [
+      {
+        "prd": "loop/prd-observation-runtime-trust-root.json",
+        "storyId": "s1-cli-canonical-authority-rehydrate",
+        "testPath": "tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs"
+      }
+    ],
+    "D3": [
+      {
+        "prd": "loop/prd-observation-runtime-trust-root.json",
+        "storyId": "s1-cli-canonical-authority-rehydrate",
+        "testPath": "tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs"
+      }
+    ],
+    "D6": [
+      {
+        "prd": "loop/prd-observation-runtime-trust-root.json",
+        "storyId": "s1-cli-canonical-authority-rehydrate",
+        "testPath": "tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs"
+      }
+    ],
+    "D7": [
+      {
+        "prd": "loop/prd-observation-runtime-trust-root.json",
+        "storyId": "s3-unsafe-golden-security-revocation",
+        "testPath": "tests/_golden/observation-unsafe-golden-revocation.zero-sut.golden.mjs"
+      }
+    ]
+  }
+}

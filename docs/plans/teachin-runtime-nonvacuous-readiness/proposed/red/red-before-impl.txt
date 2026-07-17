@@ -1,0 +1,28 @@
+基线: 0c9e21a
+约束: 零 SUT、零浏览器、零 server、零网络；只读生产模块、发布清单和冻结语料。
+
+$ node tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs readiness
+exit 1
+FAIL P0 当前运行期就绪状态明确 route:human，不冒充正向完成: 缺公开 readEntityRuntimeReadiness
+ok   HIGH 调用者 read 与普通运行对象只能保持 fail-closed
+RED  teachin-runtime-nonvacuous-readiness: P0 当前运行期就绪状态明确 route:human，不冒充正向完成: 缺公开 readEntityRuntimeReadiness
+RED  teachin-runtime-nonvacuous-readiness/readiness: 1 过 / 1 红
+
+$ node tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs legacy-policy
+exit 1
+FAIL P0 无 policy 的旧条目只能未发布或显式 historical: 旧条目 mode=undefined
+FAIL P0 历史 handle 必须显式 runtimeAuthorized:false: 历史 handle 未降权: {"ok":true,"handle":{"artifactKind":"verified-entity-lock-set-v3"}}
+FAIL P0 历史 handle 的 evaluate 与 successor 永远先拒运行授权: 历史 handle evaluate: reason="ENTITY_RUNTIME_CAPABILITY_INVALID"
+RED  teachin-runtime-nonvacuous-readiness: P0 无 policy 的旧条目只能未发布或显式 historical: 旧条目 mode=undefined
+RED  teachin-runtime-nonvacuous-readiness: P0 历史 handle 必须显式 runtimeAuthorized:false: 历史 handle 未降权: {"ok":true,"handle":{"artifactKind":"verified-entity-lock-set-v3"}}
+RED  teachin-runtime-nonvacuous-readiness: P0 历史 handle 的 evaluate 与 successor 永远先拒运行授权: 历史 handle evaluate: reason="ENTITY_RUNTIME_CAPABILITY_INVALID"
+RED  teachin-runtime-nonvacuous-readiness/legacy-policy: 0 过 / 3 红
+
+$ node tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs publication
+exit 1
+FAIL P0 生产发布清单禁止测试、负向与普通工作区路径: teachin-semantic-lock-capability-hardening: source 未声明独立发布来源
+ok   HIGH 调用者普通工作区文件不能补进空发布清单
+RED  teachin-runtime-nonvacuous-readiness: P0 生产发布清单禁止测试、负向与普通工作区路径: teachin-semantic-lock-capability-hardening: source 未声明独立发布来源
+RED  teachin-runtime-nonvacuous-readiness/publication: 1 过 / 1 红
+
+结论: 三组均为真实 RED。readiness 缺少非真空公开状态；旧无 policy handle 未显式降权；生产发布清单仍含测试语料。两个已有 fail-closed 负向检查保持绿色，不把缺少正向能力误报为 SAME/successor 完成。

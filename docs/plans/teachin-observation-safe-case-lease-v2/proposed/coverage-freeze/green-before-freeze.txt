@@ -1,0 +1,31 @@
+teachin-observation-safe-case-lease-v2 green-before-freeze
+mode: P0 safe-case-lease successor coverage-freeze (no fabricated RED)
+timestamp: 2026-07-17T12:55:28+08:00
+base: 7c3e5f17f84436d7103e402e5227420ec914fe31
+command: node tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs
+exit: 0
+scope: zero-SUT; no browser, network, fixture server, fake SUT or real SUT started
+
+ok   T1 off-root 同形 package 拒绝且零 accepted residue
+ok   T2 safe lease 预存/marker/目录替换拒删；ancestor symlink 拒绝
+ok   T3 ledger symlink/hardlink 拒绝且外部目标字节不变
+ok   T4 malformed receipt 在 commit 前拒绝且零 accepted residue
+ok   T5 malformed ledger 在 commit 前拒绝且字节不变
+ok   T6 lock 占用零写；正向只产唯一 bounded committed transaction
+ok   T7 consumer 只认 committed transaction，pending/legacy 拒绝
+ok   T8 A receipt + B authority 同 bytes/identity 仍因私有 transaction token 拒绝
+ok   T9 safe-own-data 执行 MAX_ITEMS/MAX_DEPTH/MAX_KEYS/MAX_BYTES 与全局展开预算
+ok   T10 巨稀疏数组快速拒；identity 复用共享 bounded snapshot
+ok   D1 plain source=platform-runtime 在 append 前拒绝且零 residue
+ok   D2 fixed registry 唯一扩根；调用者 key/registry/自签拒绝
+ok   D3 signed Ed25519 正向 opaque pair + identity trusted
+ok   D4 全 payload/signature/keyId/缺签篡改在 commit 前拒
+ok   D5 signed receipt 跨 package/case 拒绝且零 accepted residue
+ok   D6 append/reader/pair/identity/registry Proxy/accessor 零执行
+ok   D7 旧 unsafe frozen 只校 checksum；v2 supersession/support 非空
+ok   teachin-observation-safe-case-lease-v2: 17/17 全过（10 transaction + 7 driver，零 SUT）
+
+post-run cleanup:
+- cases/tc_observation_driver_provenance absent
+- cases/tc_casey_safe_lease_probe absent
+- no owned-backup residue

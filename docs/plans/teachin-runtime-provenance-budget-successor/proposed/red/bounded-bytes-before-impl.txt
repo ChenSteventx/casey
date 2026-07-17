@@ -1,0 +1,8 @@
+$ node tests/_golden/teachin-runtime-provenance-budget-successor.zero-sut.golden.mjs bounded-bytes
+FAIL P0 单个 release resource 超字节预算拒绝: single-resource-over.state="provenance-recorded"
+FAIL P0 release resources 合计超总字节预算拒绝: total-resources-over.state="provenance-recorded"
+ok   P0 预算内三层图仍只记录 provenance 且不可用
+RED  teachin-runtime-provenance-budget-successor: P0 单个 release resource 超字节预算拒绝: single-resource-over.state="provenance-recorded"
+RED  teachin-runtime-provenance-budget-successor: P0 release resources 合计超总字节预算拒绝: total-resources-over.state="provenance-recorded"
+RED  teachin-runtime-provenance-budget-successor/bounded-bytes: 1 过 / 2 红
+exit: 1

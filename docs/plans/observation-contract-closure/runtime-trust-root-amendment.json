@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "prd-factual-amendment",
+  "targetPrd": "loop/prd-observation-runtime-trust-root.json",
+  "amendedField": "task",
+  "incorrectDescription": "Base64 JSON/originalBase64",
+  "effectiveDescription": "gzip archive/gunzip sha256 verification",
+  "reason": "Base64 JSON 试作被真实 Node 入口执行证伪；最终实现改用 gzip 二进制容器，旧 bytes 经 gunzip 后按原 frozen sha256 核验。",
+  "priorAttemptRecordedPass": false,
+  "historicalStoriesMutation": "forbidden",
+  "historicalChecksumsMutation": "forbidden",
+  "evidence": {
+    "revocationReceipt": "tests/_golden/fixtures/observation-runtime-trust-root/security-revocation.json",
+    "revocationGolden": "tests/_golden/observation-unsafe-golden-revocation.zero-sut.golden.mjs"
+  }
+}

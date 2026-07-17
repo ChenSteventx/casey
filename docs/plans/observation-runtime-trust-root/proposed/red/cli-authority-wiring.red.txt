@@ -1,0 +1,16 @@
+RED baseline (zero-SUT, 2026-07-17)
+command: node tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs
+exit: 1
+
+FAIL CLI source only uses canonical authority root: intake 仍可绕过 canonical append transaction
+FAIL production registry is empty and cannot import fixture/workspace/env/caller trust: production registry 未诚实声明未发布
+FAIL default production intake fails honest when driver release is unpublished: production 未 fail-closed DRIVER_NOT_PUBLISHED: exit=65
+FAIL canonical signed package intakes and distills across processes: intake exit=65; intake old path rejects v2 as UNKNOWN_FIELD
+ok   self-made committed hash cannot replace signed driver binding
+ok   legacy accepted ledger is rejected
+FAIL missing driver signature rejects intake with zero accepted residue: old rejection path writes a ledger
+ok   off-root intake and distill both reject
+
+result: 3 passed, 5 failed
+note: local Node CLI subprocesses only; no SUT/browser/server/network. Experimental loader warning omitted as non-semantic noise.
+
