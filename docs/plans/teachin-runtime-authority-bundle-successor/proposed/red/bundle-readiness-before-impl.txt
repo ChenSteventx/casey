@@ -1,0 +1,9 @@
+$ node tests/_golden/teachin-runtime-authority-bundle-successor.zero-sut.golden.mjs bundle-readiness
+FAIL P0 production 空表保持 unpublished/route:human: production-readiness.state=undefined
+FAIL P0 单一同根 bundle 完整自守才 verified-ready: healthy-bundle.available=false
+FAIL P0 lock 仅为 JSON object 只能 published/不可用: unhealthy-json-only.state=undefined
+FAIL P0 driver 永远抛错且实现摘要失配 只能 published/不可用: unhealthy-bad-driver.state=undefined
+FAIL P0 issuer 返回非法值且实现摘要失配 只能 published/不可用: unhealthy-bad-issuer.state=undefined
+FAIL HIGH 纯决策器不再接受四个独立 bool 拼根: legacy-four-bools.available=true
+RED  teachin-runtime-authority-bundle-successor/bundle-readiness: 0 过 / 6 红
+exit 1

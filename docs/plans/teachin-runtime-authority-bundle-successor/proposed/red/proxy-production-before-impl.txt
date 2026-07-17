@@ -1,0 +1,5 @@
+$ node tests/_golden/teachin-runtime-authority-bundle-successor.zero-sut.golden.mjs proxy-and-production
+FAIL HIGH Proxy/accessor 零 trap、零 getter 执行并拒绝: Proxy traps 被执行 3 次
+FAIL P0 production 表无测试 bundle/publication: production 运行权威 bundle 表缺失或非空
+RED  teachin-runtime-authority-bundle-successor/proxy-and-production: 0 过 / 2 红
+exit 1

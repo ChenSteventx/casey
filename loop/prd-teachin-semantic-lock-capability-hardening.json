@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-semantic-lock-capability-hardening（full）：真实 events 三元绑定、固定 PRD/checksum authority、runtime adapter 不透明读回与同源 successor，关闭 v2 调用者自签和 raw scan 授权缝。",
+  "specPath": "docs/plans/teachin-semantic-lock-capability-hardening/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-semantic-lock-capability-hardening.zero-sut.golden.mjs": "37dda5f751a90db7fbd4ac3497868721267ec8a725efc13b6ec1475dcc397e79",
+    "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/entity-locks.frozen.json": "027296d2b2bcafc12b69c40891bb4b89c70f04051f9ac77a9e89251a918c020c",
+    "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/events.document.json": "2e7742311fd3516e5461b68e5caed19bc292aa1a3b514c9831188dab40607034"
+  },
+  "observability": [
+    {
+      "dimension": "真实 AI 中台 workflow/agent adapter 联网只读采样同记录的名称、编号、平台 ID、revision 与实际匹配数；每案录屏、视觉复核、独立 HTML 与附件。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实 compile→sign→replay 接线中 entityBindings 来源、固定 PRD 路径、登录后 runtime adapter 与 mutation 前即时复核处在同一 run context。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实 rename/create 后 successor readback proof 的平台来源、同 run 约束与跨运行重签入口。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-semantic-lock-capability-boundary",
+      "desc": "冻结四条 HIGH：真实 events 文档的 role/candidate/lock authority 精确绑定；SAME/MISSING 只来自 runtime adapter 不透明能力并保留真实匹配数；successor 只吃同源 readback proof/run context；锁集 verifier 只吃固定 PRD/checksum reader 的不透明 authority。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-capability-hardening.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T03:28:59.080Z 全部 acceptance exit 0"
+    }
+  ]
+}

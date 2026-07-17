@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-runtime-authority-bundle-successor（full）：运行期就绪只由一个携 rootId/contractId/adapterId/issuerId、完整 lock 结构验证与冻结 health proof 的同根 bundle 派生；所有运行能力状态传播同根标识并在 driver/allowAction 前拒绝跨根组合；公开对象快照对 Proxy/accessor 零 trap。",
+  "specPath": "docs/plans/teachin-runtime-authority-bundle-successor/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-runtime-authority-bundle-successor.zero-sut.golden.mjs": "4068672a368207698404b694ff4c659a9ff2bccbba356263c16c6ce2981ac527",
+    "tests/_golden/fixtures/teachin-runtime-authority-bundle-successor/bundle-cases.json": "05f757783c916570e3036256da20fde3b72bcf93a802661b6af9a5581214f582",
+    "docs/plans/teachin-runtime-authority-bundle-successor/proposed/red/bundle-readiness-before-impl.txt": "cc1372937f22bfb9b21eca7b4af8db684ff59e557899c63fe24c5fbb0c4488b8",
+    "docs/plans/teachin-runtime-authority-bundle-successor/proposed/red/root-coherence-before-impl.txt": "a329fc8d194eed4cb812b21c9074edd442a8be84bfd319995b45729a95cb82c0",
+    "docs/plans/teachin-runtime-authority-bundle-successor/proposed/red/proxy-production-before-impl.txt": "1778e2aa30d44d73e9898da2c0bc419b097cc89bda05964a950ee83e77ac4c53",
+    "tests/_golden/teachin-runtime-readiness-successor.zero-sut.golden.mjs": "404ec3dbd63237ccb89ce0199ed3e09ad8a2786a782f86b537340a9f653214f1",
+    "tests/_golden/fixtures/teachin-runtime-readiness-successor/publication-cases.json": "7cf6b0f24fda76eebeab550531590ebba45a42e94efc0f1ef80c4beaecff478c",
+    "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/entity-locks.frozen.json": "027296d2b2bcafc12b69c40891bb4b89c70f04051f9ac77a9e89251a918c020c",
+    "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/events.document.json": "2e7742311fd3516e5461b68e5caed19bc292aa1a3b514c9831188dab40607034",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/entity-action-policy.frozen.json": "74f3d362045a4cf0db77a560b218232942280055dbd942beab2728ba2b32955f",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-source-only.locks.json": "4440ebfba3bf214e04718899c9f13bd22c89f27db69da0ca23dc8b1d18418c86",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-source-only.events.json": "413432a97a61543413aff2245fd4849bbcc957fb435c6722c95954d94323419d",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-target-only.locks.json": "28d771f1801886b8a5a016eb6a3ff4afb4391d9e206d41defc05fbf4ba151b08",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-target-only.events.json": "984f7a1416da57c8f73e3c7a36058050877228d3a97f7a12b43a166658b48e28",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/mutation-empty.locks.json": "290a8485016688ed68273e2995511318f66422c27c17c4c72dae61168d9ba6f6",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/mutation-empty.events.json": "5f888baa18d62b546deea6640fad0caa9f6da9a2c974d9a1d402f35450bd7da4",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/unknown-role.locks.json": "09d50ac939a62c711ac050d2a07e3378f97a9459121daabe13a7168fe170bb14",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/unknown-role.events.json": "30ede5dcde6b4e11a99a72960cf609ec4f0b5382f4b283be51122b1789f83416"
+  },
+  "observability": [
+    {
+      "dimension": "真实 driver 与 issuer 的发布流程生成冻结 health proof、实现摘要、签署/保管边界和撤销机制；零 SUT 门禁只验证凭据消费，不代替真实发布仪式。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实 SUT 同次运行内用同根 driver/issuer/publication 得到 SAME 和同源 successor，并附录屏、视觉复核、独立 HTML 与附件。",
+      "route": "human"
+    },
+    {
+      "dimension": "旧 teachin-runtime-readiness-successor/readiness-roots 的四布尔纯决策器断言被本契约取代，旧 frozen 不修改；historical-and-roles 继续执行。旧 teachin-semantic-lock-runtime-authority 的 3/9 结构性红仍待独立迁移或退役。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-single-bundle-readiness",
+      "desc": "production 空表故障关闭；只有同一 root/contract/adapter/issuer、完整 lock/events/policy 结构验证及冻结 health proof 自守通过的 bundle 才 verified-ready；JSON-only lock 与实现摘要失配只能 published；四独立 bool 不再可拼 ready。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-runtime-authority-bundle-successor.zero-sut.golden.mjs bundle-readiness"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:22:56.084Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-root-coherence",
+      "desc": "同根完整纯模块链得到 SAME；adapter/run context 跨根在 driver 前拒绝；capability/handle 跨根在 allowAction 与 successor 前拒绝；selector 不能跨 contract。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-runtime-authority-bundle-successor.zero-sut.golden.mjs root-coherence"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:22:56.159Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-proxy-production-regression",
+      "desc": "公开快照对 Proxy/accessor 零 trap；production bundle/publication 表为空且无测试路径；既有 historical handle 降权与四组动作角色负向继续非空执行。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-runtime-authority-bundle-successor.zero-sut.golden.mjs proxy-and-production",
+        "node tests/_golden/teachin-runtime-readiness-successor.zero-sut.golden.mjs historical-and-roles"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:22:56.240Z 全部 acceptance exit 0"
+    }
+  ]
+}

@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-semantic-lock-v2（full）：外部冻结锚 + 闭合身份策略 + 唯一动作门 + 当前链头 successor，修复 v1 假 SAME 信任边界。",
+  "specPath": "docs/plans/teachin-semantic-lock-v2/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-semantic-lock-v2.zero-sut.golden.mjs": "6f89ed57e2f625692c6a078d040769a79476ce8c104fe75753530c7fac50efab",
+    "tests/_golden/fixtures/teachin-semantic-lock-v2/entity-locks.frozen.json": "91141315ce4451615f9a07a89be34191a62f0ea25d43ca9514e564a436cc0aeb",
+    "tests/_golden/fixtures/teachin-semantic-lock-v2/events.json": "6d1e586acd53345ebd0ea33087bb8553c30b782677dc4fb22310e95687bf542c"
+  },
+  "observability": [
+    {
+      "dimension": "真实 AI 中台 workflow/agent adapter 的平台 ID、parent、revision 只读采样，以及 SAME、同名异号、删除重建、重复候选、身份迁移五类联网真机验证；每案录屏、视觉复核、独立 HTML 与附件。",
+      "route": "human"
+    },
+    {
+      "dimension": "mutation、关系写和删除确认前必须用同一 binding 即时复核，禁止跨 await 复用旧许可；浏览器侧 TOCTOU 只能由真实环境验证。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实人签锁集、撤销和 successor 跨运行重签入口。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-semantic-lock-v2-trust-boundary",
+      "desc": "冻结外部信任锚、严格 schema/身份策略、唯一动作门、完整候选扫描和当前链头 successor 的攻击回归；任何证据不足均零动作。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-v2.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T01:32:35.066Z 全部 acceptance exit 0"
+    }
+  ]
+}

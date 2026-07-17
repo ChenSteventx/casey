@@ -1,0 +1,8 @@
+{
+  "schemaVersion": 1,
+  "sourceBundleFixture": "tests/_golden/fixtures/teachin-runtime-authority-bundle-successor/bundle-cases.json",
+  "bundleModuleResourceKey": "release/entity-semantic-lock/runtime-provenance/entity-runtime-authority-bundles.mjs",
+  "dependencyResourceKey": "release/entity-semantic-lock/runtime-provenance/entity-runtime-authority-bundle-dependency.mjs",
+  "transitiveDependencyResourceKey": "release/entity-semantic-lock/runtime-provenance/entity-runtime-authority-transitive-dependency.mjs",
+  "manifestResourceKey": "release/entity-semantic-lock/runtime-provenance/entity-runtime-authority-data-manifest.frozen.json"
+}

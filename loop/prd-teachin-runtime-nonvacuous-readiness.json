@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-runtime-nonvacuous-readiness（full）：把缺少真实 driver/runner 明确申报为 route:human，旧无 policy 锁集降为历史只读，并把生产发布清单移出测试与普通工作区路径。",
+  "specPath": "docs/plans/teachin-runtime-nonvacuous-readiness/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs": "c80ef09738bfd28b7465144b2d262679f9d6a43d85da375dc43190c5bd75d123",
+    "docs/plans/teachin-runtime-nonvacuous-readiness/proposed/red/red-before-impl.txt": "ad1c2aee9a043486dad05617bb669bcdec5eb258d129f1daef5a7bce7960e109"
+  },
+  "observability": [
+    {
+      "dimension": "真实 AI 中台 driver 与登录后只读扫描接线；真实唯一匹配得到 SAME，并提供录屏、视觉复核、单用例 HTML 与附件。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实 runner 运行能力与浏览器/session 生命周期同源；真实变更后 successor 成功，关窗、重连、跨运行和已撤销代际旧能力全部拒绝。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实发布资源或签名清单的生成、签署、安装与密钥保管边界；Win PowerShell、WSL、macOS 分发后不能由普通工作区文件替换。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实 compile 变更/关系动作与冻结动作身份 policy 必需角色逐项一致；未知动作保持零动作。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-explicit-runtime-readiness",
+      "desc": "真实 driver/runner 未发布时公开申报 available:false、route:human 与 DRIVER_NOT_PUBLISHED；机器只背书 fail-closed，不真空声明 SAME/successor 完成。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs readiness"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T04:29:47.579Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-legacy-policy-runtime-denial",
+      "desc": "无动作 policy 的旧条目只能未发布或成为 runtimeAuthorized:false 的历史 handle，evaluate 与 successor 先拒运行授权。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs legacy-policy"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T04:29:47.633Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-production-publication-boundary",
+      "desc": "生产发布清单拒绝 tests、负向 fixture 与普通工作区路径，只允许独立 release resource 或 signed manifest；当前无真实发布可为空并拒绝。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs publication"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T04:29:47.672Z 全部 acceptance exit 0"
+    }
+  ]
+}

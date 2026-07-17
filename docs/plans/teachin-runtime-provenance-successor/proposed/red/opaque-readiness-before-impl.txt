@@ -1,0 +1,7 @@
+$ node tests/_golden/teachin-runtime-provenance-successor.zero-sut.golden.mjs opaque-readiness
+FAIL P0 public caller 普通字符串根不能 derive available:true: caller-string-root.available=true
+FAIL P0 私有 inspection 只记录 provenance，展开副本不可复刻: private-inspection-readiness.available=true
+FAIL HIGH public derive 对 Proxy/accessor 零 trap/getter: proxy-inspection.reason="RUNTIME_READINESS_ROOT_INVALID"
+ok   P0 production 空表继续 unpublished/route:human
+RED  teachin-runtime-provenance-successor/opaque-readiness: 1 过 / 3 红
+exit 1

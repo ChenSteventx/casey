@@ -1,0 +1,11 @@
+$ node tests/_golden/teachin-runtime-provenance-successor.zero-sut.golden.mjs data-provenance
+FAIL P0 三层 release graph 自守也只 provenance-recorded/不可用: healthy-data-graph.available=true
+FAIL P0 入口 module bytes 与 manifest 摘要失配 拒绝 provenance: entry-mutated.available=true
+FAIL P0 第二层 dependency bytes 与 manifest 摘要失配 拒绝 provenance: dependency-mutated.available=true
+FAIL P0 第三层 transitive dependency bytes 与 manifest 摘要失配 拒绝 provenance: transitive-mutated.available=true
+FAIL P0 publication 缺 data manifest 拒绝 provenance: missing-manifest.available=true
+FAIL P0 递归图引用缺失节点 拒绝 provenance: missing-node.available=true
+FAIL P0 递归图成环 拒绝 provenance: cycle.available=true
+FAIL P0 递归图带不可达附加节点 拒绝 provenance: unreachable.available=true
+RED  teachin-runtime-provenance-successor/data-provenance: 0 过 / 8 红
+exit 1
