@@ -1,0 +1,10 @@
+RED baseline (zero-SUT, 2026-07-17)
+command: node tests/_golden/observation-unsafe-golden-revocation.zero-sut.golden.mjs
+exit: 1
+
+ok   revocation receipt explicitly says revoked, not PASS
+FAIL old executable paths are safe fail-fast tombstones and archives preserve bytes: tests/_golden/teachin-observation-transaction-root.zero-sut.golden.mjs 尚未 tombstone；拒绝执行
+
+result: 1 passed, 1 failed
+security note: golden deliberately stopped at static marker check; neither old unsafe body was executed.
+

@@ -1,0 +1,28 @@
+teachin-observation-transaction-root red-before-implementation
+timestamp: 2026-07-17T12:26:36+08:00
+base: 149904f98719d0c994fdeda172da7c0ae42bd3f7
+command: node tests/_golden/teachin-observation-transaction-root.zero-sut.golden.mjs
+exit: 1
+scope: zero-SUT; no browser, network, fixture server, fake SUT or real SUT started
+
+FAIL A1 同形 /tmp package 不得扩张固定 PROJECT_ROOT/cases 信任根: off-root package 被错误授权
+ok   A2 case/package 任一祖先 symlink 逃逸均拒且外部目录不留 ledger
+FAIL B1 ledger symlink/hardlink 拒绝且外部目标字节不变: ledger hardlink 外部目标被改写
+FAIL B2 receipt 校验拒绝发生在 commit 前，malformed receipt 零 accepted 残留: malformed receipt 被错误授权
+FAIL B3 package/ledger 校验拒绝发生在 commit 前，malformed ledger 零 accepted 残留: 拒绝路径残留 accepted 字节
+FAIL B4 lock 占用时零写；正向只产一条有界 committed transaction: occupied transaction lock 被错误授权
+FAIL B5 consumer 只认 committed transaction，pending/缺事务字段均拒: consumer 接受 pending transaction
+FAIL C1 A receipt + B authority 即使 case/identity 字段相同也拒: JOINT_TRANSACTION_PAIR_API_MISSING
+FAIL D1 safe-own-data 明确执行 MAX_ITEMS/MAX_DEPTH/MAX_KEYS/MAX_BYTES: SAFE_OWN_DATA_LIMITS_MISSING_OR_DRIFTED
+FAIL D2 巨稀疏数组不得按 length 构造全集；identity 复用同一有界 snapshot: SOURCE_ENUMERATES_DECLARED_ARRAY_LENGTH
+
+1/10 checks passed
+- A1 同形 /tmp package 不得扩张固定 PROJECT_ROOT/cases 信任根: off-root package 被错误授权
+- B1 ledger symlink/hardlink 拒绝且外部目标字节不变: ledger hardlink 外部目标被改写
+- B2 receipt 校验拒绝发生在 commit 前，malformed receipt 零 accepted 残留: malformed receipt 被错误授权
+- B3 package/ledger 校验拒绝发生在 commit 前，malformed ledger 零 accepted 残留: 拒绝路径残留 accepted 字节
+- B4 lock 占用时零写；正向只产一条有界 committed transaction: occupied transaction lock 被错误授权
+- B5 consumer 只认 committed transaction，pending/缺事务字段均拒: consumer 接受 pending transaction
+- C1 A receipt + B authority 即使 case/identity 字段相同也拒: JOINT_TRANSACTION_PAIR_API_MISSING
+- D1 safe-own-data 明确执行 MAX_ITEMS/MAX_DEPTH/MAX_KEYS/MAX_BYTES: SAFE_OWN_DATA_LIMITS_MISSING_OR_DRIFTED
+- D2 巨稀疏数组不得按 length 构造全集；identity 复用同一有界 snapshot: SOURCE_ENUMERATES_DECLARED_ARRAY_LENGTH

@@ -1,0 +1,16 @@
+teachin-observation-driver-provenance 红基线（2026-07-17）
+
+command: node tests/_golden/teachin-observation-driver-provenance.zero-sut.golden.mjs
+exit: 1
+environment: 零 SUT；未启动 browser/network/fake/fixture server。fixture 私钥由一次性内存进程生成且未写入/输出；攻击用例私钥只在测试进程内瞬时生成且不输出。
+
+FAIL A1 plain canonical receipt 即使 source=platform-runtime 也不得 mint/trusted: PLAIN_SOURCE_STRING_BECAME_TRUST_ROOT
+FAIL A2 registry 只认代码内固定 keyId；调用者 publicKey/自签名不能扩根: TRUSTED_DRIVER_REGISTRY_MISSING
+FAIL B1 frozen signed fixture 数学验签成立，fixed registry receipt + accepted authority 才 trusted: SIGNED_DRIVER_RECEIPT_NOT_MINTED:READBACK_RECEIPT_UNKNOWN_OR_MISSING_FIELD
+ok   B2 任一签名载荷字段/signature/keyId/缺签改动均拒绝
+ok   B3 signed receipt 复制到另一 package/case 均拒绝
+ok   C1 driver reader/identity consumer 的 Proxy/accessor 零执行拒绝
+ok   D1 旧 authority-root frozen 资产 checksum 原样
+RED  teachin-observation-driver-provenance: 4 过 / 3 红
+
+结论：当前 plain source 字符串确实能成为假信任根；固定 driver registry 尚不存在；signed fixture 的数学签名有效但生产 reader 尚不认识 signed envelope。新增验收命中真实行为缺口，不是测试基础设施失败；实现前保持 `passes:false`。

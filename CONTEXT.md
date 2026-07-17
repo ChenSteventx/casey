@@ -88,6 +88,7 @@
 | 点击身份门 | Click Identity Gate | 仅当解析目标唯一（过滤后 count===1）或点击后身份回读成立才置 `actionPerformed=true`；多匹配/坐标兜底 → ambiguous |
 | 业务对象语义锁 | Business Object Semantic Lock | 手录后把工作流、智能体等业务对象从脆弱 DOM 位置提升为冻结身份；回放前重新只读解析并与已签身份收据确定性比较，只有 `SAME` 可重绑定临时 UI 句柄，业务身份变化一律零点击并路由人 | — |
 | 业务对象身份收据 | Entity Identity Receipt | 业务对象语义锁的不可变权威载体：至少锁 `kind + name + code + scopeFingerprint`，平台提供稳定 ID、父对象或版本时一并锁定；收据带内容 hash，外部对象须用户确认、自建对象须平台权威读回，LLM/视觉只可提候选不可确认同一性 | — |
+| 身份观察旁车 | Identity Observation Sidecar | 示教录制期间与操作事件分开落盘的最小业务身份候选；只收 `kind/name/code/platformId/scopeFingerprint/parent/evidenceKind/eventSeq`，永远未签且 `replayReady:false`，与 示教录制包 通过两个字节 hash 的联合绑定防换包；缺编号只保留 pending，绝不升格为权威收据 | — |
 | 身份迁移 | Identity Transition | 已签用例有意改名/改码时声明的 `旧身份 → 变更动作 → 新身份`；动作后须平台权威读回新名称与编号并生成链接旧收据 hash 的 successor，未声明或读回失败不得静默更新锁 | — |
 | `resolution` | 定位解析态 | 点击身份门为每个动作步吐的解析结果（落进 三轴 的动作轴），枚举 `unique`（唯一命中、可动作）/ `ambiguous`（多匹配、点没点对存疑、绝不变更 SUT）/ `none`（录制 locator 全失配、走漂移探针）/ `action_failed`（唯一但动作抛错）/ `absent`（编译期候选零命中）；`verdict.mjs` 据此推 `actionPerformed` 四态。多匹配的唯一合法字面量 = `ambiguous`（点击身份门 count>1 的收口词、三门 emitters 同源）；收敛前的 `multi`（编译门）/`fallback_first`（回放通用门）是旧写法、仅在动作轴/裁定链语境弃用——`fallback_first`/`coord_fallback` 在 run-history 诊断 `locatorResolution` 枚举里仍是合法可表征锁值（seams-freeze-v2 治理），故不登为全仓黑名单弃用别名 | — |
 | 语义定位器 | Semantic Locator | 按 ARIA 角色/可访问名/标签/文本定位（getByRole/getByText/getByLabel），对照 CSS 选择器与坐标兜底；回放定位与点击身份门的基础（迁自 autotester 核心域） | — | — |

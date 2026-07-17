@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-observation-safe-case-lease-v2（P0 successor）：以 exclusive marker + case directory/marker identity + private leaseId 绑定的 canonical case lease，替代两份会无条件递归删除固定用户 case 的 unsafe golden；预存/目录替换/marker替换均拒删。新 v2 不调用旧 unsafe golden，在同一安全 lease 下完整复冻 transaction-root 10 组与 driver provenance 7 组，receipt-before-append、负向零 accepted residue、正向 committed opaque transaction pair 与 identity trusted；旧 frozen 只校 checksum，machine-readable supersession receipt 明确不可再执行。",
+  "specPath": "docs/plans/teachin-observation-safe-case-lease-v2/plan.md",
+  "testChecksums": {
+    "tests/_golden/support/canonical-case-lease.mjs": "f273c242922cf6e6617173c33fafc64c9c95bb78f4b136989d535c58627fed97",
+    "tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs": "781ff1bf1b96d304cc4ca0108817cc858ac576922c8923a88a0934bc9b41b393",
+    "tests/_golden/fixtures/teachin-observation-safe-case-lease-v2/identity-readback-receipt.signed.json": "e0415ee5e932124f28b3b74e37d4eb29047cfaa6b9bc3af0e12a59636ed87849",
+    "tests/_golden/fixtures/teachin-observation-safe-case-lease-v2/trusted-driver-public-key.pem": "e93e8f0d33f11fe32adeabf6bb72e87a4168365099c8150205133ff9012d739f",
+    "tests/_golden/fixtures/teachin-observation-safe-case-lease-v2/supersession.json": "588e9160f667cfe71738ba501447376ed58d04f797d0a4a5a6b776816b6190e1"
+  },
+  "observability": [
+    {
+      "dimension": "cleanup 最后一次 case directory/marker identity+private content 对账与递归删除间的父目录 rename race，Node 缺跨 Windows/POSIX 统一 dirfd-relative remove。",
+      "route": "human"
+    },
+    {
+      "dimension": "Windows 的 O_NOFOLLOW、目录/marker file identity、symlink 权限、atomic rename、lock 与 durability 须真机故障注入。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实 driver 私钥保护、signed receipt 是否来自同一次 DOM/平台读回、nonce 持久防重放，须联网真机进程审计。",
+      "route": "human"
+    },
+    {
+      "dimension": "本门禁不启动 SUT、fake、server、browser 或 network；coverage GREEN 不得外推成真机闭环。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-safe-case-lease-v2-successor",
+      "desc": "P0 successor coverage-freeze：case 预存不碰；exclusive marker + directory/marker identity/private leaseId 后才可 cleanup；replacement fail-safe 留人；不执行旧 unsafe golden；在安全 lease 下复冻 transaction 10/10 与 driver 7/7，并冻结 supersession receipt。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T04:57:29.505Z 全部 acceptance exit 0"
+    }
+  ]
+}

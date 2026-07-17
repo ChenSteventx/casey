@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "observation-runtime-trust-root-active-suite",
+  "activePrd": "loop/prd-observation-runtime-trust-root.json",
+  "historicalPrd": "loop/prd-teachin-observation-safe-case-lease-v2.json",
+  "historicalPassesMutation": "forbidden",
+  "productionDefault": {
+    "expectedPassed": 11,
+    "expectedFailed": 6,
+    "retainedAssertions": ["T1", "T2", "T3", "T4", "T5", "T7", "T9", "T10", "D1", "D4", "D5"],
+    "supersededAssertions": ["T6", "T8", "D2", "D3", "D6", "D7"]
+  },
+  "isolatedTestPublication": {
+    "expectedPassed": 16,
+    "expectedFailed": 1,
+    "retainedKeyAssertions": ["T6", "T8", "D2", "D3", "D6"],
+    "loader": "tests/_golden/fixtures/observation-runtime-trust-root/test-driver-publication-loader.mjs",
+    "testKeyProductionEligible": false
+  },
+  "replacementMap": {
+    "T6": ["s1-cli-canonical-authority-rehydrate", "s2-ledger-temp-final-integrity", "isolated-test-publication-v2"],
+    "T8": ["s1-cli-canonical-authority-rehydrate", "isolated-test-publication-v2"],
+    "D2": ["s1-cli-canonical-authority-rehydrate", "isolated-test-publication-v2"],
+    "D3": ["s1-cli-canonical-authority-rehydrate", "isolated-test-publication-v2"],
+    "D6": ["s1-cli-canonical-authority-rehydrate", "isolated-test-publication-v2"],
+    "D7": ["s3-unsafe-golden-security-revocation"]
+  },
+  "revokedExecutablesNeverRun": [
+    "tests/_golden/teachin-observation-transaction-root.zero-sut.golden.mjs",
+    "tests/_golden/teachin-observation-driver-canonical-root.zero-sut.golden.mjs"
+  ]
+}
+

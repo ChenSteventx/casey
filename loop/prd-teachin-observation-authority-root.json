@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-observation-authority-root（full）：替代并收严身份观察最终受信根。公开 plain ledgerEntries/bytes/pathFacts 不得自铸 accepted authority；正向只认固定 canonical package/ledger 真实追加事务铸造的 opaque handle；trusted identity 还须消费平台运行时 opaque readback receipt 并精确绑定 eventSeq、对象身份六元组与 evidenceSha256；百分号每轮及最终解码拒 C0/C1/DEL；package/intake/ledger/receipt 顶层与嵌套 Proxy/accessor 在任何 trap/getter 前拒绝。",
+  "specPath": "docs/plans/teachin-observation-authority-root/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs": "7fb6f783469c862ee0a2ff5234a0fc3baab60b1ac08e9a58d64cd87f91482312",
+    "tests/_golden/fixtures/teachin-observation-authority-root/identity-readback-receipt.json": "ac3936ae3524ea8943c7f657e710b875b9ae7aa7c2e052862ce95099f53a0d6c"
+  },
+  "observability": [
+    {
+      "dimension": "真平台 driver/runtime 是否是 identity-readback-receipt.json 的唯一写者，且 evidenceSha256 真来自同一次平台响应或 DOM 读回；零 SUT fixture 只冻结 I/O contract。",
+      "route": "human"
+    },
+    {
+      "dimension": "canonical reader 在真实文件系统是否对同一打开文件完成读前读后 identity 比较并抵御 symlink/TOCTOU；本地临时目录验收不冒充真实文件系统攻防结论。",
+      "route": "human"
+    },
+    {
+      "dimension": "workflow、agent 与其它名字+编号业务对象在真实 AI 中台上的 event/object/readback 一致性，须联网真机逐 case 录屏与视觉复核。",
+      "route": "human"
+    },
+    {
+      "dimension": "本契约不启动 SUT、fake、fixture server、浏览器或网络；当前红/未来绿均不得外推成真机可用。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-observation-authority-root",
+      "desc": "冻结 accepted authority 唯一真实追加事务铸造根、opaque runtime readback receipt 精确绑定、C0/C1/DEL 百分号绕过拒绝及 package/intake/ledger/receipt Proxy/accessor 零执行边界；相关旧 frozen 资产保持原 checksum。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T03:58:20.432Z 全部 acceptance exit 0"
+    }
+  ]
+}

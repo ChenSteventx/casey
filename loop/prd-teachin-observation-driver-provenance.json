@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-observation-driver-provenance（full）：替代并收严 readback receipt 信任根。plain source=platform-runtime 不得 mint/trusted；调用者 publicKey/自签 keypair 不得扩根；只认生产代码固定 trusted driver registry 的 keyId 与 Ed25519 detached signature，精确绑定 caseId、三件套 hashes、eventSeq、kind/name/code/platformId/scope/evidenceSha256 和 sessionNonce；任一字段/签名/keyId/缺签/跨包跨 case 均拒；signed opaque driver receipt 与 accepted authority 联合后才 trusted；Proxy/accessor 零执行。",
+  "specPath": "docs/plans/teachin-observation-driver-provenance/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-observation-driver-provenance.zero-sut.golden.mjs": "ed146533cb4a2bd3719d8986fe8376e33b33423ce26f3af2b0f94897240ac11c",
+    "tests/_golden/fixtures/teachin-observation-driver-provenance/identity-readback-receipt.signed.json": "e0415ee5e932124f28b3b74e37d4eb29047cfaa6b9bc3af0e12a59636ed87849",
+    "tests/_golden/fixtures/teachin-observation-driver-provenance/trusted-driver-public-key.pem": "e93e8f0d33f11fe32adeabf6bb72e87a4168365099c8150205133ff9012d739f"
+  },
+  "observability": [
+    {
+      "dimension": "生产 driver 私钥是否位于独立密钥存储、只有真实 driver 进程可用并按策略轮换/吊销；仓库只冻结公钥，zero-SUT 不证明私钥保护。",
+      "route": "human"
+    },
+    {
+      "dimension": "signed receipt 是否只能由真实平台 driver 在同一次 DOM/平台响应读回后写出，须联网真机录屏、运行时审计与进程权限复核。",
+      "route": "human"
+    },
+    {
+      "dimension": "sessionNonce 的熵、session 唯一性、持久去重窗口与跨进程 replay 拒绝需要真实 driver/持久状态；固定 fixture 不证明。",
+      "route": "human"
+    },
+    {
+      "dimension": "Ed25519 在 Windows/macOS/Linux/WSL 的目标 Node 发布构建兼容性须跨 OS 安装验收。",
+      "route": "human"
+    },
+    {
+      "dimension": "本契约不启动 SUT、fake、fixture server、浏览器或网络；零 SUT GREEN 不得外推成真机 trusted 已闭环。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-observation-driver-provenance",
+      "desc": "冻结 plain receipt 降权、固定代码 registry + Ed25519 signed receipt、全字段与三件套精确绑定、自带 key/自签/篡改/跨包拒绝、accepted+driver receipt 联合 trusted，以及 Proxy/accessor 零执行边界；旧 authority-root frozen 资产保持原 checksum。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-observation-driver-provenance.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T04:12:02.948Z 全部 acceptance exit 0"
+    }
+  ]
+}

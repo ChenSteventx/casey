@@ -1,0 +1,30 @@
+teachin-observation-authority-hardening 红基线（2026-07-17）
+
+command: node tests/_golden/teachin-observation-authority-hardening.zero-sut.golden.mjs
+exit: 1
+
+FAIL A1 plain expectedBinding 永远不能 trusted
+现状：结构上完整的普通对象被 verifyTrustedIdentityObservationBundle 错误授权为 trusted:true。
+
+FAIL A2 新入口只认 package→latest accepted ledger 铸造的不透明 authority
+现状：OPAQUE_ACCEPTED_LEDGER_AUTHORITY_API_MISSING；本分支尚未汇入 package/intake authority 接缝与新 API。
+
+FAIL A3 一个 eventSeq 不得为两个不同对象重复背书
+现状：workflow 与 agent 共用 eventSeq:1 时仍被错误授权为 trusted:true，observationCount:2。
+
+FAIL A4 fill/press 等无关 action 不得被 evidenceKind 自声明成对象读回
+现状：fill 事件被 detail-dual-anchor-readback 自声明后仍被错误授权为 trusted:true。
+
+FAIL A5 UTF-8 百分号编码的中文密码/token/secret/URL 单轮多轮均拒
+现状：至少一组 UTF-8 百分号敏感值未抛错，测试报告“预期拒绝但实际放行”。
+
+FAIL A6 非法/截断/overlong/不收敛编码拒绝，普通中文百分号不误伤
+现状：至少一组非法 UTF-8/百分号编码未抛错，测试报告“预期拒绝但实际放行”。
+
+FAIL A7 顶层/嵌套 Proxy 先由 util.types.isProxy 拒绝且零 trap
+现状：顶层 Proxy 未被拒绝，测试报告“预期拒绝但实际放行”。
+
+ok A8 两份旧冻结测试 checksum 保持原值
+
+summary: RED，1 过 / 7 红。
+execution boundary: 只调用纯函数并读取冻结文件；未启动 SUT、fake、fixture server、浏览器或网络。
