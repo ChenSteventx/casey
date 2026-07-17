@@ -13,7 +13,7 @@
 // 退出码：0 成功；1 运行时失败/凭据门拦；64 缺参；65 输入坏/闸拒（fail-closed）；66 flow 未 confirm。
 // 所有落盘口过 lib/cred-gate.mjs（G5 取 B，护栏 #7）。本进程零 LLM、零裁定（护栏 #15）。
 import { readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -27,6 +27,7 @@ import {
   checkCompileIdentityAdmission,
   eventsContainEntityMutation,
   flowContainsEntityMutation,
+  readIdentityAdmissionAuthorityFromPrd,
   requiredEventEntityBindings,
   requiredFlowEntityBindings,
 } from '../lib/entity-semantic-lock-preflight.mjs';
@@ -53,6 +54,14 @@ function parseArgs(argv) {
 function readJson(f, label) {
   try { return JSON.parse(readFileSync(f, 'utf8')); }
   catch { console.error(`compile: 读/解析 ${label} 失败（${f}；不是合法 JSON 或不可读，内容不回显）`); process.exit(65); }
+}
+
+// CLI 文件参数只负责指向已发布 artifact；真正授权来源仍是规范 PRD 中该 project-relative key 的 checksum。
+function projectArtifactKey(input) {
+  if (typeof input !== 'string' || !input.trim()) return null;
+  const rel = relative(PROJECT_ROOT, resolve(input));
+  if (!rel || rel === '..' || rel.startsWith(`..${sep}`)) return null;
+  return rel.split(sep).join('/');
 }
 
 // 落盘统一过凭据门（G5）：任一产物命中即全部拒写、非零退出（fail-closed）。
@@ -127,14 +136,20 @@ async function executeMode(caseId, args) {
   // 预执行身份授权门：mutation 由已过闸 flow + registry 机械判定，不接受调用者自称只读。
   // 授权同时绑定 flow/TestCase 原始字节和全部显式对象角色；未过时尚未启动浏览器。
   const containsEntityMutation = flowContainsEntityMutation(flowDoc.flow, registry);
-  const signedAuthority = typeof args['entity-authority'] === 'string'
-    ? readJson(args['entity-authority'], '预执行身份授权')
+  const executeArtifactKey = projectArtifactKey(args['entity-authority']);
+  const executeAuthorityRead = executeArtifactKey
+    ? readIdentityAdmissionAuthorityFromPrd({
+      prdId: caseId,
+      artifactKey: executeArtifactKey,
+      domain: 'execute',
+    })
     : null;
+  const executeAuthority = executeAuthorityRead?.ok === true ? executeAuthorityRead.authority : null;
   const identityAdmission = checkCompileIdentityAdmission({
     mode: 'execute',
     caseId,
     containsEntityMutation,
-    signedAuthority,
+    executeAuthority,
     flowBytes: readFileSync(flowFile),
     testcaseBytes: readFileSync(String(args.testcase)),
     requiredBindings: requiredFlowEntityBindings(flowDoc.flow),
@@ -267,14 +282,20 @@ function verifyMode(caseId, args) {
   const eventsBytes = readFileSync(eventsFile);
   const eventsDoc = readJson(eventsFile, 'events.json');
   const registry = readJson(SNAPSHOT_FILE, '原子注册表快照');
-  const frozenLocks = typeof args['entity-locks'] === 'string'
-    ? readJson(args['entity-locks'], '冻结身份锁')
+  const frozenArtifactKey = projectArtifactKey(args['entity-locks']);
+  const frozenAuthorityRead = frozenArtifactKey
+    ? readIdentityAdmissionAuthorityFromPrd({
+      prdId: caseId,
+      artifactKey: frozenArtifactKey,
+      domain: 'verify',
+    })
     : null;
+  const frozenLockAuthority = frozenAuthorityRead?.ok === true ? frozenAuthorityRead.authority : null;
   const identityAdmission = checkCompileIdentityAdmission({
     mode: 'verify',
     caseId,
     containsEntityMutation: eventsContainEntityMutation(eventsDoc, registry),
-    frozenLocks,
+    frozenLockAuthority,
     eventsBytes,
     requiredBindings: requiredEventEntityBindings(eventsDoc),
   });

@@ -15,7 +15,7 @@
 // 取证按【动作作用域 + 发起方】归因（护栏 #15，非时间窗）：currentStepId 仅在该步动作执行+静默期开放，
 //   预导航/上下文恢复期一律 null；证不出归 null（fail-safe，护栏 #14）。
 import { readFileSync, writeFileSync, renameSync, readdirSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 import pw from '@playwright/test';
 import { performAction } from '../lib/replay-actions.mjs';
 import { instantiate } from '../lib/instantiate.mjs';
@@ -28,7 +28,13 @@ import { assertSignedContract } from '../lib/sign-gate.mjs';
 import { foldIntentAction } from '../lib/intent-action-fold.mjs';
 import { validateWorkflowDeleteBindings } from '../lib/workflow-delete-spec.mjs';
 import { projectReplayAssertion, validateReplayEntityAnchors } from '../lib/replay-entity-anchor.mjs';
-import { checkCompileIdentityAdmission, eventsContainEntityMutation, requiredEventEntityBindings } from '../lib/entity-semantic-lock-preflight.mjs';
+import {
+  checkCompileIdentityAdmission,
+  eventsContainEntityMutation,
+  readIdentityAdmissionAuthorityFromPrd,
+  requiredEventEntityBindings,
+} from '../lib/entity-semantic-lock-preflight.mjs';
+import { PROJECT_ROOT } from '../lib/paths.mjs';
 
 const { chromium } = pw;
 
@@ -54,6 +60,14 @@ function parseArgs(argv) {
     else if (a === '--soft-expect') o.softExpect = argv[++i];
   }
   return o;
+}
+
+// 文件参数只选择 PRD 已冻结的 artifact key；文件内容本身不携带回放权限。
+function projectArtifactKey(input) {
+  if (typeof input !== 'string' || !input.trim()) return null;
+  const rel = relative(PROJECT_ROOT, resolve(input));
+  if (!rel || rel === '..' || rel.startsWith(`..${sep}`)) return null;
+  return rel.split(sep).join('/');
 }
 
 // ── 录像基座（replay-video GRILL D1/M3–M5）─────────────────────
@@ -211,14 +225,22 @@ async function main() {
     process.exit(65);
   }
   const caseId = eventsDoc.caseId || expectedDoc.caseId || 'unknown';
-  // frozen locks 必须绑定本次 events 原始字节与全部显式对象角色；该准入早于登录、chromium.launch 和任何业务动作。
-  const frozenLocks = readJsonSafe(args.entityLocks, 'entity-locks.frozen.json');
+  // frozen locks 必须绑定本次 events 原始字节与全部显式对象角色；该准入早于登录、浏览器启动和任何业务动作。
+  const frozenArtifactKey = projectArtifactKey(args.entityLocks);
+  const frozenAuthorityRead = frozenArtifactKey
+    ? readIdentityAdmissionAuthorityFromPrd({
+      prdId: caseId,
+      artifactKey: frozenArtifactKey,
+      domain: 'verify',
+    })
+    : null;
+  const frozenLockAuthority = frozenAuthorityRead?.ok === true ? frozenAuthorityRead.authority : null;
   const registry = readJsonSafe(new URL('../lib/atoms-registry.snapshot.json', import.meta.url), '原子注册表快照');
   const identityAdmission = checkCompileIdentityAdmission({
     mode: 'verify',
     caseId,
     containsEntityMutation: eventsContainEntityMutation(eventsDoc, registry),
-    frozenLocks,
+    frozenLockAuthority,
     eventsBytes: readFileSync(args.events),
     requiredBindings: requiredEventEntityBindings(eventsDoc),
   });
