@@ -35,8 +35,8 @@
       "acceptance": [
         "node tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-07-17T04:57:29.505Z 全部 acceptance exit 0"
     }
   ]
 }
