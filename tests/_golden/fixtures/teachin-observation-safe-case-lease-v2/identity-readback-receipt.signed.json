@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "platform-identity-readback-receipt",
+  "source": "platform-runtime",
+  "keyId": "casey-driver-ed25519-v1",
+  "algorithm": "Ed25519",
+  "sessionNonce": "driver-session-20260717-00000001",
+  "caseId": "tc_observation_driver_provenance",
+  "captureSha256": "sha256:f1ce5a77f4d09a1e5894bc759aab7abcad9687423f13da0a30b9a1a2147b0ab8",
+  "sidecarSha256": "sha256:a4cb7d0abfc2f724918718a1c6b042ba60b65444a6d9b638515869907229ef4f",
+  "manifestSha256": "sha256:d64668e6e8706f43477ab5bccd29420603360768330249bc728e1478634f6c16",
+  "eventSeq": 1,
+  "kind": "workflow",
+  "name": "审批工作流",
+  "code": "wf-001",
+  "platformId": "90071992547409931234",
+  "scopeFingerprint": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "evidenceSha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+  "signature": "Webi6/2Hbm2R5zvIYSXYjWsFRtL6PdtbiHg/e8HE8aGrgNLOPRsub/zDpmGgY+ZLhxsEL5KxdnLs+8jv0YSFAA=="
+}
