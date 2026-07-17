@@ -3,6 +3,12 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 2026-07-16 活动增量：可信闭环自进化纳入正式计划
+
+Steven 已要求把“形成可以放心使用的闭环自进化”纳入计划。现役入口为 `docs/plans/closed-loop-evolution/plan.md`：在既有 `record → intake → distill` 底座上，补齐身份观察、名称+编号语义锁、候选原子忠实闸、联网真实 SUT 复验、逐用例 HTML/录屏/附件、人签晋升、版本化撤销以及 P6 有界自愈接合。当前不得宣称闭环已完成：语义锁 v1 仍有假 SAME 风险，成功回放到正式 registry 的晋升链和可运行 `casey heal` 尚未落地。
+
+当前执行序：① 语义锁 v2 修掉假一致 P0；② 接入录制后身份对比与回放前复核；③ 候选原子 schema/忠实闸；④ 真实 SUT 回放证据闭环；⑤ 人签晋升与撤销。Claude Code 额度采用风险触发：`fable high` 只做一次安全边界计划审和一次合并前核心 diff 终审；机械接线不重复送审，除非产生新的 HIGH/P0 或关键 diff 改变。
+
 ## 当前状态（2026-07-15 凌晨，B/C 双契约收口并入 dev；replay-settle-mount 真机复验暴露修复不足——保真缺口未真补平，需再一轮）
 
 1. **B `drawer-lock-hardening`（light）已合并 dev**（merge `a65ccca` + 复验 `c5789a2`）：画布三原子域锁跨抽屉硬化，codex∥pi 六轮双路复核逐轮逼真缝到双 PASS——r1 域锁 TOCTOU 漂移窗(2 HIGH)/r2 pin 语义/r3 句柄未闭合(fable 汇裁亲读代码坐实 codex、纠 pi 漏报)/r4 空白归一 MED/r5 纯空白 label fail-open/r6 双 PASS。抗漂移绑定(物理句柄快照+pin 挂点第三闸)+run 态失效+任一可见判定。红先行金牌 G18-G20，全量 39/0。家族差异实证：pi 三轮漏报 vs codex 三轮逮到。

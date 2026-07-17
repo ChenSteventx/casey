@@ -20,10 +20,13 @@ P0 引导 loop 机制(direct)  →  P1 DDD 词表 + ADR(plan)  →  P2 TestCase 
    →  P7 报告 + 裁定徽章 + 缺陷单(full)
    →  P8 多目标 web/cef/arbitrary(full)
    →  P9 两层 selftest + 真机 UAT(full)
+   →  P10 可信闭环自进化：示教→候选原子→真机复验→人签晋升→撤销(full)
 ```
 
 **MVP 第一刀**：打通 **P0→P5 + P7 的 web 单用例**（串行），跑出第一份带多态裁定的报告；再回头做 P6 自愈与 P8 多目标。
 **并发约束（红队 loop-C）**：MVP **串行跑用例**（每条一进一出：单 active-contract + 单 breaker reset）。
+
+> P10 的现役细化计划见 `docs/plans/closed-loop-evolution/plan.md`。P6 只处理裁定下游的有界漂移自愈，不能代替 P10 的候选原子学习、真实 SUT 复验、受控晋升和撤销闭环。
 
 ---
 

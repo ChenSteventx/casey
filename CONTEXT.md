@@ -122,6 +122,11 @@
 | 示教蒸馏 | Teach-in Distillation | `casey distill` 把已入账 示教录制包 的 events 零 LLM 确定性投影成候选流程（候选 TestCase 骨架 + 候选 mapping + pending + 溯源 manifest）；蒸馏工具零 LLM，LLM 手术刀只在 CLI 外经确定性闸 + 人签入场；重走 ingest→compile→draft→sign，绝不直通回放。v1 全 pending（真机路由跨环境不稳、无可靠静态查表，不臆造脆弱匹配） | — |
 | 蒸馏候选 | Distillation Candidate | `casey distill` 产的非权威候选物（候选 TestCase + 候选 mapping + manifest）；降权标记落 manifest（`artifactKind:'distill-candidate'`）+ 文件名 + 负向不变量，绝不 `signed`/`replayReady`，须重走全链 + 人签才算数 | — |
 | 采集忠实闸 | Capture-Fidelity Gate | 示教蒸馏 的零 LLM L0 闸：校候选 mapping 对 capture 溯源忠实（每候选 atom 有 event 证据、每 event 被覆盖或落 pending）；对位 flow-bridge 投影忠实，对象是 capture 溯源而非 TestCase.steps；fail-closed 全域返回、绝不抛 | — |
+| 可信闭环自进化 | Trusted Closed-loop Evolution | 示教/真实执行产生语料，经 身份观察、语义锁、原子候选、真实 SUT 复验、确定性裁定与人签晋升形成可复用原子，并可版本化撤销的受控学习闭环；默认不自治，LLM/视觉不得裁定或直接写正式 registry | 自动学习、自进化 |
+| 身份观察 | Identity Observation | 在录制或真实执行中采集业务对象类型、名称、编号/编码、稳定属性与来源步骤的去敏旁车证据；它是语义锁的输入，不是对象相同的结论 | — |
+| 语义锁 | Semantic Lock | 跨录制与回放以对象类型 + 名称 + 编号/编码及允许的稳定属性做 SAME/DIFFERENT/INDETERMINATE 对比的 fail-closed 身份门；有编号时名称与编号必须同时一致，证据不足绝不推 SAME | — |
+| 原子候选 | Atom Candidate | 从已入账示教语料提出、逐步引用 capture 与身份观察证据的非权威可复用动作候选；须过采集忠实闸、真实 SUT 复验、确定性裁定和人签晋升，不能直接进入正式 registry | 新原子 |
+| 晋升回执 | Promotion Receipt | 原子候选经人签晋升时生成的不可变审计产物，固定候选版本、证据哈希、适用 channel/profile、对象锁策略与真实回放结果；撤销产生新状态而不覆盖历史回执 | — |
 | 归一脚手架 | Normalization Scaffold | 相0 归一的前段脚手架——把一段自由文本用例零 LLM 包成 schema 合规的 候选骨架 + 归一提示模板，供 CLI 外 LLM 归一成真实候选后经 `parseTestCase` 重新入场；脚手架零 LLM，LLM 手术刀只在 CLI 外经确定性闸 + 人签入场。喂料源是自由文本（无 events），显式区分于 示教蒸馏（喂料源是 示教录制包、有 events 可 1:1 投影） | — |
 | 候选骨架 | Candidate Skeleton | `casey scaffold-case` 产的非权威候选物；开箱过 `parseTestCase`（全 `route:human` 兜底基线），降权标记落文件名 `scaffold-candidate-<caseId>.json` + 落地提示 + 负向不变量，绝不 `signed`/`replayReady`，须 CLI 外 LLM 归一 + 重走全链 + 人签才算数；显式区分于 蒸馏候选（喂料源是 示教录制包 而非自由文本） | — |
 | 归一提示模板 | Normalization Prompt Template | 指导 CLI 外 LLM 把 `source.raw` 自由文本归一成真实候选 `TestCase` 的提示 + schema 约束（镜像 `llm-patch.draft.md` 相2 补缝模板范式）；产物必过 `parseTestCase`，违规 fail-closed 退回；语义质量 `route:human` 抽检 | — |
