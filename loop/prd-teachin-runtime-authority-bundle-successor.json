@@ -44,7 +44,8 @@
       "acceptance": [
         "node tests/_golden/teachin-runtime-authority-bundle-successor.zero-sut.golden.mjs bundle-readiness"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:22:56.084Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-root-coherence",
@@ -53,7 +54,8 @@
       "acceptance": [
         "node tests/_golden/teachin-runtime-authority-bundle-successor.zero-sut.golden.mjs root-coherence"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:22:56.159Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-proxy-production-regression",
@@ -63,7 +65,8 @@
         "node tests/_golden/teachin-runtime-authority-bundle-successor.zero-sut.golden.mjs proxy-and-production",
         "node tests/_golden/teachin-runtime-readiness-successor.zero-sut.golden.mjs historical-and-roles"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:22:56.240Z 全部 acceptance exit 0"
     }
   ]
 }
