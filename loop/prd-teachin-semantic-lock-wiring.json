@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-semantic-lock-wiring（full）：冻结 record→distill→compile→sign→replay 的业务对象语义锁接线；未签观察/候选不得直通，只有绑定真实 events、人签且 live 比较为 SAME 的对象才允许动作。",
+  "specPath": "docs/plans/teachin-semantic-lock-wiring/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-semantic-lock-artifacts.zero-sut.golden.mjs": "9e65e59c853a9eb3815d88d3744ca72b93b6b849342fbc471eb998604563a11a",
+    "tests/_golden/teachin-semantic-lock-runtime.zero-sut.golden.mjs": "fcbf1dc92e1f76f14a13c57048acb383a0f508613bba5b39f972a446d364ff33",
+    "tests/_golden/teachin-semantic-lock-cli-wiring.zero-sut.golden.mjs": "b096b1feec53e2805625ef701eb6f2936d0aa36a5c4734c306c823234b5ab2dd"
+  },
+  "observability": [
+    {
+      "dimension": "真实 AI 中台 workflow/agent adapter：同记录 name+code+platformId 的读取，以及 SAME、改名、编号冲突、删除重建、重复候选五类行为；必须联网真机、录像和视觉复核。",
+      "route": "human"
+    },
+    {
+      "dimension": "手录关窗前身份观察是否完整覆盖本次对象，以及关系写 source/target 是否识别正确；必须逐 case 人签。",
+      "route": "human"
+    },
+    {
+      "dimension": "其它业务对象是否提供稳定 code/platformId/parent/revision；逐类真实只读 spike，未证明前保持 UNVERIFIED。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-identity-artifact-chain",
+      "desc": "未签观察→identity candidates/pending→绑定 eventsSha256 与 stepId/intentId/atom/role 的 draft→用户确认签 frozen；换 events 或缺 authority 一律拒绝。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-artifacts.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s2-runtime-rebind-and-action-gate",
+      "desc": "浏览器前 structural/hash/signature/binding 门，登录后 live rebind，每个 mutation 前重新比较；非 SAME 零点击且返回 reason+nextAction，关系写锁 source+target。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-runtime.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s3-five-stage-cli-wiring",
+      "desc": "record/distill/compile/sign/replay 五阶段真实调用语义锁接缝；preflight 早于浏览器启动、live rebind 晚于登录，不存在未签直通开关。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-cli-wiring.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    }
+  ]
+}

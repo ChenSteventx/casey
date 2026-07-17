@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // bin/replay.mjs —— 确定性回放器（相3）。真回放 SUT（被测系统）→ 产三轴 axes.json → 喂已冻 verdict.mjs。
-// 冻结 CLI：node bin/replay.mjs --events <f> --sut <baseUrl> --expected <f> --profile <f> --out <axes.json> [--login-bootstrap]
+// 冻结 CLI：node bin/replay.mjs --events <f> --sut <baseUrl> --expected <f> --profile <f> --out <axes.json> --entity-locks <f> [--login-bootstrap]
 //   [--run-history <f>] [--run-metrics <f>] [--run-id <id>]（opt-in 回放历史/回放指标真产出，缺省行为一字不变）：
 //   纯观察者逐 event 收集（零新增等待、零改动作时序——动了取证归因窗即污染护栏 #15），与 axes 同刻经
 //   凭据兜底门一次写出；仅诊断证据，绝不进 verdict.mjs、绝不写 passes（口径见 docs/plans/run-history/proposed/GRILL.md）。
@@ -15,19 +15,24 @@
 // 取证按【动作作用域 + 发起方】归因（护栏 #15，非时间窗）：currentStepId 仅在该步动作执行+静默期开放，
 //   预导航/上下文恢复期一律 null；证不出归 null（fail-safe，护栏 #14）。
 import { readFileSync, writeFileSync, renameSync, readdirSync, rmSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, relative, resolve, sep } from 'node:path';
 import pw from '@playwright/test';
 import { performAction } from '../lib/replay-actions.mjs';
 import { instantiate } from '../lib/instantiate.mjs';
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { settleBeforeCapture } from '../lib/replay-settle.mjs';
-import { evaluateAssertions } from '../lib/replay-assert.mjs';
+import { evaluateAssertions, inputReadbackFromAction } from '../lib/replay-assert.mjs';
 import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
 import { credentialGate, maskCredentialRoute } from '../lib/cred-gate.mjs';
 import { assertSignedContract } from '../lib/sign-gate.mjs';
 import { foldIntentAction } from '../lib/intent-action-fold.mjs';
 import { validateWorkflowDeleteBindings } from '../lib/workflow-delete-spec.mjs';
 import { projectReplayAssertion, validateReplayEntityAnchors } from '../lib/replay-entity-anchor.mjs';
+import {
+  checkReplayEntityAdmission as checkCompileIdentityAdmission,
+  readIdentityAdmissionAuthorityFromPrd,
+} from '../lib/entity-semantic-lock-preflight.mjs';
+import { PROJECT_ROOT } from '../lib/paths.mjs';
 
 const { chromium } = pw;
 
@@ -40,6 +45,7 @@ function parseArgs(argv) {
     else if (a === '--expected') o.expected = argv[++i];
     else if (a === '--profile') o.profile = argv[++i];
     else if (a === '--out') o.out = argv[++i];
+    else if (a === '--entity-locks') o.entityLocks = argv[++i];
     else if (a === '--login-bootstrap') o.loginBootstrap = true;
     else if (a === '--run-history') o.runHistory = argv[++i];
     else if (a === '--run-metrics') o.runMetrics = argv[++i];
@@ -52,6 +58,14 @@ function parseArgs(argv) {
     else if (a === '--soft-expect') o.softExpect = argv[++i];
   }
   return o;
+}
+
+// 文件参数只选择 PRD 已冻结的 artifact key；文件内容本身不携带回放权限。
+function projectArtifactKey(input) {
+  if (typeof input !== 'string' || !input.trim()) return null;
+  const rel = relative(PROJECT_ROOT, resolve(input));
+  if (!rel || rel === '..' || rel.startsWith(`..${sep}`)) return null;
+  return rel.split(sep).join('/');
 }
 
 // ── 录像基座（replay-video GRILL D1/M3–M5）─────────────────────
@@ -157,8 +171,8 @@ function readJsonSafe(f, label) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  for (const k of ['events', 'sut', 'expected', 'profile', 'out']) {
-    if (!args[k]) { console.error(`replay: 缺 --${k}`); process.exit(64); }
+  for (const k of ['events', 'sut', 'expected', 'profile', 'out', 'entityLocks']) {
+    if (typeof args[k] !== 'string' || !args[k]) { console.error(`replay: 缺 --${k === 'entityLocks' ? 'entity-locks' : k}`); process.exit(64); }
   }
   const uniqueName = args.uniqueName == null ? 'r1' : String(args.uniqueName);
   if (!/^[a-z0-9][a-z0-9_-]{0,63}$/i.test(uniqueName)) {
@@ -209,6 +223,26 @@ async function main() {
     process.exit(65);
   }
   const caseId = eventsDoc.caseId || expectedDoc.caseId || 'unknown';
+  // frozen locks 必须绑定本次 events 原始字节与全部显式对象角色；该准入早于登录、浏览器启动和任何业务动作。
+  const frozenArtifactKey = projectArtifactKey(args.entityLocks);
+  const frozenAuthorityRead = frozenArtifactKey
+    ? readIdentityAdmissionAuthorityFromPrd({
+      prdId: caseId,
+      artifactKey: frozenArtifactKey,
+      domain: 'verify',
+    })
+    : null;
+  const frozenLockAuthority = frozenAuthorityRead?.ok === true ? frozenAuthorityRead.authority : null;
+  const identityAdmission = checkCompileIdentityAdmission({
+    caseId,
+    eventsBytes: readFileSync(args.events),
+    eventsDocument: eventsDoc,
+    frozenLockAuthority,
+  });
+  if (!identityAdmission.ok) {
+    console.error(`replay: frozen identity locks 未过（${identityAdmission.reason}），未启动浏览器；下一步 ${identityAdmission.nextAction}`);
+    process.exit(65);
+  }
   const sut = String(args.sut).replace(/\/$/, '');
   // 确定性令牌（可 golden）；真机由 compile-gate 注入带 Reserved Prefix 的实体名。
   // baseUrl：G6 分岔三取 C——events url 走 {{baseUrl}} 占位符，回放期回填 --sut（对完整 URL 的旧 fixture 是 no-op）。
@@ -407,6 +441,7 @@ async function main() {
   const intentButtonHits = new Map(); // wf-publish-states：代表步 buttonState 命中合计（role + 可选补采，可见口径）
   const intentButtonSeen = new Map(); // wf-publish-states：代表步全通道可见按钮总数（absent 活性反证，codex R1-F1）
   const intentButtonDisabledHits = new Map(); // btn-enable-ops：代表步命中且判禁用计数（enabled/disabled 判据采集）
+  const intentInputReadback = new Map(); // regress-wf-node-script：代表事件同一物理字段的精确动作回读
 
   // 回放历史 opt-in（run-history）：纯观察者收集，不加任何等待、不改任何时序。
   const rhOn = !!(args.runHistory || args.runMetrics);
@@ -520,6 +555,9 @@ async function main() {
         rhQuietWait += Date.now() - settleT;
 
         intentUrl.set(ev.intentId, pathOf(page.url()));
+        // inputReadback 不另查 DOM：只投影刚执行的代表事件动作轴。动作门未给出 unique + ok:true +
+        // string actual 时存 undefined，断言评估据此 fail-safe 证不出。
+        intentInputReadback.set(ev.intentId, inputReadbackFromAction(actionByStep.get(ev.stepId)));
         const c = intentCount.get(ev.intentId);
         if (c) c.after = await rowCount(page, countSel);
         // kinds-harden（G3）：代表步静默点现场采——事后卷回评估只吃此刻事实（同 intentUrl/intentCount 范式）。
@@ -696,6 +734,7 @@ async function main() {
       buttonSeen: intentButtonSeen.get(iid), // 同刻通道活性（absent 反证前提）；缺采集即 undefined → 证不出
       buttonDisabledHits: intentButtonDisabledHits.get(iid), // btn-enable-ops：缺采集即 undefined → enabled/disabled 证不出
       replyText: intentReply.get(iid),    // chiefcomplaint-smoke：缺采集即 undefined → 证不出
+      inputReadback: intentInputReadback.get(iid), // 脚本/字段值：只认 setNodeField 同一物理字段动作回读
       streamUrlPattern: chatCfg ? chatCfg.streamUrlPattern : undefined,
     });
     return {

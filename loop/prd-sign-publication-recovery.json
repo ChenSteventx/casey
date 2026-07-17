@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "task": "sign-publication-recovery：以 publication journal 把含 entity locks 的多文件签发变成 PRD-last、同输入可恢复且不同输入拒绝的 fail-closed 发布事务，不声称多文件 OS 原子。",
+  "specPath": "docs/plans/sign-publication-recovery/plan.md",
+  "testChecksums": {
+    "docs/plans/sign-publication-recovery/plan.md": "4cb9eecf568d330b4708a90f4b8ce8b2a408dc98afd1778e8ee527ae2357ff61",
+    "tests/_golden/sign-publication-recovery.zero-sut.golden.mjs": "dbb18c6b1fe5a14a2848b5416ca4aea384693936ded007ad5f0c27a9ce579e18"
+  },
+  "observability": [
+    {
+      "dimension": "Win PowerShell、WSL 与 macOS 上真实断电/进程终止后的文件系统 rename、flush 与权限行为。",
+      "route": "human"
+    },
+    {
+      "dimension": "人签操作者身份、平台权威读回、撤销与审计日志。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "interrupt-recover",
+      "desc": "locks 后、PRD 前中断必须保留旧 authority 与 journal；同输入重试确定性收口。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/sign-publication-recovery.zero-sut.golden.mjs interrupt-recover"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:42:11.372Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "mismatch-authority",
+      "desc": "journal 后不同输入拒绝且无后续 rename；PRD 始终最后到位，半提交 locks 不铸造本次新 authority。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/sign-publication-recovery.zero-sut.golden.mjs mismatch-authority"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:42:11.408Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "cleanup-retry",
+      "desc": "journal cleanup 失败不得报成功；同输入重试不得重复发布已到位目标并能完成收口。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/sign-publication-recovery.zero-sut.golden.mjs cleanup-retry"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:42:11.448Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "cli-wiring",
+      "desc": "sign 接独立 publication engine、显式绑定规范 PRD authorityPath、拒绝无 journal 的潜伏旧 checksum，且无多文件 OS 原子过度声称。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/sign-publication-recovery.zero-sut.golden.mjs cli-wiring"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:42:11.485Z 全部 acceptance exit 0"
+    }
+  ]
+}

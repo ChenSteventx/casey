@@ -80,6 +80,7 @@ function runPipeline(pos, opts) {
   const conventionRel = {
     events: safeCaseId ? `cases/${safeCaseId}/events.json` : 'cases/<caseId>/events.json',
     expected: safeCaseId ? `cases/${safeCaseId}/expected.frozen.json` : 'cases/<caseId>/expected.frozen.json',
+    entityLocks: safeCaseId ? `cases/${safeCaseId}/entity-locks.frozen.json` : 'cases/<caseId>/entity-locks.frozen.json',
     profile: safeCaseId ? `cases/${safeCaseId}/profile.json` : 'cases/<caseId>/profile.json',
     observed: safeCaseId ? `cases/${safeCaseId}/observed-${safeCaseId}.json` : 'cases/<caseId>/observed-<caseId>.json',
     caseMeta: safeCaseId ? `cases/${safeCaseId}/testcase.json` : 'cases/<caseId>/testcase.json',
@@ -103,6 +104,7 @@ function runPipeline(pos, opts) {
   };
   const eventsPath = cp ? resolveInput('events', 'events', cp.events, conventionRel.events, true) : null;
   const expectedPath = cp ? resolveInput('expected', 'expected', cp.expected, conventionRel.expected, true) : null;
+  const entityLocksPath = cp ? resolveInput('entity-locks', 'entity-locks', cp.entityLocks, conventionRel.entityLocks, true) : null;
   const profilePath = cp ? resolveInput('profile', 'profile', cp.profile, conventionRel.profile, true) : null;
   const observedPath = cp ? resolveInput('observed', 'observed', cp.observed, conventionRel.observed, false) : null;
   const caseMetaPath = cp ? resolveInput('case-meta', 'case-meta', cp.caseMeta, conventionRel.caseMeta, false) : null;
@@ -111,15 +113,15 @@ function runPipeline(pos, opts) {
   if (invalidCaseId) missing.unshift('caseId 不安全：仅允许单段目录名，不得含 /、\\、.. 或绝对路径');
   if (!sut) missing.push('--sut');
   // 确定性尾段已实现：缺必填参 = 用参错误 → exit 64（非 notImplemented 的 3）。相0-2 LLM 前段未建、route:human。
-  if (!caseId || invalidCaseId || !eventsPath || !expectedPath || !profilePath || !sut) {
+  if (!caseId || invalidCaseId || !eventsPath || !expectedPath || !entityLocksPath || !profilePath || !sut) {
     console.error(col(C.red, '[run] 缺必填参 → 用参错误(64)'));
     if (missing.length) {
       console.error('缺失项：');
       for (const m of missing) console.error(`  - ${m}`);
     }
     console.error('LLM 前段(相0-2 ingest/compile/draft/sign)未建、route:human；确定性尾段用法：');
-    console.error('  casey run <caseId> --sut <本地基址> [--events <f>] [--expected <f>] [--profile <f>] [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>] [--unique-name <token>] [--login-bootstrap] [--no-video]');
-    console.error('  缺文件旗标时按 cases/<caseId>/events.json、expected.frozen.json、profile.json、observed-<caseId>.json、testcase.json 约定解析。');
+    console.error('  casey run <caseId> --sut <本地基址> [--events <f>] [--expected <f>] [--entity-locks <f>] [--profile <f>] [--observed <f>] [--generated-at <iso>] [--case-meta <f>] [--run-dir <dir>] [--unique-name <token>] [--login-bootstrap] [--no-video]');
+    console.error('  缺文件旗标时按 cases/<caseId>/events.json、expected.frozen.json、entity-locks.frozen.json、profile.json、observed-<caseId>.json、testcase.json 约定解析。');
     console.error('  串 相3回放 → 相4裁定 → 报表模型装配 → 相6报告，落 runs/<caseId>/<runId>/。');
     process.exit(64);
   }
@@ -150,6 +152,7 @@ function runPipeline(pos, opts) {
   // 录屏缺省开启（replay-video GRILL D4）：--no-video 显式关；视频与元数据旁件落本 runDir
   // （登录期不入镜由 replay 双 page 舞步结构保证）。仅诊断附件，绝不进相4 裁定（M7）。
   stage('相3 replay 回放', bin('replay.mjs'), ['--events', eventsPath, '--sut', sut, '--expected', expectedPath, '--profile', profilePath, '--out', axesOut,
+    '--entity-locks', entityLocksPath,
     '--run-history', path.join(runDir, 'run-history.jsonl'), '--run-metrics', path.join(runDir, 'run-metrics.json'), '--run-id', path.basename(runDir),
     ...(typeof opts['unique-name'] === 'string' ? ['--unique-name', opts['unique-name']] : []),
     ...(opts['login-bootstrap'] ? ['--login-bootstrap'] : []),
@@ -235,7 +238,7 @@ function help() {
   console.log(`${col(C.bold, 'casey')} —— 文本用例 → 测试报告 自动化测试（loop engineering 驱动）
 
 ${col(C.cyan, '端到端')}
-  casey run <caseId> --sut <本地基址> [--events <f> --expected <f> --profile <f>] [--run-dir <d> --unique-name <token> --login-bootstrap --no-video]
+  casey run <caseId> --sut <本地基址> [--events <f> --expected <f> --entity-locks <f> --profile <f>] [--run-dir <d> --unique-name <token> --login-bootstrap --no-video]
                                           相3-4-6 编排：回放→裁定→装配→报告；缺文件旗标时按 cases/<caseId>/ 约定解析
                                           --sut 必填，只喂隧道回环基址（site.json 的 devProxyUrl）；真目标地址绝不进命令行（护栏 #7）
 
@@ -245,12 +248,12 @@ ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅�
   casey ingest  <caseId> --in <f> --out-dir <d>
                                           相0 归一：候选（CLI 外 LLM 产）→ 校验 → 规范 TestCase
   casey compile <caseId> --testcase <f> --flow <f> --out-dir <d>
-                                          相1 编译闸段（落 flow 待人 confirm）；执行段加 --execute --sut <本地基址> --profile <f> [--skip-login --unique-name <t>]
+                                          相1 编译闸段（落 flow 待人 confirm）；执行段加 --execute --sut <本地基址> --profile <f> --entity-authority <f>；核验段用 --verify --entity-locks <f>
   casey flow-bridge <caseId> --testcase <f> --mapping <f> --out-dir <d>
                                           相1 flow 草拟桥：TestCase + mapping → compile 的 --flow
   casey draft   <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]
                                           相2 断言草拟：骨架+补缝合并+闸 → expected.draft（未签）
-  casey sign    <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--signed-at <iso> --verdict-baseline <f> --resign --force --archive-dir <d>]
+  casey sign    <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--events <f> --entity-bindings-draft <f> --entity-confirmations <f> --entity-locks-out <f>] [--signed-at <iso> --verdict-baseline <f> --resign --force --archive-dir <d>]
                                           相2 人签门：草稿→冻结签署（未签契约会被回放前置闸拒）
   casey record  <caseId> --sut <本地基址> --out-dir <d> (--login-bootstrap|--no-login) [--from-events <f> --headless --max-ms <ms>]
                                           示教采集：人工操作→teach-in-capture.json（只作蒸馏语料，不签署、不直通回放）
@@ -261,7 +264,7 @@ ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅�
   casey intake  <caseId> --capture <f>    示教入账：安全复核录制包 → 登记入账台账（不转形/不签署/不回放；拒账 fail-closed）
   casey distill <caseId> --capture <f> --out-dir <d> [--verify --mapping <f>]
                                           示教蒸馏：已入账录制包 → 候选流程 + pending + 溯源（TOCTOU 硬门；v1 零 LLM 全 pending；不签署/不回放；重走 ingest→…→人签）
-  casey replay  --events <f> --sut <本地基址> --expected <f> --profile <f> --out <axes.json> [--login-bootstrap ...]
+  casey replay  --events <f> --sut <本地基址> --expected <f> --entity-locks <f> --profile <f> --out <axes.json> [--login-bootstrap ...]
                                           相3 确定性回放 + 录屏 + 取证（未签契约拒回放）
   casey verdict --axes <f> --out <f>      相4 多态裁定（零 LLM 判定树）
   casey heal    <caseId>                  相5 自愈：仅对确证 HARNESS_ERROR 非就地重锚      [P6]
