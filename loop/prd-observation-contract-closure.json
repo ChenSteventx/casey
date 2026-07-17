@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "task": "observation-contract-closure：canonical intake/rehydrate 共用同一闭合 identity package validator，signed receipt 覆盖全部 observations；runtime trust PRD 以 formal amendment 正名 gzip；active-suite v2 从 JSON 消费精确计数/loader/PRD/revoked paths 且 replacement 全指向现役 story/test。",
+  "specPath": "docs/plans/observation-contract-closure/plan.md",
+  "testChecksums": {
+    "tests/_golden/observation-identity-contract-closure.zero-sut.golden.mjs": "da67e1c9891da3a8140d07c0b7e7e810f07ab09a70b394c954290e408a5994f0",
+    "tests/_golden/fixtures/observation-contract-closure/trusted-multi-consumer-probe.mjs": "053539c8470cbb119c791cbbe367d36d9c557949ebc10788cf161c6f2bfde4fe",
+    "tests/_golden/observation-runtime-trust-amendment.zero-sut.golden.mjs": "9d20b92ab6a28182ad66269fbd98cfd55acf302176b70bd74a3a55208fb34bb3",
+    "tests/_golden/observation-active-suite-contract-v2.zero-sut.golden.mjs": "7fa227326fad1f5eb6c23fbcf77a5de5f8cf7317cbff379984b0ba39671d39ea",
+    "tests/_golden/fixtures/observation-runtime-trust-root/active-suite-v2.json": "77d94f3d38019a0960f6b3f23d72d7bfba2e6ab8f9916c8f2f5c247c965b2477"
+  },
+  "observability": [
+    {
+      "dimension": "真实 driver release publication、私钥保护/轮换、nonce 持久防重放与 receipt 真机同源性仍须联网真机审计。",
+      "route": "human"
+    },
+    {
+      "dimension": "Windows 的 symlink/O_NOFOLLOW/file identity/rename/durability 须 Windows 真机故障注入。",
+      "route": "human"
+    },
+    {
+      "dimension": "本门禁不启动 SUT、fake、browser、server 或 network；GREEN 不得外推为真实 SUT 可用。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-closed-identity-package-and-full-receipt",
+      "desc": "HIGH：append 前与 rehydrate 后共用同一 closed identity package validator；未知/敏感/consumer-incompatible sidecar 拒绝；schema v1 单观察兼容，schema v2 signed receipt 逐项覆盖全部 observations；完整双观察可 intake→distill→trusted consumer。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/observation-identity-contract-closure.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s2-runtime-trust-gzip-amendment",
+      "desc": "MED：formal amendment 将 runtime trust PRD 的 Base64/originalBase64 旧摘要正名为实际 gzip archive/gunzip sha verification，明确旧尝试从未记 PASS。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/observation-runtime-trust-amendment.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s3-active-suite-v2-machine-readable-contract",
+      "desc": "MED coverage-freeze：successor test 从 v2 JSON 消费精确 counts/loader/active+historical PRD/revoked paths；replacement arrays 非空且每项指向 active passes:true story 的真实 acceptance test。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/observation-active-suite-contract-v2.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    }
+  ]
+}
