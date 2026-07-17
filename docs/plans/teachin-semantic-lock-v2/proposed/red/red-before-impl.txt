@@ -1,0 +1,10 @@
+command: node tests/_golden/teachin-semantic-lock-v2.zero-sut.golden.mjs
+exit: 1
+
+FAIL V2-A 外部冻结锚阻断自证 hash、换包、case/events 错配: 合法 fixture 被拒：{"ok":false,"reason":"V2_MODULE_MISSING"}
+FAIL V2-B schema/策略不可降级，输入严格闭合且不静默 trim: 合法锁集未建立 handle: {"ok":false,"reason":"V2_MODULE_MISSING"}
+FAIL V2-C 唯一动作门严格处理冲突、畸形、零扫描和 accessor: 合法锁集未建立 handle: {"ok":false,"reason":"V2_MODULE_MISSING"}
+FAIL V2-D successor 只认冻结 transition/当前 head/同平台 ID/exact 新 revision，并使旧 head 失效: 合法锁集未建立 handle: {"ok":false,"reason":"V2_MODULE_MISSING"}
+RED  teachin-semantic-lock-v2: 0 过 / 4 红
+
+说明：纯函数新模块尚不存在，四组新功能验收全部真实红；未启动或连接浏览器、网络、fake、fixture 或真实 SUT。
