@@ -4,9 +4,14 @@
 import { readFileSync, lstatSync, mkdirSync, writeFileSync, rmSync } from 'node:fs';
 import { resolve, basename, dirname, join } from 'node:path';
 import { credentialGate } from '../lib/cred-gate.mjs';
-import { reviewCapture, intakeLedgerPath, normConverge, hasDuplicateKeys } from '../lib/record-intake.mjs';
-import { verifyIntakenPackage, projectCapture, validateCaptureFidelity, buildDistillManifest } from '../lib/record-distill.mjs';
+import { reviewCapture, normConverge, hasDuplicateKeys } from '../lib/record-intake.mjs';
+import { projectCapture, validateCaptureFidelity, buildDistillManifest } from '../lib/record-distill.mjs';
 import { deriveTeachInPackagePaths, verifyTeachInPackage } from '../lib/entity-semantic-lock-package.mjs';
+import {
+  rehydrateAcceptedObservationTransaction,
+  verifyObservationTransactionPair,
+} from '../lib/teachin-observation-authority-root.mjs';
+import { projectIdentityBoundCaptureForLegacyReview } from '../lib/teachin-identity-observations.mjs';
 
 function parseArgs(argv) {
   const o = { pos: [] };
@@ -67,9 +72,6 @@ function main() {
       process.exit(1);
     }
   }
-  const ledgerPath = intakeLedgerPath({ capturePath });
-  try { if (lstatSync(ledgerPath).isSymbolicLink()) { console.error('distill: intake-ledger.jsonl 是符号链接（拒；路径不回显）'); process.exit(65); } } catch { /* 台账不存在=正常 */ }
-
   let captureBytes;
   let manifestBytes;
   let sidecarBytes;
@@ -96,21 +98,30 @@ function main() {
   if (!credentialGate({ capture: raw }).ok) { console.error('distill: capture 命中凭据门（护栏 #7）；拒绝蒸馏、零落盘。'); process.exit(1); }
   if (hasDuplicateKeys(raw)) { console.error('distill: capture 含 JSON 重复键（脏内容可藏被丢弃键；拒蒸馏，零落盘）'); process.exit(65); }
 
-  // ── TOCTOU 硬门：latest accepted 必须同时匹配三份当前最终字节与观察元数据 ──
-  let ledgerEntries = [];
-  try { ledgerEntries = readFileSync(ledgerPath, 'utf8').split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l)); }
-  catch { ledgerEntries = []; }
-  const vi = verifyIntakenPackage({
-    caseId,
-    ledgerEntries,
-    packageAuthority: packageReview.authority,
-    currentCaptureSha256,
-    currentSidecarSha256,
-    currentManifestSha256,
-    observationCount: packageReview.observationCount,
-    observationSchemaVersion: packageReview.observationSchemaVersion,
+  // ── 跨进程 canonical authority 硬门：signed release receipt + committed ledger 共同 rehydrate opaque pair。──
+  const rehydrated = rehydrateAcceptedObservationTransaction({ caseId, capturePath });
+  if (!rehydrated.ok) {
+    console.error(`distill: intake→distill canonical authority 拒（${rehydrated.reason}）——绝不蒸馏。`);
+    process.exit(65);
+  }
+  const transaction = verifyObservationTransactionPair({
+    acceptedIntakeAuthority: rehydrated.authority,
+    platformReadbackReceipt: rehydrated.receipt,
   });
-  if (!vi.ok) { console.error(`distill: intake→distill 硬门拒（${vi.reason}）——未入账或换包，绝不蒸馏。`); process.exit(65); }
+  if (!transaction.ok) {
+    console.error(`distill: intake→distill opaque transaction pair 拒（${transaction.reason || 'TRANSACTION_INVALID'}）——绝不蒸馏。`);
+    process.exit(65);
+  }
+  const facts = transaction.facts;
+  if (!facts || typeof facts !== 'object' || facts.caseId !== caseId
+    || facts.captureSha256 !== currentCaptureSha256
+    || facts.sidecarSha256 !== currentSidecarSha256
+    || facts.manifestSha256 !== currentManifestSha256
+    || facts.observationCount !== packageReview.observationCount
+    || facts.observationSchemaVersion !== packageReview.observationSchemaVersion) {
+    console.error(`distill: intake→distill opaque transaction pair 拒（${transaction.reason || 'TRANSACTION_FACTS_MISMATCH'}）——绝不蒸馏。`);
+    process.exit(65);
+  }
 
   let doc;
   try { doc = JSON.parse(raw); }
@@ -124,11 +135,14 @@ function main() {
   if (!dec.converged || !credentialGate({ capture: canon }).ok || !credentialGate({ capture: dec.s }).ok) { console.error('distill: capture 含编码凭据/超深不收敛编码（canon/解码扫；护栏 #7）；拒蒸馏、零落盘。'); process.exit(1); }
 
   // 当前字节重跑 reviewCapture（belt-and-suspenders，GRILL D4 步骤 4）。
-  const review = reviewCapture(doc, { caseId });
+  let reviewDoc;
+  try { reviewDoc = projectIdentityBoundCaptureForLegacyReview({ caseId, capture: doc }); }
+  catch (error) { console.error(`distill: v2 capture 投影拒（${error?.message || 'CAPTURE_V2_INVALID'}）——绝不蒸馏。`); process.exit(65); }
+  const review = reviewCapture(reviewDoc, { caseId });
   if (!review.ok) { console.error(`distill: 当前 capture 重跑复核不过（REREVIEW_FAILED:${review.reason}）——绝不蒸馏。`); process.exit(65); }
 
   // 零 LLM 投影（--verify 与常规都从**当前 capture** 重投影，不信可变 manifest，异构评审 F1）。
-  const { candidateTestCase, candidateMapping, pending, projection } = projectCapture(doc);
+  const { candidateTestCase, candidateMapping, pending, projection } = projectCapture(reviewDoc);
 
   // ── --verify 采集忠实闸模态（GRILL D9）：以当前 capture 重投影的 projection/pending 校 --mapping ──
   if (args.verify) {
