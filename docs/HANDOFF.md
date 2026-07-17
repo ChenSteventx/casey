@@ -3,6 +3,14 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 2026-07-18 凌晨活动增量：codex 语义锁线核账 + Claude 接管认证漂移收口（待 Grok 评审终签）
+
+1. **三路核账**：codex 自报（7/16 17:03 止）全部属实；其后 codex 又推进约 60 提交至 `observation-contract-closure @ e0ffe16`（语义锁 v2/旁车/wiring 合流，未并 dev）。Claude 攻击式异构评审 PASS（已接线路径无 Critical/High/Medium），档案 `docs/plans/closed-loop-evolution/review-claude-20260717.md`。5 个 P0 防御代码闭合，但认证账漂移：两个 prd `passes:true` 与实跑 gate RED 不符、判别攻击金牌全线红。
+2. **现场处置**：Steven 拍板停 codex、Claude 接管；两处 `/tmp` 未提交特性抢救提交（`902216e` 跨平台安装 / `02f4361` 账户配置）。九个 `/tmp` worktree 重启会丢目录（提交已安全），待 `git worktree prune` 收口。
+3. **W1 契约 `semantic-lock-cert-closure`（light）已到 review 门前**：worktree `/mnt/d/ctx/heren/casey-semantic-lock-cert-closure`，提交 `9803f73`。分面重证（可达面三金牌全绿：v2 2/2、capability 2/2、runtime-authority 9/9）+ 前瞻红基线 `runtime-discrimination-successor`（0/26 诚实红，收纳被 `819015f` 不可执行姿态挡住的全部运行时判别攻击）+ 三僵死金牌墓碑吊销（收据 `supersession-revocation.json`）+ 五 prd 纪律②重签。gate/ratchet（7 问题全存量零新增）/tier1 全背书；lib 零触碰有 checksum 机制证明。契约 grill/plan/accept/loop 四阶段 done。
+4. **待办（顺序）**：① Grok 异构评审（codex 无额度，Steven 指定改走 Grok；评审包 `D:\ctx\heren\review-packets\grok-review-semantic-lock-cert-closure-9803f73.md`，先关训练开关、绝不给仓库访问）→ verdict 入 `audit.jsonl` → `advance review/learn`；② **route:human 判别分岔待 Steven**：前瞻红基线填绿三选一（真机运行时权威 / 恢复可验证接缝 kernel 契约 / 判别函数单元导出）；③ teachin 全线合并编排回 dev（顺序合并 + 3-way + 共享冻结重签 + 全仓 ratchet + tier1）；④ W2 v2 引擎接线（`observation-cli-authority-wiring` 红基线即规格）；⑤ mountdelay 保真契约排回（7/15 头号，被闭环计划挤掉，零后续）。
+5. **存量债新观测**：ratchet 7 问题含 `report-model.schema.json` 与 `workflow-delete-causal-binding.static` 两处更早漂移（疑遗产整合期引入，非本轮文件）+ 三个真机产物缺件 + 两个安全墓碑永久信号；`intake-joint` 金牌是真实 intake 接线缺口（非孤儿，保持红）。
+
 ## 2026-07-16 活动增量：可信闭环自进化纳入正式计划
 
 Steven 已要求把“形成可以放心使用的闭环自进化”纳入计划。现役入口为 `docs/plans/closed-loop-evolution/plan.md`：在既有 `record → intake → distill` 底座上，补齐身份观察、名称+编号语义锁、候选原子忠实闸、联网真实 SUT 复验、逐用例 HTML/录屏/附件、人签晋升、版本化撤销以及 P6 有界自愈接合。当前不得宣称闭环已完成：语义锁 v1 仍有假 SAME 风险，成功回放到正式 registry 的晋升链和可运行 `casey heal` 尚未落地。
