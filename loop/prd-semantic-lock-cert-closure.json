@@ -31,7 +31,7 @@
         "node tests/_golden/teachin-semantic-lock-runtime-authority.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-17T16:07:49.530Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-17T16:57:11.691Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-adjacent-greens-hold",
@@ -46,7 +46,7 @@
         "node tests/_golden/teachin-semantic-lock-package-integrity.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-17T16:07:53.075Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-17T16:57:15.183Z 全部 acceptance exit 0"
     }
   ]
 }

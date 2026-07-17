@@ -3,12 +3,13 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 2026-07-18 凌晨活动增量：codex 语义锁线核账 + Claude 接管认证漂移收口（待 Grok 评审终签）
+## 2026-07-18 凌晨活动增量：codex 语义锁线核账 + Claude 接管认证漂移收口（已收口并入 dev，merge `bf39d7e`）
 
 1. **三路核账**：codex 自报（7/16 17:03 止）全部属实；其后 codex 又推进约 60 提交至 `observation-contract-closure @ e0ffe16`（语义锁 v2/旁车/wiring 合流，未并 dev）。Claude 攻击式异构评审 PASS（已接线路径无 Critical/High/Medium），档案 `docs/plans/closed-loop-evolution/review-claude-20260717.md`。5 个 P0 防御代码闭合，但认证账漂移：两个 prd `passes:true` 与实跑 gate RED 不符、判别攻击金牌全线红。
 2. **现场处置**：Steven 拍板停 codex、Claude 接管；两处 `/tmp` 未提交特性抢救提交（`902216e` 跨平台安装 / `02f4361` 账户配置）。九个 `/tmp` worktree 重启会丢目录（提交已安全），待 `git worktree prune` 收口。
 3. **W1 契约 `semantic-lock-cert-closure`（light）已到 review 门前**：worktree `/mnt/d/ctx/heren/casey-semantic-lock-cert-closure`，提交 `9803f73`。分面重证（可达面三金牌全绿：v2 2/2、capability 2/2、runtime-authority 9/9）+ 前瞻红基线 `runtime-discrimination-successor`（0/26 诚实红，收纳被 `819015f` 不可执行姿态挡住的全部运行时判别攻击）+ 三僵死金牌墓碑吊销（收据 `supersession-revocation.json`）+ 五 prd 纪律②重签。gate/ratchet（7 问题全存量零新增）/tier1 全背书；lib 零触碰有 checksum 机制证明。契约 grill/plan/accept/loop 四阶段 done。
-4. **待办（顺序）**：① Grok 异构评审（codex 无额度，Steven 指定改走 Grok；评审包 `D:\ctx\heren\review-packets\grok-review-semantic-lock-cert-closure-9803f73.md`，先关训练开关、绝不给仓库访问）→ verdict 入 `audit.jsonl` → `advance review/learn`；② **route:human 判别分岔待 Steven**：前瞻红基线填绿三选一（真机运行时权威 / 恢复可验证接缝 kernel 契约 / 判别函数单元导出）；③ teachin 全线合并编排回 dev（顺序合并 + 3-way + 共享冻结重签 + 全仓 ratchet + tier1）；④ W2 v2 引擎接线（`observation-cli-authority-wiring` 红基线即规格）；⑤ mountdelay 保真契约排回（7/15 头号，被闭环计划挤掉，零后续）。
+4. **已完成收口（2026-07-18 凌晨续）**：契约六阶段全 done——异构评审改走 pi（Steven 指定：codex 无额度、Grok 包已备未用）：`pi.dev deepseek-v4-pro thinking high --no-tools` 冒烟验通后一次 PASS（七检查域实审，7/16 两次超时挂账清偿），入账 `loop/audit.jsonl`（主树+契约树双份）。merge `bf39d7e` 并入 dev（ort 零冲突；排除两 WIP 特性分支）；主树复验：ratchet 4 存量债零新增（report-model 与 workflow-delete 两处遗产期漂移 + 两安全墓碑永久信号）、tier1 GREEN、cert gate 主树重打 GREEN 2/2。评审包与 pi verdict 存 `D:\ctx\heren\review-packets\`。
+5. **待办（顺序）**：① **route:human 判别分岔待 Steven**：前瞻红基线 `runtime-discrimination-successor`（0/26）填绿三选一（真机运行时权威 / 恢复可验证接缝 kernel 契约 / 判别函数单元导出）；② W2 v2 引擎接线（`observation-cli-authority-wiring` 红基线即规格；intake-joint 真实缺口同线）；③ mountdelay 保真契约排回（7/15 头号，被闭环计划挤掉，零后续）；④ worktree 卫生：`git worktree prune` 清 `/tmp` 九树 + 删 `casey-teachin-semantic-lock` 空壳树 + 契约树 `casey-semantic-lock-cert-closure` 可清；⑤ 两 WIP 特性（跨平台安装 `902216e` / 账户配置 `02f4361`）待验收后另走合并。
 5. **存量债新观测**：ratchet 7 问题含 `report-model.schema.json` 与 `workflow-delete-causal-binding.static` 两处更早漂移（疑遗产整合期引入，非本轮文件）+ 三个真机产物缺件 + 两个安全墓碑永久信号；`intake-joint` 金牌是真实 intake 接线缺口（非孤儿，保持红）。
 
 ## 2026-07-16 活动增量：可信闭环自进化纳入正式计划
