@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-admission-side-effect-policy（superseding）：由冻结策略而非调用者 flags 判定副作用，逐 step/event 闭合必需角色，compile 保留对象 provenance 且仅 sign 后可 replayReady，敌对对象零 trap fail-closed。",
+  "specPath": "docs/plans/teachin-admission-side-effect-policy/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-admission-side-effect-policy.zero-sut.golden.mjs": "d3aa9b9d94aaaeaf4b422e064fae829c370bb8132e1cfe97703d0cc2af37d7ed",
+    "tests/_golden/fixtures/teachin-admission-side-effect-policy/entity-admission-policy.frozen.json": "17a7c6fa23b9c1420db077c9807007215be14cf95c60922dde4b7f39b7365ff4"
+  },
+  "observability": [
+    {
+      "dimension": "五写原子在真实 AI 中台的副作用、对象 kind 与必需 subject/source/target 角色逐项只读核对。",
+      "route": "human"
+    },
+    {
+      "dimension": "compile 真机一对多事件时 sourceIntentId + candidateId/role 未丢失，sign receipt 与最终 events 同源；每用例录屏、视觉复核、独立 HTML 与附件。",
+      "route": "human"
+    },
+    {
+      "dimension": "冻结 side-effect policy 的发布、升级、撤销与 Win PowerShell/WSL/macOS 安装边界。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-side-effect-policy",
+      "desc": "五个真实写原子不得被 caller flags/bindings 伪装只读；只读仅显式 allowlist，未知默认 mutation，旧 containsEntityMutation:false 旁路关闭。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-admission-side-effect-policy.zero-sut.golden.mjs effects"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s2-per-operation-required-roles",
+      "desc": "逐 step/event 验证 mutation/relation 必需角色，任一空锁、单端、unknown/multi role 整份 invalid，再做七字段 strict set。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-admission-side-effect-policy.zero-sut.golden.mjs roles"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s3-compile-sign-provenance",
+      "desc": "纯 compile projection 保留 sourceIntentId + candidateId/role，compile 不铸造签名字段，sign 补 lockId + receiptHash 后才 replayReady。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-admission-side-effect-policy.zero-sut.golden.mjs provenance"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s4-hostile-input-closure",
+      "desc": "classifier/derivation 对顶层、嵌套、bindings Proxy/accessor 零 trap，invalid 与合法空集严格区分且 checker fail-closed。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-admission-side-effect-policy.zero-sut.golden.mjs hostile"
+      ],
+      "passes": false
+    }
+  ]
+}
