@@ -27,7 +27,8 @@
       "acceptance": [
         "node tests/_golden/teachin-observation-sidecar-hardening.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T01:25:26.460Z 全部 acceptance exit 0"
     }
   ]
 }
