@@ -37,8 +37,8 @@
       "acceptance": [
         "node tests/_golden/teachin-observation-driver-provenance.zero-sut.golden.mjs"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-07-17T04:12:02.948Z 全部 acceptance exit 0"
     }
   ]
 }
