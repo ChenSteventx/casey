@@ -1,0 +1,19 @@
+teachin-observation-authority-root 红基线（2026-07-17）
+
+command: node tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs
+exit: 1
+environment: 零 SUT；未启动 browser/network/fake/fixture server，仅纯函数、冻结 fixture 与本地临时目录 I/O
+
+FAIL A1 公开纯函数不得从 plain ledgerEntries + bytes 自铸 accepted authority: PUBLIC_PLAIN_ACCEPTED_AUTHORITY_ISSUER_OPEN,CALLER_PATHFACTS_COMPLETED_FALSE_TRUST_CHAIN
+FAIL A2 正向 authority 只能来自固定路径真实 append transaction: OBSERVATION_AUTHORITY_ROOT_API_MISSING
+FAIL B1 accepted authority 单独或 plain receipt 均不得 trusted；opaque receipt 正向才可 trusted: OBSERVATION_AUTHORITY_ROOT_API_MISSING
+FAIL B2 receipt 精确绑定 eventSeq/kind/name/code/platformId/scope/evidenceSha256: OBSERVATION_AUTHORITY_ROOT_API_MISSING
+FAIL B3 同名 click 不能给无关 sidecar trusted: OBSERVATION_AUTHORITY_ROOT_API_MISSING
+FAIL C1 每轮/最终百分号解码后 C0/C1/DEL 与关键词插入均拒绝: CONTROL_AFTER_DECODE_ACCEPTED:to%00ken,to%2500ken,line%0afeed,field%09name,del%7fmark,c1%C2%80mark,line%250afeed,c1%25C2%2580mark
+ok   C2 UTF-8 截断/overlong/非法续字节拒绝，裸百分号基线保留
+FAIL D1 package/intake/ledger/receipt 顶层与嵌套 Proxy 零 trap 拒绝: package 顶层 Proxy 执行了 5 次 trap/getter
+FAIL D2 package/intake/ledger/receipt 顶层与嵌套 accessor 零 getter 拒绝: package 顶层 accessor 执行了 1 次 trap/getter
+ok   E1 被替代的相关 frozen tests 与 PRD checksum 全部原样
+RED  teachin-observation-authority-root: 2 过 / 8 红
+
+结论：新增验收命中了当前实现的真实缺口，不是测试基础设施失败；实现阶段开始前保持 `passes:false`。

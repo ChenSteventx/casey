@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "platform-identity-readback-receipt",
+  "source": "platform-runtime",
+  "caseId": "tc_observation_authority_root",
+  "eventSeq": 1,
+  "kind": "workflow",
+  "name": "审批工作流",
+  "code": "wf-001",
+  "platformId": "90071992547409931234",
+  "scopeFingerprint": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "evidenceSha256": "sha256:cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+}
