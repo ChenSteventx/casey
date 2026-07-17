@@ -42,7 +42,8 @@
       "acceptance": [
         "node tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:46:43.233Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-ledger-temp-final-integrity",
@@ -51,7 +52,8 @@
       "acceptance": [
         "node tests/_golden/observation-temp-commit-integrity.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:46:43.281Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-unsafe-golden-security-revocation",
@@ -60,7 +62,8 @@
       "acceptance": [
         "node tests/_golden/observation-unsafe-golden-revocation.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:46:43.426Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-active-suite-supersession-ledger",
@@ -69,7 +72,8 @@
       "acceptance": [
         "node tests/_golden/observation-active-suite-supersession.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:46:43.863Z 全部 acceptance exit 0"
     }
   ]
 }
