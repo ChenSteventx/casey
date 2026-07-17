@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-runtime-provenance-budget-successor（full）：data manifest 改为迭代有界图；固定节点、边、manifest、单资源与总资源字节预算；每个 publication inspection 异常稳定降级，公开 readiness 始终 unavailable/route:human。",
+  "specPath": "docs/plans/teachin-runtime-provenance-budget-successor/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-runtime-provenance-budget-successor.zero-sut.golden.mjs": "5d3271e2225391c618437b75d0e74438d8a77ea52f6f2575b88b6e7743d4e9ce",
+    "tests/_golden/fixtures/teachin-runtime-provenance-budget-successor/budget-cases.json": "103883090002eeb8bd6e0813c64a8786ecded011accc6158441ae55895fe40e4",
+    "docs/plans/teachin-runtime-provenance-budget-successor/proposed/SUPERSESSION.md": "83f0a22f444fdc4e73530419cd8cc0d2c66d0ff76e3c8b6744b020a17e57e47b",
+    "docs/plans/teachin-runtime-provenance-budget-successor/proposed/supersession/old-bundle-current.txt": "b6f5f5b589e1a229a000dca1c793b8117f8b10d2e4b4990cf7e64f05f0fa9275",
+    "docs/plans/teachin-runtime-provenance-budget-successor/proposed/red/bounded-topology-before-impl.txt": "2597b0080a98eb78551c0218c06072e847734e456681dfa327ab89c084e4b805",
+    "docs/plans/teachin-runtime-provenance-budget-successor/proposed/red/bounded-bytes-before-impl.txt": "3df0f15e1fe2c02b14ef1d47bf3d34e76b62307debe4adb21db52f62d7e4d129",
+    "docs/plans/teachin-runtime-provenance-budget-successor/proposed/red/isolation-before-impl.txt": "49a2a2b49fc6bf7c5b03a2a29b60dec647d03e0978d6b7f8cb3b8d5e87fb067c",
+    "tests/_golden/teachin-runtime-provenance-successor.zero-sut.golden.mjs": "3aee7ca3c9db39634db8732ab06872d5b2f6c5554d0e9a2497603c05ba5eea28",
+    "tests/_golden/fixtures/teachin-runtime-provenance-successor/provenance-cases.json": "108109099414db73bfbdfaf70e016a3b3a0fb18da7a675d8d0fb36a3c95d044a",
+    "tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs": "c80ef09738bfd28b7465144b2d262679f9d6a43d85da375dc43190c5bd75d123",
+    "tests/_golden/teachin-runtime-readiness-successor.zero-sut.golden.mjs": "404ec3dbd63237ccb89ce0199ed3e09ad8a2786a782f86b537340a9f653214f1",
+    "tests/_golden/fixtures/teachin-runtime-readiness-successor/publication-cases.json": "7cf6b0f24fda76eebeab550531590ebba45a42e94efc0f1ef80c4beaecff478c",
+    "tests/_golden/teachin-runtime-authority-bundle-successor.zero-sut.golden.mjs": "4068672a368207698404b694ff4c659a9ff2bccbba356263c16c6ce2981ac527",
+    "tests/_golden/fixtures/teachin-runtime-authority-bundle-successor/bundle-cases.json": "05f757783c916570e3036256da20fde3b72bcf93a802661b6af9a5581214f582",
+    "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/entity-locks.frozen.json": "027296d2b2bcafc12b69c40891bb4b89c70f04051f9ac77a9e89251a918c020c",
+    "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/events.document.json": "2e7742311fd3516e5461b68e5caed19bc292aa1a3b514c9831188dab40607034",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/entity-action-policy.frozen.json": "74f3d362045a4cf0db77a560b218232942280055dbd942beab2728ba2b32955f",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-source-only.locks.json": "4440ebfba3bf214e04718899c9f13bd22c89f27db69da0ca23dc8b1d18418c86",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-source-only.events.json": "413432a97a61543413aff2245fd4849bbcc957fb435c6722c95954d94323419d",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-target-only.locks.json": "28d771f1801886b8a5a016eb6a3ff4afb4391d9e206d41defc05fbf4ba151b08",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-target-only.events.json": "984f7a1416da57c8f73e3c7a36058050877228d3a97f7a12b43a166658b48e28",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/mutation-empty.locks.json": "290a8485016688ed68273e2995511318f66422c27c17c4c72dae61168d9ba6f6",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/mutation-empty.events.json": "5f888baa18d62b546deea6640fad0caa9f6da9a2c974d9a1d402f35450bd7da4",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/unknown-role.locks.json": "09d50ac939a62c711ac050d2a07e3378f97a9459121daabe13a7168fe170bb14",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/unknown-role.events.json": "30ede5dcde6b4e11a99a72960cf609ec4f0b5382f4b283be51122b1789f83416"
+  },
+  "observability": [
+    {
+      "dimension": "预算数值在真实发布物上的容量评审与监控；本轮固定资源上限，不声称覆盖未来所有合法 bundle。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实 SUT 上同次发布、可靠 JavaScript parser、真实 import graph、模块签名及 sandboxed executable loader；本轮仍不执行候选 JavaScript。",
+      "route": "human"
+    },
+    {
+      "dimension": "旧 teachin-runtime-authority-bundle-successor 当前为 exit 1、3 过 / 9 红，不是绿色；若恢复可执行路径必须新开可靠 loader 契约。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-bounded-topology",
+      "desc": "manifest 图以迭代算法和节点/边预算验证；20,000 节点线性图不爆栈，节点或边超限在资源读取前稳定 unavailable/route:human。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-runtime-provenance-budget-successor.zero-sut.golden.mjs bounded-topology"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s2-bounded-bytes",
+      "desc": "manifest、单个非 manifest 资源与非 manifest 总资源各有字节预算；超限稳定拒绝，预算内健康图仍只 provenance-recorded/不可用。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-runtime-provenance-budget-successor.zero-sut.golden.mjs bounded-bytes"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s3-isolation-supersession-regression",
+      "desc": "单 publication inspection 异常不越过公开 API；Proxy/accessor 零 trap/getter；正式记录旧 bundle 当前 3 过 / 9 红，上一 provenance、production、historical/roles 回归继续通过。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-runtime-provenance-budget-successor.zero-sut.golden.mjs isolation-and-supersession",
+        "node tests/_golden/teachin-runtime-provenance-successor.zero-sut.golden.mjs all",
+        "node tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs all",
+        "node tests/_golden/teachin-runtime-readiness-successor.zero-sut.golden.mjs historical-and-roles"
+      ],
+      "passes": false
+    }
+  ]
+}

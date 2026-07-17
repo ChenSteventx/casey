@@ -1,0 +1,8 @@
+$ git rev-parse HEAD
+819015f523aa966d4005905a7673e73b4cd19eca
+
+$ node tests/_golden/teachin-runtime-authority-bundle-successor.zero-sut.golden.mjs all
+exit: 1
+ok: 3
+red: 9
+RED  teachin-runtime-authority-bundle-successor/all: 3 过 / 9 红
