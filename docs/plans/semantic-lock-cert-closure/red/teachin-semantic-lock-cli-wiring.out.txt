@@ -1,0 +1,13 @@
+RED  teachin-semantic-lock-cli-wiring: record.mjs 缺 createIdentityObservationSidecar
+RED  teachin-semantic-lock-cli-wiring: record.mjs 缺 identity-observations.json
+RED  teachin-semantic-lock-cli-wiring: record.mjs 缺 sidecarSha256
+RED  teachin-semantic-lock-cli-wiring: distill.mjs 缺 distillIdentityCandidates
+RED  teachin-semantic-lock-cli-wiring: distill.mjs 缺 identityCandidates
+RED  teachin-semantic-lock-cli-wiring: compile.mjs 缺 buildEntityLocksDraft
+RED  teachin-semantic-lock-cli-wiring: compile.mjs 缺 entity-locks.draft.json
+RED  teachin-semantic-lock-cli-wiring: compile.mjs 缺 eventsSha256
+RED  teachin-semantic-lock-cli-wiring: replay.mjs 缺 preflightFrozenEntityLocks
+RED  teachin-semantic-lock-cli-wiring: replay.mjs 缺 rebindEntityLocksAfterLogin
+RED  teachin-semantic-lock-cli-wiring: replay.mjs 缺 authorizeLockedAction
+RED  teachin-semantic-lock-cli-wiring: replay preflight 必须在 chromium.launch 前完成
+RED  teachin-semantic-lock-cli-wiring: live rebind 必须在登录后执行

@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "task": "teachin-semantic-lock-wiring（full）：冻结 record→distill→compile→sign→replay 的业务对象语义锁接线；未签观察/候选不得直通，只有绑定真实 events、人签且 live 比较为 SAME 的对象才允许动作。",
+  "task": "teachin-semantic-lock-wiring（full）：冻结 record→distill→compile→sign→replay 的业务对象语义锁接线；未签观察/候选不得直通，只有绑定真实 events、人签且 live 比较为 SAME 的对象才允许动作。【2026-07-17 semantic-lock-cert-closure 契约处置：三金牌钉在从未落地的 flat API 上，已按吊销惯例墓碑化（exit 78），收据 tests/_golden/fixtures/semantic-lock-cert-closure/supersession-revocation.json；三 checksum 按纪律②原地重签为墓碑字节防静默复活；stories 保持诚实 false，本 prd 为历史里程碑，活体继任见收据 successors 字段。】",
   "specPath": "docs/plans/teachin-semantic-lock-wiring/plan.md",
   "testChecksums": {
-    "tests/_golden/teachin-semantic-lock-artifacts.zero-sut.golden.mjs": "9e65e59c853a9eb3815d88d3744ca72b93b6b849342fbc471eb998604563a11a",
-    "tests/_golden/teachin-semantic-lock-runtime.zero-sut.golden.mjs": "fcbf1dc92e1f76f14a13c57048acb383a0f508613bba5b39f972a446d364ff33",
-    "tests/_golden/teachin-semantic-lock-cli-wiring.zero-sut.golden.mjs": "b096b1feec53e2805625ef701eb6f2936d0aa36a5c4734c306c823234b5ab2dd"
+    "tests/_golden/teachin-semantic-lock-artifacts.zero-sut.golden.mjs": "effc9a509cd29ecfb87a17c2d4b43b56148660e5096dcb44f622143d7c588667",
+    "tests/_golden/teachin-semantic-lock-runtime.zero-sut.golden.mjs": "2b57264004f5f0ff869df84d02a8a99f067f37ddc06b74e5f272237085b62516",
+    "tests/_golden/teachin-semantic-lock-cli-wiring.zero-sut.golden.mjs": "74197e777353cf6839068b9eef1801a8318d1ff563519ed4462747e5e7089fe2"
   },
   "observability": [
     {

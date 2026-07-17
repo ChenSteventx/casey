@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "acceptance-gate-supersession-revocation-receipt",
+  "ratchetStatus": "superseded-tombstoned-not-pass",
+  "hazard": "none",
+  "reason": "dead red baselines whose import/assertions were pinned to a flat lib/entity-semantic-lock-*.mjs API that never shipped; the design rerouted the identity-sidecar, runtime-authority and five-stage CLI faces to named successors",
+  "oldFrozenAssetsImmutable": true,
+  "originalBytesArchived": false,
+  "originalBytesPreservedBy": "git-history",
+  "note": "Benign SUPERSEDED tombstoning — mirrors the SECURITY_REVOKED_GOLDEN_TOMBSTONE fail-fast style so the file exits 78 and names its successor, but the cause is design supersession, not a security hazard. Kept in a separate receipt so the two frozen security-revocation.json entries and their meta-golden stay byte-for-byte untouched.",
+  "supersededPrd": "loop/prd-teachin-semantic-lock-wiring.json",
+  "superseded": [
+    {
+      "executablePath": "tests/_golden/teachin-semantic-lock-artifacts.zero-sut.golden.mjs",
+      "marker": "SECURITY_REVOKED_GOLDEN_TOMBSTONE",
+      "originalSha256": "9e65e59c853a9eb3815d88d3744ca72b93b6b849342fbc471eb998604563a11a",
+      "tombstoneSha256": "effc9a509cd29ecfb87a17c2d4b43b56148660e5096dcb44f622143d7c588667",
+      "supersededStory": "s1-identity-artifact-chain",
+      "reason": "imported and asserted against a flat lib/entity-semantic-lock-artifacts.mjs API that never shipped",
+      "successors": ["teachin-entity-binding-sidecar-successor"],
+      "auxiliarySuccessors": ["teachin-semantic-lock", "teachin-semantic-lock-admission-authority"]
+    },
+    {
+      "executablePath": "tests/_golden/teachin-semantic-lock-runtime.zero-sut.golden.mjs",
+      "marker": "SECURITY_REVOKED_GOLDEN_TOMBSTONE",
+      "originalSha256": "fcbf1dc92e1f76f14a13c57048acb383a0f508613bba5b39f972a446d364ff33",
+      "tombstoneSha256": "2b57264004f5f0ff869df84d02a8a99f067f37ddc06b74e5f272237085b62516",
+      "supersededStory": "s2-runtime-rebind-and-action-gate",
+      "reason": "imported and asserted against a flat lib/entity-semantic-lock-runtime.mjs API that never shipped",
+      "successors": ["teachin-semantic-lock-runtime-authority", "teachin-runtime-authority-bundle-successor"],
+      "auxiliarySuccessors": []
+    },
+    {
+      "executablePath": "tests/_golden/teachin-semantic-lock-cli-wiring.zero-sut.golden.mjs",
+      "marker": "SECURITY_REVOKED_GOLDEN_TOMBSTONE",
+      "originalSha256": "b096b1feec53e2805625ef701eb6f2936d0aa36a5c4734c306c823234b5ab2dd",
+      "tombstoneSha256": "74197e777353cf6839068b9eef1801a8318d1ff563519ed4462747e5e7089fe2",
+      "supersededStory": "s3-five-stage-cli-wiring",
+      "reason": "statically pinned bin/*.mjs to a flat five-stage CLI token set that never shipped",
+      "successors": ["observation-cli-authority-wiring"],
+      "auxiliarySuccessors": []
+    }
+  ]
+}

@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "task": "teachin-semantic-lock-v2（full）：外部冻结锚 + 闭合身份策略 + 唯一动作门 + 当前链头 successor，修复 v1 假 SAME 信任边界。",
+  "task": "teachin-semantic-lock-v2（full）：外部冻结锚 + 闭合身份策略 + 唯一动作门 + 当前链头 successor，修复 v1 假 SAME 信任边界。【2026-07-17 semantic-lock-cert-closure 分面处置：`819015f` 不可执行姿态使运行时判别（V2-C/V2-D）结构性不可达，本金牌重写为可达面（V2-A 外部锚/篡改、V2-B 策略与收据侧身份）全绿；V2-C/V2-D 逐条迁入 teachin-semantic-lock-runtime-discrimination-successor 前瞻红基线，填绿路径 route:human 三选一待 Steven。checksum 按纪律②原地重签。】",
   "specPath": "docs/plans/teachin-semantic-lock-v2/plan.md",
   "testChecksums": {
-    "tests/_golden/teachin-semantic-lock-v2.zero-sut.golden.mjs": "6f89ed57e2f625692c6a078d040769a79476ce8c104fe75753530c7fac50efab",
-    "tests/_golden/fixtures/teachin-semantic-lock-v2/entity-locks.frozen.json": "91141315ce4451615f9a07a89be34191a62f0ea25d43ca9514e564a436cc0aeb",
-    "tests/_golden/fixtures/teachin-semantic-lock-v2/events.json": "6d1e586acd53345ebd0ea33087bb8553c30b782677dc4fb22310e95687bf542c"
+    "tests/_golden/teachin-semantic-lock-v2.zero-sut.golden.mjs": "27b0f89dea835c354441e1e732fad0a895136ccb0d51982b1c0e56e910d0853c",
+    "tests/_golden/fixtures/teachin-semantic-lock-v2/entity-locks.frozen.json": "44f3702de0a81a52e3e1121fde07ff3756e2b2c8e3117c16f1895f8040bfdb16",
+    "tests/_golden/fixtures/teachin-semantic-lock-v2/events.document.json": "f91bee239c2185794ab0afeef88b7b68e5f782d706592527d36cfc454a31f6ac"
   },
   "observability": [
     {
@@ -30,7 +30,7 @@
         "node tests/_golden/teachin-semantic-lock-v2.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-17T01:32:35.066Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-17T16:07:54.732Z 全部 acceptance exit 0"
     }
   ]
 }

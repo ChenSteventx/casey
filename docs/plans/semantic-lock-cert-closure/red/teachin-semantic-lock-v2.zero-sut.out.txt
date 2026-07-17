@@ -1,0 +1,9 @@
+FAIL V2-A 外部冻结锚阻断自证 hash、换包、case/events 错配: 合法 fixture 被拒：{"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_INVALID","nextAction":"RERECORD_AND_RESIGN"}
+FAIL V2-B schema/策略不可降级，输入严格闭合且不静默 trim: 合法锁集未建立 handle: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_INVALID","nextAction":"RERECORD_AND_RESIGN"}
+FAIL V2-C 唯一动作门严格处理冲突、畸形、零扫描和 accessor: 合法锁集未建立 handle: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_INVALID","nextAction":"RERECORD_AND_RESIGN"}
+FAIL V2-D successor 只认冻结 transition/当前 head/同平台 ID/exact 新 revision，并使旧 head 失效: 合法锁集未建立 handle: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_INVALID","nextAction":"RERECORD_AND_RESIGN"}
+RED  teachin-semantic-lock-v2: V2-A 外部冻结锚阻断自证 hash、换包、case/events 错配: 合法 fixture 被拒：{"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_INVALID","nextAction":"RERECORD_AND_RESIGN"}
+RED  teachin-semantic-lock-v2: V2-B schema/策略不可降级，输入严格闭合且不静默 trim: 合法锁集未建立 handle: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_INVALID","nextAction":"RERECORD_AND_RESIGN"}
+RED  teachin-semantic-lock-v2: V2-C 唯一动作门严格处理冲突、畸形、零扫描和 accessor: 合法锁集未建立 handle: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_INVALID","nextAction":"RERECORD_AND_RESIGN"}
+RED  teachin-semantic-lock-v2: V2-D successor 只认冻结 transition/当前 head/同平台 ID/exact 新 revision，并使旧 head 失效: 合法锁集未建立 handle: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_INVALID","nextAction":"RERECORD_AND_RESIGN"}
+RED  teachin-semantic-lock-v2: 0 过 / 4 红
