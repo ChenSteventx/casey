@@ -32,7 +32,8 @@
       "acceptance": [
         "node tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs readiness"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T04:29:47.579Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-legacy-policy-runtime-denial",
@@ -41,7 +42,8 @@
       "acceptance": [
         "node tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs legacy-policy"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T04:29:47.633Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-production-publication-boundary",
@@ -50,7 +52,8 @@
       "acceptance": [
         "node tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs publication"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T04:29:47.672Z 全部 acceptance exit 0"
     }
   ]
 }
