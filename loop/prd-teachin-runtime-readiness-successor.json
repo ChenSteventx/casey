@@ -37,7 +37,8 @@
       "acceptance": [
         "node tests/_golden/teachin-runtime-readiness-successor.zero-sut.golden.mjs readiness-roots"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T04:51:45.670Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-historical-and-role-regression",
@@ -46,7 +47,8 @@
       "acceptance": [
         "node tests/_golden/teachin-runtime-readiness-successor.zero-sut.golden.mjs historical-and-roles"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T04:51:45.732Z 全部 acceptance exit 0"
     }
   ]
 }
