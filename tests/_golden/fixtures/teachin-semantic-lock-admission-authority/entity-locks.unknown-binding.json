@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "entity-locks-frozen",
+  "caseId": "tc-admission-authority",
+  "signed": true,
+  "replayReady": true,
+  "signerId": "fixture-human",
+  "signedAt": "2026-07-17T00:00:00.000Z",
+  "eventsSha256": "sha256:38beca47bfa24918eaec5acda66c82828744164687c37f7aee5b0e49bcf3ed6d",
+  "bindings": [
+    {
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "atom": "workflow.rename",
+      "role": "target",
+      "candidateId": "candidate-workflow-main",
+      "lockId": "lock-workflow-main",
+      "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd",
+      "unexpectedBinding": true
+    }
+  ],
+  "signature": "sha256:182b64b79794e6035c54a741afaa3575b6c7f9efa8d983f4b92b9629b2765e69"
+}

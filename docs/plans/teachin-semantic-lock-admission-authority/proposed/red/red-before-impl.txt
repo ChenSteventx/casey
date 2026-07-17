@@ -1,0 +1,26 @@
+teachin-semantic-lock-admission-authority 红基线（2026-07-17）
+
+执行边界：本命令只调用纯函数与静态读取源码；未启动子进程、浏览器、网络、fake、fixture 或任何 SUT。
+
+$ node tests/_golden/teachin-semantic-lock-admission-authority.zero-sut.golden.mjs
+exit 1
+not ok P0-A execute 调用者自哈希不能铸造 authority: 普通 execute JSON 自签后仍被授权
+not ok P0-A verify/replay 调用者自哈希不能铸造 frozen authority: 普通 frozen JSON 自签后仍被授权
+not ok P0-A 固定 PRD/checksum 读取器铸造两个 opaque domain handle: 缺 readIdentityAdmissionAuthorityFromPrd
+not ok P0-A plain JSON、复制 handle 与跨域 handle 全部拒绝: 缺上一验收点铸造的 domain handles
+not ok P0-A 固定 checksum domain handle 正向通过: 缺固定 PRD/checksum handles
+not ok P0-B events binding 投影保留七字段: requiredEventEntityBindings 丢失 candidateId/lockId/receiptHash
+not ok P0-B 改 frozen binding.candidateId 必须拒绝: 只比 role 导致 candidateId 篡改仍通过
+not ok P0-B 改 frozen binding.lockId 必须拒绝: 只比 role 导致 lockId 篡改仍通过
+not ok P0-B 改 frozen binding.receiptHash 必须拒绝: 只比 role 导致 receiptHash 篡改仍通过
+not ok P0-B artifact binding 必须与 required binding 集合严格相等: artifact 多余 binding 被 subset 覆盖放行
+not ok HIGH 已 checksum artifact 仍执行闭合 schema 与重复 binding 拒绝: 缺固定 PRD/checksum 读取器
+not ok HIGH 顶层 Proxy/accessor 在任何 trap/getter 前拒绝: TOP_PROXY_GET_RAN
+not ok HIGH 嵌套 Proxy 在任何 trap 前拒绝: NESTED_PROXY_GET_RAN
+not ok HIGH PRD reader options Proxy 在任何 trap 前拒绝: 缺固定 PRD/checksum 读取器
+not ok P0-A PRD reader 不接受调用者注入路径、摘要、字节或读取器: 缺固定 PRD/checksum 读取器
+not ok HIGH admission options 闭合 schema，未知键不能借只读 policy 放行: 未知 options 键被 read-only policy 放行
+not ok P0-A compile/replay 只接分域 opaque authority，且准入仍早于副作用: compile.mjs 未使用固定 PRD/checksum authority reader
+FAIL teachin-semantic-lock-admission-authority: 17 项未满足（预实现 RED）
+
+结论：两个核心 P0 与输入闭合硬化均在生产实现前真实为红；没有把静态存在、普通 JSON 自签或旧 role-only 覆盖记成通过。

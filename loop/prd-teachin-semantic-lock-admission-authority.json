@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-semantic-lock-admission-authority（superseding）：普通 JSON 与公开内容自哈希不得铸造执行权限；只认固定 PRD/checksum 或真实人签交易铸造的分域 opaque authority，并以七字段 tuple 精确绑定 frozen 对象。",
+  "specPath": "docs/plans/teachin-semantic-lock-admission-authority/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-semantic-lock-admission-authority.zero-sut.golden.mjs": "03bba2f7ec16cd696c9e1d0c049ff9d56dc8507876c8e7a6a9932e33ee9cc228",
+    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/flow.json": "b6805e9595d423e84df5979d114c45015787afde310e5393a25078e411093b58",
+    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/testcase.json": "d2a737fb2ee3796cb51c442a0a01dfbce7a7becf8f6c19feb9a3dc6bccd90cb0",
+    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/events.document.json": "38beca47bfa24918eaec5acda66c82828744164687c37f7aee5b0e49bcf3ed6d",
+    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/execute-authority.json": "1f44ee95a49251bd89e0f4b27d2e6193355b1cbd007a241b2ec6906b5c1c8414",
+    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/entity-locks.frozen.json": "b0aae9532a77f47a76b7812ca08dc70b57c6a758d25920098e9c29291feb800c",
+    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/execute-authority.unknown.json": "a4063273c025d70c78864e8af7c55fa91032da9c2b6fd8939931eaed47b9e16a",
+    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/entity-locks.duplicate.json": "5f6a5e5b27c68f292d17515debbeb864b37be96d8d2185be52598b910ac4d6ea",
+    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/entity-locks.unknown-binding.json": "9a3cf7611a06302fef96bfab53a3c0e10deeedaa09d8324b8eae7f0186b8a0fd"
+  },
+  "observability": [
+    {
+      "dimension": "真实人签交易由真实操作者铸造、receipt 可撤销且跨进程可验证；须审计日志与人签证据。",
+      "route": "human"
+    },
+    {
+      "dimension": "规范 PRD 与 artifact 在安装包、Win、macOS、WSL 的只读发布边界和文件替换时序；须跨平台实跑。",
+      "route": "human"
+    },
+    {
+      "dimension": "compile execute/verify 与 replay 在真实 AI 中台于任何浏览器和业务动作前拒绝坏 authority；须联网真机、录屏与视觉复核。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-admission-authority-provenance-and-exact-bindings",
+      "desc": "公开自哈希、plain JSON、复制或跨域 handle 均无执行权；固定 PRD/checksum 铸造 execute/verify opaque handle，frozen bindings 精确覆盖 stepId/intentId/atom/role/candidateId/lockId/receiptHash，闭合 schema 与 Proxy/accessor fail-closed，CLI 只接正确域 handle。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-admission-authority.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    }
+  ]
+}
