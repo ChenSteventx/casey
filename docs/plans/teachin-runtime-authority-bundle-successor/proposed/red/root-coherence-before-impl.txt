@@ -1,0 +1,7 @@
+$ node tests/_golden/teachin-runtime-authority-bundle-successor.zero-sut.golden.mjs root-coherence
+FAIL P0 同根 authority/handle/adapter/run context/capability 得到 SAME: authority 未建立: {"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_NOT_PUBLISHED","nextAction":"RERECORD_AND_RESIGN"}
+FAIL P0 adapter/run context 跨根在 driver 执行前拒绝: 跨根前置能力未建立
+FAIL P0 capability/handle 跨根在 allowAction/successor 前拒绝: alpha handle 未建立
+ok   HIGH selector 不能跨 contract 取得 adapter 或 run context
+RED  teachin-runtime-authority-bundle-successor/root-coherence: 1 过 / 3 红
+exit 1
