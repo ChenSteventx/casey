@@ -1,0 +1,7 @@
+$ node tests/_golden/teachin-runtime-provenance-budget-successor.zero-sut.golden.mjs isolation-and-supersession
+FAIL HIGH 单 publication inspection 意外异常稳定降级: inspection 异常越过 public API: INJECTED_INSPECTION_FAILURE
+ok   HIGH public derive 对 Proxy/accessor 继续零 trap/getter
+ok   P0 正式取代记录机械确认旧 bundle 当前 3 过 / 9 红
+RED  teachin-runtime-provenance-budget-successor: HIGH 单 publication inspection 意外异常稳定降级: inspection 异常越过 public API: INJECTED_INSPECTION_FAILURE
+RED  teachin-runtime-provenance-budget-successor/isolation-and-supersession: 2 过 / 1 红
+exit: 1
