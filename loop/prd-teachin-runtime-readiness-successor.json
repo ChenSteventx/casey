@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-runtime-readiness-successor（full）：运行就绪由驱动、运行发布、动作身份 policy、真实运行上下文签发者四根联合派生；以隔离测试发布恢复 historical 降权和动作角色负向覆盖。",
+  "specPath": "docs/plans/teachin-runtime-readiness-successor/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-runtime-readiness-successor.zero-sut.golden.mjs": "404ec3dbd63237ccb89ce0199ed3e09ad8a2786a782f86b537340a9f653214f1",
+    "tests/_golden/fixtures/teachin-runtime-readiness-successor/publication-cases.json": "7cf6b0f24fda76eebeab550531590ebba45a42e94efc0f1ef80c4beaecff478c",
+    "docs/plans/teachin-runtime-readiness-successor/proposed/red/red-before-impl.txt": "815aa903055d9fb1932aba3f556c8667e408cdbd4a74f840749f06f1096123cf",
+    "docs/plans/teachin-runtime-readiness-successor/proposed/red/regression-green-before-impl.txt": "dea05ba4af18397c20f1a3738cf25f9a7ead53c0e0789fb0781935cf3643eb93",
+    "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/entity-locks.frozen.json": "027296d2b2bcafc12b69c40891bb4b89c70f04051f9ac77a9e89251a918c020c",
+    "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/events.document.json": "2e7742311fd3516e5461b68e5caed19bc292aa1a3b514c9831188dab40607034",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/entity-action-policy.frozen.json": "74f3d362045a4cf0db77a560b218232942280055dbd942beab2728ba2b32955f",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-source-only.locks.json": "4440ebfba3bf214e04718899c9f13bd22c89f27db69da0ca23dc8b1d18418c86",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-source-only.events.json": "413432a97a61543413aff2245fd4849bbcc957fb435c6722c95954d94323419d",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-target-only.locks.json": "28d771f1801886b8a5a016eb6a3ff4afb4391d9e206d41defc05fbf4ba151b08",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-target-only.events.json": "984f7a1416da57c8f73e3c7a36058050877228d3a97f7a12b43a166658b48e28",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/mutation-empty.locks.json": "290a8485016688ed68273e2995511318f66422c27c17c4c72dae61168d9ba6f6",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/mutation-empty.events.json": "5f888baa18d62b546deea6640fad0caa9f6da9a2c974d9a1d402f35450bd7da4",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/unknown-role.locks.json": "09d50ac939a62c711ac050d2a07e3378f97a9459121daabe13a7168fe170bb14",
+    "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/unknown-role.events.json": "30ede5dcde6b4e11a99a72960cf609ec4f0b5382f4b283be51122b1789f83416"
+  },
+  "observability": [
+    {
+      "dimension": "真实驱动、真实运行发布、真实动作身份 policy 与真实运行上下文签发者在同次真机运行共同取证；唯一匹配得到 SAME，真实变更后建立同源 successor，并附录屏、视觉复核、独立 HTML 与附件。",
+      "route": "human"
+    },
+    {
+      "dimension": "旧冻结 teachin-semantic-lock-runtime-authority 当前 3/9 结构性红待独立 supersession 决定迁移或退役；本轮不修改旧 frozen，也不把 successor 金牌冒充旧金牌恢复。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-four-root-runtime-readiness",
+      "desc": "四根 16 种组合只有全真可用；getter/Proxy 不形成二次读取；生产入口只读内部事实，未发布签发者不能写运行上下文。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-runtime-readiness-successor.zero-sut.golden.mjs readiness-roots"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s2-historical-and-role-regression",
+      "desc": "隔离发布真实建立 runtimeAuthorized:false historical handle 并先拒 evaluate/successor；四组动作角色负向固定语料真实到达 verifier。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-runtime-readiness-successor.zero-sut.golden.mjs historical-and-roles"
+      ],
+      "passes": false
+    }
+  ]
+}

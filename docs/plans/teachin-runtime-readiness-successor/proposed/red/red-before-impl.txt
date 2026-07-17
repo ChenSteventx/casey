@@ -1,0 +1,14 @@
+command: node tests/_golden/teachin-runtime-readiness-successor.zero-sut.golden.mjs
+baseline: d807833be13073bdc3e6b307f6218861ec8f57ec
+exit: 1
+
+FAIL P0 四根 16 组合只有全真可用，getter/Proxy 只取一次描述符快照: 缺纯四根就绪决策器 deriveEntityRuntimeReadiness
+FAIL P0 生产就绪只读内部事实，未发布签发者不能写运行上下文: 缺真实运行上下文签发入口
+ok   P0 非空 historical handle 显式降权，evaluate/successor 先拒运行授权
+ok   HIGH 动作身份 policy 真实拒绝 relation-source-only
+ok   HIGH 动作身份 policy 真实拒绝 relation-target-only
+ok   HIGH 动作身份 policy 真实拒绝 mutation-empty
+ok   HIGH 动作身份 policy 真实拒绝 unknown-role
+RED  teachin-runtime-readiness-successor: P0 四根 16 组合只有全真可用，getter/Proxy 只取一次描述符快照: 缺纯四根就绪决策器 deriveEntityRuntimeReadiness
+RED  teachin-runtime-readiness-successor: P0 生产就绪只读内部事实，未发布签发者不能写运行上下文: 缺真实运行上下文签发入口
+RED  teachin-runtime-readiness-successor/all: 5 过 / 2 红

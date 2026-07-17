@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "historical": {
+    "contractId": "successor-historical-locks",
+    "caseId": "tc_semantic_lock_capability",
+    "sourceLock": "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/entity-locks.frozen.json",
+    "sourceEvents": "tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/events.document.json",
+    "releaseLockKey": "release/entity-semantic-lock/successor/historical/entity-locks.frozen.json"
+  },
+  "runtimeRoles": {
+    "contractId": "successor-runtime-role-regressions",
+    "sourceActionPolicy": "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/entity-action-policy.frozen.json",
+    "releaseActionPolicyKey": "release/entity-semantic-lock/successor/runtime/entity-action-policy.frozen.json",
+    "cases": [
+      {
+        "name": "relation-source-only",
+        "caseId": "tc_lock_relation_source_only",
+        "sourceLock": "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-source-only.locks.json",
+        "sourceEvents": "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-source-only.events.json",
+        "releaseLockKey": "release/entity-semantic-lock/successor/runtime/relation-source-only.locks.json"
+      },
+      {
+        "name": "relation-target-only",
+        "caseId": "tc_lock_relation_target_only",
+        "sourceLock": "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-target-only.locks.json",
+        "sourceEvents": "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/relation-target-only.events.json",
+        "releaseLockKey": "release/entity-semantic-lock/successor/runtime/relation-target-only.locks.json"
+      },
+      {
+        "name": "mutation-empty",
+        "caseId": "tc_lock_mutation_empty",
+        "sourceLock": "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/mutation-empty.locks.json",
+        "sourceEvents": "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/mutation-empty.events.json",
+        "releaseLockKey": "release/entity-semantic-lock/successor/runtime/mutation-empty.locks.json"
+      },
+      {
+        "name": "unknown-role",
+        "caseId": "tc_lock_unknown_role",
+        "sourceLock": "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/unknown-role.locks.json",
+        "sourceEvents": "tests/_golden/fixtures/teachin-semantic-lock-runtime-authority/unknown-role.events.json",
+        "releaseLockKey": "release/entity-semantic-lock/successor/runtime/unknown-role.locks.json"
+      }
+    ]
+  }
+}
