@@ -6,6 +6,7 @@ import { resolve, basename, dirname } from 'node:path';
 import { createHash } from 'node:crypto';
 import { credentialGate } from '../lib/cred-gate.mjs';
 import { reviewCapture, intakeLedgerPath, buildIntakeRecord, appendIntakeLedger, normConverge, hasDuplicateKeys } from '../lib/record-intake.mjs';
+import { deriveTeachInPackagePaths, verifyTeachInPackage } from '../lib/entity-semantic-lock-package.mjs';
 
 function parseArgs(argv) {
   const o = { pos: [] };
@@ -59,20 +60,38 @@ function main() {
   try { if (lstatSync(dirname(capturePath)).isSymbolicLink()) { console.error('intake: record-capture 目录是符号链接（拒；路径不回显）'); process.exit(65); } } catch { /* 目录 stat 失败留给下方读处理 */ }
   // caseId 目录本身是软链也拒（否则台账写到软链目标；异构评审 R3-#3）。
   try { if (lstatSync(dirname(dirname(capturePath))).isSymbolicLink()) { console.error('intake: caseId 目录是符号链接（拒；路径不回显）'); process.exit(65); } } catch { /* 祖父 stat 失败略过 */ }
+  const packagePaths = deriveTeachInPackagePaths({ capturePath });
+  const { manifestPath, sidecarPath } = packagePaths;
+  for (const [label, packagePath] of [['teach-in-package.json', manifestPath], ['identity-observations.json', sidecarPath]]) {
+    try {
+      if (lstatSync(packagePath).isSymbolicLink()) {
+        console.error(`intake: ${label} 是符号链接（拒跟随；路径不回显）`);
+        process.exit(65);
+      }
+    } catch (e) {
+      console.error(`intake: ${label} 不可读（errno=${e?.code || 'UNKNOWN'}；路径不回显）`);
+      process.exit(1);
+    }
+  }
   const captureName = basename(capturePath);
   const ledgerPath = intakeLedgerPath({ capturePath });
   // 既有台账是软链则拒 append 跟随到软链目标（异构评审 R3-#3）；不存在则 lstat 抛、略过。
   try { if (lstatSync(ledgerPath).isSymbolicLink()) { console.error('intake: intake-ledger.jsonl 是符号链接（拒 append 跟随；路径不回显）'); process.exit(65); } } catch { /* 台账尚不存在 = 正常 */ }
 
-  let raw;
+  let captureBytes;
+  let manifestBytes;
+  let sidecarBytes;
   try {
-    raw = readFileSync(capturePath, 'utf8');
+    captureBytes = readFileSync(capturePath);
+    manifestBytes = readFileSync(manifestPath);
+    sidecarBytes = readFileSync(sidecarPath);
   } catch (e) {
-    console.error(`intake: --capture 不可读（errno=${e?.code || 'UNKNOWN'}；路径与内容不回显）`);
+    console.error(`intake: 示教三件套不可读（errno=${e?.code || 'UNKNOWN'}；路径与内容不回显）`);
     process.exit(1);
   }
+  const raw = captureBytes.toString('utf8');
   // capture 字节 sha256：accept/reject 条目均绑此哈希，distill 消费前校验未换包（TOCTOU 防线，异构评审 F1）。
-  const captureSha256 = createHash('sha256').update(raw).digest('hex');
+  let captureSha256 = `sha256:${createHash('sha256').update(captureBytes).digest('hex')}`;
 
   const reject = (reason, eventCount = null) => {
     try {
@@ -84,6 +103,11 @@ function main() {
     console.error(`intake: 录制包拒账（${reason}）——未入蒸馏前置队列。`);
     process.exit(65);
   };
+
+  // package 联合闸先按三份最终原始字节核对；manifest/sidecar 路径只能由规范 capturePath 同级固定推导。
+  const packageReview = verifyTeachInPackage({ caseId, captureBytes, sidecarBytes, manifestBytes });
+  if (!packageReview.ok) reject(packageReview.reason);
+  captureSha256 = packageReview.captureSha256;
 
   // 前置凭据门（纵深防御，早于 parse 与任何回显）：命中即拒，台账只记类别码、零脏内容落盘。
   if (!credentialGate({ capture: raw }).ok) reject('CRED_GATE_HIT');
@@ -106,7 +130,20 @@ function main() {
   if (!review.ok) reject(review.reason, review.eventCount);
 
   try {
-    appendIntakeLedger({ ledgerPath, record: buildIntakeRecord({ caseId, status: 'accepted', eventCount: review.eventCount, captureName, captureSha256 }) });
+    appendIntakeLedger({
+      ledgerPath,
+      record: buildIntakeRecord({
+        caseId,
+        status: 'accepted',
+        eventCount: review.eventCount,
+        captureName,
+        captureSha256,
+        sidecarSha256: packageReview.sidecarSha256,
+        manifestSha256: packageReview.manifestSha256,
+        observationCount: packageReview.observationCount,
+        observationSchemaVersion: packageReview.observationSchemaVersion,
+      }),
+    });
   } catch (e) {
     console.error(`intake: 入账台账写入受阻（${e?.code || 'ERR'}；路径与内容不回显）`);
     process.exit(1);

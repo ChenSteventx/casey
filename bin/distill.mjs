@@ -5,7 +5,8 @@ import { readFileSync, lstatSync, mkdirSync, writeFileSync, rmSync } from 'node:
 import { resolve, basename, dirname, join } from 'node:path';
 import { credentialGate } from '../lib/cred-gate.mjs';
 import { reviewCapture, intakeLedgerPath, normConverge, hasDuplicateKeys } from '../lib/record-intake.mjs';
-import { verifyIntaken, projectCapture, validateCaptureFidelity, buildDistillManifest, captureSha256Of } from '../lib/record-distill.mjs';
+import { verifyIntakenPackage, projectCapture, validateCaptureFidelity, buildDistillManifest } from '../lib/record-distill.mjs';
+import { deriveTeachInPackagePaths, verifyTeachInPackage } from '../lib/entity-semantic-lock-package.mjs';
 
 function parseArgs(argv) {
   const o = { pos: [] };
@@ -53,24 +54,62 @@ function main() {
   if (capStat.isSymbolicLink()) { console.error('distill: --capture 是符号链接（拒跟随；路径不回显）'); process.exit(65); }
   try { if (lstatSync(dirname(capturePath)).isSymbolicLink()) { console.error('distill: record-capture 目录是符号链接（拒；路径不回显）'); process.exit(65); } } catch { /* 略过 */ }
   try { if (lstatSync(dirname(dirname(capturePath))).isSymbolicLink()) { console.error('distill: caseId 目录是符号链接（拒；路径不回显）'); process.exit(65); } } catch { /* 略过 */ }
+  const packagePaths = deriveTeachInPackagePaths({ capturePath });
+  const { manifestPath, sidecarPath } = packagePaths;
+  for (const [label, packagePath] of [['teach-in-package.json', manifestPath], ['identity-observations.json', sidecarPath]]) {
+    try {
+      if (lstatSync(packagePath).isSymbolicLink()) {
+        console.error(`distill: ${label} 是符号链接（拒跟随；路径不回显）`);
+        process.exit(65);
+      }
+    } catch (e) {
+      console.error(`distill: ${label} 不可读（errno=${e?.code || 'UNKNOWN'}；路径不回显）`);
+      process.exit(1);
+    }
+  }
   const ledgerPath = intakeLedgerPath({ capturePath });
   try { if (lstatSync(ledgerPath).isSymbolicLink()) { console.error('distill: intake-ledger.jsonl 是符号链接（拒；路径不回显）'); process.exit(65); } } catch { /* 台账不存在=正常 */ }
 
-  let raw;
-  try { raw = readFileSync(capturePath, 'utf8'); }
-  catch (e) { console.error(`distill: --capture 不可读（errno=${e?.code || 'UNKNOWN'}；路径与内容不回显）`); process.exit(1); }
-  const currentSha256 = captureSha256Of(raw);
+  let captureBytes;
+  let manifestBytes;
+  let sidecarBytes;
+  try {
+    captureBytes = readFileSync(capturePath);
+    manifestBytes = readFileSync(manifestPath);
+    sidecarBytes = readFileSync(sidecarPath);
+  } catch (e) {
+    console.error(`distill: 示教三件套不可读（errno=${e?.code || 'UNKNOWN'}；路径与内容不回显）`);
+    process.exit(1);
+  }
+  const raw = captureBytes.toString('utf8');
+  const packageReview = verifyTeachInPackage({ caseId, captureBytes, sidecarBytes, manifestBytes });
+  if (!packageReview.ok) {
+    console.error(`distill: 示教三件套联合闸拒（${packageReview.reason}）——绝不蒸馏。`);
+    process.exit(65);
+  }
+  const currentCaptureSha256 = packageReview.captureSha256;
+  const currentSidecarSha256 = packageReview.sidecarSha256;
+  const currentManifestSha256 = packageReview.manifestSha256;
 
   // ── 凭据 battery == intake（异构评审 F4）：raw + 重复键 + canon + normConverge 解码，封 %HH/\u/编码凭据
   //    穿 distill 输出面（候选 step.intent/pathHint）；distill 重验证等同 intake 入账 battery，不留半道。──
   if (!credentialGate({ capture: raw }).ok) { console.error('distill: capture 命中凭据门（护栏 #7）；拒绝蒸馏、零落盘。'); process.exit(1); }
   if (hasDuplicateKeys(raw)) { console.error('distill: capture 含 JSON 重复键（脏内容可藏被丢弃键；拒蒸馏，零落盘）'); process.exit(65); }
 
-  // ── TOCTOU 硬门（GRILL D4）：读台账 verifyIntaken 校 accepted + sha 匹配 ──
+  // ── TOCTOU 硬门：latest accepted 必须同时匹配三份当前最终字节与观察元数据 ──
   let ledgerEntries = [];
   try { ledgerEntries = readFileSync(ledgerPath, 'utf8').split('\n').filter((l) => l.trim()).map((l) => JSON.parse(l)); }
   catch { ledgerEntries = []; }
-  const vi = verifyIntaken({ caseId, ledgerEntries, currentSha256 });
+  const vi = verifyIntakenPackage({
+    caseId,
+    ledgerEntries,
+    packageAuthority: packageReview.authority,
+    currentCaptureSha256,
+    currentSidecarSha256,
+    currentManifestSha256,
+    observationCount: packageReview.observationCount,
+    observationSchemaVersion: packageReview.observationSchemaVersion,
+  });
   if (!vi.ok) { console.error(`distill: intake→distill 硬门拒（${vi.reason}）——未入账或换包，绝不蒸馏。`); process.exit(65); }
 
   let doc;
@@ -103,7 +142,7 @@ function main() {
   }
 
   // ── 常规：产候选 + manifest，逐一过输出凭据门（+ 解码扫），全过再写；写盘失败清理不留半份（异构评审 F2/F4）──
-  const manifest = buildDistillManifest({ caseId, captureSha256: currentSha256, projection, pending });
+  const manifest = buildDistillManifest({ caseId, captureSha256: currentCaptureSha256, projection, pending });
   const products = [
     [`distill-candidate-testcase-${caseId}.json`, candidateTestCase],
     [`distill-candidate-mapping-${caseId}.json`, candidateMapping],
