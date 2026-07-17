@@ -51,7 +51,8 @@
       "acceptance": [
         "node tests/_golden/teachin-runtime-provenance-budget-successor.zero-sut.golden.mjs bounded-topology"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T06:33:03.087Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-bounded-bytes",
@@ -60,7 +61,8 @@
       "acceptance": [
         "node tests/_golden/teachin-runtime-provenance-budget-successor.zero-sut.golden.mjs bounded-bytes"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T06:33:03.194Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-isolation-supersession-regression",
@@ -72,7 +74,8 @@
         "node tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs all",
         "node tests/_golden/teachin-runtime-readiness-successor.zero-sut.golden.mjs historical-and-roles"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T06:33:03.460Z 全部 acceptance exit 0"
     }
   ]
 }
