@@ -11,7 +11,9 @@
     "tests/_golden/fixtures/observation-runtime-trust-root/test-driver-publication-loader.mjs": "93edcd6cf91117d262488872743055b8f20f8ea990b3b58a950c4202404a3124",
     "tests/_golden/support/canonical-case-lease.mjs": "f273c242922cf6e6617173c33fafc64c9c95bb78f4b136989d535c58627fed97",
     "tests/_golden/fixtures/teachin-observation-safe-case-lease-v2/identity-readback-receipt.signed.json": "e0415ee5e932124f28b3b74e37d4eb29047cfaa6b9bc3af0e12a59636ed87849",
-    "tests/_golden/fixtures/teachin-observation-safe-case-lease-v2/trusted-driver-public-key.pem": "e93e8f0d33f11fe32adeabf6bb72e87a4168365099c8150205133ff9012d739f"
+    "tests/_golden/fixtures/teachin-observation-safe-case-lease-v2/trusted-driver-public-key.pem": "e93e8f0d33f11fe32adeabf6bb72e87a4168365099c8150205133ff9012d739f",
+    "tests/_golden/observation-active-suite-supersession.zero-sut.golden.mjs": "ed7fb837adc7a323854d656fc70ea9f7cfd800db73389108fff245f28a3d5cc4",
+    "tests/_golden/fixtures/observation-runtime-trust-root/active-suite.json": "546418b41d7e4eca40a02b3b8b0513624812247adaf765388d66a0b05af79b56"
   },
   "observability": [
     {
@@ -56,6 +58,15 @@
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/observation-unsafe-golden-revocation.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s4-active-suite-supersession-ledger",
+      "desc": "coverage-freeze：machine-readable 固定 production default 11/17（11 个仍有效断言）与隔离 test publication 16/17（5 个 key 相关断言继续真跑）；D7 由 s3 取代；旧 PRD 历史 passes 不改、撤销 executable 不执行。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/observation-active-suite-supersession.zero-sut.golden.mjs"
       ],
       "passes": false
     }

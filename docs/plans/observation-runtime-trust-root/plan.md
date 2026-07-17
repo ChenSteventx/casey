@@ -41,3 +41,7 @@
 - signed driver receipt 是否来自同一次真实 DOM/平台 readback、真实 release publication、driver 私钥保护/轮换和 nonce 持久防重放，需联网真机审计，`route:human`；production 目前诚实为 `DRIVER_NOT_PUBLISHED`。
 - temp final reread 到 rename 的最后 race 与 safe lease cleanup 最后对账到递归删除的 race，`route:human`。
 - 本门禁只证明本地 canonical transaction 与 fail-safe wiring；不运行 SUT，GREEN 不得外推成真机业务闭环。
+
+## 6. Active-suite supersession ledger（implementation 后显式补录）
+
+安全撤销与 production registry 归零会使历史 `teachin-observation-safe-case-lease-v2` 在 production 默认面从 17/17 变为 11/17；这不是全量回归绿，也不得篡改旧 PRD 的历史 `passes:true`。新增 machine-readable active-suite 固定两套实跑：production default 必须精确 11/17（T1-T5/T7/T9/T10/D1/D4/D5 保持非空通过）；隔离 test publication 必须精确 16/17（key 相关 T6/T8/D2/D3/D6 继续跑真断言），唯一剩余 D7 由 s3 archive+tombstone 物理撤销替代。该故事是已存在行为的 coverage-freeze，诚实无 RED，独立 gate amendment commit 后才进 normal closure。
