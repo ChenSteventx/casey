@@ -1,0 +1,25 @@
+teachin-semantic-lock-wiring-gaps 红基线（2026-07-17）
+
+执行边界：五条命令均只读取源码或调用纯函数；未启动进程、浏览器、网络、fake、fixture 或任何 SUT。
+
+$ node tests/_golden/teachin-semantic-lock-package-integrity.zero-sut.golden.mjs
+exit 1
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'lib/entity-semantic-lock-package.mjs'
+
+$ node tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs
+exit 1
+Error: intake 未联合接线：缺 deriveTeachInPackagePaths
+
+$ node tests/_golden/teachin-semantic-lock-flow-provenance.zero-sut.golden.mjs
+exit 1
+Error: flow step 丢失或重写 mapping.intentId 来源
+
+$ node tests/_golden/teachin-semantic-lock-presign-bypass.zero-sut.golden.mjs
+exit 1
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module 'lib/entity-semantic-lock-preflight.mjs'
+
+$ node tests/_golden/teachin-semantic-lock-public-bypass.zero-sut.golden.mjs
+exit 1
+Error: promptset 未把 --entity-locks 列为必填
+
+结论：五项盲区均在生产实现之前真实为红；没有把缺实现、静态存在或桩命令记成通过。
