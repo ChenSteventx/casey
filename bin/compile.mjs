@@ -3,10 +3,10 @@
 //
 //   node bin/compile.mjs <caseId> --testcase <f> --flow <f> --out-dir <d>
 //       闸段：flow 草稿过 compile-gate 双闸（前缀自 TestCase.uniquePrefix，fail-closed）→ 落 flow-<caseId>.json 等人 confirm。
-//   node bin/compile.mjs <caseId> --execute --testcase <f> --sut <url> --out-dir <d> --profile <f> [--skip-login] [--unique-name <tok>]
+//   node bin/compile.mjs <caseId> --execute --testcase <f> --sut <url> --out-dir <d> --profile <f> [--entity-authority <f>] [--skip-login] [--unique-name <tok>]
 //       执行段：以 TestCase 为不可变锚重验三闸 → 登录预备动作（凭据只进内存）→ 骑 atom 知识真机逐步执行
 //       → events.json + observed-<caseId>.json + compile-report.json（任一步证不出 → 只落诊断报告 exit 65）。
-//   node bin/compile.mjs <caseId> --verify --sut <url> --out-dir <d> --profile <f> [--login-bootstrap]
+//   node bin/compile.mjs <caseId> --verify --sut <url> --out-dir <d> --profile <f> --entity-locks <f> [--login-bootstrap]
 //       核验段（G1 取 B）：调 bin/replay.mjs 产 axes → 动作轴全 unique 才 0；否则列雷点清单非零退出。
 //       --login-bootstrap 透传给子 replay（真机核验过登录墙；hermetic 不带旗标零行为差）。
 //
@@ -23,6 +23,13 @@ import { credentialGate } from '../lib/cred-gate.mjs';
 import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { createCompileRun, compileFlow, projectObserved, ROUTE_LIST } from '../lib/compile-atoms.mjs';
+import {
+  checkCompileIdentityAdmission,
+  eventsContainEntityMutation,
+  flowContainsEntityMutation,
+  requiredEventEntityBindings,
+  requiredFlowEntityBindings,
+} from '../lib/entity-semantic-lock-preflight.mjs';
 import { PROJECT_ROOT } from '../lib/paths.mjs';
 
 const { chromium } = pw;
@@ -108,14 +115,33 @@ async function executeMode(caseId, args) {
     console.error('compile: TestCase.uniquePrefix 缺失/空——破坏性前缀硬闸无锚，拒跑（fail-closed）');
     process.exit(65);
   }
+  const registry = readJson(SNAPSHOT_FILE, '原子注册表快照');
   {
-    const registry = readJson(SNAPSHOT_FILE, '原子注册表快照');
     const re = validateDraft(flowDoc.flow, { prefix: tc.uniquePrefix, registry, initialStates: tc.preconditions || [] });
     if (!re.ok) {
       console.error(`compile: 执行前重验闸未过（${re.problems.length} 问题，疑 confirm 后被改）：`);
       for (const p of re.problems) console.error(`  - ${p}`);
       process.exit(65);
     }
+  }
+  // 预执行身份授权门：mutation 由已过闸 flow + registry 机械判定，不接受调用者自称只读。
+  // 授权同时绑定 flow/TestCase 原始字节和全部显式对象角色；未过时尚未启动浏览器。
+  const containsEntityMutation = flowContainsEntityMutation(flowDoc.flow, registry);
+  const signedAuthority = typeof args['entity-authority'] === 'string'
+    ? readJson(args['entity-authority'], '预执行身份授权')
+    : null;
+  const identityAdmission = checkCompileIdentityAdmission({
+    mode: 'execute',
+    caseId,
+    containsEntityMutation,
+    signedAuthority,
+    flowBytes: readFileSync(flowFile),
+    testcaseBytes: readFileSync(String(args.testcase)),
+    requiredBindings: requiredFlowEntityBindings(flowDoc.flow),
+  });
+  if (!identityAdmission.ok) {
+    console.error(`compile --execute: 预执行身份授权未过（${identityAdmission.reason}），未启动浏览器；下一步 ${identityAdmission.nextAction}`);
+    process.exit(65);
   }
   // 旧成功产物清场（R2-F3）：本目录语义 = 本次运行结果；先清旧 events/observed，
   // 失败路径绝不让上一轮成功产物残留假冒本轮（可进 P4 的只能是本轮全 unique 产物）。
@@ -236,12 +262,33 @@ function verifyMode(caseId, args) {
   const outDir = resolve(String(args['out-dir']));
   const eventsFile = join(outDir, 'events.json');
   if (!existsSync(eventsFile)) { console.error(`compile: 缺 ${eventsFile}——先 --execute 产 events`); process.exit(65); }
+  // verify 只认绑定最终 events 字节的 frozen locks，不得拿 execute authority 冒充。
+  // 本门位于临时文件和 replay spawn 之前，拒绝路径零回放副作用。
+  const eventsBytes = readFileSync(eventsFile);
+  const eventsDoc = readJson(eventsFile, 'events.json');
+  const registry = readJson(SNAPSHOT_FILE, '原子注册表快照');
+  const frozenLocks = typeof args['entity-locks'] === 'string'
+    ? readJson(args['entity-locks'], '冻结身份锁')
+    : null;
+  const identityAdmission = checkCompileIdentityAdmission({
+    mode: 'verify',
+    caseId,
+    containsEntityMutation: eventsContainEntityMutation(eventsDoc, registry),
+    frozenLocks,
+    eventsBytes,
+    requiredBindings: requiredEventEntityBindings(eventsDoc),
+  });
+  if (!identityAdmission.ok) {
+    console.error(`compile --verify: frozen identity locks 未过（${identityAdmission.reason}），未启动 replay；下一步 ${identityAdmission.nextAction}`);
+    process.exit(65);
+  }
   const tmp = mkdtempSync(join(tmpdir(), 'casey-compile-verify-'));
   const expFile = join(tmp, 'expected.empty.json');
   writeFileSync(expFile, JSON.stringify({ caseId, channel: 'web', intents: [], globalAssertions: [] }));
   const axesFile = join(tmp, 'axes.json');
   const r = spawnSync(process.execPath, [join(PROJECT_ROOT, 'bin', 'replay.mjs'),
     '--events', eventsFile, '--sut', String(args.sut), '--expected', expFile, '--profile', String(args.profile), '--out', axesFile,
+    '--entity-locks', String(args['entity-locks']),
     // 登录预备动作透传（GRILL 人签取 A）：真机核验必过登录墙；hermetic 调用不带旗标、行为一字不变。
     ...(args['login-bootstrap'] ? ['--login-bootstrap'] : []),
   ], { encoding: 'utf8', timeout: 120000 });
@@ -282,7 +329,7 @@ async function main() {
   // （fail-closed；镜像 bin/draft.mjs R1-F2 先例，draft-cli 评审挖出的同型缝）。
   if (!/^[A-Za-z0-9_-]+$/.test(caseId)) { console.error('compile: caseId 含非法字符（仅限字母数字_-；原值不回显——CLI 参数在凭据门扫描面外）'); process.exit(65); }
   if (args.verify) {
-    for (const k of ['sut', 'out-dir', 'profile']) if (!args[k]) { console.error(`compile --verify: 缺 --${k}`); process.exit(64); }
+    for (const k of ['sut', 'out-dir', 'profile', 'entity-locks']) if (typeof args[k] !== 'string' || !args[k]) { console.error(`compile --verify: 缺 --${k}`); process.exit(64); }
     return verifyMode(caseId, args);
   }
   if (args.execute) {

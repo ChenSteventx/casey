@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // bin/replay.mjs —— 确定性回放器（相3）。真回放 SUT（被测系统）→ 产三轴 axes.json → 喂已冻 verdict.mjs。
-// 冻结 CLI：node bin/replay.mjs --events <f> --sut <baseUrl> --expected <f> --profile <f> --out <axes.json> [--login-bootstrap]
+// 冻结 CLI：node bin/replay.mjs --events <f> --sut <baseUrl> --expected <f> --profile <f> --out <axes.json> --entity-locks <f> [--login-bootstrap]
 //   [--run-history <f>] [--run-metrics <f>] [--run-id <id>]（opt-in 回放历史/回放指标真产出，缺省行为一字不变）：
 //   纯观察者逐 event 收集（零新增等待、零改动作时序——动了取证归因窗即污染护栏 #15），与 axes 同刻经
 //   凭据兜底门一次写出；仅诊断证据，绝不进 verdict.mjs、绝不写 passes（口径见 docs/plans/run-history/proposed/GRILL.md）。
@@ -28,6 +28,7 @@ import { assertSignedContract } from '../lib/sign-gate.mjs';
 import { foldIntentAction } from '../lib/intent-action-fold.mjs';
 import { validateWorkflowDeleteBindings } from '../lib/workflow-delete-spec.mjs';
 import { projectReplayAssertion, validateReplayEntityAnchors } from '../lib/replay-entity-anchor.mjs';
+import { checkCompileIdentityAdmission, eventsContainEntityMutation, requiredEventEntityBindings } from '../lib/entity-semantic-lock-preflight.mjs';
 
 const { chromium } = pw;
 
@@ -40,6 +41,7 @@ function parseArgs(argv) {
     else if (a === '--expected') o.expected = argv[++i];
     else if (a === '--profile') o.profile = argv[++i];
     else if (a === '--out') o.out = argv[++i];
+    else if (a === '--entity-locks') o.entityLocks = argv[++i];
     else if (a === '--login-bootstrap') o.loginBootstrap = true;
     else if (a === '--run-history') o.runHistory = argv[++i];
     else if (a === '--run-metrics') o.runMetrics = argv[++i];
@@ -157,8 +159,8 @@ function readJsonSafe(f, label) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  for (const k of ['events', 'sut', 'expected', 'profile', 'out']) {
-    if (!args[k]) { console.error(`replay: 缺 --${k}`); process.exit(64); }
+  for (const k of ['events', 'sut', 'expected', 'profile', 'out', 'entityLocks']) {
+    if (typeof args[k] !== 'string' || !args[k]) { console.error(`replay: 缺 --${k === 'entityLocks' ? 'entity-locks' : k}`); process.exit(64); }
   }
   const uniqueName = args.uniqueName == null ? 'r1' : String(args.uniqueName);
   if (!/^[a-z0-9][a-z0-9_-]{0,63}$/i.test(uniqueName)) {
@@ -209,6 +211,21 @@ async function main() {
     process.exit(65);
   }
   const caseId = eventsDoc.caseId || expectedDoc.caseId || 'unknown';
+  // frozen locks 必须绑定本次 events 原始字节与全部显式对象角色；该准入早于登录、chromium.launch 和任何业务动作。
+  const frozenLocks = readJsonSafe(args.entityLocks, 'entity-locks.frozen.json');
+  const registry = readJsonSafe(new URL('../lib/atoms-registry.snapshot.json', import.meta.url), '原子注册表快照');
+  const identityAdmission = checkCompileIdentityAdmission({
+    mode: 'verify',
+    caseId,
+    containsEntityMutation: eventsContainEntityMutation(eventsDoc, registry),
+    frozenLocks,
+    eventsBytes: readFileSync(args.events),
+    requiredBindings: requiredEventEntityBindings(eventsDoc),
+  });
+  if (!identityAdmission.ok) {
+    console.error(`replay: frozen identity locks 未过（${identityAdmission.reason}），未启动浏览器；下一步 ${identityAdmission.nextAction}`);
+    process.exit(65);
+  }
   const sut = String(args.sut).replace(/\/$/, '');
   // 确定性令牌（可 golden）；真机由 compile-gate 注入带 Reserved Prefix 的实体名。
   // baseUrl：G6 分岔三取 C——events url 走 {{baseUrl}} 占位符，回放期回填 --sut（对完整 URL 的旧 fixture 是 no-op）。
