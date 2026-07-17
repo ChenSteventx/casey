@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "task": "entity-binding-operability-successor：收口 resign archive 恢复、flow mutation subject 入口、entity locks 物理项目边界与无锁纯只读回放四个 HIGH。",
+  "specPath": "docs/plans/entity-binding-operability-successor/plan.md",
+  "testChecksums": {
+    "docs/plans/entity-binding-operability-successor/plan.md": "0a3bcea220d3f3165f864656b7cb725e02ef6fb4149b5a4add9bf8f918a66341",
+    "tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs": "145800b4caaa4438bae9e3d57cec1c30bf0d0314d1e5208448b729d87466582a"
+  },
+  "observability": [
+    {
+      "dimension": "Windows junction/其它 reparse point、PowerShell 权限组合以及目标文件身份 API 的真机行为。",
+      "route": "human"
+    },
+    {
+      "dimension": "macOS/APFS 与 Linux 文件系统在进程中断、目录替换竞态下的 no-follow/inode 行为。",
+      "route": "human"
+    },
+    {
+      "dimension": "自然语言 mapping 的实体候选语义是否选对业务对象。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "resign-recovery",
+      "desc": "--resign 中断恢复必须重建 journal 绑定的 archive 完整目标集合，同输入收口、异输入拒绝。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs resign-recovery"
+      ],
+      "passes": false
+    },
+    {
+      "id": "bridge-subject",
+      "desc": "自然语言 mapping 的 mutation subject 有正向入口并在 bridge 精确校验，relation source/target 与未知角色仍 fail-closed。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs bridge-subject"
+      ],
+      "passes": false
+    },
+    {
+      "id": "symlink-boundary",
+      "desc": "entity locks 写侧与固定 PRD reader 双向执行 lstat/realpath/no-follow/fstat+inode 物理边界，POSIX symlink 绕仓外不得铸 authority。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs symlink-boundary"
+      ],
+      "passes": false
+    },
+    {
+      "id": "readonly",
+      "desc": "固定只读 atom+action 的原 events 无 frozen authority 可达；错误 action、未知或 mutation 仍在 browser 前拒绝。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs readonly"
+      ],
+      "passes": false
+    }
+  ]
+}
