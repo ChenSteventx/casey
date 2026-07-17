@@ -32,8 +32,8 @@
       "acceptance": [
         "node tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-07-17T03:58:20.432Z 全部 acceptance exit 0"
     }
   ]
 }
