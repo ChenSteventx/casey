@@ -28,7 +28,8 @@
       "acceptance": [
         "node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs resign-recovery"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T06:49:11.906Z 全部 acceptance exit 0"
     },
     {
       "id": "bridge-subject",
@@ -37,7 +38,8 @@
       "acceptance": [
         "node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs bridge-subject"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T06:49:11.966Z 全部 acceptance exit 0"
     },
     {
       "id": "symlink-boundary",
@@ -46,7 +48,8 @@
       "acceptance": [
         "node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs symlink-boundary"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T06:49:12.075Z 全部 acceptance exit 0"
     },
     {
       "id": "readonly",
@@ -55,7 +58,8 @@
       "acceptance": [
         "node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs readonly"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T06:49:12.137Z 全部 acceptance exit 0"
     }
   ]
 }

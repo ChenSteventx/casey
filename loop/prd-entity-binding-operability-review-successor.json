@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "task": "entity-binding-operability-review-successor：收口 MCP/direct sign 参数假成功与 archive symlink 恢复边界。",
+  "specPath": "docs/plans/entity-binding-operability-review-successor/plan.md",
+  "testChecksums": {
+    "docs/plans/entity-binding-operability-review-successor/plan.md": "369c14338b4024c0698025f680e0e988a8a485d7f2daf7586ccbe50d4b598874",
+    "tests/_golden/entity-binding-operability-review-successor.zero-sut.golden.mjs": "7e7f127422cad9578c0bd6faeccf60ea69f0f2e7bcb09e392998ec5e765941fc"
+  },
+  "observability": [
+    {
+      "dimension": "自定义 profile.routes.workflowList 的纯只读链尚无零 binding events-hash 人签发行路径；固定路由外须 route:human。",
+      "route": "human"
+    },
+    {
+      "dimension": "Windows reparse point 与 macOS/Linux 目录并发替换在 archive no-follow 读取后的竞态。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "review-hardening",
+      "desc": "MCP 新四件套与 direct CLI 参数面闭合；archive target/tmp symlink 不可完成恢复 authority 发布，项目外普通 archive 仍可读。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-binding-operability-review-successor.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T06:49:11.776Z 全部 acceptance exit 0"
+    }
+  ]
+}

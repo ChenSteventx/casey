@@ -11,7 +11,7 @@
 // fail-closed 纪律（codex R1-F3）：全部读+校验+cred-gate 在任何授权产物写盘之前完成；普通签发走 staged
 // rename；含实体锁的多文件发布走 journal 可恢复事务且 PRD 最后落位（不声称多文件 OS 原子）。退出码：
 // 0 成功；64 缺参；65 输入坏/闸拒；1 凭据兜底门拦截（护栏 #7）。
-import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, rmSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { resolve, relative, dirname, join, basename, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -19,6 +19,13 @@ import { credentialGate } from '../lib/cred-gate.mjs';
 import { assertSignedContract } from '../lib/sign-gate.mjs';
 import { freezeEntityBindingsDraft } from '../lib/entity-semantic-lock-preflight.mjs';
 import { publishSignPublication } from '../lib/sign-publication.mjs';
+import { parseSignArgs } from '../lib/sign-cli-args.mjs';
+import {
+  checkProjectOutputBoundary,
+  readPhysicalFileBytes,
+  readProjectArtifactBytes,
+  verifyProjectArtifactIdentity,
+} from '../lib/project-artifact-boundary.mjs';
 
 // 旧静态接缝名保留为兼容别名；实现语义由 successor 的 draft exact-join 冻结器提供。
 const freezeEntityLocks = freezeEntityBindingsDraft;
@@ -30,20 +37,12 @@ const VERDICT_REASONS = new Set(['SUT_DEFECT_OR_STALE', 'CASE_DEFECT', 'AMBIGUOU
 const FROZEN_ASSERT_KEYS = new Set(['kind', 'op', 'value', 'soft', 'signedAt', 'signedAgainstBuild', 'signerId']);
 const SAFE_ID = /^[A-Za-z0-9._@-]+$/; // 授权输入（signer/build）只许简单 id，防注入进归档名/断言值（codex R1-F2）
 
-function parseArgs(argv) {
-  const o = { pos: [] };
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i];
-    if (a.startsWith('--')) { const k = a.slice(2); if (i + 1 < argv.length && !argv[i + 1].startsWith('--')) o[k] = argv[++i]; else o[k] = true; }
-    else o.pos.push(a);
-  }
-  return o;
-}
 function die(code, msg) { console.error('sign: ' + msg); process.exit(code); }
 // 读失败消毒（output-seal B1）：V8 的 JSON.parse 报错自带出错处内容片段（login-bootstrap 实测），
 // 原样上抛会把 draft/prd/verdict-baseline 人编文件内容漏进 stderr——只报「不是合法 JSON/不可读」，内容不回显。
 // SAFE_ID（:25，signer/build 复用）在 A11 键名遮值处也用。
 function readJson(f, label) { try { return JSON.parse(readFileSync(f, 'utf8')); } catch { die(65, `读/解析 ${label} 失败（${f}；不是合法 JSON 或不可读，内容不回显）`); } }
+const digest = (value) => createHash('sha256').update(value).digest('hex');
 // 两阶段落盘（codex R1-F3 + R2-F1）：普通路径先写全部 .tmp 再 staged rename；实体锁路径另用 journal
 // 把逐文件 rename 变成可恢复发布事务。两者都不声称多文件 OS 原子。
 function commitWrites(writes, dirsToMk = [], transaction = null) {
@@ -87,6 +86,8 @@ function commitWrites(writes, dirsToMk = [], transaction = null) {
       journalPath: transaction.journalPath,
       signedAt: transaction.signedAt,
       authorityPath: transaction.authorityPath,
+      ...(transaction.beforeAuthorityCommit ? { beforeAuthorityCommit: transaction.beforeAuthorityCommit } : {}),
+      ...(transaction.readExisting ? { readExisting: transaction.readExisting } : {}),
     });
     if (result?.ok !== true) {
       die(result?.retryable ? 74 : 65, `sign publication 未完成（${result?.reason || 'UNKNOWN'}）${result?.retryable ? '；journal 保留时可用相同输入重试' : ''}`);
@@ -110,8 +111,11 @@ function commitWrites(writes, dirsToMk = [], transaction = null) {
   }
 }
 
-const args = parseArgs(process.argv.slice(2));
+const args = parseSignArgs(process.argv.slice(2));
 const caseId = args.pos[0];
+if (args.invalidFlags.length || args.duplicateFlags.length || args.pos.length !== 1) {
+  die(64, '参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试');
+}
 if (!caseId || !args.draft || !args.prd || !args['frozen-out'] || !args.signer || !args['against-build']) {
   die(64, '用法: casey sign <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--events <f> --entity-bindings-draft <f> --entity-confirmations <f> --entity-locks-out <f>] [--signed-at <iso>] [--verdict-baseline <f>] [--resign] [--force] [--archive-dir <d>]');
 }
@@ -140,6 +144,8 @@ if (entityLocksOut) {
   const rel = relative(ROOT, resolve(entityLocksOut));
   if (!rel || rel === '..' || rel.startsWith(`..${sep}`)) die(65, 'entity-locks-out 必须位于 Casey 项目内，供固定 PRD checksum authority 读取');
   entityLocksProjectKey = rel.split(sep).join('/');
+  const outputBoundary = checkProjectOutputBoundary({ projectRoot: ROOT, targetPath: entityLocksOut });
+  if (!outputBoundary.ok) die(65, `entity-locks-out 物理项目边界未过（${outputBoundary.reason}），拒绝 symlink/reparse 路径`);
   publicationJournal = `${resolve(entityLocksOut)}.publish.json`;
   if (existsSync(publicationJournal)) {
     recoveryJournal = readJson(publicationJournal, 'sign publication journal');
@@ -279,16 +285,60 @@ if (!sc.ok) die(65, `frozen 自守未过 assertSignedContract：${sc.problems.sl
 // 重签 / anti-clobber（D4）：frozen 已存在——无 --resign 拒覆写；有 --resign 备好归档（写盘留到最后）。
 const archiveDir = args['archive-dir'] ? String(args['archive-dir']) : join(dirname(frozenOut), 'archive');
 let archivePlan = null;
-if (existsSync(frozenOut) && !recoveryJournal) {
-  if (!args.resign) die(65, `frozen 已存在（${frozenOut}）——重签须显式 --resign（anti-clobber 防误覆写）`);
-  const old = readJson(frozenOut, '旧 frozen');
+function archivePlanFromFrozenText(rawText) {
+  let old;
+  try { old = JSON.parse(rawText); } catch { return null; }
   const oldText = JSON.stringify(old, null, 2) + '\n';
   const rawBuild = old?.intents?.[0]?.expected?.[0]?.signedAgainstBuild || 'unknown';
   const safeBuild = String(rawBuild).replace(/[^A-Za-z0-9._-]/g, '_'); // 归档名去穿越（codex R1-F2：旧 build 可能含 /..）
   // 用旧 frozen 内容 hash 做唯一后缀（codex R2-F4）：不同旧内容 → 不同归档名（防稳定碰撞覆盖毁审计）；
   // 同内容重归档 → 同名（幂等无损）。取代易碰撞的 signed-at 数字串。
   const oldHash = createHash('sha256').update(oldText).digest('hex').slice(0, 12);
-  archivePlan = { path: join(archiveDir, `expected.frozen.${caseId}.${safeBuild}.${oldHash}.json`), text: oldText };
+  return { path: join(archiveDir, `expected.frozen.${caseId}.${safeBuild}.${oldHash}.json`), text: oldText };
+}
+const journalNeedsArchive = recoveryJournal
+  ? recoveryJournal.entries[0].targetHash !== digest(resolve(frozenOut))
+  : false;
+if (!recoveryJournal && existsSync(frozenOut)) {
+  if (!args.resign) die(65, `frozen 已存在（${frozenOut}）——重签须显式 --resign（anti-clobber 防误覆写）`);
+  archivePlan = archivePlanFromFrozenText(readFileSync(frozenOut, 'utf8'));
+  if (!archivePlan) die(65, '旧 frozen 非法，拒绝生成重签 archive');
+} else if (recoveryJournal) {
+  if (journalNeedsArchive !== Boolean(args.resign)) {
+    die(65, 'publication journal 的 archive 目标集合与本次 --resign 不一致，拒绝恢复');
+  }
+  if (journalNeedsArchive) {
+    const first = recoveryJournal.entries[0];
+    const candidates = [];
+    // journal 刚建立、archive 尚未 staged 时，当前 frozen 仍是旧字节，可直接重建确定性归档计划。
+    if (existsSync(frozenOut)) {
+      const fromCurrent = archivePlanFromFrozenText(readFileSync(frozenOut, 'utf8'));
+      if (fromCurrent && digest(resolve(fromCurrent.path)) === first.targetHash && digest(fromCurrent.text) === first.contentHash) {
+        candidates.push(fromCurrent);
+      }
+    }
+    // archive 已 staged/committed 后当前 frozen 可能已是新字节；在同一 archiveDir 内按 journal 路径摘要找回。
+    if (existsSync(archiveDir)) {
+      let names = [];
+      try { names = readdirSync(archiveDir); } catch { die(65, '重签恢复无法读取 archive-dir，拒绝猜测'); }
+      if (names.length > 1000) die(65, 'archive-dir 条目过多，拒绝无界恢复扫描');
+      for (const name of names) {
+        const storedPath = join(archiveDir, name);
+        const targetPath = name.endsWith('.tmp') ? storedPath.slice(0, -4) : storedPath;
+        if (digest(resolve(targetPath)) !== first.targetHash) continue;
+        let text;
+        try {
+          const physical = readPhysicalFileBytes({ targetPath: storedPath });
+          if (!physical.ok) continue;
+          text = physical.bytes.toString('utf8');
+        } catch { continue; }
+        if (digest(text) === first.contentHash) candidates.push({ path: targetPath, text });
+      }
+    }
+    const unique = new Map(candidates.map((candidate) => [`${resolve(candidate.path)}\u0000${digest(candidate.text)}`, candidate]));
+    if (unique.size !== 1) die(65, '无法从当前 frozen/archive staged target 唯一重建 --resign journal，须人工审计');
+    archivePlan = [...unique.values()][0];
+  }
 }
 
 // prd checksum 计划（D5）：只加 frozen 断言文件那一条；expectedFrozenPath 规范相对（仓内）。
@@ -333,7 +383,24 @@ writes.push([prdPath, prdText]);
 commitWrites(
   writes,
   archivePlan ? [archiveDir] : [],
-  publicationJournal ? { journalPath: publicationJournal, signedAt, authorityPath: prdPath } : null,
+  publicationJournal ? {
+    journalPath: publicationJournal,
+    signedAt,
+    authorityPath: prdPath,
+    beforeAuthorityCommit: () => {
+      const identity = verifyProjectArtifactIdentity({ projectRoot: ROOT, targetPath: entityLocksOut });
+      if (!identity.ok) console.error(`sign: entity locks PRD-last 前物理身份复核未过（${identity.reason}）`);
+      return identity.ok === true;
+    },
+    ...(archivePlan ? { readExisting: (path) => {
+      const resolved = resolve(path);
+      const archiveTarget = resolve(archivePlan.path);
+      if (resolved !== archiveTarget && resolved !== `${archiveTarget}.tmp`) return readFileSync(resolved, 'utf8');
+      const physical = readPhysicalFileBytes({ targetPath: resolved });
+      if (!physical.ok) throw new Error(`archive physical boundary rejected: ${physical.reason}`);
+      return physical.bytes.toString('utf8');
+    } } : {}),
+  } : null,
 );
 
 const nAssert = frozen.intents.reduce((n, it) => n + it.expected.length, 0) + (frozen.globalAssertions?.length || 0);

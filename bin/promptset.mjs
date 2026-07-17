@@ -2,7 +2,7 @@
 // bin/promptset.mjs —— 数据驱动被测参数编排器（regress-promptset，scope A）。零 LLM。
 // 一条冻结 chat flow 跑 N 行被测参数：每行一 caseId 子目录（录屏/裁定/报告），末了聚合一份总目录。
 //
-//   node bin/promptset.mjs --promptset <f> --flow <events.json> --expected <frozen.json> --profile <f> --sut <base> --entity-locks <f>
+//   node bin/promptset.mjs --promptset <f> --flow <events.json> --expected <frozen.json> --profile <f> --sut <base> [--entity-locks <f>]
 //        [--run-dir <d>] [--generated-at <iso>] [--no-builtin | --builtin-dir <d>] [--video]
 //
 // 逐行：overlayPromptset 定位唯一 {{promptText}} 槽 → replay（--prompt-text 注入本行被测参数 + --soft-expect 本行软期望）
@@ -47,11 +47,12 @@ const normCode = (code) => (code === 2 ? 2 : code === 64 ? 64 : 1);
 
 function main() {
   const opts = parseArgs(process.argv.slice(2));
+  // 参数目录保留 entity-locks 供写链/旧门面发现；纯只读链由 replay 内部 policy 证明后可省略。
   const need = ['promptset', 'flow', 'expected', 'profile', 'sut', 'entity-locks'];
-  const missing = need.filter((k) => !opts[k] || opts[k] === true);
+  const missing = need.filter((k) => k !== 'entity-locks' && (!opts[k] || opts[k] === true));
   if (missing.length) {
     console.error(col(C.red, `[promptset] 缺必填参 → 用参错误(64)：${missing.map((m) => '--' + m).join(' ')}`));
-    console.error('用法: node bin/promptset.mjs --promptset <f> --flow <events.json> --expected <frozen.json> --profile <f> --sut <本地基址> --entity-locks <entity-locks.frozen.json>');
+    console.error('用法: node bin/promptset.mjs --promptset <f> --flow <events.json> --expected <frozen.json> --profile <f> --sut <本地基址> [--entity-locks <entity-locks.frozen.json>]');
     console.error('           [--run-dir <d>] [--generated-at <iso>] [--no-builtin | --builtin-dir <d>] [--video]');
     process.exit(64);
   }
@@ -102,7 +103,7 @@ function main() {
     stage(`相3 replay(${row.promptId})`, bin('replay.mjs'), [
       '--events', path.resolve(opts.flow), '--sut', String(opts.sut), '--expected', path.resolve(opts.expected),
       '--profile', path.resolve(opts.profile), '--out', axesOut, '--prompt-text', row.promptText, '--soft-expect', softFile,
-      '--entity-locks', path.resolve(opts['entity-locks']),
+      ...(typeof opts['entity-locks'] === 'string' && opts['entity-locks'] ? ['--entity-locks', path.resolve(opts['entity-locks'])] : []),
       ...(opts.video ? ['--video-dir', rowDir] : []),
     ]);
     stage(`相4 verdict(${row.promptId})`, bin('verdict.mjs'), ['--axes', axesOut, '--out', verdictOut]);

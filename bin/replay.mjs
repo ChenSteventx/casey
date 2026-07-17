@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // bin/replay.mjs —— 确定性回放器（相3）。真回放 SUT（被测系统）→ 产三轴 axes.json → 喂已冻 verdict.mjs。
-// 冻结 CLI：node bin/replay.mjs --events <f> --sut <baseUrl> --expected <f> --profile <f> --out <axes.json> --entity-locks <f> [--login-bootstrap]
+// 冻结 CLI：node bin/replay.mjs --events <f> --sut <baseUrl> --expected <f> --profile <f> --out <axes.json> [--entity-locks <f>] [--login-bootstrap]
+// --entity-locks 仅固定 atom+action 的纯只读 events 可省；任一 mutation/未知项仍在浏览器前 fail-closed。
 //   [--run-history <f>] [--run-metrics <f>] [--run-id <id>]（opt-in 回放历史/回放指标真产出，缺省行为一字不变）：
 //   纯观察者逐 event 收集（零新增等待、零改动作时序——动了取证归因窗即污染护栏 #15），与 axes 同刻经
 //   凭据兜底门一次写出；仅诊断证据，绝不进 verdict.mjs、绝不写 passes（口径见 docs/plans/run-history/proposed/GRILL.md）。
@@ -171,8 +172,8 @@ function readJsonSafe(f, label) {
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
-  for (const k of ['events', 'sut', 'expected', 'profile', 'out', 'entityLocks']) {
-    if (typeof args[k] !== 'string' || !args[k]) { console.error(`replay: 缺 --${k === 'entityLocks' ? 'entity-locks' : k}`); process.exit(64); }
+  for (const k of ['events', 'sut', 'expected', 'profile', 'out']) {
+    if (typeof args[k] !== 'string' || !args[k]) { console.error(`replay: 缺 --${k}`); process.exit(64); }
   }
   const uniqueName = args.uniqueName == null ? 'r1' : String(args.uniqueName);
   if (!/^[a-z0-9][a-z0-9_-]{0,63}$/i.test(uniqueName)) {
@@ -224,7 +225,8 @@ async function main() {
   }
   const caseId = eventsDoc.caseId || expectedDoc.caseId || 'unknown';
   // frozen locks 必须绑定本次 events 原始字节与全部显式对象角色；该准入早于登录、浏览器启动和任何业务动作。
-  const frozenArtifactKey = projectArtifactKey(args.entityLocks);
+  const entityLocksSupplied = typeof args.entityLocks === 'string' && Boolean(args.entityLocks);
+  const frozenArtifactKey = entityLocksSupplied ? projectArtifactKey(args.entityLocks) : null;
   const frozenAuthorityRead = frozenArtifactKey
     ? readIdentityAdmissionAuthorityFromPrd({
       prdId: caseId,
@@ -237,7 +239,7 @@ async function main() {
     caseId,
     eventsBytes: readFileSync(args.events),
     eventsDocument: eventsDoc,
-    frozenLockAuthority,
+    ...(entityLocksSupplied ? { frozenLockAuthority } : {}),
   });
   if (!identityAdmission.ok) {
     console.error(`replay: frozen identity locks 未过（${identityAdmission.reason}），未启动浏览器；下一步 ${identityAdmission.nextAction}`);
@@ -472,6 +474,9 @@ async function main() {
       try {
         if (ev.action === 'nav') {
           state.currentStepId = ev.stepId; // nav 本身就是动作，开放归因
+          // 旧只读信封可缺 url 以通过无锁迁移门，但缺目标绝不能拼成 `/undefined`
+          // 触碰 SUT；按动作失败收口。带 url 的无锁 read 已在 identity admission 钉住固定路径。
+          if (typeof ev.url !== 'string' || !ev.url) throw new TypeError('nav event 缺 compiler-authored url');
           await page.goto(sut + pathOf(instantiate(ev.url, ctx)), { waitUntil: 'load' });
         } else {
           const want = ev.pre && ev.pre.path;
