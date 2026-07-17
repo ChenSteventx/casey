@@ -24,7 +24,8 @@
       "acceptance": [
         "node tests/_golden/sign-publication-recovery.zero-sut.golden.mjs interrupt-recover"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:42:11.372Z 全部 acceptance exit 0"
     },
     {
       "id": "mismatch-authority",
@@ -33,7 +34,8 @@
       "acceptance": [
         "node tests/_golden/sign-publication-recovery.zero-sut.golden.mjs mismatch-authority"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:42:11.408Z 全部 acceptance exit 0"
     },
     {
       "id": "cleanup-retry",
@@ -42,7 +44,8 @@
       "acceptance": [
         "node tests/_golden/sign-publication-recovery.zero-sut.golden.mjs cleanup-retry"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:42:11.448Z 全部 acceptance exit 0"
     },
     {
       "id": "cli-wiring",
@@ -51,7 +54,8 @@
       "acceptance": [
         "node tests/_golden/sign-publication-recovery.zero-sut.golden.mjs cli-wiring"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:42:11.485Z 全部 acceptance exit 0"
     }
   ]
 }

@@ -6,13 +6,13 @@
 //   node bin/compile.mjs <caseId> --execute --testcase <f> --sut <url> --out-dir <d> --profile <f> [--entity-authority <f>] [--skip-login] [--unique-name <tok>]
 //       执行段：以 TestCase 为不可变锚重验三闸 → 登录预备动作（凭据只进内存）→ 骑 atom 知识真机逐步执行
 //       → events.json + observed-<caseId>.json + compile-report.json（任一步证不出 → 只落诊断报告 exit 65）。
-//   node bin/compile.mjs <caseId> --verify --sut <url> --out-dir <d> --profile <f> --entity-locks <f> [--login-bootstrap]
+//   node bin/compile.mjs <caseId> --verify --sut <url> --out-dir <d> --profile <f> --entity-locks <f> [--events <events.json>] [--login-bootstrap]
 //       核验段（G1 取 B）：调 bin/replay.mjs 产 axes → 动作轴全 unique 才 0；否则列雷点清单非零退出。
 //       --login-bootstrap 透传给子 replay（真机核验过登录墙；hermetic 不带旗标零行为差）。
 //
 // 退出码：0 成功；1 运行时失败/凭据门拦；64 缺参；65 输入坏/闸拒（fail-closed）；66 flow 未 confirm。
 // 所有落盘口过 lib/cred-gate.mjs（G5 取 B，护栏 #7）。本进程零 LLM、零裁定（护栏 #15）。
-import { readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, renameSync, rmSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
@@ -24,17 +24,24 @@ import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstra
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { createCompileRun, compileFlow, projectObserved, ROUTE_LIST } from '../lib/compile-atoms.mjs';
 import {
-  checkCompileIdentityAdmission,
-  eventsContainEntityMutation,
+  buildEntityBindingsDraft,
+  checkCompileIdentityAdmission as checkExecuteIdentityAdmission,
+  checkReplayEntityAdmission,
   flowContainsEntityMutation,
   readIdentityAdmissionAuthorityFromPrd,
-  requiredEventEntityBindings,
   requiredFlowEntityBindings,
 } from '../lib/entity-semantic-lock-preflight.mjs';
 import { PROJECT_ROOT } from '../lib/paths.mjs';
 
 const { chromium } = pw;
 const SNAPSHOT_FILE = join(PROJECT_ROOT, 'lib', 'atoms-registry.snapshot.json');
+
+// 统一三段式调用名：execute 使用预执行 authority；verify 使用 successor 的 replay 内部 policy。
+function checkCompileIdentityAdmission(options) {
+  if (options?.mode === 'execute') return checkExecuteIdentityAdmission(options);
+  const { mode: _mode, ...replayOptions } = options || {};
+  return checkReplayEntityAdmission(replayOptions);
+}
 
 function parseArgs(argv) {
   const o = { pos: [] };
@@ -69,7 +76,28 @@ function gatedWrite(files) {
   const outputs = Object.fromEntries(Object.entries(files).map(([p, text]) => [p, text]));
   const gate = credentialGate(outputs);
   if (!gate.ok) { console.error(`compile: 凭据兜底门拦截（护栏 #7）：${gate.hit}；拒绝落盘`); process.exit(1); }
-  for (const [p, text] of Object.entries(files)) writeFileSync(p, text, 'utf8');
+  const entries = Object.entries(files);
+  const tmps = entries.map(([p]) => `${p}.tmp`);
+  if (new Set(entries.map(([p]) => resolve(p))).size !== entries.length || tmps.some((p) => existsSync(p))) {
+    console.error('compile: 输出路径碰撞或 .tmp 已存在，拒绝落盘'); process.exit(65);
+  }
+  const written = [];
+  try {
+    for (let index = 0; index < entries.length; index++) {
+      writeFileSync(tmps[index], entries[index][1], { encoding: 'utf8', flag: 'wx' });
+      written.push(index);
+    }
+  } catch {
+    for (const index of written) try { rmSync(tmps[index], { force: true }); } catch { /* 尽力清理 */ }
+    console.error('compile: 输出预写失败，已清理临时文件；零目标落盘'); process.exit(74);
+  }
+  for (let index = 0; index < entries.length; index++) {
+    try { renameSync(tmps[index], entries[index][0]); }
+    catch {
+      for (let rest = index; rest < tmps.length; rest++) try { rmSync(tmps[rest], { force: true }); } catch { /* 尽力清理 */ }
+      console.error('compile: 输出 staged rename 中断，已清理未提交临时文件；可能已有部分非授权产物到位，无 draft 不可签，下一次 compile 会清场重建'); process.exit(74);
+    }
+  }
 }
 
 // ── 闸段：flow 草稿 → compile-gate → 落盘等 confirm ─────────────────────────
@@ -149,6 +177,7 @@ async function executeMode(caseId, args) {
     mode: 'execute',
     caseId,
     containsEntityMutation,
+    flow: flowDoc.flow,
     executeAuthority,
     flowBytes: readFileSync(flowFile),
     testcaseBytes: readFileSync(String(args.testcase)),
@@ -161,6 +190,7 @@ async function executeMode(caseId, args) {
   // 旧成功产物清场（R2-F3）：本目录语义 = 本次运行结果；先清旧 events/observed，
   // 失败路径绝不让上一轮成功产物残留假冒本轮（可进 P4 的只能是本轮全 unique 产物）。
   rmSync(join(outDir, 'events.json'), { force: true });
+  rmSync(join(outDir, 'entity-bindings.draft.json'), { force: true });
   rmSync(join(outDir, `observed-${caseId}.json`), { force: true });
   const profile = readJson(args.profile, '通道剖面');
   // 剖面可选 routes.workflowList（非凭据通道配置）：present 则须以 / 开头的路径段（R1-F5 形状校验同律），
@@ -243,6 +273,22 @@ async function executeMode(caseId, args) {
         recordedAt: now, compiledBy: 'casey-compile/p3', authored: false,
         events: run.events,
       };
+      const eventsText = JSON.stringify(eventsDoc, null, 2) + '\n';
+      let entityBindingsDraftText = null;
+      if (containsEntityMutation) {
+        const draftResult = buildEntityBindingsDraft({
+          eventsBytes: Buffer.from(eventsText),
+          eventsDocument: eventsDoc,
+          provenance: run.entityBindingProvenance,
+        });
+        if (draftResult?.ok !== true) {
+          gatedWrite({ [join(outDir, 'compile-report.json')]: JSON.stringify(reportDoc, null, 2) + '\n' });
+          console.error(`compile: entity binding sidecar 未闭合（${draftResult?.reason || 'UNKNOWN'}），不产 events/draft/observed`);
+          exitCode = 65;
+        }
+        if (draftResult?.ok === true) entityBindingsDraftText = JSON.stringify(draftResult.draft, null, 2) + '\n';
+      }
+      if (exitCode === 0) {
       // capturedAgainstBuild 提取（Steven 决议 2026-07-02 ⑥ 接线，plan-debt-sweep）：入口 HTML 脚本 src 的
       // ?v= 查询串 = 前端发版号（Heren api-config.js?v=1.1.2 形态）；SPA 脚本跨路由常驻、尾页提取即入口提取。
       // 取不到/异常照旧 null（fail-safe 方向一字不变）。
@@ -259,11 +305,13 @@ async function executeMode(caseId, args) {
       if (typeof capturedBuild !== 'string' || !capturedBuild) capturedBuild = null;
       const observedDoc = projectObserved(run, { caseId, capturedAt: now, capturedAgainstBuild: capturedBuild });
       gatedWrite({
-        [join(outDir, 'events.json')]: JSON.stringify(eventsDoc, null, 2) + '\n',
+        [join(outDir, 'events.json')]: eventsText,
+        ...(entityBindingsDraftText ? { [join(outDir, 'entity-bindings.draft.json')]: entityBindingsDraftText } : {}),
         [join(outDir, `observed-${caseId}.json`)]: JSON.stringify(observedDoc, null, 2) + '\n',
         [join(outDir, 'compile-report.json')]: JSON.stringify(reportDoc, null, 2) + '\n',
       });
       console.log(`compile: 执行段完成 → events ${run.events.length} 步 / observed ${observedDoc.steps.length} 步 / 候选 ${run.caseDefectCandidates.length}`);
+      }
     }
   }
   clearTimeout(watchdog);
@@ -275,13 +323,13 @@ async function executeMode(caseId, args) {
 // 判据是动作轴（可加载、可回放、点击身份门全 unique），不以 verdict 终判为准（无冻结断言时裁定必落 NEEDS_HUMAN 属正常）。
 function verifyMode(caseId, args) {
   const outDir = resolve(String(args['out-dir']));
-  const eventsFile = join(outDir, 'events.json');
+  // sign 不覆写 compile 原始 events；核验始终消费原 events v2 字节。
+  const eventsFile = args.events ? resolve(String(args.events)) : join(outDir, 'events.json');
   if (!existsSync(eventsFile)) { console.error(`compile: 缺 ${eventsFile}——先 --execute 产 events`); process.exit(65); }
   // verify 只认绑定最终 events 字节的 frozen locks，不得拿 execute authority 冒充。
   // 本门位于临时文件和 replay spawn 之前，拒绝路径零回放副作用。
   const eventsBytes = readFileSync(eventsFile);
   const eventsDoc = readJson(eventsFile, 'events.json');
-  const registry = readJson(SNAPSHOT_FILE, '原子注册表快照');
   const frozenArtifactKey = projectArtifactKey(args['entity-locks']);
   const frozenAuthorityRead = frozenArtifactKey
     ? readIdentityAdmissionAuthorityFromPrd({
@@ -294,10 +342,9 @@ function verifyMode(caseId, args) {
   const identityAdmission = checkCompileIdentityAdmission({
     mode: 'verify',
     caseId,
-    containsEntityMutation: eventsContainEntityMutation(eventsDoc, registry),
-    frozenLockAuthority,
     eventsBytes,
-    requiredBindings: requiredEventEntityBindings(eventsDoc),
+    eventsDocument: eventsDoc,
+    frozenLockAuthority,
   });
   if (!identityAdmission.ok) {
     console.error(`compile --verify: frozen identity locks 未过（${identityAdmission.reason}），未启动 replay；下一步 ${identityAdmission.nextAction}`);

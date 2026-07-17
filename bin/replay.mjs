@@ -29,10 +29,8 @@ import { foldIntentAction } from '../lib/intent-action-fold.mjs';
 import { validateWorkflowDeleteBindings } from '../lib/workflow-delete-spec.mjs';
 import { projectReplayAssertion, validateReplayEntityAnchors } from '../lib/replay-entity-anchor.mjs';
 import {
-  checkCompileIdentityAdmission,
-  eventsContainEntityMutation,
+  checkReplayEntityAdmission as checkCompileIdentityAdmission,
   readIdentityAdmissionAuthorityFromPrd,
-  requiredEventEntityBindings,
 } from '../lib/entity-semantic-lock-preflight.mjs';
 import { PROJECT_ROOT } from '../lib/paths.mjs';
 
@@ -235,14 +233,11 @@ async function main() {
     })
     : null;
   const frozenLockAuthority = frozenAuthorityRead?.ok === true ? frozenAuthorityRead.authority : null;
-  const registry = readJsonSafe(new URL('../lib/atoms-registry.snapshot.json', import.meta.url), '原子注册表快照');
   const identityAdmission = checkCompileIdentityAdmission({
-    mode: 'verify',
     caseId,
-    containsEntityMutation: eventsContainEntityMutation(eventsDoc, registry),
-    frozenLockAuthority,
     eventsBytes: readFileSync(args.events),
-    requiredBindings: requiredEventEntityBindings(eventsDoc),
+    eventsDocument: eventsDoc,
+    frozenLockAuthority,
   });
   if (!identityAdmission.ok) {
     console.error(`replay: frozen identity locks 未过（${identityAdmission.reason}），未启动浏览器；下一步 ${identityAdmission.nextAction}`);
