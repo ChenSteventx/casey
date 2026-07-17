@@ -20,6 +20,7 @@ const REGISTRY = join(ROOT, 'lib', 'teachin-observation-driver-registry.mjs');
 const REGISTRY_SOURCE = readFileSync(REGISTRY, 'utf8');
 const SIGNED_RECEIPT = fileURLToPath(new URL('./fixtures/teachin-observation-safe-case-lease-v2/identity-readback-receipt.signed.json', import.meta.url));
 const TEST_PUBLICATION_LOADER = fileURLToPath(new URL('./fixtures/observation-runtime-trust-root/test-driver-publication-loader.mjs', import.meta.url));
+const IDENTITY_CONSUMER_PROBE = fileURLToPath(new URL('./fixtures/observation-runtime-trust-root/rehydrate-identity-consumer-probe.mjs', import.meta.url));
 const CASE_ID = 'tc_observation_driver_provenance';
 const SCOPE = `sha256:${'a'.repeat(64)}`;
 const EVIDENCE = `sha256:${'c'.repeat(64)}`;
@@ -131,6 +132,12 @@ try {
     expectExit(run(DISTILL, [CASE_ID, '--capture', capturePath, '--out-dir', outRoot], { testPublication: true }), 0, 'distill');
     const distillDir = join(outRoot, CASE_ID, 'distill');
     if (!existsSync(join(distillDir, `distill-candidate-testcase-${CASE_ID}.json`))) throw new Error('缺 distill candidate');
+    const identityProbe = run(IDENTITY_CONSUMER_PROBE, [CASE_ID, capturePath], { testPublication: true });
+    expectExit(identityProbe, 0, 'rehydrated identity consumer probe');
+    if (!identityProbe.stdout.includes('trusted identity consumer')
+      || !identityProbe.stdout.includes('tampered observation remains rejected')) {
+      throw new Error('rehydrated identity consumer/tamper 断言未执行');
+    }
   });
 
   const realLedger = existsSync(ledgerPath) ? readFileSync(ledgerPath) : Buffer.alloc(0);

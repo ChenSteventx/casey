@@ -7,8 +7,9 @@
 1. `bin/intake.mjs` 只通过 `appendAcceptedObservationPackage({ caseId, capturePath })` 接受 canonical v2 package；必须位于固定 `PROJECT_ROOT/cases/<caseId>/record-capture`，并有 release publication root 验过的 Ed25519 signed readback receipt。不得再直接 `appendIntakeLedger`，也不得把 legacy/plain accepted 记录写成成功。
 2. ledger committed record 除 package hashes 外，必须精确绑定 `driverReceiptSha256`、`driverKeyId`、`driverSessionNonce`。`transactionSha256` 只校记录完整性，不单独构成 authority。
 3. `bin/distill.mjs` 必须从固定 canonical root 稳定重读 package、signed driver receipt 与 latest committed ledger；全部验证后在当前进程重新 mint 同 token 的 opaque accepted authority + readback receipt，再用 transaction-pair consumer 复核。plain/self-made ledger、legacy accepted、错/缺 driver signature、off-root path 均拒绝且零候选。
-4. production driver registry 默认 empty；当前冻结 fixture 公钥只能存在于隔离 test publication module，不得进入 production registry。真实 driver public key 只能来自发行资源/签名 publication manifest，不得从 workspace、环境变量或 caller 扩根。真实 publication 尚未交付时，CLI 必须明确 `DRIVER_NOT_PUBLISHED`、`route:human`、零 accepted ledger，绝不假装可用。
-5. 人类 intake 决策本身若将来需要不可伪造签名，明确 `route:human`；本故事不在仓内放 intake 私钥或伪签名。真实 driver 私钥保护、发布签名与轮换同样 `route:human`。
+4. rehydrated pair 不得只够 distill：同进程必须能进入 `verifyAcceptedIdentityObservationBundle` 并获得 trusted identity；重水化只改变 authority source，不改变已重新验真的 driver receipt canonical provenance。旁车/receipt/package 任一篡改仍拒。
+5. production driver registry 默认 empty；当前冻结 fixture 公钥只能存在于隔离 test publication module，不得进入 production registry。真实 driver public key 只能来自发行资源/签名 publication manifest，不得从 workspace、环境变量或 caller 扩根。真实 publication 尚未交付时，CLI 必须明确 `DRIVER_NOT_PUBLISHED`、`route:human`、零 accepted ledger，绝不假装可用。
+6. 人类 intake 决策本身若将来需要不可伪造签名，明确 `route:human`；本故事不在仓内放 intake 私钥或伪签名。真实 driver 私钥保护、发布签名与轮换同样 `route:human`。
 
 ## 2. HIGH ledger temp final-integrity
 
