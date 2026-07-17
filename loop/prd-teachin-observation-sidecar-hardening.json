@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-observation-sidecar-hardening（full）：保持原冻结契约字节不变，新增必需外部 expectedBinding 的受信复核面，以 plain-own-data 一次性快照堵 getter TOCTOU/额外键，多轮归一扫敏感内容，并将 observation eventSeq 绑定到 capture 唯一事件。",
+  "specPath": "docs/plans/teachin-observation-sidecar-hardening/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-observation-sidecar-hardening.zero-sut.golden.mjs": "268ec6320b0ba8e320e8f011bd5596cfa5d4f1ffc0281f0b3915f109bd42ffcd"
+  },
+  "observability": [
+    {
+      "dimension": "pathFacts 必须由真实 I/O 层通过 containment、全祖先软链检查与 open(no-follow)→fstat→read same fd→fstat 产生；本 story 只验纯函数消费形状。",
+      "route": "human"
+    },
+    {
+      "dimension": "v2 受信锁集还须绑定 eventsSha256、签名、receipt hash 和 {stepId,intentId,atom,role} 覆盖；本 story 不产出 frozen lockset。",
+      "route": "human"
+    },
+    {
+      "dimension": "accepted-intake-ledger 文件来源与 append-only 身份由后续 I/O wiring 验真；纯函数只核对闭合外部绑定的字段与 hash。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-sidecar-trust-hardening",
+      "desc": "新增 verifyTrustedIdentityObservationBundle：expectedBinding 必需且旧自产投影不合 schema；全公开入口一次性 plain-own-data 快照拒 accessor/symbol/额外键；多轮 normConverge 扫 URL/token 且不收敛拒；受信复核严格对账 capture 唯一 seq 与 observation eventSeq；原冻结测试及 checksum 不变。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-observation-sidecar-hardening.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    }
+  ]
+}
