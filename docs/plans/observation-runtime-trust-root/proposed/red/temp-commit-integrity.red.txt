@@ -1,0 +1,10 @@
+RED baseline (zero-SUT, 2026-07-17)
+command: node tests/_golden/observation-temp-commit-integrity.zero-sut.golden.mjs
+exit: 1
+
+FAIL production exports exact final-temp verifier: 缺 verifyLedgerTempCommitBytes
+FAIL same inode tamper is rejected without target pollution: api.verifyLedgerTempCommitBytes is not a function
+FAIL commit invokes full verifier immediately before rename: final verifier 未位于 close 后 rename 前
+
+result: 0 passed, 3 failed
+
