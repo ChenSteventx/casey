@@ -46,7 +46,8 @@
       "acceptance": [
         "node tests/_golden/teachin-runtime-provenance-successor.zero-sut.golden.mjs opaque-readiness"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:45:42.917Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-recursive-data-provenance",
@@ -55,7 +56,8 @@
       "acceptance": [
         "node tests/_golden/teachin-runtime-provenance-successor.zero-sut.golden.mjs data-provenance"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:45:43.002Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-no-execution-regression",
@@ -66,7 +68,8 @@
         "node tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs all",
         "node tests/_golden/teachin-runtime-readiness-successor.zero-sut.golden.mjs historical-and-roles"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T05:45:43.139Z 全部 acceptance exit 0"
     }
   ]
 }
