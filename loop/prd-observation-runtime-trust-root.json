@@ -1,6 +1,7 @@
 {
   "schemaVersion": 1,
-  "task": "observation-runtime-trust-root（P0/HIGH security successor）：CLI intake 只走 fixed canonical append transaction；distill 以 release-published signed driver receipt + committed ledger rehydrate 本进程 opaque pair，transactionSha 不单独授权。production driver registry 默认 empty/DRIVER_NOT_PUBLISHED，测试 key 仅隔离 loader。temp rename 前同 inode 全字节/hash 复核。两份 unsafe frozen golden 以 Base64 JSON 历史容器 + fail-fast tombstone 显式安全撤销，revoked != PASS。",
+  "task": "observation-runtime-trust-root（P0/HIGH security successor）：CLI intake 只走 fixed canonical append transaction；distill 以 release-published signed driver receipt + committed ledger rehydrate 本进程 opaque pair，transactionSha 不单独授权。production driver registry 默认 empty/DRIVER_NOT_PUBLISHED，测试 key 仅隔离 loader。temp rename 前同 inode 全字节/hash 复核。两份 unsafe frozen golden 以 gzip archive + fail-fast tombstone 显式安全撤销，gunzip 后核原 sha，revoked != PASS。",
+  "amendment": "docs/plans/observation-contract-closure/runtime-trust-root-amendment.json",
   "specPath": "docs/plans/observation-runtime-trust-root/plan.md",
   "testChecksums": {
     "tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs": "bf83f74ac434420f5d3b461f4a3e2cea19df27ebe7dacdc4835fe43db47569cf",

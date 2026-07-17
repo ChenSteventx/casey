@@ -28,6 +28,8 @@
 
 验收：`tests/_golden/observation-active-suite-contract-v2.zero-sut.golden.mjs`。实现前因 v2 JSON 不存在而真实 RED。
 
+自审追加 coverage-freeze：不修改上述 frozen test，新增 `tests/_golden/observation-active-suite-contract-v2-map-closure.zero-sut.golden.mjs`，从 JSON 派生全部 superseded assertion id，并要求与 replacement map 键集合精确相等；同时钉死 expected counts 与 retained/superseded 数组长度、集合不重叠、active/historical PRD 列表不重叠。该项收编当前正确行为，冻结时即绿。
+
 ## 4. 可观测性与停止条件
 
 - 真实 driver release publication、私钥保护/轮换、nonce 持久防重放与 receipt 是否来自同一次真实平台 readback，仍 route:human；本合同不发布测试 key 到 production。

@@ -7,6 +7,7 @@
     "tests/_golden/fixtures/observation-contract-closure/trusted-multi-consumer-probe.mjs": "053539c8470cbb119c791cbbe367d36d9c557949ebc10788cf161c6f2bfde4fe",
     "tests/_golden/observation-runtime-trust-amendment.zero-sut.golden.mjs": "9d20b92ab6a28182ad66269fbd98cfd55acf302176b70bd74a3a55208fb34bb3",
     "tests/_golden/observation-active-suite-contract-v2.zero-sut.golden.mjs": "7fa227326fad1f5eb6c23fbcf77a5de5f8cf7317cbff379984b0ba39671d39ea",
+    "tests/_golden/observation-active-suite-contract-v2-map-closure.zero-sut.golden.mjs": "98fc204422a335911e1796ee5b5587027af68157e571008392f811b860d12e24",
     "tests/_golden/fixtures/observation-runtime-trust-root/active-suite-v2.json": "77d94f3d38019a0960f6b3f23d72d7bfba2e6ab8f9916c8f2f5c247c965b2477"
   },
   "observability": [
@@ -31,7 +32,8 @@
       "acceptance": [
         "node tests/_golden/observation-identity-contract-closure.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T07:22:08.175Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-runtime-trust-gzip-amendment",
@@ -40,7 +42,8 @@
       "acceptance": [
         "node tests/_golden/observation-runtime-trust-amendment.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T07:22:08.213Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-active-suite-v2-machine-readable-contract",
@@ -49,7 +52,18 @@
       "acceptance": [
         "node tests/_golden/observation-active-suite-contract-v2.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-17T07:22:08.724Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4-active-suite-v2-map-closure",
+      "desc": "MED coverage-freeze successor：从 JSON 派生全部 superseded ids 并与 replacement map 键集合精确相等；counts 与 assertion arrays 长度一致、profile/PRD 集合无重复交叉。",
+      "lane": "toil",
+      "acceptance": [
+        "node tests/_golden/observation-active-suite-contract-v2-map-closure.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-17T07:22:08.763Z 全部 acceptance exit 0"
     }
   ]
 }
