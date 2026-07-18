@@ -3,6 +3,12 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 2026-07-18 夜活动增量：obs-cases-isolation 契约收口并入 dev，三金牌主树 DrvFs 稳定绿 + W2 环境敏感挂账连带清偿
+
+`obs-cases-isolation`（full，merge 于 dev）：修三 observation 金牌主树 WSL DrvFs 必红。诊断三层纠偏（初判「扫真实 cases 数据」→「同名残留撞守卫」→ 最终只 supersession 一个真故障，cli-authority/unsafe 被残留连累）；方案两次修正（Steven 批的 rename→copy+自回收被侦察探针推翻——copy 铸新 inode 破坏 T2 身份语义、自回收触双冻结安全 primitive 高风险且不必要）。最终修：supersession `spawnSync` timeout 30s→180s（确定性 ETIMEDOUT 根因，SAFE_V2 9p 跑约47s）+ SAFE_V2 T2 rename/mkdir/rmdir 包有界 retry（新增 `retry-transient-fs.mjs` 吸收 9p 偶发 sharing-violation EACCES，retry 内每次重验身份）。codex 异构评审三轮闭环——逮 High（原属 prd 重签延后）+ Medium（T2 retry 的 check-then-act TOCTOU 窗口，逐个破坏性分支 L302/L304/L286 收干净）→ 全 RESOLVED PASS。不触 kernel lib/bin、不触安全 primitive `canonical-case-lease.mjs`、不改 caseId/active-suite 11/6 契约。原属两 prd（safe-case-lease-v2、observation-runtime-trust-root）同步重签。
+
+主树复验：三金牌全绿（cli-authority 8/8、unsafe 3/3、supersession 从必红 ETIMEDOUT 转 3/3）、零残留；ratchet 4 存量债零新增、tier1 GREEN。**连带清偿**：W2 `prd-cli-authority-wiring-fill` 之前诊断为环境敏感挂账的主树 gate 3/4，obs 修复后主树 gate 复验 GREEN 4/4（其 observability 第 4 条环境敏感诊断条目为历史记录，问题已由本契约根治）。
+
 ## 2026-07-18 傍晚活动增量：两契约 codex 评审闭环并入 dev（单元轨 + W2 接线，各真挣钱一 finding）
 
 session limit 恢复后续完两契约，均 codex 异构评审闭环并合并 dev：
