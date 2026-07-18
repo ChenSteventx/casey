@@ -10,10 +10,10 @@
     "tests/_golden/fixtures/teachin-semantic-lock-v2/entity-locks.frozen.json": "44f3702de0a81a52e3e1121fde07ff3756e2b2c8e3117c16f1895f8040bfdb16",
     "tests/_golden/fixtures/teachin-semantic-lock-v2/events.document.json": "f91bee239c2185794ab0afeef88b7b68e5f782d706592527d36cfc454a31f6ac",
     "tests/_golden/fixtures/semantic-lock-cert-closure/supersession-revocation.json": "9f78eb0399e646261338474714fbd833091c4393fe122828688a449f74f2890d",
-    "lib/entity-semantic-lock-v2.mjs": "4b370340d0697e356fa4ccc6f0ccf3103051accaeea856f41e112f94f3b2bc7e",
+    "lib/entity-semantic-lock-v2.mjs": "b7b5a47e1830084ad2715c56a384b55a6b473bc5a5f735eeedb6006df2a3b6f0",
     "lib/entity-semantic-lock-publications.mjs": "c5865db2b409fca1ad7fa98f57fbf1541ccce98b666abdfe63ef598b55d7d86a"
   },
-  "notes": "冻结面说明：初签以漂移红字节入冻；loop 期按 2026-07-13 工程纪律②原地重签为重写后字节（本条目即如实记录）：三金牌重写为可达面全绿、v2 夹具重造（entity-locks schema v3 + events.document.json 取代 events.json）、新增前瞻红基线金牌与吊销收据入冻。两个 lib 文件 checksum 全程未变（4b370340/c5865db2），机制证明本契约零触实现。publications 表保持空（生产 fail-closed 姿态），测试走温拷贝注入。三件僵死金牌墓碑化重签记录见 prd-teachin-semantic-lock-wiring task 注。",
+  "notes": "冻结面说明：初签以漂移红字节入冻；loop 期按 2026-07-13 工程纪律②原地重签为重写后字节（本条目即如实记录）：三金牌重写为可达面全绿、v2 夹具重造（entity-locks schema v3 + events.document.json 取代 events.json）、新增前瞻红基线金牌与吊销收据入冻。publications lib checksum 全程未变（c5865db2）；entity-semantic-lock-v2 在本 cert 契约内零触（初签 4b370340），后由 semantic-unit-discrimination 契约加剥壳导出面 compareCandidateFacts（codex 评审三轮 PASS）改为 b7b5a47e，合并 dev 时于本 prd 原子重签该项——即 codex High-2「cert 冻旧 lib sha 账实不符」的消解；导出属纯加法、cert 金牌不受影响仍 GREEN 2/2。publications 表保持空（生产 fail-closed 姿态），测试走温拷贝注入。三件僵死金牌墓碑化重签记录见 prd-teachin-semantic-lock-wiring task 注。",
   "observability": [
     {
       "dimension": "v2 引擎接线后（record/replay 消费），本认证需对新增接线面重评；真机 publication 与运行时权威 route:human 未落地前，5 个 P0 的绿证明仅覆盖 hermetic 判别逻辑。",
@@ -31,7 +31,7 @@
         "node tests/_golden/teachin-semantic-lock-runtime-authority.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-17T16:57:11.691Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-18T07:52:25.499Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-adjacent-greens-hold",
@@ -46,7 +46,7 @@
         "node tests/_golden/teachin-semantic-lock-package-integrity.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-17T16:57:15.183Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-18T07:52:29.101Z 全部 acceptance exit 0"
     }
   ]
 }
