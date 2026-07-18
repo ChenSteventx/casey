@@ -42,6 +42,7 @@ import {
   acquireCanonicalCaseLease,
   CASE_LEASE_MARKER,
 } from './support/canonical-case-lease.mjs';
+import { retryOnTransientFsRace } from './support/retry-transient-fs.mjs';
 
 let passed = 0;
 const failures = [];
@@ -274,7 +275,7 @@ await check('T2 safe lease 预存/marker/目录替换拒删；ancestor symlink �
   const markerBackup = join(lease.caseDir, '.lease-marker-owned-backup');
   let forgedIdentity = null;
   try {
-    renameSync(lease.markerPath, markerBackup);
+    retryOnTransientFsRace(() => renameSync(lease.markerPath, markerBackup));
     writeFileSync(lease.markerPath, '{"forged":true}\n');
     forgedIdentity = identity(lstatSync(lease.markerPath, { bigint: true }));
     if (lease.cleanup().ok) throw new Error('marker replacement 被 cleanup 错删');
@@ -282,7 +283,7 @@ await check('T2 safe lease 预存/marker/目录替换拒删；ancestor symlink �
   } finally {
     if (existsSync(lease.markerPath)
       && identity(lstatSync(lease.markerPath, { bigint: true })) === forgedIdentity) unlinkSync(lease.markerPath);
-    if (existsSync(markerBackup) && !existsSync(lease.markerPath)) renameSync(markerBackup, lease.markerPath);
+    if (existsSync(markerBackup) && !existsSync(lease.markerPath)) retryOnTransientFsRace(() => renameSync(markerBackup, lease.markerPath));
     safeCleanup(lease, 'marker replacement probe');
   }
 
@@ -292,16 +293,16 @@ await check('T2 safe lease 预存/marker/目录替换拒删；ancestor symlink �
   let replacementIdentity = null;
   try {
     if (existsSync(backupDir)) throw new Error('probe backup path 预存，拒绝触碰');
-    renameSync(lease.caseDir, backupDir);
-    mkdirSync(lease.caseDir);
+    retryOnTransientFsRace(() => renameSync(lease.caseDir, backupDir));
+    retryOnTransientFsRace(() => mkdirSync(lease.caseDir));
     replacementIdentity = identity(lstatSync(lease.caseDir, { bigint: true }));
     if (lease.cleanup().ok) throw new Error('directory replacement 被 cleanup 错删');
     if (!existsSync(lease.caseDir)) throw new Error('directory replacement 未 fail-safe 留存');
   } finally {
     if (existsSync(lease.caseDir)
-      && identity(lstatSync(lease.caseDir, { bigint: true })) === replacementIdentity) rmdirSync(lease.caseDir);
+      && identity(lstatSync(lease.caseDir, { bigint: true })) === replacementIdentity) retryOnTransientFsRace(() => rmdirSync(lease.caseDir));
     if (existsSync(backupDir) && !existsSync(lease.caseDir)
-      && identity(lstatSync(backupDir, { bigint: true })) === ownedIdentity) renameSync(backupDir, lease.caseDir);
+      && identity(lstatSync(backupDir, { bigint: true })) === ownedIdentity) retryOnTransientFsRace(() => renameSync(backupDir, lease.caseDir));
     safeCleanup(lease, 'directory replacement probe');
   }
 
