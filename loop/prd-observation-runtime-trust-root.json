@@ -14,7 +14,7 @@
     "tests/_golden/support/canonical-case-lease.mjs": "f273c242922cf6e6617173c33fafc64c9c95bb78f4b136989d535c58627fed97",
     "tests/_golden/fixtures/teachin-observation-safe-case-lease-v2/identity-readback-receipt.signed.json": "e0415ee5e932124f28b3b74e37d4eb29047cfaa6b9bc3af0e12a59636ed87849",
     "tests/_golden/fixtures/teachin-observation-safe-case-lease-v2/trusted-driver-public-key.pem": "e93e8f0d33f11fe32adeabf6bb72e87a4168365099c8150205133ff9012d739f",
-    "tests/_golden/observation-active-suite-supersession.zero-sut.golden.mjs": "ed7fb837adc7a323854d656fc70ea9f7cfd800db73389108fff245f28a3d5cc4",
+    "tests/_golden/observation-active-suite-supersession.zero-sut.golden.mjs": "f1e42089b7601ee29bdd4fe36823beae932459672fdcfc78132455d2ed49107d",
     "tests/_golden/fixtures/observation-runtime-trust-root/active-suite.json": "546418b41d7e4eca40a02b3b8b0513624812247adaf765388d66a0b05af79b56"
   },
   "observability": [
