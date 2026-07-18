@@ -274,7 +274,9 @@ await check('T2 safe lease 预存/marker/目录替换拒删；ancestor symlink �
   lease = acquireCanonicalCaseLease({ caseId: LEASE_PROBE_ID });
   const markerBackup = join(lease.caseDir, '.lease-marker-owned-backup');
   let forgedIdentity = null;
+  let backupMarkerIdentity = null;
   try {
+    backupMarkerIdentity = identity(lstatSync(lease.markerPath, { bigint: true })); // rename 保 inode → backup 身份
     retryOnTransientFsRace(() => renameSync(lease.markerPath, markerBackup));
     writeFileSync(lease.markerPath, '{"forged":true}\n');
     forgedIdentity = identity(lstatSync(lease.markerPath, { bigint: true }));
@@ -283,7 +285,11 @@ await check('T2 safe lease 预存/marker/目录替换拒删；ancestor symlink �
   } finally {
     if (existsSync(lease.markerPath)
       && identity(lstatSync(lease.markerPath, { bigint: true })) === forgedIdentity) unlinkSync(lease.markerPath);
-    retryOnTransientFsRace(() => { if (existsSync(markerBackup) && !existsSync(lease.markerPath)) renameSync(markerBackup, lease.markerPath); });
+    retryOnTransientFsRace(() => {
+      if (existsSync(markerBackup) && !existsSync(lease.markerPath)
+        && backupMarkerIdentity !== null
+        && identity(lstatSync(markerBackup, { bigint: true })) === backupMarkerIdentity) renameSync(markerBackup, lease.markerPath);
+    });
     safeCleanup(lease, 'marker replacement probe');
   }
 
