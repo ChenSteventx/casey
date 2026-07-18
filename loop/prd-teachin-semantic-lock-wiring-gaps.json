@@ -1,10 +1,10 @@
 {
   "schemaVersion": 1,
-  "task": "teachin-semantic-lock-wiring-gaps（full）：以第三 package manifest 消除 capture/sidecar 哈希环，并冻结 intake 联合验证、flow 来源角色保真、compile sign 前 mutation 拒旁路、promptset/CLI/MCP 公共入口不绕 frozen locks。",
+  "task": "teachin-semantic-lock-wiring-gaps（full）：以第三 package manifest 消除 capture/sidecar 哈希环，并冻结 intake 联合验证、flow 来源角色保真、compile sign 前 mutation 拒旁路、promptset/CLI/MCP 公共入口不绕 frozen locks。注：s2 的 intake-joint 金牌于 2026-07-18 由 cli-authority-wiring-fill 契约重写对齐 trust-root 现役模型（distill 侧断言从必含 verifyIntakenPackage 改为含 rehydrateAcceptedObservationTransaction 且不含 verifyIntakenPackage；intake 侧补命令行层三件套预检真接线），其 checksum 与 s2 passes 已随之重签。其余 s1/s3/s4/s5 金牌与本次改写无关、非本契约处置对象（其金牌本就真绿，passes:false 是该契约遗留陈旧红、不由本契约动）。",
   "specPath": "docs/plans/teachin-semantic-lock-wiring-gaps/plan.md",
   "testChecksums": {
     "tests/_golden/teachin-semantic-lock-package-integrity.zero-sut.golden.mjs": "9644a3dea9963cf19d66144fe084e5d0549ebd0557c55676c84ae3e7996e7cbb",
-    "tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs": "b3f5aca99ac1ddf98143a909f7e124e18a8c43f7bdc0943522edced92f85876e",
+    "tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs": "8bf014cc7b04ca699b900afb2d6e7e7f321e7602508d5df39f6077945e111875",
     "tests/_golden/teachin-semantic-lock-flow-provenance.zero-sut.golden.mjs": "7e06487f4fbb521d55db0f2df75ab4c604eaf7c74bf657478a980d5aab68d1b9",
     "tests/_golden/teachin-semantic-lock-presign-bypass.zero-sut.golden.mjs": "fe8e82a7c82f3a30de843ccce1e02da0c6b8cf3c76dac7cf726d8d74b66f626f",
     "tests/_golden/teachin-semantic-lock-public-bypass.zero-sut.golden.mjs": "aba5fbaeff1a8095c6765163cd8b3138ef4d172938e180dd52fd87cf86b4a3b1"
@@ -40,7 +40,8 @@
       "acceptance": [
         "node tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-18T04:42:34.255Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-flow-source-intent-role-provenance",

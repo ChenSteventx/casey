@@ -1,0 +1,10 @@
+# POST-REWRITE red baseline (pre-implementation) — captured 2026-07-18T04:25:36Z
+# both goldens rewritten to trust-root model; red demonstrates intake CLI three-piece wiring gap unfilled.
+
+== intake-joint (rewritten) ==
+Error: intake 未联合接线：缺 deriveTeachInPackagePaths
+EXIT=1
+
+== record-intake (rewritten) ==
+record-intake golden failed: C3 命令行层须点名缺失的示教三件套旁车 identity-observations.json（非把内核码原样透传）
+EXIT=1

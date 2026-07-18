@@ -1,0 +1,31 @@
+# Baseline red evidence — cli-authority-wiring-fill (branch cli-authority-wiring-fill, base dev@f9de8b8)
+# Captured 2026-07-18T02:37:26Z in worktree (cases/ gitignored, absent here).
+
+== 1) teachin-semantic-lock-intake-joint.zero-sut.golden.mjs (static, env-independent) ==
+file:///mnt/d/ctx/heren/casey-cli-authority-wiring-fill/tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs:7
+function fail(message) { throw new Error(message); }
+                               ^
+
+Error: intake 未联合接线：缺 deriveTeachInPackagePaths
+    at fail (file:///mnt/d/ctx/heren/casey-cli-authority-wiring-fill/tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs:7:32)
+    at file:///mnt/d/ctx/heren/casey-cli-authority-wiring-fill/tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs:15:35
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0
+EXIT=1
+
+== 2) observation-cli-authority-wiring.zero-sut.golden.mjs (worktree: missing cases/) ==
+ok   CLI source only uses canonical authority root
+ok   production registry is empty and cannot import fixture/workspace/env/caller trust
+node:fs:1710
+  const stats = binding.lstat(
+                        ^
+
+EXIT(pipefail-n/a) see below
+
+== 3) record-intake.golden.mjs (worktree) ==
+record-intake golden failed: 干净 capture intake 应 exit 0，stderr=intake: canonical signed transaction 拒绝（CAPTURE_PATH_NOT_CANONICAL）；零 accepted 台账。
+
+EXIT=1

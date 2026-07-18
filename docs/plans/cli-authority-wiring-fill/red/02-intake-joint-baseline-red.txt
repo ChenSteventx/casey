@@ -1,0 +1,16 @@
+# teachin-semantic-lock-intake-joint.zero-sut.golden.mjs baseline RED (pre-rewrite) — captured 2026-07-18T04:12:27Z
+# cmd: node tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs
+---
+file:///mnt/d/ctx/heren/casey-cli-authority-wiring-fill/tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs:7
+function fail(message) { throw new Error(message); }
+                               ^
+
+Error: intake 未联合接线：缺 deriveTeachInPackagePaths
+    at fail (file:///mnt/d/ctx/heren/casey-cli-authority-wiring-fill/tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs:7:32)
+    at file:///mnt/d/ctx/heren/casey-cli-authority-wiring-fill/tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs:15:35
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0
+EXIT=1

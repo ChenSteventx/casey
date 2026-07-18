@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "task": "record-intake（full）：示教兜底第二契约，新增 casey intake——接收 teach-in-capture 经安全复核 8 条 fail-closed 闸 → 登记 append-only 入账台账（accept/reject 类别码、零脏内容），不转形/不签署/不回放。入账台账显式区分于裁定下游 Failure Ledger（CONTEXT:116）。决策 docs/plans/record-intake/proposed/GRILL.md。",
+  "task": "record-intake（full）：示教兜底第二契约，新增 casey intake——接收 teach-in-capture 经安全复核 8 条 fail-closed 闸 → 登记 append-only 入账台账（accept/reject 类别码、零脏内容），不转形/不签署/不回放。入账台账显式区分于裁定下游 Failure Ledger（CONTEXT:116）。决策 docs/plans/record-intake/proposed/GRILL.md。注：本金牌于 2026-07-18 由 cli-authority-wiring-fill 契约重写对齐 trust-root 现役模型（intake 唯一成功路径改为固定 cases 根 append transaction；旧 8 条 reviewCapture 拒账台账断言退役，现行验收为命令行门面 + 三件套预检 fail-closed 面，happy accept 由 observation-cli-authority-wiring 覆盖）。此前 s1 passes:true 是掩盖真红的陈旧绿（1e6c3c5 打破后未复跑 gate），现 checksum 与 passes 已随重写重签。",
   "specPath": "docs/plans/record-intake/plan.md",
   "testChecksums": {
-    "tests/_golden/record-intake.golden.mjs": "9e6d1709061665a7a69a2a80d009b70361cc814d925527577942aed8cb4474c1"
+    "tests/_golden/record-intake.golden.mjs": "8c113693c2a0c6e472b586b828dc25cac88b2ea98166a7d0031627a54ba98504"
   },
   "observability": [
     {
@@ -28,7 +28,7 @@
         "node tests/_golden/record-intake.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T01:24:51.783Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-18T04:42:52.508Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-tier1-regression",
@@ -38,7 +38,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T01:24:52.633Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-18T04:42:56.155Z 全部 acceptance exit 0"
     }
   ]
 }
