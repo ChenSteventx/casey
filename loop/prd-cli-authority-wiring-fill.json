@@ -1,10 +1,12 @@
 {
   "schemaVersion": 1,
-  "task": "cli-authority-wiring-fill（full）：让被 trust-root 迁移（1e6c3c5）废止的两块旧规格金牌对齐现役模型，并补 bin/intake.mjs 命令行层三件套预检真接线缺口。intake-joint 金牌去掉与 trust-root 互斥的 distill 必含 verifyIntakenPackage 断言、改为 distill 含 rehydrateAcceptedObservationTransaction 且不含 verifyIntakenPackage（对齐 observation 金牌），保留补 intake 侧三件套真接线；record-intake 金牌重写为固定 cases 根 canonical 路径契约。实现只动 bin/intake.mjs 与必要 lib 胶，权威内核 teachin-observation-authority-root.mjs 与判别内核 entity-semantic-lock-v2 零触碰。决策见 docs/plans/cli-authority-wiring-fill/grill.md（Steven 2026-07-18 裁定对齐现役模型）。",
+  "task": "cli-authority-wiring-fill（full）：让被 trust-root 迁移（1e6c3c5）废止的两块旧规格金牌对齐现役模型，并补 bin/intake.mjs 命令行层三件套预检真接线缺口。intake-joint 金牌去掉与 trust-root 互斥的 distill 必含 verifyIntakenPackage 断言、改为 distill 含 rehydrateAcceptedObservationTransaction 且不含 verifyIntakenPackage（对齐 observation 金牌），保留补 intake 侧三件套真接线；record-intake 金牌重写为固定 cases 根 canonical 路径契约。决策见 docs/plans/cli-authority-wiring-fill/grill.md（Steven 2026-07-18 裁定对齐现役模型）。【2026-07-18 codex 异构评审逮 High（intake TOCTOU：一致性检查在 appendAcceptedObservationPackage 落 committed 之后，换包时报 exit65 但脏包已入账=失败留脏账，违 fail-safe「失败必须干净」）→ 修复把一致性前置进 authority 原子事务：appendAcceptedObservationPackage 接受预检期望事实、于落账前 no-follow 重验、不一致落账前拒（committed ledger 零新增）。故本轮触权威内核 teachin-observation-authority-root.mjs（append 原子性）+ bin/intake.mjs（一致性前置），判别内核 entity-semantic-lock-v2 仍零触碰；两文件纪律②冻结重签，dev 上无其它 prd 冻结该内核 lib（跨契约无连带）。】",
   "specPath": "docs/plans/cli-authority-wiring-fill/plan.md",
   "testChecksums": {
     "tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs": "8bf014cc7b04ca699b900afb2d6e7e7f321e7602508d5df39f6077945e111875",
-    "tests/_golden/record-intake.golden.mjs": "8c113693c2a0c6e472b586b828dc25cac88b2ea98166a7d0031627a54ba98504"
+    "tests/_golden/record-intake.golden.mjs": "8c113693c2a0c6e472b586b828dc25cac88b2ea98166a7d0031627a54ba98504",
+    "tests/_golden/teachin-intake-swap-race.zero-sut.golden.mjs": "92103dd1c7a24eb38eb12e04182b5b053b936ba02fadf4b55695e2576597d804",
+    "lib/teachin-observation-authority-root.mjs": "d3c8051a2b037a085c129587c13968c60c41bb55a1ef0579d68d6667047f326c"
   },
   "observability": [
     {
@@ -29,7 +31,7 @@
         "node tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-18T04:36:24.127Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-18T07:47:06.024Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-record-intake-canonical-contract",
@@ -39,7 +41,7 @@
         "node tests/_golden/record-intake.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-18T04:36:28.668Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-18T07:47:10.879Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-observation-and-adjacency-zero-regression",
@@ -55,7 +57,17 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-18T04:37:44.801Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-18T07:48:27.662Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4-intake-swap-race-atomicity",
+      "desc": "TOCTOU 换包原子性（codex High 修复）：intake 预检三件套事实与 authority 落账事实不一致时（模拟预检 A 落账 B 换包），必须 exit 65 且 accepted committed ledger 零新增条目——一致性前置进 authority 原子事务、落账前拒，失败干净（不留脏账、不重复入账）。含对照正控制（无换包时签名包正常入账 exit 0 且唯一 committed）。红先行：修复前一致性检查在 append 之后，换包时脏包已 committed。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-intake-swap-race.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-18T07:48:31.646Z 全部 acceptance exit 0"
     }
   ]
 }
