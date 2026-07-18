@@ -3,6 +3,17 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 2026-07-18 傍晚活动增量：两契约 codex 评审闭环并入 dev（单元轨 + W2 接线，各真挣钱一 finding）
+
+session limit 恢复后续完两契约，均 codex 异构评审闭环并合并 dev：
+
+1. **单元轨 `semantic-unit-discrimination` 已并 dev**（merge `56ff17f` + cert 重签 `dade165`）：判别纯函数剥壳导出面 `compareCandidateFacts`，单元金牌 38/38 hermetic 证判别基元。codex 三轮：逮 High-1 硬门旁路（导出 `allowAction`）→ 剥离重修 → 复审 High-1/Med-1/Med-2 全 RESOLVED PASS。合并点原子重签 cert-closure 冻的 lib sha `4b370340→b7b5a47e`（消解 codex High-2 账实不符）。
+2. **W2 接线 `cli-authority-wiring-fill` 已并 dev**（merge 于 `dade165` 之后）：intake 补三件套接线 + 两旧金牌对齐 trust-root + record-intake 陈旧绿翻真。codex 两轮：逮 intake TOCTOU High（一致性检查在 append 后、换包时脏包已 committed = 失败留脏账）→ 一致性前置进 authority 原子事务修复（落账前 no-follow 重验、不一致落账前拒、committed ledger 零新增）→ 复审 RESOLVED PASS。并发换包红先行金牌 3/3。
+3. **合并后主树复验诊断（承重，防误判）**：W2 gate 主树显 3/4 RED，已决定性诊断为**非 W2 回归**——s3 的三个 observation 金牌（cli-authority-wiring/unsafe-golden-revocation/active-suite-supersession）环境敏感，扫主树 12 个用户真机 `cases/` 目录时红；换回 W2 前 lib（dade165）跑主树同样全红，红纯是 `cases/` 真实数据、与 authority-root 改动无关。契约树 hermetic 干净 `cases/` 下 gate GREEN 4/4 是有效零回归证明。三金牌 `cases/` 隔离改造挂账另立契约。
+4. **两 WIP 抢救提交已转正**：`ffb4433`/`cf9cbc2`（session limit 中断时从 stash 恢复的现场）经主会话验证后各以 `fbca49c`/`3049b52` 转正、随契约合并入 dev。
+5. **异构评审本 session 实证四次真挣钱**：cert pi PASS + 单元轨 codex 逮 allowAction 旁路 + W2 codex 逮 TOCTOU + 合并后主树诊断纠偏——坐实「评审家族≠实现家族」+「hermetic 绿≠主树绿，合并后必主树复验」。audit.jsonl 五笔评审入账（两 changes_required→修复→pass 的完整轨迹）。
+6. **下一步**：① 前瞻红基线 `runtime-discrimination-successor`（0/26）真机轨填绿仍待真机运行时权威（route:human）；② 三 observation 金牌 `cases/` 隔离改造；③ mountdelay 保真契约（7/15 头号）；④ 两 WIP 特性（跨平台安装/账户配置）验收后合并；⑤ worktree 卫生（两契约树可清）。
+
 ## 2026-07-18 下午活动增量：判别双轨 + W2 接线两契约进行中（session limit 中断，两 WIP 现场已抢救提交，待续接）
 
 三条线全部**未合并 dev**（dev 停 `f9de8b8`），两个契约现场因 session limit（Perth 3pm 重置）中断、已抢救提交为明确「不可合并」WIP：

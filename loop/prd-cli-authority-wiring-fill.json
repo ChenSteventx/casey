@@ -20,6 +20,10 @@
     {
       "dimension": "同源固定根迁移遗留的其它陈旧红金牌（record-distill、cli-mcp-face 的 intake happy、teachin-observation-authority-hardening/root、teachin-observation-safe-case-lease-v2）超本契约两金牌范围、不在本契约处置，如实挂账留后续契约。",
       "route": "machine"
+    },
+    {
+      "dimension": "s3 引用的三个 observation 金牌（cli-authority-wiring/unsafe-golden-revocation/active-suite-supersession）环境敏感：扫全主树 cases/ 根，主树有用户真机数据（12 目录）时红、契约树干净 cases/ 时绿。合并 dev 后主树 gate 显 3/4 RED 已决定性诊断为非本契约回归——换回本契约前 lib（dade165）跑主树三金牌同样全红，红纯是 cases/ 真实数据环境差异、与 authority-root 改动无关；契约树 hermetic 干净 cases/ 下 gate GREEN 4/4 是有效零回归证明，故 passes 反映 hermetic 真值。三金牌应改造为用隔离临时 cases/ 而非扫主树真实根——cases/ 隔离改造挂账另立契约。",
+      "route": "machine"
     }
   ],
   "stories": [
@@ -31,7 +35,7 @@
         "node tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-18T07:47:06.024Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-18T07:59:53.675Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-record-intake-canonical-contract",
@@ -41,7 +45,7 @@
         "node tests/_golden/record-intake.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-18T07:47:10.879Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-18T07:59:57.773Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-observation-and-adjacency-zero-regression",
@@ -56,8 +60,8 @@
         "node tests/_golden/teachin-semantic-lock-package-integrity.zero-sut.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-18T07:48:27.662Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     },
     {
       "id": "s4-intake-swap-race-atomicity",
@@ -67,7 +71,7 @@
         "node tests/_golden/teachin-intake-swap-race.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-18T07:48:31.646Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-18T08:00:37.298Z 全部 acceptance exit 0"
     }
   ]
 }
