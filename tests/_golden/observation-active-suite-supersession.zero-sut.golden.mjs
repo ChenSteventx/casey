@@ -11,7 +11,9 @@ const LOADER = join(ROOT, 'tests/_golden/fixtures/observation-runtime-trust-root
 const suite = JSON.parse(readFileSync(new URL('./fixtures/observation-runtime-trust-root/active-suite.json', import.meta.url), 'utf8'));
 
 function run(args) {
-  const result = spawnSync(process.execPath, args, { cwd: ROOT, encoding: 'utf8', timeout: 30000 });
+  // SAFE_V2 在 9p/DrvFs（WSL /mnt/d）主树实测 ~47s（isolated ~61s），旧 30s timeout 确定性 ETIMEDOUT。
+  // 放宽到 180s 留 DrvFs 裕度（慢观测 61s + 9p 尖峰 + 机器负载）；耗时主体是 ~20 轮 canonical 循环，非 SUT。
+  const result = spawnSync(process.execPath, args, { cwd: ROOT, encoding: 'utf8', timeout: 180000 });
   if (result.error) throw result.error;
   return { status: result.status, output: `${result.stdout}${result.stderr}` };
 }

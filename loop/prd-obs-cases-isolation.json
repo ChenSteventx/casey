@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "task": "obs-cases-isolation（full）：修 observation-active-suite-supersession 主树 DrvFs 必红。确定性根因=spawnSync timeout 30s，SAFE_V2 在 9p 主树跑约 47s（isolated 约 61s）必 ETIMEDOUT→放宽到 180s；偶发叠加=SAFE_V2 T2 的 rename/mkdir/rmdir 在 9p 固定路径 churn 时撞 Windows sharing-violation EACCES→包有界 retry（新增 support/retry-transient-fs.mjs 吸收 EACCES/EPERM/EBUSY/ENOTEMPTY，真实拒绝仍抛、非瞬时 errno 立即抛）。否决 rename→copy（铸新 inode 破坏 T2 inode 身份拒删语义）、否决租约自回收（触双冻结安全 primitive、高风险且不必要）。cli-authority+unsafe 零改动（健康、此前红纯被 supersession 崩溃残留连累，supersession 修好即消）。不触 kernel lib/bin、不改 caseId、不改 active-suite 11/6 契约。决策见 docs/plans/obs-cases-isolation/grill.md（Steven 2026-07-18 确认全做→侦察探针修正方案）。",
+  "specPath": "docs/plans/obs-cases-isolation/plan.md",
+  "testChecksums": {
+    "tests/_golden/support/retry-transient-fs.mjs": "ea9306f5d859c31240c3ee7ada774a37678fecdf3428556dc673f8b24b7634b1",
+    "tests/_golden/observation-lease-rename-retry.zero-sut.golden.mjs": "94168b6c0c39d75b238c6d584631056fd83327cfb435c17c60c9e2d0c1e802ef",
+    "tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs": "1cd602d0efe1ff88c70a5781d099c0d931b1d30340afe427e4981c5a7ed9ef52",
+    "tests/_golden/observation-active-suite-supersession.zero-sut.golden.mjs": "f1e42089b7601ee29bdd4fe36823beae932459672fdcfc78132455d2ed49107d"
+  },
+  "notes": "红先行经两确定性红证确立：retry helper 缺席→retry 测试金牌 import 崩红（docs/plans/obs-cases-isolation/red/retry-helper-absent-red.txt）；supersession 30s timeout→SAFE_V2 47s 必 ETIMEDOUT（docs/plans/obs-cases-isolation/red/supersession-timeout-30s-etimedout-red.txt）。T2 EACCES 本偶发（flaky）无确定性红，retry 是标准 sharing-violation 吸收器、其正确性由 retry 测试金牌注入式确定性覆盖（吸收瞬时/耗尽真拒抛/非瞬时立即抛/入参 fail-closed）。SAFE_V2 exit 1 是设计态（11 过/6 失败，6 为 superseded DRIVER_NOT_PUBLISHED 真机项 + D7 墓碑连带），故不当 acceptance，其 T2 修复由 supersession 断言 SAFE_V2 精确 11/6 代言。按纪律②冻结改后绿字节、如实记录。codex 异构评审逮 High（原属 prd 重签延后致中间态账实不符）+ Medium（T2 retry 的 check-then-retry TOCTOU 窗口：身份校验在 retry 外，首次瞬时失败后重试窗口内目标被换则删/rename 未重验的新对象，弱化 T2 身份绑定拒删语义），均已修：Medium 把 L286/L302/L304 的存在性+身份校验移进 retry fn 每次重验、身份不符不操作（SAFE_V2 sha a4d19cc6→ec0cb361，仍 11/6）；High 原属 prd 在本契约内同步重签、不延后——SAFE_V2 重签 prd-teachin-observation-safe-case-lease-v2（781ff1bf→ec0cb361）、supersession 重签 prd-observation-runtime-trust-root（ed7fb837→f1e42089），本 prd SAFE_V2 项同步到 ec0cb361。canonical-case-lease.mjs 全程未触（否决自回收）。",
+  "observability": [
+    {
+      "dimension": "T2 的 9p sharing-violation EACCES 是环境偶发，retry 吸收在真机 DrvFs 多次跑复验稳定；非 DrvFs 环境本无此偶发。真实拒绝（权限真错）retry 耗尽仍抛、不掩盖。",
+      "route": "machine"
+    },
+    {
+      "dimension": "timeout 180s 是 DrvFs 裕度值（慢观测 61s + 9p 尖峰），非语义常量；更慢机器/更大负载若仍超时，据实再调，不改测试逻辑。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-retry-transient-fs-behavior",
+      "desc": "瞬时 FS 竞争吸收器 retryOnTransientFsRace 行为契约：吸收瞬时 EACCES/EPERM/EBUSY/ENOTEMPTY、耗尽 tries 抛真实拒绝、非瞬时 errno 立即抛不掩盖、入参 fail-closed。红先行：helper 缺席时 import 崩红。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/observation-lease-rename-retry.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-18T10:53:21.729Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-supersession-timeout-and-safev2-t2",
+      "desc": "supersession 在 180s timeout 下不 ETIMEDOUT 且断言 SAFE_V2 精确 11/6（T2 经 retry 稳定过、非 10/7）：代言 SAFE_V2 T2 DrvFs 兼容修复 + supersession timeout 放宽。红先行：30s timeout 下 SAFE_V2 47s 必 ETIMEDOUT。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/observation-active-suite-supersession.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-18T10:54:07.075Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-adjacent-observation-zero-regression",
+      "desc": "cli-authority + unsafe 零改动零回归（supersession 修好不留残留连累后稳定绿）。",
+      "lane": "regression",
+      "acceptance": [
+        "node tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs",
+        "node tests/_golden/observation-unsafe-golden-revocation.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-18T10:54:22.019Z 全部 acceptance exit 0"
+    }
+  ]
+}

@@ -4,7 +4,7 @@
   "specPath": "docs/plans/teachin-observation-safe-case-lease-v2/plan.md",
   "testChecksums": {
     "tests/_golden/support/canonical-case-lease.mjs": "f273c242922cf6e6617173c33fafc64c9c95bb78f4b136989d535c58627fed97",
-    "tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs": "781ff1bf1b96d304cc4ca0108817cc858ac576922c8923a88a0934bc9b41b393",
+    "tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs": "1cd602d0efe1ff88c70a5781d099c0d931b1d30340afe427e4981c5a7ed9ef52",
     "tests/_golden/fixtures/teachin-observation-safe-case-lease-v2/identity-readback-receipt.signed.json": "e0415ee5e932124f28b3b74e37d4eb29047cfaa6b9bc3af0e12a59636ed87849",
     "tests/_golden/fixtures/teachin-observation-safe-case-lease-v2/trusted-driver-public-key.pem": "e93e8f0d33f11fe32adeabf6bb72e87a4168365099c8150205133ff9012d739f",
     "tests/_golden/fixtures/teachin-observation-safe-case-lease-v2/supersession.json": "588e9160f667cfe71738ba501447376ed58d04f797d0a4a5a6b776816b6190e1"
