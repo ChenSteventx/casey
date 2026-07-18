@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "task": "semantic-unit-discrimination（light）：给 lib/entity-semantic-lock-v2.mjs 既有判别纯函数（parseCandidate/compareCandidate/identityKey/parseReceipt/parsePolicy）加只读冻结命名空间导出 ENTITY_DISCRIMINATION_UNIT_FACE，让单元级攻击金牌在纯函数层 hermetic 证明判别逻辑正确。兑现 Steven 2026-07-18「单元导出 + 真机双轨」裁决的 hermetic 轨；真机轨由前瞻红基线 teachin-semantic-lock-runtime-discrimination-successor（0/26 保持红）继续承担裁定分派与有状态 successor 目标态验收。只加导出、零行为改动：绝不改 evaluateEntityAction/createRunSuccessorProof 行为，绝不新增可铸权威入口，前瞻红基线与生产 publications 表零触碰。",
+  "specPath": "docs/plans/semantic-unit-discrimination/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-semantic-lock-unit-discrimination.zero-sut.golden.mjs": "b410891fc553ae5064add1e12c83ec9b3679c4e8d6b852b3cd43d9c7bebde1b4",
+    "lib/entity-semantic-lock-v2.mjs": "40fd8eb0e603a3cdc9a82524111ce6313f64bc4160884a233469ac723d5bd49b",
+    "tests/_golden/teachin-semantic-lock-runtime-discrimination-successor.zero-sut.golden.mjs": "4c707ff196472be21d166450d2252962ceb9b77efe83d10579090a29f6baf29a"
+  },
+  "observability": [
+    {
+      "dimension": "单元导出面只覆盖能以纯函数导出的判别基元；AMBIGUOUS 原始计数分派、MISSING 空候选分派、SCAN_INCOMPLETE 分派、successor 有状态判别 内联于 evaluate/successor，非纯函数，仍归前瞻红基线（真机轨 route:human）所有，本面不冒充覆盖。金牌头部与缺口台账如实标注此边界。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-unit-discrimination-face-green",
+      "desc": "单元判别攻击金牌全绿：parseCandidate 畸形拒/无静默 trim/platformId·revisionId 结构必比/accessor 不泄漏、identityKey 冲突与重复身份基元、compareCandidate 值比对全 reason、parseReceipt 外锚重算篡改即拒；静态反滥用 (a) bin/mcp 零 import 导出面 (b) 前瞻红基线字节零触碰。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-unit-discrimination.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-18T02:47:31.372Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacent-greens-hold",
+      "desc": "邻接绿金牌保持绿（回归护栏）：v2 引擎攻击面、v1 基础、运行时非空洞就绪。加导出零行为改动，这些应全绿零回归。",
+      "lane": "regression",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-v2.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-semantic-lock.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-18T02:47:32.537Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "冻结面说明：初签以红先行字节入冻（金牌 b410891f、lib 4b370340 为加导出前字节、前瞻基线 4c707ff1 承本契约零触碰）。loop 期按 2026-07-13 工程纪律②原地重签：加导出只改 lib 字节（4b370340→40fd8eb0），故仅重签 lib 一项；金牌 b410891f 全程不变（红态经命名 import 链接期失败达成，导出落地后同一字节文件即转绿，金牌文本未改）；前瞻基线 4c707ff1 全程不变。跨契约共享冻结：loop/prd-semantic-lock-cert-closure.json 冻结 lib 旧 sha（4b370340），本契约加导出后其 gate 该项必 MISMATCH，新 sha 40fd8eb0 报回主会话由主会话裁重签，本契约不改 cert-closure。"
+}
