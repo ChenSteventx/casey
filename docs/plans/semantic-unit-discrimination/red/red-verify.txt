@@ -1,0 +1,11 @@
+file:///mnt/d/ctx/heren/casey-semantic-unit-discrimination/tests/_golden/teachin-semantic-lock-unit-discrimination.zero-sut.golden.mjs:25
+import { ENTITY_DISCRIMINATION_UNIT_FACE as FACE } from '../../lib/entity-semantic-lock-v2.mjs';
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+SyntaxError: The requested module '../../lib/entity-semantic-lock-v2.mjs' does not provide an export named 'ENTITY_DISCRIMINATION_UNIT_FACE'
+    at #asyncInstantiate (node:internal/modules/esm/module_job:327:21)
+    at async ModuleJob.run (node:internal/modules/esm/module_job:431:5)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0
+exit=1
