@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "task": "cli-authority-wiring-fill（full）：让被 trust-root 迁移（1e6c3c5）废止的两块旧规格金牌对齐现役模型，并补 bin/intake.mjs 命令行层三件套预检真接线缺口。intake-joint 金牌去掉与 trust-root 互斥的 distill 必含 verifyIntakenPackage 断言、改为 distill 含 rehydrateAcceptedObservationTransaction 且不含 verifyIntakenPackage（对齐 observation 金牌），保留补 intake 侧三件套真接线；record-intake 金牌重写为固定 cases 根 canonical 路径契约。决策见 docs/plans/cli-authority-wiring-fill/grill.md（Steven 2026-07-18 裁定对齐现役模型）。【2026-07-18 codex 异构评审逮 High（intake TOCTOU：一致性检查在 appendAcceptedObservationPackage 落 committed 之后，换包时报 exit65 但脏包已入账=失败留脏账，违 fail-safe「失败必须干净」）→ 修复把一致性前置进 authority 原子事务：appendAcceptedObservationPackage 接受预检期望事实、于落账前 no-follow 重验、不一致落账前拒（committed ledger 零新增）。故本轮触权威内核 teachin-observation-authority-root.mjs（append 原子性）+ bin/intake.mjs（一致性前置），判别内核 entity-semantic-lock-v2 仍零触碰；两文件纪律②冻结重签，dev 上无其它 prd 冻结该内核 lib（跨契约无连带）。】",
+  "specPath": "docs/plans/cli-authority-wiring-fill/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs": "8bf014cc7b04ca699b900afb2d6e7e7f321e7602508d5df39f6077945e111875",
+    "tests/_golden/record-intake.golden.mjs": "8c113693c2a0c6e472b586b828dc25cac88b2ea98166a7d0031627a54ba98504",
+    "tests/_golden/teachin-intake-swap-race.zero-sut.golden.mjs": "92103dd1c7a24eb38eb12e04182b5b053b936ba02fadf4b55695e2576597d804",
+    "lib/teachin-observation-authority-root.mjs": "d3c8051a2b037a085c129587c13968c60c41bb55a1ef0579d68d6667047f326c"
+  },
+  "observability": [
+    {
+      "dimension": "真实手录关窗后落固定 cases 根的完整签名三件套跨进程 intake happy accept：须联网真机 + 已发布 driver key，hermetic 金牌只到命令行门面/三件套预检 fail-closed 面，happy accept 由 observation-cli-authority-wiring 覆盖。",
+      "route": "human"
+    },
+    {
+      "dimension": "intake 命令行层三件套预检对 observation 现役金牌的 off-root/缺签/未发布 driver 拒账路径无影响（三件套字节完整但落 off 固定根、或 receipt 缺签、或 driver 未发布时仍由权威内核拒）：s3 回归实跑证零回归。",
+      "route": "machine"
+    },
+    {
+      "dimension": "同源固定根迁移遗留的其它陈旧红金牌（record-distill、cli-mcp-face 的 intake happy、teachin-observation-authority-hardening/root、teachin-observation-safe-case-lease-v2）超本契约两金牌范围、不在本契约处置，如实挂账留后续契约。",
+      "route": "machine"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-intake-three-artifact-cli-wiring",
+      "desc": "bin/intake.mjs 命令行层从规范 capture 同级固定推导三件套（identity-observations.json 旁车 + teach-in-package.json 清单），读原始最终字节并 verifyTeachInPackage 联合验证，持有五字段事实，走 canonical 权威根 appendAcceptedObservationPackage、不用 appendIntakeLedger、不接受任意三件套路径参数；distill 侧断言对齐 trust-root（含 rehydrateAcceptedObservationTransaction、不含 verifyIntakenPackage、绑三 current hash）。红先行：重写后实现接线前金牌红（intake 源码缺三件套 token）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-18T07:47:06.024Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-record-intake-canonical-contract",
+      "desc": "record-intake 金牌对齐 trust-root 固定 cases 根 canonical 路径契约：命令行门面参数校验（缺参 exit 64、caseId 形状/凭据关键词 exit 65）、非规范布局 exit 65 不越界写台账、命令行层三件套预检对缺件人话点名旁车拒（exit 65、零台账残留、零凭据、零裸协议前缀、不回显绝对路径）。红先行：重写后实现接线前金牌红（命令行层三件套预检未接线，缺件仍走权威内核 CAPTURE_PATH_NOT_CANONICAL 透传而非点名旁车）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/record-intake.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-18T07:47:10.879Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-observation-and-adjacency-zero-regression",
+      "desc": "intake 命令行层接线不破坏 observation 现役全套、三件套包完整性邻接与确定性内核 tier1 自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs",
+        "node tests/_golden/observation-identity-contract-closure.zero-sut.golden.mjs",
+        "node tests/_golden/observation-temp-commit-integrity.zero-sut.golden.mjs",
+        "node tests/_golden/observation-unsafe-golden-revocation.zero-sut.golden.mjs",
+        "node tests/_golden/observation-active-suite-supersession.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-semantic-lock-package-integrity.zero-sut.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-18T07:48:27.662Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4-intake-swap-race-atomicity",
+      "desc": "TOCTOU 换包原子性（codex High 修复）：intake 预检三件套事实与 authority 落账事实不一致时（模拟预检 A 落账 B 换包），必须 exit 65 且 accepted committed ledger 零新增条目——一致性前置进 authority 原子事务、落账前拒，失败干净（不留脏账、不重复入账）。含对照正控制（无换包时签名包正常入账 exit 0 且唯一 committed）。红先行：修复前一致性检查在 append 之后，换包时脏包已 committed。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-intake-swap-race.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-18T07:48:31.646Z 全部 acceptance exit 0"
+    }
+  ]
+}

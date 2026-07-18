@@ -1,0 +1,6 @@
+# record-intake.golden.mjs baseline RED (pre-rewrite) — captured 2026-07-18T04:12:23Z
+# cmd: node tests/_golden/record-intake.golden.mjs
+---
+record-intake golden failed: 干净 capture intake 应 exit 0，stderr=intake: canonical signed transaction 拒绝（CAPTURE_PATH_NOT_CANONICAL）；零 accepted 台账。
+
+EXIT=1
