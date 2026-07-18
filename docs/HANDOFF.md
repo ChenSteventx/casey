@@ -3,6 +3,17 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 2026-07-18 下午活动增量：判别双轨 + W2 接线两契约进行中（session limit 中断，两 WIP 现场已抢救提交，待续接）
+
+三条线全部**未合并 dev**（dev 停 `f9de8b8`），两个契约现场因 session limit（Perth 3pm 重置）中断、已抢救提交为明确「不可合并」WIP：
+
+1. **`semantic-unit-discrimination`（light，worktree `casey-semantic-unit-discrimination`）**：兑现 Steven「单元导出+真机双轨」裁决的 hermetic 轨——给 `lib/entity-semantic-lock-v2.mjs` 判别纯函数加只读导出面做单元级攻击金牌。codex 异构评审逮到 High-1（导出 `compareCandidate` 返回 `allowAction:true` = 硬门旁路），Steven 裁「剥离 allowAction 重修」→ 重修 `e481d85`（导出面换剥壳 `compareCandidateFacts`，只出 `status/reason/candidateCount`）→ codex 聚焦复审判 High-1 已消解（RESOLVED），但 Med-1（反滥用静态扫描可被 `.join` 拼接绕）/Med-2（`bindingMode`·`provenance.kind` 未证被 canonical hash 覆盖，**可能藏真 fail-open 洞**）判 PARTIAL。Med 收尾代理挂在验零回归前，金牌现场抢救提交 **`ffb4433`（WIP，未验证）**。lib 当前 sha `b7b5a47e`（初版 `4b370340`→`40fd8eb0`→`b7b5a47e`）。
+   - **续接**：确认 Med-2 取证结论（若 `canonicalReceipt` 真没覆盖 `bindingMode`/`provenance.kind` 则是真 fail-open 洞、停手上报改内核另立契约；否则补隔离断言）→ 邻接十金牌零回归 → gate → 纪律②重签 prd 金牌 checksum → codex 复审两 PARTIAL 消解。
+2. **`cli-authority-wiring-fill`（full，worktree `casey-cli-authority-wiring-fill`）**：W2 接线，对齐现役 trust-root 模型（Steven 裁）——`bin/intake.mjs` 补三件套接线 + 两旧金牌对齐重写 + `record-intake` 陈旧绿翻真（`05573d1`，已核账三 gate GREEN）。codex 异构评审逮到 High（intake TOCTOU：`append` 后才比对、换包时报 exit65 但脏包已 committed = 失败留脏账，违 fail-safe「失败必须干净」）。修复代理触权威内核 `lib/teachin-observation-authority-root.mjs`（append 原子性）+ `bin/intake.mjs`（一致性前置）+ 并发换包红先行金牌，挂在 `git stash pop` timeout、现场从 stash 恢复后抢救提交 **`cf9cbc2`（WIP，未验证，自报零回归但未跑完 gate）**。
+   - **续接**：验并发换包金牌 exit0（不一致→denied+accepted ledger 零新增）+ 邻接零回归（observation 全套+tier1）+ gate → 报权威内核 lib 新 sha（跨契约共享冻结）→ codex 复审。
+3. **合并点统一动作（两契约各自 codex 复审 PASS 后）**：顺序合并回 dev，**原子重签跨契约共享冻结**——`lib/entity-semantic-lock-v2.mjs`（cert-closure prd 冻旧 `4b370340`，须重签到最终 sha，codex High-2 NOT-RESOLVED 即此，合并点消解）+ `lib/teachin-observation-authority-root.mjs`（被哪些 prd 冻结待 grep 清单）；各带 3-way + 全仓 ratchet + tier1。
+4. **异构评审本 session 实证三次真挣钱**：cert 收口 pi PASS + 单元轨 codex 逮 allowAction 旁路 + W2 codex 逮 TOCTOU——后两个都是 Claude 家族自实现+自审未抓、跨 codex 一眼看穿，坐实「评审家族≠实现家族」铁律。audit.jsonl 三笔已入账（含两 changes_required 诚实留痕）。
+
 ## 2026-07-18 凌晨活动增量：codex 语义锁线核账 + Claude 接管认证漂移收口（已收口并入 dev，merge `bf39d7e`）
 
 1. **三路核账**：codex 自报（7/16 17:03 止）全部属实；其后 codex 又推进约 60 提交至 `observation-contract-closure @ e0ffe16`（语义锁 v2/旁车/wiring 合流，未并 dev）。Claude 攻击式异构评审 PASS（已接线路径无 Critical/High/Medium），档案 `docs/plans/closed-loop-evolution/review-claude-20260717.md`。5 个 P0 防御代码闭合，但认证账漂移：两个 prd `passes:true` 与实跑 gate RED 不符、判别攻击金牌全线红。
