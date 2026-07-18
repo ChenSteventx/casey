@@ -1,0 +1,13 @@
+# RED-FIRST 证据：入账竞态换包 fail-safe 原子性缺陷（codex High）
+# 金牌: tests/_golden/teachin-intake-swap-race.zero-sut.golden.mjs
+# 基线: 05573d1（intake 三件套接线，命令行层事后比对，落账已发生）
+# 运行: node tests/_golden/teachin-intake-swap-race.zero-sut.golden.mjs
+# 日期: 2026-07-18
+# ----------------------------------------------------------------
+
+ok   前提：预检包 A 与落账包 B 三件套事实互不相同（换包场景成立）
+ok   对照：无换包时签名包 B 正常 intake → exit 0 且唯一 committed accepted
+FAIL 承重：预检 A 落账 B 不一致时 → exit 65 且 accepted 台账零新增（落账前拒）: 换包不一致仍落账：accepted 新增 1 行（fail-safe 失败必须干净被违反）
+
+teachin intake swap race: 2 passed, 1 failed
+EXIT=1

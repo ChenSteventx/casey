@@ -6,10 +6,7 @@
 import { resolve, basename, dirname } from 'node:path';
 import { readFileSync, lstatSync } from 'node:fs';
 import { credentialGate } from '../lib/cred-gate.mjs';
-import {
-  appendAcceptedObservationPackage,
-  acceptedObservationAuthorityFacts,
-} from '../lib/teachin-observation-authority-root.mjs';
+import { appendAcceptedObservationPackage } from '../lib/teachin-observation-authority-root.mjs';
 import { deriveTeachInPackagePaths, verifyTeachInPackage } from '../lib/entity-semantic-lock-package.mjs';
 
 function parseArgs(argv) {
@@ -94,21 +91,16 @@ if (!packageReview.ok) {
 const { captureSha256, sidecarSha256, manifestSha256, observationCount, observationSchemaVersion } = packageReview;
 
 // ── canonical 权威根 append transaction（固定 cases 根 + signed driver receipt + committed ledger）──
-const accepted = appendAcceptedObservationPackage({ caseId, capturePath });
+// 命令行层预检的五字段事实作为 expectedFacts 交给权威内核：内核在事务内、committed 之前把落账事实
+// 与之逐一比对，不符即在写台账前拒（防 CLI 读后、内核 commit 前换包 TOCTOU）。一致性检查在原子事务内
+// 完成，落账与返回不再可能相反——失败必然干净（accepted 台账零新增）。
+const accepted = appendAcceptedObservationPackage({
+  caseId,
+  capturePath,
+  expectedFacts: { captureSha256, sidecarSha256, manifestSha256, observationCount, observationSchemaVersion },
+});
 if (!accepted.ok) {
   console.error(`intake: canonical signed transaction 拒绝（${accepted.reason || 'AUTHORITY_ROOT_ERROR'}）；零 accepted 台账。`);
-  process.exit(65);
-}
-
-// committed authority 事实须与命令行层三件套复核逐一相等（防 CLI 读后、内核 commit 前换包 TOCTOU）。
-const committed = acceptedObservationAuthorityFacts(accepted.authority);
-if (!committed.ok
-  || committed.facts.captureSha256 !== captureSha256
-  || committed.facts.sidecarSha256 !== sidecarSha256
-  || committed.facts.manifestSha256 !== manifestSha256
-  || committed.facts.observationCount !== observationCount
-  || committed.facts.observationSchemaVersion !== observationSchemaVersion) {
-  console.error('intake: committed 三件套事实与命令行层预检不符（疑似入账竞态换包）；请复核录制包三件套后重试。');
   process.exit(65);
 }
 
