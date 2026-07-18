@@ -191,12 +191,39 @@ tamperKeepsOldHash('scopeSha256', { scopeSha256: '2'.repeat(64) });
 tamperKeepsOldHash('parentReceiptHash', { parentReceiptHash: 'a'.repeat(64) });
 tamperKeepsOldHash('revisionId', { revisionId: 'rev-9' });
 tamperKeepsOldHash('provenance.ref', { provenance: { kind: 'user-approval', ref: 'approval-unit-tamper' } });
-// bindingMode 也在 canonical 内、亦被 hash 覆盖；但它另受「模式↔provenance 种类」不变式
-// （existing 需 user-approval / created-in-run 需 platform-readback）双重把守，改 bindingMode
-// 会先被该结构不变式拒（早于 hash 重算）。如实标注：本断言证 bindingMode 篡改被拒，其覆盖
-// 由结构不变式 + hash 双重承担，非纯 hash 隔离。
-check('parseReceipt 改 bindingMode 保留旧 receiptHash → null（结构不变式 + 外锚双重覆盖 canonical.bindingMode）', () => {
-  assertNull(parseReceipt({ ...validReceipt, bindingMode: 'created-in-run' }, anchorPolicyByKind), '篡改 bindingMode 收据');
+// Med-2：bindingMode 与 provenance.kind 都在 canonical 内、都被 receiptHash 覆盖（见上 canonical
+// 形状含 bindingMode 与 provenance），但二者被「模式↔provenance 种类」不变式互相钉死
+// （existing↔user-approval / created-in-run↔platform-readback，lib 665-666 行，早于 hash 重算）——
+// 任一单独篡改都先撞该结构不变式，无法把拒绝隔离到 hash。故不假装纯单字段 hash 隔离，改用
+// 「耦合一致的联合互换 + 成对正/负控制」真正隔离 hash 覆盖：
+//  甲) 单改 bindingMode（provenance 不动）→ null；且即便配上为该 body 重算的正确 hash 仍 null，
+//      证此路的拒绝确由耦合结构不变式驱动、非 hash 门，故单字段断言不足以证 hash 覆盖（诚实标注）。
+//  乙+丙) 联合把 bindingMode→created-in-run 且 provenance.kind→platform-readback（保持模式一致），
+//      配正确重算 hash 时被接受（丙，证该联合体穿过全部结构/耦合/policy 前置校验、确为合法变体），
+//      而保留旧 receiptHash 时→null（乙）。丙与乙唯一差异是 receiptHash 值，故乙的拒绝确由 hash 比对
+//      驱动 → receiptHash 联合覆盖 canonical.bindingMode 与 canonical.provenance.kind。二字段被不变式
+//      互锁，纯单字段 hash 隔离在构造上不可能；联合一致互换是同时触及二者的最小合法变体。
+check('parseReceipt 单改 bindingMode（provenance 不动）保留旧 receiptHash → null（撞模式↔provenance 结构不变式）', () => {
+  assertNull(parseReceipt({ ...validReceipt, bindingMode: 'created-in-run' }, anchorPolicyByKind), '单改 bindingMode 收据');
+});
+check('parseReceipt 单改 bindingMode 即便配正确重算 hash 仍 → null（证此路是耦合门、非 hash 门；故单字段断言不足证 hash 覆盖）', () => {
+  const body = { ...receiptBody, bindingMode: 'created-in-run' }; // provenance 仍 user-approval，与 created-in-run 不一致
+  const rehash = sha256(JSON.stringify(canonicalReceipt(body)));
+  assertNull(parseReceipt({ ...body, receiptHash: rehash }, anchorPolicyByKind), '单改 bindingMode 配正确 hash 收据');
+});
+const jointModeBody = {
+  ...receiptBody, bindingMode: 'created-in-run',
+  provenance: { kind: 'platform-readback', observationSha256: '3'.repeat(64) },
+};
+const jointModeHash = sha256(JSON.stringify(canonicalReceipt(jointModeBody)));
+check('parseReceipt 联合互换 bindingMode+provenance.kind（一致）配正确重算 hash → 接受（正控制：穿过全部结构/耦合/policy 前置校验，确为合法变体）', () => {
+  const r = parseReceipt({ ...jointModeBody, receiptHash: jointModeHash }, anchorPolicyByKind);
+  if (!r) throw new Error('合法联合变体（created-in-run + platform-readback）竟被拒');
+  assertEq(r.bindingMode, 'created-in-run', 'joint.bindingMode');
+  assertEq(r.provenance.kind, 'platform-readback', 'joint.provenance.kind');
+});
+check('parseReceipt 联合互换 bindingMode+provenance.kind 保留旧 receiptHash → null（负控制：与正控制唯一差异是 hash 值 → receiptHash 联合覆盖 canonical.bindingMode 与 canonical.provenance.kind）', () => {
+  assertNull(parseReceipt({ ...jointModeBody, receiptHash }, anchorPolicyByKind), '联合互换保留旧 receiptHash 收据');
 });
 
 check('parseReceipt 篡改 receiptHash 保留 body → null（外锚拒自证 hash）', () => {
@@ -221,17 +248,22 @@ function listJsSources(dir) {
   }
   return out;
 }
-// 检测导出面被引入的多种形态，非仅裸子串：
+// 检测导出面被引入的多种形态，非仅裸子串（启发式次生防线，非穷尽）：
 //  1) 字面名 includes——覆盖 import 语句、export{} re-export、解构，以及
 //     obj['ENTITY_DISCRIMINATION_UNIT_FACE'] 动态属性访问（字面名在源码里都会原样出现）；
-//  2) 拆分拼接构造——'ENTITY_'+'DISCRIMINATION_UNIT_FACE' 一类，裸 includes 会漏，故剥去
-//     字符串/拼接标点后再查连续字面名兜一层（启发式，非穷尽）。
+//  2) 各片段作相邻字面量的拼装——剥去字符串/拼接/数组标点『再连下划线』后查无连字符全名，
+//     一网兜住两类拼装：'ENTITY_'+'DISCRIMINATION_UNIT_FACE' 加号拼接，以及
+//     ['ENTITY','DISCRIMINATION','UNIT','FACE'].join('_') 数组/join/concat 把各片段作相邻字面量
+//     拼装（此形态里连字符是 join 分隔符、不落在片段之间，故不剥下划线会漏——Med-1 codex 复审所指绕过）。
 const stripJoinPunct = (source) => source.replace(/['"`+\s[\],]/g, '');
+// 再剥下划线，把 FACE_NAME 各片段的相邻字面量拼装压成无连字符全名比对（信号 2）。
+const squashSegments = (source) => stripJoinPunct(source).replace(/_/g, '');
+const FACE_NAME_SQUASHED = FACE_NAME.split('_').join('');
 function referencesUnitFace(source) {
   if (source.includes(FACE_NAME)) return true;
-  return stripJoinPunct(source).includes(FACE_NAME);
+  return squashSegments(source).includes(FACE_NAME_SQUASHED);
 }
-check('反滥用(a) bin/ 与 mcp/ 下零 JS 源引入该导出面（扩展名全覆盖 + 字面/re-export/动态属性/拆分拼接多信号）', () => {
+check('反滥用(a) bin/ 与 mcp/ 下零 JS 源引入该导出面（扩展名全覆盖 + 字面/re-export/动态属性/加号拼接/数组join拼接多信号）', () => {
   const offenders = [];
   for (const rel of ['bin', 'mcp']) {
     const dir = fileURLToPath(new URL(`../../${rel}/`, import.meta.url));
@@ -240,10 +272,12 @@ check('反滥用(a) bin/ 与 mcp/ 下零 JS 源引入该导出面（扩展名全
     }
   }
   if (offenders.length) throw new Error(`生产路径竟引入单元导出面: ${offenders.join(', ')}`);
-  // 静态边界（如实标注）：纯字符串静态扫描无法穷尽 eval/Function 构造/运行时逐字符拼名等
-  // 混淆；上面是扩展名全覆盖 + 多引入形态的静态防线。运行时旁路的最终把守由
-  // evaluateEntityAction 的 runtimeAuthorized 硬门承担——且本导出面本就不产 allowAction，
-  // 即便被 import 也拿不到放行语义。
+  // 静态边界（如实标注，Med-1）：本扫描是尽力次生防线、非穷尽。已覆盖扩展名全套 + 字面名 +
+  // 加号拼接 + 数组/join/concat 相邻片段拼装；仍无法拦 .concat() 方法链接收者分片、模板串分片、
+  // eval/Function 构造、运行时逐字符/编码拼名等混淆——穷尽绕过需 AST/运行时插桩，明确不做。
+  // 真正 backstop 是双层、不靠本静态扫描：导出面 compareCandidateFacts 本就剥壳、绝不产
+  // allowAction（High-1 已消硬门旁路，即便被 import 也拿不到放行语义），加 evaluateEntityAction
+  // 的 runtimeAuthorized 硬门。
 });
 check('反滥用(b) 前瞻红基线字节 sha256 恒等于冻结值（本契约零触碰证明）', () => {
   const fwd = fileURLToPath(new URL('./teachin-semantic-lock-runtime-discrimination-successor.zero-sut.golden.mjs', import.meta.url));
