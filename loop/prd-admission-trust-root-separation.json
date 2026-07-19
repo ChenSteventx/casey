@@ -28,7 +28,8 @@
       "acceptance": [
         "node tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-19T23:16:09.622Z 全部 acceptance exit 0"
     }
   ]
 }

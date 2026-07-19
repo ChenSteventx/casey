@@ -32,6 +32,7 @@ import { projectReplayAssertion, validateReplayEntityAnchors } from '../lib/repl
 import {
   checkReplayEntityAdmission as checkCompileIdentityAdmission,
   readIdentityAdmissionAuthorityFromPrd,
+  checkCredentialAudienceGate,
 } from '../lib/entity-semantic-lock-preflight.mjs';
 import { PROJECT_ROOT } from '../lib/paths.mjs';
 
@@ -266,6 +267,18 @@ async function main() {
       loginPrep = { site, creds, startUrl: sut + (entryPath || '/') };
     } catch (e) {
       console.error('replay: 登录预备动作前置失败（fail-closed；凭据/站点配置详情不回显，护栏 #7——output-seal B5）'); // e.message 可携 AT_CREDS_FILE 路径
+      process.exit(65);
+    }
+  }
+
+  // 凭据上下文门（ADR-0010）：铸权后、启动浏览器前，准入受众须匹配凭据上下文——真凭据 run（loginPrep 成立）↔
+  // production 受众、无凭据 run ↔ test 受众，不符 fail-closed 不启动浏览器。只对有受众的 mutation 回放生效
+  // （只读回放无 authority、无受众、跳过）。防测试锁被误指向真 SUT 授权真实改动。
+  if (frozenAuthorityRead?.ok === true) {
+    const credentialContext = loginPrep ? 'production' : 'test';
+    const audienceGate = checkCredentialAudienceGate({ audience: frozenAuthorityRead.audience, credentialContext });
+    if (!audienceGate.ok) {
+      console.error(`replay: 准入受众与凭据上下文不符（${audienceGate.reason}：受众=${frozenAuthorityRead.audience} 上下文=${credentialContext}），未启动浏览器；下一步 ${audienceGate.nextAction}`);
       process.exit(65);
     }
   }

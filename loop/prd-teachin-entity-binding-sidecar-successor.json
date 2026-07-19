@@ -6,7 +6,7 @@
     "tests/_golden/teachin-entity-binding-sidecar-successor.zero-sut.golden.mjs": "aa8c759e61c4ea93ca20b34708823400dcdbd77f05fc3a1761fccb7d7c87fe00",
     "tests/_golden/fixtures/teachin-entity-binding-sidecar-successor/entity-bindings-draft.schema.json": "b06250035f63fd742b6ea1383afe86cdedc95dcd00e7fffdf5ceb51480a13082",
     "tests/_golden/fixtures/teachin-entity-binding-sidecar-successor/entity-locks-frozen.schema.json": "26a0b1170b71b04ce85ffd4bcad4f2da6d119de5e9107dfab520b6a31ae2231d",
-    "tests/_golden/fixtures/teachin-entity-binding-sidecar-successor/entity-locks.frozen.json": "9d51f9a28fbcfa9302496a98e2b0ea16424a514310a8ffb314ce5456025d02bd"
+    "tests/_golden/fixtures/teachin-entity-binding-sidecar-successor/entity-locks.frozen.json": "b1a3fc86e7ee354561794d8c9a3abbca3e06e188b75538f7b42305c3115f39d5"
   },
   "observability": [
     {

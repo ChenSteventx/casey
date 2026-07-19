@@ -33,6 +33,10 @@
 
 验收 1/2/3/4/6 落一个新 zero-SUT golden（`tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs`）：实现前逐条验红（schema 未加字段 → 验收 1 合法件被拒或非法件误过；门未建 → 验收 3/4 import 失败红）。验收 5 接线用现有 replay/compile 金牌形态的 zero-SUT 桩或子进程退出码断言。验收 7/8 = 迁移后复跑现存 5 夹具的 zero-SUT golden + ratchet。`contract advance accept --red-verified` 后才动 kernel 字节。
 
+## 实现发现（loop 期，承重）
+
+`audience` 是 **preflight 冻结件 schema**（`validateFrozenArtifact`/`validateExecuteArtifact`）的字段——只该加到经 preflight 读路（`readIdentityAdmissionAuthorityFromPrd`）消费的夹具。`teachin-*` 夹具跨两条校验路：`preflight` 读路（admission-authority 的 entity-locks+execute-authority、sidecar-successor 的 entity-locks，各由 `readIdentityAdmissionAuthorityFromPrd` 消费）**加 audience**；`v2` 授权链（capability-hardening、semantic-lock-v2 的 entity-locks，由 `lib/entity-semantic-lock-v2.mjs` 的 `ENTITY_LOCK_SET` 校验消费，有独立闭合结构、不认 audience）**不加**——误加会让 v2 校验判 `ENTITY_LOCK_SET_INVALID`。迁移前必按「消费 golden 调 preflight reader 还是 v2 verify」判每个夹具的路，别按目录名一刀切。实际迁移面 = 3 个 preflight 夹具（admission-authority ×2 + sidecar），非侦察初列的 5 个。
+
 ## 冻结治理 / 车道纪律
 
 - 冻结面：新 golden 冻进本契约 prd；5 夹具重签 + 其 prd checksum 更新 + 各 zero-SUT golden 断言更新，全走 `bin/sign.mjs`/重签流程，改冻结断言人签（ADR-0004）。

@@ -27,6 +27,7 @@ import {
   buildEntityBindingsDraft,
   checkCompileIdentityAdmission as checkExecuteIdentityAdmission,
   checkReplayEntityAdmission,
+  checkCredentialAudienceGate,
   flowContainsEntityMutation,
   readIdentityAdmissionAuthorityFromPrd,
   requiredFlowEntityBindings,
@@ -186,6 +187,17 @@ async function executeMode(caseId, args) {
   if (!identityAdmission.ok) {
     console.error(`compile --execute: 预执行身份授权未过（${identityAdmission.reason}），未启动浏览器；下一步 ${identityAdmission.nextAction}`);
     process.exit(65);
+  }
+  // 凭据上下文门（ADR-0010）：铸权后、启动浏览器前，准入受众须匹配凭据上下文——登录 run（非 --skip-login，
+  // 生产意图）↔ production 受众、--skip-login run ↔ test 受众，不符 fail-closed 不启动浏览器。想改真 SUT 必须
+  // 登录（不 skip），而生产上下文要求生产受众、测试夹具无——故此门不造旁路。只对有受众的执行授权生效。
+  if (executeAuthorityRead?.ok === true) {
+    const credentialContext = args['skip-login'] ? 'test' : 'production';
+    const audienceGate = checkCredentialAudienceGate({ audience: executeAuthorityRead.audience, credentialContext });
+    if (!audienceGate.ok) {
+      console.error(`compile --execute: 准入受众与凭据上下文不符（${audienceGate.reason}：受众=${executeAuthorityRead.audience} 上下文=${credentialContext}），未启动浏览器；下一步 ${audienceGate.nextAction}`);
+      process.exit(65);
+    }
   }
   // 旧成功产物清场（R2-F3）：本目录语义 = 本次运行结果；先清旧 events/observed，
   // 失败路径绝不让上一轮成功产物残留假冒本轮（可进 P4 的只能是本轮全 unique 产物）。

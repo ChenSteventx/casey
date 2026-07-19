@@ -7,8 +7,8 @@
     "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/flow.json": "b6805e9595d423e84df5979d114c45015787afde310e5393a25078e411093b58",
     "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/testcase.json": "d2a737fb2ee3796cb51c442a0a01dfbce7a7becf8f6c19feb9a3dc6bccd90cb0",
     "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/events.document.json": "38beca47bfa24918eaec5acda66c82828744164687c37f7aee5b0e49bcf3ed6d",
-    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/execute-authority.json": "1f44ee95a49251bd89e0f4b27d2e6193355b1cbd007a241b2ec6906b5c1c8414",
-    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/entity-locks.frozen.json": "b0aae9532a77f47a76b7812ca08dc70b57c6a758d25920098e9c29291feb800c",
+    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/execute-authority.json": "c6d14b25f54fe4b81ab20b1b8435a7c90bfcc208413158eaaa6edf236ca61373",
+    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/entity-locks.frozen.json": "85017d4dda3d48ae2050603e238e7ba114005370b20453a8bb9182d6cad6718b",
     "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/execute-authority.unknown.json": "a4063273c025d70c78864e8af7c55fa91032da9c2b6fd8939931eaed47b9e16a",
     "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/entity-locks.duplicate.json": "5f6a5e5b27c68f292d17515debbeb864b37be96d8d2185be52598b910ac4d6ea",
     "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/entity-locks.unknown-binding.json": "9a3cf7611a06302fef96bfab53a3c0e10deeedaa09d8324b8eae7f0186b8a0fd"
@@ -35,7 +35,8 @@
       "acceptance": [
         "node tests/_golden/teachin-semantic-lock-admission-authority.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-19T23:17:53.010Z 全部 acceptance exit 0"
     }
   ]
 }
