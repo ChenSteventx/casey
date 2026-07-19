@@ -3,6 +3,16 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 2026-07-19 活动增量：发现基础债——一批浏览器回放金牌 runtime-RED + prd 陈旧绿（semantic-lock 准入门 enforcement 落地未复跑），mountdelay 挂起排后
+
+**基础阻塞（亲核坐实）**：2026-07-17 提交 `9ee2731`「feat: enforce semantic lock admission gates」→`dfee72c` 落地 semantic-lock 准入门 enforcement——含 mutation atom 的 events 现要求签名冻结锁（`--entity-locks` + 注册 prd checksum，`lib/entity-semantic-lock-preflight.mjs:checkReplayEntityAdmission`，`bin/replay.mjs:238-247`）。合成 caseId 的 hermetic 浏览器回放金牌满足不了 → 一批金牌全 runtime-RED（`FROZEN_ENTITY_LOCKS`）：`p5-replay`/`wf-publish-states`/`replay-settle-mount`/`drawer-lock-hardening`/`replay-nth-visible-hardening`。enforcement 落地时**未复跑这些金牌**，其 prd 全带陈旧 `passes:true`；`tier1` GREEN 掩盖（不跑浏览器回放金牌）。亲核：`replay-settle-mount.golden.mjs` 主树 9 过/7 红（7 红全 FROZEN_ENTITY_LOCKS），prd evidence 停在 gate@2026-07-14。**本会话第三次逮同模式**（enforcement/迁移落地未复跑受影响金牌→陈旧绿；前两次 record-intake、supersession）。
+
+**Steven 2026-07-19 可点选项决策**：先修基础债（另立契约）+ mountdelay 排后。修复方向=给 hermetic 浏览器回放金牌一条 semantic-lock 准入路径（测试签名冻结锁注入 或 受制 hermetic 准入 seam），解锁一批金牌 + mountdelay + 翻真陈旧绿；触 semantic-lock 准入安全门（kernel 级），方案侦察中。
+
+**mountdelay-fidelity 契约挂起**（worktree `casey-mountdelay-fidelity`，grill+plan done）：核心设计已亲定并落 `docs/plans/mountdelay-fidelity/plan.md`（settle 加占位门+静止窗兜底、fake-sut 补延迟提交子形态、hermetic/真机边界）。因基础阻塞（原设计驱 `bin/replay.mjs` 红先行的红会是准入门失败而非预期 buttonState 假阴）挂起，基础修好后可直接续实现。
+
+**次要发现（纠正 plan/侦察冻结清单不准，实现代理核实）**：`lib/replay-settle.mjs` 冻在 **0** 个 prd（非 1，强化它不用重签）；`server.mjs` 冻 **4** 个（drawer-lock/p5-replay/replay-nth/replay-settle-mount，非 5——`prd-resolution` 只冻 `resolution.golden.mjs`）；`CONTRACT.md` 冻 **3** 个（+drawer-lock，非 2）；mountdelay plan B 兜底 `STILL_TICKS=4`（≈480ms）会让 `replay-settle-mount.golden` U3（floorMs 0→waitedMs<300）转红，兜底静止窗须改 opt-driven（裸调用保持 2 拍）。
+
 ## 2026-07-18 夜活动增量：obs-cases-isolation 契约收口并入 dev，三金牌主树 DrvFs 稳定绿 + W2 环境敏感挂账连带清偿
 
 `obs-cases-isolation`（full，merge 于 dev）：修三 observation 金牌主树 WSL DrvFs 必红。诊断三层纠偏（初判「扫真实 cases 数据」→「同名残留撞守卫」→ 最终只 supersession 一个真故障，cli-authority/unsafe 被残留连累）；方案两次修正（Steven 批的 rename→copy+自回收被侦察探针推翻——copy 铸新 inode 破坏 T2 身份语义、自回收触双冻结安全 primitive 高风险且不必要）。最终修：supersession `spawnSync` timeout 30s→180s（确定性 ETIMEDOUT 根因，SAFE_V2 9p 跑约47s）+ SAFE_V2 T2 rename/mkdir/rmdir 包有界 retry（新增 `retry-transient-fs.mjs` 吸收 9p 偶发 sharing-violation EACCES，retry 内每次重验身份）。codex 异构评审三轮闭环——逮 High（原属 prd 重签延后）+ Medium（T2 retry 的 check-then-act TOCTOU 窗口，逐个破坏性分支 L302/L304/L286 收干净）→ 全 RESOLVED PASS。不触 kernel lib/bin、不触安全 primitive `canonical-case-lease.mjs`、不改 caseId/active-suite 11/6 契约。原属两 prd（safe-case-lease-v2、observation-runtime-trust-root）同步重签。
