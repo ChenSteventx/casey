@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "entity-locks-frozen",
+  "caseId": "tc_settle_replay",
+  "signed": true,
+  "replayReady": true,
+  "signerId": "hermetic-migration-fixture",
+  "signedAt": "2026-07-19T00:00:00.000Z",
+  "eventsSha256": "sha256:d23285b7305e679cde32944e00dced213e6bc39971120cbbf2f3188f2b5fbefc",
+  "bindings": [
+    {
+      "stepId": "atstep_0",
+      "intentId": "intent_0",
+      "atom": "nav.processList",
+      "role": "subject",
+      "candidateId": "candidate-atstep_0-subject",
+      "lockId": "lock-atstep_0-subject",
+      "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    },
+    {
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "atom": "workflow.openCreate",
+      "role": "subject",
+      "candidateId": "candidate-atstep_1-subject",
+      "lockId": "lock-atstep_1-subject",
+      "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    },
+    {
+      "stepId": "atstep_2",
+      "intentId": "intent_1",
+      "atom": "workflow.fillName",
+      "role": "subject",
+      "candidateId": "candidate-atstep_2-subject",
+      "lockId": "lock-atstep_2-subject",
+      "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    },
+    {
+      "stepId": "atstep_3",
+      "intentId": "intent_1",
+      "atom": "workflow.confirmCreate",
+      "role": "subject",
+      "candidateId": "candidate-atstep_3-subject",
+      "lockId": "lock-atstep_3-subject",
+      "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    }
+  ],
+  "signature": "sha256:b27c5ba1dbaa01ed33fe7ffca412d575944a0acb3a42d504aeac39bb0856b90c"
+}

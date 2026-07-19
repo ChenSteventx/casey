@@ -1,0 +1,58 @@
+{
+  "schemaVersion": 2,
+  "channel": "web",
+  "caseId": "tc_settle_replay",
+  "url": "{{baseUrl}}/ai-manager/process/list",
+  "recordedAt": "2026-07-14T00:00:00.000Z",
+  "compiledBy": "golden-fixture",
+  "authored": false,
+  "events": [
+    {
+      "stepId": "atstep_0",
+      "intentId": "intent_0",
+      "atom": "nav.processList",
+      "action": "nav",
+      "url": "{{baseUrl}}/ai-manager/process/list"
+    },
+    {
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "atom": "workflow.openCreate",
+      "action": "click",
+      "semantic": {
+        "kind": "role",
+        "role": "button",
+        "name": "新增工作流",
+        "exact": true
+      },
+      "text": "新增工作流",
+      "fallbackCss": ".create-wf"
+    },
+    {
+      "stepId": "atstep_2",
+      "intentId": "intent_1",
+      "atom": "workflow.fillName",
+      "action": "fill",
+      "semantic": {
+        "kind": "label",
+        "name": "工作流名称"
+      },
+      "fieldLabel": "工作流名称",
+      "value": "atl_settle_wf"
+    },
+    {
+      "stepId": "atstep_3",
+      "intentId": "intent_1",
+      "atom": "workflow.confirmCreate",
+      "action": "click",
+      "semantic": {
+        "kind": "role",
+        "role": "button",
+        "name": "确定",
+        "exact": true
+      },
+      "text": "确定",
+      "fallbackCss": ".hr-button--primary"
+    }
+  ]
+}

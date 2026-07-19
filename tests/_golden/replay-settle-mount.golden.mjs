@@ -154,20 +154,10 @@ await checkAsync('U7 稳定对不跨零点：在途 1,1,0,0 + DOM 恒定 → 放
 // I 集成向：驱 bin/replay.mjs 子进程（不 import settle 模块）。建流事件复刻真机建流拓扑。
 // ─────────────────────────────────────────────────────────────────────────────
 const CASE_ID = 'tc_settle_replay';
-function settleEventsDoc() {
-  return {
-    schemaVersion: 2, channel: 'web', caseId: CASE_ID,
-    url: '{{baseUrl}}/ai-manager/process/list', recordedAt: '2026-07-14T00:00:00.000Z', compiledBy: 'golden-fixture', authored: false,
-    events: [
-      { stepId: 'atstep_0', intentId: 'intent_0', atom: 'nav.processList', action: 'nav', url: '{{baseUrl}}/ai-manager/process/list' },
-      { stepId: 'atstep_1', intentId: 'intent_1', atom: 'workflow.openCreate', action: 'click', semantic: { kind: 'role', role: 'button', name: '新增工作流', exact: true }, text: '新增工作流', fallbackCss: '.create-wf' },
-      { stepId: 'atstep_2', intentId: 'intent_1', atom: 'workflow.fillName', action: 'fill', semantic: { kind: 'label', name: '工作流名称' }, fieldLabel: '工作流名称', value: 'atl_settle_wf' },
-      { stepId: 'atstep_3', intentId: 'intent_1', atom: 'workflow.confirmCreate', action: 'click', semantic: { kind: 'role', role: 'button', name: '确定', exact: true }, text: '确定', fallbackCss: '.hr-button--primary' },
-    ],
-  };
-}
-const EVENTS = join(tmp, 'settle-events.json');
-writeFileSync(EVENTS, JSON.stringify(settleEventsDoc(), null, 2));
+// events 文档为 committed 夹具字节（准入门迁移：锁 eventsSha256 绑该字节；内容语义与迁移前内联版一致）。
+// 配套测试签名锁经 loop/prd-tc_settle_replay.json 注册（docs/plans/replay-admission-hermetic-migration/plan.md）。
+const EVENTS = join(HERE, 'fixtures/admission-locks/tc_settle_replay/events.document.json');
+const LOCKS = join(HERE, 'fixtures/admission-locks/tc_settle_replay/entity-locks.frozen.json');
 const PROFILE = join(tmp, 'profile.json');
 writeFileSync(PROFILE, JSON.stringify({
   background: FAKE_SITE_DENYLIST, successField: 'status', successValue: 200,
@@ -176,7 +166,12 @@ writeFileSync(PROFILE, JSON.stringify({
 function expDoc(intent1) {
   return signExpected({
     caseId: CASE_ID, channel: 'web',
-    intents: [{ intentId: 'intent_0', expected: [] }, { intentId: 'intent_1', expected: intent1 }],
+    intents: [
+      // 3fc0032 起 casey run 退出码绑「裁定全 PASS」；空硬断言步裁判恒 INDETERMINATE（fail-safe §2.1 设计，不发空 PASS）。
+      // nav intent 补真可证硬断言使其合法 PASS——不是放宽，是把该 intent 的期望落到可证面。
+      { intentId: 'intent_0', expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/ai-manager/process/list', soft: false }] },
+      { intentId: 'intent_1', expected: intent1 },
+    ],
     globalAssertions: [],
   });
 }
@@ -200,7 +195,7 @@ await checkAsync('I1 延迟挂载主案（红先行核心）：mountdelay 采集
   const srv = await startFakeSut({ scenario: 'mountdelay' }); // 缺省 mountDelayMs 800
   try {
     const OUT = join(tmp, 'i1-axes.json');
-    const r = run([REPLAY, '--events', EVENTS, '--sut', srv.url, '--expected', EXP_MAIN, '--profile', PROFILE, '--out', OUT]);
+    const r = run([REPLAY, '--events', EVENTS, '--entity-locks', LOCKS, '--sut', srv.url, '--expected', EXP_MAIN, '--profile', PROFILE, '--out', OUT]);
     if (r.status !== 0) throw new Error(`replay 应 exit 0，实际 ${r.status}：${(r.stderr || '').slice(-200)}`);
     const axes = JSON.parse(readFileSync(OUT, 'utf8'));
     const post = findPost(axes, 'intent_1');
@@ -217,7 +212,7 @@ await checkAsync('I2 垫调 0 条件兜住：mountdelay + REPLAY_SETTLE_FLOOR_MS
   const srv = await startFakeSut({ scenario: 'mountdelay' });
   try {
     const OUT = join(tmp, 'i2-axes.json');
-    const r = run([REPLAY, '--events', EVENTS, '--sut', srv.url, '--expected', EXP_MAIN, '--profile', PROFILE, '--out', OUT],
+    const r = run([REPLAY, '--events', EVENTS, '--entity-locks', LOCKS, '--sut', srv.url, '--expected', EXP_MAIN, '--profile', PROFILE, '--out', OUT],
       { env: { ...process.env, REPLAY_SETTLE_FLOOR_MS: '0' } });
     if (r.status !== 0) throw new Error(`replay 应 exit 0，实际 ${r.status}`);
     const axes = JSON.parse(readFileSync(OUT, 'utf8'));
@@ -234,7 +229,7 @@ await checkAsync('I3 即时渲染回归锁（冻结时即绿）：happy 同事�
   try {
     const OUT = join(tmp, 'i3-axes.json');
     const RH = join(tmp, 'i3-rh.jsonl');
-    const r = run([REPLAY, '--events', EVENTS, '--sut', srv.url, '--expected', EXP_MAIN, '--profile', PROFILE, '--out', OUT, '--run-history', RH],
+    const r = run([REPLAY, '--events', EVENTS, '--entity-locks', LOCKS, '--sut', srv.url, '--expected', EXP_MAIN, '--profile', PROFILE, '--out', OUT, '--run-history', RH],
       { env: { ...process.env, REPLAY_DEBUG: '1' } });
     if (r.status !== 0) throw new Error(`replay 应 exit 0，实际 ${r.status}：${(r.stderr || '').slice(-200)}`);
     const axes = JSON.parse(readFileSync(OUT, 'utf8'));
@@ -256,7 +251,7 @@ await checkAsync('I4 观察者不是许愿机（冻结时即绿）：mountdelay 
     const OUT = join(tmp, 'i4-axes.json');
     const EXP = join(tmp, 'exp-ghost.json');
     writeFileSync(EXP, JSON.stringify(expDoc([a({ kind: 'buttonState', op: 'present', value: '幽灵导出' })])));
-    const r = run([REPLAY, '--events', EVENTS, '--sut', srv.url, '--expected', EXP, '--profile', PROFILE, '--out', OUT],
+    const r = run([REPLAY, '--events', EVENTS, '--entity-locks', LOCKS, '--sut', srv.url, '--expected', EXP, '--profile', PROFILE, '--out', OUT],
       { env: { ...process.env, REPLAY_DEBUG: '1' } });
     if (r.status !== 0) throw new Error(`replay 应 exit 0，实际 ${r.status}`);
     const axes = JSON.parse(readFileSync(OUT, 'utf8'));
@@ -272,7 +267,7 @@ await checkAsync('I5 超预算照采 fail-safe（冻结时即绿）：mountDelay
   try {
     const OUT = join(tmp, 'i5-axes.json');
     const RH = join(tmp, 'i5-rh.jsonl');
-    const r = run([REPLAY, '--events', EVENTS, '--sut', srv.url, '--expected', EXP_MAIN, '--profile', PROFILE, '--out', OUT, '--run-history', RH],
+    const r = run([REPLAY, '--events', EVENTS, '--entity-locks', LOCKS, '--sut', srv.url, '--expected', EXP_MAIN, '--profile', PROFILE, '--out', OUT, '--run-history', RH],
       { env: { ...process.env, REPLAY_SETTLE_BUDGET_MS: '100', REPLAY_DEBUG: '1' } });
     if (r.status !== 0) throw new Error(`超预算仍应 replay exit 0（不因静默点报错吞步），实际 ${r.status}：${(r.stderr || '').slice(-200)}`);
     if (!existsSync(OUT)) throw new Error('超预算仍应 axes 落盘');
@@ -293,7 +288,7 @@ await checkAsync('I6 扰动走时上界回归锁（冻结时即绿）：churn �
     const OUT = join(tmp, 'i6-axes.json');
     const EXP = join(tmp, 'exp-churn.json');
     writeFileSync(EXP, JSON.stringify(expDoc([a({ kind: 'urlPathname', op: 'startsWith', value: '/ai-manager/process/detail' })])));
-    const r = run([REPLAY, '--events', EVENTS, '--sut', srv.url, '--expected', EXP, '--profile', PROFILE, '--out', OUT],
+    const r = run([REPLAY, '--events', EVENTS, '--entity-locks', LOCKS, '--sut', srv.url, '--expected', EXP, '--profile', PROFILE, '--out', OUT],
       { env: { ...process.env, REPLAY_DEBUG: '1' } });
     if (r.status !== 0) throw new Error(`churn 应 replay exit 0，实际 ${r.status}`);
     const st = parseSettle(r.stderr, 'intent_1');
@@ -310,7 +305,7 @@ await checkAsync('W1 端到端裁定翻正：casey run 对 mountdelay → intent
   try {
     const runDir = join(tmp, 'w1-run');
     mkdirSync(runDir, { recursive: true });
-    const r = run([CASEY, 'run', CASE_ID, '--sut', srv.url, '--events', EVENTS, '--expected', EXP_MAIN, '--profile', PROFILE,
+    const r = run([CASEY, 'run', CASE_ID, '--sut', srv.url, '--events', EVENTS, '--entity-locks', LOCKS, '--expected', EXP_MAIN, '--profile', PROFILE,
       '--run-dir', runDir, '--generated-at', '2026-07-14T00:00:00.000Z']);
     if (r.status !== 0) throw new Error(`casey run 应 exit 0，实际 ${r.status}：${(r.stderr || '').slice(-200)}`);
     const verdict = JSON.parse(readFileSync(join(runDir, 'verdict.json'), 'utf8'));

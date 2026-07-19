@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "entries": [
+    {
+      "caseId": "tc_settle_replay",
+      "artifactKey": "tests/_golden/fixtures/admission-locks/tc_settle_replay/entity-locks.frozen.json",
+      "domain": "verify"
+    }
+  ]
+}
