@@ -99,6 +99,8 @@
 | 三轴 | Three-Axis | 回放期每个原子步吐的三组事实——动作（过点击身份门判 true/ambiguous/false）/ 逐条断言（typed kind 各一条，断言续跑、不首错即停）/ 取证（网络取证 + 生命周期）；零 LLM 的 `verdict.mjs` 据此跑判定树出四态，是裁判·桥·报告共吃的数据契约 | — |
 | 自愈 | Self-heal | 相5：仅对确证 `HARNESS_ERROR` 的有界重锚；是裁定的下游消费者，绝不反向进入裁判进程 | — |
 | 自愈准入门 | Self-heal Admission Gate | 护栏：自愈只对确证 `HARNESS_ERROR` 开闸；`SUT_DEFECT`/`NEEDS_HUMAN` 一律拒绝自愈 | — |
+| 准入受众 | Admission Audience | 冻结身份准入件（`entity-locks.frozen.json`/`execute-authority.json`）的必填签名字段 `audience ∈ {test, production}`，签进内容自哈希；标记该件只许在测试上下文还是生产上下文授权回放/编译。测试夹具标 `test`，生产件须显式 `production`。防「测试锁被误指向真 SUT 授权真实改动」（ADR-0010） | — |
+| 凭据上下文门 | Credential-Context Gate | 准入铸权后、启动浏览器前的纯函数门：判本次 run 的凭据上下文（加载真 `.auth`/走登录预备动作=生产、无凭据=测试），要求准入件的准入受众严格匹配该上下文，不符即 fail-closed 不启动浏览器。判据不看 `--sut` 地址（hermetic 与真机 UAT 都走回环、分不开），只看是否加载真凭据（ADR-0010） | — |
 | 非就地自愈 | Out-of-place Self-heal | 自愈重锚写 `drift/<caseId>.<ts>.patch` 旁文件，原 spec 不变照常回放，人签后才应用 | — |
 | 漂移补丁 | Drift Patch | 非就地自愈产出的旁文件补丁，记重锚前后对照 | — |
 | 人签门 | Human Sign-off Gate | 人签掉冻结断言才算数；gate 绿 ≠ 完成，人签真机才完成；CASE_DEFECT 与 SUT_DEFECT 的分水岭 | — |
