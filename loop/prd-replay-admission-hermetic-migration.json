@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "task": "replay-admission-hermetic-migration：把被 semantic-lock 准入门拦成 runtime-RED 的五个 hermetic 浏览器回放金牌，经生产同一权威铸造接口（prd checksum → 分域 opaque handle）合法迁入门内侧；陈旧绿先翻红记账再修绿；准入门 kernel 零改动、生产门零削弱。",
+  "specPath": "docs/plans/replay-admission-hermetic-migration/plan.md",
+  "testChecksums": {
+    "tests/_golden/replay-admission-hermetic-migration.golden.mjs": "53bc03d6c9fa9753210de73f5e8c814cd7a675879130a63a04fdb8e4758893a0",
+    "tests/_golden/support/assert-affected-gates-green.mjs": "fe5d5a24cbd785ac7f93acd8f62597974259eac330335075016446afa0b90ab5"
+  },
+  "observability": [
+    {
+      "dimension": "测试签名锁只在 hermetic 金牌域生效；真机回放仍须真实人签冻结锁与真收据（本契约不触真机路径），真机升必过闸照旧 route:human。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-migration-registry-certification",
+      "desc": "迁移清单里每把测试锁/执行授权经生产读路合法注册生效；未注册键/错 prd/错域一律拒；清单与五个迁移金牌引用集合双向一致；夹具身份字段与注册条目一致。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/replay-admission-hermetic-migration.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s2-affected-gates-restored",
+      "desc": "五个受影响 prd（p5-replay/wf-publish-states/replay-settle-mount/drawer-lock-hardening/replay-nth-visible-hardening）台账全部 story 由 gate 写回 passes:true——陈旧绿翻红记账后经迁移合法翻绿。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/support/assert-affected-gates-green.mjs"
+      ],
+      "passes": false
+    }
+  ]
+}

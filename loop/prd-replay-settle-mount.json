@@ -29,8 +29,8 @@
       "acceptance": [
         "node tests/_golden/replay-settle-mount.golden.mjs"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-14T17:37:50.517Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     },
     {
       "id": "s2-regression-and-resign",
@@ -47,8 +47,8 @@
         "node tests/_golden/e2e-chain.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-14T17:44:13.033Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     }
   ]
 }
