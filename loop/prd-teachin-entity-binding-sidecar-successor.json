@@ -31,7 +31,7 @@
         "node tests/_golden/teachin-entity-binding-sidecar-successor.zero-sut.golden.mjs draft"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-17T06:49:11.711Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-19T23:35:08.206Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-sign-exact-join",
@@ -40,8 +40,8 @@
       "acceptance": [
         "node tests/_golden/teachin-entity-binding-sidecar-successor.zero-sut.golden.mjs sign"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-17T06:49:11.778Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     },
     {
       "id": "s3-replay-internal-policy",
@@ -51,7 +51,7 @@
         "node tests/_golden/teachin-entity-binding-sidecar-successor.zero-sut.golden.mjs replay"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-17T06:49:11.842Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-19T23:35:09.237Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-hostile-closed-data",
@@ -60,8 +60,8 @@
       "acceptance": [
         "node tests/_golden/teachin-entity-binding-sidecar-successor.zero-sut.golden.mjs hostile"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-17T06:49:11.899Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     }
   ]
 }
