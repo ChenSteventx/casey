@@ -3,6 +3,20 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 2026-07-19 晚活动增量：基础债规模远超预估 + codex 讨论推翻锁绿路径 → 转两阶段方向（信任根分离 → 金牌生命周期重裁）
+
+**权威后续方向 = `docs/plans/replay-admission-hermetic-migration/DIRECTION-AFTER-CODEX.md`**。本会话把基础债从「5 金牌」推进到坐实真实规模并**转向**：
+
+1. **规模真相**：enforcement `9ee2731`→`dfee72c`（2026-07-17）落地未迁移测试套件，把**整个 hermetic 浏览器回放金牌套件**（约 24 金牌 / 40 prd）打成陈旧绿，非最初发现的 5 个。债务全貌钉死在 `DEBT-REGISTER.md`（18 复签即真绿集 + 12 翻红集 + 7 额外红金牌 sweep 范围）。
+2. **codex gpt-5.6-sol high 异构讨论真挣钱**（Steven 指示做，`review/codex-sol-strategy-20260719.md`，入 audit）：逮到 Claude 家族自审看漏的四承重问题——① 路 a「生产门零削弱」不成立（测试锁绑 events 不绑 `--sut`、生产 reader 不分测试/生产 signer = 利用既有 trust-root 缺口）；② `SKILL.md:107` 冲突；③ p5 墓碑不该借删两案翻绿；④ mint 工具语义授权不可信。
+3. **Steven 2026-07-19 两裁决**（AskUserQuestion）：**Q1 = SKILL.md:107 fake-SUT 只读规则也约束 dev gate/golden**（hermetic 金牌不该被 agent 跑、须按生命周期重裁，非重跑锁绿）；**Q2 = 先修生产/测试信任根分离再迁移**（codex 荐）。→ 原执行路径（重跑 fake-sut + 注入测试锁锁绿）**作废**。
+4. **正确方向两阶段**（各另立契约、均须 Steven 参与，见 DIRECTION-AFTER-CODEX.md）：**阶段一** 生产/测试信任根分离（kernel 车道：生产 reader 只读不可变发布 manifest、artifact 带不可伪造 audience 分根签、拒测试 signer、绑环境/SUT scope、验 receipt、反向验收测试锁必被生产 reader 拒）；**阶段二** hermetic 金牌套件逐个生命周期重裁（(a) 转 zero-SUT 确定性喂冻结 axes/纯裁判=主力出路 / (b) 真机 UAT-only 墓碑 fake-sut / (c) 教义作废墓碑+命名后继，如 p5 drift/vanished：原 story superseded-not-pass + successor PRD + 自愈 liveness 另立）。
+5. **本契约收口姿态**：`replay-admission-hermetic-migration` 转**调查/决策契约**（prd stories 空、方向记 observability）。已做：波0 五核心 prd honest 翻红（**保留权威——按 Q1 不得再跑 gate 启动 fake-sut，passes:false 不可撤了重生**）；波1 settle 锁绿已 `git revert`（含 mint 工具，codex 判语义授权不可信）；复签 sweep 工具 `tests/_golden/support/resign-changed-goldens.mjs` 保留（生命周期工作仍用）。约 35 个非核心 prd 仍陈旧绿（未翻红）待阶段二清偿（DEBT-REGISTER C 组）。dev HEAD 5df2c17。
+6. **mountdelay-fidelity 仍挂起**（worktree 存、grill+plan done）：原被基础债阻塞，现基础债转为两阶段大工程、mountdelay 继续排后待方向落地。
+7. **主树未提交现场**：`.gitignore` + 一批 prd（M，gate evidence 时间戳漂移）+ 用户未跟踪件（docs/codex/、follow.mjs 等）——别碰别提交。主树活契约槽仍 alh-open-entry（外部仓，与本线无关；本线契约在主槽被 replay-admission-hermetic-migration 短暂占用后，其阶段互锁停在 accept done——本契约不再走 loop/review/learn 正常流，转调查姿态收口）。
+
+以下为本会话早段快照（其「路 a 锁绿」执行序已被本节转向推翻），只溯源、勿据其判现状：
+
 ## 2026-07-19 活动增量：发现基础债——一批浏览器回放金牌 runtime-RED + prd 陈旧绿（semantic-lock 准入门 enforcement 落地未复跑），mountdelay 挂起排后
 
 **基础阻塞（亲核坐实）**：2026-07-17 提交 `9ee2731`「feat: enforce semantic lock admission gates」→`dfee72c` 落地 semantic-lock 准入门 enforcement——含 mutation atom 的 events 现要求签名冻结锁（`--entity-locks` + 注册 prd checksum，`lib/entity-semantic-lock-preflight.mjs:checkReplayEntityAdmission`，`bin/replay.mjs:238-247`）。合成 caseId 的 hermetic 浏览器回放金牌满足不了 → 一批金牌全 runtime-RED（`FROZEN_ENTITY_LOCKS`）：`p5-replay`/`wf-publish-states`/`replay-settle-mount`/`drawer-lock-hardening`/`replay-nth-visible-hardening`。enforcement 落地时**未复跑这些金牌**，其 prd 全带陈旧 `passes:true`；`tier1` GREEN 掩盖（不跑浏览器回放金牌）。亲核：`replay-settle-mount.golden.mjs` 主树 9 过/7 红（7 红全 FROZEN_ENTITY_LOCKS），prd evidence 停在 gate@2026-07-14。**本会话第三次逮同模式**（enforcement/迁移落地未复跑受影响金牌→陈旧绿；前两次 record-intake、supersession）。
