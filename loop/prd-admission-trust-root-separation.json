@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "task": "admission-trust-root-separation（阶段一 kernel）：给冻结身份准入件加签名进自哈希的必填 audience 字段（准入受众）+ 铸权后启动浏览器前的凭据上下文门（严格匹配受众与凭据上下文，不符 fail-closed）。防「测试锁被误指向真 SUT 授权真实改动」。设计=ADR-0010+GRILL.md+plan.md。",
+  "specPath": "docs/plans/admission-trust-root-separation/plan.md",
+  "testChecksums": {
+    "tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs": "e12cb78f81c4fe1c7f970dbcc5caec286b846b0af4faa3975a777bee6f551aca",
+    "tests/_golden/fixtures/admission-audience/no-audience.frozen.json": "b0aae9532a77f47a76b7812ca08dc70b57c6a758d25920098e9c29291feb800c"
+  },
+  "observability": [
+    {
+      "dimension": "接线 fail-closed（验收5）：replay/compile --execute 在受众与凭据上下文不符时于 chromium.launch 前 exit 65 不启动浏览器——实现期子进程退出码断言（不启动 fake-sut，门在浏览器前拒）。",
+      "route": "human"
+    },
+    {
+      "dimension": "迁移零回归（验收7/8）：5 committed 夹具重签 audience:test + prd checksum + 消费它们的 zero-SUT golden 断言，实现期随 kernel 改动共同落地并复跑，走 sign 流程人签（ADR-0004）。",
+      "route": "human"
+    },
+    {
+      "dimension": "明确不覆盖（ADR-0010 划界）：密钥签名/signerId 认证、不可变发布 manifest 根、receipt 读路复验、撤销、锁绑 SUT/环境 scope——各另立后续契约。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-credential-audience-gate",
+      "desc": "准入受众必填 + 凭据上下文门严格匹配：门导出/四态/畸形 fail-closed/反向验收（测试受众件在生产上下文被阻断）/无 audience 件经生产读路被拒。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    }
+  ]
+}
