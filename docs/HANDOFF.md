@@ -13,7 +13,7 @@
 4. **正确方向两阶段**（各另立契约、均须 Steven 参与，见 DIRECTION-AFTER-CODEX.md）：**阶段一** 生产/测试信任根分离（kernel 车道：生产 reader 只读不可变发布 manifest、artifact 带不可伪造 audience 分根签、拒测试 signer、绑环境/SUT scope、验 receipt、反向验收测试锁必被生产 reader 拒）；**阶段二** hermetic 金牌套件逐个生命周期重裁（(a) 转 zero-SUT 确定性喂冻结 axes/纯裁判=主力出路 / (b) 真机 UAT-only 墓碑 fake-sut / (c) 教义作废墓碑+命名后继，如 p5 drift/vanished：原 story superseded-not-pass + successor PRD + 自愈 liveness 另立）。
 5. **本契约收口姿态**：`replay-admission-hermetic-migration` 转**调查/决策契约**（prd stories 空、方向记 observability）。已做：波0 五核心 prd honest 翻红（**保留权威——按 Q1 不得再跑 gate 启动 fake-sut，passes:false 不可撤了重生**）；波1 settle 锁绿已 `git revert`（含 mint 工具，codex 判语义授权不可信）；复签 sweep 工具 `tests/_golden/support/resign-changed-goldens.mjs` 保留（生命周期工作仍用）。约 35 个非核心 prd 仍陈旧绿（未翻红）待阶段二清偿（DEBT-REGISTER C 组）。dev HEAD 5df2c17。
 6. **mountdelay-fidelity 仍挂起**（worktree 存、grill+plan done）：原被基础债阻塞，现基础债转为两阶段大工程、mountdelay 继续排后待方向落地。
-7. **主树未提交现场**：`.gitignore` + 一批 prd（M，gate evidence 时间戳漂移）+ 用户未跟踪件（docs/codex/、follow.mjs 等）——别碰别提交。主树活契约槽仍 alh-open-entry（外部仓，与本线无关；本线契约在主槽被 replay-admission-hermetic-migration 短暂占用后，其阶段互锁停在 accept done——本契约不再走 loop/review/learn 正常流，转调查姿态收口）。
+7. **主树未提交现场**：`.gitignore` + 一批 prd（M，gate evidence 时间戳漂移）+ 用户未跟踪件（docs/codex/、follow.mjs 等）——别碰别提交。**主树活契约槽已归还 alh-open-entry**（外部仓 agent-loop-harness 接入，Steven 上下文，与本线无关；本会话曾临时占槽跑 replay-admission-hermetic-migration，收口后已恢复原槽）。replay-admission-hermetic-migration 契约转调查/决策姿态、不走 loop/review/learn 正常流，其完整状态在 `docs/plans/replay-admission-hermetic-migration/`（DIRECTION-AFTER-CODEX/DEBT-REGISTER/prd）与本节，不依赖契约槽。阶段一另立新 slug。
 
 以下为本会话早段快照（其「路 a 锁绿」执行序已被本节转向推翻），只溯源、勿据其判现状：
 

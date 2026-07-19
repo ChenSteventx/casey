@@ -33,8 +33,9 @@ CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
 - Steven 2026-07-19 两裁决：Q1=SKILL.md:107 fake-SUT 只读规则也约束 dev gate/golden（hermetic
   金牌不该被 agent 跑、须按生命周期重裁，非重跑锁绿）；Q2=先修生产/测试信任根分离再迁移。
   → 原执行路径（重跑 fake-sut + 注入测试锁锁绿）作废。
-- 本契约 replay-admission-hermetic-migration 转调查/决策契约（活契约槽仍占它、accept done、
-  不再走 loop 正常流）：波0 五核心 prd honest 翻红保留权威（按 Q1 不得再跑 gate 启动 fake-sut、
+- 本契约 replay-admission-hermetic-migration 转调查/决策契约（状态全在其 docs、不走 loop 正常流；
+  活契约槽已归还 alh-open-entry 外部仓、阶段一另立新 slug）：波0 五核心 prd honest 翻红保留权威
+  （按 Q1 不得再跑 gate 启动 fake-sut、
   passes:false 不可撤了重生）；波1 settle 锁绿已 git revert（含 mint 工具）；复签 sweep 工具
   tests/_golden/support/resign-changed-goldens.mjs 保留（生命周期工作仍用）。dev HEAD 5df2c17。
 - mountdelay-fidelity 仍挂起（worktree 存、grill+plan done）；基础债转大工程、mountdelay 继续排后。
