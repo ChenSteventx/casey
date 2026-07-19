@@ -57,6 +57,18 @@
 - **U1 单列处置归零**：波 0 实跑 `wf-publish-states` 金牌无 `IMPLEMENTED_KINDS` 失败（U1 绿），交接账里的该漂移条目不成立或已被先前修复，零动作。
 - **events 字节冻结手法**（防序列化漂移类缺陷）：迁移把 events 文档从金牌内联/临时序列化改为 committed 夹具字节——单文档金牌直接把夹具路径传 `--events`；多变体金牌把 events 构造器提为 `tests/_golden/support/` 共享模块（金牌与铸造工具同源 import），锁的 `eventsSha256` 一律对 committed 字节取。
 
+## 6.6 规模决策（Steven 2026-07-19 拍：选项三=收窄本契约 + 全债记账）
+
+波 1 打样后核出真实规模远超 5 金牌口径：enforcement 9ee2731 把**整个浏览器回放金牌套件**（约 24 金牌 / 40 prd）打成陈旧绿，波 0 只翻红了最先发现的 5 核心 prd。抽验坐实 `prd-btn-enable-ops`/`prd-wf-history-version` 等 `passes:[true,true]` 但自有金牌准入门红。呈 Steven 可点选项，拍板**选项三**：
+
+- **本契约验收面收窄**到 5 核心 prd 的 s2 闭包 = 恰好 17 金牌（其余 s2 邻居本就绿，已核）。把这 17 迁到真绿即满足本契约验收点 1。
+- 改这 17 金牌连带破约 40 个 prd 的 checksum（它们冻结这些金牌）。处置分两类，**严格区分复签与翻红**：
+  - **复签 checksum**（文件确实改了字节）：对全部 40 个 freezing prd 里的这 17 金牌条目，更新为新 sha256。确定性、只碰这 17 个键、不掩盖他因漂移。走 sweep（见下）。
+  - **翻红 passes**（gate 覆写）：对复签后**自身仍准入门红**的~35 个非核心 prd（其 gate 跑到 17 之外的准入门红金牌），逐个 `gate --prd` 让裁判把陈旧 `passes:true` 覆写为 `false`。绝不手改、绝不靠复签让 ratchet 匹配就当绿。
+- 其余套件债 park 成 `DEBT-REGISTER.md`（本目录）——列全 24 准入门红金牌 + 40 prd 现状，留给后续 sweep 契约系统迁完。本契约诚实收窄、债可见。
+- 结构性阻塞 `p5 drift/vanished`：`DRIFT-VANISHED-DECISION.md` 墓碑吊销决策包待 Steven 人签。
+- 异构讨论：Steven 指示与 codex gpt-5.6-sol high 讨论策略（讨论料 `review-packets/admission-migration-strategy-discussion.md`），据其独立判断校准后再执行剩余迁移。
+
 ## 6. 提交序与冻结治理
 
 翻红记账（波 0，prd `passes` 由 gate 覆写）→ 铸造工具 + 夹具 + 注册 prd + 金牌接线（波 1-4，按波提交）→ U1 单列小修（如需，独立提交）→ 翻绿收口 + 重签（波 5）→ 评审修复 → 交接文档先行再并 dev（docs 先于 dev 提交纪律）。全程不手改 `passes`、不动 `testChecksums` 之外的他人冻结面；凭据零接触（纯 hermetic，无 `.auth`/`site.json`）。
