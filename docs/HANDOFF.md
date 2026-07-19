@@ -7,7 +7,7 @@
 
 **基础阻塞（亲核坐实）**：2026-07-17 提交 `9ee2731`「feat: enforce semantic lock admission gates」→`dfee72c` 落地 semantic-lock 准入门 enforcement——含 mutation atom 的 events 现要求签名冻结锁（`--entity-locks` + 注册 prd checksum，`lib/entity-semantic-lock-preflight.mjs:checkReplayEntityAdmission`，`bin/replay.mjs:238-247`）。合成 caseId 的 hermetic 浏览器回放金牌满足不了 → 一批金牌全 runtime-RED（`FROZEN_ENTITY_LOCKS`）：`p5-replay`/`wf-publish-states`/`replay-settle-mount`/`drawer-lock-hardening`/`replay-nth-visible-hardening`。enforcement 落地时**未复跑这些金牌**，其 prd 全带陈旧 `passes:true`；`tier1` GREEN 掩盖（不跑浏览器回放金牌）。亲核：`replay-settle-mount.golden.mjs` 主树 9 过/7 红（7 红全 FROZEN_ENTITY_LOCKS），prd evidence 停在 gate@2026-07-14。**本会话第三次逮同模式**（enforcement/迁移落地未复跑受影响金牌→陈旧绿；前两次 record-intake、supersession）。
 
-**Steven 2026-07-19 可点选项决策**：先修基础债（另立契约）+ mountdelay 排后。修复方向=给 hermetic 浏览器回放金牌一条 semantic-lock 准入路径（测试签名冻结锁注入 或 受制 hermetic 准入 seam），解锁一批金牌 + mountdelay + 翻真陈旧绿；触 semantic-lock 准入安全门（kernel 级），方案侦察中。
+**Steven 2026-07-19 可点选项决策**：先修基础债（另立契约）+ mountdelay 排后。**方案已侦察定清并落盘 `docs/plans/replay-admission-hermetic-migration/PROPOSAL.md`（供直接接手）**：采路 (a) 测试签名锁注入 + 金牌迁移，**不触准入门 kernel**——准入读路无 Ed25519/无收据验证/无真 SUT 依赖，只认 结构+内容自哈希+prd checksum，故 hermetic 测试锁可确定性铸造 + 经生产接口合法注册、不削弱生产门（否决路 b hermetic seam：触 kernel、fail-open 缝、违护栏 #14）。分层：简单案（p5-replay/replay-settle-mount/wf-publish-states 静态 events 直接铸锁）+ 摩擦案（drawer-lock/nth-visible compile-driven 非确定性 + 双门，须冻编译产物或拆轨）+ 独立门（p5 drift/vanished 的 deleteByName 死在另一道 binding 门）。陈旧绿先翻红记账再修绿（不手改/不随迁移补绿）。full 车道、非 kernel、不必 worktree。
 
 **mountdelay-fidelity 契约挂起**（worktree `casey-mountdelay-fidelity`，grill+plan done）：核心设计已亲定并落 `docs/plans/mountdelay-fidelity/plan.md`（settle 加占位门+静止窗兜底、fake-sut 补延迟提交子形态、hermetic/真机边界）。因基础阻塞（原设计驱 `bin/replay.mjs` 红先行的红会是准入门失败而非预期 buttonState 假阴）挂起，基础修好后可直接续实现。
 
