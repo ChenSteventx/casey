@@ -3,7 +3,7 @@
   "task": "replay-settle-mount（full）：回放代表步（`isLast`）采集断言输入前补一个有界静默点 `settleBeforeCapture`（新 `lib/replay-settle.mjs`），镜像编译侧 `quietPoint`——让单页应用路由挂载 /「页面加载中」占位消失后再采，堵回放侧计时假阴（真机 `tc_wf_publish_states` 的 `intent_1` 判 `NEEDS_HUMAN`(`SUT_DEFECT_OR_STALE`)/`actual=0`，而 1.5s 后按钮成功点中——按钮一直在、是采集抢在挂载前）。复合判据：判据 A 在途前台请求归零（复用 `watchNetworkForensics` 的 `inFlightApi`，加性暴露 `inFlightCount`；`denylist` 背景轮询天然除外）+ 判据 B DOM 连续两拍稳定（逐字镜像 `quietPoint`），连续两拍相等且两拍均归零（稳定对不跨零点）才放行；固定下限 250ms 起步垫（`REPLAY_SETTLE_FLOOR_MS` 测试缝）+ 预算 2500ms（`REPLAY_SETTLE_BUDGET_MS` 测试缝）耗尽后仅在途仍非零才走 `networkidle` 有界兜底一次（职责=网络尾巴，兜底条件化）。铁不变量：纯观察者、有界、fail-safe（绝不外抛/绝不无限等/超预算按现状采不吞步）；归因语义零动（静默点全程 `currentStepId` 为 null）；`bin/verdict.mjs` 与 `lib/replay-assert.mjs` 字节不动；axes/observed schema 零新键（`run-history.schema.json` 文件字节不动，代表步 `quietPointReached` 只改取值来源为 `navOk && settled`）。夹具加法：`mountdelay`（数据请求驱动的延迟挂载 + 静态占位 + toast 3000ms 自动消隐）与 `churn`（DOM 持续扰动 + 背景轮询）两场景，既有场景零行为差。决策 `docs/plans/replay-settle-mount/plan.md`（改动 1-8，已并入 codex-sol@max 设计评审修订 8 findings）、`proposed/GRILL.md`（D1 方向 / D2 固定下限 / D3 复合判据）。红先行：U1-U7 缺模块红 + I1 `actual=0` 真机同签名红 + I2 垫零红 + W1 `NEEDS_HUMAN` 端到端红（`docs/plans/replay-settle-mount/proposed/red/red-before-impl.txt` 存证）。",
   "specPath": "docs/plans/replay-settle-mount/plan.md",
   "testChecksums": {
-    "tests/_golden/replay-settle-mount.golden.mjs": "aadd5f9e0336ae4e814ead62ca3ddbc84a125766ef44e557a11df1a5b5f11e61",
+    "tests/_golden/replay-settle-mount.golden.mjs": "cf81e01489c627b77a9c2243eda38750b230d16a655f8e151f8f732e03ee3adb",
     "tests/fixtures/fake-sut/server.mjs": "b4c4d214b394d6109856b0dea7a13e3c05a32c6d6b51b56ec369dd849c6a313d",
     "tests/fixtures/fake-sut/CONTRACT.md": "5cc702248a6287247dbc34628f5881ba6c383bccb2c4ccd0fa1e468d2a540b7c"
   },
@@ -18,10 +18,6 @@
     },
     {
       "dimension": "「响应结束→UI 延迟提交」形态：判据 A 在 loadingFinished 即归零，提交延迟超过稳定对约两拍缓冲（约 240ms）则在占位上放行——失败方向假红非假绿，已确证真机形态（应答即提交）I1 已覆盖，判据侧扩展会假定「应答必改 DOM」恶化最坏走时，本轮不做（GRILL D3 残余）",
-      "route": "human"
-    },
-    {
-      "dimension": "纪律②重签（2026-07-19 replay-admission-hermetic-migration）：金牌接线准入门测试签名锁（events 改读 committed 夹具 + --entity-locks + intent_0 补 urlPathname 硬断言对齐 3fc0032 退出码纪律），同会话原地重签本金牌 checksum cf81e01489c6→aadd5f9e0336。",
       "route": "human"
     }
   ],
