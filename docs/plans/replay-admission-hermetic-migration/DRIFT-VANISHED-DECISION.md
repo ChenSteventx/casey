@@ -14,7 +14,8 @@
 
 ## 选项
 
-- **A（推荐）墓碑吊销两案 + 命名后继**：照 `semantic-lock-cert-closure` 先例（`tests/_golden/fixtures/semantic-lock-cert-closure/supersession-revocation.json`，benign SUPERSEDED 式样）出收据吊销这两案（案级变体：从 `replay-cases.json` 移除/标记 + 收据记原字节 sha + 教义作废理由 + 后继指名），漂移判别的后继面指 `teachin-semantic-lock-runtime-discrimination-successor`（0/26 前瞻红基线，本就是运行时判别的收纳地）+ 单元层 `p2-verdict`（verdict 映射已有单元证）。`prd-p5-replay` 随之重签、gate 可合法翻绿。需 Steven 人签（ADR-0004 冻结断言变更）。
+- **A（推荐）墓碑吊销两案 + 命名后继**：照 `semantic-lock-cert-closure` 先例（`tests/_golden/fixtures/semantic-lock-cert-closure/supersession-revocation.json`，benign SUPERSEDED 式样）出收据吊销这两案（案级变体：从 `replay-cases.json` 移除/标记 + 收据记原字节 sha + 教义作废理由 + 后继指名），漂移判别的后继面指 `teachin-semantic-lock-runtime-discrimination-successor`（0/26 前瞻红基线，本就是运行时判别的收纳地）+ 单元层 `p2-verdict`（verdict 映射已有单元证）。需 Steven 人签（ADR-0004 冻结断言变更）。
+  - **codex gpt-5.6-sol high 修正（2026-07-19，已采纳）**：**不得借删两案让原 `prd-p5-replay` s1 story 翻绿**——原 story 明确冻结 10 案 + 漂移探针 + fake-sut replay（`prd-p5-replay.json:27`），删两案标绿 = 把「契约被取代」伪装成「原契约通过」（假绿）。仓内先例 `supersession-revocation.json:3` = `superseded-tombstoned-not-pass`、旧 story 保持 false。正确：原 p5 story 保持 false/superseded + 出案级吊销收据（冻原 hash/作废因/后继）+ **新建 successor PRD 承 8 存活案**。此项归 DIRECTION-AFTER-CODEX.md 阶段二 (c)，前置于阶段一（信任根分离）之后。
 - **B 保持红、挂账等内核裁决**：本契约验收点 1 无法完整达成（`prd-p5-replay` s1 恒红 → 契约 s2 恒红），契约以「余账明示」姿态收口。诚实但把基础债留在原地，mountdelay 继续被卡。
 - **C 按新教义重写两案**：改成「合法 delete 绑定 + 域锁删除成功/缺席」的用例——证的是删除域锁而非漂移探针（该面已有 `workflow-delete-spec-preflight.static` 等覆盖），漂移证被静默丢弃，最不推荐。
 

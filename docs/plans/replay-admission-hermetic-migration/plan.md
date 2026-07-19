@@ -1,6 +1,8 @@
 # plan — replay-admission-hermetic-migration
 
-> 契约：full 车道，主树（非 kernel、不碰 `lib`/`bin`）。设计源 = 同目录 `PROPOSAL.md`（Steven 2026-07-19 亲裁路 a：测试签名锁注入 + 金牌迁移）。本文是实现计划：把 PROPOSAL 落成可执行分波 + 验收点，并记录两轮侦察对 PROPOSAL 的修正。
+> **⚠ 执行路径已作废（2026-07-19，codex 讨论 + Steven 裁决后）**：本文的波1-5 执行编排与 `PROPOSAL.md` 路 a（测试签名锁注入 + 金牌迁移）**不再采**——被 SKILL.md:107 真机规则（Q1 裁定也约束 dev gate/golden）与 trust-root 缺口（Q2 裁定先修信任根分离）双双证伪。**权威后续方向见同目录 `DIRECTION-AFTER-CODEX.md`（两阶段：先修生产/测试信任根分离 kernel 契约 → 再按生命周期重裁 hermetic 金牌套件）**。本文以下内容仅作调查过程溯源，勿据其执行。
+>
+> 契约：原声明 full 车道，主树。设计源曾 = 同目录 `PROPOSAL.md`。本文原是实现计划；波0（五核心 prd honest 翻红）已落且保留，波1（settle 锁绿）已 revert。
 
 ## 0. 目标一句话
 

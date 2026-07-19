@@ -1,35 +1,17 @@
 {
   "schemaVersion": 1,
-  "task": "replay-admission-hermetic-migration：把被 semantic-lock 准入门拦成 runtime-RED 的五个 hermetic 浏览器回放金牌，经生产同一权威铸造接口（prd checksum → 分域 opaque handle）合法迁入门内侧；陈旧绿先翻红记账再修绿；准入门 kernel 零改动、生产门零削弱。",
+  "task": "replay-admission-hermetic-migration（转调查/决策契约）：调查坐实 enforcement 9ee2731 把整套 hermetic 浏览器回放金牌（约24金牌/40prd）打成陈旧绿、且与 SKILL.md:107 真机规则冲突、并暴露既有 trust-root 缺口。codex gpt-5.6-sol high 异构讨论证实。Steven 2026-07-19 裁：原执行路径（重跑 fake-sut+注入测试锁锁绿）作废；正确方向=两阶段（先修生产/测试信任根分离 kernel 契约，再按生命周期重裁 hermetic 金牌套件）。见 docs/plans/replay-admission-hermetic-migration/DIRECTION-AFTER-CODEX.md。",
   "specPath": "docs/plans/replay-admission-hermetic-migration/plan.md",
-  "testChecksums": {
-    "tests/_golden/replay-admission-hermetic-migration.golden.mjs": "53bc03d6c9fa9753210de73f5e8c814cd7a675879130a63a04fdb8e4758893a0",
-    "tests/_golden/support/assert-affected-gates-green.mjs": "fe5d5a24cbd785ac7f93acd8f62597974259eac330335075016446afa0b90ab5"
-  },
+  "testChecksums": {},
   "observability": [
     {
-      "dimension": "测试签名锁只在 hermetic 金牌域生效；真机回放仍须真实人签冻结锁与真收据（本契约不触真机路径），真机升必过闸照旧 route:human。",
+      "dimension": "本契约执行路径作废、转调查/决策契约。交付=债务登记表(DEBT-REGISTER.md)+两阶段方向(DIRECTION-AFTER-CODEX.md)+codex验证(review/codex-sol-strategy-20260719.md)+五核心prd honest翻红。阶段一(信任根分离)/阶段二(hermetic金牌生命周期重裁)各另立契约、均须Steven参与。",
+      "route": "human"
+    },
+    {
+      "dimension": "波0五核心prd翻红(passes:false)保留权威：按Q1不得再跑gate(启动fake-sut)、这些honest红不能撤了重生。约35个非核心prd仍陈旧绿(未翻红)、待阶段二系统清偿(DEBT-REGISTER C组)。",
       "route": "human"
     }
   ],
-  "stories": [
-    {
-      "id": "s1-migration-registry-certification",
-      "desc": "迁移清单里每把测试锁/执行授权经生产读路合法注册生效；未注册键/错 prd/错域一律拒；清单与五个迁移金牌引用集合双向一致；夹具身份字段与注册条目一致。",
-      "lane": "implementation",
-      "acceptance": [
-        "node tests/_golden/replay-admission-hermetic-migration.golden.mjs"
-      ],
-      "passes": false
-    },
-    {
-      "id": "s2-affected-gates-restored",
-      "desc": "五个受影响 prd（p5-replay/wf-publish-states/replay-settle-mount/drawer-lock-hardening/replay-nth-visible-hardening）台账全部 story 由 gate 写回 passes:true——陈旧绿翻红记账后经迁移合法翻绿。",
-      "lane": "implementation",
-      "acceptance": [
-        "node tests/_golden/support/assert-affected-gates-green.mjs"
-      ],
-      "passes": false
-    }
-  ]
+  "stories": []
 }
