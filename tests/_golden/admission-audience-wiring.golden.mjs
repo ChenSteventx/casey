@@ -114,6 +114,28 @@ test('W3 compile --execute production 授权 + test 上下文 → 受众门 exit
   assert(!launched, '启动哨兵不应写（chromium.launch 未到达=浏览器未启动，机械证受众门在浏览器前拦）');
 });
 
+// W3b compile 正控（证 compile 哨兵非空，codex round-5：W1b 只证 replay 哨兵、compile 哨兵是另一份独立代码）：
+// 纯 read 原子只读 flow（nav.workflowManagement+assert.textVisible→无 mutation→deterministic-read-only-policy 过 admission）
+// + --skip-login（test 上下文、无受众门因无 --entity-authority）→ 过一切 compile 浏览器前门 → 到 compile launch 点 →
+// 哨兵写 + exit 66。证 W2/W3 的「哨兵缺席」确因 compile 门在 launch 前拦、非 compile 哨兵永不 fire。
+test('W3b compile 正控：纯只读 flow + --skip-login → 过 compile 前置门到 launch 点 → 哨兵写 + exit 66', () => {
+  const CD = join(HERE, 'fixtures/admission-audience/compile');
+  const tmp = mkdtempSync(join(tmpdir(), 'casey-compile-ro-'));
+  const CASE = 'tc_compile_ro';
+  const gate = spawnSync(process.execPath, [COMPILE, CASE, '--testcase', join(CD, 'ro-testcase.json'), '--flow', join(CD, 'ro-flow.json'), '--out-dir', tmp], { encoding: 'utf8', timeout: 60000 });
+  if (gate.status !== 0) { rmSync(tmp, { recursive: true, force: true }); throw new Error(`相1 闸段应 exit 0，实际 ${gate.status}：${(gate.stderr || '').slice(-160)}`); }
+  const compiledFlow = join(tmp, `flow-${CASE}.json`);
+  const fd = JSON.parse(readFileSync(compiledFlow, 'utf8'));
+  fd.confirmedBy = 'golden-human'; fd.confirmedAt = '2026-07-20T00:00:00.000Z';
+  writeFileSync(compiledFlow, JSON.stringify(fd, null, 2));
+  const sentinel = join(tmp, 'launched.sentinel');
+  const exec = spawnSync(process.execPath, [COMPILE, CASE, '--execute', '--testcase', join(CD, 'ro-testcase.json'), '--sut', 'http://127.0.0.1:1', '--out-dir', tmp, '--profile', join(CD, 'profile.json'), '--skip-login', '--unique-name', 'w3b'], { encoding: 'utf8', timeout: 60000, env: { ...process.env, CASEY_LAUNCH_SENTINEL: sentinel } });
+  const launched = existsSync(sentinel);
+  rmSync(tmp, { recursive: true, force: true });
+  assert(exec.status === 66, `只读 flow 过 compile 前置门应到 launch 哨兵 exit 66，实际 ${exec.status}：${(exec.stderr || '').slice(-200)}`);
+  assert(launched, '过 compile 前置门到 launch 点后 compile 哨兵必写（证 compile 哨兵机制会 fire、非空断言）');
+});
+
 rmSync(OUT, { force: true });
 if (failures.length > 0) { console.error(`\n${failures.length} 检查失败`); process.exit(1); }
 console.log('\n全部检查通过');

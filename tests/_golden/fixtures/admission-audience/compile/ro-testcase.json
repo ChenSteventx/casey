@@ -1,0 +1,1 @@
+{"schemaVersion":1,"caseId":"tc_compile_ro","channel":"web","uniquePrefix":"atl_","preconditions":["已登录"],"intents":[{"intentId":"intent_1","text":"进入并看到文案"}]}

@@ -1,0 +1,1 @@
+{"id":"tc_compile_ro","name":"纯只读","category":"normal","steps":[{"atom":"nav.workflowManagement","params":{}},{"atom":"assert.textVisible","params":{"text":"工作流"}}]}

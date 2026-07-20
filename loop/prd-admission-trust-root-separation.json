@@ -4,7 +4,7 @@
   "specPath": "docs/plans/admission-trust-root-separation/plan.md",
   "testChecksums": {
     "tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs": "d9120def3b80c2f223c0a5d7b9ba8da6eb853e0d17a88a2aa3a9b3e9f8d0dddb",
-    "tests/_golden/admission-audience-wiring.golden.mjs": "5a28f02492c542ce77756e2b62e12128b323e90c234cbdab96ecd837546e64ee",
+    "tests/_golden/admission-audience-wiring.golden.mjs": "68ee7315339e9cbb1700923e43ab7462850405dd168791bc444313d56822eb4f",
     "tests/_golden/fixtures/admission-audience/no-audience.frozen.json": "b0aae9532a77f47a76b7812ca08dc70b57c6a758d25920098e9c29291feb800c",
     "tests/_golden/fixtures/admission-audience/no-audience.execute.json": "1f44ee95a49251bd89e0f4b27d2e6193355b1cbd007a241b2ec6906b5c1c8414",
     "tests/_golden/fixtures/admission-audience/compile/testcase.json": "0378d6fd3d32bca07a0eb55507c697046385c2e8200a0a5517c15045cc47e946",
@@ -34,7 +34,7 @@
         "node tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-20T01:06:03.097Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-20T01:21:43.293Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-credential-gate-wiring",
@@ -44,7 +44,7 @@
         "node tests/_golden/admission-audience-wiring.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-20T01:06:38.213Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-20T01:22:26.754Z 全部 acceptance exit 0"
     }
   ]
 }

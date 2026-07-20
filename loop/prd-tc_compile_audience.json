@@ -3,7 +3,9 @@
   "task": "tc_compile_audience 接线夹具注册（admission-trust-root-separation）：production 受众 execute-authority，供接线金牌证 compile --execute 受众门在浏览器前拦。",
   "specPath": "docs/plans/admission-trust-root-separation/plan.md",
   "testChecksums": {
-    "tests/_golden/fixtures/admission-audience/compile/execute-authority.json": "4cf4e47c42397224e9de5d24e5a14c67964462f8b86e1f248450aa61899a535e"
+    "tests/_golden/fixtures/admission-audience/compile/execute-authority.json": "4cf4e47c42397224e9de5d24e5a14c67964462f8b86e1f248450aa61899a535e",
+    "tests/_golden/fixtures/admission-audience/compile/ro-testcase.json": "2b883a085b656796103ec64bff707945d8b6b8da274489c7e885843f236e3496",
+    "tests/_golden/fixtures/admission-audience/compile/ro-flow.json": "2036aef8af446d51ed0d3f02e8859e6dffb30d5fe9ecf5f6b5d67ac76c7690d0"
   },
   "stories": []
 }
