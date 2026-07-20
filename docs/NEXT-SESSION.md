@@ -9,6 +9,12 @@
 工作目录 /mnt/d/ctx/heren/casey，分支 dev（master 稳定 / test 提测）。
 你是接手者，零上下文起步——先读文档对齐，再按下一步动手。
 
+【2026-07-20 最新覆盖层】
+阶段二 hermetic-golden-zero-sut-lifecycle 已 6/6 done 并由 Steven 人签；mountdelay-fidelity 也已
+6/6 done、merge 6f244fb 入 dev。下方所有写“阶段二待做 / mountdelay 挂起”的 2026-07-19 段落只作
+历史溯源，不得据此重复实现。机器门禁：mountdelay 新验收 4/4、Grok R1 锁 2/2、既有单元 9/9、
+PRD gate 4/4 GREEN；旧 fake-SUT/browser 金牌仍 agentExecution=forbidden，绝不重跑。
+
 【一句话定位 + 血缘】
 Casey 是 autotester（人录·机回放·零 LLM）的「翻面」：输入端改 LLM 读懂文本用例，
 但「确定性是默认、LLM 是手术刀、完成是退出码、裁判零 LLM」的内核一字不让。
@@ -17,11 +23,11 @@ CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
 
 【先读，别现编已决的事】（必读顺序）
 1. CLAUDE.md + CONTEXT.md（统一语言注册表，命名以它为准；弃用别名黑名单；繁体禁用）
-2. docs/HANDOFF.md（最新进度，冲突以它为准；已更到 2026-07-19 晚：基础债转两阶段方向）
+2. docs/HANDOFF.md（最新进度，冲突以它为准；已更到 2026-07-20：阶段二与 mountdelay 全收口）
 3. loop/GUARDRAILS.md（19 条护栏逐条有效；#19=强制层/迁移落地必复跑受影响金牌、别信 tier1 分层绿）
 4. 追溯「为何这么定」：docs/adr/（架构决策主事实源）、docs/design/（端到端设计）。
 
-【当前状态（2026-07-19 晚）——基础债转两阶段方向，权威后续见 DIRECTION-AFTER-CODEX.md】
+【历史状态（2026-07-19 晚）——已被上方 2026-07-20 覆盖层接管，仅供溯源】
 本会话把「semantic-lock 准入门基础债」从 5 金牌口径推进到坐实真实规模并转向：
 - 规模真相：enforcement 9ee2731→dfee72c（2026-07-17）落地未迁移测试套件，把整个 hermetic
   浏览器回放金牌套件（约 24 金牌 / 40 prd）打成陈旧绿，非最初发现的 5 个。债务全貌钉死在
@@ -71,20 +77,12 @@ CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
 - 陈旧绿翻真纪律：enforcement/迁移落地必复跑受影响金牌（护栏 #19）；先翻红记账再修，不手改 passes、
   不盲目复签掩盖债（撞 fidelity-audit 翻真纪律）。
 
-【下一步（Steven 2026-07-19 定序：基础债转两阶段大工程；权威=DIRECTION-AFTER-CODEX.md）】
-A.（首推，前置）阶段一 生产/测试信任根分离——kernel 车道契约（触强制层，须 grill/plan +
-   护栏 #14/#15 审 + Steven 人签）。修 codex 逮的既有缺口：生产 reader 只读不可变发布 manifest、
-   不直接信任开发工作树 prd；artifact 带不可伪造 audience（prod/test）分根签、生产 reader 拒测试
-   signer；授权绑环境/SUT scope（不只绑 flow/events）；生产读路验 receipt 内容；测试 reader/发行物
-   物理分离、不靠自报 --hermetic；反向验收（强制）=测试锁交生产 reader 必被拒。承重 file:line 在
-   DIRECTION-AFTER-CODEX.md 阶段一。
-B. 阶段二（阶段一解完后）hermetic 金牌套件逐个生命周期重裁：(a) 转 zero-SUT 确定性（喂冻结
-   axes/事件夹具给纯裁判、不启动 SUT=主力出路）/ (b) 真机 UAT-only 墓碑 fake-sut 金牌 / (c) 教义
-   作废墓碑+命名后继（p5 drift/vanished：原 story superseded-not-pass 不借删两案翻绿 + successor
-   PRD 承 8 存活案 + 自愈 liveness 契约另立）。DEBT-REGISTER C 组约 35 非核心 prd 系统清偿。
-C. mountdelay-fidelity 续（基础债方向落地后）：worktree casey-mountdelay-fidelity 已存、grill+plan
-   done；注意其原设计依赖跑 fake-sut 金牌，须与阶段二 (a) zero-SUT 转化路线对齐后再动。
-D. 前瞻红基线 teachin-semantic-lock-runtime-discrimination-successor（0/26）真机轨填绿：route:human。
+【下一步（2026-07-20 最新）】
+A. 没有本链的 agent 可执行实现尾巴；不得重复做阶段二或 mountdelay。
+B. 需 Steven 在场的 route:human：阶段一 admission-trust-root-separation 人签/真机 execute UAT；
+   mountdelay 真机多次回放 + profile.loading 标定；隔离浏览器义务的真实 UAT 存证/可信签名/迁移机制
+   另立后续契约，单次绿不算 flaky 消除。
+C. 若暂不做真机，回到 HANDOFF 其它未完成候选重新 contract init；不要动主树既有用户未提交文件。
 
 【环境坑（WSL）】
 - 行尾/checksum 整库 LF 一致；查行尾用 node 数 0x0d、别用 grep -c $'\r'（git-bash 退化误报）。

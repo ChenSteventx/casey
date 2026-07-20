@@ -3,6 +3,34 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 2026-07-20 活动增量：阶段二生命周期重裁 + mountdelay-fidelity 全收口并入 dev
+
+**阶段二 `hermetic-golden-zero-sut-lifecycle` 六阶段全 done**（dev `95bb6bb`，ADR-0004 人签已落）：
+全量清点 27 个会启动 fake-SUT/浏览器的金牌，按逐 check 义务拆出 zero-SUT 存活单元，其余浏览器
+义务进入隔离账（239 obligations / 27 live executables，`agentExecution=forbidden`、route:human）。闭合机器
+包含依赖扫描、source-obligations、subsumption matrix、retirement/isolation receipts、PRD 反向闭包与突变
+电池；55/55 checksum 人签 GREEN。Pi DeepSeek V4 Pro 与 Grok 复审均 ACCEPT；Grok R1 的扫描器
+High/Medium 已补正负控修复。旧 fake-SUT 金牌没有被重新运行或伪称已迁真机。
+
+**`mountdelay-fidelity` 六阶段全 done，merge `6f244fb` 入 dev**：原计划依赖共享 fake-SUT 的部分按
+生命周期契约删除，不改/不跑共享 fixture。`lib/replay-settle.mjs` 新增严格 `profile.loading`
+selectors/text、DOM/占位同刻快照、所有模式至少三拍静止窗；配置态还须连续两拍证实占位消失，
+probe unknown 保持 `settled:false`。`bin/replay.mjs` 在浏览器前校验 profile 并只把 profile（不把
+expected）传给静默点。新 zero-SUT 验收 4/4、Grok R1 回归锁 2/2、既有存活单元 9/9、gate 4/4
+GREEN；生命周期闭合保持 GREEN。
+
+**异构评审链诚实收口**：Pi R1/R2 均 ACCEPT；Grok direct R1 两条有效 Medium 先造 0/2 红锁再修；
+Grok R2 要求 placeholderGone 连续三拍的争议，经 Claude Code Opus 无工具时间线裁决为不成立——
+`stableSamples>=3` 已保证配置态不弱于无配置，DOM 长度变化时自然重置为三拍 gone，长度不变时两拍
+gone 是原授权语义。完整收据见 `docs/plans/mountdelay-fidelity/review/summary.md`。
+
+**本链剩余项全部是 route:human，不是 agent 可自行翻绿的实现尾巴**：① 阶段一
+`admission-trust-root-separation` 的人签/真机 execute UAT；② 阶段二隔离浏览器义务的真实 UAT 存证、
+可信签名与迁移机制（已明确延期给后续 `real-uat-attestation` 类契约）；③ mountdelay 真机多次回放、
+`profile.loading` selector/text 与时序标定。单次真机绿不得宣称 flaky 已消除。
+
+主树既有未提交现场（`.gitignore`、三份无关 PRD、`docs/codex/` 等）均为用户/并行工作，合并时未触碰。
+
 ## 2026-07-20 活动增量：阶段一（生产/测试信任根分离 kernel 契约）六阶段 done + codex 六轮异构评审 PASS，待 route:human 人签
 
 **契约 `admission-trust-root-separation`（kernel/full）六阶段全 done**（grill/plan/accept/loop/review/learn），dev 到 `dd09ae7`。给冻结身份准入件加签名进自哈希的必填 `audience` 字段（准入受众 test|production）+ 铸权后启动浏览器前的纯函数**凭据上下文门**（严格匹配受众与凭据上下文：真凭据 run↔production、无凭据 run↔test，不符 fail-closed 不启动浏览器），机制阻断「测试锁被误指向真 SUT 授权真实改动」。设计=ADR-0010 + `docs/plans/admission-trust-root-separation/`（GRILL/plan/learn）。**明确不覆盖（ADR-0010 划界，后续契约）**：密钥签名/signerId 认证、不可变发布 manifest 根、receipt 读路复验、撤销、锁绑 SUT/环境 scope——本契约诚实划界为「防误用/泄漏」有界威胁。
