@@ -248,7 +248,7 @@ ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅�
   casey ingest  <caseId> --in <f> --out-dir <d>
                                           相0 归一：候选（CLI 外 LLM 产）→ 校验 → 规范 TestCase
   casey compile <caseId> --testcase <f> --flow <f> --out-dir <d>
-                                          相1 编译闸段（落 flow 待人 confirm）；执行段加 --execute --sut <本地基址> --profile <f> --entity-authority <f>；核验写链用 --verify --entity-locks <f>（纯只读可省）
+                                          相1 编译闸段（落 flow 待人 confirm）；执行段加 --execute --sut <本地基址> --profile <f> [--entity-authority <f>]（变更链必填、纯只读可省） [--skip-login]（带=测试凭据上下文不载凭据、匹配受众 test；不带=生产意图、浏览器前加载凭据，缺则 fail-closed） [--unique-name <tok>]；核验写链用 --verify --entity-locks <f>（纯只读可省）
   casey flow-bridge <caseId> --testcase <f> --mapping <f> --out-dir <d>
                                           相1 flow 草拟桥：TestCase + mapping → compile 的 --flow
   casey draft   <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]
