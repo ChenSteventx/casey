@@ -28,7 +28,8 @@
       "acceptance": [
         "node tests/_golden/teachin-admission-side-effect-policy.zero-sut.golden.mjs effects"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-20T10:02:50.174Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-per-operation-required-roles",
@@ -37,7 +38,8 @@
       "acceptance": [
         "node tests/_golden/teachin-admission-side-effect-policy.zero-sut.golden.mjs roles"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-20T10:02:50.609Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-compile-sign-provenance",
@@ -46,7 +48,8 @@
       "acceptance": [
         "node tests/_golden/teachin-admission-side-effect-policy.zero-sut.golden.mjs provenance"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-20T10:02:51.142Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-hostile-input-closure",
@@ -55,7 +58,8 @@
       "acceptance": [
         "node tests/_golden/teachin-admission-side-effect-policy.zero-sut.golden.mjs hostile"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-20T10:02:51.483Z 全部 acceptance exit 0"
     }
   ]
 }

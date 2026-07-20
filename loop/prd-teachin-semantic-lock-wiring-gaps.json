@@ -31,7 +31,8 @@
       "acceptance": [
         "node tests/_golden/teachin-semantic-lock-package-integrity.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-20T10:02:33.339Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-intake-three-artifact-joint-gate",
@@ -41,7 +42,7 @@
         "node tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-18T04:42:34.255Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-20T10:02:33.490Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-flow-source-intent-role-provenance",
@@ -50,7 +51,8 @@
       "acceptance": [
         "node tests/_golden/teachin-semantic-lock-flow-provenance.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-20T10:02:34.080Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-compile-presign-mutation-denial",
@@ -59,7 +61,8 @@
       "acceptance": [
         "node tests/_golden/teachin-semantic-lock-presign-bypass.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-20T10:02:34.367Z 全部 acceptance exit 0"
     },
     {
       "id": "s5-public-entry-lock-propagation",
@@ -68,7 +71,8 @@
       "acceptance": [
         "node tests/_golden/teachin-semantic-lock-public-bypass.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-20T10:02:34.505Z 全部 acceptance exit 0"
     }
   ]
 }
