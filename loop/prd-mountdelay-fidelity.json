@@ -4,6 +4,7 @@
   "specPath": "docs/plans/mountdelay-fidelity/plan.md",
   "testChecksums": {
     "tests/_golden/mountdelay-fidelity.zero-sut.golden.mjs": "cfd9b18d2e9b52b78175ff1e27e4a634388c98a63b1cc5bd7b3772a608321c56",
+    "tests/_golden/mountdelay-fidelity-review-r1.zero-sut.golden.mjs": "0d78600b84e9acfd18e4579c91f827f9cdd3c9f30ca96d6820b90aea5d8cc388",
     "tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs": "bed6bb6d6c0f614b00231e3570e05df4d83a65a288d3f2ec6607641c6634d75a",
     "tests/_golden/hermetic-golden-lifecycle-closure.zero-sut.golden.mjs": "ede769f511e7633b30d46807f977df1e88a50a03f400737e917a52d86014149d"
   },
@@ -30,7 +31,17 @@
         "node tests/_golden/mountdelay-fidelity.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-20T08:51:40.713Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-20T09:15:24.053Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s1b-grok-r1-fail-safe",
+      "desc": "Grok R1 有效 finding 回归锁：配置态 number-only 结果视为 unknown；selector 从未命中也不得弱于三拍静止窗。修复前 0/2 红。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/mountdelay-fidelity-review-r1.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-20T09:15:25.366Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-existing-settle-regression",
@@ -40,7 +51,7 @@
         "node tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-20T08:51:47.296Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-20T09:15:31.862Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-lifecycle-closure",
@@ -50,7 +61,7 @@
         "node tests/_golden/hermetic-golden-lifecycle-closure.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-20T08:51:51.201Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-20T09:15:35.994Z 全部 acceptance exit 0"
     }
   ]
 }
