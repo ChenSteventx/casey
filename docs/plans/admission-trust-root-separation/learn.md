@@ -14,7 +14,7 @@ kernel 车道契约六阶段走完（grill/plan/accept/loop/review done，learn 
 
 ## 教训（承重，已沉淀记忆）
 
-1. **判金牌只信退出码、别 grep 失败标记串**（[[verify-goldens-by-exit-code]]）：round-1 我用 `grep "not ok"` 判「12 golden 全绿」，但 sidecar 用 `FAIL` 标记、实为 exit 1，误报绿 + 提交假绿，codex 当场逮。批量验金牌一律 `node g.mjs; echo $?`。
+1. **判金牌只信退出码**（别扫失败标记串，[[verify-goldens-by-exit-code]]）：round-1 我用 `grep "not ok"` 判「12 golden 全绿」，但 sidecar 用 `FAIL` 标记、实为 exit 1，误报绿 + 提交假绿，codex 当场逮。批量验金牌一律 `node g.mjs; echo $?`。
 2. **异构评审对强制层改动真挣钱**（`kernel` 车道，[[heterogeneous-review-on-premises-not-just-code]]、[[review-uses-codex]]）：codex 六轮逐轮逼出我 Claude 家族自审看漏的洞——① 生产门零削弱不成立(锁不绑--sut) ② SKILL.md:107 冲突 ③ sign 写路径未迁移 ④ compile 假凭据判据 ⑤ W2 没真测门 ⑥ C5b 错误原因假绿 ⑦ 无产物≠没启动 ⑧ W1b 不证 compile 哨兵。换 Claude 同族自审一个都逮不出。**弱证/假绿是本契约反复踩的坑**：断言「拒了」不等于「为对的原因拒」、断言「产物缺席」不等于「没执行到那一步」——机械证据要能被反例突变（删掉被测代码则测试必红）证伪才算数。
 3. **迁移共享冻结面按消费路径分**：`audience` 是 preflight schema 字段、只加 preflight 路夹具；v2 授权链夹具误加会破其独立校验（round-1 逮）。改冻结面前先查每个夹具「消费 golden 调哪条读路」。
 
