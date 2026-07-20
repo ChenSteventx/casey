@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "entity-pre-execution-authority",
+  "authorizedFor": "compile-execute",
+  "caseId": "tc_compile_audience",
+  "signed": true,
+  "signerId": "compile-wiring-prod",
+  "signedAt": "2026-07-20T00:00:00.000Z",
+  "audience": "production",
+  "flowSha256": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "testcaseSha256": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "bindings": [
+    {
+      "sourceIntentId": "intent_1",
+      "candidateId": "candidate-x",
+      "role": "target"
+    }
+  ],
+  "signature": "sha256:6631c905004b2db062e0320c3c4b88c9275fffb5dbb16ecc7073ee6f910b4132"
+}

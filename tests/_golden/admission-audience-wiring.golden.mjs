@@ -71,9 +71,33 @@ test('W2 compile --execute 非 skip-login 且无凭据 → 凭据探测浏览器
   // 执行段：非 --skip-login + 指向不存在的凭据文件 → 凭据探测抛 → 浏览器前 exit 65
   const exec = spawnSync(process.execPath, [COMPILE, CASE, '--execute', '--testcase', testcase, '--sut', 'http://127.0.0.1:1', '--out-dir', outDir, '--profile', profile, '--unique-name', 'w2'], { encoding: 'utf8', timeout: 60000, env: { ...process.env, AT_CREDS_FILE: join(tmp, 'nonexistent.auth') } });
   const stderr = exec.stderr || '';
+  const products = ['events.json', `observed-${CASE}.json`].map((n) => existsSync(join(outDir, n)));
   rmSync(tmp, { recursive: true, force: true });
   assert(exec.status === 65, `非 skip-login 无凭据应 exit 65（凭据探测门前拦），实际 ${exec.status}：${stderr.slice(-200)}`);
   assert(/未启动浏览器/.test(stderr), `stderr 应声明未启动浏览器，实际 ${stderr.slice(-200)}`);
+  assert(!products[0] && !products[1], '不得有执行产物（浏览器未跑=门在浏览器前拦的可观测证据）');
+});
+
+// W3 compile 受众门（codex round-3：真正证 compile 的 checkCredentialAudienceGate 分支）：production execute-authority
+// + test 上下文（--skip-login）→ 受众门在浏览器前 exit 65 CREDENTIAL_AUDIENCE_MISMATCH，且零执行产物（events.json/
+// observed 不存在=浏览器未跑）。删掉 compile 受众门则本例转红。受众门置于 admission 前、故授权只需 schema 合法。
+test('W3 compile --execute production 授权 + test 上下文 → 受众门 exit 65 CREDENTIAL_AUDIENCE_MISMATCH、零执行产物', () => {
+  const CD = join(HERE, 'fixtures/admission-audience/compile');
+  const tmp = mkdtempSync(join(tmpdir(), 'casey-compile-aud-'));
+  const CASE = 'tc_compile_audience';
+  const gate = spawnSync(process.execPath, [COMPILE, CASE, '--testcase', join(CD, 'testcase.json'), '--flow', join(CD, 'flow.json'), '--out-dir', tmp], { encoding: 'utf8', timeout: 60000 });
+  if (gate.status !== 0) { rmSync(tmp, { recursive: true, force: true }); throw new Error(`相1 闸段应 exit 0，实际 ${gate.status}：${(gate.stderr || '').slice(-160)}`); }
+  const compiledFlow = join(tmp, `flow-${CASE}.json`);
+  const fd = JSON.parse(readFileSync(compiledFlow, 'utf8'));
+  fd.confirmedBy = 'golden-human'; fd.confirmedAt = '2026-07-20T00:00:00.000Z';
+  writeFileSync(compiledFlow, JSON.stringify(fd, null, 2));
+  const exec = spawnSync(process.execPath, [COMPILE, CASE, '--execute', '--testcase', join(CD, 'testcase.json'), '--sut', 'http://127.0.0.1:1', '--out-dir', tmp, '--profile', join(CD, 'profile.json'), '--entity-authority', join(CD, 'execute-authority.json'), '--skip-login', '--unique-name', 'w3'], { encoding: 'utf8', timeout: 60000 });
+  const stderr = exec.stderr || '';
+  const products = ['events.json', `observed-${CASE}.json`].map((n) => existsSync(join(tmp, n)));
+  rmSync(tmp, { recursive: true, force: true });
+  assert(exec.status === 65, `production 授权 + test 上下文应 exit 65，实际 ${exec.status}：${stderr.slice(-200)}`);
+  assert(/CREDENTIAL_AUDIENCE_MISMATCH/.test(stderr), `stderr 应含 CREDENTIAL_AUDIENCE_MISMATCH，实际 ${stderr.slice(-200)}`);
+  assert(!products[0] && !products[1], '不得有执行产物 events.json/observed（浏览器未跑=门在浏览器前拦的可观测证据）');
 });
 
 rmSync(OUT, { force: true });

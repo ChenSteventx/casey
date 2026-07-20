@@ -3,10 +3,13 @@
   "task": "admission-trust-root-separation（阶段一 kernel）：给冻结身份准入件加签名进自哈希的必填 audience 字段（准入受众）+ 铸权后启动浏览器前的凭据上下文门（严格匹配受众与凭据上下文，不符 fail-closed）。防「测试锁被误指向真 SUT 授权真实改动」。设计=ADR-0010+GRILL.md+plan.md。",
   "specPath": "docs/plans/admission-trust-root-separation/plan.md",
   "testChecksums": {
-    "tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs": "b4e3bbda90ccac77b399f8e5ddd2f865153961747059f513cc46cabe37c4d706",
-    "tests/_golden/admission-audience-wiring.golden.mjs": "8e9f7ec6ae6b4633af538d748868aaa1d8380e39dd278f1d395ac6e12133b726",
+    "tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs": "0d07b678e609ac3374d678be0ad93571db2e732d00f55426c7bc9c3c8632faa3",
+    "tests/_golden/admission-audience-wiring.golden.mjs": "3dfb1dccb62e73c521bbd6d79108eeaf04e8e7396d76ba8997b8ebc5cfdc7016",
     "tests/_golden/fixtures/admission-audience/no-audience.frozen.json": "b0aae9532a77f47a76b7812ca08dc70b57c6a758d25920098e9c29291feb800c",
-    "tests/_golden/fixtures/admission-audience/no-audience.execute.json": "fc4fe3a7193f46cac2a189e1f914d37fa140d19c12249370de8762c970bb8ee9"
+    "tests/_golden/fixtures/admission-audience/no-audience.execute.json": "1f44ee95a49251bd89e0f4b27d2e6193355b1cbd007a241b2ec6906b5c1c8414",
+    "tests/_golden/fixtures/admission-audience/compile/testcase.json": "0378d6fd3d32bca07a0eb55507c697046385c2e8200a0a5517c15045cc47e946",
+    "tests/_golden/fixtures/admission-audience/compile/flow.json": "6ba19a73d2e127991ce2fd6f6c4819a47d45484cb31bc7a3ad42eddaea98564e",
+    "tests/_golden/fixtures/admission-audience/compile/profile.json": "474aee7a63025c2ad1320c4b64f7d770eb7a8088e33295b8f4d01f9eda4ace65"
   },
   "observability": [
     {
@@ -31,7 +34,7 @@
         "node tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-20T00:32:49.146Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-20T00:47:01.610Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-credential-gate-wiring",
@@ -41,7 +44,7 @@
         "node tests/_golden/admission-audience-wiring.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-20T00:33:06.105Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-20T00:47:26.831Z 全部 acceptance exit 0"
     }
   ]
 }

@@ -66,9 +66,11 @@ test('C5 无 audience 的冻结件经生产读路被拒（audience 必填）', (
 });
 
 // ── C5b execute 域 schema 必填 audience（经生产读路）──
-test('C5b 无 audience 的 execute 授权件经生产读路被拒（audience 必填，execute 域）', () => {
+// 负样本【仅缺 audience、其余字段与签名自洽】（自签覆盖无 audience 内容）——故拒因确为「缺 audience」非签名失配。
+test('C5b 仅缺 audience 的自洽 execute 授权件经生产读路被拒 SCHEMA_INVALID（audience 必填，execute 域）', () => {
   const r = admission.readIdentityAdmissionAuthorityFromPrd({ prdId: CONTRACT_PRD, artifactKey: NEG_EXEC_KEY, domain: 'execute' });
-  assertDenied(r, '缺 audience 字段的 execute 授权件必须被拒（frozen 与 execute 两域对称必填）');
+  assertDenied(r, '仅缺 audience 的 execute 授权件必须被拒（frozen 与 execute 两域对称必填）');
+  assert(r.reason === 'IDENTITY_AUTHORITY_ARTIFACT_SCHEMA_INVALID', `拒因应为 schema 非法（缺必填 audience），实际 ${r.reason}`);
 });
 
 // ── C6 签名覆盖 audience（篡改检测）──

@@ -1,0 +1,9 @@
+{
+  "schemaVersion": 1,
+  "task": "tc_compile_audience 接线夹具注册（admission-trust-root-separation）：production 受众 execute-authority，供接线金牌证 compile --execute 受众门在浏览器前拦。",
+  "specPath": "docs/plans/admission-trust-root-separation/plan.md",
+  "testChecksums": {
+    "tests/_golden/fixtures/admission-audience/compile/execute-authority.json": "4cf4e47c42397224e9de5d24e5a14c67964462f8b86e1f248450aa61899a535e"
+  },
+  "stories": []
+}

@@ -1,0 +1,1 @@
+{"id":"tc_compile_audience","name":"只读接线","category":"normal","steps":[{"atom":"nav.workflowManagement","params":{}},{"atom":"assert.onPage","params":{"urlIncludes":"/process/list"}}]}

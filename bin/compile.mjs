@@ -174,24 +174,10 @@ async function executeMode(caseId, args) {
     })
     : null;
   const executeAuthority = executeAuthorityRead?.ok === true ? executeAuthorityRead.authority : null;
-  const identityAdmission = checkCompileIdentityAdmission({
-    mode: 'execute',
-    caseId,
-    containsEntityMutation,
-    flow: flowDoc.flow,
-    executeAuthority,
-    flowBytes: readFileSync(flowFile),
-    testcaseBytes: readFileSync(String(args.testcase)),
-    requiredBindings: requiredFlowEntityBindings(flowDoc.flow),
-  });
-  if (!identityAdmission.ok) {
-    console.error(`compile --execute: 预执行身份授权未过（${identityAdmission.reason}），未启动浏览器；下一步 ${identityAdmission.nextAction}`);
-    process.exit(65);
-  }
-  // 凭据上下文门（ADR-0010，codex High-2 修）：铸权后、启动浏览器前，按【实际凭据加载】派生上下文（非 --skip-login
-  // 旗标自报）——非 skip-login=生产意图，此处即把站点配置/凭据加载掉：成功=production 上下文、失败=浏览器前 exit 65
-  // fail-closed（绝不启动浏览器后才发现无凭据）；--skip-login=test 上下文、无凭据。受众与上下文严格匹配，不符 exit 65。
-  // 与 replay.mjs 同律（实际加载派生、浏览器前拦）。防测试锁被误指向真 SUT 授权真实改动。
+  // 凭据上下文门（ADR-0010，codex High-2 修）：铸权后、启动浏览器前、且【早于】bindings 准入——按实际凭据加载派生
+  // 上下文（非 --skip-login 旗标自报）：非 skip-login=生产意图，此处即把站点配置/凭据加载掉，成功=production 上下文、
+  // 失败=浏览器前 exit 65 fail-closed（绝不启动浏览器后才发现无凭据）；--skip-login=test 上下文、无凭据。受众与上下文
+  // 严格匹配，不符 exit 65。与 replay.mjs 同律；受众与 bindings 正交、故置于 admission 之前更早 fail-closed。防测试锁误指真 SUT。
   let preloadedCreds = null;
   let credentialContext = 'test';
   if (!args['skip-login']) {
@@ -210,6 +196,20 @@ async function executeMode(caseId, args) {
       console.error(`compile --execute: 准入受众与凭据上下文不符（${audienceGate.reason}：受众=${executeAuthorityRead.audience} 上下文=${credentialContext}），未启动浏览器；下一步 ${audienceGate.nextAction}`);
       process.exit(65);
     }
+  }
+  const identityAdmission = checkCompileIdentityAdmission({
+    mode: 'execute',
+    caseId,
+    containsEntityMutation,
+    flow: flowDoc.flow,
+    executeAuthority,
+    flowBytes: readFileSync(flowFile),
+    testcaseBytes: readFileSync(String(args.testcase)),
+    requiredBindings: requiredFlowEntityBindings(flowDoc.flow),
+  });
+  if (!identityAdmission.ok) {
+    console.error(`compile --execute: 预执行身份授权未过（${identityAdmission.reason}），未启动浏览器；下一步 ${identityAdmission.nextAction}`);
+    process.exit(65);
   }
   // 旧成功产物清场（R2-F3）：本目录语义 = 本次运行结果；先清旧 events/observed，
   // 失败路径绝不让上一轮成功产物残留假冒本轮（可进 P4 的只能是本轮全 unique 产物）。
