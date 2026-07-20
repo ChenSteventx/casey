@@ -29,8 +29,8 @@
       "acceptance": [
         "node tests/_golden/mountdelay-fidelity.zero-sut.golden.mjs"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-07-20T08:51:40.713Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-existing-settle-regression",
@@ -39,8 +39,8 @@
       "acceptance": [
         "node tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-07-20T08:51:47.296Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-lifecycle-closure",
@@ -49,8 +49,8 @@
       "acceptance": [
         "node tests/_golden/hermetic-golden-lifecycle-closure.zero-sut.golden.mjs"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-07-20T08:51:51.201Z 全部 acceptance exit 0"
     }
   ]
 }
