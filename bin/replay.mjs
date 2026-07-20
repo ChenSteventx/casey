@@ -15,7 +15,7 @@
 // 裁判零 LLM（护栏 #15）：本进程只产三轴事实，绝不裁定、绝不问 LLM、绝不写 verdict/passes。
 // 取证按【动作作用域 + 发起方】归因（护栏 #15，非时间窗）：currentStepId 仅在该步动作执行+静默期开放，
 //   预导航/上下文恢复期一律 null；证不出归 null（fail-safe，护栏 #14）。
-import { readFileSync, writeFileSync, renameSync, readdirSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, writeSync, renameSync, readdirSync, rmSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import pw from '@playwright/test';
 import { performAction } from '../lib/replay-actions.mjs';
@@ -266,7 +266,10 @@ async function main() {
       if (!entryPath && typeof eventsDoc.url === 'string' && eventsDoc.url) entryPath = pathOf(instantiate(eventsDoc.url, ctx));
       loginPrep = { site, creds, startUrl: sut + (entryPath || '/') };
     } catch (e) {
-      console.error('replay: 登录预备动作前置失败（fail-closed；凭据/站点配置详情不回显，护栏 #7——output-seal B5）'); // e.message 可携 AT_CREDS_FILE 路径
+      // process.exit() does not wait for an asynchronous stderr pipe to flush.
+      // This pre-launch rejection is consumed by deterministic callers, so emit
+      // the fixed, credential-free line synchronously before the terminal exit.
+      writeSync(2, 'replay: 登录预备动作前置失败（fail-closed；凭据/站点配置详情不回显，护栏 #7——output-seal B5）\n'); // e.message 可携 AT_CREDS_FILE 路径
       process.exit(65);
     }
   }
