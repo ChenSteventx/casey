@@ -216,7 +216,7 @@ check('B5 replay 登录预备动作前置失败报文不携 AT_CREDS_FILE 路径
   const events = wf('b5-events.json', { schemaVersion: 2, channel: 'web', caseId: 'tc_b5', url, recordedAt: '2026-07-07T00:00:00.000Z', compiledBy: 'golden', authored: false, events: [{ stepId: 'atstep_0', intentId: 'intent_1', atom: 'nav.workflowManagement', action: 'nav', url }] });
   const exp = wf('b5-expected.json', signExpected({ caseId: 'tc_b5', channel: 'web', intents: [{ intentId: 'intent_1', expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/ai-manager/process/list' }] }], globalAssertions: [] }));
   const profile = wf('b5-profile.json', { background: [], successField: 'status', successValue: 200 });
-  const site = wf('b5-site.json', {});
+  const site = wf('b5-site-config.json', {});
   const launchSentinel = join(tmp, 'b5-launch.sentinel');
   const env = { ...process.env, AT_SITE_JSON: site, AT_CREDS_FILE: join(tmp, 'SEEDVAL_B5_x9dir', 'creds.json'), CASEY_LAUNCH_SENTINEL: launchSentinel };
   delete env.AT_CREDS_USER; delete env.AT_CREDS_PASS;

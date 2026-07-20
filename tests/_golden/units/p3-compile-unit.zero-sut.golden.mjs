@@ -53,7 +53,7 @@ await check('p3-compile-unit-c2', async () => {
   const sitePath = join(tmp, 'site.synth.json');
   writeFileSync(sitePath, JSON.stringify({ login: { user: { name: '账号X' } }, target: { startUrl: 'http://x.invalid/' } }));
   const site = loadSiteConfig(sitePath);
-  if (site.login.user.name !== '账号X') throw new Error('site.json 深合并覆盖未生效');
+  if (site.login.user.name !== '账号X') throw new Error('site config 深合并覆盖未生效');
   if (site.login.submit.name !== '登 录') throw new Error('深合并须保留未覆盖键');
   if (site.target?.startUrl !== 'http://x.invalid/') throw new Error('顶层键须透传');
   const saved = { user: process.env.AT_CREDS_USER, pass: process.env.AT_CREDS_PASS };
