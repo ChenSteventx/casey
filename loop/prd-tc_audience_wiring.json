@@ -6,7 +6,8 @@
     "tests/_golden/fixtures/admission-audience/wiring/entity-locks.frozen.json": "8db6318bea6cdf855b36f099b5fdf3cf8f04aaf21ea77ff3eb5a11f56948c888",
     "tests/_golden/fixtures/admission-audience/wiring/events.document.json": "270f443a0de5e5481c9418d3cbbf45ad2838beea7b2034d4175062a5789de928",
     "tests/_golden/fixtures/admission-audience/wiring/expected.frozen.json": "5696d9a551278daf6d6ef3b17381b6446b70a679700fba836a7fbb18e210b7eb",
-    "tests/_golden/fixtures/admission-audience/wiring/profile.json": "fd7b04c65d8121fbdec939852629096bd9ce84756d48f3e8ad9075b967a64cef"
+    "tests/_golden/fixtures/admission-audience/wiring/profile.json": "fd7b04c65d8121fbdec939852629096bd9ce84756d48f3e8ad9075b967a64cef",
+    "tests/_golden/fixtures/admission-audience/wiring/entity-locks.test.frozen.json": "d5f4ac307a0d5d7519caac26da9d877667c041eaf2e94ff5a4a6f015e70bf37e"
   },
   "stories": []
 }

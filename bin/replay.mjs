@@ -353,6 +353,10 @@ async function main() {
   }
   const allStepIds = new Set(events.map((e) => e.stepId));
 
+  // 浏览器启动哨兵（仅测试注入，生产 env 未设即 no-op）：到达本行=控制流已越过一切浏览器前 fail-closed 门（准入/受众门）。
+  // 设 env 时写哨兵并 exit 66 短路——【不真启浏览器】即可让验收金牌机械证「门是否在浏览器前拦」：门先 fire→exit 65
+  // 哨兵缺席；控制流到达此点→哨兵在 + exit 66（正控证哨兵非空、非 axes 缺席那种可被先启动后退门绕过的弱证）。codex round-4。
+  if (process.env.CASEY_LAUNCH_SENTINEL) { writeFileSync(process.env.CASEY_LAUNCH_SENTINEL, 'launched'); process.exit(66); }
   const browser = await chromium.launch({ headless: true });
   activeBrowser = browser;
   // 录像 opt-in（M3）：recordVideo 是 context 级选项；缺省不带旗标时 newContext 无参、行为一字不变。

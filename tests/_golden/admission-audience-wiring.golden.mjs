@@ -26,23 +26,36 @@ function test(name, fn) {
 }
 function assert(c, m) { if (!c) throw new Error(m); }
 
-function runReplay(extraArgs = []) {
+// CASEY_LAUNCH_SENTINEL：compile/replay 在 chromium.launch 前若 env 设则写此文件——门在浏览器前 fail-closed 则它不存在，
+// 令「未启动浏览器」可机械证（codex round-4：产物缺席不足证，浏览器可先启动再退门仍无最终产物）。
+function runReplay(lockName = 'entity-locks.frozen.json') {
   rmSync(OUT, { force: true });
+  const sentinel = join(mkdtempSync(join(tmpdir(), 'casey-sentinel-')), 'launched');
   const r = spawnSync(process.execPath, [
     REPLAY, '--events', join(W, 'events.document.json'), '--sut', 'http://127.0.0.1:1',
     '--expected', join(W, 'expected.frozen.json'), '--profile', join(W, 'profile.json'),
-    '--entity-locks', join(W, 'entity-locks.frozen.json'), '--out', OUT, ...extraArgs,
-  ], { encoding: 'utf8', timeout: 60000 });
-  return r;
+    '--entity-locks', join(W, lockName), '--out', OUT,
+  ], { encoding: 'utf8', timeout: 60000, env: { ...process.env, CASEY_LAUNCH_SENTINEL: sentinel } });
+  const launched = existsSync(sentinel);
+  rmSync(dirname(sentinel), { recursive: true, force: true });
+  return { r, launched };
 }
 
-// W1 核心接线：production 受众锁 + test 上下文（无 login）→ 门在浏览器前 exit 65、不落 axes。
-test('W1 production 受众锁 + test 上下文 → 凭据门浏览器前 exit 65、不启动浏览器', () => {
-  const r = runReplay();
+// W1 核心接线：production 受众锁 + test 上下文（无 login）→ 门在浏览器前 exit 65、不落 axes、启动哨兵未写。
+test('W1 production 受众锁 + test 上下文 → 凭据门浏览器前 exit 65、启动哨兵未写', () => {
+  const { r, launched } = runReplay();
   assert(r.status === 65, `应 exit 65（门拦），实际 ${r.status}：${(r.stderr || '').slice(-160)}`);
   assert(/CREDENTIAL_AUDIENCE_MISMATCH/.test(r.stderr || ''), `stderr 应含 CREDENTIAL_AUDIENCE_MISMATCH，实际 ${(r.stderr || '').slice(-160)}`);
-  assert(/未启动浏览器/.test(r.stderr || ''), 'stderr 应声明未启动浏览器');
-  assert(!existsSync(OUT), 'axes 不应落盘（门在采集前拦、无浏览器动作）');
+  assert(!launched, '启动哨兵不应写（chromium.launch 未到达=浏览器未启动，机械证）');
+  assert(!existsSync(OUT), 'axes 不应落盘（门在采集前拦）');
+});
+
+// W1b 正控（证哨兵非空）：test 受众锁 + test 上下文（无 login）→ 受众匹配、过一切浏览器前门 → 到达 launch 点 →
+// 哨兵写 + exit 66 短路（不真启浏览器）。证明 W1/W2/W3 的「哨兵未写」不是因哨兵永不 fire、而确是门在 launch 前拦。
+test('W1b 正控：test 受众锁 + test 上下文 → 过门到 launch 点 → 哨兵写 + exit 66（哨兵机制非空）', () => {
+  const { r, launched } = runReplay('entity-locks.test.frozen.json');
+  assert(r.status === 66, `受众匹配应过门到 launch 哨兵 exit 66，实际 ${r.status}：${(r.stderr || '').slice(-160)}`);
+  assert(launched, '过门到 launch 点后启动哨兵必写（证哨兵机制会 fire、非空断言）');
 });
 
 // W2 compile 接线（codex High-2 修复的可执行回归证据）：compile --execute 非 --skip-login 且无凭据 →
@@ -69,13 +82,13 @@ test('W2 compile --execute 非 skip-login 且无凭据 → 凭据探测浏览器
   fd.confirmedBy = 'golden-human'; fd.confirmedAt = '2026-07-20T00:00:00.000Z';
   writeFileSync(compiledFlow, JSON.stringify(fd, null, 2));
   // 执行段：非 --skip-login + 指向不存在的凭据文件 → 凭据探测抛 → 浏览器前 exit 65
-  const exec = spawnSync(process.execPath, [COMPILE, CASE, '--execute', '--testcase', testcase, '--sut', 'http://127.0.0.1:1', '--out-dir', outDir, '--profile', profile, '--unique-name', 'w2'], { encoding: 'utf8', timeout: 60000, env: { ...process.env, AT_CREDS_FILE: join(tmp, 'nonexistent.auth') } });
+  const sentinel = join(tmp, 'launched.sentinel');
+  const exec = spawnSync(process.execPath, [COMPILE, CASE, '--execute', '--testcase', testcase, '--sut', 'http://127.0.0.1:1', '--out-dir', outDir, '--profile', profile, '--unique-name', 'w2'], { encoding: 'utf8', timeout: 60000, env: { ...process.env, AT_CREDS_FILE: join(tmp, 'nonexistent.auth'), CASEY_LAUNCH_SENTINEL: sentinel } });
   const stderr = exec.stderr || '';
-  const products = ['events.json', `observed-${CASE}.json`].map((n) => existsSync(join(outDir, n)));
+  const launched = existsSync(sentinel);
   rmSync(tmp, { recursive: true, force: true });
   assert(exec.status === 65, `非 skip-login 无凭据应 exit 65（凭据探测门前拦），实际 ${exec.status}：${stderr.slice(-200)}`);
-  assert(/未启动浏览器/.test(stderr), `stderr 应声明未启动浏览器，实际 ${stderr.slice(-200)}`);
-  assert(!products[0] && !products[1], '不得有执行产物（浏览器未跑=门在浏览器前拦的可观测证据）');
+  assert(!launched, '启动哨兵不应写（chromium.launch 未到达=浏览器未启动，机械证）');
 });
 
 // W3 compile 受众门（codex round-3：真正证 compile 的 checkCredentialAudienceGate 分支）：production execute-authority
@@ -91,13 +104,14 @@ test('W3 compile --execute production 授权 + test 上下文 → 受众门 exit
   const fd = JSON.parse(readFileSync(compiledFlow, 'utf8'));
   fd.confirmedBy = 'golden-human'; fd.confirmedAt = '2026-07-20T00:00:00.000Z';
   writeFileSync(compiledFlow, JSON.stringify(fd, null, 2));
-  const exec = spawnSync(process.execPath, [COMPILE, CASE, '--execute', '--testcase', join(CD, 'testcase.json'), '--sut', 'http://127.0.0.1:1', '--out-dir', tmp, '--profile', join(CD, 'profile.json'), '--entity-authority', join(CD, 'execute-authority.json'), '--skip-login', '--unique-name', 'w3'], { encoding: 'utf8', timeout: 60000 });
+  const sentinel = join(tmp, 'launched.sentinel');
+  const exec = spawnSync(process.execPath, [COMPILE, CASE, '--execute', '--testcase', join(CD, 'testcase.json'), '--sut', 'http://127.0.0.1:1', '--out-dir', tmp, '--profile', join(CD, 'profile.json'), '--entity-authority', join(CD, 'execute-authority.json'), '--skip-login', '--unique-name', 'w3'], { encoding: 'utf8', timeout: 60000, env: { ...process.env, CASEY_LAUNCH_SENTINEL: sentinel } });
   const stderr = exec.stderr || '';
-  const products = ['events.json', `observed-${CASE}.json`].map((n) => existsSync(join(tmp, n)));
+  const launched = existsSync(sentinel);
   rmSync(tmp, { recursive: true, force: true });
   assert(exec.status === 65, `production 授权 + test 上下文应 exit 65，实际 ${exec.status}：${stderr.slice(-200)}`);
   assert(/CREDENTIAL_AUDIENCE_MISMATCH/.test(stderr), `stderr 应含 CREDENTIAL_AUDIENCE_MISMATCH，实际 ${stderr.slice(-200)}`);
-  assert(!products[0] && !products[1], '不得有执行产物 events.json/observed（浏览器未跑=门在浏览器前拦的可观测证据）');
+  assert(!launched, '启动哨兵不应写（chromium.launch 未到达=浏览器未启动，机械证受众门在浏览器前拦）');
 });
 
 rmSync(OUT, { force: true });
