@@ -3,6 +3,16 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 2026-07-20 活动增量：阶段一（生产/测试信任根分离 kernel 契约）六阶段 done + codex 六轮异构评审 PASS，待 route:human 人签
+
+**契约 `admission-trust-root-separation`（kernel/full）六阶段全 done**（grill/plan/accept/loop/review/learn），dev 到 `dd09ae7`。给冻结身份准入件加签名进自哈希的必填 `audience` 字段（准入受众 test|production）+ 铸权后启动浏览器前的纯函数**凭据上下文门**（严格匹配受众与凭据上下文：真凭据 run↔production、无凭据 run↔test，不符 fail-closed 不启动浏览器），机制阻断「测试锁被误指向真 SUT 授权真实改动」。设计=ADR-0010 + `docs/plans/admission-trust-root-separation/`（GRILL/plan/learn）。**明确不覆盖（ADR-0010 划界，后续契约）**：密钥签名/signerId 认证、不可变发布 manifest 根、receipt 读路复验、撤销、锁绑 SUT/环境 scope——本契约诚实划界为「防误用/泄漏」有界威胁。
+
+**codex gpt-5.6-sol high 六轮异构评审 PASS**（`docs/plans/admission-trust-root-separation/review/`，入 audit）——kernel 强制层异构评审真挣钱的极强实证。逐轮逼出我 Claude 家族自审看漏的洞 + 我三次自造的假绿/弱证：① 生产门零削弱不成立(锁不绑 --sut) ② SKILL.md:107 冲突 ③ 我用错 grep 标记误报绿+提假绿(已沉淀记忆「判金牌只信退出码」) ④ sign 写路径未迁移 ⑤ compile 假凭据判据 ⑥ W2 没真测门 ⑦ C5b 错误原因假绿 ⑧「无产物≠没启动」⑨ W1b 不证 compile 哨兵。全消解，Medium-4 六轮闭合（浏览器启动哨兵机械化 + 双正控 W1b replay/W3b compile）。
+
+**待 route:human（kernel 纪律，交 Steven）**：① 冻结夹具/金牌改动的 ADR-0004 人签（3 preflight 夹具重签 audience:test + sidecar golden/schema + 3 敌意夹具 + 新增验收金牌与夹具）；② compile --execute 真机 execute 授权路径端到端 UAT 抽验（audience-mismatch 分支，W3 已覆盖其 hermetic 可执行回归证据）。
+
+**与阶段二关系**：本契约独立加固、非阶段二前置（Q1 决策）——阶段二 hermetic 金牌生命周期重裁主力走 zero-SUT、不碰准入门；见 `docs/plans/replay-admission-hermetic-migration/DIRECTION-AFTER-CODEX.md`。**下一步**：阶段二（金牌生命周期重裁）或 mountdelay-fidelity 续（视基础债方向落地）。主树活契约槽收口后归还 alh-open-entry。
+
 ## 2026-07-19 晚活动增量：基础债规模远超预估 + codex 讨论推翻锁绿路径 → 转两阶段方向（信任根分离 → 金牌生命周期重裁）
 
 **权威后续方向 = `docs/plans/replay-admission-hermetic-migration/DIRECTION-AFTER-CODEX.md`**。本会话把基础债从「5 金牌」推进到坐实真实规模并**转向**：
