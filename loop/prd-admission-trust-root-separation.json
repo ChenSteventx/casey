@@ -3,9 +3,10 @@
   "task": "admission-trust-root-separation（阶段一 kernel）：给冻结身份准入件加签名进自哈希的必填 audience 字段（准入受众）+ 铸权后启动浏览器前的凭据上下文门（严格匹配受众与凭据上下文，不符 fail-closed）。防「测试锁被误指向真 SUT 授权真实改动」。设计=ADR-0010+GRILL.md+plan.md。",
   "specPath": "docs/plans/admission-trust-root-separation/plan.md",
   "testChecksums": {
-    "tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs": "e7e914aa6a3b4689964fc144262ef58c7e1565f14746bedb493d898b2b0d7d2c",
-    "tests/_golden/admission-audience-wiring.golden.mjs": "06389b3a47227635f7e03d480c457e59aa956e1705027fdb22aa20853ee298ba",
-    "tests/_golden/fixtures/admission-audience/no-audience.frozen.json": "b0aae9532a77f47a76b7812ca08dc70b57c6a758d25920098e9c29291feb800c"
+    "tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs": "b4e3bbda90ccac77b399f8e5ddd2f865153961747059f513cc46cabe37c4d706",
+    "tests/_golden/admission-audience-wiring.golden.mjs": "8e9f7ec6ae6b4633af538d748868aaa1d8380e39dd278f1d395ac6e12133b726",
+    "tests/_golden/fixtures/admission-audience/no-audience.frozen.json": "b0aae9532a77f47a76b7812ca08dc70b57c6a758d25920098e9c29291feb800c",
+    "tests/_golden/fixtures/admission-audience/no-audience.execute.json": "fc4fe3a7193f46cac2a189e1f914d37fa140d19c12249370de8762c970bb8ee9"
   },
   "observability": [
     {
@@ -13,7 +14,7 @@
       "route": "human"
     },
     {
-      "dimension": "compile --execute 接线（codex High-2 已修 Option A：凭据探测挪到 chromium.launch 前、上下文按实际加载派生、缺凭据 exit 65）：其真机 execute 授权路径的端到端 fail-closed 待真机 UAT 抽验；replay 侧同门同律已有 W1 hermetic 可执行证据。",
+      "dimension": "compile --execute 接线（codex High-2 已修 Option A）：W2 hermetic 可执行证据已覆盖「凭据探测在浏览器前 fail-closed exit 65」核心修复；audience mismatch 分支与 replay W1 同门同律。真机 execute 授权路径端到端仍待真机 UAT 抽验（route:human）。",
       "route": "human"
     },
     {
@@ -30,7 +31,7 @@
         "node tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-20T00:07:44.179Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-20T00:32:49.146Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-credential-gate-wiring",
@@ -40,7 +41,7 @@
         "node tests/_golden/admission-audience-wiring.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-20T00:07:50.004Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-20T00:33:06.105Z 全部 acceptance exit 0"
     }
   ]
 }

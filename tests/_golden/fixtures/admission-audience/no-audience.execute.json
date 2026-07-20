@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "entity-pre-execution-authority",
+  "authorizedFor": "compile-execute",
+  "caseId": "tc-admission-authority",
+  "signed": true,
+  "signerId": "fixture-human",
+  "signedAt": "2026-07-17T00:00:00.000Z",
+  "flowSha256": "sha256:b6805e9595d423e84df5979d114c45015787afde310e5393a25078e411093b58",
+  "testcaseSha256": "sha256:d2a737fb2ee3796cb51c442a0a01dfbce7a7becf8f6c19feb9a3dc6bccd90cb0",
+  "bindings": [
+    {
+      "sourceIntentId": "intent_1",
+      "candidateId": "candidate-workflow-main",
+      "role": "target"
+    }
+  ],
+  "signature": "sha256:c6b2e1d0a4d4bf3ffb7f144353545c1d581854c4e51cf148cd5a295817105635"
+}

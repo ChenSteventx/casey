@@ -47,6 +47,7 @@ function signEntityArgs(args) {
     ...flag('entity-bindings-draft', draft),
     ...flag('entity-confirmations', confirmations),
     ...flag('entity-locks-out', out),
+    ...flag('audience', args.audience), // 准入受众（ADR-0010）：产实体锁必带 test|production，缺则 CLI fail-closed
   ];
 }
 // export：漂移锁金牌直接对 toArgs 做 argv 映射表断言（cli-mcp-face 契约 codex R1-F1）；服务行为零变。
@@ -96,7 +97,7 @@ export const TOOLS = [
   {
     name: 'casey_sign',
     description: '相2 人签门：草稿 → 冻结签署 + PRD checksum；实体语义锁须把 events、entityBindingsDraft、entityConfirmations、entityLocksOut 四件成组传入。缺件由 CLI exit 64，绝不静默只签 expected。签署人身份归人、本工具只代跑 CLI。',
-    inputSchema: { type: 'object', required: ['caseId', 'draft', 'prd', 'frozenOut', 'signer', 'againstBuild'], properties: { caseId: { type: 'string' }, draft: { type: 'string' }, prd: { type: 'string' }, frozenOut: { type: 'string' }, signer: { type: 'string' }, againstBuild: { type: 'string' }, signedAt: { type: 'string' }, verdictBaseline: { type: 'string' }, resign: { type: 'boolean' }, force: { type: 'boolean' }, archiveDir: { type: 'string' }, events: { type: 'string', description: '最终 events v2 原字节路径；实体锁四件套之一' }, entityBindingsDraft: { type: 'string', description: 'compile 产 entity-bindings.draft.json' }, entityConfirmations: { type: 'string', description: '人确认 receipts 文件' }, entityLocksOut: { type: 'string', description: '固定名 entity-locks.frozen.json' }, entityLocksDraft: { type: 'string', deprecated: true, description: '旧名兼容；等价 entityBindingsDraft' }, entityLocksConfirm: { type: 'string', deprecated: true, description: '旧名兼容；等价 entityConfirmations' }, entityLocksFrozen: { type: 'string', deprecated: true, description: '旧名兼容；等价 entityLocksOut' } } },
+    inputSchema: { type: 'object', required: ['caseId', 'draft', 'prd', 'frozenOut', 'signer', 'againstBuild'], properties: { caseId: { type: 'string' }, draft: { type: 'string' }, prd: { type: 'string' }, frozenOut: { type: 'string' }, signer: { type: 'string' }, againstBuild: { type: 'string' }, signedAt: { type: 'string' }, verdictBaseline: { type: 'string' }, resign: { type: 'boolean' }, force: { type: 'boolean' }, archiveDir: { type: 'string' }, events: { type: 'string', description: '最终 events v2 原字节路径；实体锁四件套之一' }, entityBindingsDraft: { type: 'string', description: 'compile 产 entity-bindings.draft.json' }, entityConfirmations: { type: 'string', description: '人确认 receipts 文件' }, entityLocksOut: { type: 'string', description: '固定名 entity-locks.frozen.json' }, audience: { type: 'string', enum: ['test', 'production'], description: '准入受众（ADR-0010）：产实体锁必带 test|production，签进冻结件自哈希；缺则 CLI fail-closed exit 65' }, entityLocksDraft: { type: 'string', deprecated: true, description: '旧名兼容；等价 entityBindingsDraft' }, entityLocksConfirm: { type: 'string', deprecated: true, description: '旧名兼容；等价 entityConfirmations' }, entityLocksFrozen: { type: 'string', deprecated: true, description: '旧名兼容；等价 entityLocksOut' } } },
     toArgs: (a) => ['sign', ...(a.caseId ? [a.caseId] : []), ...flag('draft', a.draft), ...flag('prd', a.prd), ...flag('frozen-out', a.frozenOut), ...flag('signer', a.signer), ...flag('against-build', a.againstBuild), ...flag('signed-at', a.signedAt), ...flag('verdict-baseline', a.verdictBaseline), ...boolFlag('resign', a.resign), ...boolFlag('force', a.force), ...flag('archive-dir', a.archiveDir), ...signEntityArgs(a)],
   },
   {

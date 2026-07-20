@@ -253,7 +253,7 @@ ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅�
                                           相1 flow 草拟桥：TestCase + mapping → compile 的 --flow
   casey draft   <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]
                                           相2 断言草拟：骨架+补缝合并+闸 → expected.draft（未签）
-  casey sign    <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--events <f> --entity-bindings-draft <f> --entity-confirmations <f> --entity-locks-out <f>] [--signed-at <iso> --verdict-baseline <f> --resign --force --archive-dir <d>]
+  casey sign    <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--events <f> --entity-bindings-draft <f> --entity-confirmations <f> --entity-locks-out <f> --audience <test|production>] [--signed-at <iso> --verdict-baseline <f> --resign --force --archive-dir <d>]
                                           相2 人签门：草稿→冻结签署（未签契约会被回放前置闸拒）
   casey record  <caseId> --sut <本地基址> --out-dir <d> (--login-bootstrap|--no-login) [--from-events <f> --headless --max-ms <ms>]
                                           示教采集：人工操作→teach-in-capture.json（只作蒸馏语料，不签署、不直通回放）

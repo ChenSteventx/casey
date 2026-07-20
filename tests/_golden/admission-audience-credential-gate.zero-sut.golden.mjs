@@ -8,6 +8,7 @@ import { readFileSync } from 'node:fs';
 import * as admission from '../../lib/entity-semantic-lock-preflight.mjs';
 
 const NEG_KEY = 'tests/_golden/fixtures/admission-audience/no-audience.frozen.json';
+const NEG_EXEC_KEY = 'tests/_golden/fixtures/admission-audience/no-audience.execute.json';
 const CONTRACT_PRD = 'admission-trust-root-separation';
 // 已签合法冻结件（含 audience:test），用于篡改检测：读它、改 audience、断言签名失配。
 const SIGNED_FROZEN = new URL('./fixtures/teachin-semantic-lock-admission-authority/entity-locks.frozen.json', import.meta.url);
@@ -62,6 +63,12 @@ test('C4 反向验收：测试受众件在生产凭据上下文被机制阻断',
 test('C5 无 audience 的冻结件经生产读路被拒（audience 必填）', () => {
   const r = admission.readIdentityAdmissionAuthorityFromPrd({ prdId: CONTRACT_PRD, artifactKey: NEG_KEY, domain: 'verify' });
   assertDenied(r, '缺 audience 字段的冻结件必须被拒（现役接受=红，实现后必填校验拒=绿）');
+});
+
+// ── C5b execute 域 schema 必填 audience（经生产读路）──
+test('C5b 无 audience 的 execute 授权件经生产读路被拒（audience 必填，execute 域）', () => {
+  const r = admission.readIdentityAdmissionAuthorityFromPrd({ prdId: CONTRACT_PRD, artifactKey: NEG_EXEC_KEY, domain: 'execute' });
+  assertDenied(r, '缺 audience 字段的 execute 授权件必须被拒（frozen 与 execute 两域对称必填）');
 });
 
 // ── C6 签名覆盖 audience（篡改检测）──
