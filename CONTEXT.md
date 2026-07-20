@@ -94,7 +94,7 @@
 | 语义定位器 | Semantic Locator | 按 ARIA 角色/可访问名/标签/文本定位（getByRole/getByText/getByLabel），对照 CSS 选择器与坐标兜底；回放定位与点击身份门的基础（迁自 autotester 核心域） | — | — |
 | 网络取证 | Network Forensics | `watchNetworkForensics`：记 response/requestfailed 的 {url,status,initiator} + error-envelope，按请求发起方归因（非时间窗） | — |
 | 错误信封 | Error Envelope | 响应 body 的成功字段判失败的软失败（典型：HTTP 200 但 body 表失败）；`noErrorEnvelope` 断言据此取证；成功字段按 channel 参数化、经`通道剖面`注入（web/Heren 实测为 body `status===200`，非早期假设的 `code!=0`） | — |
-| 通道剖面 | Channel Profile | runner 回放某 channel 所需的非凭据配置：背景 denylist + 错误信封成功字段/值；与 `site.json` 凭据密文严格分离（护栏 #7 边界），hermetic 经 `--profile` 传合成值、tier-2 由 site.json 非凭据子集投影 | — |
+| 通道剖面 | Channel Profile | runner 回放某 channel 所需的非凭据配置：背景 denylist + 错误信封成功字段/值 + 可选加载占位 selectors/text；与 `site.json` 凭据密文严格分离（护栏 #7 边界），hermetic 经 `--profile` 传合成值、tier-2 由 site.json 非凭据子集投影 | — |
 | 通道驱动 | channelDriver | 端口适配器式接缝：声明某驱动在某 channel 上能执行的动作能力集（actionSpace，严格 ⊆ events.schema 枚举）+ 每动作 call 指针 + coordinateSpace + 取证能力；只声明能力，transport/denylist/成功字段归 通道剖面（只带 profileRef 指针不内嵌）。分工镜像 动作词汇表 : channelDriver ≈ 断言词汇表 : 通道剖面；verdict.mjs 绝不读它、对 action 不可知（护栏 #17） | — |
 | 三轴 | Three-Axis | 回放期每个原子步吐的三组事实——动作（过点击身份门判 true/ambiguous/false）/ 逐条断言（typed kind 各一条，断言续跑、不首错即停）/ 取证（网络取证 + 生命周期）；零 LLM 的 `verdict.mjs` 据此跑判定树出四态，是裁判·桥·报告共吃的数据契约 | — |
 | 自愈 | Self-heal | 相5：仅对确证 `HARNESS_ERROR` 的有界重锚；是裁定的下游消费者，绝不反向进入裁判进程 | — |

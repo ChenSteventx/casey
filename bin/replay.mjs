@@ -5,7 +5,8 @@
 //   [--run-history <f>] [--run-metrics <f>] [--run-id <id>]（opt-in 回放历史/回放指标真产出，缺省行为一字不变）：
 //   纯观察者逐 event 收集（零新增等待、零改动作时序——动了取证归因窗即污染护栏 #15），与 axes 同刻经
 //   凭据兜底门一次写出；仅诊断证据，绝不进 verdict.mjs、绝不写 passes（口径见 docs/plans/run-history/proposed/GRILL.md）。
-//   --profile = 通道剖面（非凭据）：{ background:[denylist], successField, successValue }。
+//   --profile = 通道剖面（非凭据）：{ background:[denylist], successField, successValue,
+//     loading?:{selectors?:string[],text?:string} }。
 //   --login-bootstrap（opt-in，缺省行为一字不变）：回放前执行登录预备动作（CONTEXT.md 术语）——
 //     不产 event、不进 axes、凭据只进内存（护栏 #7）；前置加载/登录失败 exit 65 不落 axes（护栏 #14）。
 //   --video-dir <dir>（opt-in，缺省行为一字不变，replay-video GRILL M3）：context 级录屏——正常收敛后
@@ -21,7 +22,7 @@ import pw from '@playwright/test';
 import { performAction } from '../lib/replay-actions.mjs';
 import { instantiate } from '../lib/instantiate.mjs';
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
-import { settleBeforeCapture } from '../lib/replay-settle.mjs';
+import { normalizeLoadingProfile, settleBeforeCapture } from '../lib/replay-settle.mjs';
 import { evaluateAssertions, inputReadbackFromAction } from '../lib/replay-assert.mjs';
 import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
 import { credentialGate, maskCredentialRoute } from '../lib/cred-gate.mjs';
@@ -215,6 +216,11 @@ async function main() {
     process.exit(65);
   }
   const profile = readJsonSafe(args.profile, 'profile');
+  try { normalizeLoadingProfile(profile); }
+  catch {
+    console.error('replay: profile.loading 形状非法，浏览器启动前拒绝');
+    process.exit(65);
+  }
   const events = eventsDoc.events || [];
   // 破坏性删除的陈旧 spec 必须在启动浏览器、接触 SUT 前拒绝。否则前序创建/发布已发生后，
   // 两个无 value 的 click 才 fail-safe，会制造可避免的 atl_ 残留。正确恢复路径是重编译 events，
@@ -572,6 +578,7 @@ async function main() {
             inFlight: () => forensics.inFlightCount(),
             floorMs: Number.isFinite(settleFloor) && settleFloor >= 0 ? settleFloor : undefined,
             budgetMs: Number.isFinite(settleBudget) && settleBudget > 0 ? settleBudget : undefined,
+            profile,
             log,
           });
           reprSettled = sr.settled;

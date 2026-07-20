@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "task": "mountdelay-fidelity（full）：在已隔离的浏览器金牌之外，以 zero-SUT 桩页加严 settleBeforeCapture。profile.loading 配置存在时，稳定且在途归零仍须等加载占位全部消失；无配置时用至少三拍静止窗兜底；占位探测异常不假称 settled。bin/replay.mjs 只把 profile 传入静默点，绝不把 expected 变成放行判据。",
+  "specPath": "docs/plans/mountdelay-fidelity/plan.md",
+  "testChecksums": {
+    "tests/_golden/mountdelay-fidelity.zero-sut.golden.mjs": "cfd9b18d2e9b52b78175ff1e27e4a634388c98a63b1cc5bd7b3772a608321c56",
+    "tests/_golden/mountdelay-fidelity-review-r1.zero-sut.golden.mjs": "0d78600b84e9acfd18e4579c91f827f9cdd3c9f30ca96d6820b90aea5d8cc388",
+    "tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs": "bed6bb6d6c0f614b00231e3570e05df4d83a65a288d3f2ec6607641c6634d75a",
+    "tests/_golden/hermetic-golden-lifecycle-closure.zero-sut.golden.mjs": "ede769f511e7633b30d46807f977df1e88a50a03f400737e917a52d86014149d"
+  },
+  "observability": [
+    {
+      "dimension": "真实 DOM 的加载占位是否忠实代表 UI 提交完成，以及 buttonState actual>=1 的因果链，只能由真机多次回放与 run-history 时间线证明；桩页判据不冒充等价覆盖。",
+      "route": "human"
+    },
+    {
+      "dimension": "原 I1-I6/W1 与其它 fake-SUT 浏览器回归已由生命周期契约隔离，agentExecution=forbidden；人工运行时仍须遵守隔离清单与真机准入。",
+      "route": "human"
+    },
+    {
+      "dimension": "真机 profile.loading selectors/text 与静止窗延迟的标定、flaky 消除及最终人签。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-loading-gate-zero-sut",
+      "desc": "桩页验收占位门、三拍静止窗、探测故障 fail-safe 与 profile 接线；实现前 0/4 红。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/mountdelay-fidelity.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-20T09:15:24.053Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s1b-grok-r1-fail-safe",
+      "desc": "Grok R1 有效 finding 回归锁：配置态 number-only 结果视为 unknown；selector 从未命中也不得弱于三拍静止窗。修复前 0/2 红。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/mountdelay-fidelity-review-r1.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-20T09:15:25.366Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-existing-settle-regression",
+      "desc": "既有 replay-settle 存活单元继续绿色，新增实现不得改写已冻结后继。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-20T09:15:31.862Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-lifecycle-closure",
+      "desc": "生命周期闭合与禁止执行边界保持绿色，浏览器义务继续隔离。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/hermetic-golden-lifecycle-closure.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-20T09:15:35.994Z 全部 acceptance exit 0"
+    }
+  ]
+}
