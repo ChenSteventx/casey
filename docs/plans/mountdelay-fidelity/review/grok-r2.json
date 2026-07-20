@@ -1,0 +1,12 @@
+{
+  "findings": [
+    {
+      "file": "lib/replay-settle.mjs",
+      "line": 149,
+      "severity": "Medium",
+      "issue": "R2 要求 configured loading gate 的 placeholderGone 也连续三拍。",
+      "disposition": "rejected-after-claude-adjudication",
+      "reason": "stableSamples>=3 已保证配置态不弱于无配置；DOM 长度变化会重置计数并自然要求三拍 gone，长度不变时两拍 gone 是原授权语义。"
+    }
+  ]
+}
