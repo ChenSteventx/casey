@@ -55,3 +55,20 @@ pass-through：把 `profile.loading`（selectors/text）传进 `settleBeforeCapt
 - 占位门 selectors 配错/真机无稳定占位 → 退兜底静止窗（B），真机标定挂 route:human。
 - 静止窗兜底残余竞态（挂载延迟超 STILL_TICKS）——域通用无占位配置时的已知局限，如实挂账。
 - 5 prd 重签叠在初始工作树 M（drawer/p5-replay/replay-nth 等 gate 时间戳漂移，用户的）——worktree 隔离干净重签，合并点按并发 git 卫生只提显式路径。
+
+## 2026-07-20 生命周期对齐
+
+`hermetic-golden-zero-sut-lifecycle` 已在本契约挂起期间把
+`replay-settle-mount.golden.mjs` 的 U1-U8 拆为存活的 zero-SUT 单元，并把 I1-I6/W1
+浏览器义务隔离为 `agentExecution=forbidden`。因此本契约不再新增或运行 fake-SUT
+场景，也不把桩页判据覆盖冒充为真实 DOM 因果链的等价后继。
+
+机器验收收窄为四条：配置占位在场时不得早放；占位消失并重新稳定后才放行；无配置
+时静止窗从两拍加严为至少三拍；占位探测异常时证不出稳定，耗尽预算返回
+`settled:false`；以及 `bin/replay.mjs` 把 `profile` 传给静默点且不传 `expected`。
+旧计划中的 `actual>=1`、端到端 PASS、其它浏览器场景零回归与真机 flaky 消除全部保留
+为 route:human，不进入 agent 可执行验收。
+
+旧设计曾写“占位探测抛错后退回两拍基础判据”，这会让损坏配置比无配置更早放行，
+与 fail-safe 不变量冲突。本次明确修正为探测异常不累计稳定拍，预算耗尽后按现状采并
+返回 `settled:false`；该变化只影响新增占位门，不改变既有 inFlight 降级语义。
