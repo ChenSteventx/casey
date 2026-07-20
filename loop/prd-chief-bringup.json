@@ -14,10 +14,9 @@
   "stories": [
     {
       "id": "s1-bringup-four-fixes",
-      "desc": "四修验收：chiefcomplaint golden 11/11（含 C2 路由 nav 断言）+ tier1 回归。",
+      "desc": "四修验收：chiefcomplaint golden 11/11（含 C2 路由 nav 断言）+ tier1 回归。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,

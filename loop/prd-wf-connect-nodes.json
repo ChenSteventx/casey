@@ -14,25 +14,19 @@
   "stories": [
     {
       "id": "s1-connect-atom-and-coverage",
-      "desc": "connectNodes 端到端金牌（C1 集 15 / C2 compile→replay→verdict 全 PASS / C3 fail-closed 反面真缺席用例 / C4 addNode +2 路径）+ fake-sut 真并行网关开始双节点夹具 + 修 codex F1/F2 健壮性缝。红先行：C4 现红（缺 +2 夹具）+ F1/F2 修前节点缺席崩回放/无诊断实锤。",
+      "desc": "connectNodes 端到端金牌（C1 集 15 / C2 compile→replay→verdict 全 PASS / C3 fail-closed 反面真缺席用例 / C4 addNode +2 路径）+ fake-sut 真并行网关开始双节点夹具 + 修 codex F1/F2 健壮性缝。红先行：C4 现红（缺 +2 夹具）+ F1/F2 修前节点缺席崩回放/无诊断实锤。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/wf-connect-nodes.golden.mjs",
-        "node tests/_golden/wf-add-node.golden.mjs",
-        "node tests/_golden/flow-bridge.golden.mjs",
-        "node tests/_golden/wf-open-smoke.golden.mjs"
+        "node tests/_golden/flow-bridge.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-07T15:59:48.751Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-resign-and-regression",
-      "desc": "四漂移棘轮 prd 重签（wf-add-node/flow-bridge/wf-open-smoke/p5-replay）+ 新金牌冻 prd-wf-connect-nodes；全链回归零行为差。",
+      "desc": "四漂移棘轮 prd 重签（wf-add-node/flow-bridge/wf-open-smoke/p5-replay）+ 新金牌冻 prd-wf-connect-nodes；全链回归零行为差。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p5-replay.golden.mjs",
-        "node tests/_golden/e2e-chain.golden.mjs",
-        "node tests/_golden/p3-compile.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,

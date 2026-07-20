@@ -3,7 +3,7 @@
   "task": "output-seal（full）：全仓输出通道封缝——caseid-echo-mask 挂账兑现。High 5 + Med 13 真裸口（A1-A13 + B1-B8 择收）+ C 类点名（ingest/flow-bridge 凭据门产物名键改固定标签）+ inbox/candidates 落盘过门。修法两模板：ingest 遮值句式 / login-bootstrap 消毒重抛；遮值不降诊断（类型词 + intentId/序号定位保留）。决策 docs/plans/output-seal/proposed/GRILL.md D1-D6，缝谱系 proposed/AUDIT.md。",
   "specPath": "docs/plans/output-seal/plan.md",
   "testChecksums": {
-    "tests/_golden/output-seal.golden.mjs": "0b9b7528c2134e5bb61cffb8c3d321829f0c04be5a0eae2866db4d355d140bb7"
+    "tests/_golden/output-seal.golden.mjs": "db2cec484fda0ebbe51bfa5e9410724d13d43a0b7eab9686a1b48f2d1e29cc94"
   },
   "observability": [
     "B5 登录期报文收敛（bin/replay.mjs :274/:307/:329 三处 Playwright 在飞报错面）hermetic 触发不了：哨兵只钉 :199 前置口（AT_CREDS_FILE 缺文件路径种子）；三处在飞面收敛为只留 e.name + 固定文案后须真机验证 route:human。",
@@ -14,16 +14,12 @@
   "stories": [
     {
       "id": "s1-output-seal",
-      "desc": "逐封口遮值/消毒 + report 穿越面字符集闸 + inbox/candidates 落盘过门。红先行 0/26（20 种子回显 + 2 多行栈帧 + 4 新闸退出码实锤）；退出码与修前语义一致、遮值不降诊断（类型词 + intentId/序号定位）。",
+      "desc": "逐封口遮值/消毒 + report 穿越面字符集闸 + inbox/candidates 落盘过门。红先行 0/26（20 种子回显 + 2 多行栈帧 + 4 新闸退出码实锤）；退出码与修前语义一致、遮值不降诊断（类型词 + intentId/序号定位）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/output-seal.golden.mjs",
         "node bin/casey.mjs selftest --tier1",
-        "node tests/_golden/e2e-chain.golden.mjs",
-        "node tests/_golden/p2-sign.golden.mjs",
         "node tests/_golden/draft-cli.golden.mjs",
-        "node tests/_golden/p3-compile.golden.mjs",
-        "node tests/_golden/p5-replay.golden.mjs",
         "node tests/_golden/p7-report.golden.mjs",
         "node tests/_golden/caseid-echo-mask.golden.mjs"
       ],

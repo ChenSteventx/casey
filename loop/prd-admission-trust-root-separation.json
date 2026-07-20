@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "task": "admission-trust-root-separation（阶段一 kernel）：给冻结身份准入件加签名进自哈希的必填 audience 字段（准入受众）+ 铸权后启动浏览器前的凭据上下文门（严格匹配受众与凭据上下文，不符 fail-closed）。防「测试锁被误指向真 SUT 授权真实改动」。设计=ADR-0010+GRILL.md+plan.md。",
+  "specPath": "docs/plans/admission-trust-root-separation/plan.md",
+  "testChecksums": {
+    "tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs": "d9120def3b80c2f223c0a5d7b9ba8da6eb853e0d17a88a2aa3a9b3e9f8d0dddb",
+    "tests/_golden/admission-audience-wiring.golden.mjs": "378bc81e9005c503c323b245f5dd1533402217471d2872343abf3632a6bb7972",
+    "tests/_golden/fixtures/admission-audience/no-audience.frozen.json": "b0aae9532a77f47a76b7812ca08dc70b57c6a758d25920098e9c29291feb800c",
+    "tests/_golden/fixtures/admission-audience/no-audience.execute.json": "1f44ee95a49251bd89e0f4b27d2e6193355b1cbd007a241b2ec6906b5c1c8414",
+    "tests/_golden/fixtures/admission-audience/compile/testcase.json": "0378d6fd3d32bca07a0eb55507c697046385c2e8200a0a5517c15045cc47e946",
+    "tests/_golden/fixtures/admission-audience/compile/flow.json": "6ba19a73d2e127991ce2fd6f6c4819a47d45484cb31bc7a3ad42eddaea98564e",
+    "tests/_golden/fixtures/admission-audience/compile/profile.json": "474aee7a63025c2ad1320c4b64f7d770eb7a8088e33295b8f4d01f9eda4ace65"
+  },
+  "observability": [
+    {
+      "dimension": "迁移零回归（验收8）：preflight 夹具(admission-authority×2/sidecar)加 audience:test 重签 + prd checksum + sidecar golden(S2 sign 路径/S4 schema)与其 frozen schema 更新 + 3 敌意夹具加 audience 为本意缺陷被拒；全走 sign 流程人签(ADR-0004)。v2 授权链夹具不动。",
+      "route": "human"
+    },
+    {
+      "dimension": "compile --execute 接线（codex High-2 已修 Option A）：W2 hermetic 可执行证据已覆盖「凭据探测在浏览器前 fail-closed exit 65」核心修复；audience mismatch 分支与 replay W1 同门同律。真机 execute 授权路径端到端仍待真机 UAT 抽验（route:human）。",
+      "route": "human"
+    },
+    {
+      "dimension": "明确不覆盖（ADR-0010 划界）：密钥签名/signerId 认证、不可变发布 manifest 根、receipt 读路复验、撤销、锁绑 SUT/环境 scope——各另立后续契约。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-credential-audience-gate",
+      "desc": "准入受众必填 + 凭据上下文门严格匹配：门导出/四态/畸形 fail-closed/反向验收（测试受众件在生产上下文被阻断）/无 audience 件经生产读路被拒。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-20T01:29:51.879Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-credential-gate-wiring",
+      "desc": "凭据上下文门在 replay 浏览器启动前拦：production 受众锁+test 上下文 → exit 65(CREDENTIAL_AUDIENCE_MISMATCH)、不落 axes、不启动浏览器（codex High-2 接线可执行证据）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/admission-audience-wiring.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-20T01:30:36.864Z 全部 acceptance exit 0"
+    }
+  ]
+}

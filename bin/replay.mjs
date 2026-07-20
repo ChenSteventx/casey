@@ -15,7 +15,7 @@
 // 裁判零 LLM（护栏 #15）：本进程只产三轴事实，绝不裁定、绝不问 LLM、绝不写 verdict/passes。
 // 取证按【动作作用域 + 发起方】归因（护栏 #15，非时间窗）：currentStepId 仅在该步动作执行+静默期开放，
 //   预导航/上下文恢复期一律 null；证不出归 null（fail-safe，护栏 #14）。
-import { readFileSync, writeFileSync, renameSync, readdirSync, rmSync } from 'node:fs';
+import { readFileSync, writeFileSync, writeSync, renameSync, readdirSync, rmSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import pw from '@playwright/test';
 import { performAction } from '../lib/replay-actions.mjs';
@@ -32,6 +32,7 @@ import { projectReplayAssertion, validateReplayEntityAnchors } from '../lib/repl
 import {
   checkReplayEntityAdmission as checkCompileIdentityAdmission,
   readIdentityAdmissionAuthorityFromPrd,
+  checkCredentialAudienceGate,
 } from '../lib/entity-semantic-lock-preflight.mjs';
 import { PROJECT_ROOT } from '../lib/paths.mjs';
 
@@ -265,7 +266,22 @@ async function main() {
       if (!entryPath && typeof eventsDoc.url === 'string' && eventsDoc.url) entryPath = pathOf(instantiate(eventsDoc.url, ctx));
       loginPrep = { site, creds, startUrl: sut + (entryPath || '/') };
     } catch (e) {
-      console.error('replay: 登录预备动作前置失败（fail-closed；凭据/站点配置详情不回显，护栏 #7——output-seal B5）'); // e.message 可携 AT_CREDS_FILE 路径
+      // process.exit() does not wait for an asynchronous stderr pipe to flush.
+      // This pre-launch rejection is consumed by deterministic callers, so emit
+      // the fixed, credential-free line synchronously before the terminal exit.
+      writeSync(2, 'replay: 登录预备动作前置失败（fail-closed；凭据/站点配置详情不回显，护栏 #7——output-seal B5）\n'); // e.message 可携 AT_CREDS_FILE 路径
+      process.exit(65);
+    }
+  }
+
+  // 凭据上下文门（ADR-0010）：铸权后、启动浏览器前，准入受众须匹配凭据上下文——真凭据 run（loginPrep 成立）↔
+  // production 受众、无凭据 run ↔ test 受众，不符 fail-closed 不启动浏览器。只对有受众的 mutation 回放生效
+  // （只读回放无 authority、无受众、跳过）。防测试锁被误指向真 SUT 授权真实改动。
+  if (frozenAuthorityRead?.ok === true) {
+    const credentialContext = loginPrep ? 'production' : 'test';
+    const audienceGate = checkCredentialAudienceGate({ audience: frozenAuthorityRead.audience, credentialContext });
+    if (!audienceGate.ok) {
+      console.error(`replay: 准入受众与凭据上下文不符（${audienceGate.reason}：受众=${frozenAuthorityRead.audience} 上下文=${credentialContext}），未启动浏览器；下一步 ${audienceGate.nextAction}`);
       process.exit(65);
     }
   }
@@ -340,6 +356,10 @@ async function main() {
   }
   const allStepIds = new Set(events.map((e) => e.stepId));
 
+  // 浏览器启动哨兵（仅测试注入，生产 env 未设即 no-op）：到达本行=控制流已越过一切浏览器前 fail-closed 门（准入/受众门）。
+  // 设 env 时写哨兵并 exit 66 短路——【不真启浏览器】即可让验收金牌机械证「门是否在浏览器前拦」：门先 fire→exit 65
+  // 哨兵缺席；控制流到达此点→哨兵在 + exit 66（正控证哨兵非空、非 axes 缺席那种可被先启动后退门绕过的弱证）。codex round-4。
+  if (process.env.CASEY_LAUNCH_SENTINEL) { writeFileSync(process.env.CASEY_LAUNCH_SENTINEL, 'launched'); process.exit(66); }
   const browser = await chromium.launch({ headless: true });
   activeBrowser = browser;
   // 录像 opt-in（M3）：recordVideo 是 context 级选项；缺省不带旗标时 newContext 无参、行为一字不变。

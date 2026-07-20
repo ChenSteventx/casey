@@ -6,6 +6,7 @@
   "replayReady": true,
   "signerId": "fixture-human",
   "signedAt": "2026-07-17T00:00:00.000Z",
+  "audience": "test",
   "eventsSha256": "sha256:38beca47bfa24918eaec5acda66c82828744164687c37f7aee5b0e49bcf3ed6d",
   "bindings": [
     {
@@ -19,5 +20,5 @@
       "unexpectedBinding": true
     }
   ],
-  "signature": "sha256:182b64b79794e6035c54a741afaa3575b6c7f9efa8d983f4b92b9629b2765e69"
+  "signature": "sha256:9edccbbf7fbb15f9ffa08f4d02dea6339b04bf5c82d3db95b7dc1c730012ae33"
 }

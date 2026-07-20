@@ -14,11 +14,10 @@
   "stories": [
     {
       "id": "s1-mask-at-source",
-      "desc": "打码 golden 3 检查（命中段替换/零行为差/门配对）+ chiefcomplaint golden 11/11（C2/I1 打码钉，修前红=hermetic 精确复现真机门拦事故）+ tier1。",
+      "desc": "打码 golden 3 检查（命中段替换/零行为差/门配对）+ chiefcomplaint golden 11/11（C2/I1 打码钉，修前红=hermetic 精确复现真机门拦事故）+ tier1。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/cred-route-mask.golden.mjs",
-        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,

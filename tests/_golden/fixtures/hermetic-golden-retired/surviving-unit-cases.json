@@ -1,0 +1,599 @@
+{
+  "schemaVersion": 1,
+  "cases": [
+    {
+      "sourceObligationId": "hg-drawer-lock-hardening-g7a-input-gate",
+      "unitGoldenPath": "tests/_golden/units/drawer-lock-input-gates.zero-sut.golden.mjs",
+      "unitCheckId": "U-G7a",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-drawer-lock-hardening-g7b-input-gate",
+      "unitGoldenPath": "tests/_golden/units/drawer-lock-input-gates.zero-sut.golden.mjs",
+      "unitCheckId": "U-G7b",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-drawer-lock-hardening-g7c-1-input-gate",
+      "unitGoldenPath": "tests/_golden/units/drawer-lock-input-gates.zero-sut.golden.mjs",
+      "unitCheckId": "U-G7c-1",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-drawer-lock-hardening-g7c-2-input-gate",
+      "unitGoldenPath": "tests/_golden/units/drawer-lock-input-gates.zero-sut.golden.mjs",
+      "unitCheckId": "U-G7c-2",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-drawer-lock-hardening-g7d-input-gate",
+      "unitGoldenPath": "tests/_golden/units/drawer-lock-input-gates.zero-sut.golden.mjs",
+      "unitCheckId": "U-G7d",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-drawer-lock-hardening-g20a-input-gate",
+      "unitGoldenPath": "tests/_golden/units/drawer-lock-input-gates.zero-sut.golden.mjs",
+      "unitCheckId": "U-G20a",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c1",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C1",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c2",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C2",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c3",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C3",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c4",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C4",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c6",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C6",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c7",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C7",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c8",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C8",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c9",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C9",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c10",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C10",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c11",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C11",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c12",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C12",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c13",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C13",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c14",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C14",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c15",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C15",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c16",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C16",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c17",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C17",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c18",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C18",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c19",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C19",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c20",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C20",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c21",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C21",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p2-sign-c22",
+      "unitGoldenPath": "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U-C22",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-regress-promptset-p1",
+      "unitGoldenPath": "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs",
+      "unitCheckId": "regress-promptset-unit-p1",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-regress-promptset-p2",
+      "unitGoldenPath": "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs",
+      "unitCheckId": "regress-promptset-unit-p2",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-regress-promptset-p3",
+      "unitGoldenPath": "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs",
+      "unitCheckId": "regress-promptset-unit-p3",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-regress-promptset-p4",
+      "unitGoldenPath": "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs",
+      "unitCheckId": "regress-promptset-unit-p4",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-regress-promptset-b1",
+      "unitGoldenPath": "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs",
+      "unitCheckId": "regress-promptset-unit-b1",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-regress-promptset-b2",
+      "unitGoldenPath": "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs",
+      "unitCheckId": "regress-promptset-unit-b2",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-regress-promptset-b3",
+      "unitGoldenPath": "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs",
+      "unitCheckId": "regress-promptset-unit-b3",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-regress-promptset-o1",
+      "unitGoldenPath": "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs",
+      "unitCheckId": "regress-promptset-unit-o1",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-regress-promptset-o2",
+      "unitGoldenPath": "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs",
+      "unitCheckId": "regress-promptset-unit-o2",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-regress-promptset-o3",
+      "unitGoldenPath": "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs",
+      "unitCheckId": "regress-promptset-unit-o3",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-regress-promptset-o4",
+      "unitGoldenPath": "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs",
+      "unitCheckId": "regress-promptset-unit-o4",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-regress-promptset-a1",
+      "unitGoldenPath": "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs",
+      "unitCheckId": "regress-promptset-unit-a1",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-regress-promptset-a2",
+      "unitGoldenPath": "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs",
+      "unitCheckId": "regress-promptset-unit-a2",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-regress-promptset-a3",
+      "unitGoldenPath": "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs",
+      "unitCheckId": "regress-promptset-unit-a3",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-regress-promptset-a4",
+      "unitGoldenPath": "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs",
+      "unitCheckId": "regress-promptset-unit-a4",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-report-diagnostics-u1",
+      "unitGoldenPath": "tests/_golden/units/report-diagnostics-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U1",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-report-diagnostics-u2",
+      "unitGoldenPath": "tests/_golden/units/report-diagnostics-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U2",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-report-diagnostics-u6",
+      "unitGoldenPath": "tests/_golden/units/report-diagnostics-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U6",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-report-diagnostics-u3",
+      "unitGoldenPath": "tests/_golden/units/report-diagnostics-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U3",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-report-diagnostics-u4",
+      "unitGoldenPath": "tests/_golden/units/report-diagnostics-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U4",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-report-diagnostics-u5",
+      "unitGoldenPath": "tests/_golden/units/report-diagnostics-unit.zero-sut.golden.mjs",
+      "unitCheckId": "U5",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-report-diagnostics-w1a",
+      "unitGoldenPath": "tests/_golden/units/report-diagnostics-unit.zero-sut.golden.mjs",
+      "unitCheckId": "W1a",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-report-diagnostics-w1b",
+      "unitGoldenPath": "tests/_golden/units/report-diagnostics-unit.zero-sut.golden.mjs",
+      "unitCheckId": "W1b",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-report-diagnostics-w1c",
+      "unitGoldenPath": "tests/_golden/units/report-diagnostics-unit.zero-sut.golden.mjs",
+      "unitCheckId": "W1c",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-report-diagnostics-w1d",
+      "unitGoldenPath": "tests/_golden/units/report-diagnostics-unit.zero-sut.golden.mjs",
+      "unitCheckId": "W1d",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-report-diagnostics-w1e",
+      "unitGoldenPath": "tests/_golden/units/report-diagnostics-unit.zero-sut.golden.mjs",
+      "unitCheckId": "W1e",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-e2e-chain-c1",
+      "unitGoldenPath": "tests/_golden/units/e2e-chain-unit.zero-sut.golden.mjs",
+      "unitCheckId": "e2e-chain-unit-c1",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p3-compile-c1",
+      "unitGoldenPath": "tests/_golden/units/p3-compile-unit.zero-sut.golden.mjs",
+      "unitCheckId": "p3-compile-unit-c1",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p3-compile-c2",
+      "unitGoldenPath": "tests/_golden/units/p3-compile-unit.zero-sut.golden.mjs",
+      "unitCheckId": "p3-compile-unit-c2",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p3-compile-c3",
+      "unitGoldenPath": "tests/_golden/units/p3-compile-unit.zero-sut.golden.mjs",
+      "unitCheckId": "p3-compile-unit-c3",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-p3-compile-c3b",
+      "unitGoldenPath": "tests/_golden/units/p3-compile-unit.zero-sut.golden.mjs",
+      "unitCheckId": "p3-compile-unit-c3b",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-plan-debt-sweep-c2",
+      "unitGoldenPath": "tests/_golden/units/plan-debt-sweep-unit.zero-sut.golden.mjs",
+      "unitCheckId": "plan-debt-sweep-unit-c2",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-plan-debt-sweep-c3",
+      "unitGoldenPath": "tests/_golden/units/plan-debt-sweep-unit.zero-sut.golden.mjs",
+      "unitCheckId": "plan-debt-sweep-unit-c3",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-replay-settle-mount-u1",
+      "unitGoldenPath": "tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs",
+      "unitCheckId": "replay-settle-mount-unit-u1",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-replay-settle-mount-u2a",
+      "unitGoldenPath": "tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs",
+      "unitCheckId": "replay-settle-mount-unit-u2a",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-replay-settle-mount-u8",
+      "unitGoldenPath": "tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs",
+      "unitCheckId": "replay-settle-mount-unit-u8",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-replay-settle-mount-u2b",
+      "unitGoldenPath": "tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs",
+      "unitCheckId": "replay-settle-mount-unit-u2b",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-replay-settle-mount-u3",
+      "unitGoldenPath": "tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs",
+      "unitCheckId": "replay-settle-mount-unit-u3",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-replay-settle-mount-u4",
+      "unitGoldenPath": "tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs",
+      "unitCheckId": "replay-settle-mount-unit-u4",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-replay-settle-mount-u5",
+      "unitGoldenPath": "tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs",
+      "unitCheckId": "replay-settle-mount-unit-u5",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-replay-settle-mount-u6",
+      "unitGoldenPath": "tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs",
+      "unitCheckId": "replay-settle-mount-unit-u6",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-replay-settle-mount-u7",
+      "unitGoldenPath": "tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs",
+      "unitCheckId": "replay-settle-mount-unit-u7",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-btn-enable-ops-c1",
+      "unitGoldenPath": "tests/_golden/units/btn-enable-ops-unit.zero-sut.golden.mjs",
+      "unitCheckId": "btn-enable-ops-unit-c1",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-btn-enable-ops-c2",
+      "unitGoldenPath": "tests/_golden/units/btn-enable-ops-unit.zero-sut.golden.mjs",
+      "unitCheckId": "btn-enable-ops-unit-c2",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-btn-enable-ops-c3",
+      "unitGoldenPath": "tests/_golden/units/btn-enable-ops-unit.zero-sut.golden.mjs",
+      "unitCheckId": "btn-enable-ops-unit-c3",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-chiefcomplaint-smoke-u1",
+      "unitGoldenPath": "tests/_golden/units/chiefcomplaint-smoke-unit.zero-sut.golden.mjs",
+      "unitCheckId": "chiefcomplaint-smoke-unit-u1",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-chiefcomplaint-smoke-u2",
+      "unitGoldenPath": "tests/_golden/units/chiefcomplaint-smoke-unit.zero-sut.golden.mjs",
+      "unitCheckId": "chiefcomplaint-smoke-unit-u2",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-chiefcomplaint-smoke-u3",
+      "unitGoldenPath": "tests/_golden/units/chiefcomplaint-smoke-unit.zero-sut.golden.mjs",
+      "unitCheckId": "chiefcomplaint-smoke-unit-u3",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-chiefcomplaint-smoke-u4",
+      "unitGoldenPath": "tests/_golden/units/chiefcomplaint-smoke-unit.zero-sut.golden.mjs",
+      "unitCheckId": "chiefcomplaint-smoke-unit-u4",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-chiefcomplaint-smoke-u5",
+      "unitGoldenPath": "tests/_golden/units/chiefcomplaint-smoke-unit.zero-sut.golden.mjs",
+      "unitCheckId": "chiefcomplaint-smoke-unit-u5",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-kinds-harden-u1",
+      "unitGoldenPath": "tests/_golden/units/kinds-harden-unit.zero-sut.golden.mjs",
+      "unitCheckId": "kinds-harden-unit-u1",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-kinds-harden-u2",
+      "unitGoldenPath": "tests/_golden/units/kinds-harden-unit.zero-sut.golden.mjs",
+      "unitCheckId": "kinds-harden-unit-u2",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-kinds-harden-u3",
+      "unitGoldenPath": "tests/_golden/units/kinds-harden-unit.zero-sut.golden.mjs",
+      "unitCheckId": "kinds-harden-unit-u3",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-run-history-u1",
+      "unitGoldenPath": "tests/_golden/units/run-history-unit.zero-sut.golden.mjs",
+      "unitCheckId": "run-history-unit-u1",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-history-version-c1-atom-compile-knowledge-membership",
+      "unitGoldenPath": "tests/_golden/units/wf-history-version-compile-registration-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-history-version-unit-c1-atom-compile-knowledge-membership",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-open-smoke-c1-current-remainder",
+      "unitGoldenPath": "tests/_golden/units/wf-open-smoke-compile-registration-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-open-smoke-unit-c1-current-registration",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-publish-states-u1-buttonstate-membership-unit",
+      "unitGoldenPath": "tests/_golden/units/wf-publish-states-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-publish-states-unit-u1-buttonstate-membership",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-publish-states-u1-switchstate-not-implemented-unit",
+      "unitGoldenPath": "tests/_golden/units/wf-publish-states-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-publish-states-unit-u1-switchstate-not-implemented",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-publish-states-u2",
+      "unitGoldenPath": "tests/_golden/units/wf-publish-states-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-publish-states-unit-u2",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-publish-states-u3",
+      "unitGoldenPath": "tests/_golden/units/wf-publish-states-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-publish-states-unit-u3",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-publish-states-d1",
+      "unitGoldenPath": "tests/_golden/units/wf-publish-states-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-publish-states-unit-d1",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-publish-states-c1-atom-compile-knowledge-membership-unit",
+      "unitGoldenPath": "tests/_golden/units/wf-publish-states-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-publish-states-unit-c1-atom-compile-knowledge-membership",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-replay-video-v4a-assembler-mapping-unit",
+      "unitGoldenPath": "tests/_golden/units/replay-video-unit.zero-sut.golden.mjs",
+      "unitCheckId": "replay-video-unit-v4a-assembler-mapping",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-add-node-c1-workflow-addnode-membership-unit",
+      "unitGoldenPath": "tests/_golden/units/wf-add-node-compile-registration-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-add-node-unit-c1-workflow-addnode-membership",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-add-node-c1-workflow-connectnodes-membership-unit",
+      "unitGoldenPath": "tests/_golden/units/wf-add-node-compile-registration-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-add-node-unit-c1-workflow-connectnodes-membership",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-connect-nodes-c1-workflow-connectnodes-membership-unit",
+      "unitGoldenPath": "tests/_golden/units/wf-connect-nodes-compile-registration-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-connect-nodes-unit-c1-workflow-connectnodes-membership",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-connect-nodes-c1-workflow-addnode-membership-unit",
+      "unitGoldenPath": "tests/_golden/units/wf-connect-nodes-compile-registration-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-connect-nodes-unit-c1-workflow-addnode-membership",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-open-node-c1-workflow-opennode-membership-unit",
+      "unitGoldenPath": "tests/_golden/units/wf-open-node-compile-registration-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-open-node-unit-c1-workflow-opennode-membership",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-select-node-dropdown-c1-membership-unit",
+      "unitGoldenPath": "tests/_golden/units/wf-select-node-dropdown-compile-registration-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-select-node-dropdown-unit-c1-membership",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-select-node-dropdown-c1-nonsense-negative-unit",
+      "unitGoldenPath": "tests/_golden/units/wf-select-node-dropdown-compile-registration-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-select-node-dropdown-unit-c1-nonsense-negative",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-set-node-field-c1-membership-unit",
+      "unitGoldenPath": "tests/_golden/units/wf-set-node-field-compile-registration-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-set-node-field-unit-c1-membership",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    },
+    {
+      "sourceObligationId": "hg-wf-set-node-field-c1-nonsense-negative-unit",
+      "unitGoldenPath": "tests/_golden/units/wf-set-node-field-compile-registration-unit.zero-sut.golden.mjs",
+      "unitCheckId": "wf-set-node-field-unit-c1-nonsense-negative",
+      "aggregationCommand": "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+    }
+  ]
+}

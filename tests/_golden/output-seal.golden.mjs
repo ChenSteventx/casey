@@ -212,14 +212,17 @@ check('B4 report-model 坏 case-meta JSON 不透传内容片段', () => {
 // ---------- B5 replay 登录期前置口（:199）：报文只留 e.name + 固定文案，不携路径/内容 ----------
 // 收窄：:274/:307/:329 登录期 Playwright 在飞报错 hermetic 触发不了 → 不立哨兵，真机验证 route:human（prd 记档）。
 check('B5 replay 登录预备动作前置失败报文不携 AT_CREDS_FILE 路径（种子目录名）', () => {
-  const events = wf('b5-events.json', { schemaVersion: 2, channel: 'web', caseId: 'tc_b5', url: '{{baseUrl}}/plain', recordedAt: '2026-07-07T00:00:00.000Z', compiledBy: 'golden', authored: false, events: [{ stepId: 'atstep_0', intentId: 'intent_1', atom: 'workflow.create', action: 'nav', url: '{{baseUrl}}/plain' }] });
-  const exp = wf('b5-expected.json', signExpected({ caseId: 'tc_b5', channel: 'web', intents: [{ intentId: 'intent_1', expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/plain' }] }], globalAssertions: [] }));
+  const url = '{{baseUrl}}/ai-manager/process/list';
+  const events = wf('b5-events.json', { schemaVersion: 2, channel: 'web', caseId: 'tc_b5', url, recordedAt: '2026-07-07T00:00:00.000Z', compiledBy: 'golden', authored: false, events: [{ stepId: 'atstep_0', intentId: 'intent_1', atom: 'nav.workflowManagement', action: 'nav', url }] });
+  const exp = wf('b5-expected.json', signExpected({ caseId: 'tc_b5', channel: 'web', intents: [{ intentId: 'intent_1', expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/ai-manager/process/list' }] }], globalAssertions: [] }));
   const profile = wf('b5-profile.json', { background: [], successField: 'status', successValue: 200 });
-  const site = wf('b5-site.json', {});
-  const env = { ...process.env, AT_SITE_JSON: site, AT_CREDS_FILE: join(tmp, 'SEEDVAL_B5_x9dir', 'creds.json') };
+  const site = wf('b5-site-config.json', {});
+  const launchSentinel = join(tmp, 'b5-launch.sentinel');
+  const env = { ...process.env, AT_SITE_JSON: site, AT_CREDS_FILE: join(tmp, 'SEEDVAL_B5_x9dir', 'creds.json'), CASEY_LAUNCH_SENTINEL: launchSentinel };
   delete env.AT_CREDS_USER; delete env.AT_CREDS_PASS;
   const r = run([REPLAY, '--events', events, '--sut', 'http://127.0.0.1:1', '--expected', exp, '--profile', profile, '--out', join(tmp, 'b5-axes.json'), '--login-bootstrap'], env);
   assertSeal(r, { label: 'B5', exit: 65, seeds: ['SEEDVAL_B5_x9dir'], mustHave: ['登录预备动作'] });
+  if (existsSync(launchSentinel)) throw new Error('B5 控制流越过浏览器启动前门（CASEY_LAUNCH_SENTINEL 已写）');
 });
 
 // ---------- B6 replay events 坏 JSON 消毒（追加发现 #1 提硬）----------

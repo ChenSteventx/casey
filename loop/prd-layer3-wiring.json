@@ -23,13 +23,13 @@
   "stories": [
     {
       "id": "s1-layer3-wiring",
-      "desc": "假 SUT + 合成 fixture 端到端：casey run 编排 replay→verdict→装配→report 两场景全绿（happy→PASS 无 defectTicket；inject500→SUT_DEFECT 锚步带 defectTicket 含归因本步 500）；report-model 过契约（verdictSummary 计数 + defectTicket 仅 SUT_DEFECT 正反两向）；report 三文件产出；退出码归一；产物深扫无凭据禁字段",
+      "desc": "假 SUT + 合成 fixture 端到端：casey run 编排 replay→verdict→装配→report 两场景全绿（happy→PASS 无 defectTicket；inject500→SUT_DEFECT 锚步带 defectTicket 含归因本步 500）；report-model 过契约（verdictSummary 计数 + defectTicket 仅 SUT_DEFECT 正反两向）；report 三文件产出；退出码归一；产物深扫无凭据禁字段 生命周期重裁：原行为已进入隔离账，agentExecution=forbidden、route:human；本 story 由静态隔离闸保持非绿。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/layer3-wiring.golden.mjs"
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-09T10:27:43.743Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     },
     {
       "id": "s2-assembler-failsafe-coverage",

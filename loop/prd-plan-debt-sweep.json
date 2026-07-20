@@ -14,10 +14,9 @@
   "stories": [
     {
       "id": "s1-debt-sweep",
-      "desc": "四件欠账 + 金牌 C1-C4（红先行 0 过 / 4 败：versioned 场景不存在 / 裸 atl_ 字面量 sign exit 0 实锤冻结面洞 / CONTEXT 词条仍声称 passes / 设计文档无对账节）。",
+      "desc": "四件欠账 + 金牌 C1-C4（红先行 0 过 / 4 败：versioned 场景不存在 / 裸 atl_ 字面量 sign exit 0 实锤冻结面洞 / CONTEXT 词条仍声称 passes / 设计文档无对账节）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/plan-debt-sweep.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
@@ -25,14 +24,10 @@
     },
     {
       "id": "s2-ripple-locks",
-      "desc": "涟漪回归锁：碰 compile 执行段 + fake-sut 共享夹具（prd-p5-replay 重签）+ sign 门 → 各面消费者金牌复跑零行为差。",
+      "desc": "涟漪回归锁：碰 compile 执行段 + fake-sut 共享夹具（prd-p5-replay 重签）+ sign 门 → 各面消费者金牌复跑零行为差。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p3-compile.golden.mjs",
-        "node tests/_golden/p5-replay.golden.mjs",
-        "node tests/_golden/p5-replay-coverage.golden.mjs",
-        "node tests/_golden/p2-sign.golden.mjs",
-        "node tests/_golden/e2e-chain.golden.mjs"
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-06T18:49:51.933Z 全部 acceptance exit 0"

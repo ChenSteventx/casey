@@ -14,10 +14,9 @@
   "stories": [
     {
       "id": "s1-produce-and-wire",
-      "desc": "真产出 + 编排接线 golden 5 检查：裁判闭包红线（verdict.mjs 依赖闭包零接缝引用）/ 三旗标逐行过冻结 schema + 打码 + 失配诚实 + 聚合一致 / 缺省零产物零行为差 / 零事件空文件 + locatorHitRate null（codex R1-F3 钉红修绿）/ casey run 端到端 runDir 落两件 runId=目录名（实现前 I1/I3 红已核）。",
+      "desc": "真产出 + 编排接线 golden 5 检查：裁判闭包红线（verdict.mjs 依赖闭包零接缝引用）/ 三旗标逐行过冻结 schema + 打码 + 失配诚实 + 聚合一致 / 缺省零产物零行为差 / 零事件空文件 + locatorHitRate null（codex R1-F3 钉红修绿）/ casey run 端到端 runDir 落两件 runId=目录名（实现前 I1/I3 红已核）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/run-history.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
@@ -25,13 +24,10 @@
     },
     {
       "id": "s2-regression-locks",
-      "desc": "回归锁：p5 两份冻结 golden（回放内核缺省路径零行为差）+ kinds-harden（代表步采集不受扰）+ layer3-wiring（编排端到端不回归）原样绿。",
+      "desc": "回归锁：p5 两份冻结 golden（回放内核缺省路径零行为差）+ kinds-harden（代表步采集不受扰）+ layer3-wiring（编排端到端不回归）原样绿。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p5-replay.golden.mjs",
-        "node tests/_golden/p5-replay-coverage.golden.mjs",
-        "node tests/_golden/kinds-harden.golden.mjs",
-        "node tests/_golden/layer3-wiring.golden.mjs"
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-03T01:27:34.250Z 全部 acceptance exit 0"

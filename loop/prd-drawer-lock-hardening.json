@@ -20,36 +20,25 @@
   "stories": [
     {
       "id": "s1-drawer-lock-hardening-e2e",
-      "desc": "G1-G17（33 条独立子用例，checkAsync 隔离防短路）红先行金牌：G1/G2/G3a/G3b（twinfield 跨抽屉误命中反面）、G4/G11（twinboth 域内唯一才动手正面半边）、G5/G6（twintitle 开错抽屉归因反面）、G8a/G8b/G9a/G9b/G9c/G9d（twinlate 点后歧义+域级多匹配）、G10a/G10b（twinghost 隐藏标题文本拒认）、G7a/G7b/G7c-1/G7c-2/G7d（happy 场景缺/空串/纯空白/非 string nodeName fail-closed 钉桩）、G12a/G12b/G12c（twindelay 检查后窗口前插冒牌——抗漂移绑定 pin 锚 + 落笔前重判，codex r1 HIGH#1）、G13（happy，openNode 尝试即失效旧 run 态标题——A 开成 B 开败后 set 不得借 A 旧标题落笔，codex r1 HIGH#2）、G14a/G14b（ghostdup 隐藏同文案在前合法抽屉不误拒正面——任一命中可见即纳入，codex/pi r1 双路 MED#1）、G15a/G15b（pinclone pin 被页面复制拒动——物理句柄绑定+pin 全页唯一重验，MutationObserver 握手零时序依赖，codex r2 HIGH）、G16a/G16b（fieldmove：字段 focus 后同一物理 input 离域，回放/编译均须拒填且域外字段保持空值）、G17a/G17b（triggermove：触发器 click 后同一物理节点离域，回放/编译均须在点选项前拒绝且值保持「请选择」）。反面用例精确钉 verdict 恰 NEEDS_HUMAN（INDETERMINATE/AMBIGUOUS_ACTION 分场景钉 reason）；涉冒牌字段/触发器用例加宽域候选零落笔/唯一落笔取证（含 length 钉位，防空数组对 .some() 恒假通过）。fake-sut 相关场景含 twinfield/twinboth/twintitle/twinlate/twinghost/twindelay/pinclone/fieldmove/triggermove + ghostdup 合法正面场景（纯加法，既有场景零行为差）+ CONTRACT.md 登记。既有三金牌（wf-set-node-field/wf-select-node-dropdown/replay-nth-visible-hardening）补 nodeName + 编译产物 nodeName 钉位加严；wf-open-node/画布族涟漪（wf-add-node/wf-connect-nodes/wf-open-smoke/flow-bridge）零行为差复跑。红先行：实现前 tests/_golden/drawer-lock-hardening.golden.mjs 初版 20/20 败（红证留存运行输出，逐条对应旧实现的具体假绿路径——旧宽域锁/旧回读命中冒牌抽屉返 unique、旧编译门 exit 0 产 events 等）；实现评审 r1 修复轮新增 6 条（G12a/b/c、G13、G14a/b）在 r1 实现上 6/6 败（21 旧条全绿佐证既有面未回归）后修绿；实现评审 r2 修复轮新增 2 条（G15a/b）在 r1 修复版 835a8ec 上 2/2 败（27 旧条全绿）后修绿；实现评审 r3 前置独立审查新增 4 条（G16a/b、G17a/b）在修复前 r2 精确重建态上 0/4 过（回放 unique 假绿、编译 exit 0 产成功结果），修后现行 33/33 全绿；accept 收口后 --red-verified 通过。loop 内 codex-sol@medium L2 测试质量咨询（非裁判）指出 G9a/G9b 宽域候选快照断言漏 length 钉位（空数组对 `.some()` 恒假通过）+ G7 缺「非 string」nodeName 分支覆盖，均属真发现、已补 G9a/G9b length 钉位 + 新增 G7d（20→21 条），复跑仍全绿；另指出编译侧 domain>1/隐藏标题分支未被『不经 openNode 级联』的用例直接命中（仅经 run 态缺失级联间接触达）——记为已知残余覆盖缺口，未在本轮补（需新夹具场景或新测试手法，超出本契约已批准范围，留档待下一轮决策）。",
+      "desc": "G1-G17（33 条独立子用例，checkAsync 隔离防短路）红先行金牌：G1/G2/G3a/G3b（twinfield 跨抽屉误命中反面）、G4/G11（twinboth 域内唯一才动手正面半边）、G5/G6（twintitle 开错抽屉归因反面）、G8a/G8b/G9a/G9b/G9c/G9d（twinlate 点后歧义+域级多匹配）、G10a/G10b（twinghost 隐藏标题文本拒认）、G7a/G7b/G7c-1/G7c-2/G7d（happy 场景缺/空串/纯空白/非 string nodeName fail-closed 钉桩）、G12a/G12b/G12c（twindelay 检查后窗口前插冒牌——抗漂移绑定 pin 锚 + 落笔前重判，codex r1 HIGH#1）、G13（happy，openNode 尝试即失效旧 run 态标题——A 开成 B 开败后 set 不得借 A 旧标题落笔，codex r1 HIGH#2）、G14a/G14b（ghostdup 隐藏同文案在前合法抽屉不误拒正面——任一命中可见即纳入，codex/pi r1 双路 MED#1）、G15a/G15b（pinclone pin 被页面复制拒动——物理句柄绑定+pin 全页唯一重验，MutationObserver 握手零时序依赖，codex r2 HIGH）、G16a/G16b（fieldmove：字段 focus 后同一物理 input 离域，回放/编译均须拒填且域外字段保持空值）、G17a/G17b（triggermove：触发器 click 后同一物理节点离域，回放/编译均须在点选项前拒绝且值保持「请选择」）。反面用例精确钉 verdict 恰 NEEDS_HUMAN（INDETERMINATE/AMBIGUOUS_ACTION 分场景钉 reason）；涉冒牌字段/触发器用例加宽域候选零落笔/唯一落笔取证（含 length 钉位，防空数组对 .some() 恒假通过）。fake-sut 相关场景含 twinfield/twinboth/twintitle/twinlate/twinghost/twindelay/pinclone/fieldmove/triggermove + ghostdup 合法正面场景（纯加法，既有场景零行为差）+ CONTRACT.md 登记。既有三金牌（wf-set-node-field/wf-select-node-dropdown/replay-nth-visible-hardening）补 nodeName + 编译产物 nodeName 钉位加严；wf-open-node/画布族涟漪（wf-add-node/wf-connect-nodes/wf-open-smoke/flow-bridge）零行为差复跑。红先行：实现前 tests/_golden/drawer-lock-hardening.golden.mjs 初版 20/20 败（红证留存运行输出，逐条对应旧实现的具体假绿路径——旧宽域锁/旧回读命中冒牌抽屉返 unique、旧编译门 exit 0 产 events 等）；实现评审 r1 修复轮新增 6 条（G12a/b/c、G13、G14a/b）在 r1 实现上 6/6 败（21 旧条全绿佐证既有面未回归）后修绿；实现评审 r2 修复轮新增 2 条（G15a/b）在 r1 修复版 835a8ec 上 2/2 败（27 旧条全绿）后修绿；实现评审 r3 前置独立审查新增 4 条（G16a/b、G17a/b）在修复前 r2 精确重建态上 0/4 过（回放 unique 假绿、编译 exit 0 产成功结果），修后现行 33/33 全绿；accept 收口后 --red-verified 通过。loop 内 codex-sol@medium L2 测试质量咨询（非裁判）指出 G9a/G9b 宽域候选快照断言漏 length 钉位（空数组对 `.some()` 恒假通过）+ G7 缺「非 string」nodeName 分支覆盖，均属真发现、已补 G9a/G9b length 钉位 + 新增 G7d（20→21 条），复跑仍全绿；另指出编译侧 domain>1/隐藏标题分支未被『不经 openNode 级联』的用例直接命中（仅经 run 态缺失级联间接触达）——记为已知残余覆盖缺口，未在本轮补（需新夹具场景或新测试手法，超出本契约已批准范围，留档待下一轮决策）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "DLH_GOLDEN_PART=base node tests/_golden/drawer-lock-hardening.golden.mjs",
-        "DLH_GOLDEN_PART=review node tests/_golden/drawer-lock-hardening.golden.mjs",
-        "node tests/_golden/wf-set-node-field.golden.mjs",
-        "node tests/_golden/wf-select-node-dropdown.golden.mjs",
-        "node tests/_golden/replay-nth-visible-hardening.golden.mjs",
-        "node tests/_golden/wf-open-node.golden.mjs",
-        "node tests/_golden/wf-add-node.golden.mjs",
-        "node tests/_golden/wf-connect-nodes.golden.mjs",
-        "node tests/_golden/wf-open-smoke.golden.mjs",
         "node tests/_golden/flow-bridge.golden.mjs"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-14T17:59:46.990Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     },
     {
       "id": "s2-regression-and-selftest",
-      "desc": "全链回归零行为差（fake-sut 双冻文件影响面：p5-replay 夹具回归 + p5-replay-coverage fail-safe 不变量 + e2e-chain 全链 + report-workflow-structure 集 18 COMPILE_KNOWN_ATOMS 不变）+ 裁判零 LLM 链路自检 selftest --tier1。",
+      "desc": "全链回归零行为差（fake-sut 双冻文件影响面：p5-replay 夹具回归 + p5-replay-coverage fail-safe 不变量 + e2e-chain 全链 + report-workflow-structure 集 18 COMPILE_KNOWN_ATOMS 不变）+ 裁判零 LLM 链路自检 selftest --tier1。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p5-replay.golden.mjs",
         "node tests/_golden/p5-replay-coverage.golden.mjs",
-        "node tests/_golden/e2e-chain.golden.mjs",
         "node tests/_golden/report-workflow-structure.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-14T18:01:27.842Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     }
   ]
 }

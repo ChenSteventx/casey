@@ -1,1 +1,50 @@
-{"schemaVersion":1,"artifactKind":"entity-locks-frozen","caseId":"tc_sidecar_successor","signed":true,"replayReady":true,"signerId":"fixture-human","signedAt":"2026-07-17T01:00:00.000Z","eventsSha256":"sha256:3167fc58527fc2496093699de2e02f131b7600e99702ebdd42963cb303d3ee9e","bindings":[{"stepId":"atstep_1","intentId":"intent_1","atom":"workflow.create","role":"subject","candidateId":"candidate-workflow-main","lockId":"lock-workflow-main","receiptHash":"sha256:b066ba1c3572391340da6022ea95930abce7dbf87690b1a4bad459d54af860b8"},{"stepId":"atstep_2","intentId":"intent_2","atom":"workflow.setNodeField","role":"subject","candidateId":"candidate-workflow-main","lockId":"lock-workflow-main","receiptHash":"sha256:b066ba1c3572391340da6022ea95930abce7dbf87690b1a4bad459d54af860b8"},{"stepId":"atstep_3","intentId":"intent_3","atom":"workflow.bindAgent","role":"source","candidateId":"candidate-workflow-main","lockId":"lock-workflow-main","receiptHash":"sha256:b066ba1c3572391340da6022ea95930abce7dbf87690b1a4bad459d54af860b8"},{"stepId":"atstep_3","intentId":"intent_3","atom":"workflow.bindAgent","role":"target","candidateId":"candidate-agent-main","lockId":"lock-agent-main","receiptHash":"sha256:336a82b1e8f2a1af18161bfe5df3e0438a149b16e2d43b551f3e29289c21cdbf"}],"signature":"sha256:fb9161a2e5e7c88a24fe5fad1d000473d957b49292b57b84a7a6f4a95fcbec8f"}
+{
+  "schemaVersion": 1,
+  "artifactKind": "entity-locks-frozen",
+  "caseId": "tc_sidecar_successor",
+  "signed": true,
+  "replayReady": true,
+  "signerId": "fixture-human",
+  "signedAt": "2026-07-17T01:00:00.000Z",
+  "audience": "test",
+  "eventsSha256": "sha256:3167fc58527fc2496093699de2e02f131b7600e99702ebdd42963cb303d3ee9e",
+  "bindings": [
+    {
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "atom": "workflow.create",
+      "role": "subject",
+      "candidateId": "candidate-workflow-main",
+      "lockId": "lock-workflow-main",
+      "receiptHash": "sha256:b066ba1c3572391340da6022ea95930abce7dbf87690b1a4bad459d54af860b8"
+    },
+    {
+      "stepId": "atstep_2",
+      "intentId": "intent_2",
+      "atom": "workflow.setNodeField",
+      "role": "subject",
+      "candidateId": "candidate-workflow-main",
+      "lockId": "lock-workflow-main",
+      "receiptHash": "sha256:b066ba1c3572391340da6022ea95930abce7dbf87690b1a4bad459d54af860b8"
+    },
+    {
+      "stepId": "atstep_3",
+      "intentId": "intent_3",
+      "atom": "workflow.bindAgent",
+      "role": "source",
+      "candidateId": "candidate-workflow-main",
+      "lockId": "lock-workflow-main",
+      "receiptHash": "sha256:b066ba1c3572391340da6022ea95930abce7dbf87690b1a4bad459d54af860b8"
+    },
+    {
+      "stepId": "atstep_3",
+      "intentId": "intent_3",
+      "atom": "workflow.bindAgent",
+      "role": "target",
+      "candidateId": "candidate-agent-main",
+      "lockId": "lock-agent-main",
+      "receiptHash": "sha256:336a82b1e8f2a1af18161bfe5df3e0438a149b16e2d43b551f3e29289c21cdbf"
+    }
+  ],
+  "signature": "sha256:e267f6673ab1dfd0c162c5147454e90640761a2e0ab4bf8c51fa8f30d0a146ac"
+}

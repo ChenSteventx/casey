@@ -27,6 +27,7 @@ import {
   buildEntityBindingsDraft,
   checkCompileIdentityAdmission as checkExecuteIdentityAdmission,
   checkReplayEntityAdmission,
+  checkCredentialAudienceGate,
   flowContainsEntityMutation,
   readIdentityAdmissionAuthorityFromPrd,
   requiredFlowEntityBindings,
@@ -173,6 +174,29 @@ async function executeMode(caseId, args) {
     })
     : null;
   const executeAuthority = executeAuthorityRead?.ok === true ? executeAuthorityRead.authority : null;
+  // 凭据上下文门（ADR-0010，codex High-2 修）：铸权后、启动浏览器前、且【早于】bindings 准入——按实际凭据加载派生
+  // 上下文（非 --skip-login 旗标自报）：非 skip-login=生产意图，此处即把站点配置/凭据加载掉，成功=production 上下文、
+  // 失败=浏览器前 exit 65 fail-closed（绝不启动浏览器后才发现无凭据）；--skip-login=test 上下文、无凭据。受众与上下文
+  // 严格匹配，不符 exit 65。与 replay.mjs 同律；受众与 bindings 正交、故置于 admission 之前更早 fail-closed。防测试锁误指真 SUT。
+  let preloadedCreds = null;
+  let credentialContext = 'test';
+  if (!args['skip-login']) {
+    try {
+      loadSiteConfig(undefined, { strict: true }); // 坏 site.json 抛错 fail-closed
+      preloadedCreds = loadCreds();
+      credentialContext = 'production';
+    } catch {
+      console.error('compile --execute: 登录站点配置/凭据加载失败（fail-closed；详情不回显，护栏 #7），未启动浏览器');
+      process.exit(65);
+    }
+  }
+  if (executeAuthorityRead?.ok === true) {
+    const audienceGate = checkCredentialAudienceGate({ audience: executeAuthorityRead.audience, credentialContext });
+    if (!audienceGate.ok) {
+      console.error(`compile --execute: 准入受众与凭据上下文不符（${audienceGate.reason}：受众=${executeAuthorityRead.audience} 上下文=${credentialContext}），未启动浏览器；下一步 ${audienceGate.nextAction}`);
+      process.exit(65);
+    }
+  }
   const identityAdmission = checkCompileIdentityAdmission({
     mode: 'execute',
     caseId,
@@ -210,6 +234,10 @@ async function executeMode(caseId, args) {
   const site = loadSiteConfig();
   const watchdog = setTimeout(() => { console.error('compile 看门狗：超时强制退出'); process.exit(1); }, 120000);
 
+  // 浏览器启动哨兵（仅测试注入，生产 env 未设即 no-op）：到达本行=控制流已越过一切浏览器前 fail-closed 门（准入/受众/
+  // 凭据）。设 env 时写哨兵并 exit 66 短路——【不真启浏览器】即可让验收金牌机械证「门是否在浏览器前拦」：门先 fire→
+  // exit 65 哨兵缺席；控制流到达此点→哨兵在 + exit 66（正控证哨兵非空、非产物缺席那种可被先启动后退门绕过的弱证）。codex round-4。
+  if (process.env.CASEY_LAUNCH_SENTINEL) { writeFileSync(process.env.CASEY_LAUNCH_SENTINEL, 'launched'); process.exit(66); }
   const browser = await chromium.launch({ headless: true });
   const context = await browser.newContext();
   const page = await context.newPage();
@@ -230,7 +258,8 @@ async function executeMode(caseId, args) {
       // 登录预备动作：不产 event，凭据只进内存（护栏 #7）。登录入口 = --sut 基址 + site.json startUrl 的路径段——
       // devProxyUrl/根 '/' 只是基址不渲染登录表单（真机实采 2026-07-02：裸基址上 SPA 判据「表单不在场」
       // 会被误读为已登录态 fail-open，后续全步 absent）；基址恒由 --sut 注入、绝不写死。
-      const creds = loadCreds();
+      const creds = preloadedCreds; // 已在浏览器启动前加载（codex High-2 凭据上下文门），此处复用不重载
+      run.notes.push('凭据于浏览器启动前加载（凭据上下文门 fail-closed）');
       let entryPath = ROUTE_LIST;
       try { entryPath = new URL(site.target.startUrl).pathname; } catch { /* 无 startUrl：退列表路由 */ }
       await loginBootstrap(page, { site, creds, startUrl: sut + entryPath });

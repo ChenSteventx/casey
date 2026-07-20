@@ -78,7 +78,8 @@ function freeze(draft, confirmations = CONFIRMATIONS, patch = {}) {
   assert(typeof admission.freezeEntityBindingsDraft === 'function', '缺 freezeEntityBindingsDraft');
   return admission.freezeEntityBindingsDraft({
     caseId: EVENTS.caseId, eventsBytes: EVENTS_BYTES, eventsDocument: EVENTS, draft,
-    confirmations, signerId: 'fixture-human', signedAt: '2026-07-17T01:00:00.000Z', ...patch,
+    confirmations, signerId: 'fixture-human', signedAt: '2026-07-17T01:00:00.000Z',
+    audience: 'test', ...patch, // 准入受众必填（ADR-0010）：测试夹具签 test 受众
   });
 }
 

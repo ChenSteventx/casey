@@ -16,10 +16,9 @@
   "stories": [
     {
       "id": "s1-sign-and-replay-gate",
-      "desc": "签发端 + 未签闸：新建 bin/sign.mjs（draft→frozen 盖三签字段 + 去 pending + 自守 assertSignedContract ok + 白名单键自检，任一不过 exit 65 零落盘；pending 非空拒签/--force 留痕旁车；expectedVerdict 人给值+fail-safe 不变量+不反推；sha256 冻进 prd testChecksums/expectedFrozenPath 只断言文件；重签 --resign 归档+anti-clobber+不记缺陷；落盘过 cred-gate；caseId 一致/路径安全）+ bin/replay.mjs 加 assertSignedContract 前置闸（未签非空 exit 65 fail-closed，空 vacuously ok）+ bin/casey.mjs sign 分发接线。金牌 C1-C8（实现前 0/8 全红已核：C1/C2/C4/C6/C7 缺 sign.mjs exit 1、C3/C8 待精确 65/1、C5 未签 replay 现 exit 0 待接闸）。",
+      "desc": "签发端 + 未签闸：新建 bin/sign.mjs（draft→frozen 盖三签字段 + 去 pending + 自守 assertSignedContract ok + 白名单键自检，任一不过 exit 65 零落盘；pending 非空拒签/--force 留痕旁车；expectedVerdict 人给值+fail-safe 不变量+不反推；sha256 冻进 prd testChecksums/expectedFrozenPath 只断言文件；重签 --resign 归档+anti-clobber+不记缺陷；落盘过 cred-gate；caseId 一致/路径安全）+ bin/replay.mjs 加 assertSignedContract 前置闸（未签非空 exit 65 fail-closed，空 vacuously ok）+ bin/casey.mjs sign 分发接线。金牌 C1-C8（实现前 0/8 全红已核：C1/C2/C4/C6/C7 缺 sign.mjs exit 1、C3/C8 待精确 65/1、C5 未签 replay 现 exit 0 待接闸）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p2-sign.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
@@ -27,21 +26,13 @@
     },
     {
       "id": "s2-ripple-locks",
-      "desc": "涟漪回归锁（D1 知情选择的落地面）：碰 bin/replay.mjs 加未签闸 → 所有喂非空未签 expected 的金牌须经 _sign-helper.signExpected 补签 + 各自 prd testChecksums 重签 + 原样复跑 GREEN。实测受影响 9 金牌：回放内核 p5-replay/layer3-wiring + 飞轮 chiefcomplaint-smoke/kinds-harden/replay-video/wf-history-version/wf-publish-states + 端到端 run-history/report-diagnostics（casey run 喂非空 expected，全套跑一遍完整性扫补捉）；工具 scripts/sample-report.mjs 同步补签。全套 37 金牌零红实证。空断言金牌（video-login-carry 等）vacuously ok 不受影响。",
+      "desc": "涟漪回归锁（D1 知情选择的落地面）：碰 bin/replay.mjs 加未签闸 → 所有喂非空未签 expected 的金牌须经 _sign-helper.signExpected 补签 + 各自 prd testChecksums 重签 + 原样复跑 GREEN。实测受影响 9 金牌：回放内核 p5-replay/layer3-wiring + 飞轮 chiefcomplaint-smoke/kinds-harden/replay-video/wf-history-version/wf-publish-states + 端到端 run-history/report-diagnostics（casey run 喂非空 expected，全套跑一遍完整性扫补捉）；工具 scripts/sample-report.mjs 同步补签。全套 37 金牌零红实证。空断言金牌（video-login-carry 等）vacuously ok 不受影响。 生命周期重裁：原行为已进入隔离账，agentExecution=forbidden、route:human；本 story 由静态隔离闸保持非绿。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p5-replay.golden.mjs",
-        "node tests/_golden/layer3-wiring.golden.mjs",
-        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
-        "node tests/_golden/kinds-harden.golden.mjs",
-        "node tests/_golden/replay-video.golden.mjs",
-        "node tests/_golden/wf-history-version.golden.mjs",
-        "node tests/_golden/wf-publish-states.golden.mjs",
-        "node tests/_golden/run-history.golden.mjs",
-        "node tests/_golden/report-diagnostics.golden.mjs"
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-06T09:29:39.632Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     }
   ]
 }

@@ -1,0 +1,17 @@
+{
+  "schemaVersion": 1,
+  "task": "replay-admission-hermetic-migration（转调查/决策契约）：调查坐实 enforcement 9ee2731 把整套 hermetic 浏览器回放金牌（约24金牌/40prd）打成陈旧绿、且与 SKILL.md:107 真机规则冲突、并暴露既有 trust-root 缺口。codex gpt-5.6-sol high 异构讨论证实。Steven 2026-07-19 裁：原执行路径（重跑 fake-sut+注入测试锁锁绿）作废；正确方向=两阶段（先修生产/测试信任根分离 kernel 契约，再按生命周期重裁 hermetic 金牌套件）。见 docs/plans/replay-admission-hermetic-migration/DIRECTION-AFTER-CODEX.md。",
+  "specPath": "docs/plans/replay-admission-hermetic-migration/plan.md",
+  "testChecksums": {},
+  "observability": [
+    {
+      "dimension": "本契约执行路径作废、转调查/决策契约。交付=债务登记表(DEBT-REGISTER.md)+两阶段方向(DIRECTION-AFTER-CODEX.md)+codex验证(review/codex-sol-strategy-20260719.md)+五核心prd honest翻红。阶段一(信任根分离)/阶段二(hermetic金牌生命周期重裁)各另立契约、均须Steven参与。",
+      "route": "human"
+    },
+    {
+      "dimension": "波0五核心prd翻红(passes:false)保留权威：按Q1不得再跑gate(启动fake-sut)、这些honest红不能撤了重生。约35个非核心prd仍陈旧绿(未翻红)、待阶段二系统清偿(DEBT-REGISTER C组)。",
+      "route": "human"
+    }
+  ],
+  "stories": []
+}

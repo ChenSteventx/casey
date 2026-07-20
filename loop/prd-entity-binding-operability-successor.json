@@ -4,7 +4,7 @@
   "specPath": "docs/plans/entity-binding-operability-successor/plan.md",
   "testChecksums": {
     "docs/plans/entity-binding-operability-successor/plan.md": "0a3bcea220d3f3165f864656b7cb725e02ef6fb4149b5a4add9bf8f918a66341",
-    "tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs": "145800b4caaa4438bae9e3d57cec1c30bf0d0314d1e5208448b729d87466582a"
+    "tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs": "acbe4b6a7707df845e976bb2071bf30c9957849eb4831061338d81b7e8055655"
   },
   "observability": [
     {

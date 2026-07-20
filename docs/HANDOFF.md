@@ -3,6 +3,40 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 2026-07-20 活动增量：阶段一（生产/测试信任根分离 kernel 契约）六阶段 done + codex 六轮异构评审 PASS，待 route:human 人签
+
+**契约 `admission-trust-root-separation`（kernel/full）六阶段全 done**（grill/plan/accept/loop/review/learn），dev 到 `dd09ae7`。给冻结身份准入件加签名进自哈希的必填 `audience` 字段（准入受众 test|production）+ 铸权后启动浏览器前的纯函数**凭据上下文门**（严格匹配受众与凭据上下文：真凭据 run↔production、无凭据 run↔test，不符 fail-closed 不启动浏览器），机制阻断「测试锁被误指向真 SUT 授权真实改动」。设计=ADR-0010 + `docs/plans/admission-trust-root-separation/`（GRILL/plan/learn）。**明确不覆盖（ADR-0010 划界，后续契约）**：密钥签名/signerId 认证、不可变发布 manifest 根、receipt 读路复验、撤销、锁绑 SUT/环境 scope——本契约诚实划界为「防误用/泄漏」有界威胁。
+
+**codex gpt-5.6-sol high 六轮异构评审 PASS**（`docs/plans/admission-trust-root-separation/review/`，入 audit）——kernel 强制层异构评审真挣钱的极强实证。逐轮逼出我 Claude 家族自审看漏的洞 + 我三次自造的假绿/弱证：① 生产门零削弱不成立(锁不绑 --sut) ② SKILL.md:107 冲突 ③ 我用错 grep 标记误报绿+提假绿(已沉淀记忆「判金牌只信退出码」) ④ sign 写路径未迁移 ⑤ compile 假凭据判据 ⑥ W2 没真测门 ⑦ C5b 错误原因假绿 ⑧「无产物≠没启动」⑨ W1b 不证 compile 哨兵。全消解，Medium-4 六轮闭合（浏览器启动哨兵机械化 + 双正控 W1b replay/W3b compile）。
+
+**待 route:human（kernel 纪律，交 Steven）**：① 冻结夹具/金牌改动的 ADR-0004 人签（3 preflight 夹具重签 audience:test + sidecar golden/schema + 3 敌意夹具 + 新增验收金牌与夹具）；② compile --execute 真机 execute 授权路径端到端 UAT 抽验（audience-mismatch 分支，W3 已覆盖其 hermetic 可执行回归证据）。
+
+**与阶段二关系**：本契约独立加固、非阶段二前置（Q1 决策）——阶段二 hermetic 金牌生命周期重裁主力走 zero-SUT、不碰准入门；见 `docs/plans/replay-admission-hermetic-migration/DIRECTION-AFTER-CODEX.md`。**下一步**：阶段二（金牌生命周期重裁）或 mountdelay-fidelity 续（视基础债方向落地）。主树活契约槽收口后归还 alh-open-entry。
+
+## 2026-07-19 晚活动增量：基础债规模远超预估 + codex 讨论推翻锁绿路径 → 转两阶段方向（信任根分离 → 金牌生命周期重裁）
+
+**权威后续方向 = `docs/plans/replay-admission-hermetic-migration/DIRECTION-AFTER-CODEX.md`**。本会话把基础债从「5 金牌」推进到坐实真实规模并**转向**：
+
+1. **规模真相**：enforcement `9ee2731`→`dfee72c`（2026-07-17）落地未迁移测试套件，把**整个 hermetic 浏览器回放金牌套件**（约 24 金牌 / 40 prd）打成陈旧绿，非最初发现的 5 个。债务全貌钉死在 `DEBT-REGISTER.md`（18 复签即真绿集 + 12 翻红集 + 7 额外红金牌 sweep 范围）。
+2. **codex gpt-5.6-sol high 异构讨论真挣钱**（Steven 指示做，`review/codex-sol-strategy-20260719.md`，入 audit）：逮到 Claude 家族自审看漏的四承重问题——① 路 a「生产门零削弱」不成立（测试锁绑 events 不绑 `--sut`、生产 reader 不分测试/生产 signer = 利用既有 trust-root 缺口）；② `SKILL.md:107` 冲突；③ p5 墓碑不该借删两案翻绿；④ mint 工具语义授权不可信。
+3. **Steven 2026-07-19 两裁决**（AskUserQuestion）：**Q1 = SKILL.md:107 fake-SUT 只读规则也约束 dev gate/golden**（hermetic 金牌不该被 agent 跑、须按生命周期重裁，非重跑锁绿）；**Q2 = 先修生产/测试信任根分离再迁移**（codex 荐）。→ 原执行路径（重跑 fake-sut + 注入测试锁锁绿）**作废**。
+4. **正确方向两阶段**（各另立契约、均须 Steven 参与，见 DIRECTION-AFTER-CODEX.md）：**阶段一** 生产/测试信任根分离（kernel 车道：生产 reader 只读不可变发布 manifest、artifact 带不可伪造 audience 分根签、拒测试 signer、绑环境/SUT scope、验 receipt、反向验收测试锁必被生产 reader 拒）；**阶段二** hermetic 金牌套件逐个生命周期重裁（(a) 转 zero-SUT 确定性喂冻结 axes/纯裁判=主力出路 / (b) 真机 UAT-only 墓碑 fake-sut / (c) 教义作废墓碑+命名后继，如 p5 drift/vanished：原 story superseded-not-pass + successor PRD + 自愈 liveness 另立）。
+5. **本契约收口姿态**：`replay-admission-hermetic-migration` 转**调查/决策契约**（prd stories 空、方向记 observability）。已做：波0 五核心 prd honest 翻红（**保留权威——按 Q1 不得再跑 gate 启动 fake-sut，passes:false 不可撤了重生**）；波1 settle 锁绿已 `git revert`（含 mint 工具，codex 判语义授权不可信）；复签 sweep 工具 `tests/_golden/support/resign-changed-goldens.mjs` 保留（生命周期工作仍用）。约 35 个非核心 prd 仍陈旧绿（未翻红）待阶段二清偿（DEBT-REGISTER C 组）。dev HEAD 5df2c17。
+6. **mountdelay-fidelity 仍挂起**（worktree 存、grill+plan done）：原被基础债阻塞，现基础债转为两阶段大工程、mountdelay 继续排后待方向落地。
+7. **主树未提交现场**：`.gitignore` + 一批 prd（M，gate evidence 时间戳漂移）+ 用户未跟踪件（docs/codex/、follow.mjs 等）——别碰别提交。**主树活契约槽已归还 alh-open-entry**（外部仓 agent-loop-harness 接入，Steven 上下文，与本线无关；本会话曾临时占槽跑 replay-admission-hermetic-migration，收口后已恢复原槽）。replay-admission-hermetic-migration 契约转调查/决策姿态、不走 loop/review/learn 正常流，其完整状态在 `docs/plans/replay-admission-hermetic-migration/`（DIRECTION-AFTER-CODEX/DEBT-REGISTER/prd）与本节，不依赖契约槽。阶段一另立新 slug。
+
+以下为本会话早段快照（其「路 a 锁绿」执行序已被本节转向推翻），只溯源、勿据其判现状：
+
+## 2026-07-19 活动增量：发现基础债——一批浏览器回放金牌 runtime-RED + prd 陈旧绿（semantic-lock 准入门 enforcement 落地未复跑），mountdelay 挂起排后
+
+**基础阻塞（亲核坐实）**：2026-07-17 提交 `9ee2731`「feat: enforce semantic lock admission gates」→`dfee72c` 落地 semantic-lock 准入门 enforcement——含 mutation atom 的 events 现要求签名冻结锁（`--entity-locks` + 注册 prd checksum，`lib/entity-semantic-lock-preflight.mjs:checkReplayEntityAdmission`，`bin/replay.mjs:238-247`）。合成 caseId 的 hermetic 浏览器回放金牌满足不了 → 一批金牌全 runtime-RED（`FROZEN_ENTITY_LOCKS`）：`p5-replay`/`wf-publish-states`/`replay-settle-mount`/`drawer-lock-hardening`/`replay-nth-visible-hardening`。enforcement 落地时**未复跑这些金牌**，其 prd 全带陈旧 `passes:true`；`tier1` GREEN 掩盖（不跑浏览器回放金牌）。亲核：`replay-settle-mount.golden.mjs` 主树 9 过/7 红（7 红全 FROZEN_ENTITY_LOCKS），prd evidence 停在 gate@2026-07-14。**本会话第三次逮同模式**（enforcement/迁移落地未复跑受影响金牌→陈旧绿；前两次 record-intake、supersession）。
+
+**Steven 2026-07-19 可点选项决策**：先修基础债（另立契约）+ mountdelay 排后。**方案已侦察定清并落盘 `docs/plans/replay-admission-hermetic-migration/PROPOSAL.md`（供直接接手）**：采路 (a) 测试签名锁注入 + 金牌迁移，**不触准入门 kernel**——准入读路无 Ed25519/无收据验证/无真 SUT 依赖，只认 结构+内容自哈希+prd checksum，故 hermetic 测试锁可确定性铸造 + 经生产接口合法注册、不削弱生产门（否决路 b hermetic seam：触 kernel、fail-open 缝、违护栏 #14）。分层：简单案（p5-replay/replay-settle-mount/wf-publish-states 静态 events 直接铸锁）+ 摩擦案（drawer-lock/nth-visible compile-driven 非确定性 + 双门，须冻编译产物或拆轨）+ 独立门（p5 drift/vanished 的 deleteByName 死在另一道 binding 门）。陈旧绿先翻红记账再修绿（不手改/不随迁移补绿）。full 车道、非 kernel、不必 worktree。
+
+**mountdelay-fidelity 契约挂起**（worktree `casey-mountdelay-fidelity`，grill+plan done）：核心设计已亲定并落 `docs/plans/mountdelay-fidelity/plan.md`（settle 加占位门+静止窗兜底、fake-sut 补延迟提交子形态、hermetic/真机边界）。因基础阻塞（原设计驱 `bin/replay.mjs` 红先行的红会是准入门失败而非预期 buttonState 假阴）挂起，基础修好后可直接续实现。
+
+**次要发现（纠正 plan/侦察冻结清单不准，实现代理核实）**：`lib/replay-settle.mjs` 冻在 **0** 个 prd（非 1，强化它不用重签）；`server.mjs` 冻 **4** 个（drawer-lock/p5-replay/replay-nth/replay-settle-mount，非 5——`prd-resolution` 只冻 `resolution.golden.mjs`）；`CONTRACT.md` 冻 **3** 个（+drawer-lock，非 2）；mountdelay plan B 兜底 `STILL_TICKS=4`（≈480ms）会让 `replay-settle-mount.golden` U3（floorMs 0→waitedMs<300）转红，兜底静止窗须改 opt-driven（裸调用保持 2 拍）。
+
 ## 2026-07-18 夜活动增量：obs-cases-isolation 契约收口并入 dev，三金牌主树 DrvFs 稳定绿 + W2 环境敏感挂账连带清偿
 
 `obs-cases-isolation`（full，merge 于 dev）：修三 observation 金牌主树 WSL DrvFs 必红。诊断三层纠偏（初判「扫真实 cases 数据」→「同名残留撞守卫」→ 最终只 supersession 一个真故障，cli-authority/unsafe 被残留连累）；方案两次修正（Steven 批的 rename→copy+自回收被侦察探针推翻——copy 铸新 inode 破坏 T2 身份语义、自回收触双冻结安全 primitive 高风险且不必要）。最终修：supersession `spawnSync` timeout 30s→180s（确定性 ETIMEDOUT 根因，SAFE_V2 9p 跑约47s）+ SAFE_V2 T2 rename/mkdir/rmdir 包有界 retry（新增 `retry-transient-fs.mjs` 吸收 9p 偶发 sharing-violation EACCES，retry 内每次重验身份）。codex 异构评审三轮闭环——逮 High（原属 prd 重签延后）+ Medium（T2 retry 的 check-then-act TOCTOU 窗口，逐个破坏性分支 L302/L304/L286 收干净）→ 全 RESOLVED PASS。不触 kernel lib/bin、不触安全 primitive `canonical-case-lease.mjs`、不改 caseId/active-suite 11/6 契约。原属两 prd（safe-case-lease-v2、observation-runtime-trust-root）同步重签。

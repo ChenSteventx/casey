@@ -14,10 +14,9 @@
   "stories": [
     {
       "id": "s1-harden-two-kinds",
-      "desc": "两 kind 提硬 golden 5 检查：已实现集 7（buttonState 仍除外）/ 单元三向×2（命中/未命中/证不出 + 词表正反/零弹窗/证不出）/ 假 SUT 集成命中真过+未命中真败（实现前 5 红全核）。",
+      "desc": "两 kind 提硬 golden 5 检查：已实现集 7（buttonState 仍除外）/ 单元三向×2（命中/未命中/证不出 + 词表正反/零弹窗/证不出）/ 假 SUT 集成命中真过+未命中真败（实现前 5 红全核）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/kinds-harden.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
@@ -25,13 +24,12 @@
     },
     {
       "id": "s2-ripple-and-locks",
-      "desc": "涟漪翻转与回归锁：p4-drafter/draft-cli/report-fidelity 三份 golden 翻转后全绿（各 prd 另行补冻复验）；p5 两份冻结 golden 原样绿（evaluateAssertions 加分支纯加法）。",
+      "desc": "涟漪翻转与回归锁：p4-drafter/draft-cli/report-fidelity 三份 golden 翻转后全绿（各 prd 另行补冻复验）；p5 两份冻结 golden 原样绿（evaluateAssertions 加分支纯加法）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/p4-drafter.golden.mjs",
         "node tests/_golden/draft-cli.golden.mjs",
         "node tests/_golden/report-fidelity.golden.mjs",
-        "node tests/_golden/p5-replay.golden.mjs",
         "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": true,

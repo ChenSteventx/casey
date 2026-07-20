@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 1,
+  "receipts": [
+    {
+      "receiptId": "sup-wf-add-node-known-atoms-18",
+      "sourceObligationId": "hg-wf-add-node-c1-known-atoms-18",
+      "sourceGolden": "tests/_golden/wf-add-node.golden.mjs",
+      "sourceCheckId": "C1",
+      "subObligationId": "known-atoms-count-18",
+      "doctrineId": "compile-known-atoms-18-to-25"
+    },
+    {
+      "receiptId": "sup-wf-connect-nodes-known-atoms-18",
+      "sourceObligationId": "hg-wf-connect-nodes-c1-known-atoms-18",
+      "sourceGolden": "tests/_golden/wf-connect-nodes.golden.mjs",
+      "sourceCheckId": "C1",
+      "subObligationId": "known-atoms-count-18",
+      "doctrineId": "compile-known-atoms-18-to-25"
+    },
+    {
+      "receiptId": "sup-wf-open-node-known-atoms-18",
+      "sourceObligationId": "hg-wf-open-node-c1-known-atoms-18",
+      "sourceGolden": "tests/_golden/wf-open-node.golden.mjs",
+      "sourceCheckId": "C1",
+      "subObligationId": "known-atoms-count-18",
+      "doctrineId": "compile-known-atoms-18-to-25"
+    },
+    {
+      "receiptId": "sup-wf-open-smoke-known-atoms-18",
+      "sourceObligationId": "hg-wf-open-smoke-c1-known-atoms-18",
+      "sourceGolden": "tests/_golden/wf-open-smoke.golden.mjs",
+      "sourceCheckId": "C1",
+      "subObligationId": "known-atoms-count-18",
+      "doctrineId": "compile-known-atoms-18-to-25"
+    },
+    {
+      "receiptId": "sup-wf-add-node-agent-open-tool-picker",
+      "sourceObligationId": "hg-wf-add-node-c1-current-remainder",
+      "sourceGolden": "tests/_golden/wf-add-node.golden.mjs",
+      "sourceCheckId": "C1",
+      "subObligationId": "agent-open-tool-picker-negative",
+      "doctrineId": "compile-agent-open-tool-picker-now-supported"
+    },
+    {
+      "receiptId": "sup-wf-connect-nodes-agent-open-tool-picker",
+      "sourceObligationId": "hg-wf-connect-nodes-c1-current-remainder",
+      "sourceGolden": "tests/_golden/wf-connect-nodes.golden.mjs",
+      "sourceCheckId": "C1",
+      "subObligationId": "agent-open-tool-picker-negative",
+      "doctrineId": "compile-agent-open-tool-picker-now-supported"
+    },
+    {
+      "receiptId": "sup-wf-open-node-agent-open-tool-picker",
+      "sourceObligationId": "hg-wf-open-node-c1-current-remainder",
+      "sourceGolden": "tests/_golden/wf-open-node.golden.mjs",
+      "sourceCheckId": "C1",
+      "subObligationId": "agent-open-tool-picker-negative",
+      "doctrineId": "compile-agent-open-tool-picker-now-supported"
+    },
+    {
+      "receiptId": "sup-wf-select-node-dropdown-known-atoms-18",
+      "sourceObligationId": "hg-wf-select-node-dropdown-c1-known-atoms-18",
+      "sourceGolden": "tests/_golden/wf-select-node-dropdown.golden.mjs",
+      "sourceCheckId": "C1",
+      "subObligationId": "known-atoms-count-18",
+      "doctrineId": "compile-known-atoms-18-to-25-extended"
+    },
+    {
+      "receiptId": "sup-wf-select-node-dropdown-agent-open-tool-picker",
+      "sourceObligationId": "hg-wf-select-node-dropdown-c1",
+      "sourceGolden": "tests/_golden/wf-select-node-dropdown.golden.mjs",
+      "sourceCheckId": "C1",
+      "subObligationId": "agent-open-tool-picker-negative",
+      "doctrineId": "compile-agent-open-tool-picker-now-supported"
+    },
+    {
+      "receiptId": "sup-wf-set-node-field-known-atoms-18",
+      "sourceObligationId": "hg-wf-set-node-field-c1-known-atoms-18",
+      "sourceGolden": "tests/_golden/wf-set-node-field.golden.mjs",
+      "sourceCheckId": "C1",
+      "subObligationId": "known-atoms-count-18",
+      "doctrineId": "compile-known-atoms-18-to-25-extended"
+    },
+    {
+      "receiptId": "sup-wf-set-node-field-agent-open-tool-picker",
+      "sourceObligationId": "hg-wf-set-node-field-c1",
+      "sourceGolden": "tests/_golden/wf-set-node-field.golden.mjs",
+      "sourceCheckId": "C1",
+      "subObligationId": "agent-open-tool-picker-negative",
+      "doctrineId": "compile-agent-open-tool-picker-now-supported"
+    }
+  ]
+}
