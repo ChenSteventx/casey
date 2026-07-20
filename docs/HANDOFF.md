@@ -27,7 +27,8 @@ gone 是原授权语义。完整收据见 `docs/plans/mountdelay-fidelity/review
 **本链剩余项全部是 route:human，不是 agent 可自行翻绿的实现尾巴**：① 阶段一
 `admission-trust-root-separation` 的人签/真机 execute UAT；② 阶段二隔离浏览器义务的真实 UAT 存证、
 可信签名与迁移机制（已明确延期给后续 `real-uat-attestation` 类契约）；③ mountdelay 真机多次回放、
-`profile.loading` selector/text 与时序标定。单次真机绿不得宣称 flaky 已消除。
+`profile.loading` selector/text 与时序标定；④ mountdelay 本次新增冻结验收的 ADR-0004 人签确认。
+单次真机绿不得宣称 flaky 已消除。
 
 主树既有未提交现场（`.gitignore`、三份无关 PRD、`docs/codex/` 等）均为用户/并行工作，合并时未触碰。
 

@@ -81,7 +81,7 @@ CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
 A. 没有本链的 agent 可执行实现尾巴；不得重复做阶段二或 mountdelay。
 B. 需 Steven 在场的 route:human：阶段一 admission-trust-root-separation 人签/真机 execute UAT；
    mountdelay 真机多次回放 + profile.loading 标定；隔离浏览器义务的真实 UAT 存证/可信签名/迁移机制
-   另立后续契约，单次绿不算 flaky 消除。
+   另立后续契约；mountdelay 新冻结验收仍需 ADR-0004 人签。单次绿不算 flaky 消除。
 C. 若暂不做真机，回到 HANDOFF 其它未完成候选重新 contract init；不要动主树既有用户未提交文件。
 
 【环境坑（WSL）】
