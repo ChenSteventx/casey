@@ -50,8 +50,9 @@ test('W1 production 受众锁 + test 上下文 → 凭据门浏览器前 exit 65
   assert(!existsSync(OUT), 'axes 不应落盘（门在采集前拦）');
 });
 
-// W1b 正控（证哨兵非空）：test 受众锁 + test 上下文（无 login）→ 受众匹配、过一切浏览器前门 → 到达 launch 点 →
-// 哨兵写 + exit 66 短路（不真启浏览器）。证明 W1/W2/W3 的「哨兵未写」不是因哨兵永不 fire、而确是门在 launch 前拦。
+// W1b 正控（证 replay 哨兵非空）：test 受众锁 + test 上下文（无 login）→ 受众匹配、过一切浏览器前门 → 到达 replay
+// launch 点 → 哨兵写 + exit 66 短路（不真启浏览器）。故 W1 的「哨兵未写」确是 replay 门在 launch 前拦、非哨兵永不 fire。
+// （compile 哨兵是另一份独立代码，其非空由 W3b 单独证——W1 归 W1b、W2/W3 归 W3b，codex round-6 清理项。）
 test('W1b 正控：test 受众锁 + test 上下文 → 过门到 launch 点 → 哨兵写 + exit 66（哨兵机制非空）', () => {
   const { r, launched } = runReplay('entity-locks.test.frozen.json');
   assert(r.status === 66, `受众匹配应过门到 launch 哨兵 exit 66，实际 ${r.status}：${(r.stderr || '').slice(-160)}`);
