@@ -6,7 +6,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 
 const FIXTURE_PATH_RE = /(?:^|\/)fixtures\/(fake-sut|login-sut|chat-sut|publish-sut)\/server\.mjs$/;
-const START_EXPORT_RE = /^start(?:Fake|Login|Chat|Publish)Sut$/;
+const START_EXPORT_RE = /^start[A-Za-z_$][\w$]*Sut$/;
 
 function posix(path) {
   return path.split(sep).join('/');
@@ -76,6 +76,13 @@ function namedBindings(clause) {
   }).filter(({ imported, local }) => /^[A-Za-z_$][\w$]*$/.test(imported) && /^[A-Za-z_$][\w$]*$/.test(local));
 }
 
+function destructuredBindings(clause) {
+  return clause.split(',').map((part) => part.trim()).filter(Boolean).map((part) => {
+    const [imported, local = imported] = part.split(/\s*:\s*/);
+    return { imported: imported.trim(), local: local.trim() };
+  }).filter(({ imported, local }) => /^[A-Za-z_$][\w$]*$/.test(imported) && /^[A-Za-z_$][\w$]*$/.test(local));
+}
+
 function staticImports(source) {
   const imports = [];
   const re = /\bimport\s+([\s\S]*?)\s+from\s+(['"])([^'"\n]+)\2\s*;?/g;
@@ -124,6 +131,18 @@ function calledAt(code, name) {
   return match ? match.index : -1;
 }
 
+function matchingClose(code, openOffset, open = '(', close = ')') {
+  let depth = 0;
+  for (let i = openOffset; i < code.length; i += 1) {
+    if (code[i] === open) depth += 1;
+    else if (code[i] === close) {
+      depth -= 1;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
 function fixtureReasons(file, source, code) {
   const found = new Map();
   for (const declaration of staticImports(source)) {
@@ -153,14 +172,69 @@ function fixtureReasons(file, source, code) {
     if (!fixture || found.has(fixture)) continue;
     const moduleName = match[1];
     const after = code.slice(match.index + match[0].length);
-    const extraction = new RegExp(`\\b(?:const|let)\\s+([A-Za-z_$][\\w$]*)\\s*=\\s*${moduleName}\\.(start(?:Fake|Login|Chat|Publish)Sut)\\b`).exec(after);
+    const extraction = new RegExp(`\\b(?:const|let)\\s+([A-Za-z_$][\\w$]*)\\s*=\\s*${moduleName}\\.(start[A-Za-z_$][\\w$]*Sut)\\b`).exec(after);
     if (!extraction || calledAt(after.slice(extraction.index + extraction[0].length), extraction[1]) < 0) continue;
     found.set(fixture, {
       kind: 'fixture-start', fixture,
       sourceSpan: spanAt(source, match.index),
     });
   }
+
+  // Dynamic fixture import with destructuring, including local aliases:
+  //   const { startFakeSut: boot } = await import('./fixtures/fake-sut/server.mjs');
+  const destructured = /\b(?:const|let)\s*\{([^}]+)\}\s*=\s*await\s+import\s*\(\s*(['"])([^'"\n]+)\2\s*\)/g;
+  for (const match of source.matchAll(destructured)) {
+    const fixture = fixtureName(match[3]);
+    if (!fixture || found.has(fixture)) continue;
+    const binding = destructuredBindings(match[1]).find(({ imported, local }) => START_EXPORT_RE.test(imported) && calledAt(code.slice(match.index + match[0].length), local) >= 0);
+    if (!binding) continue;
+    found.set(fixture, {
+      kind: 'fixture-start', fixture,
+      sourceSpan: spanAt(source, match.index),
+    });
+  }
   return [...found.values()];
+}
+
+function browserLaunchReasons(source, code) {
+  const engines = new Set();
+  const namespaces = new Set();
+  for (const declaration of staticImports(source)) {
+    if (!['playwright', 'playwright-core', '@playwright/test'].includes(declaration.specifier)) continue;
+    for (const binding of namedBindings(declaration.clause)) {
+      if (binding.imported === 'chromium' || binding.imported === 'firefox' || binding.imported === 'webkit') engines.add(binding.local);
+    }
+    const namespace = /^\s*\*\s+as\s+([A-Za-z_$][\w$]*)\s*$/.exec(declaration.clause);
+    if (namespace) namespaces.add(namespace[1]);
+    const defaultBinding = /^\s*([A-Za-z_$][\w$]*)\s*$/.exec(declaration.clause);
+    if (defaultBinding) namespaces.add(defaultBinding[1]);
+  }
+
+  const offsets = [];
+  for (const engine of engines) {
+    const escaped = engine.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const match = new RegExp(`\\b${escaped}\\s*\\.\\s*launch\\s*\\(`).exec(code);
+    if (match) offsets.push(match.index);
+  }
+  for (const namespace of namespaces) {
+    const escaped = namespace.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const match = new RegExp(`\\b${escaped}\\s*\\.\\s*(?:chromium|firefox|webkit)\\s*\\.\\s*launch\\s*\\(`).exec(code);
+    if (match) offsets.push(match.index);
+  }
+
+  // Dynamic destructuring from Playwright is also a launch-capable binding.
+  const dynamic = /\b(?:const|let)\s*\{([^}]+)\}\s*=\s*await\s+import\s*\(\s*(['"])(playwright(?:-core)?|@playwright\/test)\2\s*\)/g;
+  for (const match of source.matchAll(dynamic)) {
+    for (const binding of destructuredBindings(match[1])) {
+      if (!['chromium', 'firefox', 'webkit'].includes(binding.imported)) continue;
+      const escaped = binding.local.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const launch = new RegExp(`\\b${escaped}\\s*\\.\\s*launch\\s*\\(`).exec(code.slice(match.index + match[0].length));
+      if (launch) offsets.push(match.index + match[0].length + launch.index);
+    }
+  }
+  return [...new Set(offsets)].sort((a, b) => a - b).map((offset) => ({
+    kind: 'browser-launch', browser: 'playwright', sourceSpan: spanAt(source, offset),
+  }));
 }
 
 function directListenerReason(source, code) {
@@ -192,16 +266,64 @@ function sutCliReason(source, code) {
     }
   }
   for (const invoker of childAliases) {
-    const callRe = new RegExp(`\\b${invoker}\\s*\\(\\s*process\\.execPath\\s*,\\s*([A-Za-z_$][\\w$]*)\\b`, 'g');
+    const callRe = new RegExp(`\\b${invoker}\\s*\\(`, 'g');
     for (const call of code.matchAll(callRe)) {
-      const argv = call[1];
-      // Read the original source for the literal flag, but require the same argv
-      // identifier on the effect path to the child-process call.
-      const pushRe = new RegExp(`\\b${argv}\\s*\\.\\s*push\\s*\\(\\s*(['"])--sut\\1\\s*,\\s*([A-Za-z_$][\\w$]*)`);
-      const push = pushRe.exec(source.slice(0, call.index));
-      if (!push) continue;
-      const offset = source.slice(0, call.index).lastIndexOf(push[0]);
-      return { kind: 'sut-cli-connect', sourceSpan: spanAt(source, offset) };
+      const open = code.indexOf('(', call.index);
+      const close = matchingClose(code, open);
+      if (close < 0) continue;
+      const callCode = code.slice(call.index, close + 1);
+      const callSource = source.slice(call.index, close + 1);
+      // Follow direct array literals, array variables, spreads and any number
+      // of preceding argv.push(...) calls. This is intentionally bounded to
+      // identifiers which actually flow into this child-process call.
+      const evidence = [callSource];
+      const identifiers = new Set(callCode.match(/\b[A-Za-z_$][\w$]*\b/g) || []);
+      for (const identifier of identifiers) {
+        const escaped = identifier.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const beforeCode = code.slice(0, call.index);
+        const beforeSource = source.slice(0, call.index);
+        const declarationRe = new RegExp(`\\b(?:const|let|var)\\s+${escaped}\\s*=\\s*\\[`, 'g');
+        let declaration = null;
+        for (const candidate of beforeCode.matchAll(declarationRe)) declaration = candidate;
+        if (declaration) {
+          const arrayOpen = beforeCode.indexOf('[', declaration.index);
+          const arrayClose = matchingClose(beforeCode, arrayOpen, '[', ']');
+          if (arrayClose >= 0) evidence.push(beforeSource.slice(declaration.index, arrayClose + 1));
+        }
+        const objectDeclarationRe = new RegExp(`\\b(?:const|let|var)\\s+${escaped}\\s*=\\s*\\{`, 'g');
+        let objectDeclaration = null;
+        for (const candidate of beforeCode.matchAll(objectDeclarationRe)) objectDeclaration = candidate;
+        if (objectDeclaration) {
+          const objectOpen = beforeCode.indexOf('{', objectDeclaration.index);
+          const objectClose = matchingClose(beforeCode, objectOpen, '{', '}');
+          if (objectClose >= 0) evidence.push(beforeSource.slice(objectDeclaration.index, objectClose + 1));
+        }
+        const pushRe = new RegExp(`\\b${escaped}\\s*\\.\\s*push\\s*\\(`, 'g');
+        for (const push of beforeCode.matchAll(pushRe)) {
+          const pushOpen = beforeCode.indexOf('(', push.index);
+          const pushClose = matchingClose(beforeCode, pushOpen);
+          if (pushClose >= 0) evidence.push(beforeSource.slice(push.index, pushClose + 1));
+        }
+      }
+      const argvEvidence = evidence.join('\n');
+      // CASEY_LAUNCH_SENTINEL is a deliberate browser-launch preflight: the
+      // production CLI writes it and exits before launch. Follow an inline
+      // options object or a named env/options object used by the call.
+      if (/\bCASEY_LAUNCH_SENTINEL\b/.test(argvEvidence)) continue;
+      if (!/(['"])--sut\1/.test(argvEvidence)) continue;
+      if (/(['"])--from-events\1/.test(argvEvidence)) continue;
+
+      // Reject commands such as `casey demo --sut x`: --sut denotes a real
+      // connection only on replay/compile/record executables or `casey run`.
+      const effectfulCommand = /\b(?:REPLAY|COMPILE|RECORD)\b/.test(argvEvidence)
+        || /bin[\\/]?(?:replay|compile|record)\.mjs/.test(argvEvidence)
+        || /(['"])(?:run|replay|compile|record)\1/.test(argvEvidence);
+      if (!effectfulCommand) continue;
+      const marker = /(['"])--sut\1/.exec(argvEvidence);
+      const sourceOffset = marker && callSource.includes(marker[0])
+        ? call.index + callSource.indexOf(marker[0])
+        : call.index;
+      return { kind: 'sut-cli-connect', sourceSpan: spanAt(source, sourceOffset) };
     }
   }
   return null;
@@ -220,6 +342,7 @@ export async function scanSutStartupClosure({ root, entries }) {
     const source = readFileSync(file, 'utf8');
     const code = executableText(source);
     const reasons = fixtureReasons(file, source, code);
+    reasons.push(...browserLaunchReasons(source, code));
     const listener = directListenerReason(source, code);
     if (listener) reasons.push(listener);
     const cli = sutCliReason(source, code);

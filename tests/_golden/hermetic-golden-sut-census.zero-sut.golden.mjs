@@ -50,10 +50,17 @@ const FIXTURE_ENTRIES = [
   'positive/direct-fixture.entry.mjs',
   'positive/reexport-fixture.entry.mjs',
   'positive/dynamic-fixture.entry.mjs',
+  'positive/dynamic-destructure-fixture.entry.mjs',
   'positive/direct-listener.entry.mjs',
+  'positive/playwright-launch.entry.mjs',
   'positive/sut-cli-connect.entry.mjs',
+  'positive/sut-cli-direct-executable.entry.mjs',
+  'positive/sut-cli-array.entry.mjs',
+  'positive/sut-cli-multipush.entry.mjs',
+  'positive/sut-cli-casey-spread.entry.mjs',
   'negative/from-events.negative.mjs',
   'negative/import-sentinel.negative.mjs',
+  'negative/playwright-import-only.negative.mjs',
   'negative/preflight-sentinel.negative.mjs',
   'negative/string-only.negative.mjs',
   'negative/unused-fixture-import.negative.mjs',
@@ -62,9 +69,15 @@ const FIXTURE_ENTRIES = [
 const EXPECTED_FIXTURE_CLOSURE = [
   'positive/direct-fixture.entry.mjs',
   'positive/direct-listener.entry.mjs',
+  'positive/dynamic-destructure-fixture.entry.mjs',
   'positive/dynamic-fixture.entry.mjs',
+  'positive/playwright-launch.entry.mjs',
   'positive/reexport-fixture.entry.mjs',
+  'positive/sut-cli-array.entry.mjs',
+  'positive/sut-cli-casey-spread.entry.mjs',
   'positive/sut-cli-connect.entry.mjs',
+  'positive/sut-cli-direct-executable.entry.mjs',
+  'positive/sut-cli-multipush.entry.mjs',
 ].sort();
 
 let passed = 0;
@@ -145,8 +158,14 @@ await check('C5 detector fixture 正负闭集、间接 import 与效果路径均
     ['positive/direct-fixture.entry.mjs', 'fixture-start'],
     ['positive/reexport-fixture.entry.mjs', 'fixture-start'],
     ['positive/dynamic-fixture.entry.mjs', 'fixture-start'],
+    ['positive/dynamic-destructure-fixture.entry.mjs', 'fixture-start'],
     ['positive/direct-listener.entry.mjs', 'direct-listener'],
+    ['positive/playwright-launch.entry.mjs', 'browser-launch'],
     ['positive/sut-cli-connect.entry.mjs', 'sut-cli-connect'],
+    ['positive/sut-cli-direct-executable.entry.mjs', 'sut-cli-connect'],
+    ['positive/sut-cli-array.entry.mjs', 'sut-cli-connect'],
+    ['positive/sut-cli-multipush.entry.mjs', 'sut-cli-connect'],
+    ['positive/sut-cli-casey-spread.entry.mjs', 'sut-cli-connect'],
   ]);
   for (const [path, kind] of expectedKinds) {
     if (!byPath.get(path)?.reasons.some((reason) => reason.kind === kind)) throw new Error(`${path} 缺 ${kind} 原因`);
