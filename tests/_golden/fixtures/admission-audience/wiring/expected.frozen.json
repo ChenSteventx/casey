@@ -1,0 +1,11 @@
+{
+  "caseId": "tc_audience_wiring",
+  "channel": "web",
+  "intents": [
+    {
+      "intentId": "intent_1",
+      "expected": []
+    }
+  ],
+  "globalAssertions": []
+}

@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "task": "tc_audience_wiring 接线夹具注册（admission-trust-root-separation）：production 受众冻结锁 + events，供验收金牌证 replay 凭据上下文门在浏览器前拦（production 锁 + test 上下文 → exit 65）。",
+  "specPath": "docs/plans/admission-trust-root-separation/plan.md",
+  "testChecksums": {
+    "tests/_golden/fixtures/admission-audience/wiring/entity-locks.frozen.json": "8db6318bea6cdf855b36f099b5fdf3cf8f04aaf21ea77ff3eb5a11f56948c888",
+    "tests/_golden/fixtures/admission-audience/wiring/events.document.json": "270f443a0de5e5481c9418d3cbbf45ad2838beea7b2034d4175062a5789de928",
+    "tests/_golden/fixtures/admission-audience/wiring/expected.frozen.json": "5696d9a551278daf6d6ef3b17381b6446b70a679700fba836a7fbb18e210b7eb",
+    "tests/_golden/fixtures/admission-audience/wiring/profile.json": "fd7b04c65d8121fbdec939852629096bd9ce84756d48f3e8ad9075b967a64cef"
+  },
+  "stories": []
+}

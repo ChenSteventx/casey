@@ -9,9 +9,9 @@
     "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/events.document.json": "38beca47bfa24918eaec5acda66c82828744164687c37f7aee5b0e49bcf3ed6d",
     "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/execute-authority.json": "c6d14b25f54fe4b81ab20b1b8435a7c90bfcc208413158eaaa6edf236ca61373",
     "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/entity-locks.frozen.json": "85017d4dda3d48ae2050603e238e7ba114005370b20453a8bb9182d6cad6718b",
-    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/execute-authority.unknown.json": "a4063273c025d70c78864e8af7c55fa91032da9c2b6fd8939931eaed47b9e16a",
-    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/entity-locks.duplicate.json": "5f6a5e5b27c68f292d17515debbeb864b37be96d8d2185be52598b910ac4d6ea",
-    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/entity-locks.unknown-binding.json": "9a3cf7611a06302fef96bfab53a3c0e10deeedaa09d8324b8eae7f0186b8a0fd"
+    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/execute-authority.unknown.json": "68475e04ab198af11f40a25cbacc34b1a6daea2d4933cffa7cf46d9fe94359b6",
+    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/entity-locks.duplicate.json": "10be5182e3c73e65fa500b51ec71ae66889b452d2efc56694ed5b33b8f438bcc",
+    "tests/_golden/fixtures/teachin-semantic-lock-admission-authority/entity-locks.unknown-binding.json": "6f70171a2cdd17728ff2d5ec31d4f8ce86990012c2831086cf4904061bd112c2"
   },
   "observability": [
     {

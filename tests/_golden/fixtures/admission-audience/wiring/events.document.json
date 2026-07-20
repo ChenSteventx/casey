@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 2,
+  "channel": "web",
+  "caseId": "tc_audience_wiring",
+  "url": "{{baseUrl}}/ai-manager/process/list",
+  "recordedAt": "2026-07-20T00:00:00.000Z",
+  "compiledBy": "wiring-fixture",
+  "authored": false,
+  "events": [
+    {
+      "stepId": "atstep_0",
+      "intentId": "intent_1",
+      "atom": "workflow.create",
+      "action": "click",
+      "semantic": {
+        "kind": "role",
+        "role": "button",
+        "name": "新增",
+        "exact": true
+      },
+      "text": "新增"
+    }
+  ]
+}

@@ -3,9 +3,9 @@
   "task": "teachin-entity-binding-sidecar-successor（superseding）：保持 events v2 原字节不变，以未签 sidecar 传 provenance，sign 精确联结身份收据后只冻结 entity locks，replay 从 opaque locks 内部推导逐事件角色。",
   "specPath": "docs/plans/teachin-entity-binding-sidecar-successor/plan.md",
   "testChecksums": {
-    "tests/_golden/teachin-entity-binding-sidecar-successor.zero-sut.golden.mjs": "aa8c759e61c4ea93ca20b34708823400dcdbd77f05fc3a1761fccb7d7c87fe00",
+    "tests/_golden/teachin-entity-binding-sidecar-successor.zero-sut.golden.mjs": "0aae0f9be7734f0bc8665cc9c3c5a1e90e5f4d5f736649f27388c35b0493652d",
     "tests/_golden/fixtures/teachin-entity-binding-sidecar-successor/entity-bindings-draft.schema.json": "b06250035f63fd742b6ea1383afe86cdedc95dcd00e7fffdf5ceb51480a13082",
-    "tests/_golden/fixtures/teachin-entity-binding-sidecar-successor/entity-locks-frozen.schema.json": "26a0b1170b71b04ce85ffd4bcad4f2da6d119de5e9107dfab520b6a31ae2231d",
+    "tests/_golden/fixtures/teachin-entity-binding-sidecar-successor/entity-locks-frozen.schema.json": "18d791203588703382483a92e1fc48373a375143286eb4c4d1af18d95217e34d",
     "tests/_golden/fixtures/teachin-entity-binding-sidecar-successor/entity-locks.frozen.json": "b1a3fc86e7ee354561794d8c9a3abbca3e06e188b75538f7b42305c3115f39d5"
   },
   "observability": [

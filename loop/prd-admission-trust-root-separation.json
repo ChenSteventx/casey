@@ -3,16 +3,17 @@
   "task": "admission-trust-root-separation（阶段一 kernel）：给冻结身份准入件加签名进自哈希的必填 audience 字段（准入受众）+ 铸权后启动浏览器前的凭据上下文门（严格匹配受众与凭据上下文，不符 fail-closed）。防「测试锁被误指向真 SUT 授权真实改动」。设计=ADR-0010+GRILL.md+plan.md。",
   "specPath": "docs/plans/admission-trust-root-separation/plan.md",
   "testChecksums": {
-    "tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs": "e12cb78f81c4fe1c7f970dbcc5caec286b846b0af4faa3975a777bee6f551aca",
+    "tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs": "e7e914aa6a3b4689964fc144262ef58c7e1565f14746bedb493d898b2b0d7d2c",
+    "tests/_golden/admission-audience-wiring.golden.mjs": "06389b3a47227635f7e03d480c457e59aa956e1705027fdb22aa20853ee298ba",
     "tests/_golden/fixtures/admission-audience/no-audience.frozen.json": "b0aae9532a77f47a76b7812ca08dc70b57c6a758d25920098e9c29291feb800c"
   },
   "observability": [
     {
-      "dimension": "接线 fail-closed（验收5）：replay/compile --execute 在受众与凭据上下文不符时于 chromium.launch 前 exit 65 不启动浏览器——实现期子进程退出码断言（不启动 fake-sut，门在浏览器前拒）。",
+      "dimension": "迁移零回归（验收8）：preflight 夹具(admission-authority×2/sidecar)加 audience:test 重签 + prd checksum + sidecar golden(S2 sign 路径/S4 schema)与其 frozen schema 更新 + 3 敌意夹具加 audience 为本意缺陷被拒；全走 sign 流程人签(ADR-0004)。v2 授权链夹具不动。",
       "route": "human"
     },
     {
-      "dimension": "迁移零回归（验收7/8）：5 committed 夹具重签 audience:test + prd checksum + 消费它们的 zero-SUT golden 断言，实现期随 kernel 改动共同落地并复跑，走 sign 流程人签（ADR-0004）。",
+      "dimension": "compile --execute 接线（codex High-2 已修 Option A：凭据探测挪到 chromium.launch 前、上下文按实际加载派生、缺凭据 exit 65）：其真机 execute 授权路径的端到端 fail-closed 待真机 UAT 抽验；replay 侧同门同律已有 W1 hermetic 可执行证据。",
       "route": "human"
     },
     {
@@ -29,7 +30,17 @@
         "node tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-19T23:16:09.622Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-20T00:07:44.179Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-credential-gate-wiring",
+      "desc": "凭据上下文门在 replay 浏览器启动前拦：production 受众锁+test 上下文 → exit 65(CREDENTIAL_AUDIENCE_MISMATCH)、不落 axes、不启动浏览器（codex High-2 接线可执行证据）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/admission-audience-wiring.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-20T00:07:50.004Z 全部 acceptance exit 0"
     }
   ]
 }

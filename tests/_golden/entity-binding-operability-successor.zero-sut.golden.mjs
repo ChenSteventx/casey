@@ -78,6 +78,7 @@ function signArgs(fixture, extra = []) {
     '--signer', 'golden-human', '--against-build', 'golden-build', '--signed-at', fixture.signedAt,
     '--events', fixture.events, '--entity-bindings-draft', fixture.bindings,
     '--entity-confirmations', fixture.confirmations, '--entity-locks-out', fixture.locks,
+    '--audience', 'test', // 准入受众必填（ADR-0010）：golden 签测试夹具用 test 受众
     ...extra];
 }
 const runSign = (fixture, extra = []) => spawnSync(process.execPath, signArgs(fixture, extra), { cwd: ROOT, encoding: 'utf8' });

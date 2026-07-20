@@ -117,7 +117,7 @@ if (args.invalidFlags.length || args.duplicateFlags.length || args.pos.length !=
   die(64, '参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试');
 }
 if (!caseId || !args.draft || !args.prd || !args['frozen-out'] || !args.signer || !args['against-build']) {
-  die(64, '用法: casey sign <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--events <f> --entity-bindings-draft <f> --entity-confirmations <f> --entity-locks-out <f>] [--signed-at <iso>] [--verdict-baseline <f>] [--resign] [--force] [--archive-dir <d>]');
+  die(64, '用法: casey sign <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--events <f> --entity-bindings-draft <f> --entity-confirmations <f> --entity-locks-out <f> --audience <test|production>] [--signed-at <iso>] [--verdict-baseline <f>] [--resign] [--force] [--archive-dir <d>]');
 }
 // caseId / 授权输入 / 产物路径安全（codex R1-F2；caseId 同 draft.mjs:40）。
 // 报错不回显原值——CLI 参数在凭据门扫描面外（ingest 契约 codex R2-F2 同族封缝，镜像 bin/ingest.mjs:29）。
@@ -136,6 +136,12 @@ if (entityLockArgCount !== 0 && entityLockArgCount !== entityLockArgs.length) {
   die(64, '--events / --entity-bindings-draft / --entity-confirmations / --entity-locks-out 必须成组提供');
 }
 const entityLocksOut = entityLockArgCount ? String(args['entity-locks-out']) : null;
+// 准入受众（ADR-0010）：产实体锁时必填，枚举 test|production，签进冻结件自哈希。真机生产签发用 production、
+// 测试夹具用 test；读侧凭据上下文门据此拒「测试锁改真 SUT」。缺/非法一律 fail-closed。
+const entityAudience = entityLocksOut ? String(args.audience || '') : null;
+if (entityLocksOut && entityAudience !== 'test' && entityAudience !== 'production') {
+  die(65, '产实体锁须 --audience test|production（ADR-0010 准入受众，缺/非法拒；原值不回显）');
+}
 let entityLocksProjectKey = null;
 let publicationJournal = null;
 let recoveryJournal = null;
@@ -268,6 +274,7 @@ if (entityLocksOut) {
     confirmations: entityConfirmations.confirmations,
     signerId: signer,
     signedAt,
+    audience: entityAudience,
   });
   if (frozenResult?.ok !== true || frozenResult.artifact?.replayReady !== true) {
     die(65, `entity locks 冻结失败（${frozenResult?.reason || 'UNKNOWN'}）`);

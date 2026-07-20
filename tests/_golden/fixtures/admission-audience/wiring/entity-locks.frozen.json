@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "entity-locks-frozen",
+  "caseId": "tc_audience_wiring",
+  "signed": true,
+  "replayReady": true,
+  "signerId": "wiring-fixture-prod",
+  "signedAt": "2026-07-20T00:00:00.000Z",
+  "audience": "production",
+  "eventsSha256": "sha256:270f443a0de5e5481c9418d3cbbf45ad2838beea7b2034d4175062a5789de928",
+  "bindings": [
+    {
+      "stepId": "atstep_0",
+      "intentId": "intent_1",
+      "atom": "workflow.create",
+      "role": "subject",
+      "candidateId": "candidate-atstep_0",
+      "lockId": "lock-atstep_0",
+      "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    }
+  ],
+  "signature": "sha256:3f99b60aa1b5f204dc651df7c35d68e597ba6a3c7bd1fdfb5e34ed2808b0f01d"
+}

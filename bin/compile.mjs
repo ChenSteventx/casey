@@ -188,11 +188,23 @@ async function executeMode(caseId, args) {
     console.error(`compile --execute: 预执行身份授权未过（${identityAdmission.reason}），未启动浏览器；下一步 ${identityAdmission.nextAction}`);
     process.exit(65);
   }
-  // 凭据上下文门（ADR-0010）：铸权后、启动浏览器前，准入受众须匹配凭据上下文——登录 run（非 --skip-login，
-  // 生产意图）↔ production 受众、--skip-login run ↔ test 受众，不符 fail-closed 不启动浏览器。想改真 SUT 必须
-  // 登录（不 skip），而生产上下文要求生产受众、测试夹具无——故此门不造旁路。只对有受众的执行授权生效。
+  // 凭据上下文门（ADR-0010，codex High-2 修）：铸权后、启动浏览器前，按【实际凭据加载】派生上下文（非 --skip-login
+  // 旗标自报）——非 skip-login=生产意图，此处即把站点配置/凭据加载掉：成功=production 上下文、失败=浏览器前 exit 65
+  // fail-closed（绝不启动浏览器后才发现无凭据）；--skip-login=test 上下文、无凭据。受众与上下文严格匹配，不符 exit 65。
+  // 与 replay.mjs 同律（实际加载派生、浏览器前拦）。防测试锁被误指向真 SUT 授权真实改动。
+  let preloadedCreds = null;
+  let credentialContext = 'test';
+  if (!args['skip-login']) {
+    try {
+      loadSiteConfig(undefined, { strict: true }); // 坏 site.json 抛错 fail-closed
+      preloadedCreds = loadCreds();
+      credentialContext = 'production';
+    } catch {
+      console.error('compile --execute: 登录站点配置/凭据加载失败（fail-closed；详情不回显，护栏 #7），未启动浏览器');
+      process.exit(65);
+    }
+  }
   if (executeAuthorityRead?.ok === true) {
-    const credentialContext = args['skip-login'] ? 'test' : 'production';
     const audienceGate = checkCredentialAudienceGate({ audience: executeAuthorityRead.audience, credentialContext });
     if (!audienceGate.ok) {
       console.error(`compile --execute: 准入受众与凭据上下文不符（${audienceGate.reason}：受众=${executeAuthorityRead.audience} 上下文=${credentialContext}），未启动浏览器；下一步 ${audienceGate.nextAction}`);
@@ -242,7 +254,8 @@ async function executeMode(caseId, args) {
       // 登录预备动作：不产 event，凭据只进内存（护栏 #7）。登录入口 = --sut 基址 + site.json startUrl 的路径段——
       // devProxyUrl/根 '/' 只是基址不渲染登录表单（真机实采 2026-07-02：裸基址上 SPA 判据「表单不在场」
       // 会被误读为已登录态 fail-open，后续全步 absent）；基址恒由 --sut 注入、绝不写死。
-      const creds = loadCreds();
+      const creds = preloadedCreds; // 已在浏览器启动前加载（codex High-2 凭据上下文门），此处复用不重载
+      run.notes.push('凭据于浏览器启动前加载（凭据上下文门 fail-closed）');
       let entryPath = ROUTE_LIST;
       try { entryPath = new URL(site.target.startUrl).pathname; } catch { /* 无 startUrl：退列表路由 */ }
       await loginBootstrap(page, { site, creds, startUrl: sut + entryPath });

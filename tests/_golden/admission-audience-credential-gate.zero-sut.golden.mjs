@@ -4,10 +4,13 @@
 // 契约 admission-trust-root-separation（ADR-0010）。红先行：实现前 C1（门未导出）与 C5（无 audience 件现役被接受）必红。
 //   audience = 准入件的必填签名字段 test|production；凭据上下文门 = 铸权后启动浏览器前判「受众须匹配凭据上下文」的纯函数门。
 
+import { readFileSync } from 'node:fs';
 import * as admission from '../../lib/entity-semantic-lock-preflight.mjs';
 
 const NEG_KEY = 'tests/_golden/fixtures/admission-audience/no-audience.frozen.json';
 const CONTRACT_PRD = 'admission-trust-root-separation';
+// 已签合法冻结件（含 audience:test），用于篡改检测：读它、改 audience、断言签名失配。
+const SIGNED_FROZEN = new URL('./fixtures/teachin-semantic-lock-admission-authority/entity-locks.frozen.json', import.meta.url);
 
 const failures = [];
 function test(name, fn) {
@@ -59,6 +62,29 @@ test('C4 反向验收：测试受众件在生产凭据上下文被机制阻断',
 test('C5 无 audience 的冻结件经生产读路被拒（audience 必填）', () => {
   const r = admission.readIdentityAdmissionAuthorityFromPrd({ prdId: CONTRACT_PRD, artifactKey: NEG_KEY, domain: 'verify' });
   assertDenied(r, '缺 audience 字段的冻结件必须被拒（现役接受=红，实现后必填校验拒=绿）');
+});
+
+// ── C6 签名覆盖 audience（篡改检测）──
+test('C6 篡改 audience 后签名失配（audience 进自哈希、不可脱签改）', () => {
+  const artifact = JSON.parse(readFileSync(SIGNED_FROZEN, 'utf8'));
+  assert(artifact.audience === 'test', '前提：夹具应为 audience:test');
+  assert(artifact.signature === admission.calculateIdentityAdmissionSignature(artifact), '前提：原件签名应自洽');
+  const tampered = { ...artifact, audience: 'production' };
+  assert(tampered.signature !== admission.calculateIdentityAdmissionSignature(tampered),
+    'audience 被篡改后签名仍自洽 = audience 未进自哈希（可脱签升权=洞）');
+});
+
+// ── C7 凭据门 Proxy 入参零 trap fail-closed ──
+test('C7 凭据门 Proxy 入参在任何 trap 前 fail-closed', () => {
+  let trapCount = 0;
+  const proxy = new Proxy({ audience: 'test', credentialContext: 'test' }, {
+    get(t, k) { trapCount++; return Reflect.get(t, k); },
+    ownKeys(t) { trapCount++; return Reflect.ownKeys(t); },
+    getOwnPropertyDescriptor(t, k) { trapCount++; return Reflect.getOwnPropertyDescriptor(t, k); },
+  });
+  const r = admission.checkCredentialAudienceGate(proxy);
+  assertDenied(r, 'Proxy 入参应 fail-closed');
+  assert(trapCount === 0, `Proxy trap 被触发 ${trapCount} 次（应零 trap 前拒，闭合入参防副作用注入）`);
 });
 
 if (failures.length > 0) { console.error(`\n${failures.length} 检查失败`); process.exit(1); }
