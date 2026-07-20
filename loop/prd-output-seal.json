@@ -14,16 +14,12 @@
   "stories": [
     {
       "id": "s1-output-seal",
-      "desc": "逐封口遮值/消毒 + report 穿越面字符集闸 + inbox/candidates 落盘过门。红先行 0/26（20 种子回显 + 2 多行栈帧 + 4 新闸退出码实锤）；退出码与修前语义一致、遮值不降诊断（类型词 + intentId/序号定位）。",
+      "desc": "逐封口遮值/消毒 + report 穿越面字符集闸 + inbox/candidates 落盘过门。红先行 0/26（20 种子回显 + 2 多行栈帧 + 4 新闸退出码实锤）；退出码与修前语义一致、遮值不降诊断（类型词 + intentId/序号定位）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/output-seal.golden.mjs",
         "node bin/casey.mjs selftest --tier1",
-        "node tests/_golden/e2e-chain.golden.mjs",
-        "node tests/_golden/p2-sign.golden.mjs",
         "node tests/_golden/draft-cli.golden.mjs",
-        "node tests/_golden/p3-compile.golden.mjs",
-        "node tests/_golden/p5-replay.golden.mjs",
         "node tests/_golden/p7-report.golden.mjs",
         "node tests/_golden/caseid-echo-mask.golden.mjs"
       ],

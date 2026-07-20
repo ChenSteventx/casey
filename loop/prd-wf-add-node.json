@@ -14,38 +14,30 @@
   "stories": [
     {
       "id": "s1-atom-and-flip",
-      "desc": "阶段一：compileWorkflowAddNode 建成（条件步开面板 + customAct 拖拽 + 计数核验进 blockers）+ 两金牌例翻（flow-bridge C5/C14/C15、wf-open-smoke C1 反例换 agent.openToolPicker + 集 13→14）+ prd-flow-bridge / prd-wf-open-smoke 重签。红先行：C1「addNode 应可编译/集非 14」、C2/C4a/C4b「暂无编译知识」实锤。",
+      "desc": "阶段一：compileWorkflowAddNode 建成（条件步开面板 + customAct 拖拽 + 计数核验进 blockers）+ 两金牌例翻（flow-bridge C5/C14/C15、wf-open-smoke C1 反例换 agent.openToolPicker + 集 13→14）+ prd-flow-bridge / prd-wf-open-smoke 重签。红先行：C1「addNode 应可编译/集非 14」、C2/C4a/C4b「暂无编译知识」实锤。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/wf-add-node.golden.mjs",
-        "node tests/_golden/flow-bridge.golden.mjs",
-        "node tests/_golden/wf-open-smoke.golden.mjs"
+        "node tests/_golden/flow-bridge.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-07T15:46:37.251Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-dragto-seams",
-      "desc": "阶段二：dragTo 动作类入双冻结（events.schema 枚举 + 描述修订 + allOf 落点分支 + ox/oy 语义；action-vocabulary/channel-driver/run-history 三 schema 全等镜像 + maxItems 8；av fixture dragTo 治理条目 + cd fixture web actionSpace）+ 回放器分支（replay-actions doAct dragTo + RH_ACTIONS/RH_INTERACTIVE + profile countSelector 通道）+ seams 双金牌与 p3-compile 金牌联动；prd-seams-freeze / prd-seams-freeze-v2 / prd-p3-compile 重签。红先行：C5 枚举缺 dragTo 实锤。",
+      "desc": "阶段二：dragTo 动作类入双冻结（events.schema 枚举 + 描述修订 + allOf 落点分支 + ox/oy 语义；action-vocabulary/channel-driver/run-history 三 schema 全等镜像 + maxItems 8；av fixture dragTo 治理条目 + cd fixture web actionSpace）+ 回放器分支（replay-actions doAct dragTo + RH_ACTIONS/RH_INTERACTIVE + profile countSelector 通道）+ seams 双金牌与 p3-compile 金牌联动；prd-seams-freeze / prd-seams-freeze-v2 / prd-p3-compile 重签。红先行：C5 枚举缺 dragTo 实锤。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/wf-add-node.golden.mjs",
         "node tests/_golden/seams-freeze.golden.mjs",
-        "node tests/_golden/seams-freeze-v2.golden.mjs",
-        "node tests/_golden/run-history.golden.mjs",
-        "node tests/_golden/p3-compile.golden.mjs"
+        "node tests/_golden/seams-freeze-v2.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-07T15:50:31.980Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-fixture-and-chain",
-      "desc": "阶段三：fake-sut 画布通路纯加法（预研补丁 9/9 冒烟绿：添加节点开面板 21 项 / 双守卫拖落 .lf-node / 单击双击微动出界不落 / data-node-count 实数）+ CONTRACT.md 增补 + prd-p5-replay 重签；registry nodeName desc 修至真机 21 名；设计条款 :135 修订 + CONTEXT.md 动作词汇表词条同步；全链回归零行为差。",
+      "desc": "阶段三：fake-sut 画布通路纯加法（预研补丁 9/9 冒烟绿：添加节点开面板 21 项 / 双守卫拖落 .lf-node / 单击双击微动出界不落 / data-node-count 实数）+ CONTRACT.md 增补 + prd-p5-replay 重签；registry nodeName desc 修至真机 21 名；设计条款 :135 修订 + CONTEXT.md 动作词汇表词条同步；全链回归零行为差。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/wf-add-node.golden.mjs",
-        "node tests/_golden/p5-replay.golden.mjs",
-        "node tests/_golden/e2e-chain.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,

@@ -15,10 +15,9 @@
   "stories": [
     {
       "id": "s1-carry-fix-and-hygiene",
-      "desc": "收割-注入主链 + 卫生：bin/replay.mjs 仅 --video-dir 与 --login-bootstrap 同开的舞步分支——loginBootstrap(page1) 归位后 page1.evaluate 一次性收割该 origin sessionStorage 全键值快照 + location.origin（快照仅进程内存）；page2 创建后首次 goto 前 addInitScript 恒等 origin 才种入（每次导航自动重种、SPA 同 origin 覆盖）。金牌三检查：S1 舞步下 session 登录态须继承（步 unique/performed + 视频产物落盘；实现前红已核：resolution none 复现缺陷）+ S2 凭据卫生负向（axes/run-history/run-metrics/video.json + stdout/stderr 无 token 字面量，防收割引新泄漏面）+ S3 单 page 零差回归（无 --video-dir 恒绿，锁修舞步不得破单 page 路径）。金牌一处按冻结接缝修正后重签（checksum 59f42e→ee07c8）：axes 动作轴无 actionPerformed 字段（verdict 衍生概念），S1 改断等强度接缝信号 identityReadback.ok===true（replay-actions 唯一写者）；红证据不受影响——修前 S1 在 resolution none 处先红、走不到回读断言。codex R1 四发现三采信一修正采纳重钉（checksum 再签 ee07c8→40e426，三破坏钉红实证后修绿）：F3 全键值快照语义提硬（夹具三键随机值 + 页面壳内嵌期望值校验，三键值全对才渲染受保护 UI——硬编码键名/常量值/部分携带全进不了；破坏「只种 sid」S1+S4 双红实证）+ F2 跨 origin 负向 S4 新增（B 实例复用 A 键值使 origin 门成唯一分界；replay 的 nav 步被机制钉在 --sut 基址、跨 origin 只能由 SUT 自身跳转发生，夹具加 crossLink 外链锚点；破坏「去 origin 门」S4 红实证）+ F1 修正采纳（S2 升级为工作目录 Buffer 级递归全扫 + 全轮次 stdout/stderr，盖住 webm 等二进制；report 未在金牌内生成——report 是 axes+video.json 的纯渲染、其卫生由 p7-report/report-fidelity/p7-credgate-coverage 持锁、本扫描盖住其全部输入；破坏「快照打 stdout」S2 红实证）+ F4 采信（S3 补 identityReadback.ok 断言，与 S1 同接缝、防御性、无独立可红面）。codex R2 四发现全采信（F1 env 洗净+形状校验 / F2 S4 A/B 键值深等+B 命中标记 / F3 夹具 capture 输出扫描 / F4 entries 收割+页面壳 JSON.parse 的 __proto__ 保真 + S5 特殊键金牌），另实现方自查修一处 capture 管道不关吊死事件循环致 gate 超时。codex R3 一发现采信收口（checksum 再签→8b9914/b3a968）：R3-F1 Low——capture 用异步 on('data')、金牌 spawnSync 阻塞事件循环，夹具末轮输出可能滞留 OS 管道致 S2 漏扫；修 = close() 改等 'close' 事件（stdio EOF、保 data 全落）而非 'exit' + 各 check 内即关（finally），S2 扫描前全部 SUT 已收口确定性完整；钉红实证（夹具泄漏 key 到 stderr → S2 确定性红）。",
+      "desc": "收割-注入主链 + 卫生：bin/replay.mjs 仅 --video-dir 与 --login-bootstrap 同开的舞步分支——loginBootstrap(page1) 归位后 page1.evaluate 一次性收割该 origin sessionStorage 全键值快照 + location.origin（快照仅进程内存）；page2 创建后首次 goto 前 addInitScript 恒等 origin 才种入（每次导航自动重种、SPA 同 origin 覆盖）。金牌三检查：S1 舞步下 session 登录态须继承（步 unique/performed + 视频产物落盘；实现前红已核：resolution none 复现缺陷）+ S2 凭据卫生负向（axes/run-history/run-metrics/video.json + stdout/stderr 无 token 字面量，防收割引新泄漏面）+ S3 单 page 零差回归（无 --video-dir 恒绿，锁修舞步不得破单 page 路径）。金牌一处按冻结接缝修正后重签（checksum 59f42e→ee07c8）：axes 动作轴无 actionPerformed 字段（verdict 衍生概念），S1 改断等强度接缝信号 identityReadback.ok===true（replay-actions 唯一写者）；红证据不受影响——修前 S1 在 resolution none 处先红、走不到回读断言。codex R1 四发现三采信一修正采纳重钉（checksum 再签 ee07c8→40e426，三破坏钉红实证后修绿）：F3 全键值快照语义提硬（夹具三键随机值 + 页面壳内嵌期望值校验，三键值全对才渲染受保护 UI——硬编码键名/常量值/部分携带全进不了；破坏「只种 sid」S1+S4 双红实证）+ F2 跨 origin 负向 S4 新增（B 实例复用 A 键值使 origin 门成唯一分界；replay 的 nav 步被机制钉在 --sut 基址、跨 origin 只能由 SUT 自身跳转发生，夹具加 crossLink 外链锚点；破坏「去 origin 门」S4 红实证）+ F1 修正采纳（S2 升级为工作目录 Buffer 级递归全扫 + 全轮次 stdout/stderr，盖住 webm 等二进制；report 未在金牌内生成——report 是 axes+video.json 的纯渲染、其卫生由 p7-report/report-fidelity/p7-credgate-coverage 持锁、本扫描盖住其全部输入；破坏「快照打 stdout」S2 红实证）+ F4 采信（S3 补 identityReadback.ok 断言，与 S1 同接缝、防御性、无独立可红面）。codex R2 四发现全采信（F1 env 洗净+形状校验 / F2 S4 A/B 键值深等+B 命中标记 / F3 夹具 capture 输出扫描 / F4 entries 收割+页面壳 JSON.parse 的 __proto__ 保真 + S5 特殊键金牌），另实现方自查修一处 capture 管道不关吊死事件循环致 gate 超时。codex R3 一发现采信收口（checksum 再签→8b9914/b3a968）：R3-F1 Low——capture 用异步 on('data')、金牌 spawnSync 阻塞事件循环，夹具末轮输出可能滞留 OS 管道致 S2 漏扫；修 = close() 改等 'close' 事件（stdio EOF、保 data 全落）而非 'exit' + 各 check 内即关（finally），S2 扫描前全部 SUT 已收口确定性完整；钉红实证（夹具泄漏 key 到 stderr → S2 确定性红）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/video-login-carry.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
@@ -26,16 +25,13 @@
     },
     {
       "id": "s2-ripple-locks",
-      "desc": "涟漪回归锁：共享夹具 login-sut/server.mjs 加法式改动（/app-session + /api/login-session，cookie 模式一字不动）+ 碰 bin/replay.mjs 舞步分支，锁全部消费者金牌——replay-login-bootstrap（8 检查）/ replay-video（13 检查，舞步既有语义零弱化）/ run-history / kinds-harden 原样绿；prd-replay-login-bootstrap 夹具 checksum 已重签（7be49b→b8b83c→61e0ed，随 R1 提硬再签）+ 其 gate 复验 GREEN。共享夹具 R1 增量：三键随机值 + 内嵌期望值校验 + sessionKeys/crossLink 注入口（全为 /app-session 会话模式加法，cookie 模式与既有消费者语义零动）。",
+      "desc": "涟漪回归锁：共享夹具 login-sut/server.mjs 加法式改动（/app-session + /api/login-session，cookie 模式一字不动）+ 碰 bin/replay.mjs 舞步分支，锁全部消费者金牌——replay-login-bootstrap（8 检查）/ replay-video（13 检查，舞步既有语义零弱化）/ run-history / kinds-harden 原样绿；prd-replay-login-bootstrap 夹具 checksum 已重签（7be49b→b8b83c→61e0ed，随 R1 提硬再签）+ 其 gate 复验 GREEN。共享夹具 R1 增量：三键随机值 + 内嵌期望值校验 + sessionKeys/crossLink 注入口（全为 /app-session 会话模式加法，cookie 模式与既有消费者语义零动）。 生命周期重裁：原行为已进入隔离账，agentExecution=forbidden、route:human；本 story 由静态隔离闸保持非绿。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/replay-login-bootstrap.golden.mjs",
-        "node tests/_golden/replay-video.golden.mjs",
-        "node tests/_golden/run-history.golden.mjs",
-        "node tests/_golden/kinds-harden.golden.mjs"
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-06T06:41:52.932Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     }
   ]
 }

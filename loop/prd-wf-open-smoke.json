@@ -14,10 +14,9 @@
   "stories": [
     {
       "id": "s1-open-atoms",
-      "desc": "两编译原子 + 夹具通路 + 金牌 C1-C4（红先行 0 过 / 4 败：两原子「暂无编译知识」抛错实锤 / execute exit 1 / 下游产物全缺席）。C2 events 序列/observed 尾步/assertionAtoms 挂靠钉死；C3 mini 端到端 verdict 全 PASS；C4 只读钉死（动作 ⊆ nav,click、零破坏原子）。",
+      "desc": "两编译原子 + 夹具通路 + 金牌 C1-C4（红先行 0 过 / 4 败：两原子「暂无编译知识」抛错实锤 / execute exit 1 / 下游产物全缺席）。C2 events 序列/observed 尾步/assertionAtoms 挂靠钉死；C3 mini 端到端 verdict 全 PASS；C4 只读钉死（动作 ⊆ nav,click、零破坏原子）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/wf-open-smoke.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
@@ -25,13 +24,10 @@
     },
     {
       "id": "s2-ripple-flip-and-locks",
-      "desc": "涟漪：flow-bridge 金牌三钉点例翻（C5 真缝例/C14 名单与集 13/C15 篡改探针 → workflow.addNode）+ prd-flow-bridge 金牌重签；fake-sut 共享夹具 prd-p5-replay 重签；消费者金牌复跑零行为差。",
+      "desc": "涟漪：flow-bridge 金牌三钉点例翻（C5 真缝例/C14 名单与集 13/C15 篡改探针 → workflow.addNode）+ prd-flow-bridge 金牌重签；fake-sut 共享夹具 prd-p5-replay 重签；消费者金牌复跑零行为差。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/flow-bridge.golden.mjs",
-        "node tests/_golden/p3-compile.golden.mjs",
-        "node tests/_golden/p5-replay.golden.mjs",
-        "node tests/_golden/e2e-chain.golden.mjs"
+        "node tests/_golden/flow-bridge.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-07T11:23:57.331Z 全部 acceptance exit 0"

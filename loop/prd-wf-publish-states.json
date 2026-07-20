@@ -19,10 +19,9 @@
   "stories": [
     {
       "id": "s1-buttonstate-kind-and-capture",
-      "desc": "词表收窄 + buttonState 评估三向 + buttonHits 双通道采集 + 草拟映射翻转 + workflow.publish 编译知识 + 对抗场景（plainText/divButtons/dupButtons）+ casey run 端到端 golden 14 检查（实现前 11/13 红已核；codex R1 两 High 采信钉红修绿：F1 absent 通道活性反证 buttonSeen + F2 补采可见性过滤，3 红实证假绿后修绿：U1/U2/U3/D1/I1/I2/I4/I5/I6/W1/C1；I0 夹具冒烟与 I3 盲区 fail-safe 方向冻结时即绿=回归保护）。",
+      "desc": "词表收窄 + buttonState 评估三向 + buttonHits 双通道采集 + 草拟映射翻转 + workflow.publish 编译知识 + 对抗场景（plainText/divButtons/dupButtons）+ casey run 端到端 golden 14 检查（实现前 11/13 红已核；codex R1 两 High 采信钉红修绿：F1 absent 通道活性反证 buttonSeen + F2 补采可见性过滤，3 红实证假绿后修绿：U1/U2/U3/D1/I1/I2/I4/I5/I6/W1/C1；I0 夹具冒烟与 I3 盲区 fail-safe 方向冻结时即绿=回归保护）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/wf-publish-states.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": false,
@@ -30,19 +29,14 @@
     },
     {
       "id": "s2-ripple-and-locks",
-      "desc": "涟漪重钉与回归锁：kinds-harden/chiefcomplaint-smoke 未实现范例换 switchState + 精确计数移交（重钉后即绿已核）；p4-drafter C-map 翻硬（重钉后 1 红=右红，随实现转绿）；report-fidelity 零改仍绿；seams 双 golden（schema +present 加法无害已核）+ p5 双份 + layer3-wiring + run-history 原样绿。",
+      "desc": "涟漪重钉与回归锁：kinds-harden/chiefcomplaint-smoke 未实现范例换 switchState + 精确计数移交（重钉后即绿已核）；p4-drafter C-map 翻硬（重钉后 1 红=右红，随实现转绿）；report-fidelity 零改仍绿；seams 双 golden（schema +present 加法无害已核）+ p5 双份 + layer3-wiring + run-history 原样绿。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/kinds-harden.golden.mjs",
-        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
         "node tests/_golden/p4-drafter.golden.mjs",
         "node tests/_golden/report-fidelity.golden.mjs",
         "node tests/_golden/seams-freeze.golden.mjs",
         "node tests/_golden/seams-freeze-v2.golden.mjs",
-        "node tests/_golden/p5-replay.golden.mjs",
-        "node tests/_golden/p5-replay-coverage.golden.mjs",
-        "node tests/_golden/layer3-wiring.golden.mjs",
-        "node tests/_golden/run-history.golden.mjs"
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": false,
       "evidence": ""

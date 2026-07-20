@@ -14,10 +14,9 @@
   "stories": [
     {
       "id": "s1-enable-ops",
-      "desc": "词表+采集+评估+草拟四面 + 夹具场景。金牌 C1-C5（红先行 0 过 / 6 败全形态实锤：词表拒 enabled exit 2 / 评估证不出 / mapAtom 落 pending / 回放四断言全败无禁用态采集 / disabledClass 形状闸不存在 exit 0）。",
+      "desc": "词表+采集+评估+草拟四面 + 夹具场景。金牌 C1-C5（红先行 0 过 / 6 败全形态实锤：词表拒 enabled exit 2 / 评估证不出 / mapAtom 落 pending / 回放四断言全败无禁用态采集 / disabledClass 形状闸不存在 exit 0）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/btn-enable-ops.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
@@ -25,15 +24,11 @@
     },
     {
       "id": "s2-ripple-flip-and-locks",
-      "desc": "涟漪：wf-publish-states 金牌三钉点生命周期翻转（U2 词表拒→过 / 遗留 op 证不出→语义评估 / D 段落 pending→硬映射）红先行改 + 其 prd 金牌与共享夹具 checksum 重签 + prd-wf-history-version 夹具 checksum 重签；四面消费者金牌复跑零行为差。",
+      "desc": "涟漪：wf-publish-states 金牌三钉点生命周期翻转（U2 词表拒→过 / 遗留 op 证不出→语义评估 / D 段落 pending→硬映射）红先行改 + 其 prd 金牌与共享夹具 checksum 重签 + prd-wf-history-version 夹具 checksum 重签；四面消费者金牌复跑零行为差。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/wf-publish-states.golden.mjs",
-        "node tests/_golden/wf-history-version.golden.mjs",
         "node tests/_golden/p4-drafter.golden.mjs",
-        "node tests/_golden/p2-check-vocab.golden.mjs",
-        "node tests/_golden/kinds-harden.golden.mjs",
-        "node tests/_golden/e2e-chain.golden.mjs"
+        "node tests/_golden/p2-check-vocab.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-06T18:06:28.094Z 全部 acceptance exit 0"

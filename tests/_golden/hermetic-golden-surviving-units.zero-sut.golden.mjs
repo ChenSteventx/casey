@@ -58,6 +58,7 @@ check('surviving-unit manifest 存在且含原子义务血缘', () => {
 
 check('每个 unit 后继先静态证 zero-SUT，再真实执行为绿', () => {
   if (cases.length === 0) throw new Error('没有可执行的 surviving-unit case，拒绝真空通过');
+  const runnable = new Map();
   for (const entry of cases) {
     const path = resolve(ROOT, entry.unitGoldenPath);
     if (!insideRoot(path) || !existsSync(path)) throw new Error(`${entry.unitGoldenPath} 不存在或越界`);
@@ -66,9 +67,23 @@ check('每个 unit 后继先静态证 zero-SUT，再真实执行为绿', () => {
     if (!source.includes(entry.sourceObligationId) || !source.includes(entry.unitCheckId)) {
       throw new Error(`${entry.unitGoldenPath} 未携原子义务血缘/检查标识`);
     }
+    const run = runnable.get(path) || { repoPath: entry.unitGoldenPath, checkIds: [] };
+    run.checkIds.push(entry.unitCheckId);
+    runnable.set(path, run);
+  }
+  // 一个 unit 文件可承载多个独立 unitCheckId；血缘逐 case 校验，但文件只需执行一次。
+  // 重复执行整文件既不增加覆盖，还会把原子数误变成运行时长倍率。
+  for (const [path, { repoPath, checkIds }] of runnable) {
     const result = spawnSync(process.execPath, [path], { cwd: ROOT, encoding: 'utf8', timeout: 120000 });
     if (result.error || result.status !== 0) {
-      throw new Error(`${entry.unitGoldenPath} exit=${result.status} ${result.error?.message || ''}`.trim());
+      throw new Error(`${repoPath} exit=${result.status} ${result.error?.message || ''}`.trim());
+    }
+    const outputLines = String(result.stdout || '').split(/\r?\n/);
+    for (const checkId of checkIds) {
+      const prefix = `ok   ${checkId}`;
+      if (!outputLines.some((line) => line === prefix || line.startsWith(`${prefix} `))) {
+        throw new Error(`${repoPath} 未执行并报告 unitCheckId ${checkId}`);
+      }
     }
   }
 });

@@ -25,12 +25,11 @@
     },
     {
       "id": "s2-regression-locks",
-      "desc": "回归锁：layer3 脱敏金丝雀全保（redactScalar 收窄零放松）+ p7 报告渲染 + p5 回放两份（evaluateAssertions 形状加性）+ replay-login-bootstrap（run CLI 面）。",
+      "desc": "回归锁：layer3 脱敏金丝雀全保（redactScalar 收窄零放松）+ p7 报告渲染 + p5 回放两份（evaluateAssertions 形状加性）+ replay-login-bootstrap（run CLI 面）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/layer3-wiring-coverage.golden.mjs",
         "node tests/_golden/p7-report.golden.mjs",
-        "node tests/_golden/p5-replay.golden.mjs",
         "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": true,

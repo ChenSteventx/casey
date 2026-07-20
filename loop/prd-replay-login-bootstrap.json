@@ -15,10 +15,9 @@
   "stories": [
     {
       "id": "s1-login-bootstrap-optin",
-      "desc": "三处加法：lib/login-bootstrap.mjs 的 loadCreds 凭据文件路径加 AT_CREDS_FILE env 覆盖（与 AT_SITE_JSON 同范式，hermetic 凭据源隔离所需）；bin/replay.mjs 识别 --login-bootstrap（前置 loadSiteConfig+loadCreds 失败 exit 65、登录入口 = --sut + site.target.startUrl 路径段（退 events 信封 url 路径段再退 /）、forensics 接线后事件循环前执行 loginBootstrap、登录失败关浏览器 exit 65 不落 axes）；bin/compile.mjs verify 段按调用方旗标透传 --login-bootstrap 给子 replay。五检查 golden：C1 无旗标零行为差 / C2 缺凭据 fail-closed 65 / C3 登录真发生且 axes 无登录步无凭据值 / C4 无表单幂等直通 / C5 verify 透传（实现前 C2/C3/C5 红已核）。",
+      "desc": "三处加法：lib/login-bootstrap.mjs 的 loadCreds 凭据文件路径加 AT_CREDS_FILE env 覆盖（与 AT_SITE_JSON 同范式，hermetic 凭据源隔离所需）；bin/replay.mjs 识别 --login-bootstrap（前置 loadSiteConfig+loadCreds 失败 exit 65、登录入口 = --sut + site.target.startUrl 路径段（退 events 信封 url 路径段再退 /）、forensics 接线后事件循环前执行 loginBootstrap、登录失败关浏览器 exit 65 不落 axes）；bin/compile.mjs verify 段按调用方旗标透传 --login-bootstrap 给子 replay。五检查 golden：C1 无旗标零行为差 / C2 缺凭据 fail-closed 65 / C3 登录真发生且 axes 无登录步无凭据值 / C4 无表单幂等直通 / C5 verify 透传（实现前 C2/C3/C5 红已核）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/replay-login-bootstrap.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
@@ -26,12 +25,10 @@
     },
     {
       "id": "s2-regression-locks",
-      "desc": "回归锁：无旗标路径一字不变——p5 回放内核两份冻结 golden 与 p3 编译 golden（compile --verify 既有语义、login-bootstrap 登录件语义）原样复跑全绿。",
+      "desc": "回归锁：无旗标路径一字不变——p5 回放内核两份冻结 golden 与 p3 编译 golden（compile --verify 既有语义、login-bootstrap 登录件语义）原样复跑全绿。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p5-replay.golden.mjs",
-        "node tests/_golden/p5-replay-coverage.golden.mjs",
-        "node tests/_golden/p3-compile.golden.mjs"
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-06T06:43:55.450Z 全部 acceptance exit 0"

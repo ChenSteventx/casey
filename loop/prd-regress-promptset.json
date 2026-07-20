@@ -14,10 +14,9 @@
   "stories": [
     {
       "id": "s1-promptset-overlay-aggregate",
-      "desc": "红先行金牌 regress-promptset：P 解析 fail-closed + B 注入向量库文件名/前缀强制 + O overlay 唯一槽·不漂移·软期望合成 + S 软期望不进裁定（失败软期望该步仍 PASS）+ A 聚合分段/横幅/黄标·畸形 fail-closed + W casey run --promptset 端到端。",
+      "desc": "红先行金牌 regress-promptset：P 解析 fail-closed + B 注入向量库文件名/前缀强制 + O overlay 唯一槽·不漂移·软期望合成 + S 软期望不进裁定（失败软期望该步仍 PASS）+ A 聚合分段/横幅/黄标·畸形 fail-closed + W casey run --promptset 端到端。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/regress-promptset.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
@@ -25,11 +24,9 @@
     },
     {
       "id": "s2-regression-locks",
-      "desc": "回归锁：chiefcomplaint-smoke（chat 回放 + soft 未回归）+ p5-replay 两份（replay 形状加性）+ report-fidelity（report-model 加性）+ p7-report（渲染）+ p2-verdict（裁判零改）。",
+      "desc": "回归锁：chiefcomplaint-smoke（chat 回放 + soft 未回归）+ p5-replay 两份（replay 形状加性）+ report-fidelity（report-model 加性）+ p7-report（渲染）+ p2-verdict（裁判零改）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
-        "node tests/_golden/p5-replay.golden.mjs",
         "node tests/_golden/p5-replay-coverage.golden.mjs",
         "node tests/_golden/report-fidelity.golden.mjs",
         "node tests/_golden/p7-report.golden.mjs",

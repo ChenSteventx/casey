@@ -14,29 +14,20 @@
   "stories": [
     {
       "id": "s1-selectnodedropdown-atom-e2e",
-      "desc": "selectNodeDropdown 端到端金牌（C1 集 17 / C2 compile→replay→verdict 全 PASS 含 ddtwin 钉位——非域锁/全页门必 ambiguous 唯 nth 域锁 + 可见浮层作用域 doSelectNodeDropdown 过 / C3a 编译面双证：未 openNode gate 前置门截 + 无下拉 execute 预检 count=0 blocker exit 65 / C3b nth 越界 blocker exit 65 / C3c 缺席守卫优雅 none / C3d 选项多匹配 ambiguous candidateCount 恰 2 / C3e 选错项精确回读拒认 action_failed / C3f 目标缺席 action_failed）+ fake-sut 节点抽屉下拉夹具。红先行：实现前 1 过 9 败（C1 集 16 + C2×3 无编译知识/回放门 + C3a/b 无预检门 + C3d/e/f 通用门假 unique + ddtwin 非域锁门 fallback_first count=2 实锤）。附五例翻金牌「集 16」翻 17 复跑锁不回退。",
+      "desc": "selectNodeDropdown 端到端金牌（C1 集 17 / C2 compile→replay→verdict 全 PASS 含 ddtwin 钉位——非域锁/全页门必 ambiguous 唯 nth 域锁 + 可见浮层作用域 doSelectNodeDropdown 过 / C3a 编译面双证：未 openNode gate 前置门截 + 无下拉 execute 预检 count=0 blocker exit 65 / C3b nth 越界 blocker exit 65 / C3c 缺席守卫优雅 none / C3d 选项多匹配 ambiguous candidateCount 恰 2 / C3e 选错项精确回读拒认 action_failed / C3f 目标缺席 action_failed）+ fake-sut 节点抽屉下拉夹具。红先行：实现前 1 过 9 败（C1 集 16 + C2×3 无编译知识/回放门 + C3a/b 无预检门 + C3d/e/f 通用门假 unique + ddtwin 非域锁门 fallback_first count=2 实锤）。附五例翻金牌「集 16」翻 17 复跑锁不回退。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/wf-select-node-dropdown.golden.mjs",
-        "node tests/_golden/wf-open-node.golden.mjs",
-        "node tests/_golden/wf-connect-nodes.golden.mjs",
-        "node tests/_golden/wf-add-node.golden.mjs",
-        "node tests/_golden/flow-bridge.golden.mjs",
-        "node tests/_golden/wf-open-smoke.golden.mjs"
+        "node tests/_golden/flow-bridge.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-13T22:33:47.491Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-resign-and-regression",
-      "desc": "六 prd 重签（五例翻棘轮 + p5-replay 夹具 checksum）+ 新金牌冻 prd-wf-select-node-dropdown；全链回归零行为差（fake-sut 节点抽屉下拉 + 五反面场景纯加法、既有场景零影响）。",
+      "desc": "六 prd 重签（五例翻棘轮 + p5-replay 夹具 checksum）+ 新金牌冻 prd-wf-select-node-dropdown；全链回归零行为差（fake-sut 节点抽屉下拉 + 五反面场景纯加法、既有场景零影响）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p5-replay.golden.mjs",
         "node tests/_golden/p5-replay-coverage.golden.mjs",
-        "node tests/_golden/e2e-chain.golden.mjs",
-        "node tests/_golden/p3-compile.golden.mjs",
-        "node tests/_golden/run-history.golden.mjs",
         "node tests/_golden/seams-freeze.golden.mjs",
         "node tests/_golden/seams-freeze-v2.golden.mjs",
         "node bin/casey.mjs selftest --tier1"

@@ -14,26 +14,19 @@
   "stories": [
     {
       "id": "s1-opennode-atom-e2e",
-      "desc": "openNode 端到端金牌（C1 集 16 / C2 compile→replay→verdict 全 PASS 含域锁门钉位——面板开着全页门必 ambiguous 唯专用门过 / C3a-b 编译面预检 blocker exit 65 / C3c 缺席守卫优雅 none / C3d 域内多匹配 ambiguous 绝不点 candidateCount 恰 2）+ fake-sut 节点抽屉夹具。红先行：实现前 1 过 6 败（C1/C2×2/C3a/C3b 无编译知识红 + C3d 全页门 fallback_first count=3 实锤）。",
+      "desc": "openNode 端到端金牌（C1 集 16 / C2 compile→replay→verdict 全 PASS 含域锁门钉位——面板开着全页门必 ambiguous 唯专用门过 / C3a-b 编译面预检 blocker exit 65 / C3c 缺席守卫优雅 none / C3d 域内多匹配 ambiguous 绝不点 candidateCount 恰 2）+ fake-sut 节点抽屉夹具。红先行：实现前 1 过 6 败（C1/C2×2/C3a/C3b 无编译知识红 + C3d 全页门 fallback_first count=3 实锤）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/wf-open-node.golden.mjs",
-        "node tests/_golden/wf-connect-nodes.golden.mjs",
-        "node tests/_golden/wf-add-node.golden.mjs",
-        "node tests/_golden/flow-bridge.golden.mjs",
-        "node tests/_golden/wf-open-smoke.golden.mjs"
+        "node tests/_golden/flow-bridge.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-08T06:13:43.030Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-resign-and-regression",
-      "desc": "五 prd 重签（四例翻棘轮 + p5-replay 夹具 checksum）+ 新金牌冻 prd-wf-open-node；全链回归零行为差。",
+      "desc": "五 prd 重签（四例翻棘轮 + p5-replay 夹具 checksum）+ 新金牌冻 prd-wf-open-node；全链回归零行为差。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p5-replay.golden.mjs",
-        "node tests/_golden/e2e-chain.golden.mjs",
-        "node tests/_golden/p3-compile.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,

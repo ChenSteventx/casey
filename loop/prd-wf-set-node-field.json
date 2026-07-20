@@ -18,30 +18,20 @@
   "stories": [
     {
       "id": "s1-setnodefield-atom-e2e",
-      "desc": "setNodeField 端到端金牌（C1 集 18 / C2 compile→replay→verdict 全 PASS 含 setclash 钉位——全页 getByPlaceholder count=2 必 ambiguous 唯域锁 doSetNodeField count=1 unique 填入 + 动作轴 identityReadback ok 门内 value 精确回读 / C3a 编译面双证：未 openNode gate 前置门截 + 无字段 execute 预检 count=0 blocker exit 65 / C3b 多匹配未给 nth ambiguous blocker exit 65 绝不填首项 / C3c nth 越界 blocker exit 65 / C3d 缺席守卫优雅 none / C3e 多匹配未给 nth ambiguous candidateCount 恰 2）+ fake-sut 节点抽屉可填字段夹具。红先行：实现前 1 过 8 败（C1 集 17 + C2/C3 无编译知识/回放门/夹具场景 + setclash 非域锁门实锤）。附六例翻金牌「集 17」翻 18 复跑锁不回退。",
+      "desc": "setNodeField 端到端金牌（C1 集 18 / C2 compile→replay→verdict 全 PASS 含 setclash 钉位——全页 getByPlaceholder count=2 必 ambiguous 唯域锁 doSetNodeField count=1 unique 填入 + 动作轴 identityReadback ok 门内 value 精确回读 / C3a 编译面双证：未 openNode gate 前置门截 + 无字段 execute 预检 count=0 blocker exit 65 / C3b 多匹配未给 nth ambiguous blocker exit 65 绝不填首项 / C3c nth 越界 blocker exit 65 / C3d 缺席守卫优雅 none / C3e 多匹配未给 nth ambiguous candidateCount 恰 2）+ fake-sut 节点抽屉可填字段夹具。红先行：实现前 1 过 8 败（C1 集 17 + C2/C3 无编译知识/回放门/夹具场景 + setclash 非域锁门实锤）。附六例翻金牌「集 17」翻 18 复跑锁不回退。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/wf-set-node-field.golden.mjs",
-        "node tests/_golden/wf-select-node-dropdown.golden.mjs",
-        "node tests/_golden/wf-open-node.golden.mjs",
-        "node tests/_golden/wf-connect-nodes.golden.mjs",
-        "node tests/_golden/wf-add-node.golden.mjs",
-        "node tests/_golden/flow-bridge.golden.mjs",
-        "node tests/_golden/wf-open-smoke.golden.mjs"
+        "node tests/_golden/flow-bridge.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-13T22:24:08.091Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-resign-and-regression",
-      "desc": "七 prd 重签（六例翻棘轮 + p5-replay 夹具 checksum）+ 新金牌冻 prd-wf-set-node-field；全链回归零行为差（fake-sut 节点抽屉可填字段 + setmulti/setclash 场景纯加法、既有场景零影响）。",
+      "desc": "七 prd 重签（六例翻棘轮 + p5-replay 夹具 checksum）+ 新金牌冻 prd-wf-set-node-field；全链回归零行为差（fake-sut 节点抽屉可填字段 + setmulti/setclash 场景纯加法、既有场景零影响）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p5-replay.golden.mjs",
         "node tests/_golden/p5-replay-coverage.golden.mjs",
-        "node tests/_golden/e2e-chain.golden.mjs",
-        "node tests/_golden/p3-compile.golden.mjs",
-        "node tests/_golden/run-history.golden.mjs",
         "node tests/_golden/seams-freeze.golden.mjs",
         "node tests/_golden/seams-freeze-v2.golden.mjs",
         "node bin/casey.mjs selftest --tier1"

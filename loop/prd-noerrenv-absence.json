@@ -14,11 +14,10 @@
   "stories": [
     {
       "id": "s1-absence-semantics",
-      "desc": "noErrorEnvelope 分支改缺席语义（零记录 true / 坏信封 false / 仅好信封 true 三向，红先行两红已核）；p5 四态映射与 p4-drafter IMPLEMENTED_KINDS 面不变。",
+      "desc": "noErrorEnvelope 分支改缺席语义（零记录 true / 坏信封 false / 仅好信封 true 三向，红先行两红已核）；p5 四态映射与 p4-drafter IMPLEMENTED_KINDS 面不变。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/p5-replay-coverage.golden.mjs",
-        "node tests/_golden/p5-replay.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
@@ -26,11 +25,10 @@
     },
     {
       "id": "s2-regression-locks",
-      "desc": "回归锁：p4-drafter golden（soft 语义判定用 IMPLEMENTED_KINDS 未变）+ p3-compile golden（编译面不涉）原样绿。",
+      "desc": "回归锁：p4-drafter golden（soft 语义判定用 IMPLEMENTED_KINDS 未变）+ p3-compile golden（编译面不涉）原样绿。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p4-drafter.golden.mjs",
-        "node tests/_golden/p3-compile.golden.mjs"
+        "node tests/_golden/p4-drafter.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-09T10:25:50.738Z 全部 acceptance exit 0"

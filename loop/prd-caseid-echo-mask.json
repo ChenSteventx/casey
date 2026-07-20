@@ -25,14 +25,12 @@
     },
     {
       "id": "s2-ripple-locks",
-      "desc": "涟漪回归锁：四 CLI 既有金牌复跑零行为差（冻结金牌只钉退出码不钉文案，已核零棘轮冲突）。",
+      "desc": "涟漪回归锁：四 CLI 既有金牌复跑零行为差（冻结金牌只钉退出码不钉文案，已核零棘轮冲突）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/flow-bridge.golden.mjs",
         "node tests/_golden/draft-cli.golden.mjs",
-        "node tests/_golden/compile-caseid-shape.golden.mjs",
-        "node tests/_golden/p2-sign.golden.mjs",
-        "node tests/_golden/p3-compile.golden.mjs"
+        "node tests/_golden/compile-caseid-shape.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-06T13:23:35.867Z 全部 acceptance exit 0"

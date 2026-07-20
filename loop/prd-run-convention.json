@@ -20,10 +20,9 @@
   "stories": [
     {
       "id": "s1-run-convention",
-      "desc": "casey run 在缺文件旗标时按 cases/<caseId>/ 约定解析输入，显式旗标恒赢，缺件 fail-closed 且可选件明示降级。",
+      "desc": "casey run 在缺文件旗标时按 cases/<caseId>/ 约定解析输入，显式旗标恒赢，缺件 fail-closed 且可选件明示降级。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/run-convention.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,

@@ -14,10 +14,9 @@
   "stories": [
     {
       "id": "s1-chain",
-      "desc": "十站链金牌 C1-C8：相0 ingest / 相1 flow-bridge / compile gate / confirm 负闸(exit 66 零 events)+execute 三件 / draft 骨架+补缝 pending 空且每 intent ≥1 硬断言 / sign 三签署字段齐+prd 回写 checksum / casey run 裁定全 PASS+报告三件 / caseId 绑定+产物哨兵扫描零凭据形串。冻结即绿证据：bring-up 首跑 8 过 / 0 败。",
+      "desc": "十站链金牌 C1-C8：相0 ingest / 相1 flow-bridge / compile gate / confirm 负闸(exit 66 零 events)+execute 三件 / draft 骨架+补缝 pending 空且每 intent ≥1 硬断言 / sign 三签署字段齐+prd 回写 checksum / casey run 裁定全 PASS+报告三件 / caseId 绑定+产物哨兵扫描零凭据形串。冻结即绿证据：bring-up 首跑 8 过 / 0 败。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/e2e-chain.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,

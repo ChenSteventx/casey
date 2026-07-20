@@ -15,10 +15,9 @@
   "stories": [
     {
       "id": "s1-kinds-and-replay",
-      "desc": "三 kind + 谓词普化 + 动态流等待 + keydown 垫 + reply 采集 + 编排/编译端到端 golden 11 检查（实现前 9/9 红已核；codex R1 三修钉红修绿：缺 value 空正则 fail-safe / 流等待按本步发起归因（背景长流不拖无关步）/ reply 陈迹基线（旧气泡不当新回复））。",
+      "desc": "三 kind + 谓词普化 + 动态流等待 + keydown 垫 + reply 采集 + 编排/编译端到端 golden 11 检查（实现前 9/9 红已核；codex R1 三修钉红修绿：缺 value 空正则 fail-safe / 流等待按本步发起归因（背景长流不拖无关步）/ reply 陈迹基线（旧气泡不当新回复））。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
@@ -26,14 +25,10 @@
     },
     {
       "id": "s2-ripple-and-locks",
-      "desc": "涟漪重钉与回归锁：kinds-harden.golden U1 随 7→10 重钉（其 prd 补冻另行 gate 复验）；p5 两份冻结 golden（无流零行为差）+ layer3-wiring + run-history golden 原样绿。",
+      "desc": "涟漪重钉与回归锁：kinds-harden.golden U1 随 7→10 重钉（其 prd 补冻另行 gate 复验）；p5 两份冻结 golden（无流零行为差）+ layer3-wiring + run-history golden 原样绿。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/kinds-harden.golden.mjs",
-        "node tests/_golden/p5-replay.golden.mjs",
-        "node tests/_golden/p5-replay-coverage.golden.mjs",
-        "node tests/_golden/layer3-wiring.golden.mjs",
-        "node tests/_golden/run-history.golden.mjs"
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-03T07:06:28.115Z 全部 acceptance exit 0"

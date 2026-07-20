@@ -24,27 +24,20 @@
   "stories": [
     {
       "id": "s1-settle-red-golden",
-      "desc": "红先行金牌 replay-settle-mount.golden.mjs：U1-U8 单元向（settleBeforeCapture 桩验——稳定页快速放行 / 永不稳定 fail-safe 两变体（U2a 强化：总等待≥下限+全额预算，钉条件窗不被下限吃掉）/ 固定下限可调 / evaluate 抛错不外抛 / evaluate 永不返回硬上界 / inFlight 抛错降级 / 稳定对不跨零点 / U8 小预算下条件轮询仍发生（evaluate≥1，堵下限吃完预算直接兜底），动态 import 逐案捕获、缺模块各自红签名）；I1 延迟挂载主案（mountdelay → 修前 buttonState actual=0 真机同签名、修后 ok:true/actual≥1 + textHidden/textVisible 全绿）；I2 垫调 0 条件兜住（REPLAY_SETTLE_FLOOR_MS=0 修后仍绿——靠条件非靠垫）；I3 即时渲染回归锁（happy settle waited<1500/settled:true、quietPointReached:true）；I4 观察者不是许愿机（幽灵按钮 ok:false/settled:true）；I5 超预算照采 fail-safe（mountDelayMs 6000 + budget 100 → exit 0/actual:0/quietPointReached:false）；I6 扰动走时上界（churn settled:false/waited<4000）；W1 端到端裁定翻正（casey run mountdelay → 修前 NEEDS_HUMAN 修后 intent_1 PASS + 报告三件）。verdict.mjs/replay-assert.mjs 字节不动。",
+      "desc": "红先行金牌 replay-settle-mount.golden.mjs：U1-U8 单元向（settleBeforeCapture 桩验——稳定页快速放行 / 永不稳定 fail-safe 两变体（U2a 强化：总等待≥下限+全额预算，钉条件窗不被下限吃掉）/ 固定下限可调 / evaluate 抛错不外抛 / evaluate 永不返回硬上界 / inFlight 抛错降级 / 稳定对不跨零点 / U8 小预算下条件轮询仍发生（evaluate≥1，堵下限吃完预算直接兜底），动态 import 逐案捕获、缺模块各自红签名）；I1 延迟挂载主案（mountdelay → 修前 buttonState actual=0 真机同签名、修后 ok:true/actual≥1 + textHidden/textVisible 全绿）；I2 垫调 0 条件兜住（REPLAY_SETTLE_FLOOR_MS=0 修后仍绿——靠条件非靠垫）；I3 即时渲染回归锁（happy settle waited<1500/settled:true、quietPointReached:true）；I4 观察者不是许愿机（幽灵按钮 ok:false/settled:true）；I5 超预算照采 fail-safe（mountDelayMs 6000 + budget 100 → exit 0/actual:0/quietPointReached:false）；I6 扰动走时上界（churn settled:false/waited<4000）；W1 端到端裁定翻正（casey run mountdelay → 修前 NEEDS_HUMAN 修后 intent_1 PASS + 报告三件）。verdict.mjs/replay-assert.mjs 字节不动。 生命周期重裁：原行为已进入隔离账，agentExecution=forbidden、route:human；本 story 由静态隔离闸保持非绿。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/replay-settle-mount.golden.mjs"
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
       ],
       "passes": false,
       "evidence": ""
     },
     {
       "id": "s2-regression-and-resign",
-      "desc": "影响面复验零行为差 + 重签涟漪 prd。静默点每代表步约 +0.5s（稳定页），受影响 fake-sut 消费金牌族逐个原样绿（p5-replay/p5-replay-coverage/wf-publish-states/wf-open-smoke/kinds-harden/run-history/replay-nth-visible-hardening/e2e-chain）+ selftest --tier1 绿。重签 prd-p5-replay（server.mjs + CONTRACT.md 两条 sha256）、prd-replay-nth-visible-hardening（server.mjs 一条）各自 gate 复验 GREEN（另跑，见重签台账）。",
+      "desc": "影响面复验零行为差 + 重签涟漪 prd。静默点每代表步约 +0.5s（稳定页），受影响 fake-sut 消费金牌族逐个原样绿（p5-replay/p5-replay-coverage/wf-publish-states/wf-open-smoke/kinds-harden/run-history/replay-nth-visible-hardening/e2e-chain）+ selftest --tier1 绿。重签 prd-p5-replay（server.mjs + CONTRACT.md 两条 sha256）、prd-replay-nth-visible-hardening（server.mjs 一条）各自 gate 复验 GREEN（另跑，见重签台账）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p5-replay.golden.mjs",
         "node tests/_golden/p5-replay-coverage.golden.mjs",
-        "node tests/_golden/wf-publish-states.golden.mjs",
-        "node tests/_golden/wf-open-smoke.golden.mjs",
-        "node tests/_golden/kinds-harden.golden.mjs",
-        "node tests/_golden/run-history.golden.mjs",
-        "node tests/_golden/replay-nth-visible-hardening.golden.mjs",
-        "node tests/_golden/e2e-chain.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": false,

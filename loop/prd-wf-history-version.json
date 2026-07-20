@@ -15,10 +15,9 @@
   "stories": [
     {
       "id": "s1-two-atoms-and-dialog",
-      "desc": "两编译原子 + 夹具历史版本弹窗 + 既有 kind 回放通路 golden 3 检查（实现前 C 编译向红已核：clickEditorButton/closeDrawer「暂无编译知识」抛；I1 回放向 + W1 端到端冻结即绿=夹具正确性 + 既有 textVisible/buttonState/textHidden 通路回归）。 codex R1 三 High 采信钉紧门禁：F1 Esc 关闭效果锁（textHidden 关闭步 + 夹具清空内容）/ F2 event shape 全锁（两 clickEditorButton role button exact + 两 closeDrawer fallbackCss body）/ F3 断言 intent 挂靠锁（暂无数据折首历史版本 intent、导出折发布 intent、创建时间折次历史版本 intent）/ F4 关闭钮 handler。 R2 一发现采信：查看断言 intent 挂靠补锁 + assertionAtoms 总数钉死（恰 4 条）。",
+      "desc": "两编译原子 + 夹具历史版本弹窗 + 既有 kind 回放通路 golden 3 检查（实现前 C 编译向红已核：clickEditorButton/closeDrawer「暂无编译知识」抛；I1 回放向 + W1 端到端冻结即绿=夹具正确性 + 既有 textVisible/buttonState/textHidden 通路回归）。 codex R1 三 High 采信钉紧门禁：F1 Esc 关闭效果锁（textHidden 关闭步 + 夹具清空内容）/ F2 event shape 全锁（两 clickEditorButton role button exact + 两 closeDrawer fallbackCss body）/ F3 断言 intent 挂靠锁（暂无数据折首历史版本 intent、导出折发布 intent、创建时间折次历史版本 intent）/ F4 关闭钮 handler。 R2 一发现采信：查看断言 intent 挂靠补锁 + assertionAtoms 总数钉死（恰 4 条）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/wf-history-version.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
@@ -26,14 +25,10 @@
     },
     {
       "id": "s2-regression-locks",
-      "desc": "回归锁：wf-publish-states（共享夹具扩展后重签，历史版本钮走 mk 保 divButtons role 全盲）/chiefcomplaint-smoke/kinds-harden/p4-drafter/report-diagnostics 原样绿。",
+      "desc": "回归锁：wf-publish-states（共享夹具扩展后重签，历史版本钮走 mk 保 divButtons role 全盲）/chiefcomplaint-smoke/kinds-harden/p4-drafter/report-diagnostics 原样绿。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/wf-publish-states.golden.mjs",
-        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
-        "node tests/_golden/kinds-harden.golden.mjs",
-        "node tests/_golden/p4-drafter.golden.mjs",
-        "node tests/_golden/report-diagnostics.golden.mjs"
+        "node tests/_golden/p4-drafter.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-06T17:49:31.205Z 全部 acceptance exit 0"

@@ -25,16 +25,13 @@
     },
     {
       "id": "s2-ripple-locks",
-      "desc": "涟漪回归锁：碰 lib/compile-atoms.mjs（加法导出 + :259 throw 同源）→ 经 compile-atoms 的金牌复跑零行为差——p3-compile（直接 import compile-atoms）+ 经 casey compile 子进程的 chiefcomplaint-smoke/wf-publish-states/wf-history-version。",
+      "desc": "涟漪回归锁：碰 lib/compile-atoms.mjs（加法导出 + :259 throw 同源）→ 经 compile-atoms 的金牌复跑零行为差——p3-compile（直接 import compile-atoms）+ 经 casey compile 子进程的 chiefcomplaint-smoke/wf-publish-states/wf-history-version。 生命周期重裁：原行为已进入隔离账，agentExecution=forbidden、route:human；本 story 由静态隔离闸保持非绿。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p3-compile.golden.mjs",
-        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
-        "node tests/_golden/wf-publish-states.golden.mjs",
-        "node tests/_golden/wf-history-version.golden.mjs"
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-07T15:35:51.731Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     }
   ]
 }

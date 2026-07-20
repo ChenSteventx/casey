@@ -15,11 +15,9 @@
   "stories": [
     {
       "id": "s1-login-drop-and-host-strip",
-      "desc": "登录期切断 + 剥 host + blob/自嵌/协议相对三缝：login golden 8/8（C3 补钉红先行）+ chiefcomplaint 12/12（I1 两轮收紧 + blob 考场红先行）+ tier1。",
+      "desc": "登录期切断 + 剥 host + blob/自嵌/协议相对三缝：login golden 8/8（C3 补钉红先行）+ chiefcomplaint 12/12（I1 两轮收紧 + blob 考场红先行）+ tier1。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/replay-login-bootstrap.golden.mjs",
-        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,

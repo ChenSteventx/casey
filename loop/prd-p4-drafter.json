@@ -33,11 +33,10 @@
     },
     {
       "id": "s2-regression-locks",
-      "desc": "回归锁：schema 双 enum 加法不破已冻接缝（seams-freeze golden 原样绿、prd-seams-freeze 已另行重签复验）；replay-assert 加性导出不扰 p5 回放内核（两份冻结 golden 原样绿）；p4-freeze 既有件不受扰（expected-compile/sign-gate 走 tier1 已覆盖）。",
+      "desc": "回归锁：schema 双 enum 加法不破已冻接缝（seams-freeze golden 原样绿、prd-seams-freeze 已另行重签复验）；replay-assert 加性导出不扰 p5 回放内核（两份冻结 golden 原样绿）；p4-freeze 既有件不受扰（expected-compile/sign-gate 走 tier1 已覆盖）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/seams-freeze.golden.mjs",
-        "node tests/_golden/p5-replay.golden.mjs",
         "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": true,

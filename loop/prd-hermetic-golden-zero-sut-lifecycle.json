@@ -48,7 +48,8 @@
       "acceptance": [
         "node tests/_golden/hermetic-golden-sut-census.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-20T06:25:06.651Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-atomized-lifecycle-closure",
@@ -57,7 +58,8 @@
       "acceptance": [
         "node tests/_golden/hermetic-golden-lifecycle-closure.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-20T06:25:11.236Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-surviving-zero-sut-units",
@@ -66,7 +68,8 @@
       "acceptance": [
         "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-20T06:25:17.502Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-retirement-and-prd-closure",
@@ -76,7 +79,8 @@
         "node tests/_golden/hermetic-golden-retirement-meta.zero-sut.golden.mjs",
         "node tests/_golden/hermetic-golden-prd-reverse-closure.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-20T06:25:43.487Z 全部 acceptance exit 0"
     },
     {
       "id": "s5-case-defect-regression",
@@ -85,7 +89,8 @@
       "acceptance": [
         "node tests/_golden/p2-verdict-case-defect.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-20T06:25:21.976Z 全部 acceptance exit 0"
     },
     {
       "id": "s6-output-seal-b5-prelaunch",
@@ -94,7 +99,8 @@
       "acceptance": [
         "node tests/_golden/output-seal-b5-prelaunch.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-20T06:25:30.951Z 全部 acceptance exit 0"
     }
   ]
 }

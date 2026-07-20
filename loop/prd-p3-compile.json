@@ -34,10 +34,9 @@
   "stories": [
     {
       "id": "s1-compile-pipeline",
-      "desc": "编译执行引擎命令化层：casey compile 三段式 CLI（闸+落 flow / confirm 门+执行 / 回放核验）+ lib/atoms-registry.snapshot.json（整表 60 原子、snapshotOf 溯源、atomId 钉 registry 原名）+ lib/login-bootstrap.mjs（拷快照 DEFAULT_SITE.login/loadSiteConfig/loadCreds，env 覆盖优先、缺凭据 fail-closed）+ lib/cred-gate.mjs（credentialGate/stripUrlQuery 共享化，bin/report.mjs 保留 re-export）+ {{baseUrl}} 回填接线（bin/replay.mjs URL 通道过 instantiate，ctx 注 baseUrl=--sut）。产物：events（占位符纪律、authored:false、禁纯坐标步、atom 回链）+ observed（步数=events 步数、实测字面量、requestLog 剥 query、背景归 null）+ compile-report（逐步核验记录、CASE_DEFECT 候选、断言原子意图留痕）。退出码：缺参 64 / 闸拒 65 / 未 confirm 66 / 成功 0。",
+      "desc": "编译执行引擎命令化层：casey compile 三段式 CLI（闸+落 flow / confirm 门+执行 / 回放核验）+ lib/atoms-registry.snapshot.json（整表 60 原子、snapshotOf 溯源、atomId 钉 registry 原名）+ lib/login-bootstrap.mjs（拷快照 DEFAULT_SITE.login/loadSiteConfig/loadCreds，env 覆盖优先、缺凭据 fail-closed）+ lib/cred-gate.mjs（credentialGate/stripUrlQuery 共享化，bin/report.mjs 保留 re-export）+ {{baseUrl}} 回填接线（bin/replay.mjs URL 通道过 instantiate，ctx 注 baseUrl=--sut）。产物：events（占位符纪律、authored:false、禁纯坐标步、atom 回链）+ observed（步数=events 步数、实测字面量、requestLog 剥 query、背景归 null）+ compile-report（逐步核验记录、CASE_DEFECT 候选、断言原子意图留痕）。退出码：缺参 64 / 闸拒 65 / 未 confirm 66 / 成功 0。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p3-compile.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
@@ -45,11 +44,10 @@
     },
     {
       "id": "s2-regression-locks",
-      "desc": "回归锁：凭据门共享化不破 p7 冻结覆盖（credentialGate 语义与 re-export 不变）；{{baseUrl}} 接线与 verify 器不扰 p5 回放内核（已冻 fixture 完整假 host URL 走 no-op 路径）。三份已冻 golden 原样复跑全绿。",
+      "desc": "回归锁：凭据门共享化不破 p7 冻结覆盖（credentialGate 语义与 re-export 不变）；{{baseUrl}} 接线与 verify 器不扰 p5 回放内核（已冻 fixture 完整假 host URL 走 no-op 路径）。三份已冻 golden 原样复跑全绿。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/p7-credgate-coverage.golden.mjs",
-        "node tests/_golden/p5-replay.golden.mjs",
         "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": true,

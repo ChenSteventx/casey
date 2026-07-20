@@ -14,10 +14,9 @@
   "stories": [
     {
       "id": "s1-diagnostics-render-and-wiring",
-      "desc": "渲染器可选第二参 + 壳旁件旗标 + casey run 接线 golden 9 检查（实现前 6/9 红已核：U2/U3/U4/W1a/W1b/E1；U1 单参零行为差、U5 replyText 回归锁、W1c 不带旗标零行为差冻结即绿=回归保护）。 codex R1 三 High/Medium 采信钉红修绿：F1 诊断 CSS 条件注入（单参字节级零差异）/ F2 旁件值 :// 零容忍脱敏占位（U6）/ F3 坏行定义收紧（W1d：非对象/缺键行 fail-closed）/ F4 golden 补钉（MD 无绝对 URL + E1 嵌入块标题去弱子串），9→11 检查。 codex R2 一发现采信：W1e 坏 metrics 语义收紧（合法 JSON 非对象 fail-closed），11→12 检查。",
+      "desc": "渲染器可选第二参 + 壳旁件旗标 + casey run 接线 golden 9 检查（实现前 6/9 红已核：U2/U3/U4/W1a/W1b/E1；U1 单参零行为差、U5 replyText 回归锁、W1c 不带旗标零行为差冻结即绿=回归保护）。 codex R1 三 High/Medium 采信钉红修绿：F1 诊断 CSS 条件注入（单参字节级零差异）/ F2 旁件值 :// 零容忍脱敏占位（U6）/ F3 坏行定义收紧（W1d：非对象/缺键行 fail-closed）/ F4 golden 补钉（MD 无绝对 URL + E1 嵌入块标题去弱子串），9→11 检查。 codex R2 一发现采信：W1e 坏 metrics 语义收紧（合法 JSON 非对象 fail-closed），11→12 检查。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/report-diagnostics.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
@@ -25,15 +24,11 @@
     },
     {
       "id": "s2-regression-locks",
-      "desc": "回归锁：p7-report（单参续绿+自包含硬约束）/report-fidelity/run-history（不进 verdict 红线）/layer3-wiring/chiefcomplaint-smoke（W1 casey run 报告面）/wf-publish-states 原样绿。",
+      "desc": "回归锁：p7-report（单参续绿+自包含硬约束）/report-fidelity/run-history（不进 verdict 红线）/layer3-wiring/chiefcomplaint-smoke（W1 casey run 报告面）/wf-publish-states 原样绿。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/p7-report.golden.mjs",
-        "node tests/_golden/report-fidelity.golden.mjs",
-        "node tests/_golden/run-history.golden.mjs",
-        "node tests/_golden/layer3-wiring.golden.mjs",
-        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
-        "node tests/_golden/wf-publish-states.golden.mjs"
+        "node tests/_golden/report-fidelity.golden.mjs"
       ],
       "passes": true,
       "evidence": "gate@2026-07-03T08:27:51.765Z 全部 acceptance exit 0"

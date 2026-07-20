@@ -27,10 +27,9 @@
   "stories": [
     {
       "id": "s1-replay",
-      "desc": "回放 runner + watchNetworkForensics + StepAxes 产出 + 只读漂移探针。bin/replay.mjs 真回放假 SUT，按 intentId 聚合事件依序回放、过点击身份门出动作轴、CDP 真发起方归因出取证轴（背景 401 归 null 不背书）、按 expected 评估出断言轴，三轴写 axes.json 喂已冻 verdict.mjs。漂移探针只读查同稳定签名 count===1、不点不改 spec。runner 是 verdict.mjs 的上游产出者，绝不在回放进程内做裁定（护栏 #15）。",
+      "desc": "回放 runner + watchNetworkForensics + StepAxes 产出 + 只读漂移探针。bin/replay.mjs 真回放假 SUT，按 intentId 聚合事件依序回放、过点击身份门出动作轴、CDP 真发起方归因出取证轴（背景 401 归 null 不背书）、按 expected 评估出断言轴，三轴写 axes.json 喂已冻 verdict.mjs。漂移探针只读查同稳定签名 count===1、不点不改 spec。runner 是 verdict.mjs 的上游产出者，绝不在回放进程内做裁定（护栏 #15）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p5-replay.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": false,
