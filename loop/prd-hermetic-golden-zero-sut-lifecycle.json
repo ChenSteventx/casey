@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "task": "hermetic-golden-zero-sut-lifecycle：按原子覆盖义务重裁 27 个启动夹具 SUT 的历史金牌。只有完整等价且后继已落盘的义务可退役；部分/不确定覆盖隔离保留，纯函数覆盖拆成 zero-SUT 后继，教义作废单独收据。",
+  "specPath": "docs/plans/hermetic-golden-zero-sut-lifecycle/plan.md",
+  "testChecksums": {
+    "tests/_golden/hermetic-golden-sut-census.zero-sut.golden.mjs": "7ef8f395e483a874ec247fac4830f874c2d23e8252b789a26d40c1fd36919281",
+    "tests/_golden/fixtures/hermetic-golden-sut-census/negative/from-events.negative.mjs": "3bcf83fb2836ad88436c18cb3f8fcb0cf3dab31a8e58c60d3cd578ab7d77ed49",
+    "tests/_golden/fixtures/hermetic-golden-sut-census/negative/import-sentinel.negative.mjs": "8ed861b4b23428b8b071337b8ee2f4a36914126d8186efb13b240f1945bec4c1",
+    "tests/_golden/fixtures/hermetic-golden-sut-census/negative/preflight-sentinel.negative.mjs": "4709996a48a09e98b35703089121c7aa97432f66641704e2931862bce7b20db2",
+    "tests/_golden/fixtures/hermetic-golden-sut-census/negative/string-only.negative.mjs": "a18d0539a4e41dc54029a9075dfe4e2f73e2325513527e830deab9d6a610c1c8",
+    "tests/_golden/fixtures/hermetic-golden-sut-census/negative/unused-fixture-import.negative.mjs": "7b86942fa4d5de788ef8e6b00f033a39e4415123acd12b8df289f2dc5f3951db",
+    "tests/_golden/fixtures/hermetic-golden-sut-census/positive/direct-fixture.entry.mjs": "de11f9100527b464c813a774391a496ce8c74888cdb72821d20b7e372da3eaa6",
+    "tests/_golden/fixtures/hermetic-golden-sut-census/positive/direct-listener.entry.mjs": "cb3262e6c71fe3e3161b790e0a8c70229c2211fef60b91eba2427449d59634cc",
+    "tests/_golden/fixtures/hermetic-golden-sut-census/positive/dynamic-fixture.entry.mjs": "d6ed24de7ace5104ea1d78830d9bd4ada5ce1cc2d8917c38b79474cbbebf074c",
+    "tests/_golden/fixtures/hermetic-golden-sut-census/positive/reexport-fixture.entry.mjs": "18d71a181a2e3ab97c73e6cf2ce6e741cb4529c3c045d7e5f9647ce0d2e1c1b9",
+    "tests/_golden/fixtures/hermetic-golden-sut-census/positive/reexport-helper.inc.mjs": "699fa68fd95b20ef76d590b9c378521ce4544030dea6a507e2b0dc9806f97620",
+    "tests/_golden/fixtures/hermetic-golden-sut-census/positive/sut-cli-connect.entry.mjs": "7a96f85cf5efb149fc123fe5c6dc4fa0fb33c02cbe97eda6fb0faabaed3fee49",
+    "tests/_golden/hermetic-golden-lifecycle-closure.zero-sut.golden.mjs": "ede769f511e7633b30d46807f977df1e88a50a03f400737e917a52d86014149d",
+    "tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs": "c03baed00375792c0d83ea629ba6e4eebe3717db9ee05d7040356fd6e21a47fa",
+    "tests/_golden/hermetic-golden-retirement-meta.zero-sut.golden.mjs": "b5d8132cbace27f722ec77df62b2e460a3ae6342abc66039b18a3e0911758313",
+    "tests/_golden/hermetic-golden-prd-reverse-closure.zero-sut.golden.mjs": "7b61ac3dad60b13bfa3f9fac69349e61c0e81d7302d96968c322aae37e0b6a7c",
+    "tests/_golden/p2-verdict-case-defect.zero-sut.golden.mjs": "16aadc72dac9b32a022a3708aa63e7e3247745a8246458823424002fe05ccdaf",
+    "tests/_golden/output-seal-b5-prelaunch.zero-sut.golden.mjs": "f054406747be7bc482c80c55a8c3be8786076f280ea4f2f9aacdae137acbc4be"
+  },
+  "observability": [
+    {
+      "dimension": "D9 只做 44 条分层抽样；全量原子化 obligations 在冻结前仍须逐项人工复核 source span、覆盖关系与生命周期，禁止由模型自产自签。",
+      "route": "human"
+    },
+    {
+      "dimension": "所有 retain-isolated 行为义务禁止 agent 执行；原行为是否由人手工复现与其视觉/时序证据另走 route:human，不以部分 unit/UAT 后继冒充完整接管。",
+      "route": "human"
+    },
+    {
+      "dimension": "真机 UAT 本契约不实跑；可信签名、证据存证、触发 registry 与 append-only 迁移 ledger 延给 real-uat-attestation。",
+      "route": "human"
+    },
+    {
+      "dimension": "ADR-0004 冻结面变更（atomized obligations、manifests、unit 后继、墓碑/归档/收据、PRD checksum 与案级 supersession）须 Steven 人签。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-sut-startup-census",
+      "desc": "纯静态 scanner 锁 27 个 fixture 启动文件、效果路径原因与独立正负控；不得 import/执行被扫描入口。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/hermetic-golden-sut-census.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s2-atomized-lifecycle-closure",
+      "desc": "原子义务、四轴 SUT 归因、四类覆盖关系/生命周期、unit/UAT/isolation/supersession 血缘与敌意突变闭合。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/hermetic-golden-lifecycle-closure.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s3-surviving-zero-sut-units",
+      "desc": "所有存活 unit 后继携原子义务血缘，先静态证明不启动/连接 SUT，再真实执行为绿。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s4-retirement-and-prd-closure",
+      "desc": "只有 full/retire 文件可墓碑；归档摘要、exit 78、无 I/O 模板与突变电池闭合；隔离 live executable 从全部 PRD acceptance 清除。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/hermetic-golden-retirement-meta.zero-sut.golden.mjs",
+        "node tests/_golden/hermetic-golden-prd-reverse-closure.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s5-case-defect-regression",
+      "desc": "合成 compile 入口可证缺席 StepAxes 由零 LLM verdict 稳定裁为 NEEDS_HUMAN/CASE_DEFECT；属于冻结时即绿的回归保护。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p2-verdict-case-defect.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s6-output-seal-b5-prelaunch",
+      "desc": "output-seal B5 使用合法只读 nav 信封，命中登录预备失败、种子不回显，启动哨兵证明未到浏览器。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/output-seal-b5-prelaunch.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    }
+  ]
+}
