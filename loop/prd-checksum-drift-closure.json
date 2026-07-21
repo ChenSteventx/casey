@@ -31,7 +31,7 @@
         "git diff --check -- docs/plans/checksum-drift-closure/GRILL.md docs/plans/checksum-drift-closure/plan.md tests/_golden/checksum-drift-closure.zero-sut.golden.mjs loop/prd-checksum-drift-closure.json"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-21T06:55:12.732Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T09:05:23.952Z 全部 acceptance exit 0"
     }
   ]
 }
