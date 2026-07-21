@@ -1,0 +1,29 @@
+# bindAgent 回放金牌 A7 红先行基线证据（entity-ui-wiring W2 交付物2/3）
+# 金牌：tests/_golden/entity-ui-wiring.bindagent-replay.golden.mjs
+# 判据：退出码 + 结构化字段（isCompilableAtom 布尔 / COMPILE_KNOWN_ATOMS 计数 / gate 退出码 + validateStructural 问题），禁标记串 grep。
+# 结论：今日红点=「原子无编译知识」——bin/compile 的 validateStructural 拒 workflow.bindAgent（不在注册表），如实钉住作基线。
+# 跑机：v24.18.0  Linux 6.18.33.2-microsoft-standard-WSL2
+# 生成时刻：2026-07-21T17:33:20Z
+
+$ node tests/_golden/entity-ui-wiring.bindagent-replay.golden.mjs ; echo "exit=$?"
+exit=1
+
+---- 红证摘录（每断言 红/退出码 + 结构化红点，≤20 行）----
+  entity-ui-wiring bindagent-replay golden: 0 过 / 4 败
+    FAIL A7-knowledge workflow.bindAgent 可编译、COMPILE_KNOWN_ATOMS 恰 26（bindAgent +1）、agent.openToolPicker 仍不可编译: workflow.bindAgent 应可编译（智能体接线原子加法）——今日红基线：原子无编译知识（不在 COMPILE_ATOM_COMPILERS）
+    FAIL A7a 唯一选项（bindagentone）：bindAgent 回放选中 agentName + 抽屉内选中值精确回读双证（events 末步 bindAgent + compile-report 精确回读）——今日红：原子无编译知识 gate exit 65「未知原子 workflow.bindAgent」: gate 应接受已注册原子 workflow.bindAgent（exit 0）；今日红基线=原子无编译知识：gate exit 65（validateStructural 拒，stderr 尾: compile: flow 草稿未过编译门（1 问题，fail-closed）：
+    FAIL A7b 同名双选项（bindagenttwin：目标 agentName 浮层内两处）：域内 count=2 ambiguous 绝不选 first → blocker exit 65 零 events——今日红：原子无编译知识 gate exit 65「未知原子」: gate 应接受已注册原子 workflow.bindAgent（exit 0）；今日红基线=原子无编译知识：gate exit 65（validateStructural 拒，stderr 尾: compile: flow 草稿未过编译门（1 问题，fail-closed）：
+    FAIL A7c 目标选项缺席（bindagentabsent：浮层不含 agentName）：缺席守卫 count=0 硬阻断 → blocker exit 65 零 events——今日红：原子无编译知识 gate exit 65「未知原子」: gate 应接受已注册原子 workflow.bindAgent（exit 0）；今日红基线=原子无编译知识：gate exit 65（validateStructural 拒，stderr 尾: compile: flow 草稿未过编译门（1 问题，fail-closed）：
+
+---- 逐断言红/绿 + 退出码判定 ----
+  A7-knowledge  : 红  | isCompilableAtom('workflow.bindAgent')=false（应 true）; COMPILE_KNOWN_ATOMS.size=25（应 26）——原子无编译知识（不在 COMPILE_ATOM_COMPILERS）
+  A7a 唯一选项   : 红  | casey compile gate exit=65; validateStructural: step[6] 未知原子「workflow.bindAgent」（不在注册表）
+  A7b 同名双选项 : 红  | casey compile gate exit=65; validateStructural: step[6] 未知原子「workflow.bindAgent」（不在注册表）
+  A7c 目标选项缺席: 红  | casey compile gate exit=65; validateStructural: step[6] 未知原子「workflow.bindAgent」（不在注册表）
+  金牌整体       : 红  | 退出码 exit=1（0 过 / 4 败）
+
+# 注：A7a/b/c 断言首行 load-bearing=gate 须 exit 0（原子已注册可编译）；今日 bindAgent 无编译知识 → gate exit 65
+#   （lib/compile-gate.mjs:46 未知原子不在注册表 → bin/compile.mjs:113-116 fail-closed exit 65）。绿态目标
+#   （events 末步 bindAgent + compile-report 精确回读双证 / 同名双选项 count=2 ambiguous 绝不 first blocker /
+#   缺席守卫 count=0 blocker）为后续实现者红填绿的靶；bindAgent 属 relation 原子，其 execute/回放准入另挂
+#   [source,target] 双 receipt 授权（A5 端到端锁链金牌 bindagent-lockchain.zero-sut 覆盖）。

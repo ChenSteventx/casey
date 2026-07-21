@@ -1,0 +1,2771 @@
+diff --git a/CONTEXT.md b/CONTEXT.md
+index 2f74f9d..021c06c 100644
+--- a/CONTEXT.md
++++ b/CONTEXT.md
+@@ -86,6 +86,8 @@
+ | `AFFORDANCE_ABSENT` | 入口缺席 | `NEEDS_HUMAN` 子类（人签后）：编译时够到的入口回归时没了，又无漂移信号无取证；走缺陷-或-过程错误分诊 | — |
+ | `INDETERMINATE` | 未定 | `NEEDS_HUMAN` 子类：纯未知失败，看证据人判；catch-all 的 fail-safe 默认落点 | — |
+ | 点击身份门 | Click Identity Gate | 仅当解析目标唯一（过滤后 count===1）或点击后身份回读成立才置 `actionPerformed=true`；多匹配/坐标兜底 → ambiguous |
++| 容器归属闸 | Container Membership Gate | 文本精确唯一命中后仍须证明命中元素落在预期记录容器内（表格行/卡片/条目容器，剖面可覆写容器选择器）；容器外命中=同名非记录控件碰撞，硬阻断 fail-closed 不点。wf-open-smoke 首立（workflow.open），entity-ui-wiring 抽为 agent.searchOpen 编译/回放共享门 | — |
++| 关系原子 | Relation Atom | 动作效果为建立两个业务对象间关系的原子（首例 `workflow.bindAgent`：把智能体绑进工作流节点）；准入策略 `effect=relation`，必须同时携 `source` 与 `target` 双角色绑定且双边独立锁定（各自 lockId+收据 hash），缺任一边整份拒绝，绝不单边降级 | — |
+ | 业务对象语义锁 | Business Object Semantic Lock | 手录后把工作流、智能体等业务对象从脆弱 DOM 位置提升为冻结身份；回放前重新只读解析并与已签身份收据确定性比较，只有 `SAME` 可重绑定临时 UI 句柄，业务身份变化一律零点击并路由人 | — |
+ | 业务对象身份收据 | Entity Identity Receipt | 业务对象语义锁的不可变权威载体：至少锁 `kind + name + code + scopeFingerprint`，平台提供稳定 ID、父对象或版本时一并锁定；收据带内容 hash，外部对象须用户确认、自建对象须平台权威读回，LLM/视觉只可提候选不可确认同一性 | — |
+ | 身份观察旁车 | Identity Observation Sidecar | 示教录制期间与操作事件分开落盘的最小业务身份候选；只收 `kind/name/code/platformId/scopeFingerprint/parent/evidenceKind/eventSeq`，永远未签且 `replayReady:false`，与 示教录制包 通过两个字节 hash 的联合绑定防换包；缺编号只保留 pending，绝不升格为权威收据 | — |
+diff --git a/lib/atoms-registry.snapshot.json b/lib/atoms-registry.snapshot.json
+index 7ec466b..23b6fcb 100644
+--- a/lib/atoms-registry.snapshot.json
++++ b/lib/atoms-registry.snapshot.json
+@@ -1,1037 +1,1069 @@
+ {
+-  "snapshotOf": {
+-    "repo": "regress_autotest",
+-    "path": "tests/_atoms/atoms.registry.json",
+-    "sourceVersion": 2,
+-    "copiedAt": "2026-07-02"
++ "snapshotOf": {
++  "repo": "regress_autotest",
++  "path": "tests/_atoms/atoms.registry.json",
++  "sourceVersion": 2,
++  "copiedAt": "2026-07-02"
++ },
++ "version": 2,
++ "_note": "原子动作注册表（复杂操作流 = 原子库 + NL 编译 的骨架，见 PLAN-atomic-flows.md）。本文件以 snapshotOf 记录的 regress 版本为来源基线，复制后已有 Casey 本地修订（包括 agent.create、agent.delete 与 picker.search），不再声称与上游逐字一致；其中 agent.delete 的后置语义已收紧为同源目标稳定精确归零，任一绑定、加载、计数、窗口或超时证据不足均 fail-closed。编译器只能从这里挑 atomId + 按 params 填参；validateFlow（_flow-runner.ts 收集期 / scripts/lint-flow.mjs 离线）据此校验冻结的 *.flow.json。改原子实现（tests/_atoms/_atoms.ts）务必同步本表与 scripts/lint-flow.mjs。 v2：states=封闭状态词表（标签只能用这里的词，lint 注册表自检兜底）；exclusiveGroups=互斥组（provide 组内状态自动移除组内其它）；每原子可标 requires/provides/removes（缺省[]）/destructive（确认门高亮）/entityNameParam（该参数值必须 ctxtest_ 前缀，建删硬闸）。校验逻辑见 scripts/lint-flow.mjs 闸二 与 _flow-runner.ts:validateFlow（双实现同步）。",
++ "states": {
++  "已登录": "login 成功进入应用（不再停在 /login）",
++  "在智能体管理页": "智能体管理列表（/agent/list）",
++  "在工作流管理页": "工作流管理列表（/process/list）",
++  "智能体详情已开": "智能体详情页（/agent/detail）",
++  "画布已开": "工作流画布编辑器（/process/detail）",
++  "MCP列表页": "MCP 工具列表页（/mcp/tools）",
++  "测试面板已开": "智能体测试会话面板（消息框「请输入消息」可见）",
++  "节点抽屉已开": "画布某节点的配置抽屉",
++  "工具选择器已开": "智能体加工具的选择器对话框",
++  "详情快照已记": "ctx.detailUrl/detailChips 已由 agent.snapshotDetailState 记录",
++  "选择器一级基线已记": "ctx.pickerPrimaries 已由 picker.snapshotPrimaries 记录"
++ },
++ "exclusiveGroups": [
++  [
++   "在智能体管理页",
++   "在工作流管理页",
++   "智能体详情已开",
++   "画布已开",
++   "MCP列表页"
++  ]
++ ],
++ "atoms": {
++  "login": {
++   "desc": "打开起始 URL；被鉴权守卫拦到 /login 时填账号密码登录（凭据读 .auth/credentials.json，绝不写死）。",
++   "params": {
++    "startUrl": {
++     "type": "string",
++     "required": false,
++     "runtimeInput": true,
++     "desc": "起始 URL；缺省 APP_START_URL 或内置默认目标环境地址（运行时输入，不写死凭据）。"
++    }
++   },
++   "provides": [
++    "已登录"
++   ],
++   "post": "不再停在 /login（进入应用）。"
+   },
+-  "version": 2,
+-  "_note": "原子动作注册表（复杂操作流 = 原子库 + NL 编译 的骨架，见 PLAN-atomic-flows.md）。本文件以 snapshotOf 记录的 regress 版本为来源基线，复制后已有 Casey 本地修订（包括 agent.create、agent.delete 与 picker.search），不再声称与上游逐字一致；其中 agent.delete 的后置语义已收紧为同源目标稳定精确归零，任一绑定、加载、计数、窗口或超时证据不足均 fail-closed。编译器只能从这里挑 atomId + 按 params 填参；validateFlow（_flow-runner.ts 收集期 / scripts/lint-flow.mjs 离线）据此校验冻结的 *.flow.json。改原子实现（tests/_atoms/_atoms.ts）务必同步本表与 scripts/lint-flow.mjs。 v2：states=封闭状态词表（标签只能用这里的词，lint 注册表自检兜底）；exclusiveGroups=互斥组（provide 组内状态自动移除组内其它）；每原子可标 requires/provides/removes（缺省[]）/destructive（确认门高亮）/entityNameParam（该参数值必须 ctxtest_ 前缀，建删硬闸）。校验逻辑见 scripts/lint-flow.mjs 闸二 与 _flow-runner.ts:validateFlow（双实现同步）。",
+-  "states": {
+-    "已登录": "login 成功进入应用（不再停在 /login）",
+-    "在智能体管理页": "智能体管理列表（/agent/list）",
+-    "在工作流管理页": "工作流管理列表（/process/list）",
+-    "智能体详情已开": "智能体详情页（/agent/detail）",
+-    "画布已开": "工作流画布编辑器（/process/detail）",
+-    "MCP列表页": "MCP 工具列表页（/mcp/tools）",
+-    "测试面板已开": "智能体测试会话面板（消息框「请输入消息」可见）",
+-    "节点抽屉已开": "画布某节点的配置抽屉",
+-    "工具选择器已开": "智能体加工具的选择器对话框",
+-    "详情快照已记": "ctx.detailUrl/detailChips 已由 agent.snapshotDetailState 记录",
+-    "选择器一级基线已记": "ctx.pickerPrimaries 已由 picker.snapshotPrimaries 记录"
++  "nav.agentManagement": {
++   "desc": "点击左侧「智能体管理」进入智能体列表。",
++   "params": {},
++   "requires": [
++    "已登录"
++   ],
++   "provides": [
++    "在智能体管理页"
++   ],
++   "post": "「智能体管理」列表可见。"
+   },
+-  "exclusiveGroups": [
+-    [
+-      "在智能体管理页",
+-      "在工作流管理页",
+-      "智能体详情已开",
+-      "画布已开",
+-      "MCP列表页"
+-    ]
+-  ],
+-  "atoms": {
+-    "login": {
+-      "desc": "打开起始 URL；被鉴权守卫拦到 /login 时填账号密码登录（凭据读 .auth/credentials.json，绝不写死）。",
+-      "params": {
+-        "startUrl": {
+-          "type": "string",
+-          "required": false,
+-          "runtimeInput": true,
+-          "desc": "起始 URL；缺省 APP_START_URL 或内置默认目标环境地址（运行时输入，不写死凭据）。"
+-        }
+-      },
+-      "provides": [
+-        "已登录"
+-      ],
+-      "post": "不再停在 /login（进入应用）。"
+-    },
+-    "nav.agentManagement": {
+-      "desc": "点击左侧「智能体管理」进入智能体列表。",
+-      "params": {},
+-      "requires": [
+-        "已登录"
+-      ],
+-      "provides": [
+-        "在智能体管理页"
+-      ],
+-      "post": "「智能体管理」列表可见。"
+-    },
+-    "nav.workflowManagement": {
+-      "desc": "点击左侧「工作流管理」进入工作流列表（真机实测 URL=/process/list）。",
+-      "params": {},
+-      "requires": [
+-        "已登录"
+-      ],
+-      "provides": [
+-        "在工作流管理页"
+-      ],
+-      "removes": [
+-        "测试面板已开",
+-        "节点抽屉已开",
+-        "工具选择器已开"
+-      ],
+-      "post": "工作流列表可见（URL 含 /process/list）。"
+-    },
+-    "workflow.open": {
+-      "desc": "在工作流管理列表点工作流『名字』进入画布编辑器（真机实测：点名字进画布、URL=/process/detail；『编辑』按钮是改名弹窗、不是画布）。",
+-      "params": {
+-        "openName": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "工作流列表里要点开的名称（须足够唯一）。"
+-        }
+-      },
+-      "requires": [
+-        "在工作流管理页"
+-      ],
+-      "provides": [
+-        "画布已开"
+-      ],
+-      "post": "进入工作流画布编辑器（URL 含 /process/detail）。"
+-    },
+-    "workflow.publish": {
+-      "desc": "【破坏性·确认门高亮】点画布编辑器的「发布」按钮（节点完整则真发布、不完整则出校验提示）。真机实测编辑器有 分享/预览/测试/保存/发布/历史版本/添加节点。",
+-      "params": {},
+-      "requires": [
+-        "画布已开"
+-      ],
+-      "destructive": true,
+-      "post": "点了「发布」（结果由后续 assert.* 判定：成功 toast 或校验提示）。"
+-    },
+-    "workflow.save": {
+-      "desc": "【破坏性】点画布编辑器的「保存」按钮（暂存工作流，任何状态都可保存）。",
+-      "params": {},
+-      "requires": [
+-        "画布已开"
+-      ],
+-      "destructive": true,
+-      "post": "点了「保存」。"
+-    },
+-    "workflow.clickEditorButton": {
+-      "desc": "点画布编辑器顶部某个按钮（测试/导出/历史版本/新建版本/预览 等只读或弹层类）。破坏性按钮（发布/保存/删除）请用专用原子，便于确认门高亮。",
+-      "params": {
+-        "name": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "按钮可见名，如 测试/导出/历史版本/新建版本/预览。"
+-        }
+-      },
+-      "requires": [
+-        "画布已开"
+-      ],
+-      "post": "点了该按钮（结果由后续 assert.* 判定）。"
+-    },
+-    "workflow.create": {
+-      "desc": "【破坏性】新增工作流：点「新增工作流」下拉→菜单「新增工作流」→填 名称/编码/描述/分类(全必填)→确认，回到列表。名称建议 ctxtest_ 前缀便于清理。编码可省（中台按名称拼音自动生成）。",
+-      "params": {
+-        "name": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "工作流名称（后端唯一约束，建 ctxtest_ 前缀）。"
+-        },
+-        "code": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "工作流编码（省略则中台按名称拼音自动生成）。"
+-        },
+-        "desc": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "工作流描述（省略用名称）。"
+-        },
+-        "category": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "分类，缺省「测试分类」。"
+-        }
+-      },
+-      "requires": [
+-        "已登录"
+-      ],
+-      "provides": [
+-        "画布已开"
+-      ],
+-      "removes": [
+-        "测试面板已开",
+-        "节点抽屉已开",
+-        "工具选择器已开"
+-      ],
+-      "destructive": true,
+-      "entityNameParam": "name",
+-      "post": "回到列表且新工作流名出现。"
+-    },
+-    "workflow.addNode": {
+-      "desc": "往画布拖入一个节点（坐标方案：开「添加节点」面板→拖面板项到画布坐标）。优先用 nodeName(按面板项文本)——因多类节点共用图标(排他/并行/真并行网关都是 gateway；MCP/智能体工作流/文档提取都是 server)。需先在画布编辑器(/process/detail)。坐标相对画布左上角，x≥600 避左侧面板、间距≥350 防重叠。",
+-      "params": {
+-        "nodeName": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "节点面板项文本(推荐)，2026-07-07 真机实采 21 名(wf-add-node)：开始节点/结束节点/HTTP请求/SSE流式请求/变量映射/排他网关/并行网关/真并行网关开始/真并行网关结束/脚本转换/模型节点/知识库检索/重排序/数据库节点/MCP工具/智能体\\u002F工作流/变量聚合/文档提取/缓存读取/缓存写入/人工介入。名单随版本漂移，身份门 fail-closed 兜底、不做静态白名单校验(GRILL D8)。"
+-        },
+-        "nodeType": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "（兼容）图标后缀 start/end/api/app... 仅对图标唯一的节点可靠；歧义节点请用 nodeName。"
+-        },
+-        "x": {
+-          "type": "number",
+-          "required": false,
+-          "desc": "落点 x（相对画布左上角，缺省 600）。"
+-        },
+-        "y": {
+-          "type": "number",
+-          "required": false,
+-          "desc": "落点 y（缺省 280）。"
+-        },
+-        "expectedNodeDelta": {
+-          "type": "number",
+-          "required": false,
+-          "desc": "预期新增 .lf-node 数；缺省普通节点 +1，真并行网关开始在 Heren 真机一次拖拽生成开始/结束两个节点，默认按 +2 核验。"
+-        }
+-      },
+-      "requires": [
+-        "画布已开"
+-      ],
+-      "post": "画布节点数增加（普通节点 .lf-node +1；真并行网关开始一次拖拽生成开始/结束两个节点，.lf-node +2）。"
+-    },
+-    "workflow.openNode": {
+-      "desc": "点开画布上某节点的配置抽屉（按节点标题定位 .lf-node→点中心→等抽屉打开，点空重点一次）。需先在画布编辑器。",
+-      "params": {
+-        "label": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "画布上节点的可见标题，如 智能体/工作流、开始节点、结束节点。"
+-        }
+-      },
+-      "requires": [
+-        "画布已开"
+-      ],
+-      "provides": [
+-        "节点抽屉已开"
+-      ],
+-      "post": "右侧配置抽屉打开。"
+-    },
+-    "assert.switchState": {
+-      "desc": "L1：断言配置抽屉里某开关的状态（如「回显」默认 ON）——做回显优化等「默认打开/关闭」类用例。按「开关所在行文本含 label」定位。",
+-      "params": {
+-        "label": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "开关所在行的文本（如 回显/缓存/提示）。"
+-        },
+-        "state": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "on(缺省)/off。"
+-        }
+-      },
+-      "requires": [
+-        "节点抽屉已开"
+-      ],
+-      "post": "该开关处于期望状态。"
+-    },
+-    "workflow.connectNodes": {
+-      "desc": "把两个节点连线（坐标/锚点方案：hover 源节点→取 .lf-node-anchor-hover 真锚点→拖到目标节点）。注：纯 DOM 读不到边的 source/target，只能断「边数增加」，无法断「连对哪两个」——要确定性需前端暴露 window.lf（见 PLAN §6.5）。",
+-      "params": {
+-        "fromLabel": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "起始节点的可见标题（如 开始节点）。"
+-        },
+-        "toLabel": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "目标节点的可见标题（如 结束节点）。"
+-        }
+-      },
+-      "requires": [
+-        "画布已开"
+-      ],
+-      "post": "画布边数 +1（.lf-edge 计数增加）。"
+-    },
+-    "workflow.setNodeField": {
+-      "desc": "在已打开的节点配置抽屉里，按 placeholder 填某个文本字段（如 HTTP 节点 URL：placeholder「请输入接口的URL」）。",
+-      "params": {
+-        "placeholder": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "字段占位符，如 请输入接口的URL / 请输入变量名 / 请输入(请求头名称)。"
+-        },
+-        "value": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "要填的值。"
+-        },
+-        "exact": {
+-          "type": "boolean",
+-          "required": false,
+-          "desc": "占位符精确匹配（如「请输入」是子串会撞 URL，需 exact）。"
+-        },
+-        "nth": {
+-          "type": "number",
+-          "required": false,
+-          "desc": "同占位符多个时取第几个（缺省 0）。"
+-        }
+-      },
+-      "requires": [
+-        "节点抽屉已开"
+-      ],
+-      "post": "该字段被填入值。"
+-    },
+-    "workflow.setSwitch": {
+-      "desc": "在配置抽屉里把某开关设到目标态（如关掉 HTTP 节点「鉴权」以免 Key/Value 变必填）。按需点切换。",
+-      "params": {
+-        "label": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "开关所在行文本，如 鉴权/缓存/提示/回显。"
+-        },
+-        "state": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "on / off(缺省)。"
+-        }
+-      },
+-      "requires": [
+-        "节点抽屉已开"
+-      ],
+-      "post": "该开关处于目标态。"
+-    },
+-    "workflow.selectMcpTool": {
+-      "desc": "在已打开的「MCP工具」节点配置抽屉里，通过级联选择器(.hr-cascader)选「第三方、自定义工具」：第一列点 MCP 服务器分类→第二列点工具叶子。真机实证：选后触发器值变「分类 / 工具」、「输入」区按工具入参自动填充(如 maps_weather→变量名 city)。需先 workflow.openNode 打开 MCP工具 节点。",
+-      "params": {
+-        "category": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "MCP 服务器名(级联第一列)，如 第三方mcp测试。注意 0 工具的服务器是禁用叶子、选不了。"
+-        },
+-        "tool": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "工具名(级联第二列叶子)，如 maps_weather。"
+-        }
+-      },
+-      "requires": [
+-        "节点抽屉已开"
+-      ],
+-      "post": "级联触发器值含「分类 / 工具」（= 该 MCP 工具已选中、输入区已按其入参填充）。"
++  "nav.workflowManagement": {
++   "desc": "点击左侧「工作流管理」进入工作流列表（真机实测 URL=/process/list）。",
++   "params": {},
++   "requires": [
++    "已登录"
++   ],
++   "provides": [
++    "在工作流管理页"
++   ],
++   "removes": [
++    "测试面板已开",
++    "节点抽屉已开",
++    "工具选择器已开"
++   ],
++   "post": "工作流列表可见（URL 含 /process/list）。"
++  },
++  "workflow.open": {
++   "desc": "在工作流管理列表点工作流『名字』进入画布编辑器（真机实测：点名字进画布、URL=/process/detail；『编辑』按钮是改名弹窗、不是画布）。",
++   "params": {
++    "openName": {
++     "type": "string",
++     "required": true,
++     "desc": "工作流列表里要点开的名称（须足够唯一）。"
++    }
++   },
++   "requires": [
++    "在工作流管理页"
++   ],
++   "provides": [
++    "画布已开"
++   ],
++   "post": "进入工作流画布编辑器（URL 含 /process/detail）。"
++  },
++  "workflow.publish": {
++   "desc": "【破坏性·确认门高亮】点画布编辑器的「发布」按钮（节点完整则真发布、不完整则出校验提示）。真机实测编辑器有 分享/预览/测试/保存/发布/历史版本/添加节点。",
++   "params": {},
++   "requires": [
++    "画布已开"
++   ],
++   "destructive": true,
++   "post": "点了「发布」（结果由后续 assert.* 判定：成功 toast 或校验提示）。"
++  },
++  "workflow.save": {
++   "desc": "【破坏性】点画布编辑器的「保存」按钮（暂存工作流，任何状态都可保存）。",
++   "params": {},
++   "requires": [
++    "画布已开"
++   ],
++   "destructive": true,
++   "post": "点了「保存」。"
++  },
++  "workflow.clickEditorButton": {
++   "desc": "点画布编辑器顶部某个按钮（测试/导出/历史版本/新建版本/预览 等只读或弹层类）。破坏性按钮（发布/保存/删除）请用专用原子，便于确认门高亮。",
++   "params": {
++    "name": {
++     "type": "string",
++     "required": true,
++     "desc": "按钮可见名，如 测试/导出/历史版本/新建版本/预览。"
++    }
++   },
++   "requires": [
++    "画布已开"
++   ],
++   "post": "点了该按钮（结果由后续 assert.* 判定）。"
++  },
++  "workflow.create": {
++   "desc": "【破坏性】新增工作流：点「新增工作流」下拉→菜单「新增工作流」→填 名称/编码/描述/分类(全必填)→确认，回到列表。名称建议 ctxtest_ 前缀便于清理。编码可省（中台按名称拼音自动生成）。",
++   "params": {
++    "name": {
++     "type": "string",
++     "required": true,
++     "desc": "工作流名称（后端唯一约束，建 ctxtest_ 前缀）。"
+     },
+-    "workflow.selectNodeDropdown": {
+-      "desc": "在已打开的节点配置抽屉里选一个 HEREN select 下拉（点第 nth 个「请选择」触发器→弹层 .hr-select-option 选项）。用于 数据库节点(选库)/知识库检索(选重排模型)/重排序/中断 等。需先 workflow.openNode。",
+-      "params": {
+-        "nth": {
+-          "type": "number",
+-          "required": false,
+-          "desc": "抽屉里第几个「请选择」下拉(0 起，缺省 0)。"
+-        },
+-        "option": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "选项文本(子串)；缺省选第一项。给了则后置断言触发器值含它。"
+-        }
+-      },
+-      "requires": [
+-        "节点抽屉已开"
+-      ],
+-      "post": "（给了 option 则）该下拉已选中含 option 的项。"
++    "code": {
++     "type": "string",
++     "required": false,
++     "desc": "工作流编码（省略则中台按名称拼音自动生成）。"
+     },
+-    "workflow.assertNodeFieldValue": {
+-      "desc": "L1：断言节点配置抽屉里某字段(按 placeholder 定位 input/textarea)的 value 精确等于期望值——用于验证 setNodeField/脚本等填值完整生效(value 非文本节点，assert.textVisible 看不到)。",
+-      "params": {
+-        "nodeName": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "字段所属节点标题，如 脚本转换；与动作回读一并冻结，防同 placeholder 跨节点串绑。"
+-        },
+-        "placeholder": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "字段占位符，如 请输入接口的URL / 请输入python脚本。"
+-        },
+-        "value": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "期望的完整 value；严格精确相等，不接受子串或尾缀。"
+-        },
+-        "exact": {
+-          "type": "boolean",
+-          "required": false,
+-          "desc": "placeholder 是否精确匹配；缺省 false，须与 workflow.setNodeField 同值。"
+-        }
+-      },
+-      "requires": [
+-        "节点抽屉已开"
+-      ],
+-      "post": "该字段 value 精确等于期望值。"
++    "desc": {
++     "type": "string",
++     "required": false,
++     "desc": "工作流描述（省略用名称）。"
+     },
+-    "workflow.assertEchoByVar": {
+-      "desc": "L1：断言节点配置抽屉「输出」区里某个输出变量行(按变量名匹配 .request-params-item 第一个 input 的 value)的「回显」开关状态。用于『回显优化』用例：模型/智能体节点默认输出 answer(回显ON) + jsons(回显OFF)——比 assert.switchState(只匹配首个含「回显」的行)更精确，能分别断 answer/jsons。需先 workflow.openNode 打开该节点。",
+-      "params": {
+-        "varName": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "输出变量名(精确匹配该行变量名输入框 value)，真机默认：answer / jsons。"
+-        },
+-        "state": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "期望回显开关态 on / off(缺省 off)。"
+-        }
+-      },
+-      "requires": [
+-        "节点抽屉已开"
+-      ],
+-      "post": "该输出变量行的回显开关处于期望状态。"
++    "category": {
++     "type": "string",
++     "required": false,
++     "desc": "分类，缺省「测试分类」。"
++    }
++   },
++   "requires": [
++    "已登录"
++   ],
++   "provides": [
++    "画布已开"
++   ],
++   "removes": [
++    "测试面板已开",
++    "节点抽屉已开",
++    "工具选择器已开"
++   ],
++   "destructive": true,
++   "entityNameParam": "name",
++   "post": "回到列表且新工作流名出现。"
++  },
++  "workflow.addNode": {
++   "desc": "往画布拖入一个节点（坐标方案：开「添加节点」面板→拖面板项到画布坐标）。优先用 nodeName(按面板项文本)——因多类节点共用图标(排他/并行/真并行网关都是 gateway；MCP/智能体工作流/文档提取都是 server)。需先在画布编辑器(/process/detail)。坐标相对画布左上角，x≥600 避左侧面板、间距≥350 防重叠。",
++   "params": {
++    "nodeName": {
++     "type": "string",
++     "required": false,
++     "desc": "节点面板项文本(推荐)，2026-07-07 真机实采 21 名(wf-add-node)：开始节点/结束节点/HTTP请求/SSE流式请求/变量映射/排他网关/并行网关/真并行网关开始/真并行网关结束/脚本转换/模型节点/知识库检索/重排序/数据库节点/MCP工具/智能体\\u002F工作流/变量聚合/文档提取/缓存读取/缓存写入/人工介入。名单随版本漂移，身份门 fail-closed 兜底、不做静态白名单校验(GRILL D8)。"
+     },
+-    "workflow.closeDrawer": {
+-      "desc": "Esc 关闭当前浮层：节点配置抽屉、历史版本等 Esc 可关的弹窗（实现=按一次 Esc，通用关闭器）。配完节点要关抽屉，否则盖住发布/测试按钮。",
+-      "params": {},
+-      "removes": [
+-        "节点抽屉已开"
+-      ],
+-      "post": "配置抽屉关闭。"
++    "nodeType": {
++     "type": "string",
++     "required": false,
++     "desc": "（兼容）图标后缀 start/end/api/app... 仅对图标唯一的节点可靠；歧义节点请用 nodeName。"
+     },
+-    "workflow.configEndOutput": {
+-      "desc": "配置结束节点输出 ans=<源节点>.<变量>（缺省 开始节点.question，与历史行为一致；可指定如 模型节点 + answer (str)）。内含「开一次开始节点抽屉再 Esc」trick=注册默认入参 question+消开始节点红框（漏这步发布被拦——2026-06-10 实证）。否则发布/测试/试跑报「存在节点内容未填写完整」。需画布上已有 开始节点+结束节点。",
+-      "params": {
+-        "sourceNode": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "引用来源节点名（缺省 开始节点）。"
+-        },
+-        "variable": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "变量标签（缺省 question (str)；空格容忍，answer (str) 也能匹配真机的 answer(str)）。"
+-        }
+-      },
+-      "requires": [
+-        "画布已开"
+-      ],
+-      "post": "结束节点输出 ans 已配置并勾必传（工作流可发布/试跑）。"
++    "x": {
++     "type": "number",
++     "required": false,
++     "desc": "落点 x（相对画布左上角，缺省 600）。"
+     },
+-    "workflow.selectNodeModel": {
+-      "desc": "模型节点选模型【2026-06-10 破解 §3.2 卡点】：点模型字段「本体」(抽屉第一个只读 input .hr-input.hr-is-readonly)→弹层 .hr-popup.hr-select__dropdown 选项「平台<模型名><厂商>」→点选项即写入字段，无需确认按钮(录制里的 .col-3 按钮是抽屉头布局按钮、点了反而关抽屉=历史假失败根因)。需先 workflow.openNode 打开模型节点。",
+-      "params": {
+-        "modelName": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "模型名(子串)，如 deepseek-v3。"
+-        },
+-        "vendor": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "厂商锁定(deepseek-v3 有 腾讯/阿里 两项)，如 腾讯。"
+-        }
+-      },
+-      "requires": [
+-        "节点抽屉已开"
+-      ],
+-      "post": "模型字段 value 含模型名（动态信号：默认为空，真选中才出现）。"
++    "y": {
++     "type": "number",
++     "required": false,
++     "desc": "落点 y（缺省 280）。"
+     },
+-    "workflow.addNodeInputVar": {
+-      "desc": "模型节点「输入」区添加变量行并命名【2026-06-10 破解】：输入区默认「暂无数据」(无默认行)，「添加」=该折叠面板内 primary 按钮。注意：输入变量不会自动注入模型(真机实证)，须用户提示词 {变量名} 引用(fillNodeTextArea nth1)。需先 workflow.openNode。",
+-      "params": {
+-        "name": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "变量名，如 q。"
+-        }
+-      },
+-      "requires": [
+-        "节点抽屉已开"
+-      ],
+-      "post": "输入区出现该名变量行。"
++    "expectedNodeDelta": {
++     "type": "number",
++     "required": false,
++     "desc": "预期新增 .lf-node 数；缺省普通节点 +1，真并行网关开始在 Heren 真机一次拖拽生成开始/结束两个节点，默认按 +2 核验。"
++    }
++   },
++   "requires": [
++    "画布已开"
++   ],
++   "post": "画布节点数增加（普通节点 .lf-node +1；真并行网关开始一次拖拽生成开始/结束两个节点，.lf-node +2）。"
++  },
++  "workflow.openNode": {
++   "desc": "点开画布上某节点的配置抽屉（按节点标题定位 .lf-node→点中心→等抽屉打开，点空重点一次）。需先在画布编辑器。",
++   "params": {
++    "label": {
++     "type": "string",
++     "required": true,
++     "desc": "画布上节点的可见标题，如 智能体/工作流、开始节点、结束节点。"
++    }
++   },
++   "requires": [
++    "画布已开"
++   ],
++   "provides": [
++    "节点抽屉已开"
++   ],
++   "post": "右侧配置抽屉打开。"
++  },
++  "assert.switchState": {
++   "desc": "L1：断言配置抽屉里某开关的状态（如「回显」默认 ON）——做回显优化等「默认打开/关闭」类用例。按「开关所在行文本含 label」定位。",
++   "params": {
++    "label": {
++     "type": "string",
++     "required": true,
++     "desc": "开关所在行的文本（如 回显/缓存/提示）。"
+     },
+-    "workflow.refNodeVariable": {
+-      "desc": "节点配置抽屉里给值框做变量引用【2026-06-10 破解】：齿轮=第 nth 个 .variable-value-input 容器内方形图标按钮→弹窗选 listitem 源节点→点变量文本即生效并自动关弹窗(无需确认按钮)。nth 按抽屉 DOM 序：输入区行在缓存 key 行之前；模型节点未加输入行时 nth0=缓存 key(先 addNodeInputVar)。",
+-      "params": {
+-        "nth": {
+-          "type": "number",
+-          "required": false,
+-          "desc": "第几个 .variable-value-input 容器(0 起，缺省 0)。"
+-        },
+-        "sourceNode": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "源节点名，如 开始节点 / 模型节点。"
+-        },
+-        "variable": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "变量标签，如 question (str) / answer (str)（空格容忍）。"
+-        }
+-      },
+-      "requires": [
+-        "节点抽屉已开"
+-      ],
+-      "post": "该值框出现「源节点 变量」引用 chip。"
++    "state": {
++     "type": "string",
++     "required": false,
++     "desc": "on(缺省)/off。"
++    }
++   },
++   "requires": [
++    "节点抽屉已开"
++   ],
++   "post": "该开关处于期望状态。"
++  },
++  "workflow.connectNodes": {
++   "desc": "把两个节点连线（坐标/锚点方案：hover 源节点→取 .lf-node-anchor-hover 真锚点→拖到目标节点）。注：纯 DOM 读不到边的 source/target，只能断「边数增加」，无法断「连对哪两个」——要确定性需前端暴露 window.lf（见 PLAN §6.5）。",
++   "params": {
++    "fromLabel": {
++     "type": "string",
++     "required": true,
++     "desc": "起始节点的可见标题（如 开始节点）。"
+     },
+-    "workflow.fillNodeTextArea": {
+-      "desc": "填节点配置抽屉的提示词编辑区(.text-input-area 自定义 div 编辑器，.fill() 可填——用户录制实证)：模型节点 nth0=系统提示词、nth1=用户提示词。用户提示词以 {变量名} 引用输入区变量(UI 占位符明示)。需先 workflow.openNode。",
+-      "params": {
+-        "nth": {
+-          "type": "number",
+-          "required": false,
+-          "desc": "第几个 .text-input-area(0 起，缺省 0=系统提示词)。"
+-        },
+-        "text": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "要填的提示词文本，如 {q}。"
+-        }
+-      },
+-      "requires": [
+-        "节点抽屉已开"
+-      ],
+-      "post": "该提示词区含填入文本。"
++    "toLabel": {
++     "type": "string",
++     "required": true,
++     "desc": "目标节点的可见标题（如 结束节点）。"
++    }
++   },
++   "requires": [
++    "画布已开"
++   ],
++   "post": "画布边数 +1（.lf-edge 计数增加）。"
++  },
++  "workflow.setNodeField": {
++   "desc": "在已打开的节点配置抽屉里，按 placeholder 填某个文本字段（如 HTTP 节点 URL：placeholder「请输入接口的URL」）。",
++   "params": {
++    "placeholder": {
++     "type": "string",
++     "required": true,
++     "desc": "字段占位符，如 请输入接口的URL / 请输入变量名 / 请输入(请求头名称)。"
+     },
+-    "workflow.optimizeVersion": {
+-      "desc": "已发布工作流→进入可编辑新版本【2026-06-10 破解】：「新建版本」只 toast 保存成功(后台建 V2 草稿、当前页仍锁定 V1)；本原子做「历史版本」表→V2 行「优化」链接(A.hr-link)→确认弹窗「请确定当前流程图数据已保存…」点确认→落 V2 草稿。需先 workflow.publish + clickEditorButton(新建版本)。",
+-      "params": {},
+-      "requires": [
+-        "画布已开"
+-      ],
+-      "destructive": true,
+-      "post": "画布解锁（「添加节点」按钮 enabled——已发布态它是 disabled，动态信号）。"
++    "value": {
++     "type": "string",
++     "required": true,
++     "desc": "要填的值。"
+     },
+-    "workflow.trialRun": {
+-      "desc": "试运行工作流：点「测试」→在「请输入消息」发输入→（可选）断言回复出现期望内容（证明数据真流通，画布域允许的内容断言）。【2026-06-10 防假绿加固】测试会话抽屉会带出历史气泡(异步加载)：发送前等气泡数稳定记快照，断言只认「发送后新增」内容。",
+-      "params": {
+-        "input": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "试运行输入。"
+-        },
+-        "expectIncludes": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "期望回复包含的子串/正则；给了才断言。"
+-        }
+-      },
+-      "requires": [
+-        "画布已开"
+-      ],
+-      "destructive": true,
+-      "post": "（给了 expectIncludes 则）回复出现期望内容。"
++    "exact": {
++     "type": "boolean",
++     "required": false,
++     "desc": "占位符精确匹配（如「请输入」是子串会撞 URL，需 exact）。"
+     },
+-    "workflow.deleteByName": {
+-      "desc": "清理：读取唯一搜索框当前名称，只在精确目标 table/card 记录域内唯一定位删除，并只在唯一可见确认弹层域内确认；任一域缺席或非唯一均不点击。",
+-      "params": {
+-        "name": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "要删除的工作流名称。"
+-        }
+-      },
+-      "requires": [
+-        "已登录"
+-      ],
+-      "provides": [
+-        "在工作流管理页"
+-      ],
+-      "removes": [
+-        "测试面板已开",
+-        "节点抽屉已开",
+-        "工具选择器已开"
+-      ],
+-      "destructive": true,
+-      "entityNameParam": "name",
+-      "post": "删后重搜必须由已签 countChange equals 0 证明；清理失败不改写前序业务 intent，但 cleanup intent 不得 PASS。"
++    "nth": {
++     "type": "number",
++     "required": false,
++     "desc": "同占位符多个时取第几个（缺省 0）。"
++    }
++   },
++   "requires": [
++    "节点抽屉已开"
++   ],
++   "post": "该字段被填入值。"
++  },
++  "workflow.setSwitch": {
++   "desc": "在配置抽屉里把某开关设到目标态（如关掉 HTTP 节点「鉴权」以免 Key/Value 变必填）。按需点切换。",
++   "params": {
++    "label": {
++     "type": "string",
++     "required": true,
++     "desc": "开关所在行文本，如 鉴权/缓存/提示/回显。"
+     },
+-    "agent.searchOpen": {
+-      "desc": "在「智能体管理」搜索框输入关键词并打开指定智能体详情（搜索+打开合为一个有独立后置断言的业务动作）。",
+-      "params": {
+-        "searchKeyword": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "搜索框输入（智能体名称或编码）。"
+-        },
+-        "openName": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "搜索结果里点开的列表项可见文本（须足够唯一，避免 strict mode 命中多个）。"
+-        }
+-      },
+-      "requires": [
+-        "在智能体管理页"
+-      ],
+-      "provides": [
+-        "智能体详情已开"
+-      ],
+-      "post": "进入该智能体详情页（出现「测试」按钮）。"
++    "state": {
++     "type": "string",
++     "required": false,
++     "desc": "on / off(缺省)。"
++    }
++   },
++   "requires": [
++    "节点抽屉已开"
++   ],
++   "post": "该开关处于目标态。"
++  },
++  "workflow.selectMcpTool": {
++   "desc": "在已打开的「MCP工具」节点配置抽屉里，通过级联选择器(.hr-cascader)选「第三方、自定义工具」：第一列点 MCP 服务器分类→第二列点工具叶子。真机实证：选后触发器值变「分类 / 工具」、「输入」区按工具入参自动填充(如 maps_weather→变量名 city)。需先 workflow.openNode 打开 MCP工具 节点。",
++   "params": {
++    "category": {
++     "type": "string",
++     "required": true,
++     "desc": "MCP 服务器名(级联第一列)，如 第三方mcp测试。注意 0 工具的服务器是禁用叶子、选不了。"
+     },
+-    "agent.openTestPanel": {
+-      "desc": "打开「测试」面板（硬化：等详情页 networkidle→等「测试」可见→点→确认消息框出现，点空则重点一次）。",
+-      "params": {},
+-      "requires": [
+-        "智能体详情已开"
+-      ],
+-      "provides": [
+-        "测试面板已开"
+-      ],
+-      "post": "测试面板消息输入框「请输入消息」可见（点空会被这条后置断言逮到）。"
++    "tool": {
++     "type": "string",
++     "required": true,
++     "desc": "工具名(级联第二列叶子)，如 maps_weather。"
++    }
++   },
++   "requires": [
++    "节点抽屉已开"
++   ],
++   "post": "级联触发器值含「分类 / 工具」（= 该 MCP 工具已选中、输入区已按其入参填充）。"
++  },
++  "workflow.selectNodeDropdown": {
++   "desc": "在已打开的节点配置抽屉里选一个 HEREN select 下拉（点第 nth 个「请选择」触发器→弹层 .hr-select-option 选项）。用于 数据库节点(选库)/知识库检索(选重排模型)/重排序/中断 等。需先 workflow.openNode。",
++   "params": {
++    "nth": {
++     "type": "number",
++     "required": false,
++     "desc": "抽屉里第几个「请选择」下拉(0 起，缺省 0)。"
+     },
+-    "agent.assertPromptTabs": {
+-      "desc": "L1：断言智能体详情「提示词」区按系统/用户分区（真机实测：系统/用户为 .prompt-tip 标签，父 .agent-content.two-prompt）。做测试表『提示词区分为系统、用户』用例。需先在某智能体详情页(agent.searchOpen 之后)。",
+-      "params": {
+-        "labels": {
+-          "type": "string[]",
+-          "required": false,
+-          "desc": "要断言存在的提示词分区标签；缺省 ['系统','用户']。"
+-        }
+-      },
+-      "requires": [
+-        "智能体详情已开"
+-      ],
+-      "post": "提示词区出现全部期望分区标签（系统/用户）。"
++    "option": {
++     "type": "string",
++     "required": false,
++     "desc": "选项文本(子串)；缺省选第一项。给了则后置断言触发器值含它。"
++    }
++   },
++   "requires": [
++    "节点抽屉已开"
++   ],
++   "post": "（给了 option 则）该下拉已选中含 option 的项。"
++  },
++  "workflow.assertNodeFieldValue": {
++   "desc": "L1：断言节点配置抽屉里某字段(按 placeholder 定位 input/textarea)的 value 精确等于期望值——用于验证 setNodeField/脚本等填值完整生效(value 非文本节点，assert.textVisible 看不到)。",
++   "params": {
++    "nodeName": {
++     "type": "string",
++     "required": true,
++     "desc": "字段所属节点标题，如 脚本转换；与动作回读一并冻结，防同 placeholder 跨节点串绑。"
+     },
+-    "agent.create": {
+-      "desc": "【破坏性·建实体】新增草稿智能体：名称基必须带 atl_，编译为 atl_*_{{uniqueName}}；编码编译为 atl_agent_{{uniqueName}}。限定唯一可见抽屉填写名称、编码、角色编码，选择输出类型和类型，确认后须进入 /agent/detail。创建目标模板只在本次编译内存传给 agent.delete。未真机复核时 route:human。",
+-      "params": {
+-        "name": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "带 atl_ 的名称基；回放期自动追加 {{uniqueName}}。"
+-        },
+-        "role": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "带 atl_ 的测试角色编码；缺省 atl_test_role。"
+-        },
+-        "outputType": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "输出类型下拉：流式输出/非流式输出。"
+-        },
+-        "agentType": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "类型下拉（数据获取/病历质控/诊后管理/…）；须显式给出，不猜第一项。"
+-        }
+-      },
+-      "requires": [
+-        "在智能体管理页"
+-      ],
+-      "provides": [
+-        "智能体详情已开"
+-      ],
+-      "destructive": true,
+-      "entityNameParam": "name",
+-      "post": "进入新建草稿智能体详情（URL 含 /agent/detail）。"
++    "placeholder": {
++     "type": "string",
++     "required": true,
++     "desc": "字段占位符，如 请输入接口的URL / 请输入python脚本。"
+     },
+-    "agent.openToolPicker": {
+-      "desc": "在(草稿/可编辑态)智能体详情右侧「工具」区点「+ 添加」打开工具选择器对话框。gating 实证：已发布态点添加无效，需草稿态。稳健 finder 定位「工具」行的「添加」(不要求叶子)。注：详情左侧「工具」是提示词模板标签、不是它。",
+-      "params": {},
+-      "requires": [
+-        "智能体详情已开"
+-      ],
+-      "provides": [
+-        "工具选择器已开"
+-      ],
+-      "post": "工具选择器对话框出现（含搜索框「请输入关键字搜索」）。"
++    "value": {
++     "type": "string",
++     "required": true,
++     "desc": "期望的完整 value；严格精确相等，不接受子串或尾缀。"
+     },
+-    "picker.search": {
+-      "desc": "在工具选择器搜索框输入关键字并回车过滤（真机：需 Enter 才触发；搜一级名→过滤到该一级，搜二级工具名→过滤到其父一级）。可断言过滤后一级卡片数 / 期望一级名可见。",
+-      "params": {
+-        "keyword": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "非空搜索关键字；fill 后按 Enter 触发过滤。"
+-        },
+-        "expectCount": {
+-          "type": "number",
+-          "required": false,
+-          "desc": "断言过滤后可见一级(.hr-collapse-panel)卡片数；省略不断言。"
+-        },
+-        "expectName": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "断言过滤后某一级名可见；省略不断言。"
+-        }
+-      },
+-      "requires": [
+-        "工具选择器已开"
+-      ],
+-      "post": "（给了断言参数则）过滤结果符合期望。"
++    "exact": {
++     "type": "boolean",
++     "required": false,
++     "desc": "placeholder 是否精确匹配；缺省 false，须与 workflow.setNodeField 同值。"
++    }
++   },
++   "requires": [
++    "节点抽屉已开"
++   ],
++   "post": "该字段 value 精确等于期望值。"
++  },
++  "workflow.assertEchoByVar": {
++   "desc": "L1：断言节点配置抽屉「输出」区里某个输出变量行(按变量名匹配 .request-params-item 第一个 input 的 value)的「回显」开关状态。用于『回显优化』用例：模型/智能体节点默认输出 answer(回显ON) + jsons(回显OFF)——比 assert.switchState(只匹配首个含「回显」的行)更精确，能分别断 answer/jsons。需先 workflow.openNode 打开该节点。",
++   "params": {
++    "varName": {
++     "type": "string",
++     "required": true,
++     "desc": "输出变量名(精确匹配该行变量名输入框 value)，真机默认：answer / jsons。"
+     },
+-    "picker.expandPrimary": {
+-      "desc": "点工具选择器里某一级(MCP)卡片的 header 展开其二级工具列表（真机：点 .hr-collapse-panel__header 即展开、不跳转）。",
+-      "params": {
+-        "name": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "要展开的一级（MCP）名，如 预约挂号。"
+-        }
+-      },
+-      "requires": [
+-        "工具选择器已开"
+-      ],
+-      "post": "该一级展开，二级工具项(.tool-item)可见。"
++    "state": {
++     "type": "string",
++     "required": false,
++     "desc": "期望回显开关态 on / off(缺省 off)。"
++    }
++   },
++   "requires": [
++    "节点抽屉已开"
++   ],
++   "post": "该输出变量行的回显开关处于期望状态。"
++  },
++  "workflow.closeDrawer": {
++   "desc": "Esc 关闭当前浮层：节点配置抽屉、历史版本等 Esc 可关的弹窗（实现=按一次 Esc，通用关闭器）。配完节点要关抽屉，否则盖住发布/测试按钮。",
++   "params": {},
++   "removes": [
++    "节点抽屉已开"
++   ],
++   "post": "配置抽屉关闭。"
++  },
++  "workflow.configEndOutput": {
++   "desc": "配置结束节点输出 ans=<源节点>.<变量>（缺省 开始节点.question，与历史行为一致；可指定如 模型节点 + answer (str)）。内含「开一次开始节点抽屉再 Esc」trick=注册默认入参 question+消开始节点红框（漏这步发布被拦——2026-06-10 实证）。否则发布/测试/试跑报「存在节点内容未填写完整」。需画布上已有 开始节点+结束节点。",
++   "params": {
++    "sourceNode": {
++     "type": "string",
++     "required": false,
++     "desc": "引用来源节点名（缺省 开始节点）。"
+     },
+-    "picker.selectFirstTool": {
+-      "desc": "勾选第一个【可见】二级工具的勾选框(.tool-item .hr-checkbox)。给 under 则限定到该一级面板内选其首个工具(多选不同一级各一个工具时用)。顺手把该工具名(去掉描述行)写入 ctx.lastToolName，供 agent.openAddedToolMcpList 点详情上的它。",
+-      "params": {
+-        "under": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "限定在哪个一级(MCP)面板下选首个工具，如 高德地图；省略则选全局第一个可见工具。需先 expandPrimary 展开该一级。"
+-        }
+-      },
+-      "requires": [
+-        "工具选择器已开"
+-      ],
+-      "post": "至少 1 个工具被选中(checkbox checked)；ctx.lastToolName = 该工具名。"
++    "variable": {
++     "type": "string",
++     "required": false,
++     "desc": "变量标签（缺省 question (str)；空格容忍，answer (str) 也能匹配真机的 answer(str)）。"
++    }
++   },
++   "requires": [
++    "画布已开"
++   ],
++   "post": "结束节点输出 ans 已配置并勾必传（工作流可发布/试跑）。"
++  },
++  "workflow.selectNodeModel": {
++   "desc": "模型节点选模型【2026-06-10 破解 §3.2 卡点】：点模型字段「本体」(抽屉第一个只读 input .hr-input.hr-is-readonly)→弹层 .hr-popup.hr-select__dropdown 选项「平台<模型名><厂商>」→点选项即写入字段，无需确认按钮(录制里的 .col-3 按钮是抽屉头布局按钮、点了反而关抽屉=历史假失败根因)。需先 workflow.openNode 打开模型节点。",
++   "params": {
++    "modelName": {
++     "type": "string",
++     "required": true,
++     "desc": "模型名(子串)，如 deepseek-v3。"
+     },
+-    "agent.openAddedToolMcpList": {
+-      "desc": "R24：在智能体详情「工具」区点【已添加工具的名字】→ 同标签页跳转到 MCP 工具列表页(/mcp/tools)。真机实证(tmp/probe_tool_jump.mjs)：picker 弹框里点工具不跳；工具加进来后、在详情页点它的名字才跳。需先 agent.confirmToolPicker 把工具加进来。",
+-      "params": {
+-        "toolName": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "要点的已添加工具名；省略则用 ctx.lastToolName(picker.selectFirstTool 的产物)。"
+-        }
+-      },
+-      "requires": [
+-        "智能体详情已开"
+-      ],
+-      "provides": [
+-        "MCP列表页"
+-      ],
+-      "post": "当前 URL 含 /mcp/tools（= 跳到了 MCP 工具列表页）。"
++    "vendor": {
++     "type": "string",
++     "required": false,
++     "desc": "厂商锁定(deepseek-v3 有 腾讯/阿里 两项)，如 腾讯。"
++    }
++   },
++   "requires": [
++    "节点抽屉已开"
++   ],
++   "post": "模型字段 value 含模型名（动态信号：默认为空，真选中才出现）。"
++  },
++  "workflow.addNodeInputVar": {
++   "desc": "模型节点「输入」区添加变量行并命名【2026-06-10 破解】：输入区默认「暂无数据」(无默认行)，「添加」=该折叠面板内 primary 按钮。注意：输入变量不会自动注入模型(真机实证)，须用户提示词 {变量名} 引用(fillNodeTextArea nth1)。需先 workflow.openNode。",
++   "params": {
++    "name": {
++     "type": "string",
++     "required": true,
++     "desc": "变量名，如 q。"
++    }
++   },
++   "requires": [
++    "节点抽屉已开"
++   ],
++   "post": "输入区出现该名变量行。"
++  },
++  "workflow.refNodeVariable": {
++   "desc": "节点配置抽屉里给值框做变量引用【2026-06-10 破解】：齿轮=第 nth 个 .variable-value-input 容器内方形图标按钮→弹窗选 listitem 源节点→点变量文本即生效并自动关弹窗(无需确认按钮)。nth 按抽屉 DOM 序：输入区行在缓存 key 行之前；模型节点未加输入行时 nth0=缓存 key(先 addNodeInputVar)。",
++   "params": {
++    "nth": {
++     "type": "number",
++     "required": false,
++     "desc": "第几个 .variable-value-input 容器(0 起，缺省 0)。"
+     },
+-    "mcp.backToAgentDetail": {
+-      "desc": "R25：在 MCP 工具列表页(/mcp/tools)点「返回」→ 回智能体详情(/agent/detail)。真机实证：返回是 span.back(chevron-left 图标 + 文字「返回」)。需先在 /mcp/tools。",
+-      "params": {},
+-      "requires": [
+-        "MCP列表页"
+-      ],
+-      "provides": [
+-        "智能体详情已开"
+-      ],
+-      "post": "当前 URL 含 /agent/detail（= 返回了智能体详情）。"
++    "sourceNode": {
++     "type": "string",
++     "required": true,
++     "desc": "源节点名，如 开始节点 / 模型节点。"
+     },
+-    "agent.snapshotDetailState": {
+-      "desc": "R25 加强(2026-06-10 用户演示)：在智能体详情页快照当前界面——URL + 已添加工具 chips(.hr-tag--close 文本列表)，写 ctx.detailUrl/ctx.detailChips 并把快照写进报告注解。配合 agent.assertDetailStateRestored 断『跳转前后是同一个界面』。注意先 agent.save——未保存的工具加入在跳转→返回后会丢。",
+-      "params": {},
+-      "requires": [
+-        "智能体详情已开"
+-      ],
+-      "provides": [
+-        "详情快照已记"
+-      ],
+-      "post": "ctx.detailUrl/ctx.detailChips 已记录；报告出现「跳转前详情快照」注解。"
++    "variable": {
++     "type": "string",
++     "required": true,
++     "desc": "变量标签，如 question (str) / answer (str)（空格容忍）。"
++    }
++   },
++   "requires": [
++    "节点抽屉已开"
++   ],
++   "post": "该值框出现「源节点 变量」引用 chip。"
++  },
++  "workflow.fillNodeTextArea": {
++   "desc": "填节点配置抽屉的提示词编辑区(.text-input-area 自定义 div 编辑器，.fill() 可填——用户录制实证)：模型节点 nth0=系统提示词、nth1=用户提示词。用户提示词以 {变量名} 引用输入区变量(UI 占位符明示)。需先 workflow.openNode。",
++   "params": {
++    "nth": {
++     "type": "number",
++     "required": false,
++     "desc": "第几个 .text-input-area(0 起，缺省 0=系统提示词)。"
+     },
+-    "agent.assertToolChip": {
+-      "desc": "L1：断言智能体详情「工具」区某工具 chip(.hr-tag--close 含名字)在/不在。用户演示实证(2026-06-10)：工具确认加入但【未保存】时跳转→返回后 chip 丢失；【已保存】则仍在。name 省略用 ctx.lastToolName。",
+-      "params": {
+-        "name": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "工具名(chip 文本)，如 预约挂号；省略用 ctx.lastToolName。"
+-        },
+-        "state": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "present(缺省)=应存在 / absent=应不存在。"
+-        }
+-      },
+-      "requires": [
+-        "智能体详情已开"
+-      ],
+-      "post": "该工具 chip 处于期望的 在/不在 状态。"
++    "text": {
++     "type": "string",
++     "required": true,
++     "desc": "要填的提示词文本，如 {q}。"
++    }
++   },
++   "requires": [
++    "节点抽屉已开"
++   ],
++   "post": "该提示词区含填入文本。"
++  },
++  "workflow.optimizeVersion": {
++   "desc": "已发布工作流→进入可编辑新版本【2026-06-10 破解】：「新建版本」只 toast 保存成功(后台建 V2 草稿、当前页仍锁定 V1)；本原子做「历史版本」表→V2 行「优化」链接(A.hr-link)→确认弹窗「请确定当前流程图数据已保存…」点确认→落 V2 草稿。需先 workflow.publish + clickEditorButton(新建版本)。",
++   "params": {},
++   "requires": [
++    "画布已开"
++   ],
++   "destructive": true,
++   "post": "画布解锁（「添加节点」按钮 enabled——已发布态它是 disabled，动态信号）。"
++  },
++  "workflow.trialRun": {
++   "desc": "试运行工作流：点「测试」→在「请输入消息」发输入→（可选）断言回复出现期望内容（证明数据真流通，画布域允许的内容断言）。【2026-06-10 防假绿加固】测试会话抽屉会带出历史气泡(异步加载)：发送前等气泡数稳定记快照，断言只认「发送后新增」内容。",
++   "params": {
++    "input": {
++     "type": "string",
++     "required": true,
++     "desc": "试运行输入。"
+     },
+-    "agent.assertDetailStateRestored": {
+-      "desc": "R25 加强：对比当前详情页与 agent.snapshotDetailState 的快照是否【同一个界面】。硬断言(用户定标 2026-06-10)=两处记录的 URL 逐字符相等即可；工具 chips 仅写报告注解供人工核对、不判红。快照与对比结论都进报告注解。",
+-      "params": {},
+-      "requires": [
+-        "智能体详情已开",
+-        "详情快照已记"
+-      ],
+-      "post": "URL 与跳转前完全一致（= 返回后是同一界面）。"
++    "expectIncludes": {
++     "type": "string",
++     "required": false,
++     "desc": "期望回复包含的子串/正则；给了才断言。"
++    }
++   },
++   "requires": [
++    "画布已开"
++   ],
++   "destructive": true,
++   "post": "（给了 expectIncludes 则）回复出现期望内容。"
++  },
++  "workflow.deleteByName": {
++   "desc": "清理：读取唯一搜索框当前名称，只在精确目标 table/card 记录域内唯一定位删除，并只在唯一可见确认弹层域内确认；任一域缺席或非唯一均不点击。",
++   "params": {
++    "name": {
++     "type": "string",
++     "required": true,
++     "desc": "要删除的工作流名称。"
++    }
++   },
++   "requires": [
++    "已登录"
++   ],
++   "provides": [
++    "在工作流管理页"
++   ],
++   "removes": [
++    "测试面板已开",
++    "节点抽屉已开",
++    "工具选择器已开"
++   ],
++   "destructive": true,
++   "entityNameParam": "name",
++   "post": "删后重搜必须由已签 countChange equals 0 证明；清理失败不改写前序业务 intent，但 cleanup intent 不得 PASS。"
++  },
++  "agent.searchOpen": {
++   "desc": "在「智能体管理」搜索框输入关键词并打开指定智能体详情（搜索+打开合为一个有独立后置断言的业务动作）。",
++   "params": {
++    "searchKeyword": {
++     "type": "string",
++     "required": true,
++     "desc": "搜索框输入（智能体名称或编码）。"
+     },
+-    "agent.selectModel": {
+-      "desc": "在智能体详情选『应用模型』：模型字段=第一个 .hr-input.hr-is-readonly(leftLabel『模型』)，点其后缀 chevron→下拉(.common-model-select__overlay-option)里点含 modelName 的 .hr-select-option。真机实证(探针+用户录制)破解 §3.2 长期没攻下的模型选择。后置断模型字段 value 变为 modelName(动态)。",
+-      "params": {
+-        "modelName": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "要选的模型名(子串匹配下拉选项)，缺省 deepseek-v3；下拉项文如『平台deepseek-v3腾讯』，选后字段显示『deepseek-v3』。"
+-        }
+-      },
+-      "requires": [
+-        "智能体详情已开"
+-      ],
+-      "post": "模型字段 value 含 modelName（= 模型已选中）。"
++    "openName": {
++     "type": "string",
++     "required": true,
++     "desc": "搜索结果里点开的列表项可见文本（须足够唯一，避免 strict mode 命中多个）。"
+     },
+-    "agent.save": {
+-      "desc": "【破坏性】点智能体详情『保存』按钮持久化(模型/工具等改动)。后置断出现『保存成功/操作成功』toast(动态信号)。",
+-      "params": {},
+-      "requires": [
+-        "智能体详情已开"
+-      ],
+-      "destructive": true,
+-      "post": "出现保存成功提示。"
++    "code": {
++     "type": "string",
++     "required": false,
++     "desc": "智能体编码（可选）：在场时搜索框填编码收敛候选（placeholder 支持名称或编码），点击仍按 openName 精确锚；不冒充平台 ID 读回。"
++    }
++   },
++   "requires": [
++    "在智能体管理页"
++   ],
++   "provides": [
++    "智能体详情已开"
++   ],
++   "post": "进入该智能体详情页（出现「测试」按钮）。"
++  },
++  "agent.openTestPanel": {
++   "desc": "打开「测试」面板（硬化：等详情页 networkidle→等「测试」可见→点→确认消息框出现，点空则重点一次）。",
++   "params": {},
++   "requires": [
++    "智能体详情已开"
++   ],
++   "provides": [
++    "测试面板已开"
++   ],
++   "post": "测试面板消息输入框「请输入消息」可见（点空会被这条后置断言逮到）。"
++  },
++  "agent.assertPromptTabs": {
++   "desc": "L1：断言智能体详情「提示词」区按系统/用户分区（真机实测：系统/用户为 .prompt-tip 标签，父 .agent-content.two-prompt）。做测试表『提示词区分为系统、用户』用例。需先在某智能体详情页(agent.searchOpen 之后)。",
++   "params": {
++    "labels": {
++     "type": "string[]",
++     "required": false,
++     "desc": "要断言存在的提示词分区标签；缺省 ['系统','用户']。"
++    }
++   },
++   "requires": [
++    "智能体详情已开"
++   ],
++   "post": "提示词区出现全部期望分区标签（系统/用户）。"
++  },
++  "agent.create": {
++   "desc": "【破坏性·建实体】新增草稿智能体：名称基必须带 atl_，编译为 atl_*_{{uniqueName}}；编码编译为 atl_agent_{{uniqueName}}。限定唯一可见抽屉填写名称、编码、角色编码，选择输出类型和类型，确认后须进入 /agent/detail。创建目标模板只在本次编译内存传给 agent.delete。未真机复核时 route:human。",
++   "params": {
++    "name": {
++     "type": "string",
++     "required": true,
++     "desc": "带 atl_ 的名称基；回放期自动追加 {{uniqueName}}。"
+     },
+-    "agent.publish": {
+-      "desc": "【破坏性·确认门高亮】点智能体详情『发布』按钮(可能弹确认框，自动点确认)→断『发布成功/操作成功』。注：用户录制实证测试在『保存』后即可跑，发布非测试前置；本原子供需要发布态的用例。",
+-      "params": {},
+-      "requires": [
+-        "智能体详情已开"
+-      ],
+-      "destructive": true,
+-      "post": "出现发布成功提示。"
++    "role": {
++     "type": "string",
++     "required": false,
++     "desc": "带 atl_ 的测试角色编码；缺省 atl_test_role。"
+     },
+-    "picker.toggleShowSelected": {
+-      "desc": "切换工具选择器的「仅显示已选」开关。真机：无已选时切 ON→一级清空(0)；选了工具后切 ON→只剩含该工具的一级。可断言切后一级卡片数。",
+-      "params": {
+-        "state": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "on(缺省)/off。"
+-        },
+-        "expectCount": {
+-          "type": "number",
+-          "required": false,
+-          "desc": "断言切后可见一级卡片数；省略不断言。"
+-        }
+-      },
+-      "requires": [
+-        "工具选择器已开"
+-      ],
+-      "post": "「仅显示已选」处于目标态，（给了 expectCount 则）一级数符合期望。"
++    "outputType": {
++     "type": "string",
++     "required": true,
++     "desc": "输出类型下拉：流式输出/非流式输出。"
+     },
+-    "picker.snapshotPrimaries": {
+-      "desc": "快照工具选择器当前可见一级(MCP)卡片的【有序】名称列表(按 DOM 顺序，写入 ctx.pickerPrimaries)——给「切换显示全部·按原始顺序」用例做基线。后置断言至少抓到 1 个一级(防空快照假绿)。需先 agent.openToolPicker。",
+-      "params": {},
+-      "requires": [
+-        "工具选择器已开"
+-      ],
+-      "provides": [
+-        "选择器一级基线已记"
+-      ],
+-      "post": "ctx.pickerPrimaries = 当前有序一级名列表(非空)。"
++    "agentType": {
++     "type": "string",
++     "required": true,
++     "desc": "类型下拉（数据获取/病历质控/诊后管理/…）；须显式给出，不猜第一项。"
++    }
++   },
++   "requires": [
++    "在智能体管理页"
++   ],
++   "provides": [
++    "智能体详情已开"
++   ],
++   "destructive": true,
++   "entityNameParam": "name",
++   "post": "进入新建草稿智能体详情（URL 含 /agent/detail）。"
++  },
++  "agent.openToolPicker": {
++   "desc": "在(草稿/可编辑态)智能体详情右侧「工具」区点「+ 添加」打开工具选择器对话框。gating 实证：已发布态点添加无效，需草稿态。稳健 finder 定位「工具」行的「添加」(不要求叶子)。注：详情左侧「工具」是提示词模板标签、不是它。",
++   "params": {},
++   "requires": [
++    "智能体详情已开"
++   ],
++   "provides": [
++    "工具选择器已开"
++   ],
++   "post": "工具选择器对话框出现（含搜索框「请输入关键字搜索」）。"
++  },
++  "picker.search": {
++   "desc": "在工具选择器搜索框输入关键字并回车过滤（真机：需 Enter 才触发；搜一级名→过滤到该一级，搜二级工具名→过滤到其父一级）。可断言过滤后一级卡片数 / 期望一级名可见。",
++   "params": {
++    "keyword": {
++     "type": "string",
++     "required": true,
++     "desc": "非空搜索关键字；fill 后按 Enter 触发过滤。"
+     },
+-    "picker.assertPrimariesRestored": {
+-      "desc": "L1：断言「显示全部」(切『仅显示已选』OFF)后，可见一级(MCP)卡片与 ctx.pickerPrimaries 基线【条数+顺序完全一致】——证明切回显示全部恢复了原始顺序。需先 picker.snapshotPrimaries 抓基线。",
+-      "params": {},
+-      "requires": [
+-        "工具选择器已开",
+-        "选择器一级基线已记"
+-      ],
+-      "post": "当前有序一级名列表 === ctx.pickerPrimaries（按原始顺序恢复）。"
++    "expectCount": {
++     "type": "number",
++     "required": false,
++     "desc": "断言过滤后可见一级(.hr-collapse-panel)卡片数；省略不断言。"
+     },
+-    "picker.cancel": {
+-      "desc": "点工具选择器「取消」关闭对话框（不持久化选择，保持自包含）。",
+-      "params": {},
+-      "requires": [
+-        "工具选择器已开"
+-      ],
+-      "removes": [
+-        "工具选择器已开"
+-      ],
+-      "post": "工具选择器对话框关闭。"
++    "expectName": {
++     "type": "string",
++     "required": false,
++     "desc": "断言过滤后某一级名可见；省略不断言。"
++    }
++   },
++   "requires": [
++    "工具选择器已开"
++   ],
++   "post": "（给了断言参数则）过滤结果符合期望。"
++  },
++  "picker.expandPrimary": {
++   "desc": "点工具选择器里某一级(MCP)卡片的 header 展开其二级工具列表（真机：点 .hr-collapse-panel__header 即展开、不跳转）。",
++   "params": {
++    "name": {
++     "type": "string",
++     "required": true,
++     "desc": "要展开的一级（MCP）名，如 预约挂号。"
++    }
++   },
++   "requires": [
++    "工具选择器已开"
++   ],
++   "post": "该一级展开，二级工具项(.tool-item)可见。"
++  },
++  "picker.selectFirstTool": {
++   "desc": "勾选第一个【可见】二级工具的勾选框(.tool-item .hr-checkbox)。给 under 则限定到该一级面板内选其首个工具(多选不同一级各一个工具时用)。顺手把该工具名(去掉描述行)写入 ctx.lastToolName，供 agent.openAddedToolMcpList 点详情上的它。",
++   "params": {
++    "under": {
++     "type": "string",
++     "required": false,
++     "desc": "限定在哪个一级(MCP)面板下选首个工具，如 高德地图；省略则选全局第一个可见工具。需先 expandPrimary 展开该一级。"
++    }
++   },
++   "requires": [
++    "工具选择器已开"
++   ],
++   "post": "至少 1 个工具被选中(checkbox checked)；ctx.lastToolName = 该工具名。"
++  },
++  "agent.openAddedToolMcpList": {
++   "desc": "R24：在智能体详情「工具」区点【已添加工具的名字】→ 同标签页跳转到 MCP 工具列表页(/mcp/tools)。真机实证(tmp/probe_tool_jump.mjs)：picker 弹框里点工具不跳；工具加进来后、在详情页点它的名字才跳。需先 agent.confirmToolPicker 把工具加进来。",
++   "params": {
++    "toolName": {
++     "type": "string",
++     "required": false,
++     "desc": "要点的已添加工具名；省略则用 ctx.lastToolName(picker.selectFirstTool 的产物)。"
++    }
++   },
++   "requires": [
++    "智能体详情已开"
++   ],
++   "provides": [
++    "MCP列表页"
++   ],
++   "post": "当前 URL 含 /mcp/tools（= 跳到了 MCP 工具列表页）。"
++  },
++  "mcp.backToAgentDetail": {
++   "desc": "R25：在 MCP 工具列表页(/mcp/tools)点「返回」→ 回智能体详情(/agent/detail)。真机实证：返回是 span.back(chevron-left 图标 + 文字「返回」)。需先在 /mcp/tools。",
++   "params": {},
++   "requires": [
++    "MCP列表页"
++   ],
++   "provides": [
++    "智能体详情已开"
++   ],
++   "post": "当前 URL 含 /agent/detail（= 返回了智能体详情）。"
++  },
++  "agent.snapshotDetailState": {
++   "desc": "R25 加强(2026-06-10 用户演示)：在智能体详情页快照当前界面——URL + 已添加工具 chips(.hr-tag--close 文本列表)，写 ctx.detailUrl/ctx.detailChips 并把快照写进报告注解。配合 agent.assertDetailStateRestored 断『跳转前后是同一个界面』。注意先 agent.save——未保存的工具加入在跳转→返回后会丢。",
++   "params": {},
++   "requires": [
++    "智能体详情已开"
++   ],
++   "provides": [
++    "详情快照已记"
++   ],
++   "post": "ctx.detailUrl/ctx.detailChips 已记录；报告出现「跳转前详情快照」注解。"
++  },
++  "agent.assertToolChip": {
++   "desc": "L1：断言智能体详情「工具」区某工具 chip(.hr-tag--close 含名字)在/不在。用户演示实证(2026-06-10)：工具确认加入但【未保存】时跳转→返回后 chip 丢失；【已保存】则仍在。name 省略用 ctx.lastToolName。",
++   "params": {
++    "name": {
++     "type": "string",
++     "required": false,
++     "desc": "工具名(chip 文本)，如 预约挂号；省略用 ctx.lastToolName。"
+     },
+-    "agent.confirmToolPicker": {
+-      "desc": "点工具选择器「确认」把弹框内勾选的工具加到智能体（持久化）。真机实证：确认后弹框关闭，右侧「工具」区出现该工具 chip(.hr-tag--close)，左侧「提示词」区多出「工具」段=工具提示词编辑框(默认『工具调用优化要求…』)、系统提示词变 {tools_inst}。",
+-      "params": {},
+-      "requires": [
+-        "工具选择器已开"
+-      ],
+-      "removes": [
+-        "工具选择器已开"
+-      ],
+-      "post": "工具选择器关闭（所选工具已加到智能体）。"
++    "state": {
++     "type": "string",
++     "required": false,
++     "desc": "present(缺省)=应存在 / absent=应不存在。"
++    }
++   },
++   "requires": [
++    "智能体详情已开"
++   ],
++   "post": "该工具 chip 处于期望的 在/不在 状态。"
++  },
++  "agent.assertDetailStateRestored": {
++   "desc": "R25 加强：对比当前详情页与 agent.snapshotDetailState 的快照是否【同一个界面】。硬断言(用户定标 2026-06-10)=两处记录的 URL 逐字符相等即可；工具 chips 仅写报告注解供人工核对、不判红。快照与对比结论都进报告注解。",
++   "params": {},
++   "requires": [
++    "智能体详情已开",
++    "详情快照已记"
++   ],
++   "post": "URL 与跳转前完全一致（= 返回后是同一界面）。"
++  },
++  "agent.selectModel": {
++   "desc": "在智能体详情选『应用模型』：模型字段=第一个 .hr-input.hr-is-readonly(leftLabel『模型』)，点其后缀 chevron→下拉(.common-model-select__overlay-option)里点含 modelName 的 .hr-select-option。真机实证(探针+用户录制)破解 §3.2 长期没攻下的模型选择。后置断模型字段 value 变为 modelName(动态)。",
++   "params": {
++    "modelName": {
++     "type": "string",
++     "required": false,
++     "desc": "要选的模型名(子串匹配下拉选项)，缺省 deepseek-v3；下拉项文如『平台deepseek-v3腾讯』，选后字段显示『deepseek-v3』。"
++    }
++   },
++   "requires": [
++    "智能体详情已开"
++   ],
++   "post": "模型字段 value 含 modelName（= 模型已选中）。"
++  },
++  "agent.save": {
++   "desc": "【破坏性】点智能体详情『保存』按钮持久化(模型/工具等改动)。后置断出现『保存成功/操作成功』toast(动态信号)。",
++   "params": {},
++   "requires": [
++    "智能体详情已开"
++   ],
++   "destructive": true,
++   "post": "出现保存成功提示。"
++  },
++  "agent.publish": {
++   "desc": "【破坏性·确认门高亮】点智能体详情『发布』按钮(可能弹确认框，自动点确认)→断『发布成功/操作成功』。注：用户录制实证测试在『保存』后即可跑，发布非测试前置；本原子供需要发布态的用例。",
++   "params": {},
++   "requires": [
++    "智能体详情已开"
++   ],
++   "destructive": true,
++   "post": "出现发布成功提示。"
++  },
++  "picker.toggleShowSelected": {
++   "desc": "切换工具选择器的「仅显示已选」开关。真机：无已选时切 ON→一级清空(0)；选了工具后切 ON→只剩含该工具的一级。可断言切后一级卡片数。",
++   "params": {
++    "state": {
++     "type": "string",
++     "required": false,
++     "desc": "on(缺省)/off。"
+     },
+-    "agent.removeToolByName": {
+-      "desc": "移除智能体已加的某工具：点其「工具」区 chip(.hr-tag--close 含该名)的关闭图标(.hr-tag__icon-close)。真机实证：移除后该 chip 消失、工具提示词编辑框默认文案随之消失。",
+-      "params": {
+-        "name": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "要移除的工具(MCP)名，如 预约挂号。"
+-        }
+-      },
+-      "requires": [
+-        "智能体详情已开"
+-      ],
+-      "post": "该工具 chip 被移除。"
++    "expectCount": {
++     "type": "number",
++     "required": false,
++     "desc": "断言切后可见一级卡片数；省略不断言。"
++    }
++   },
++   "requires": [
++    "工具选择器已开"
++   ],
++   "post": "「仅显示已选」处于目标态，（给了 expectCount 则）一级数符合期望。"
++  },
++  "picker.snapshotPrimaries": {
++   "desc": "快照工具选择器当前可见一级(MCP)卡片的【有序】名称列表(按 DOM 顺序，写入 ctx.pickerPrimaries)——给「切换显示全部·按原始顺序」用例做基线。后置断言至少抓到 1 个一级(防空快照假绿)。需先 agent.openToolPicker。",
++   "params": {},
++   "requires": [
++    "工具选择器已开"
++   ],
++   "provides": [
++    "选择器一级基线已记"
++   ],
++   "post": "ctx.pickerPrimaries = 当前有序一级名列表(非空)。"
++  },
++  "picker.assertPrimariesRestored": {
++   "desc": "L1：断言「显示全部」(切『仅显示已选』OFF)后，可见一级(MCP)卡片与 ctx.pickerPrimaries 基线【条数+顺序完全一致】——证明切回显示全部恢复了原始顺序。需先 picker.snapshotPrimaries 抓基线。",
++   "params": {},
++   "requires": [
++    "工具选择器已开",
++    "选择器一级基线已记"
++   ],
++   "post": "当前有序一级名列表 === ctx.pickerPrimaries（按原始顺序恢复）。"
++  },
++  "picker.cancel": {
++   "desc": "点工具选择器「取消」关闭对话框（不持久化选择，保持自包含）。",
++   "params": {},
++   "requires": [
++    "工具选择器已开"
++   ],
++   "removes": [
++    "工具选择器已开"
++   ],
++   "post": "工具选择器对话框关闭。"
++  },
++  "agent.confirmToolPicker": {
++   "desc": "点工具选择器「确认」把弹框内勾选的工具加到智能体（持久化）。真机实证：确认后弹框关闭，右侧「工具」区出现该工具 chip(.hr-tag--close)，左侧「提示词」区多出「工具」段=工具提示词编辑框(默认『工具调用优化要求…』)、系统提示词变 {tools_inst}。",
++   "params": {},
++   "requires": [
++    "工具选择器已开"
++   ],
++   "removes": [
++    "工具选择器已开"
++   ],
++   "post": "工具选择器关闭（所选工具已加到智能体）。"
++  },
++  "agent.removeToolByName": {
++   "desc": "移除智能体已加的某工具：点其「工具」区 chip(.hr-tag--close 含该名)的关闭图标(.hr-tag__icon-close)。真机实证：移除后该 chip 消失、工具提示词编辑框默认文案随之消失。",
++   "params": {
++    "name": {
++     "type": "string",
++     "required": true,
++     "desc": "要移除的工具(MCP)名，如 预约挂号。"
++    }
++   },
++   "requires": [
++    "智能体详情已开"
++   ],
++   "post": "该工具 chip 被移除。"
++  },
++  "assert.textHidden": {
++   "desc": "L1：断言页面【不】出现某段文字（toBeHidden，含未挂载）——用于「移除后某元素应消失」类用例（如移除工具后工具提示词编辑框默认文案『工具调用优化要求』应消失）。",
++   "params": {
++    "text": {
++     "type": "string",
++     "required": true,
++     "desc": "不应出现的文字（子串匹配）。"
+     },
+-    "assert.textHidden": {
+-      "desc": "L1：断言页面【不】出现某段文字（toBeHidden，含未挂载）——用于「移除后某元素应消失」类用例（如移除工具后工具提示词编辑框默认文案『工具调用优化要求』应消失）。",
+-      "params": {
+-        "text": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "不应出现的文字（子串匹配）。"
+-        },
+-        "timeoutMs": {
+-          "type": "number",
+-          "required": false,
+-          "desc": "等待消失的超时，缺省 8000。"
+-        }
+-      },
+-      "post": "页面不出现该文字。"
++    "timeoutMs": {
++     "type": "number",
++     "required": false,
++     "desc": "等待消失的超时，缺省 8000。"
++    }
++   },
++   "post": "页面不出现该文字。"
++  },
++  "agent.delete": {
++   "desc": "【破坏性·清理】按本次 agent.create 的同源名称模板搜索智能体，目标记录恰一才触发删除，只授权该触发动作因果产生的确认弹层，确认后重搜并要求目标记录精确归零。任一绑定或后置回读失败都 fail-closed，不得吞清理失败。",
++   "params": {
++    "name": {
++     "type": "string",
++     "required": true,
++     "desc": "与前序 agent.create 同一 atl_ 名称基；编译器绑定为同一 {{uniqueName}} 模板。"
++    }
++   },
++   "requires": [
++    "已登录"
++   ],
++   "provides": [
++    "在智能体管理页"
++   ],
++   "removes": [
++    "测试面板已开",
++    "节点抽屉已开",
++    "工具选择器已开"
++   ],
++   "destructive": true,
++   "entityNameParam": "name",
++   "post": "同源目标在加载结束后连续 3000 ms 精确计数为零；加载态、目标重现、超时或样本不足均 fail-closed。"
++  },
++  "chat.sendAndWait": {
++   "desc": "逐字符输入消息并发送，等 LLM 流式接口结束 + 助手气泡文本稳定。本 UI send 触发与 wait 不可分，故合并为一个原子（忠于现有实现，不为对齐设计图拆出脆边界）。",
++   "params": {
++    "prompt": {
++     "type": "string",
++     "required": true,
++     "desc": "打进对话框的消息文本。"
+     },
+-    "agent.delete": {
+-      "desc": "【破坏性·清理】按本次 agent.create 的同源名称模板搜索智能体，目标记录恰一才触发删除，只授权该触发动作因果产生的确认弹层，确认后重搜并要求目标记录精确归零。任一绑定或后置回读失败都 fail-closed，不得吞清理失败。",
+-      "params": {
+-        "name": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "与前序 agent.create 同一 atl_ 名称基；编译器绑定为同一 {{uniqueName}} 模板。"
+-        }
+-      },
+-      "requires": [
+-        "已登录"
+-      ],
+-      "provides": [
+-        "在智能体管理页"
+-      ],
+-      "removes": [
+-        "测试面板已开",
+-        "节点抽屉已开",
+-        "工具选择器已开"
+-      ],
+-      "destructive": true,
+-      "entityNameParam": "name",
+-      "post": "同源目标在加载结束后连续 3000 ms 精确计数为零；加载态、目标重现、超时或样本不足均 fail-closed。"
++    "streamUrlPattern": {
++     "type": "string",
++     "required": false,
++     "desc": "LLM 流式接口 URL 子串；缺省 /ai-api/tester/agent/stream。"
+     },
+-    "chat.sendAndWait": {
+-      "desc": "逐字符输入消息并发送，等 LLM 流式接口结束 + 助手气泡文本稳定。本 UI send 触发与 wait 不可分，故合并为一个原子（忠于现有实现，不为对齐设计图拆出脆边界）。",
+-      "params": {
+-        "prompt": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "打进对话框的消息文本。"
+-        },
+-        "streamUrlPattern": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "LLM 流式接口 URL 子串；缺省 /ai-api/tester/agent/stream。"
+-        },
+-        "replySelector": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "助手回复气泡选择器；缺省 .hr-chat__text__assistant（断言只读它，不读整页避免命中用户输入回显）。"
+-        },
+-        "sendIconSelector": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "发送小箭头选择器；缺省 .hr-icon.hr-icon-arrow-up。"
+-        }
+-      },
+-      "requires": [
+-        "测试面板已开"
+-      ],
+-      "post": "助手气泡出现非空文本且 2s 内稳定（产物 replyText 写入 ctx 供后续原子用）。"
++    "replySelector": {
++     "type": "string",
++     "required": false,
++     "desc": "助手回复气泡选择器；缺省 .hr-chat__text__assistant（断言只读它，不读整页避免命中用户输入回显）。"
+     },
+-    "assert.bubble": {
+-      "desc": "对 ctx.replyText（助手气泡原文）做软期望子串判定，只标注不判红（L2，阶段一可选）。",
+-      "params": {
+-        "mustInclude": {
+-          "type": "string[]",
+-          "required": false,
+-          "desc": "应包含子串（未命中只标注）。"
+-        },
+-        "mustNotInclude": {
+-          "type": "string[]",
+-          "required": false,
+-          "desc": "不应包含子串（命中只标注）。"
+-        }
+-      },
+-      "post": "（软）命中与否进注解，不影响 pass/fail。"
++    "sendIconSelector": {
++     "type": "string",
++     "required": false,
++     "desc": "发送小箭头选择器；缺省 .hr-icon.hr-icon-arrow-up。"
++    }
++   },
++   "requires": [
++    "测试面板已开"
++   ],
++   "post": "助手气泡出现非空文本且 2s 内稳定（产物 replyText 写入 ctx 供后续原子用）。"
++  },
++  "assert.bubble": {
++   "desc": "对 ctx.replyText（助手气泡原文）做软期望子串判定，只标注不判红（L2，阶段一可选）。",
++   "params": {
++    "mustInclude": {
++     "type": "string[]",
++     "required": false,
++     "desc": "应包含子串（未命中只标注）。"
+     },
+-    "assert.noErrorToast": {
+-      "desc": "L1 红线兜底：断言页面没有「操作失败/系统异常/网络错误」等错误提示弹窗。命中即原子失败判红——逮 app 拒绝/低级错。【注：toast 选择器待真机确认，见 _atoms.ts 注释】",
+-      "params": {
+-        "phrases": {
+-          "type": "string[]",
+-          "required": false,
+-          "desc": "判错短语；缺省 操作失败/系统异常/网络错误/请求失败。"
+-        }
+-      },
+-      "post": "无可见错误 toast（有则判红）。"
++    "mustNotInclude": {
++     "type": "string[]",
++     "required": false,
++     "desc": "不应包含子串（命中只标注）。"
++    }
++   },
++   "post": "（软）命中与否进注解，不影响 pass/fail。"
++  },
++  "assert.noErrorToast": {
++   "desc": "L1 红线兜底：断言页面没有「操作失败/系统异常/网络错误」等错误提示弹窗。命中即原子失败判红——逮 app 拒绝/低级错。【注：toast 选择器待真机确认，见 _atoms.ts 注释】",
++   "params": {
++    "phrases": {
++     "type": "string[]",
++     "required": false,
++     "desc": "判错短语；缺省 操作失败/系统异常/网络错误/请求失败。"
++    }
++   },
++   "post": "无可见错误 toast（有则判红）。"
++  },
++  "assert.onPage": {
++   "desc": "L1：断言当前页 URL 含指定片段——用来判跳转（如 /process/detail=进了画布、/agent/detail=智能体详情、/process/list=工作流列表）。不含即判红。",
++   "params": {
++    "urlIncludes": {
++     "type": "string",
++     "required": true,
++     "desc": "期望 URL 含的片段。"
+     },
+-    "assert.onPage": {
+-      "desc": "L1：断言当前页 URL 含指定片段——用来判跳转（如 /process/detail=进了画布、/agent/detail=智能体详情、/process/list=工作流列表）。不含即判红。",
+-      "params": {
+-        "urlIncludes": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "期望 URL 含的片段。"
+-        },
+-        "label": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "人类可读页名（报告显示用）。"
+-        }
+-      },
+-      "post": "当前 URL 含指定片段。"
++    "label": {
++     "type": "string",
++     "required": false,
++     "desc": "人类可读页名（报告显示用）。"
++    }
++   },
++   "post": "当前 URL 含指定片段。"
++  },
++  "assert.textVisible": {
++   "desc": "L1：断言页面出现某段可见文字（如『请先配置数据库』『不支持发布』『发布成功』）。没出现即判红——这是这批用例最常用的检查。",
++   "params": {
++    "text": {
++     "type": "string",
++     "required": true,
++     "desc": "期望出现的文字（子串匹配）。"
+     },
+-    "assert.textVisible": {
+-      "desc": "L1：断言页面出现某段可见文字（如『请先配置数据库』『不支持发布』『发布成功』）。没出现即判红——这是这批用例最常用的检查。",
+-      "params": {
+-        "text": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "期望出现的文字（子串匹配）。"
+-        },
+-        "timeoutMs": {
+-          "type": "number",
+-          "required": false,
+-          "desc": "等待出现的超时，缺省 15000。"
+-        }
+-      },
+-      "post": "页面出现该文字。"
++    "timeoutMs": {
++     "type": "number",
++     "required": false,
++     "desc": "等待出现的超时，缺省 15000。"
++    }
++   },
++   "post": "页面出现该文字。"
++  },
++  "assert.buttonState": {
++   "desc": "L1：断言某按钮的状态——用于「支持/不支持某操作」类用例（真机：未发布编辑器无『导出』、有『保存/发布』；发布后有『导出/新建版本』、无『保存/发布』）。",
++   "params": {
++    "name": {
++     "type": "string",
++     "required": true,
++     "desc": "按钮可见名（子串匹配），如 导出/保存/发布/新建版本。"
+     },
+-    "assert.buttonState": {
+-      "desc": "L1：断言某按钮的状态——用于「支持/不支持某操作」类用例（真机：未发布编辑器无『导出』、有『保存/发布』；发布后有『导出/新建版本』、无『保存/发布』）。",
+-      "params": {
+-        "name": {
+-          "type": "string",
+-          "required": true,
+-          "desc": "按钮可见名（子串匹配），如 导出/保存/发布/新建版本。"
+-        },
+-        "state": {
+-          "type": "string",
+-          "required": false,
+-          "desc": "present(缺省,存在可见)/absent(不存在)/enabled(可点)/disabled(置灰)。"
+-        },
+-        "timeoutMs": {
+-          "type": "number",
+-          "required": false,
+-          "desc": "等待超时，缺省 10000。"
+-        }
+-      },
+-      "post": "该按钮处于期望状态。"
++    "state": {
++     "type": "string",
++     "required": false,
++     "desc": "present(缺省,存在可见)/absent(不存在)/enabled(可点)/disabled(置灰)。"
+     },
+-    "evidence.capture": {
+-      "desc": "留证据：整页截图 + 助手气泡原文（判定铁证）+ 整页文本（仅留档，切勿据它判泄露）。",
+-      "params": {},
+-      "post": "证据附件已 attach。"
++    "timeoutMs": {
++     "type": "number",
++     "required": false,
++     "desc": "等待超时，缺省 10000。"
++    }
++   },
++   "post": "该按钮处于期望状态。"
++  },
++  "evidence.capture": {
++   "desc": "留证据：整页截图 + 助手气泡原文（判定铁证）+ 整页文本（仅留档，切勿据它判泄露）。",
++   "params": {},
++   "post": "证据附件已 attach。"
++  },
++  "chat.closeTestPanel": {
++   "desc": "关闭右侧测试面板抽屉。",
++   "params": {},
++   "requires": [
++    "测试面板已开"
++   ],
++   "removes": [
++    "测试面板已开"
++   ],
++   "post": "抽屉关闭。"
++  },
++  "final": {
++   "desc": "回到列表并留最终状态（截图 + URL + DOM）。",
++   "params": {},
++   "requires": [
++    "智能体详情已开"
++   ],
++   "provides": [
++    "在智能体管理页"
++   ],
++   "post": "最终状态证据已 attach。"
++  },
++  "workflow.bindAgent": {
++   "desc": "在已打开的节点配置抽屉里，把智能体绑定为指定名称（关系原子：source=工作流、target=智能体，双边独立锁定；多匹配/缺席 fail-closed 绝不 first）。",
++   "params": {
++    "nodeLabel": {
++     "type": "string",
++     "required": true,
++     "desc": "节点标题（域锁：该节点配置抽屉，前置原子 workflow.openNode 已开）。"
+     },
+-    "chat.closeTestPanel": {
+-      "desc": "关闭右侧测试面板抽屉。",
+-      "params": {},
+-      "requires": [
+-        "测试面板已开"
+-      ],
+-      "removes": [
+-        "测试面板已开"
+-      ],
+-      "post": "抽屉关闭。"
++    "agentName": {
++     "type": "string",
++     "required": true,
++     "desc": "要选中的智能体名称（选项精确匹配 + 选中值精确回读双证）。"
+     },
+-    "final": {
+-      "desc": "回到列表并留最终状态（截图 + URL + DOM）。",
+-      "params": {},
+-      "requires": [
+-        "智能体详情已开"
+-      ],
+-      "provides": [
+-        "在智能体管理页"
+-      ],
+-      "post": "最终状态证据已 attach。"
++    "agentCode": {
++     "type": "string",
++     "required": false,
++     "desc": "智能体编码（可选，供带编码的选择控件收敛；hermetic 轨未消费、真机配方复核后接入）。"
+     }
++   },
++   "requires": [
++    "节点抽屉已开"
++   ],
++   "provides": [
++    "节点智能体已绑定"
++   ],
++   "post": "选择控件选中值【精确】等于 agentName（抽屉内回读）。"
+   }
++ }
+ }
+diff --git a/lib/compile-atoms.mjs b/lib/compile-atoms.mjs
+index d84416e..b8b7e03 100644
+--- a/lib/compile-atoms.mjs
++++ b/lib/compile-atoms.mjs
+@@ -18,6 +18,7 @@ import {
+ } from './agent-tool-compile.mjs';
+ import { isAgentToolSpecialAction, performAgentToolAction } from './agent-tool-actions.mjs';
+ import { projectCompileEntityProvenance } from './entity-semantic-lock-preflight.mjs';
++import { resolveAgentSearchTarget } from './agent-search-gate.mjs';
+ 
+ export const ROUTE_LIST = '/ai-manager/process/list';
+ // 编译分派表 = 单一事实源（codex R1-F1）：atom → 编译函数；COMPILE_KNOWN_ATOMS 由其键派生、compileAtomStep
+@@ -37,6 +38,7 @@ const COMPILE_ATOM_COMPILERS = Object.assign(Object.create(null), {
+   'workflow.openNode': compileWorkflowOpenNode,
+   'workflow.selectNodeDropdown': compileWorkflowSelectNodeDropdown,
+   'workflow.setNodeField': compileWorkflowSetNodeField,
++  'workflow.bindAgent': compileWorkflowBindAgent,
+   'nav.agentManagement': compileNavAgentManagement,
+   'nav.workflowManagement': compileNavWorkflowManagement,
+   'agent.searchOpen': compileAgentSearchOpen,
+@@ -1099,13 +1101,78 @@ async function compileWorkflowSetNodeField(run, params) {
+   }
+ }
+ 
++// workflow.bindAgent（entity-ui-wiring W2，关系原子 relation/[source,target]——策略 preflight:51 已冻结，
++// 四层锁链数据驱动零改动）：在已打开的节点配置抽屉里把智能体绑定为 agentName。配方按 fake-sut 抽屉模式
++// hermetic 先行（GRILL D1，真机配方四停站复核挂 prd observability route:human）：触发器（.agent-bind-select
++// 可见恰一）→ 选项浮层精确选中（多匹配/缺席经点击身份门 fail-closed，绝不 first）→ 触发器值【精确】回读
++// 双证（openNode/selectNodeDropdown F1 精确回读同律：子串会把选错/半选误判选对）。
++async function compileWorkflowBindAgent(run, params) {
++  const i = run.newIntent();
++  const nodeLabel = String(params.nodeLabel ?? '');
++  const agentTemplate = String(params.agentName ?? '');
++  const agentName = instantiate(agentTemplate, run.ctx);
++  if (!nodeLabel.trim() || !agentName.trim()) {
++    run.blockers.push('workflow.bindAgent 参数缺失（nodeLabel/agentName 空）→ 硬阻断 fail-closed');
++    run.notes.push(run.blockers[run.blockers.length - 1]);
++    return;
++  }
++  // 触发器身份门：可见恰一才动，0/多/证不出硬阻断（点击身份门同口径；抽屉未开即 0）。
++  const triggers = run.page.locator('.agent-bind-select:visible');
++  const tcount = await triggers.count().catch(() => null);
++  if (tcount !== 1) {
++    run.blockers.push(`workflow.bindAgent「${nodeLabel}」智能体选择控件可见计数=${tcount ?? '证不出'}（期望恰 1）→ 硬阻断 fail-closed 不点`);
++    run.notes.push(run.blockers[run.blockers.length - 1]);
++    return;
++  }
++  // 触发器展开是条件步、不产 event（镜像 addNode 开面板/openTestPanel 采集先例）：绑定动作事件只有
++  // 「选中智能体」一步——非 unique 时唯一的 bindAgent 账面即选中步，绝无 acted=true 谎报。回放门同刻自行展开。
++  if ((await run.page.locator('.agent-bind-option:visible').count().catch(() => 0)) === 0) {
++    try { await triggers.first().click({ timeout: 5000 }); } catch {
++      run.blockers.push(`workflow.bindAgent「${nodeLabel}」选择控件触发器点不动 → 硬阻断 fail-closed`);
++      run.notes.push(run.blockers[run.blockers.length - 1]);
++      return;
++    }
++  }
++  // 选项浮层就位（有界等待；缺席照实计数交身份门，绝不无界等）。
++  try { await run.page.locator('.agent-bind-option').first().waitFor({ state: 'visible', timeout: 5000 }); } catch { /* 计数照实 */ }
++  const r2 = await run.emit({ intentId: i, atom: 'workflow.bindAgent', action: 'click', semantic: { kind: 'text', name: agentTemplate, exact: true }, text: agentTemplate, value: agentTemplate, nodeName: nodeLabel });
++  if (r2.resolution !== 'unique') {
++    // 同名双选项 ambiguous / 缺席 none：身份门 fail-closed 绝不 first；点名自身签名供 route:human 诊断。
++    run.blockers.push(`workflow.bindAgent 域内智能体选项「${agentName}」resolution=${r2.resolution}（count=${r2.candidateCount}）→ 硬阻断 fail-closed（多匹配绝不 first、缺席绝不猜）`);
++    run.notes.push(run.blockers[run.blockers.length - 1]);
++    return;
++  }
++  // 后置核验（registry post：选中值精确回读）：触发器值【精确】等于 agentName，证不出/不等硬阻断。
++  let got = null;
++  try { got = await run.page.locator('.agent-bind-select__value').first().textContent({ timeout: 3000 }); } catch { got = null; }
++  if (got !== agentName) {
++    run.blockers.push(`workflow.bindAgent 后置核验选中值回读证不出（回读=${got == null ? '证不出' : `「${got}」`}，期望精确「${agentName}」）→ 硬阻断（fail-closed）`);
++    run.notes.push(run.blockers[run.blockers.length - 1]);
++    return;
++  }
++  run.notes.push(`workflow.bindAgent 智能体已选中（节点「${nodeLabel}」，选中值〈${agentName}〉精确回读过，域锁+身份门+回读双证）`);
++}
++
+ async function compileAgentSearchOpen(run, params) {
+   const i = run.newIntent();
+   const SEARCH = { kind: 'role', role: 'textbox', name: AGENT_SEARCH_NAME, exact: true };
+-  await run.emit({ intentId: i, atom: 'agent.searchOpen', action: 'fill', semantic: SEARCH, value: params.searchKeyword });
++  // 编码收敛（entity-ui-wiring D2）：code 在场时搜索框填编码（placeholder 真机明文支持「名称或编码」），
++  // 点击仍按 openName 精确锚——code 只作输入侧收敛通道，不冒充平台 ID 读回（读回等真机 spike）。
++  const keyword = typeof params.code === 'string' && params.code.trim() !== '' ? params.code : params.searchKeyword;
++  await run.emit({ intentId: i, atom: 'agent.searchOpen', action: 'fill', semantic: SEARCH, value: keyword });
+   // 搜索需回车触发过滤（regress 实测）。
+   await run.emit({ intentId: i, atom: 'agent.searchOpen', action: 'press', key: 'Enter', semantic: SEARCH });
+-  const r = await run.emit({ intentId: i, atom: 'agent.searchOpen', action: 'click', semantic: { kind: 'text', name: params.openName, exact: false }, text: params.openName });
++  // 共享门（编译门=回放门同刻，A3）：精确锚 + 条目容器归属闸；多匹配/缺席/容器外硬阻断绝不点
++  // （旧 exact:false 子串命中会开错同名前缀/超集对象——A1 病灶）。
++  const target = instantiate(String(params.openName ?? ''), run.ctx);
++  const container = (run.profile && run.profile.agents && run.profile.agents.itemContainer) || '.agent-item';
++  const gate = await resolveAgentSearchTarget(run.page, { openName: target, containerSelector: container });
++  if (gate.resolution !== 'unique') {
++    run.blockers.push(`agent.searchOpen「${params.openName}」共享门裁定 ${gate.resolution}（candidateCount=${gate.candidateCount}）→ 硬阻断 fail-closed 不点（多匹配/缺席/容器外绝不 first）`);
++    run.notes.push(run.blockers[run.blockers.length - 1]);
++    return;
++  }
++  const r = await run.emit({ intentId: i, atom: 'agent.searchOpen', action: 'click', semantic: { kind: 'text', name: params.openName, exact: true }, text: params.openName });
+   // 后置条件（registry：provides 智能体详情已开）：「测试」按钮可见；仅本步 unique 才等（G2 失败步不堆等）。
+   if (r.resolution === 'unique') await run.page.getByRole('button', { name: '测试' }).waitFor({ state: 'visible', timeout: 30000 }).catch(() => {});
+ }
+diff --git a/lib/replay-actions.mjs b/lib/replay-actions.mjs
+index d491c02..2f30a83 100644
+--- a/lib/replay-actions.mjs
++++ b/lib/replay-actions.mjs
+@@ -7,6 +7,7 @@ import { findEquivalentAffordance } from './drift-probe.mjs';
+ import { performWorkflowDeleteConfirm, performWorkflowDeleteTrigger } from './workflow-delete-domain.mjs';
+ import { isAgentToolSpecialAction, performAgentToolAction } from './agent-tool-actions.mjs';
+ import { encodeInputReadback } from './replay-assert.mjs';
++import { resolveAgentSearchTarget } from './agent-search-gate.mjs';
+ 
+ function semanticLocator(page, ev) {
+   const s = ev.semantic;
+@@ -26,6 +27,8 @@ export async function performAction(page, ev, ctx) {
+   if (ev.action === 'selectOption') return await doSelect(page, ev, ctx);
+   if (ev.action === 'dragTo') return await doDragTo(page, ev);
+   if (isAgentToolSpecialAction(ev)) return await performAgentToolAction(page, ev, ctx);
++  if (ev.action === 'click' && ev.atom === 'agent.searchOpen') return await doAgentSearchOpen(page, ev, ctx);
++  if (ev.action === 'click' && ev.atom === 'workflow.bindAgent') return await doBindAgent(page, ev, ctx);
+   if (ev.action === 'click' && ev.atom === 'workflow.openNode') return await doOpenNode(page, ev);
+   if (ev.action === 'click' && ev.atom === 'workflow.selectNodeDropdown') return await doSelectNodeDropdown(page, ev);
+   if (ev.action === 'click' && ev.atom === 'workflow.deleteByName') {
+@@ -294,6 +297,64 @@ async function wideTriggerSnapshot(page) {
+ // 域内唯一才点（多匹配 ambiguous 绝不点、缺席回 none）；身份回读改为标题锚域三态（drawer-lock-hardening
+ // D5）：预点基线——单击前先数「可见且含精确、且标题文本自身可见」的抽屉，count>0 即无法把点后的抽屉
+ // 归因于本次单击（证不出）→ 绝不背书；点后恰一——回读要求域内恰 1（0 或 >1 同样证不出归因）。
++// agent.searchOpen 点击专用门（entity-ui-wiring W1）：消费 lib/agent-search-gate.mjs 共享门——
++// 编译门=回放门同刻（openNode F2 元教训，金牌 A3 以两侧 import 结构钉死）。精确锚+容器归属闸，
++// 多匹配 ambiguous 绝不 first、缺席/容器外 none/fail-closed。
++async function doAgentSearchOpen(page, ev, ctx) {
++  const raw = ev.semantic && typeof ev.semantic.name === 'string' ? ev.semantic.name : (typeof ev.text === 'string' ? ev.text : null);
++  const name = raw == null ? null : instantiate(raw, ctx);
++  if (!name || name.trim() === '') return { resolution: 'action_failed', candidateCount: 0, identityReadback: { ok: false } };
++  const gate = await resolveAgentSearchTarget(page, { openName: name });
++  if (gate.resolution === 'ambiguous') return { resolution: 'ambiguous', candidateCount: gate.candidateCount, identityReadback: { ok: false } };
++  if (gate.resolution !== 'unique') return { resolution: 'none', candidateCount: gate.candidateCount, identityReadback: { ok: false } };
++  try { await page.getByText(name, { exact: true }).click({ timeout: 10000 }); } catch {
++    return { resolution: 'action_failed', candidateCount: 1, identityReadback: { ok: false } };
++  }
++  return { resolution: 'unique', candidateCount: 1, identityReadback: { ok: true } };
++}
++
++// workflow.bindAgent 回放专用门（entity-ui-wiring W2）：单事件（选中智能体）；触发器展开是条件步
++// （与编译配方同刻——编译侧同样不为展开产 event）。触发器域锁可见恰一；选项多匹配 ambiguous 绝不 first、
++// 缺席 none、选中值【精确】回读不等即 action_failed（fail-closed）。
++async function doBindAgent(page, ev, ctx) {
++  const agentTemplate = typeof ev.value === 'string' && ev.value.trim() ? ev.value : null;
++  if (!agentTemplate) return { resolution: 'action_failed', candidateCount: 0, identityReadback: { ok: false } };
++  // 抽屉标题域锁（nodeName 供给通道，与 selectNodeDropdown 同律）：缺失/非法即硬阻断，绝不宽域猜。
++  if (nodeNameInvalid(ev.nodeName)) return { resolution: 'action_failed', candidateCount: 0, identityReadback: { ok: false } };
++  const agentName = instantiate(agentTemplate, ctx);
++  const bound = await pinNodeDrawer(page, ev.nodeName);
++  if (bound.status === 'none') return { resolution: 'none', candidateCount: 0, identityReadback: { ok: false } };
++  if (bound.status === 'ambiguous') return { resolution: 'ambiguous', candidateCount: bound.count, identityReadback: { ok: false } };
++  if (bound.status !== 'ok') return { resolution: 'action_failed', candidateCount: bound.count, identityReadback: { ok: false } };
++  try {
++  const triggers = bound.root.locator('.agent-bind-select:visible');
++  try { await triggers.first().waitFor({ state: 'visible', timeout: 5000 }); } catch { /* 计数照实 */ }
++  const tn = await triggers.count().catch(() => 0);
++  if (tn === 0) return { resolution: 'none', candidateCount: 0, identityReadback: { ok: false } };
++  if (tn > 1) return { resolution: 'ambiguous', candidateCount: tn, identityReadback: { ok: false } };
++  // 条件展开（脚手架步，不改动作账）：选项浮层未开才点触发器。
++  if ((await page.locator('.agent-bind-option:visible').count().catch(() => 0)) === 0) {
++    try { await triggers.first().click({ timeout: 5000 }); } catch {
++      return { resolution: 'action_failed', candidateCount: 1, identityReadback: { ok: false } };
++    }
++  }
++  const options = page.locator('.agent-bind-option:visible').filter({ hasText: exactTextRe(agentName) });
++  try { await options.first().waitFor({ state: 'visible', timeout: 5000 }); } catch { /* 计数照实 */ }
++  const n = await options.count().catch(() => 0);
++  if (n === 0) return { resolution: 'none', candidateCount: 0, identityReadback: { ok: false } };
++  if (n > 1) return { resolution: 'ambiguous', candidateCount: n, identityReadback: { ok: false } };
++  try { await options.first().click({ timeout: 5000 }); } catch {
++    return { resolution: 'action_failed', candidateCount: 1, identityReadback: { ok: false } };
++  }
++  let got = null;
++  try { got = await bound.root.locator('.agent-bind-select__value').first().textContent({ timeout: 3000 }); } catch { got = null; }
++  if (got !== agentName) return { resolution: 'action_failed', candidateCount: 1, identityReadback: { ok: false } };
++  return { resolution: 'unique', candidateCount: 1, identityReadback: { ok: true } };
++  } finally {
++    await disposeHandle(bound.rootHandle);
++  }
++}
++
+ async function doOpenNode(page, ev) {
+   const label = ev.semantic && ev.semantic.kind === 'text' && typeof ev.semantic.name === 'string' ? ev.semantic.name : null;
+   // trim 空门（codex r5 fail-open）：纯空白 label 经 nodeDrawerDomain 的 norm 归一成空串，会借空 target
+diff --git a/loop/prd-chiefcomplaint-smoke.json b/loop/prd-chiefcomplaint-smoke.json
+index 209ea00..b35ba90 100644
+--- a/loop/prd-chiefcomplaint-smoke.json
++++ b/loop/prd-chiefcomplaint-smoke.json
+@@ -4,7 +4,7 @@
+   "specPath": "docs/plans/chiefcomplaint-smoke/plan.md",
+   "testChecksums": {
+     "tests/_golden/chiefcomplaint-smoke.golden.mjs": "0a014f1ac56b12b8fca4e5cc81a1aa77ba725a8cb61755bd72d0042195ba7f4f",
+-    "tests/fixtures/chat-sut/server.mjs": "dd1c380299d8953e3db3b2bf303293de09e60e801605ed94318d15f98e4914ff"
++    "tests/fixtures/chat-sut/server.mjs": "7262aac8f26724c21ba3471e1ed4fbf68abe3a150c42d09fc529caa8e84eca6a"
+   },
+   "observability": [
+     {
+@@ -21,7 +21,7 @@
+         "node bin/casey.mjs selftest --tier1"
+       ],
+       "passes": true,
+-      "evidence": "gate@2026-07-03T07:05:13.590Z 全部 acceptance exit 0"
++      "evidence": "gate@2026-07-21T18:25:59.645Z 全部 acceptance exit 0"
+     },
+     {
+       "id": "s2-ripple-and-locks",
+@@ -31,7 +31,17 @@
+         "node tests/_golden/p5-replay-coverage.golden.mjs"
+       ],
+       "passes": true,
+-      "evidence": "gate@2026-07-03T07:06:28.115Z 全部 acceptance exit 0"
++      "evidence": "gate@2026-07-21T18:26:00.664Z 全部 acceptance exit 0"
++    }
++  ],
++  "resignLog": [
++    {
++      "at": "2026-07-22",
++      "by": "entity-ui-wiring 涟漪重签",
++      "files": [
++        "tests/fixtures/chat-sut/server.mjs"
++      ],
++      "reason": "registry/夹具纯加法（bindAgent 原子登记、chat-sut twins、fake-sut bindagent 三场景）+ 计数例翻 25→26；既有场景字节级零行为差见 docs/plans/entity-ui-wiring/evidence/"
+     }
+   ]
+ }
+diff --git a/loop/prd-drawer-lock-hardening.json b/loop/prd-drawer-lock-hardening.json
+index 64b784e..d8f8014 100644
+--- a/loop/prd-drawer-lock-hardening.json
++++ b/loop/prd-drawer-lock-hardening.json
+@@ -4,7 +4,7 @@
+   "specPath": "docs/plans/drawer-lock-hardening/plan.md",
+   "testChecksums": {
+     "tests/_golden/drawer-lock-hardening.golden.mjs": "709cfac6274f0d64d34ff3a06d118c4c01dbfeb3f1948341e8f16df600d3172b",
+-    "tests/fixtures/fake-sut/server.mjs": "b4c4d214b394d6109856b0dea7a13e3c05a32c6d6b51b56ec369dd849c6a313d",
++    "tests/fixtures/fake-sut/server.mjs": "387a31b6738909e2fd134b239ff2a6e9bf31dc59eb013d3256bca4dd7dd09554",
+     "tests/fixtures/fake-sut/CONTRACT.md": "5cc702248a6287247dbc34628f5881ba6c383bccb2c4ccd0fa1e468d2a540b7c"
+   },
+   "observability": [
+@@ -26,7 +26,7 @@
+         "node tests/_golden/flow-bridge.golden.mjs"
+       ],
+       "passes": true,
+-      "evidence": "gate@2026-07-21T02:47:24.371Z 全部 acceptance exit 0"
++      "evidence": "gate@2026-07-21T18:26:22.900Z 全部 acceptance exit 0"
+     },
+     {
+       "id": "s2-regression-and-selftest",
+@@ -38,7 +38,17 @@
+         "node bin/casey.mjs selftest --tier1"
+       ],
+       "passes": true,
+-      "evidence": "gate@2026-07-21T02:47:29.489Z 全部 acceptance exit 0"
++      "evidence": "gate@2026-07-21T18:26:28.912Z 全部 acceptance exit 0"
++    }
++  ],
++  "resignLog": [
++    {
++      "at": "2026-07-22",
++      "by": "entity-ui-wiring 涟漪重签",
++      "files": [
++        "tests/fixtures/fake-sut/server.mjs"
++      ],
++      "reason": "registry/夹具纯加法（bindAgent 原子登记、chat-sut twins、fake-sut bindagent 三场景）+ 计数例翻 25→26；既有场景字节级零行为差见 docs/plans/entity-ui-wiring/evidence/"
+     }
+   ]
+ }
+diff --git a/loop/prd-flow-bridge.json b/loop/prd-flow-bridge.json
+index a18a8ce..e362bac 100644
+--- a/loop/prd-flow-bridge.json
++++ b/loop/prd-flow-bridge.json
+@@ -3,7 +3,7 @@
+   "task": "相1 LLM flow 草拟桥 flow-bridge（full）：规范 TestCase（嵌套 steps）+ CLI 外 LLM mapping → compile 吃的 flow（原子+参数）。lib/flow-bridge.mjs 纯函数 buildFlow + validateBridge 三闸（投影忠实：每 TestCase.steps[].intentId 被覆盖 + 无凭空 intentId；编译知识允许集：atom 可编译，补 compile-gate 放行册内无编译知识原子的缝——真缝 nav.workflowManagement；复用 compile-gate.validateDraft 结构+破坏性前缀+状态机）；bin/flow-bridge.mjs 薄 CLI（caseId 一致+路径安全+cred-gate，任一闸拒 exit 65 零落盘）；lib/compile-atoms.mjs 加法导出 COMPILE_KNOWN_ATOMS/isCompilableAtom（:259 throw 同源，行为一字不变）；bin/casey.mjs flow-bridge 分发接线。LLM 在 CLI 外产 mapping、进程零 LLM 零真机（测时 mock）。决策全表 docs/plans/flow-bridge/proposed/GRILL.md。",
+   "specPath": "docs/plans/flow-bridge/plan.md",
+   "testChecksums": {
+-    "tests/_golden/flow-bridge.golden.mjs": "1864f99249d688cf4bb52e0e3bb0659e8c702bcc804927afcda6137cd7e6d701"
++    "tests/_golden/flow-bridge.golden.mjs": "28da2a24405b75e9c3105f2bc4a070cbe736d81b767fe8c702c9f7bcee2c2b20"
+   },
+   "observability": [
+     {
+@@ -21,7 +21,7 @@
+         "node bin/casey.mjs selftest --tier1"
+       ],
+       "passes": true,
+-      "evidence": "gate@2026-07-21T02:47:54.591Z 全部 acceptance exit 0"
++      "evidence": "gate@2026-07-21T18:24:33.198Z 全部 acceptance exit 0"
+     },
+     {
+       "id": "s2-ripple-locks",
+@@ -33,5 +33,15 @@
+       "passes": false,
+       "evidence": ""
+     }
++  ],
++  "resignLog": [
++    {
++      "at": "2026-07-22",
++      "by": "entity-ui-wiring 涟漪重签",
++      "files": [
++        "tests/_golden/flow-bridge.golden.mjs"
++      ],
++      "reason": "registry/夹具纯加法（bindAgent 原子登记、chat-sut twins、fake-sut bindagent 三场景）+ 计数例翻 25→26；既有场景字节级零行为差见 docs/plans/entity-ui-wiring/evidence/"
++    }
+   ]
+ }
+diff --git a/loop/prd-integrate-regress-agent-tool-slice.json b/loop/prd-integrate-regress-agent-tool-slice.json
+index c8e4661..529d012 100644
+--- a/loop/prd-integrate-regress-agent-tool-slice.json
++++ b/loop/prd-integrate-regress-agent-tool-slice.json
+@@ -3,10 +3,10 @@
+   "task": "把 regress 智能体工具首纵切重放到最新 dev，保留目标基线信任边界并只做零 SUT 集成验收。",
+   "specPath": "docs/plans/integrate-regress-agent-tool-slice/plan.md",
+   "testChecksums": {
+-    "tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs": "2e213e76170046864844c7033a7f6b200c290570dbe88a32ec2cf50fd643ef06",
++    "tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs": "d3ba8ad3f4660e3b966fab5250578b7b46944f2b16e9016943c31c44122bb4d5",
+     "tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs": "5e41993bb9deaa831c0eafb255455cb5af2d07c8fd26f03e706b98423c4c1dec",
+     "tests/_golden/regress-agent-tool-integration-hardening.zero-sut.golden.mjs": "bea7927d8c2f8b9c3491a53237bff6b8168c595cb9fc7e1d3d234c936e479f3d",
+-    "tests/_golden/flow-bridge.golden.mjs": "1864f99249d688cf4bb52e0e3bb0659e8c702bcc804927afcda6137cd7e6d701",
++    "tests/_golden/flow-bridge.golden.mjs": "28da2a24405b75e9c3105f2bc4a070cbe736d81b767fe8c702c9f7bcee2c2b20",
+     "docs/plans/regress-agent-tool-first-slice/candidate/agent-tool-add.flow.json": "544052807f28c27e619cd6eb5c304b691bb222b06ee4e0a3afb2f1ff04ca6cbe"
+   },
+   "observability": [
+@@ -27,7 +27,18 @@
+         "node tests/_golden/flow-bridge.golden.mjs"
+       ],
+       "passes": true,
+-      "evidence": "gate@2026-07-21T03:11:32.472Z 全部 acceptance exit 0"
++      "evidence": "gate@2026-07-21T18:24:04.308Z 全部 acceptance exit 0"
++    }
++  ],
++  "resignLog": [
++    {
++      "at": "2026-07-22",
++      "by": "entity-ui-wiring 涟漪重签",
++      "files": [
++        "tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs",
++        "tests/_golden/flow-bridge.golden.mjs"
++      ],
++      "reason": "registry/夹具纯加法（bindAgent 原子登记、chat-sut twins、fake-sut bindagent 三场景）+ 计数例翻 25→26；既有场景字节级零行为差见 docs/plans/entity-ui-wiring/evidence/"
+     }
+   ]
+ }
+diff --git a/loop/prd-p5-replay.json b/loop/prd-p5-replay.json
+index 2c489ad..17c5a74 100644
+--- a/loop/prd-p5-replay.json
++++ b/loop/prd-p5-replay.json
+@@ -6,7 +6,7 @@
+     "tests/_golden/p5-replay.golden.mjs": "8a368f628ba19b0d487744e9e74e873966bb0fc4cb4d6d42e7ce1456ed1529c1",
+     "tests/_golden/p5-replay-coverage.golden.mjs": "3e46e9a7fdf6824ed17e3a3c83e406ff55e95a2e5bb279d6bbdb92d67f7e2706",
+     "tests/_golden/fixtures/p5/replay-cases.json": "931c708956e6abb0fa2fad0e4ad081b203da884d9a08894dd0828a5e216524b0",
+-    "tests/fixtures/fake-sut/server.mjs": "b4c4d214b394d6109856b0dea7a13e3c05a32c6d6b51b56ec369dd849c6a313d",
++    "tests/fixtures/fake-sut/server.mjs": "387a31b6738909e2fd134b239ff2a6e9bf31dc59eb013d3256bca4dd7dd09554",
+     "tests/fixtures/fake-sut/CONTRACT.md": "5cc702248a6287247dbc34628f5881ba6c383bccb2c4ccd0fa1e468d2a540b7c",
+     "tests/_golden/fixtures/seams/events.fixture.json": "49545e6efe597c33d9eeaaff65e9f8f9e268e125509533ccf54026a70023dd14"
+   },
+@@ -32,8 +32,8 @@
+       "acceptance": [
+         "node bin/casey.mjs selftest --tier1"
+       ],
+-      "passes": false,
+-      "evidence": ""
++      "passes": true,
++      "evidence": "gate@2026-07-21T18:26:34.700Z 全部 acceptance exit 0"
+     },
+     {
+       "id": "s2-failsafe-coverage",
+@@ -43,7 +43,17 @@
+         "node tests/_golden/p5-replay-coverage.golden.mjs"
+       ],
+       "passes": true,
+-      "evidence": "gate@2026-07-19T07:05:52.399Z 全部 acceptance exit 0"
++      "evidence": "gate@2026-07-21T18:26:35.628Z 全部 acceptance exit 0"
++    }
++  ],
++  "resignLog": [
++    {
++      "at": "2026-07-22",
++      "by": "entity-ui-wiring 涟漪重签",
++      "files": [
++        "tests/fixtures/fake-sut/server.mjs"
++      ],
++      "reason": "registry/夹具纯加法（bindAgent 原子登记、chat-sut twins、fake-sut bindagent 三场景）+ 计数例翻 25→26；既有场景字节级零行为差见 docs/plans/entity-ui-wiring/evidence/"
+     }
+   ]
+ }
+diff --git a/loop/prd-regress-agent-tool-first-slice.json b/loop/prd-regress-agent-tool-first-slice.json
+index e7108da..fcf568b 100644
+--- a/loop/prd-regress-agent-tool-first-slice.json
++++ b/loop/prd-regress-agent-tool-first-slice.json
+@@ -3,7 +3,7 @@
+   "task": "regress 智能体工具首纵切（full）：只读提取 agent_tool_add 业务语义，新增七个真实编译原子与 fail-closed 动作接缝；不迁旧代码、报告或 trace，不运行任何假 SUT。",
+   "specPath": "docs/plans/regress-agent-tool-first-slice/plan.md",
+   "testChecksums": {
+-    "tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs": "2e213e76170046864844c7033a7f6b200c290570dbe88a32ec2cf50fd643ef06",
++    "tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs": "d3ba8ad3f4660e3b966fab5250578b7b46944f2b16e9016943c31c44122bb4d5",
+     "tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs": "5e41993bb9deaa831c0eafb255455cb5af2d07c8fd26f03e706b98423c4c1dec",
+     "docs/plans/regress-agent-tool-first-slice/candidate/agent-tool-add.flow.json": "544052807f28c27e619cd6eb5c304b691bb222b06ee4e0a3afb2f1ff04ca6cbe"
+   },
+@@ -28,7 +28,17 @@
+         "node tests/_golden/flow-bridge.golden.mjs"
+       ],
+       "passes": true,
+-      "evidence": "gate@2026-07-21T02:53:01.690Z 全部 acceptance exit 0"
++      "evidence": "gate@2026-07-21T18:23:36.169Z 全部 acceptance exit 0"
++    }
++  ],
++  "resignLog": [
++    {
++      "at": "2026-07-22",
++      "by": "entity-ui-wiring 涟漪重签",
++      "files": [
++        "tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs"
++      ],
++      "reason": "registry/夹具纯加法（bindAgent 原子登记、chat-sut twins、fake-sut bindagent 三场景）+ 计数例翻 25→26；既有场景字节级零行为差见 docs/plans/entity-ui-wiring/evidence/"
+     }
+   ]
+ }
+diff --git a/loop/prd-regress-wf-node-script.json b/loop/prd-regress-wf-node-script.json
+index a580a33..6d3cde8 100644
+--- a/loop/prd-regress-wf-node-script.json
++++ b/loop/prd-regress-wf-node-script.json
+@@ -3,7 +3,7 @@
+   "task": "迁移 regress 脚本转换节点纵切：补 workflow.assertNodeFieldValue 命名断言原子与 inputReadback 精确回读接缝；不运行假被测系统，真实行为保持 route:human。",
+   "specPath": "docs/plans/regress-wf-node-script/plan.md",
+   "testChecksums": {
+-    "tests/_golden/regress-wf-node-script.zero-sut.golden.mjs": "9cda784ee55803acfce2177163486601766ed645b73372fc7ff258e6ae5a69eb"
++    "tests/_golden/regress-wf-node-script.zero-sut.golden.mjs": "17c792c70284e3ea7482803b3ab7792a41184b229671639a644e1956e5955fa0"
+   },
+   "observability": [
+     {
+@@ -25,7 +25,17 @@
+         "node tests/_golden/p4-drafter.golden.mjs"
+       ],
+       "passes": true,
+-      "evidence": "gate@2026-07-16T07:17:59.090Z 全部 acceptance exit 0"
++      "evidence": "gate@2026-07-21T18:23:40.353Z 全部 acceptance exit 0"
++    }
++  ],
++  "resignLog": [
++    {
++      "at": "2026-07-22",
++      "by": "entity-ui-wiring 涟漪重签",
++      "files": [
++        "tests/_golden/regress-wf-node-script.zero-sut.golden.mjs"
++      ],
++      "reason": "registry/夹具纯加法（bindAgent 原子登记、chat-sut twins、fake-sut bindagent 三场景）+ 计数例翻 25→26；既有场景字节级零行为差见 docs/plans/entity-ui-wiring/evidence/"
+     }
+   ]
+ }
+diff --git a/loop/prd-replay-nth-visible-hardening.json b/loop/prd-replay-nth-visible-hardening.json
+index 424f959..82e3c55 100644
+--- a/loop/prd-replay-nth-visible-hardening.json
++++ b/loop/prd-replay-nth-visible-hardening.json
+@@ -4,7 +4,7 @@
+   "specPath": "docs/plans/replay-nth-visible-hardening/plan.md",
+   "testChecksums": {
+     "tests/_golden/replay-nth-visible-hardening.golden.mjs": "78cc7d18fcbf87ecfbe686c6fa37f3ef6410d6d0214ff4c57a5b9b96c5c360c6",
+-    "tests/fixtures/fake-sut/server.mjs": "b4c4d214b394d6109856b0dea7a13e3c05a32c6d6b51b56ec369dd849c6a313d"
++    "tests/fixtures/fake-sut/server.mjs": "387a31b6738909e2fd134b239ff2a6e9bf31dc59eb013d3256bca4dd7dd09554"
+   },
+   "stories": [
+     {
+@@ -26,7 +26,17 @@
+         "node bin/casey.mjs selftest --tier1"
+       ],
+       "passes": true,
+-      "evidence": "gate@2026-07-21T02:53:27.178Z 全部 acceptance exit 0"
++      "evidence": "gate@2026-07-21T18:27:04.320Z 全部 acceptance exit 0"
++    }
++  ],
++  "resignLog": [
++    {
++      "at": "2026-07-22",
++      "by": "entity-ui-wiring 涟漪重签",
++      "files": [
++        "tests/fixtures/fake-sut/server.mjs"
++      ],
++      "reason": "registry/夹具纯加法（bindAgent 原子登记、chat-sut twins、fake-sut bindagent 三场景）+ 计数例翻 25→26；既有场景字节级零行为差见 docs/plans/entity-ui-wiring/evidence/"
+     }
+   ]
+ }
+diff --git a/loop/prd-replay-settle-mount.json b/loop/prd-replay-settle-mount.json
+index f6944a6..a066369 100644
+--- a/loop/prd-replay-settle-mount.json
++++ b/loop/prd-replay-settle-mount.json
+@@ -4,7 +4,7 @@
+   "specPath": "docs/plans/replay-settle-mount/plan.md",
+   "testChecksums": {
+     "tests/_golden/replay-settle-mount.golden.mjs": "cf81e01489c627b77a9c2243eda38750b230d16a655f8e151f8f732e03ee3adb",
+-    "tests/fixtures/fake-sut/server.mjs": "b4c4d214b394d6109856b0dea7a13e3c05a32c6d6b51b56ec369dd849c6a313d",
++    "tests/fixtures/fake-sut/server.mjs": "387a31b6738909e2fd134b239ff2a6e9bf31dc59eb013d3256bca4dd7dd09554",
+     "tests/fixtures/fake-sut/CONTRACT.md": "5cc702248a6287247dbc34628f5881ba6c383bccb2c4ccd0fa1e468d2a540b7c"
+   },
+   "observability": [
+@@ -40,8 +40,18 @@
+         "node tests/_golden/p5-replay-coverage.golden.mjs",
+         "node bin/casey.mjs selftest --tier1"
+       ],
+-      "passes": false,
+-      "evidence": ""
++      "passes": true,
++      "evidence": "gate@2026-07-21T18:27:11.898Z 全部 acceptance exit 0"
++    }
++  ],
++  "resignLog": [
++    {
++      "at": "2026-07-22",
++      "by": "entity-ui-wiring 涟漪重签",
++      "files": [
++        "tests/fixtures/fake-sut/server.mjs"
++      ],
++      "reason": "registry/夹具纯加法（bindAgent 原子登记、chat-sut twins、fake-sut bindagent 三场景）+ 计数例翻 25→26；既有场景字节级零行为差见 docs/plans/entity-ui-wiring/evidence/"
+     }
+   ]
+ }
+diff --git a/tests/_golden/flow-bridge.golden.mjs b/tests/_golden/flow-bridge.golden.mjs
+index 923c4b7..aeaf1dc 100644
+--- a/tests/_golden/flow-bridge.golden.mjs
++++ b/tests/_golden/flow-bridge.golden.mjs
+@@ -186,11 +186,11 @@ await checkAsync('C13 凭据门前零目录副作用：leaky mapping + 全新 ou
+ });
+ 
+ // ---------- C14 isCompilableAtom 单一事实源语义（codex R1-F1；wf-open-smoke 集 11→13 重钉） ----------
+-await checkAsync('C14 isCompilableAtom 语义：25 命名 + login + assert.* 真；册内无知识/未知 假；集恰 25', async () => {
++await checkAsync('C14 isCompilableAtom 语义：26 命名 + login + assert.* 真；册内无知识/未知 假；集恰 26', async () => {
+   const ca = await import(`file://${join(ROOT, 'lib', 'compile-atoms.mjs').replace(/\\/g, '/')}`);
+   for (const a of ['workflow.create', 'chat.closeTestPanel', 'nav.workflowManagement', 'workflow.open', 'workflow.addNode', 'workflow.connectNodes', 'workflow.openNode', 'login', 'assert.onPage']) if (!ca.isCompilableAtom(a)) throw new Error(`${a} 应可编译`);
+   for (const a of ['agent.selectModel', 'nonsense.x']) if (ca.isCompilableAtom(a)) throw new Error(`${a} 不应可编译`);
+-  if (ca.COMPILE_KNOWN_ATOMS.size !== 25) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 25 个（智能体工具首纵切 +7），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
++  if (ca.COMPILE_KNOWN_ATOMS.size !== 26) throw new Error(`COMPILE_KNOWN_ATOMS 应恰 26 个（智能体工具首纵切 +7、entity-ui-wiring bindAgent +1），实际 ${ca.COMPILE_KNOWN_ATOMS.size}`);
+ });
+ 
+ // ---------- C15 原型链键 + 导出 Set 可变性（codex R2） ----------
+diff --git a/tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs b/tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs
+index 4962231..67022be 100644
+--- a/tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs
++++ b/tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs
+@@ -43,7 +43,7 @@ check('A1 首纵切原子清单恰七个且顺序固定', () => {
+ 
+ check('A2 七原子进入单一编译分派表，命名原子 18→25，未知仍拒绝', () => {
+   for (const atom of AGENT_TOOL_ADD_ATOMS) if (!isCompilableAtom(atom)) throw new Error(`${atom} 未接编译分派`);
+-  if (COMPILE_KNOWN_ATOMS.size !== 25) throw new Error(`命名编译原子应 25，实际 ${COMPILE_KNOWN_ATOMS.size}`);
++  if (COMPILE_KNOWN_ATOMS.size !== 26) throw new Error(`命名编译原子应 26（entity-ui-wiring bindAgent +1），实际 ${COMPILE_KNOWN_ATOMS.size}`);
+   if (isCompilableAtom('agent.unreviewedLegacyAtom')) throw new Error('未知遗产原子被放行');
+ });
+ 
+diff --git a/tests/_golden/regress-wf-node-script.zero-sut.golden.mjs b/tests/_golden/regress-wf-node-script.zero-sut.golden.mjs
+index e55639d..a731c94 100644
+--- a/tests/_golden/regress-wf-node-script.zero-sut.golden.mjs
++++ b/tests/_golden/regress-wf-node-script.zero-sut.golden.mjs
+@@ -22,7 +22,7 @@ const replayAssert = await import('../../lib/replay-assert.mjs');
+ await check('C1 命名断言可编译但不进入动作分派表', () => {
+   if (!compile.isCompilableAtom('workflow.assertNodeFieldValue')) throw new Error('命名断言仍被桥前置拦截');
+   if (compile.COMPILE_KNOWN_ATOMS.has('workflow.assertNodeFieldValue')) throw new Error('纯断言不得伪装成动作编译器');
+-  if (compile.COMPILE_KNOWN_ATOMS.size !== 25) throw new Error(`组合后动作编译器数量应保持 25，实际 ${compile.COMPILE_KNOWN_ATOMS.size}`);
++  if (compile.COMPILE_KNOWN_ATOMS.size !== 26) throw new Error(`组合后动作编译器数量应保持 26（entity-ui-wiring bindAgent +1），实际 ${compile.COMPILE_KNOWN_ATOMS.size}`);
+ });
+ 
+ await check('C2 编译只留断言原子且不产生 event', async () => {
+diff --git a/tests/fixtures/chat-sut/server.mjs b/tests/fixtures/chat-sut/server.mjs
+index 7b4b70e..cbaf5d5 100644
+--- a/tests/fixtures/chat-sut/server.mjs
++++ b/tests/fixtures/chat-sut/server.mjs
+@@ -11,6 +11,9 @@
+ //           | 'bgstream'（同 happy 但页面加载即开一条永不结束的背景 SSE——钉「流等待按本步发起归因、
+ //             背景长流不拖无关步」codex R1-F2）
+ //           | 'leaky'（同 happy 但发送另发一条 query 携凭据形态的请求——钉「axes 落盘口过凭据门拒写」）
++//           | 'twins'（同 happy，但 /agent/list 列出两条完全同名的 .agent-item 条目——同一列表两条
++//             「互联网问诊-主诉」不同实体，钉「entity-ui-wiring W1：名字定位遇同名双条目必须 AMBIGUOUS
++//             硬阻断、绝不点 first」；纯加法，其余场景 /agent/list 一字不动）
+ //   GET /                          —— 首页：侧栏 list「智能体管理」→ /agent/list
+ //   GET /agent/list                —— 搜索框（placeholder 输入智能体名称或编码进行搜索）Enter 出结果项
+ //   GET /agent/detail              —— 「测试」按钮 → 右抽屉：消息框（请输入消息）+ 发送箭头
+@@ -42,6 +45,24 @@ const LIST_PAGE =
+   'document.getElementById("agent-open").addEventListener("click",function(){location.href="/agent/detail";});' +
+   '</script>';
+ 
++// twins 列表页（entity-ui-wiring W1 对抗考场）：同一列表两条完全同名的 .agent-item 条目（不同实体：
++// href 不同）。纯加法——仅 scenario==='twins' 时替换 /agent/list，既有场景走 LIST_PAGE 不动。名字文本是
++// 夹具既有通道（同 LIST_PAGE 的 .agent-item 渲染），非投机接缝。
++const TWINS_LIST_PAGE =
++  SIDEBAR +
++  '<h1>智能体列表</h1>' +
++  '<input type="text" id="agent-search" placeholder="输入智能体名称或编码进行搜索">' +
++  '<div id="results" hidden>' +
++  '<div class="agent-item" id="agent-open-1">互联网问诊-主诉</div>' +
++  '<div class="agent-item" id="agent-open-2">互联网问诊-主诉</div>' +
++  '</div>' +
++  '<script>' +
++  'document.getElementById("agent-search").addEventListener("keydown",function(e){' +
++  'if(e.key==="Enter"&&this.value.trim())document.getElementById("results").hidden=false;});' +
++  'document.getElementById("agent-open-1").addEventListener("click",function(){location.href="/agent/detail";});' +
++  'document.getElementById("agent-open-2").addEventListener("click",function(){location.href="/agent/detail?id=2";});' +
++  '</script>';
++
+ // 发送钮 enable 判据复刻 regress 实测：监听 keydown（fill 只发 input 事件不触发 keydown → 保持 disabled）。
+ function detailPage(scenario) {
+   const staleBubble = scenario === 'stale' ? '<div class="hr-chat__text__assistant">历史回复：建议多喝水</div>' : '';
+@@ -104,7 +125,7 @@ function makeHandler(scenario) {
+   return (req, res) => {
+     const path = new URL(req.url, 'http://127.0.0.1').pathname;
+     if (req.method === 'GET' && path === '/') return html(res, SIDEBAR + '<h1>首页</h1>');
+-    if (req.method === 'GET' && path === '/agent/list') return html(res, LIST_PAGE);
++    if (req.method === 'GET' && path === '/agent/list') return html(res, scenario === 'twins' ? TWINS_LIST_PAGE : LIST_PAGE);
+     if (req.method === 'GET' && path === '/agent/detail') return html(res, detailPage(scenario));
+     if (req.method === 'GET' && path === '/ai-api/tester/agent/stream') return streamReply(res, scenario);
+     if (req.method === 'GET' && path === '/ai-manager/auths/getTempTokenForApi') {
+diff --git a/tests/fixtures/fake-sut/server.mjs b/tests/fixtures/fake-sut/server.mjs
+index d22fa08..c00e4dc 100644
+--- a/tests/fixtures/fake-sut/server.mjs
++++ b/tests/fixtures/fake-sut/server.mjs
+@@ -74,6 +74,14 @@ const SCENARIOS = new Set([
+   //     （占位期 DOM 静止=纯两拍判据反例考场，在途请求撑住复合判据 A）；确认按钮「新增成功」toast 3000ms 自动消隐。
+   //   churn：编辑器即时挂载后 DOM 每 100ms 追加变长 + 背景轮询 300ms（denylist 内）——走时上界考场（判据 A 归零故兜底跳过）。
+   'mountdelay', 'churn',
++  // entity-ui-wiring W2（workflow.bindAgent 原子接线）：节点配置抽屉纯加法补「智能体」选择控件，三形态
++  //   对抗场景（唯一选项 / 同名双选项 / 目标选项缺席）——钉 bindAgent 回放选中精确回读 + 缺席/多匹配
++  //   fail-closed 绝不 first（A7）。控件类名 .agent-bind-select 与节点下拉 .hr-select、可填字段 .hr-input
++  //   均异名，不进 selectNodeDropdown/setNodeField 任一域锁计数门；仅本三场景渲染，既有场景零行为差。
++  //   bindagentone   智能体选择控件目标选项唯一（正常选中，触发器值精确回读=agentName）；
++  //   bindagenttwin  同名双选项（浮层内目标 agentName 出现两次）——钉回放门 count=2 ambiguous 绝不 first；
++  //   bindagentabsent 目标选项缺席（浮层不含 agentName）——钉回放门 count=0 缺席守卫硬阻断。
++  'bindagentone', 'bindagenttwin', 'bindagentabsent',
+ ]);
+ 
+ // 背景轮询 denylist 的合成形态（绝不引真 site.json，护栏 #7）：watchNetworkForensics 用它把 /auths/poll 归 background。
+@@ -361,6 +369,43 @@ function clientMain() {
+       return trig;
+     }
+ 
++    // —— 节点抽屉「智能体」选择控件（entity-ui-wiring W2，bindAgent 原子的接线面）——纯加法：
++    //   触发器 = .agent-bind-select（初值「请选择智能体」，值放 .agent-bind-select__value 子 span 便于精确
++    //   回读）；点触发器弹可见浮层 .agent-bind-option 选项（teleport 到 body，复现真机浮层脱离抽屉、防全局
++    //   text 撞列表页/孪生浮层）；点选项 → 触发器值改该选项（身份回读地面真值），并移除浮层。类名与节点
++    //   下拉 .hr-select、可填字段 .hr-input 均异名，绝不进 selectNodeDropdown/setNodeField 域锁计数门。
++    //   三形态（fixture 场景控、非 URL query——replay nav 剥 query）：bindagenttwin 目标 agentName 浮层内两处
++    //   → 多匹配；bindagentabsent 浮层不含目标 → 缺席；bindagentone/缺省 目标唯一。
++    var AGENT_TARGET = '订单智能体'; // 目标智能体（回放选中 + 精确回读锚；与 DD_OPT「订单库」异名，防跨控件误命中）
++    var AGENT_SELECT_PLACEHOLDER = '请选择智能体'; // 触发器初值（与节点下拉「请选择」异串，防全页门跨控件撞）
++    function agentOptionsFor(mode) {
++      if (mode === 'bindagenttwin') return [AGENT_TARGET, AGENT_TARGET, '客服智能体']; // 目标浮层内出现两次 → 多匹配
++      if (mode === 'bindagentabsent') return ['客服智能体', '风控智能体'];              // 浮层不含目标 → 缺席
++      return [AGENT_TARGET, '客服智能体', '风控智能体'];                                 // bindagentone/缺省：目标唯一
++    }
++    function buildAgentSelect(container, mode) {
++      var trig = el('div', { class: 'agent-bind-select' });
++      var val = el('span', { class: 'agent-bind-select__value' }, AGENT_SELECT_PLACEHOLDER);
++      trig.appendChild(val);
++      var layer = null;
++      trig.addEventListener('click', function () {
++        if (layer) { layer.remove(); layer = null; return; } // 再点收起（toggle）
++        layer = el('div', { class: 'agent-bind-dropdown' });
++        var opts = agentOptionsFor(mode);
++        for (var k = 0; k < opts.length; k++) {
++          var o = el('div', { class: 'agent-bind-option' }, opts[k]);
++          o.addEventListener('click', (function (txt) { return function () {
++            val.textContent = txt; // 身份回读地面真值（触发器值精确改该选项）
++            if (layer) { layer.remove(); layer = null; }
++          }; })(opts[k]));
++          layer.appendChild(o);
++        }
++        document.body.appendChild(layer); // teleport 到 body（复现真机浮层脱离抽屉）
++      });
++      container.appendChild(trig);
++      return trig;
++    }
++
+     function moveTargetToFakeDrawer(target) {
+       if (!target || !target.parentNode) return;
+       var actionFakeDrawer = el('div', { class: 'hr-drawer__content-wrapper action-window-fake' });
+@@ -389,6 +434,13 @@ function clientMain() {
+         nodeDrawer.appendChild(ghostDup);
+       }
+       nodeDrawer.appendChild(el('div', { class: 'lf-node-drawer__title' }, titleText));
++      // entity-ui-wiring W2（bindAgent 接线面，纯加法）：bindagent* 场景抽屉只渲标题 + 「智能体」选择控件
++      //   （早返避开既有节点下拉/字段/twin 逻辑，既有场景一律不入本支、零行为差）。openNode 域锁读回仍按
++      //   .hr-drawer__content-wrapper + .lf-node-drawer__title 双证过（结构与既有抽屉同构）。
++      if (scenario === 'bindagentone' || scenario === 'bindagenttwin' || scenario === 'bindagentabsent') {
++        buildAgentSelect(nodeDrawer, scenario);
++        return;
++      }
+       // pinmove（实现评审 r4 汇裁 A2 HIGH）：真抽屉 A（含可见标题）挂两个同占位符字段，其一（field1）
+       //   直接在 A 内、另一（field2）包在 A 内部无标题、同类名 .hr-drawer__content-wrapper 的嵌套子容器 B
+       //   里。MutationObserver 监听 A 的 pin 属性——A 一被回放/编译门钉上 pin，同一微任务里摘下 A 的 pin、
+@@ -607,7 +659,10 @@ function pageHtml(scenario) {
+     + '.lf-edge{position:absolute;left:0;top:0;width:20px;height:1px;background:#888}'
+     + '.hr-select{display:inline-block;min-width:120px;border:1px solid #bbb;padding:2px 8px;margin-top:6px;cursor:pointer}'
+     + '.hr-select-dropdown{position:fixed;left:8px;bottom:8px;border:1px solid #999;background:#fff;z-index:9}'
+-    + '.hr-select-option{padding:2px 8px;cursor:pointer}</style>'
++    + '.hr-select-option{padding:2px 8px;cursor:pointer}'
++    + '.agent-bind-select{display:inline-block;min-width:140px;border:1px solid #a6c;padding:2px 8px;margin-top:6px;cursor:pointer}'
++    + '.agent-bind-dropdown{position:fixed;left:8px;top:40px;border:1px solid #99a;background:#fff;z-index:9}'
++    + '.agent-bind-option{padding:2px 8px;cursor:pointer}</style>'
+     + versionTag
+     + '</head><body><div id="app"></div>'
+     + '<script>window.__CFG__=' + cfg + ';</script>'

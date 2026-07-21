@@ -1,0 +1,34 @@
+entity-ui-wiring W1 · chat-sut 夹具加法（twins 同名双条目场景）—— 受影响既有金牌零行为差基线
+======================================================================================
+
+夹具改动：tests/fixtures/chat-sut/server.mjs —— 纯加法。
+  · 新增 TWINS_LIST_PAGE 常量（/agent/list 出两条完全同名的 .agent-item「互联网问诊-主诉」，href 不同=不同实体）；
+  · makeHandler 的 /agent/list 分支：scenario==='twins' ? TWINS_LIST_PAGE : LIST_PAGE（既有场景恒走 LIST_PAGE 不动）；
+  · 头注新增 twins 场景说明。
+采集日期：2026-07-22（dev 基线 c573974）
+
+—— 证据 1：HEAD 夹具 vs 改后夹具，既有场景逐字节比对（非侵入，不动工作树）——————————————————
+方法：git show HEAD:tests/fixtures/chat-sut/server.mjs 取原版，与改后版并起，对每个既有场景逐路由 fetch 比字节。
+覆盖：场景 {happy, error, stale, bgstream, leaky} × 路由 {/, /agent/list, /agent/detail} = 15 组。
+结果：15 组，0 处不同 → ZERO-BEHAVIOR-DIFF-CONFIRMED。
+      改后 twins /agent/list = 2 条 .agent-item（纯新增场景，HEAD 无此分支）。
+含义：既有金牌只经 HTTP 与夹具交互；既有场景每一字节相同 ⇒ 既有金牌行为不可能被此加法改变。
+
+—— 证据 2：受影响既有金牌实跑（改后夹具在场）—————————————————————————————————————————
+受影响集（import ../fixtures/chat-sut/server.mjs 且驱动它的既有金牌）：
+  chiefcomplaint-smoke.golden.mjs、regress-promptset.golden.mjs
+  （census 动态夹具 entry 与 regress-promptset 均只用 scenario:'happy'，逐字节相同，行为不变。）
+
+命令：node tests/_golden/chiefcomplaint-smoke.golden.mjs
+退出码：1（5 过 / 7 红）
+
+命令：node tests/_golden/regress-promptset.golden.mjs
+退出码：1（15 过 / 2 红）
+
+归因：两金牌全部红均为 dev 基线既有的 entity-semantic-lock 预执行门所致——
+  FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID / PRE_EXECUTION_IDENTITY_BINDINGS_INVALID
+  （未登记为 read 的 agent/chat 读原子被当 mutation，浏览器启动前 fail-closed）。
+  与本夹具加法正交、与 W1 正交；属涟漪 A9 待收口项，本轮不动。证据 1 已证此加法对这两金牌零行为差。
+
+注：本 worktree 与并行 W2（bindAgent/guards）共享，故不 git stash（会牵动他人 fake-sut 改动）；
+    改用非侵入的逐字节比对证零行为差。

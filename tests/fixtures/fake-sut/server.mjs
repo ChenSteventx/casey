@@ -74,6 +74,14 @@ const SCENARIOS = new Set([
   //     （占位期 DOM 静止=纯两拍判据反例考场，在途请求撑住复合判据 A）；确认按钮「新增成功」toast 3000ms 自动消隐。
   //   churn：编辑器即时挂载后 DOM 每 100ms 追加变长 + 背景轮询 300ms（denylist 内）——走时上界考场（判据 A 归零故兜底跳过）。
   'mountdelay', 'churn',
+  // entity-ui-wiring W2（workflow.bindAgent 原子接线）：节点配置抽屉纯加法补「智能体」选择控件，三形态
+  //   对抗场景（唯一选项 / 同名双选项 / 目标选项缺席）——钉 bindAgent 回放选中精确回读 + 缺席/多匹配
+  //   fail-closed 绝不 first（A7）。控件类名 .agent-bind-select 与节点下拉 .hr-select、可填字段 .hr-input
+  //   均异名，不进 selectNodeDropdown/setNodeField 任一域锁计数门；仅本三场景渲染，既有场景零行为差。
+  //   bindagentone   智能体选择控件目标选项唯一（正常选中，触发器值精确回读=agentName）；
+  //   bindagenttwin  同名双选项（浮层内目标 agentName 出现两次）——钉回放门 count=2 ambiguous 绝不 first；
+  //   bindagentabsent 目标选项缺席（浮层不含 agentName）——钉回放门 count=0 缺席守卫硬阻断。
+  'bindagentone', 'bindagenttwin', 'bindagentabsent',
 ]);
 
 // 背景轮询 denylist 的合成形态（绝不引真 site.json，护栏 #7）：watchNetworkForensics 用它把 /auths/poll 归 background。
@@ -361,6 +369,43 @@ function clientMain() {
       return trig;
     }
 
+    // —— 节点抽屉「智能体」选择控件（entity-ui-wiring W2，bindAgent 原子的接线面）——纯加法：
+    //   触发器 = .agent-bind-select（初值「请选择智能体」，值放 .agent-bind-select__value 子 span 便于精确
+    //   回读）；点触发器弹可见浮层 .agent-bind-option 选项（teleport 到 body，复现真机浮层脱离抽屉、防全局
+    //   text 撞列表页/孪生浮层）；点选项 → 触发器值改该选项（身份回读地面真值），并移除浮层。类名与节点
+    //   下拉 .hr-select、可填字段 .hr-input 均异名，绝不进 selectNodeDropdown/setNodeField 域锁计数门。
+    //   三形态（fixture 场景控、非 URL query——replay nav 剥 query）：bindagenttwin 目标 agentName 浮层内两处
+    //   → 多匹配；bindagentabsent 浮层不含目标 → 缺席；bindagentone/缺省 目标唯一。
+    var AGENT_TARGET = '订单智能体'; // 目标智能体（回放选中 + 精确回读锚；与 DD_OPT「订单库」异名，防跨控件误命中）
+    var AGENT_SELECT_PLACEHOLDER = '请选择智能体'; // 触发器初值（与节点下拉「请选择」异串，防全页门跨控件撞）
+    function agentOptionsFor(mode) {
+      if (mode === 'bindagenttwin') return [AGENT_TARGET, AGENT_TARGET, '客服智能体']; // 目标浮层内出现两次 → 多匹配
+      if (mode === 'bindagentabsent') return ['客服智能体', '风控智能体'];              // 浮层不含目标 → 缺席
+      return [AGENT_TARGET, '客服智能体', '风控智能体'];                                 // bindagentone/缺省：目标唯一
+    }
+    function buildAgentSelect(container, mode) {
+      var trig = el('div', { class: 'agent-bind-select' });
+      var val = el('span', { class: 'agent-bind-select__value' }, AGENT_SELECT_PLACEHOLDER);
+      trig.appendChild(val);
+      var layer = null;
+      trig.addEventListener('click', function () {
+        if (layer) { layer.remove(); layer = null; return; } // 再点收起（toggle）
+        layer = el('div', { class: 'agent-bind-dropdown' });
+        var opts = agentOptionsFor(mode);
+        for (var k = 0; k < opts.length; k++) {
+          var o = el('div', { class: 'agent-bind-option' }, opts[k]);
+          o.addEventListener('click', (function (txt) { return function () {
+            val.textContent = txt; // 身份回读地面真值（触发器值精确改该选项）
+            if (layer) { layer.remove(); layer = null; }
+          }; })(opts[k]));
+          layer.appendChild(o);
+        }
+        document.body.appendChild(layer); // teleport 到 body（复现真机浮层脱离抽屉）
+      });
+      container.appendChild(trig);
+      return trig;
+    }
+
     function moveTargetToFakeDrawer(target) {
       if (!target || !target.parentNode) return;
       var actionFakeDrawer = el('div', { class: 'hr-drawer__content-wrapper action-window-fake' });
@@ -389,6 +434,13 @@ function clientMain() {
         nodeDrawer.appendChild(ghostDup);
       }
       nodeDrawer.appendChild(el('div', { class: 'lf-node-drawer__title' }, titleText));
+      // entity-ui-wiring W2（bindAgent 接线面，纯加法）：bindagent* 场景抽屉只渲标题 + 「智能体」选择控件
+      //   （早返避开既有节点下拉/字段/twin 逻辑，既有场景一律不入本支、零行为差）。openNode 域锁读回仍按
+      //   .hr-drawer__content-wrapper + .lf-node-drawer__title 双证过（结构与既有抽屉同构）。
+      if (scenario === 'bindagentone' || scenario === 'bindagenttwin' || scenario === 'bindagentabsent') {
+        buildAgentSelect(nodeDrawer, scenario);
+        return;
+      }
       // pinmove（实现评审 r4 汇裁 A2 HIGH）：真抽屉 A（含可见标题）挂两个同占位符字段，其一（field1）
       //   直接在 A 内、另一（field2）包在 A 内部无标题、同类名 .hr-drawer__content-wrapper 的嵌套子容器 B
       //   里。MutationObserver 监听 A 的 pin 属性——A 一被回放/编译门钉上 pin，同一微任务里摘下 A 的 pin、
@@ -607,7 +659,10 @@ function pageHtml(scenario) {
     + '.lf-edge{position:absolute;left:0;top:0;width:20px;height:1px;background:#888}'
     + '.hr-select{display:inline-block;min-width:120px;border:1px solid #bbb;padding:2px 8px;margin-top:6px;cursor:pointer}'
     + '.hr-select-dropdown{position:fixed;left:8px;bottom:8px;border:1px solid #999;background:#fff;z-index:9}'
-    + '.hr-select-option{padding:2px 8px;cursor:pointer}</style>'
+    + '.hr-select-option{padding:2px 8px;cursor:pointer}'
+    + '.agent-bind-select{display:inline-block;min-width:140px;border:1px solid #a6c;padding:2px 8px;margin-top:6px;cursor:pointer}'
+    + '.agent-bind-dropdown{position:fixed;left:8px;top:40px;border:1px solid #99a;background:#fff;z-index:9}'
+    + '.agent-bind-option{padding:2px 8px;cursor:pointer}</style>'
     + versionTag
     + '</head><body><div id="app"></div>'
     + '<script>window.__CFG__=' + cfg + ';</script>'

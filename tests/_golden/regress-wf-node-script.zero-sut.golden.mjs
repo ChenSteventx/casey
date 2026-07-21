@@ -22,7 +22,7 @@ const replayAssert = await import('../../lib/replay-assert.mjs');
 await check('C1 命名断言可编译但不进入动作分派表', () => {
   if (!compile.isCompilableAtom('workflow.assertNodeFieldValue')) throw new Error('命名断言仍被桥前置拦截');
   if (compile.COMPILE_KNOWN_ATOMS.has('workflow.assertNodeFieldValue')) throw new Error('纯断言不得伪装成动作编译器');
-  if (compile.COMPILE_KNOWN_ATOMS.size !== 25) throw new Error(`组合后动作编译器数量应保持 25，实际 ${compile.COMPILE_KNOWN_ATOMS.size}`);
+  if (compile.COMPILE_KNOWN_ATOMS.size !== 26) throw new Error(`组合后动作编译器数量应保持 26（entity-ui-wiring bindAgent +1），实际 ${compile.COMPILE_KNOWN_ATOMS.size}`);
 });
 
 await check('C2 编译只留断言原子且不产生 event', async () => {

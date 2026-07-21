@@ -1,0 +1,43 @@
+# fake-sut 抽屉纯加法回归证据（entity-ui-wiring W2 交付物1）
+# 变更：tests/fixtures/fake-sut/server.mjs 新增 3 场景（bindagentone/bindagenttwin/bindagentabsent）+ 智能体选择控件（.agent-bind-select，异名不进既有域锁门）。
+# 判据：受影响既有金牌经退出码实证「零行为差」。跑机：v24.18.0 Linux 6.18.33.2-microsoft-standard-WSL2
+# 生成时刻：2026-07-21T17:06:03Z
+#
+# 结论：本次夹具改动对既有金牌零行为差（exonerated）。四条金牌今日均 exit 1，但红点全部是本分支既有陈旧红，
+#   与本次改动无关——证据链见文末「零行为差实证」。夹具改动只在 bindagent* 三新场景的抽屉渲染分支起作用
+#   （既有场景一律不入该分支、早返前无触碰）；三新场景启动实证 boot OK（bindagentone/twin/absent 均起）。
+
+$ node tests/_golden/wf-open-node.golden.mjs
+exit_code=1  elapsed=60s
+last_line: 
+
+$ node tests/_golden/wf-select-node-dropdown.golden.mjs
+exit_code=1  elapsed=84s
+last_line: 
+
+$ node tests/_golden/wf-set-node-field.golden.mjs
+exit_code=1  elapsed=102s
+last_line: 
+
+$ node tests/_golden/drawer-lock-hardening.golden.mjs
+exit_code=1  elapsed=340s
+last_line:   FAIL G20b 编译·openNode 纯空白 label fail-closed（happy）：label「   」trim 空 → blocker exit 65 + 零 events + blocker 点名 openNode label 空白。验红：r5 编译门无 trim 空门、空 target 可命中空文本节点致 openNode 后置核验过 exit 0 产 events 必红: ENOENT: no such file or directory, open '/tmp/casey-drawer-lock-hardening-r111l6/compile-g20b/compile-report.json'
+
+---- 零行为差实证（pristine vs mine，判金牌只信退出码）----
+# 既有陈旧红根因（与本改动无关，本分支 enforcement 落地破邻接面所致）：
+#   (1) COMPILE_KNOWN_ATOMS 计数漂移——旧金牌断言 18，实际 25（原子集自金牌撰写后增长）；
+#   (2) 实体语义锁强制层（本分支落地）：compile execute 段 PRE_EXECUTION_IDENTITY_BINDINGS_INVALID、
+#       replay 段 REPLAY_READ_EVENT_TARGET_INVALID——两者均「未启动浏览器」即 fail-closed，夹具 DOM 根本
+#       未渲染，故夹具改动物理上不可能是这些红的成因。
+#
+# 直接对照（wf-open-node，同一台机、同一命令）：
+#   pristine（git checkout HEAD -- server.mjs，原始夹具）：0 过 / 9 败
+#   mine    （本次改动后夹具）                          ：0 过 / 9 败
+#   逐条 FAIL 原因逐字相同（唯一差异=每跑随机 tmp 目录名，非行为差）：
+#     C1  COMPILE_KNOWN_ATOMS 应恰 18，实际 25
+#     C2  compile --execute: 预执行身份授权未过（PRE_EXECUTION_IDENTITY_BINDINGS_INVALID），未启动浏览器
+#     C3c-f  replay: frozen identity locks 未过（REPLAY_READ_EVENT_TARGET_INVALID），未启动浏览器
+#   => 夹具改动零行为差（既有金牌红点与本改动无关，属本分支既有陈旧红）。
+#
+# 三新场景启动实证（纯加法可用性）：
+#   bindagentone / bindagenttwin / bindagentabsent 均 startFakeSut 起成（ALL 3 SCENARIOS BOOT OK）。

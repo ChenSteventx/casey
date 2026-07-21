@@ -1,0 +1,100 @@
+{
+  "schemaVersion": 1,
+  "task": "entity-ui-wiring（full，worktree）：语义锁 UI 接线第一波（hermetic 轨）——agent.searchOpen 联合定位输入侧收紧（exact:true+容器闸+共享门同刻+code 编码收敛）+ workflow.bindAgent 三处原子识别面接线与双 receipt 锁链端到端。接线红基线零触碰（真机轨，Steven 2026-07-18 已裁）；ID 读回等真机 spike。",
+  "specPath": "docs/plans/entity-ui-wiring/plan.md",
+  "testChecksums": {
+    "tests/_golden/entity-ui-wiring.searchopen.golden.mjs": "8ae9759b362b074a2fccbbd0e8c83f0f17585ebff4704c573a2bf45811c14246",
+    "tests/_golden/entity-ui-wiring.bindagent-lockchain.zero-sut.golden.mjs": "4adffa20309664e526e2aecca39cd599756361d6946a03d63bc42e8974c7b01f",
+    "tests/_golden/entity-ui-wiring.bindagent-replay.golden.mjs": "51b164aa46d901e1865073ea4c5109f5e93175e9b2174f64e5e90b28c2b61827",
+    "tests/_golden/entity-ui-wiring.guards.zero-sut.golden.mjs": "499bf2fde8d2ed1cfb7174815218c199baf57970ad286f8a007ae7b4809d1ae7"
+  },
+  "observability": [
+    {
+      "dimension": "真机只读 spike：智能体平台 ID 三通道观察（列表行属性/点击后 URL/详情接口）+ agent.searchOpen 容器类名采样 + bindAgent 真机配方四停站复核；清单见 docs/plans/entity-ui-wiring/realmachine-spike-checklist.md，采集结果回填后另立契约接 ID 读回。",
+      "route": "human"
+    },
+    {
+      "dimension": "名称+ID 双定位真机 UAT 与同名智能体敌意真机用例：依赖上项 spike 与真机运行时权威（乙轨）；hermetic 绿不冒充真机完成（ADR-0009）。",
+      "route": "human"
+    },
+    {
+      "dimension": "接线红基线（teachin-semantic-lock-runtime-discrimination-successor，0/26 诚实红）填绿唯一路径=真机运行时权威落地（Steven 2026-07-18「单元导出+真机双轨」，丙案已否决）；本契约以 s4 守恒金牌钉死零触碰。",
+      "route": "human"
+    },
+    {
+      "dimension": "execute 权威链（entity-pre-execution-authority 铸造）在两份浏览器金牌中以生产接缝消费者身份使用，准入门与人签冻结 admission policy 镜像语义零改动；若后续策略层把 agent 读原子登记为 read，属另案（须回人签）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-searchopen-joint-targeting",
+      "desc": "agent.searchOpen 收紧与编码收敛：共享门 lib/agent-search-gate.mjs（exact:true+容器归属闸，unique/ambiguous/absent/container-out 结构化裁定，绝不 first）；编译与回放同 import 同刻；registry 补 code 可选参数、code 在场时 fill 值精确等于 code（整链事件级）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-ui-wiring.searchopen.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-21T19:38:59.560Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-bindagent-lockchain",
+      "desc": "workflow.bindAgent 原子识别面 + 双 receipt 锁链：COMPILE_KNOWN_ATOMS 25→26；flow-bridge 放行双 binding、拒单边；compile-draft→confirm→sign→replay 准入双 receipt 全链绿；source-only/target-only 必红 FROZEN_ENTITY_LOCKS_REQUIRED_ROLES_INVALID（回归网）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-ui-wiring.bindagent-lockchain.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-21T19:39:03.099Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-bindagent-replay",
+      "desc": "bindAgent 编译/回放行为面（fake-sut 抽屉智能体选择三形态）：唯一选项选中+选中值精确回读双证；同名双选项 AMBIGUOUS 硬阻断绝不 first；缺席守卫硬阻断；execute 经铸造权威链合法过预执行门。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-ui-wiring.bindagent-replay.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-21T19:40:11.198Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4-guards-and-terms",
+      "desc": "边界守恒与统一语言：接线红基线字节/诚实红/gate 账三重守恒（冻结即绿的回归网）；CONTEXT.md 词条登记过 term-lint registry 完整性检查。",
+      "lane": "guard",
+      "acceptance": [
+        "node tests/_golden/entity-ui-wiring.guards.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-21T19:40:13.709Z 全部 acceptance exit 0"
+    }
+  ],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-22",
+      "files": [
+        "tests/_golden/entity-ui-wiring.searchopen.golden.mjs",
+        "tests/_golden/entity-ui-wiring.bindagent-replay.golden.mjs"
+      ],
+      "reason": "授权脚手架修正（断言语义零弱化）：闭合绑定集须覆盖全部 mutation 口径步（nav.agentManagement 补 subject 绑定、assert.onPage 不入 flow）+ execute 权威工件铸造接入 --entity-authority；另修一处被前置断言遮蔽的陈旧反例（openToolPicker→removeToolByName）。修正版金牌已在无实现状态下重钉红（s1 1过/10红、s3 六处「未知原子」），证据 docs/plans/entity-ui-wiring/evidence/red-repin.txt"
+    },
+    {
+      "amendedAt": "2026-07-22",
+      "round": "R1 评审修复钉",
+      "files": [
+        "tests/_golden/entity-ui-wiring.searchopen.golden.mjs",
+        "tests/_golden/entity-ui-wiring.bindagent-replay.golden.mjs"
+      ],
+      "reason": "codex R1 FAIL（2H+3M）全采信：s3 增 R1-H1/H2/M1 三条对抗检查（修前红证 evidence/review-r1-fix-red.txt，补 M2 回放分支验收覆盖缺口）；两金牌临时 prd 改 wx 防覆盖+唯一散置目录（M3）。断言只增不减。"
+    },
+    {
+      "amendedAt": "2026-07-22",
+      "round": "R2 复审修复",
+      "files": [
+        "tests/_golden/entity-ui-wiring.searchopen.golden.mjs",
+        "tests/_golden/entity-ui-wiring.bindagent-replay.golden.mjs"
+      ],
+      "reason": "codex R2：H2 补齐动作时刻重判协议（verifyPinnedNodeDrawer+物理句柄三闸，编译经 emit 动作回调、回放同刻）；M3 清理边界闭合（临时 prd wx 先行独占、散置随后、失败零残留、SUT 启动入受控区）。金牌只改授权脚手架时序，断言零弱化。"
+    }
+  ]
+}

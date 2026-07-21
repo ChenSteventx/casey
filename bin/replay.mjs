@@ -257,7 +257,12 @@ async function main() {
   // baseUrl：G6 分岔三取 C——events url 走 {{baseUrl}} 占位符，回放期回填 --sut（对完整 URL 的旧 fixture 是 no-op）。
   // promptText（regress-promptset）：被测参数经 --prompt-text 注入，回填 fill 步的 {{promptText}} 提示槽（护栏 #6
   // 冻占位符不冻字面量）；RH_PLACEHOLDER 已覆盖 {{promptText}}——回放历史始终显占位符、绝不落真被测参数（护栏 #7）。
-  const ctx = { uniqueName, baseUrl: sut, ...(args.promptText != null ? { promptText: String(args.promptText) } : {}) };
+  const ctx = {
+    uniqueName, baseUrl: sut,
+    ...(args.promptText != null ? { promptText: String(args.promptText) } : {}),
+    // 容器覆写同参（codex R1-M1）：把通道剖面带给动作门（agent.searchOpen 条目容器覆写与编译侧同一通道）。
+    ...(profile && typeof profile === 'object' ? { profile } : {}),
+  };
 
   // 登录预备动作前置（GRILL 人签取 A）：凭据/站点配置在开浏览器前加载，任一失败 exit 65（fail-closed）。
   // 登录入口 = --sut 基址 + site.target.startUrl 路径段（真机实采教训：裸基址不渲染登录表单，SPA 判据

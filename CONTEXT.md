@@ -86,6 +86,8 @@
 | `AFFORDANCE_ABSENT` | 入口缺席 | `NEEDS_HUMAN` 子类（人签后）：编译时够到的入口回归时没了，又无漂移信号无取证；走缺陷-或-过程错误分诊 | — |
 | `INDETERMINATE` | 未定 | `NEEDS_HUMAN` 子类：纯未知失败，看证据人判；catch-all 的 fail-safe 默认落点 | — |
 | 点击身份门 | Click Identity Gate | 仅当解析目标唯一（过滤后 count===1）或点击后身份回读成立才置 `actionPerformed=true`；多匹配/坐标兜底 → ambiguous |
+| 容器归属闸 | Container Membership Gate | 文本精确唯一命中后仍须证明命中元素落在预期记录容器内（表格行/卡片/条目容器，剖面可覆写容器选择器）；容器外命中=同名非记录控件碰撞，硬阻断 fail-closed 不点。wf-open-smoke 首立（workflow.open），entity-ui-wiring 抽为 agent.searchOpen 编译/回放共享门 | — |
+| 关系原子 | Relation Atom | 动作效果为建立两个业务对象间关系的原子（首例 `workflow.bindAgent`：把智能体绑进工作流节点）；准入策略 `effect=relation`，必须同时携 `source` 与 `target` 双角色绑定且双边独立锁定（各自 lockId+收据 hash），缺任一边整份拒绝，绝不单边降级 | — |
 | 业务对象语义锁 | Business Object Semantic Lock | 手录后把工作流、智能体等业务对象从脆弱 DOM 位置提升为冻结身份；回放前重新只读解析并与已签身份收据确定性比较，只有 `SAME` 可重绑定临时 UI 句柄，业务身份变化一律零点击并路由人 | — |
 | 业务对象身份收据 | Entity Identity Receipt | 业务对象语义锁的不可变权威载体：至少锁 `kind + name + code + scopeFingerprint`，平台提供稳定 ID、父对象或版本时一并锁定；收据带内容 hash，外部对象须用户确认、自建对象须平台权威读回，LLM/视觉只可提候选不可确认同一性 | — |
 | 身份观察旁车 | Identity Observation Sidecar | 示教录制期间与操作事件分开落盘的最小业务身份候选；只收 `kind/name/code/platformId/scopeFingerprint/parent/evidenceKind/eventSeq`，永远未签且 `replayReady:false`，与 示教录制包 通过两个字节 hash 的联合绑定防换包；缺编号只保留 pending，绝不升格为权威收据 | — |

@@ -251,7 +251,7 @@ async function executeMode(caseId, args) {
     currentStep: () => state.currentStepId,
   });
 
-  const run = createCompileRun({ page, forensics, state, sut, uniqueName, site, listRoute, agentListRoute });
+  const run = createCompileRun({ page, forensics, state, sut, uniqueName, site, listRoute, agentListRoute, profile });
   let exitCode = 0;
   try {
     if (!args['skip-login']) {

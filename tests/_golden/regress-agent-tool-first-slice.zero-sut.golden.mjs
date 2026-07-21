@@ -43,7 +43,7 @@ check('A1 首纵切原子清单恰七个且顺序固定', () => {
 
 check('A2 七原子进入单一编译分派表，命名原子 18→25，未知仍拒绝', () => {
   for (const atom of AGENT_TOOL_ADD_ATOMS) if (!isCompilableAtom(atom)) throw new Error(`${atom} 未接编译分派`);
-  if (COMPILE_KNOWN_ATOMS.size !== 25) throw new Error(`命名编译原子应 25，实际 ${COMPILE_KNOWN_ATOMS.size}`);
+  if (COMPILE_KNOWN_ATOMS.size !== 26) throw new Error(`命名编译原子应 26（entity-ui-wiring bindAgent +1），实际 ${COMPILE_KNOWN_ATOMS.size}`);
   if (isCompilableAtom('agent.unreviewedLegacyAtom')) throw new Error('未知遗产原子被放行');
 });
 

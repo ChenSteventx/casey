@@ -1,0 +1,44 @@
+entity-ui-wiring W1 · agent.searchOpen 收紧 + 编码收敛 —— 验收金牌红证（阶段 2 门禁，红先行）
+======================================================================================
+
+金牌：tests/_golden/entity-ui-wiring.searchopen.golden.mjs
+命令：node tests/_golden/entity-ui-wiring.searchopen.golden.mjs
+退出码：1（1 过 / 10 红）
+采集日期：2026-07-22（dev 基线 c573974，实现前）
+
+结论：A0 加法守恒控制面今日即绿；A1/A2/A3 全部目标态断言今日红（共 10 条），实现随后按测试走。
+
+分条红/绿状态：
+  A0 控制面·普通 agent.searchOpen flow 过编译门 exit 0 ............ 绿（今日）
+  A1a 对照面·唯一精确命中 → resolution=unique/1 ................. 红（共享门未落地）
+  A1b 子串命中被杀·openName 子串 → resolution=absent ............ 红（共享门未落地）
+  A1c 同名双条目 → resolution=ambiguous/2，绝不点 first ......... 红（共享门未落地）
+  A1d 容器归属闸·容器外命中 → 非 unique ........................ 红（共享门未落地）
+  A2-registry agent.searchOpen 词条含 code 可选参数 ............. 红（registry 缺 code）
+  A2-gate 带 code 的 flow 过编译门 exit 0 ...................... 红（今日 exit 65「未声明参数 code」）
+  A2-event code 在场时 fill 事件 value 精确等于 code ............ 红（编译门先拒 code，无法产 events）
+  A3-file 共享门 lib/agent-search-gate.mjs 在场 ................. 红（文件未落地）
+  A3-compile-import lib/compile-atoms.mjs import 共享门 ......... 红（未 import）
+  A3-replay-import lib/replay-actions.mjs import 共享门 ......... 红（未 import）
+
+断言纪律：只认退出码与结构化字段（门 resolution/candidateCount、compile-report 退出码、
+events fill 事件 value、registry 结构、源码 import 结构）；不 grep 失败标记串；code/candidateCount
+用【精确】等值。A1 行为面在「共享门直连真实 Playwright DOM」这一层验（compile/回放消费门的同一
+层），与被 entity-lock 预执行门拦住的 compile --execute/replay 整链解耦（见金牌头注基线实况）。
+
+—— 原样红证输出（stdout+stderr）——————————————————————————————————————————————————————
+RED  entity-ui-wiring.searchopen: A1a 对照面·唯一精确命中 → resolution=unique candidateCount=1（照常打开）: 共享门 lib/agent-search-gate.mjs 未落地或未导出 resolveAgentSearchTarget(page,{openName,containerSelector})（A1/A3 结构缺——实现须补）
+RED  entity-ui-wiring.searchopen: A1b 子串命中被杀·openName 只是条目子串 → resolution=absent（exact:true 零命中，旧面 exact:false 假绿被证）: 共享门 lib/agent-search-gate.mjs 未落地或未导出 resolveAgentSearchTarget(page,{openName,containerSelector})（A1/A3 结构缺——实现须补）
+RED  entity-ui-wiring.searchopen: A1c 同名双条目·两条完全同名 → resolution=ambiguous candidateCount=2（硬阻断，绝不点 first）: 共享门 lib/agent-search-gate.mjs 未落地或未导出 resolveAgentSearchTarget(page,{openName,containerSelector})（A1/A3 结构缺——实现须补）
+RED  entity-ui-wiring.searchopen: A1d 容器归属闸·命中落在 .agent-item 容器外 → resolution 非 unique（fail-closed 绝不点）: 共享门 lib/agent-search-gate.mjs 未落地或未导出 resolveAgentSearchTarget(page,{openName,containerSelector})（A1/A3 结构缺——实现须补）
+RED  entity-ui-wiring.searchopen: A2-registry agent.searchOpen 词条含 code 可选参数（required:false）: agent.searchOpen.params 缺 code 参数（编码收敛词条未登记）
+RED  entity-ui-wiring.searchopen: A2-gate 带 code 参数的 agent.searchOpen flow 过编译门 exit 0（今日「未声明参数 code」→ 65 红）: 带 code 的 flow 编译门应 exit 0，实际 65：compile: flow 草稿未过编译门（1 问题，fail-closed）：
+  - step[1] (agent.searchOpen)：未声明的参数「code」
+
+RED  entity-ui-wiring.searchopen: A2-event code 在场时 fill 事件 value 精确等于 code（整链事件级，今日红）: 阶段[编译门]：带 code 的 flow 未过门（exit 65）——registry 未登记 code，无法产 events 断言 value===code：compile: flow 草稿未过编译门（1 问题，fail-closed）：
+  - step[1] (agent.searchOpen)：未声明的参数「code」
+
+RED  entity-ui-wiring.searchopen: A3-file 共享门 lib/agent-search-gate.mjs 在场: lib/agent-search-gate.mjs 未落地（共享门单一事实源缺）
+RED  entity-ui-wiring.searchopen: A3-compile-import lib/compile-atoms.mjs import ./agent-search-gate.mjs（编译侧消费共享门）: lib/compile-atoms.mjs 未 import ./agent-search-gate.mjs（编译侧未消费共享门）
+RED  entity-ui-wiring.searchopen: A3-replay-import lib/replay-actions.mjs import ./agent-search-gate.mjs（回放侧消费同一共享门）: lib/replay-actions.mjs 未 import ./agent-search-gate.mjs（回放侧未消费共享门——编译门≠回放门）
+RED  entity-ui-wiring.searchopen: 1 过 / 10 红

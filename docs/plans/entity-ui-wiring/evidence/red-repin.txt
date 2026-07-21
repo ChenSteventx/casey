@@ -1,0 +1,19 @@
+红重钉证据（2026-07-22，实现经 git stash -u 移除后跑修正版金牌）：
+s1 searchopen: exit=1
+RED  entity-ui-wiring.searchopen: A1d 容器归属闸·命中落在 .agent-item 容器外 → resolution 非 unique（fail-closed 绝不点）: 共享门 lib/agent-search-gate.mjs 未落地或未导出 resolveAgentSearchTarget(page,{openName,containerSelector})（A1/A3 结构缺——实现须补）
+RED  entity-ui-wiring.searchopen: A2-registry agent.searchOpen 词条含 code 可选参数（required:false）: agent.searchOpen.params 缺 code 参数（编码收敛词条未登记）
+RED  entity-ui-wiring.searchopen: A2-gate 带 code 参数的 agent.searchOpen flow 过编译门 exit 0（今日「未声明参数 code」→ 65 红）: 带 code 的 flow 编译门应 exit 0，实际 65：compile: flow 草稿未过编译门（1 问题，fail-closed）：
+  - step[1] (agent.searchOpen)：未声明的参数「code」
+
+RED  entity-ui-wiring.searchopen: A2-event code 在场时 fill 事件 value 精确等于 code（整链事件级，今日红）: 阶段[编译门]：带 code 的 flow 未过门（exit 65）——registry 未登记 code，无法产 events 断言 value===code：compile: flow 草稿未过编译门（1 问题，fail-closed）：
+  - step[1] (agent.searchOpen)：未声明的参数「code」
+
+RED  entity-ui-wiring.searchopen: A3-file 共享门 lib/agent-search-gate.mjs 在场: lib/agent-search-gate.mjs 未落地（共享门单一事实源缺）
+RED  entity-ui-wiring.searchopen: A3-compile-import lib/compile-atoms.mjs import ./agent-search-gate.mjs（编译侧消费共享门）: lib/compile-atoms.mjs 未 import ./agent-search-gate.mjs（编译侧未消费共享门）
+RED  entity-ui-wiring.searchopen: A3-replay-import lib/replay-actions.mjs import ./agent-search-gate.mjs（回放侧消费同一共享门）: lib/replay-actions.mjs 未 import ./agent-search-gate.mjs（回放侧未消费共享门——编译门≠回放门）
+RED  entity-ui-wiring.searchopen: 1 过 / 10 红
+
+s3 bindagent-replay: exit=1（未知原子 6 处）
+  FAIL A7a 唯一选项（bindagentone）：bindAgent 回放选中 agentName + 抽屉内选中值精确回读双证（events 末步 bindAgent + compile-report 精确回读）——今日红：原子无编译知识 gate exit 65「未知原子 workflow.bindAgent」: gate 应接受已注册原子 workflow.bindAgent（exit 0）；今日红基线=原子无编译知识：gate exit 65（validateStructural 拒，stderr 尾: compile: flow 草稿未过编译门（1 问题，fail-closed）：
+  - step[5]：未知原子「workflow.bindAgent」（不在注册表）
+  FAIL A7b 同名双选项（bindagenttwin：目标 agentName 浮层内两处）：域内 count=2 ambiguous 绝不选 first → blocker exit 65 零 events——今日红：原子无编译知识 gate exit 65「未知原子」: gate 应接受已注册原子 workflow.bindAgent（exit 0）；今日红基线=原子无编译知识：gate exit 65（validateStructural 拒，stderr 尾: compile: flow 草稿未过编译门（1 问题，fail-closed）：

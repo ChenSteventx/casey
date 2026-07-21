@@ -1,0 +1,12 @@
+R1 修复钉红先行证据（2026-07-22，lib 修复应用前）：
+run A（H2 桩误报前）：exit=1
+  FAIL R1-H1 回读可见恰一：隐藏旧值(目标名)+可见错误值 → 绝不 unique/identityReadback.ok（修前红）: 隐藏旧值骗绿：可见选中值为「错误智能体」仍回 unique/ok（{"resolution":"unique","candidateCount":1,"identityReadback":{"ok":true}}）
+  FAIL R1-H2 编译门抽屉域锁：只有别的节点抽屉时 bindAgent 必硬阻断、不产成功注记（修前红）: this.forensics.records is not a function
+  FAIL R1-M1 容器覆写同刻：ctx.profile.agents.itemContainer 于回放门生效 → unique（修前红）: 自定义容器下应 unique，实际 {"resolution":"none","candidateCount":1,"identityReadback":{"ok":false}}
+
+run B（桩修后）：exit=1
+  FAIL R1-H1 回读可见恰一：隐藏旧值(目标名)+可见错误值 → 绝不 unique/identityReadback.ok（修前红）: 隐藏旧值骗绿：可见选中值为「错误智能体」仍回 unique/ok（{"resolution":"unique","candidateCount":1,"identityReadback":{"ok":true}}）
+  FAIL R1-H2 编译门抽屉域锁：只有别的节点抽屉时 bindAgent 必硬阻断、不产成功注记（修前红）: 页面无「模型节点」抽屉仍未硬阻断（blockers=[]；成功注记=true）
+  FAIL R1-M1 容器覆写同刻：ctx.profile.agents.itemContainer 于回放门生效 → unique（修前红）: 自定义容器下应 unique，实际 {"resolution":"none","candidateCount":1,"identityReadback":{"ok":false}}
+
+lib 修复后：s3 7/7 exit=0（/tmp/g3h.out）

@@ -6,7 +6,7 @@
     "tests/_golden/p5-replay.golden.mjs": "8a368f628ba19b0d487744e9e74e873966bb0fc4cb4d6d42e7ce1456ed1529c1",
     "tests/_golden/p5-replay-coverage.golden.mjs": "3e46e9a7fdf6824ed17e3a3c83e406ff55e95a2e5bb279d6bbdb92d67f7e2706",
     "tests/_golden/fixtures/p5/replay-cases.json": "931c708956e6abb0fa2fad0e4ad081b203da884d9a08894dd0828a5e216524b0",
-    "tests/fixtures/fake-sut/server.mjs": "b4c4d214b394d6109856b0dea7a13e3c05a32c6d6b51b56ec369dd849c6a313d",
+    "tests/fixtures/fake-sut/server.mjs": "387a31b6738909e2fd134b239ff2a6e9bf31dc59eb013d3256bca4dd7dd09554",
     "tests/fixtures/fake-sut/CONTRACT.md": "5cc702248a6287247dbc34628f5881ba6c383bccb2c4ccd0fa1e468d2a540b7c",
     "tests/_golden/fixtures/seams/events.fixture.json": "49545e6efe597c33d9eeaaff65e9f8f9e268e125509533ccf54026a70023dd14"
   },
@@ -32,8 +32,8 @@
       "acceptance": [
         "node bin/casey.mjs selftest --tier1"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-07-21T18:26:34.700Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-failsafe-coverage",
@@ -43,7 +43,17 @@
         "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-19T07:05:52.399Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T18:26:35.628Z 全部 acceptance exit 0"
+    }
+  ],
+  "resignLog": [
+    {
+      "at": "2026-07-22",
+      "by": "entity-ui-wiring 涟漪重签",
+      "files": [
+        "tests/fixtures/fake-sut/server.mjs"
+      ],
+      "reason": "registry/夹具纯加法（bindAgent 原子登记、chat-sut twins、fake-sut bindagent 三场景）+ 计数例翻 25→26；既有场景字节级零行为差见 docs/plans/entity-ui-wiring/evidence/"
     }
   ]
 }
