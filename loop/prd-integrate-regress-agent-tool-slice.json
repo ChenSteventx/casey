@@ -3,10 +3,10 @@
   "task": "把 regress 智能体工具首纵切重放到最新 dev，保留目标基线信任边界并只做零 SUT 集成验收。",
   "specPath": "docs/plans/integrate-regress-agent-tool-slice/plan.md",
   "testChecksums": {
-    "tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs": "2e213e76170046864844c7033a7f6b200c290570dbe88a32ec2cf50fd643ef06",
+    "tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs": "d3ba8ad3f4660e3b966fab5250578b7b46944f2b16e9016943c31c44122bb4d5",
     "tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs": "5e41993bb9deaa831c0eafb255455cb5af2d07c8fd26f03e706b98423c4c1dec",
     "tests/_golden/regress-agent-tool-integration-hardening.zero-sut.golden.mjs": "bea7927d8c2f8b9c3491a53237bff6b8168c595cb9fc7e1d3d234c936e479f3d",
-    "tests/_golden/flow-bridge.golden.mjs": "1864f99249d688cf4bb52e0e3bb0659e8c702bcc804927afcda6137cd7e6d701",
+    "tests/_golden/flow-bridge.golden.mjs": "28da2a24405b75e9c3105f2bc4a070cbe736d81b767fe8c702c9f7bcee2c2b20",
     "docs/plans/regress-agent-tool-first-slice/candidate/agent-tool-add.flow.json": "544052807f28c27e619cd6eb5c304b691bb222b06ee4e0a3afb2f1ff04ca6cbe"
   },
   "observability": [
@@ -27,7 +27,18 @@
         "node tests/_golden/flow-bridge.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-21T03:11:32.472Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T18:24:04.308Z 全部 acceptance exit 0"
+    }
+  ],
+  "resignLog": [
+    {
+      "at": "2026-07-22",
+      "by": "entity-ui-wiring 涟漪重签",
+      "files": [
+        "tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs",
+        "tests/_golden/flow-bridge.golden.mjs"
+      ],
+      "reason": "registry/夹具纯加法（bindAgent 原子登记、chat-sut twins、fake-sut bindagent 三场景）+ 计数例翻 25→26；既有场景字节级零行为差见 docs/plans/entity-ui-wiring/evidence/"
     }
   ]
 }

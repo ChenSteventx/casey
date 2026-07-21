@@ -1,0 +1,288 @@
+diff --git a/lib/compile-atoms.mjs b/lib/compile-atoms.mjs
+index d84416e..d24b429 100644
+--- a/lib/compile-atoms.mjs
++++ b/lib/compile-atoms.mjs
+@@ -18,6 +18,7 @@ import {
+ } from './agent-tool-compile.mjs';
+ import { isAgentToolSpecialAction, performAgentToolAction } from './agent-tool-actions.mjs';
+ import { projectCompileEntityProvenance } from './entity-semantic-lock-preflight.mjs';
++import { resolveAgentSearchTarget } from './agent-search-gate.mjs';
+ 
+ export const ROUTE_LIST = '/ai-manager/process/list';
+ // 编译分派表 = 单一事实源（codex R1-F1）：atom → 编译函数；COMPILE_KNOWN_ATOMS 由其键派生、compileAtomStep
+@@ -37,6 +38,7 @@ const COMPILE_ATOM_COMPILERS = Object.assign(Object.create(null), {
+   'workflow.openNode': compileWorkflowOpenNode,
+   'workflow.selectNodeDropdown': compileWorkflowSelectNodeDropdown,
+   'workflow.setNodeField': compileWorkflowSetNodeField,
++  'workflow.bindAgent': compileWorkflowBindAgent,
+   'nav.agentManagement': compileNavAgentManagement,
+   'nav.workflowManagement': compileNavWorkflowManagement,
+   'agent.searchOpen': compileAgentSearchOpen,
+@@ -339,9 +341,11 @@ export async function auditDeleteCount(page, targetName) {
+   return summarizeDeleteCountAudit(counts);
+ }
+ 
+-export function createCompileRun({ page, forensics, state, sut, uniqueName, site, listRoute, agentListRoute }) {
++export function createCompileRun({ page, forensics, state, sut, uniqueName, site, listRoute, agentListRoute, profile }) {
+   return {
+     page, forensics, state, site,
++    // 通道剖面（非凭据）：agent.searchOpen 条目容器覆写通道（profile.agents.itemContainer），与回放 ctx 同参。
++    profile: profile && typeof profile === 'object' ? profile : null,
+     // 列表页路由：通道剖面可选 routes.workflowList（非凭据通道配置，channel-driver schema 边界注明归剖面）；
+     // 缺省 = ROUTE_LIST（hermetic 假 SUT 路由，行为不变）。真机实采：/ai-manager/* 是 API 前缀（503），列表真身另有其路。
+     listRoute: listRoute || ROUTE_LIST,
+@@ -1099,13 +1103,133 @@ async function compileWorkflowSetNodeField(run, params) {
+   }
+ }
+ 
++// workflow.bindAgent（entity-ui-wiring W2，关系原子 relation/[source,target]——策略 preflight:51 已冻结，
++// 四层锁链数据驱动零改动）：在已打开的节点配置抽屉里把智能体绑定为 agentName。配方按 fake-sut 抽屉模式
++// hermetic 先行（GRILL D1，真机配方四停站复核挂 prd observability route:human）：触发器（.agent-bind-select
++// 可见恰一）→ 选项浮层精确选中（多匹配/缺席经点击身份门 fail-closed，绝不 first）→ 触发器值【精确】回读
++// 双证（openNode/selectNodeDropdown F1 精确回读同律：子串会把选错/半选误判选对）。
++async function compileWorkflowBindAgent(run, params) {
++  const i = run.newIntent();
++  const nodeLabel = String(params.nodeLabel ?? '');
++  const agentTemplate = String(params.agentName ?? '');
++  const agentName = instantiate(agentTemplate, run.ctx);
++  if (!nodeLabel.trim() || !agentName.trim()) {
++    run.blockers.push('workflow.bindAgent 参数缺失（nodeLabel/agentName 空）→ 硬阻断 fail-closed');
++    run.notes.push(run.blockers[run.blockers.length - 1]);
++    return;
++  }
++  // 抽屉标题域锁（codex R1-H2/R2）：钉 nodeLabel 对应抽屉，触发器/选项/回读全程「落笔前-落笔时-落笔后」
++  // 重判（verifyPinnedNodeDrawer + 物理句柄绑定三闸，与 selectNodeDropdown 同协议、与回放门同刻）——
++  // 初始钉扎后窗口冒出同标题抽屉/被钉抽屉被替换/句柄漂移，一律证不出归属硬阻断，绝不带疑落笔。
++  const bound = await pinNodeDrawer(run.page, nodeLabel);
++  if (bound.status !== 'ok') {
++    run.blockers.push(`workflow.bindAgent「${nodeLabel}」节点抽屉域锁 ${bound.status}（count=${bound.count}）→ 硬阻断 fail-closed 不点`);
++    run.notes.push(run.blockers[run.blockers.length - 1]);
++    return;
++  }
++  let trigHandle = null;
++  let optHandle = null;
++  try {
++    // 触发器身份门：被钉抽屉域内可见恰一 + 物理句柄绑定。
++    const triggers = bound.root.locator('.agent-bind-select:visible');
++    const tcount = await triggers.count().catch(() => null);
++    if (tcount !== 1) {
++      run.blockers.push(`workflow.bindAgent「${nodeLabel}」智能体选择控件被钉抽屉域内可见计数=${tcount ?? '证不出'}（期望恰 1）→ 硬阻断 fail-closed 不点`);
++      run.notes.push(run.blockers[run.blockers.length - 1]);
++      return;
++    }
++    try { trigHandle = await triggers.first().elementHandle({ timeout: 3000 }); } catch { trigHandle = null; }
++    if (!trigHandle) {
++      run.blockers.push(`workflow.bindAgent「${nodeLabel}」触发器物理绑定证不出 → 硬阻断 fail-closed`);
++      run.notes.push(run.blockers[run.blockers.length - 1]);
++      return;
++    }
++    // 落笔前重判（三闸）。
++    const preClick = await verifyPinnedNodeDrawer(run.page, nodeLabel, bound.pin, bound.rootHandle);
++    if (preClick.status !== 'ok'
++      || !(await locatorStillBound(run.page, triggers, 0, trigHandle))
++      || !(await handleInsideRoot(trigHandle, bound.rootHandle))) {
++      run.blockers.push(`workflow.bindAgent「${nodeLabel}」落笔前重判失败（count=${preClick.count}，${preClick.status}）→ 硬阻断 fail-closed 不点`);
++      run.notes.push(run.blockers[run.blockers.length - 1]);
++      return;
++    }
++    // 绑定动作事件只有「选中智能体」一步（触发器展开是条件步、不产 event——镜像 addNode 开面板先例）；
++    // 落笔时刻重判走 emit 动作回调（抛错落 emit 既有 action_failed 通道，与 selectNodeDropdown 同法）。
++    const r2 = await run.emit({ intentId: i, atom: 'workflow.bindAgent', action: 'click', semantic: { kind: 'text', name: agentTemplate, exact: true }, text: agentTemplate, value: agentTemplate, nodeName: nodeLabel }, async () => {
++      const atAct = await verifyPinnedNodeDrawer(run.page, nodeLabel, bound.pin, bound.rootHandle);
++      if (atAct.status !== 'ok'
++        || !(await locatorStillBound(run.page, triggers, 0, trigHandle))
++        || !(await handleInsideRoot(trigHandle, bound.rootHandle))) throw new Error(`落笔时刻抽屉域重判失败（count=${atAct.count}，${atAct.status}），拒点`);
++      if ((await run.page.locator('.agent-bind-option:visible').count().catch(() => 0)) === 0) {
++        await trigHandle.click({ timeout: 3000 }); // 条件展开（脚手架步）
++      }
++      const visibleOptions = run.page.locator('.agent-bind-option:visible');
++      await visibleOptions.first().waitFor({ state: 'visible', timeout: 5000 });
++      const target = visibleOptions.filter({ hasText: exactTextRe(agentName) });
++      const oc = await target.count().catch(() => 0);
++      if (oc !== 1) throw new Error(`浮层内智能体选项「${agentName}」可见 count=${oc} 非唯一/缺席，拒点（多匹配绝不 first）`);
++      optHandle = await target.first().elementHandle({ timeout: 3000 });
++      if (!optHandle) throw new Error('浮层选项物理绑定证不出，拒点');
++      // 浮层 teleport 到 body 无祖先物理包含可验——靠可见唯一闸 + 选项物理句柄 + 抽屉域重判兜底。
++      const atOpt = await verifyPinnedNodeDrawer(run.page, nodeLabel, bound.pin, bound.rootHandle);
++      if (atOpt.status !== 'ok'
++        || !(await handleInsideRoot(trigHandle, bound.rootHandle))
++        || !(await locatorStillBound(run.page, target, 0, optHandle, 1))) throw new Error(`选项落笔前重判失败（count=${atOpt.count}，${atOpt.status}），拒点`);
++      await optHandle.click({ timeout: 3000 });
++      const afterClick = await verifyPinnedNodeDrawer(run.page, nodeLabel, bound.pin, bound.rootHandle);
++      if (afterClick.status !== 'ok'
++        || !(await handleInsideRoot(trigHandle, bound.rootHandle))) throw new Error(`选项点击后抽屉域重判失败（count=${afterClick.count}，${afterClick.status}），拒认`);
++    });
++    if (r2.resolution !== 'unique') {
++      // 同名双选项 ambiguous / 缺席 none / 回调重判抛错 action_failed：身份门 fail-closed 绝不 first。
++      run.blockers.push(`workflow.bindAgent 域内智能体选项「${agentName}」resolution=${r2.resolution}（count=${r2.candidateCount}）→ 硬阻断 fail-closed（多匹配绝不 first、缺席绝不猜、重判失败绝不带疑落笔）`);
++      run.notes.push(run.blockers[run.blockers.length - 1]);
++      return;
++    }
++    // 回读前重判 + 后置核验（codex R1-H1）：被钉抽屉域内【可见】选中值恰一 + 精确等值。
++    const atRead = await verifyPinnedNodeDrawer(run.page, nodeLabel, bound.pin, bound.rootHandle);
++    if (atRead.status !== 'ok') {
++      run.blockers.push(`workflow.bindAgent 回读前抽屉域重判失败（count=${atRead.count}，${atRead.status}）→ 硬阻断（fail-closed）`);
++      run.notes.push(run.blockers[run.blockers.length - 1]);
++      return;
++    }
++    const values = bound.root.locator('.agent-bind-select__value:visible');
++    const vcount = await values.count().catch(() => null);
++    let got = null;
++    if (vcount === 1) { try { got = await values.first().textContent({ timeout: 3000 }); } catch { got = null; } }
++    if (vcount !== 1 || got !== agentName) {
++      run.blockers.push(`workflow.bindAgent 后置核验选中值回读证不出（可见值计数=${vcount ?? '证不出'}，回读=${got == null ? '证不出' : `「${got}」`}，期望可见恰一且精确「${agentName}」）→ 硬阻断（fail-closed）`);
++      run.notes.push(run.blockers[run.blockers.length - 1]);
++      return;
++    }
++    run.notes.push(`workflow.bindAgent 智能体已选中（节点「${nodeLabel}」，选中值〈${agentName}〉可见恰一精确回读过，域锁+三闸重判+身份门+回读双证）`);
++  } finally {
++    await disposeHandle(trigHandle);
++    await disposeHandle(optHandle);
++    await disposeHandle(bound.rootHandle);
++  }
++}
++
+ async function compileAgentSearchOpen(run, params) {
+   const i = run.newIntent();
+   const SEARCH = { kind: 'role', role: 'textbox', name: AGENT_SEARCH_NAME, exact: true };
+-  await run.emit({ intentId: i, atom: 'agent.searchOpen', action: 'fill', semantic: SEARCH, value: params.searchKeyword });
++  // 编码收敛（entity-ui-wiring D2）：code 在场时搜索框填编码（placeholder 真机明文支持「名称或编码」），
++  // 点击仍按 openName 精确锚——code 只作输入侧收敛通道，不冒充平台 ID 读回（读回等真机 spike）。
++  const keyword = typeof params.code === 'string' && params.code.trim() !== '' ? params.code : params.searchKeyword;
++  await run.emit({ intentId: i, atom: 'agent.searchOpen', action: 'fill', semantic: SEARCH, value: keyword });
+   // 搜索需回车触发过滤（regress 实测）。
+   await run.emit({ intentId: i, atom: 'agent.searchOpen', action: 'press', key: 'Enter', semantic: SEARCH });
+-  const r = await run.emit({ intentId: i, atom: 'agent.searchOpen', action: 'click', semantic: { kind: 'text', name: params.openName, exact: false }, text: params.openName });
++  // 共享门（编译门=回放门同刻，A3）：精确锚 + 条目容器归属闸；多匹配/缺席/容器外硬阻断绝不点
++  // （旧 exact:false 子串命中会开错同名前缀/超集对象——A1 病灶）。
++  const target = instantiate(String(params.openName ?? ''), run.ctx);
++  const container = (run.profile && run.profile.agents && run.profile.agents.itemContainer) || '.agent-item';
++  const gate = await resolveAgentSearchTarget(run.page, { openName: target, containerSelector: container });
++  if (gate.resolution !== 'unique') {
++    run.blockers.push(`agent.searchOpen「${params.openName}」共享门裁定 ${gate.resolution}（candidateCount=${gate.candidateCount}）→ 硬阻断 fail-closed 不点（多匹配/缺席/容器外绝不 first）`);
++    run.notes.push(run.blockers[run.blockers.length - 1]);
++    return;
++  }
++  const r = await run.emit({ intentId: i, atom: 'agent.searchOpen', action: 'click', semantic: { kind: 'text', name: params.openName, exact: true }, text: params.openName });
+   // 后置条件（registry：provides 智能体详情已开）：「测试」按钮可见；仅本步 unique 才等（G2 失败步不堆等）。
+   if (r.resolution === 'unique') await run.page.getByRole('button', { name: '测试' }).waitFor({ state: 'visible', timeout: 30000 }).catch(() => {});
+ }
+diff --git a/lib/replay-actions.mjs b/lib/replay-actions.mjs
+index d491c02..32edc36 100644
+--- a/lib/replay-actions.mjs
++++ b/lib/replay-actions.mjs
+@@ -7,6 +7,7 @@ import { findEquivalentAffordance } from './drift-probe.mjs';
+ import { performWorkflowDeleteConfirm, performWorkflowDeleteTrigger } from './workflow-delete-domain.mjs';
+ import { isAgentToolSpecialAction, performAgentToolAction } from './agent-tool-actions.mjs';
+ import { encodeInputReadback } from './replay-assert.mjs';
++import { resolveAgentSearchTarget } from './agent-search-gate.mjs';
+ 
+ function semanticLocator(page, ev) {
+   const s = ev.semantic;
+@@ -26,6 +27,8 @@ export async function performAction(page, ev, ctx) {
+   if (ev.action === 'selectOption') return await doSelect(page, ev, ctx);
+   if (ev.action === 'dragTo') return await doDragTo(page, ev);
+   if (isAgentToolSpecialAction(ev)) return await performAgentToolAction(page, ev, ctx);
++  if (ev.action === 'click' && ev.atom === 'agent.searchOpen') return await doAgentSearchOpen(page, ev, ctx);
++  if (ev.action === 'click' && ev.atom === 'workflow.bindAgent') return await doBindAgent(page, ev, ctx);
+   if (ev.action === 'click' && ev.atom === 'workflow.openNode') return await doOpenNode(page, ev);
+   if (ev.action === 'click' && ev.atom === 'workflow.selectNodeDropdown') return await doSelectNodeDropdown(page, ev);
+   if (ev.action === 'click' && ev.atom === 'workflow.deleteByName') {
+@@ -294,6 +297,97 @@ async function wideTriggerSnapshot(page) {
+ // 域内唯一才点（多匹配 ambiguous 绝不点、缺席回 none）；身份回读改为标题锚域三态（drawer-lock-hardening
+ // D5）：预点基线——单击前先数「可见且含精确、且标题文本自身可见」的抽屉，count>0 即无法把点后的抽屉
+ // 归因于本次单击（证不出）→ 绝不背书；点后恰一——回读要求域内恰 1（0 或 >1 同样证不出归因）。
++// agent.searchOpen 点击专用门（entity-ui-wiring W1）：消费 lib/agent-search-gate.mjs 共享门——
++// 编译门=回放门同刻（openNode F2 元教训，金牌 A3 以两侧 import 结构钉死）。精确锚+容器归属闸，
++// 多匹配 ambiguous 绝不 first、缺席/容器外 none/fail-closed。
++async function doAgentSearchOpen(page, ev, ctx) {
++  const raw = ev.semantic && typeof ev.semantic.name === 'string' ? ev.semantic.name : (typeof ev.text === 'string' ? ev.text : null);
++  const name = raw == null ? null : instantiate(raw, ctx);
++  if (!name || name.trim() === '') return { resolution: 'action_failed', candidateCount: 0, identityReadback: { ok: false } };
++  // 容器覆写同参（codex R1-M1）：与编译侧同一 profile.agents.itemContainer 通道（回放 ctx 携 profile）。
++  const container = (ctx && ctx.profile && ctx.profile.agents && ctx.profile.agents.itemContainer) || '.agent-item';
++  const gate = await resolveAgentSearchTarget(page, { openName: name, containerSelector: container });
++  if (gate.resolution === 'ambiguous') return { resolution: 'ambiguous', candidateCount: gate.candidateCount, identityReadback: { ok: false } };
++  if (gate.resolution !== 'unique') return { resolution: 'none', candidateCount: gate.candidateCount, identityReadback: { ok: false } };
++  try { await page.getByText(name, { exact: true }).click({ timeout: 10000 }); } catch {
++    return { resolution: 'action_failed', candidateCount: 1, identityReadback: { ok: false } };
++  }
++  return { resolution: 'unique', candidateCount: 1, identityReadback: { ok: true } };
++}
++
++// workflow.bindAgent 回放专用门（entity-ui-wiring W2）：单事件（选中智能体）；触发器展开是条件步
++// （与编译配方同刻——编译侧同样不为展开产 event）。触发器域锁可见恰一；选项多匹配 ambiguous 绝不 first、
++// 缺席 none、选中值【精确】回读不等即 action_failed（fail-closed）。
++async function doBindAgent(page, ev, ctx) {
++  const agentTemplate = typeof ev.value === 'string' && ev.value.trim() ? ev.value : null;
++  if (!agentTemplate) return { resolution: 'action_failed', candidateCount: 0, identityReadback: { ok: false } };
++  // 抽屉标题域锁（nodeName 供给通道，与 selectNodeDropdown 同律）：缺失/非法即硬阻断，绝不宽域猜。
++  if (nodeNameInvalid(ev.nodeName)) return { resolution: 'action_failed', candidateCount: 0, identityReadback: { ok: false } };
++  const agentName = instantiate(agentTemplate, ctx);
++  const bound = await pinNodeDrawer(page, ev.nodeName);
++  if (bound.status === 'none') return { resolution: 'none', candidateCount: 0, identityReadback: { ok: false } };
++  if (bound.status === 'ambiguous') return { resolution: 'ambiguous', candidateCount: bound.count, identityReadback: { ok: false } };
++  if (bound.status !== 'ok') return { resolution: 'action_failed', candidateCount: bound.count, identityReadback: { ok: false } };
++  let trigHandle = null;
++  let optHandle = null;
++  try {
++    // 触发器身份门：被钉抽屉域内可见恰一 + 物理句柄绑定（codex R2：初始钉扎后须全程重判，绝不带疑落笔）。
++    const triggers = bound.root.locator('.agent-bind-select:visible');
++    try { await triggers.first().waitFor({ state: 'visible', timeout: 5000 }); } catch { /* 计数照实 */ }
++    const tn = await triggers.count().catch(() => 0);
++    if (tn === 0) return { resolution: 'none', candidateCount: 0, identityReadback: { ok: false } };
++    if (tn > 1) return { resolution: 'ambiguous', candidateCount: tn, identityReadback: { ok: false } };
++    try { trigHandle = await triggers.first().elementHandle({ timeout: 3000 }); } catch { trigHandle = null; }
++    if (!trigHandle) return { resolution: 'action_failed', candidateCount: 1, identityReadback: { ok: false } };
++    // 落笔前重判（三闸，与编译门同刻）。
++    const pre = await verifyPinnedNodeDrawer(page, ev.nodeName, bound.pin, bound.rootHandle);
++    if (pre.status !== 'ok'
++      || !(await locatorStillBound(page, triggers, 0, trigHandle))
++      || !(await handleInsideRoot(trigHandle, bound.rootHandle))) {
++      return { resolution: 'action_failed', candidateCount: pre.count, identityReadback: { ok: false } };
++    }
++    // 条件展开（脚手架步，不改动作账）：选项浮层未开才点触发器（经物理句柄）。
++    if ((await page.locator('.agent-bind-option:visible').count().catch(() => 0)) === 0) {
++      try { await trigHandle.click({ timeout: 5000 }); } catch {
++        return { resolution: 'action_failed', candidateCount: 1, identityReadback: { ok: false } };
++      }
++    }
++    const options = page.locator('.agent-bind-option:visible').filter({ hasText: exactTextRe(agentName) });
++    try { await options.first().waitFor({ state: 'visible', timeout: 5000 }); } catch { /* 计数照实 */ }
++    const n = await options.count().catch(() => 0);
++    if (n === 0) return { resolution: 'none', candidateCount: 0, identityReadback: { ok: false } };
++    if (n > 1) return { resolution: 'ambiguous', candidateCount: n, identityReadback: { ok: false } };
++    try { optHandle = await options.first().elementHandle({ timeout: 3000 }); } catch { optHandle = null; }
++    if (!optHandle) return { resolution: 'action_failed', candidateCount: 1, identityReadback: { ok: false } };
++    // 选项落笔前重判（浮层 teleport 到 body 无祖先包含可验——可见唯一闸 + 物理句柄 + 抽屉域重判兜底）。
++    const atOpt = await verifyPinnedNodeDrawer(page, ev.nodeName, bound.pin, bound.rootHandle);
++    if (atOpt.status !== 'ok'
++      || !(await handleInsideRoot(trigHandle, bound.rootHandle))
++      || !(await locatorStillBound(page, options, 0, optHandle, 1))) {
++      return { resolution: 'action_failed', candidateCount: atOpt.count, identityReadback: { ok: false } };
++    }
++    try { await optHandle.click({ timeout: 5000 }); } catch {
++      return { resolution: 'action_failed', candidateCount: 1, identityReadback: { ok: false } };
++    }
++    // 点击后/回读前重判 + 后置核验（codex R1-H1）：被钉抽屉域内【可见】选中值恰一 + 精确等值。
++    const afterClick = await verifyPinnedNodeDrawer(page, ev.nodeName, bound.pin, bound.rootHandle);
++    if (afterClick.status !== 'ok' || !(await handleInsideRoot(trigHandle, bound.rootHandle))) {
++      return { resolution: 'action_failed', candidateCount: afterClick.count, identityReadback: { ok: false } };
++    }
++    const values = bound.root.locator('.agent-bind-select__value:visible');
++    const vcount = await values.count().catch(() => null);
++    if (vcount !== 1) return { resolution: 'action_failed', candidateCount: 1, identityReadback: { ok: false } };
++    let got = null;
++    try { got = await values.first().textContent({ timeout: 3000 }); } catch { got = null; }
++    if (got !== agentName) return { resolution: 'action_failed', candidateCount: 1, identityReadback: { ok: false } };
++    return { resolution: 'unique', candidateCount: 1, identityReadback: { ok: true } };
++  } finally {
++    await disposeHandle(trigHandle);
++    await disposeHandle(optHandle);
++    await disposeHandle(bound.rootHandle);
++  }
++}
++
+ async function doOpenNode(page, ev) {
+   const label = ev.semantic && ev.semantic.kind === 'text' && typeof ev.semantic.name === 'string' ? ev.semantic.name : null;
+   // trim 空门（codex r5 fail-open）：纯空白 label 经 nodeDrawerDomain 的 norm 归一成空串，会借空 target

@@ -4,7 +4,7 @@
   "specPath": "docs/plans/replay-nth-visible-hardening/plan.md",
   "testChecksums": {
     "tests/_golden/replay-nth-visible-hardening.golden.mjs": "78cc7d18fcbf87ecfbe686c6fa37f3ef6410d6d0214ff4c57a5b9b96c5c360c6",
-    "tests/fixtures/fake-sut/server.mjs": "b4c4d214b394d6109856b0dea7a13e3c05a32c6d6b51b56ec369dd849c6a313d"
+    "tests/fixtures/fake-sut/server.mjs": "387a31b6738909e2fd134b239ff2a6e9bf31dc59eb013d3256bca4dd7dd09554"
   },
   "stories": [
     {
@@ -26,7 +26,17 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-21T02:53:27.178Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T18:27:04.320Z 全部 acceptance exit 0"
+    }
+  ],
+  "resignLog": [
+    {
+      "at": "2026-07-22",
+      "by": "entity-ui-wiring 涟漪重签",
+      "files": [
+        "tests/fixtures/fake-sut/server.mjs"
+      ],
+      "reason": "registry/夹具纯加法（bindAgent 原子登记、chat-sut twins、fake-sut bindagent 三场景）+ 计数例翻 25→26；既有场景字节级零行为差见 docs/plans/entity-ui-wiring/evidence/"
     }
   ]
 }

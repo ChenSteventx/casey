@@ -4,7 +4,7 @@
   "specPath": "docs/plans/replay-settle-mount/plan.md",
   "testChecksums": {
     "tests/_golden/replay-settle-mount.golden.mjs": "cf81e01489c627b77a9c2243eda38750b230d16a655f8e151f8f732e03ee3adb",
-    "tests/fixtures/fake-sut/server.mjs": "b4c4d214b394d6109856b0dea7a13e3c05a32c6d6b51b56ec369dd849c6a313d",
+    "tests/fixtures/fake-sut/server.mjs": "387a31b6738909e2fd134b239ff2a6e9bf31dc59eb013d3256bca4dd7dd09554",
     "tests/fixtures/fake-sut/CONTRACT.md": "5cc702248a6287247dbc34628f5881ba6c383bccb2c4ccd0fa1e468d2a540b7c"
   },
   "observability": [
@@ -40,8 +40,18 @@
         "node tests/_golden/p5-replay-coverage.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-07-21T18:27:11.898Z 全部 acceptance exit 0"
+    }
+  ],
+  "resignLog": [
+    {
+      "at": "2026-07-22",
+      "by": "entity-ui-wiring 涟漪重签",
+      "files": [
+        "tests/fixtures/fake-sut/server.mjs"
+      ],
+      "reason": "registry/夹具纯加法（bindAgent 原子登记、chat-sut twins、fake-sut bindagent 三场景）+ 计数例翻 25→26；既有场景字节级零行为差见 docs/plans/entity-ui-wiring/evidence/"
     }
   ]
 }

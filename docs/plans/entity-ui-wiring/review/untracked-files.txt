@@ -1,0 +1,7 @@
+docs/plans/entity-ui-wiring/
+lib/agent-search-gate.mjs
+loop/prd-entity-ui-wiring.json
+tests/_golden/entity-ui-wiring.bindagent-lockchain.zero-sut.golden.mjs
+tests/_golden/entity-ui-wiring.bindagent-replay.golden.mjs
+tests/_golden/entity-ui-wiring.guards.zero-sut.golden.mjs
+tests/_golden/entity-ui-wiring.searchopen.golden.mjs

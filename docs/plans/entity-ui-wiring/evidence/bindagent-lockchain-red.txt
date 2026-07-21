@@ -1,0 +1,76 @@
+entity-ui-wiring · W2 验收金牌红/绿基线证据
+金牌：tests/_golden/entity-ui-wiring.bindagent-lockchain.zero-sut.golden.mjs
+采集日期：2026-07-22（W2 落地前，pre-bindAgent-wiring 基线）
+运行：node tests/_golden/entity-ui-wiring.bindagent-lockchain.zero-sut.golden.mjs <a4a|a4b|a5|a6|all>
+纪律：退出码 + 精确 reason/problem 字段 + deepEqual 钉结构；禁标记串 grep。
+
+================================================================================
+逐验收点红/绿 + 退出码总览
+================================================================================
+A4a  编译原子识别      红（今日 25 原子、无 workflow.bindAgent 编译器；期望 26）      exit 1
+A4b  flow-bridge 放行   红（registry 缺 workflow.bindAgent 词条，validateDraft 判未知原子）exit 1
+A4b  flow-bridge 拒绝   绿（今日即绿·回归保护：单边 binding 报精确角色闭合 reason）
+A5   双 receipt 端到端链 绿（今日全环已绿：draft→confirm→sign(exit0)→replay 准入放行）    exit 0
+A6   单边 frozen 准入红  绿（今日即绿·回归保护：source-only/target-only 必红角色闭合）      exit 0
+整体 all                                                                            exit 1（5 过 / 3 红）
+
+“今日红在哪一环”（A5）：无。prepareSignCase 双 receipt 变体手编 events，绕过 W2 断缝
+（compile-atoms 编译器缺 bindAgent、registry 缺词条、flow-bridge 结构闸）——这三处正是 A4
+所守；A5 走的是已泛化的 provenance/sign/replay 准入栈（策略层 relation[source,target] 早就位），
+故 compile-draft→confirm→sign→replay 每一环今日均绿。A5 作为端到端回归护栏（含真 CLI bin/sign.mjs
+对 relation 双 receipt 案的首次覆盖），非红先行信号；W2 的红先行信号由 A4a/A4b(放行) 承载。
+
+================================================================================
+【红】A4a  node ...golden.mjs a4a   → exit 1
+================================================================================
+FAIL A4a COMPILE_KNOWN_ATOMS 含 workflow.bindAgent: COMPILE_KNOWN_ATOMS 缺 workflow.bindAgent（今日 25 原子无 bindAgent 编译器）
+FAIL A4a 编译原子总数恰 26: COMPILE_KNOWN_ATOMS.size=25（期望 26：25 现有 + workflow.bindAgent）
+RED  entity-ui-wiring.bindagent-lockchain/a4a: 0 过 / 2 红
+
+================================================================================
+【红】A4b(放行) + 【绿】A4b(拒绝)  node ...golden.mjs a4b   → exit 1
+================================================================================
+FAIL A4b flow-bridge 放行带 source+target 双 binding 的 bindAgent flow: 双 binding bindAgent flow 未被 flow-bridge 放行（今日 registry 缺 bindAgent 词条）；problems=["step[0]：未知原子「workflow.bindAgent」（不在注册表）"]
+ok   A4b flow-bridge 拒绝仅 source 单边 binding 的 bindAgent flow 且报精确 reason
+ok   A4b flow-bridge 拒绝仅 target 单边 binding 的 bindAgent flow 且报精确 reason
+RED  entity-ui-wiring.bindagent-lockchain/a4b: 2 过 / 1 红
+
+拒绝语义核实（今日行为，已钉死）：单边 source/target 的 validateBridge().problems 恰含
+  "实体绑定策略未闭合（ENTITY_BINDING_REQUIRED_ROLES_INVALID）"
+（lib/flow-bridge.mjs:133，relation 原子 side-effect 角色闭合闸；来自 requiredFlowEntityBindings→
+ ENTITY_BINDING_REQUIRED_ROLES_INVALID）。今日另伴随 "未知原子" 串（registry 缺词条），W2 落地后
+ 该伴随串消失、角色闭合串保留——断言用精确成员含（.includes），今日/W2 两态均绿。
+
+================================================================================
+【绿】A5  node ...golden.mjs a5   → exit 0（今日全环已绿）
+================================================================================
+ok   A5 双 receipt 端到端链 compile-draft→confirm→sign→replay 准入全绿
+ok   entity-ui-wiring.bindagent-lockchain/a5: 1/1 全过（纯函数 + 本地文件 + 一次 sign 子进程，零 SUT）
+
+  逐环实测（探针复核）：
+   · compile-draft: buildEntityBindingsDraft ok=true（relation source+target 双行 provenance）
+   · sign:          bin/sign.mjs exit=0，产 entity-locks.frozen.json
+   · frozen 结构（deepEqual 钉死）：
+       [source] atom=workflow.bindAgent candidateId=candidate-workflow-main lockId=lock-workflow-main
+       [target] atom=workflow.bindAgent candidateId=candidate-agent-main    lockId=lock-agent-main
+   · replay 准入: {"ok":true,"allowBrowserLaunch":true,"reason":null,"authorityKind":"frozen-entity-locks-internal-policy"}
+
+================================================================================
+【绿】A6  node ...golden.mjs a6   → exit 0（今日即绿·回归保护）
+================================================================================
+ok   A6 仅 source 单边 frozen locks 过 replay 准入必红 FROZEN_ENTITY_LOCKS_REQUIRED_ROLES_INVALID
+ok   A6 仅 target 单边 frozen locks 过 replay 准入必红 FROZEN_ENTITY_LOCKS_REQUIRED_ROLES_INVALID
+ok   entity-ui-wiring.bindagent-lockchain/a6: 2/2 全过（纯函数 + 本地文件 + 一次 sign 子进程，零 SUT）
+
+  逐边实测（探针复核）：
+   · source-only replay = {"ok":false,"allowBrowserLaunch":false,"reason":"FROZEN_ENTITY_LOCKS_REQUIRED_ROLES_INVALID","nextAction":"REDRAFT_AND_RESIGN_ALL_EVENT_ROLES"}
+   · target-only replay = {"ok":false,"allowBrowserLaunch":false,"reason":"FROZEN_ENTITY_LOCKS_REQUIRED_ROLES_INVALID","nextAction":"REDRAFT_AND_RESIGN_ALL_EVENT_ROLES"}
+
+================================================================================
+W2 落地后期望翻绿路径
+================================================================================
+· A4a: COMPILE_ATOM_COMPILERS 注册 workflow.bindAgent→compileWorkflowBindAgent（lib/compile-atoms.mjs:27-53）
+       → COMPILE_KNOWN_ATOMS.size 25→26 且含 bindAgent → A4a 两断言翻绿。
+· A4b(放行): lib/atoms-registry.snapshot.json 登记 workflow.bindAgent（params nodeLabel/agentName/可选 agentCode，
+       requires 节点抽屉域）→ validateDraft 不再判未知原子、状态机闸过 → validateBridge().ok=true → 翻绿。
+· A4b(拒绝)/A5/A6: 今日已绿，W2 后应保持绿（回归护栏）。

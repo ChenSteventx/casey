@@ -11,6 +11,9 @@
 //           | 'bgstream'（同 happy 但页面加载即开一条永不结束的背景 SSE——钉「流等待按本步发起归因、
 //             背景长流不拖无关步」codex R1-F2）
 //           | 'leaky'（同 happy 但发送另发一条 query 携凭据形态的请求——钉「axes 落盘口过凭据门拒写」）
+//           | 'twins'（同 happy，但 /agent/list 列出两条完全同名的 .agent-item 条目——同一列表两条
+//             「互联网问诊-主诉」不同实体，钉「entity-ui-wiring W1：名字定位遇同名双条目必须 AMBIGUOUS
+//             硬阻断、绝不点 first」；纯加法，其余场景 /agent/list 一字不动）
 //   GET /                          —— 首页：侧栏 list「智能体管理」→ /agent/list
 //   GET /agent/list                —— 搜索框（placeholder 输入智能体名称或编码进行搜索）Enter 出结果项
 //   GET /agent/detail              —— 「测试」按钮 → 右抽屉：消息框（请输入消息）+ 发送箭头
@@ -40,6 +43,24 @@ const LIST_PAGE =
   'document.getElementById("agent-search").addEventListener("keydown",function(e){' +
   'if(e.key==="Enter"&&this.value.trim())document.getElementById("results").hidden=false;});' +
   'document.getElementById("agent-open").addEventListener("click",function(){location.href="/agent/detail";});' +
+  '</script>';
+
+// twins 列表页（entity-ui-wiring W1 对抗考场）：同一列表两条完全同名的 .agent-item 条目（不同实体：
+// href 不同）。纯加法——仅 scenario==='twins' 时替换 /agent/list，既有场景走 LIST_PAGE 不动。名字文本是
+// 夹具既有通道（同 LIST_PAGE 的 .agent-item 渲染），非投机接缝。
+const TWINS_LIST_PAGE =
+  SIDEBAR +
+  '<h1>智能体列表</h1>' +
+  '<input type="text" id="agent-search" placeholder="输入智能体名称或编码进行搜索">' +
+  '<div id="results" hidden>' +
+  '<div class="agent-item" id="agent-open-1">互联网问诊-主诉</div>' +
+  '<div class="agent-item" id="agent-open-2">互联网问诊-主诉</div>' +
+  '</div>' +
+  '<script>' +
+  'document.getElementById("agent-search").addEventListener("keydown",function(e){' +
+  'if(e.key==="Enter"&&this.value.trim())document.getElementById("results").hidden=false;});' +
+  'document.getElementById("agent-open-1").addEventListener("click",function(){location.href="/agent/detail";});' +
+  'document.getElementById("agent-open-2").addEventListener("click",function(){location.href="/agent/detail?id=2";});' +
   '</script>';
 
 // 发送钮 enable 判据复刻 regress 实测：监听 keydown（fill 只发 input 事件不触发 keydown → 保持 disabled）。
@@ -104,7 +125,7 @@ function makeHandler(scenario) {
   return (req, res) => {
     const path = new URL(req.url, 'http://127.0.0.1').pathname;
     if (req.method === 'GET' && path === '/') return html(res, SIDEBAR + '<h1>首页</h1>');
-    if (req.method === 'GET' && path === '/agent/list') return html(res, LIST_PAGE);
+    if (req.method === 'GET' && path === '/agent/list') return html(res, scenario === 'twins' ? TWINS_LIST_PAGE : LIST_PAGE);
     if (req.method === 'GET' && path === '/agent/detail') return html(res, detailPage(scenario));
     if (req.method === 'GET' && path === '/ai-api/tester/agent/stream') return streamReply(res, scenario);
     if (req.method === 'GET' && path === '/ai-manager/auths/getTempTokenForApi') {
