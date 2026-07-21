@@ -3,7 +3,7 @@
   "task": "workflow.deleteByName 确认动作只允许消费删除触发后唯一新出现的物理弹层授权，拒绝任意可见弹层替代。",
   "specPath": "docs/plans/delete-confirm-causal-binding/plan.md",
   "testChecksums": {
-    "tests/_golden/workflow-delete-causal-binding.static.golden.mjs": "5055cc2526182621f10cd2b560a7d4da96bec6849517120bda3d2bf363204830"
+    "tests/_golden/workflow-delete-causal-binding.static.golden.mjs": "483b1e50908427e05f3c4a11ebf00dd4435d9ef10b1afa1fac2071e14b819abb"
   },
   "observability": [
     {
@@ -28,7 +28,7 @@
         "git diff --check"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-15T16:40:17.908Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T06:55:39.065Z 全部 acceptance exit 0"
     }
   ]
 }

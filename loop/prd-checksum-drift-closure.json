@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "task": "checksum-drift-closure（full）：以零 SUT 回归保护证明 report-model schema 真实报告交付扩展与 workflow.deleteByName 因果弹层收严仍语义正确；新增 PRD 只冻结新增验收，两个目标冻结件继续由原 owner 单独持有。验收后须由 Steven 另签两个完整当前 sha256，才可更新 owner testChecksums。本契约不修改 loop-kit、不重签两份安全撤销墓碑，也不把 ratchet 的两条预期安全撤销红冒充全绿。",
+  "specPath": "docs/plans/checksum-drift-closure/plan.md",
+  "testChecksums": {
+    "tests/_golden/checksum-drift-closure.zero-sut.golden.mjs": "a3fb3bdf7e576784678552ed0c832877c08382fdaee3b082c0c38bc173354cc5"
+  },
+  "observability": [
+    {
+      "dimension": "零 SUT 验收只证明报告 schema/生产纯函数形态与删除域 fail-closed 语义，不证明真实报告附件、视觉复核或真实 Heren 删除弹层时序与删后归零。",
+      "route": "human"
+    },
+    {
+      "dimension": "两个真实漏签的完整当前 sha256 必须在验收通过后另交 Steven 按 ADR-0004 签认；本次 D1/D2/D3 方案签认不替代该哈希人签。",
+      "route": "human"
+    },
+    {
+      "dimension": "本契约结束时全仓 ratchet 预期仍 exit 1，且只能剩 driver canonical-root 与 transaction-root 两条有意安全撤销 mismatch；其具名建模由后续 ratchet-security-revocation 契约处理。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-zero-sut-semantic-closure",
+      "desc": "新增回归保护测试钉住 artifacts/visualReview 闭合 schema、生产纯函数投影与 verdictImpact=none，同时独立证明删除弹层 class token 边界和空 expectedName 零页面读取 fail-closed；验收闭包不含浏览器、网络、子进程或任何 SUT。现役删除静态金牌作为原 owner 已冻结的独立交叉证据直接运行。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/checksum-drift-closure.zero-sut.golden.mjs",
+        "node tests/_golden/workflow-delete-causal-binding.static.golden.mjs",
+        "node --check tests/_golden/checksum-drift-closure.zero-sut.golden.mjs",
+        "git diff --check -- docs/plans/checksum-drift-closure/GRILL.md docs/plans/checksum-drift-closure/plan.md tests/_golden/checksum-drift-closure.zero-sut.golden.mjs loop/prd-checksum-drift-closure.json"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-21T06:55:12.732Z 全部 acceptance exit 0"
+    }
+  ]
+}
