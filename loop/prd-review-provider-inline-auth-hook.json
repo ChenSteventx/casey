@@ -24,7 +24,7 @@
         "node tests/_golden/review-provider-inline-auth-hook.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-21T08:51:28.394Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T09:05:21.554Z 全部 acceptance exit 0"
     }
   ]
 }
