@@ -8,6 +8,12 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/loop-kit/bin/hook-loop-triage.mjs\"",
             "timeout": 10,
             "statusMessage": "loop 入口分流检查单"
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/bin/review-provider-context-hook.mjs\"",
+            "timeout": 10,
+            "statusMessage": "评审供应方内联认证纪律"
           }
         ]
       }

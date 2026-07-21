@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "task": "review-provider-inline-auth-hook（full）：Steven 明确裁定 Grok/pi.dev 均可用且认证由调用链内联；新增 Casey UserPromptSubmit hook 恒定注入禁凭据探测/禁裸 CLI 预检/直接走已配置入口/CC 无额度不回退，并在 AGENTS 覆盖 Codex。",
+  "specPath": "docs/plans/review-provider-inline-auth-hook/plan.md",
+  "testChecksums": {
+    "tests/_golden/review-provider-inline-auth-hook.zero-sut.golden.mjs": "6c156d7c287de6cf2d7dd19a9da1704beb40f9bc437e0bff8131388d0fc2eb22"
+  },
+  "observability": [
+    {
+      "dimension": "hook 只注入调用纪律，不验证或暴露任何认证信息；真实供应方可用性只由项目既定已配置入口的真实任务调用观察。",
+      "route": "human"
+    },
+    {
+      "dimension": "Codex 当前不执行 .claude UserPromptSubmit hook，故以 AGENTS.md 同义硬规则覆盖；其它 agent 是否加载该入口由各宿主负责。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-inline-auth-provider-context",
+      "desc": "新增零凭据、零网络、fail-open 的供应方上下文 hook；任意提示恒定注入 Grok/pi.dev 内联认证纪律，保留 loop triage，AGENTS 同义覆盖 Codex。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/review-provider-inline-auth-hook.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-21T08:51:28.394Z 全部 acceptance exit 0"
+    }
+  ]
+}
