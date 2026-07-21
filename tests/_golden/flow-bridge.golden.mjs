@@ -37,8 +37,8 @@ const TESTCASE = {
 };
 // mock LLM mapping（CLI 外产，逐 intent → 原子+参数）。
 const MAPPING = [
-  { intentId: 'intent_create', atom: 'workflow.create', params: { name: 'atl_{{uniqueName}}', category: '测试分类' } },
-  { intentId: 'intent_save', atom: 'workflow.save', params: {} },
+  { intentId: 'intent_create', atom: 'workflow.create', params: { name: 'atl_{{uniqueName}}', category: '测试分类' }, entityBindings: [{ candidateId: 'candidate-workflow-main', role: 'subject' }] },
+  { intentId: 'intent_save', atom: 'workflow.save', params: {}, entityBindings: [{ candidateId: 'candidate-workflow-main', role: 'subject' }] },
 ];
 const tcFile = join(tmp, 'testcase.json'); writeFileSync(tcFile, JSON.stringify(TESTCASE));
 function writeMapping(m, name) { const f = join(tmp, name); writeFileSync(f, JSON.stringify(m)); return f; }
@@ -78,18 +78,20 @@ await checkAsync('C3 round-trip：桥产 flow → casey compile --flow gate 段 
 });
 
 // ---------- C4 未知原子（不在注册表）拒 ----------
-await checkAsync('C4 未知原子（不在注册表）→ 桥 exit 65 零落盘', async () => {
-  const bad = [{ intentId: 'intent_create', atom: 'workflow.create', params: { name: 'atl_{{uniqueName}}', category: 'x' } }, { intentId: 'intent_save', atom: 'nonsense.atom', params: {} }];
+await checkAsync('C4 未知原子（不在注册表）→ 桥 exit 65 精确点名 + 零落盘', async () => {
+  // 非目标原子带合法绑定（refit：隔离拒因——拒必须因未知原子，不得被实体闸接拒造错因假绿）
+  const bad = [{ intentId: 'intent_create', atom: 'workflow.create', params: { name: 'atl_{{uniqueName}}', category: 'x' }, entityBindings: [{ candidateId: 'candidate-workflow-main', role: 'subject' }] }, { intentId: 'intent_save', atom: 'nonsense.atom', params: {}, entityBindings: [{ candidateId: 'candidate-workflow-main', role: 'subject' }] }];
   const mf = writeMapping(bad, 'm-c4.json'); const od = join(tmp, 'c4');
   const r = bridge(CASE_ID, mf, od);
   if (r.status !== 65) throw new Error(`未知原子应 exit 65，实际 ${r.status}`);
+  if (!/未知原子/.test((r.stderr || '') + (r.stdout || ''))) throw new Error('拒因须精确点名「未知原子」（防实体闸接拒错因假绿）');
   if (existsSync(flowOut(od))) throw new Error('拒应零落盘');
 });
 
 // ---------- C5 真缝：册内无编译知识原子拒 ----------
 await checkAsync('C5【真缝】册内(60)但无编译知识原子（如 agent.selectModel）→ 桥 exit 65 点名无编译知识', async () => {
   // 例翻（regress-agent-tool-first-slice）：首纵切七原子已获编译知识，反例换下一条尚未迁移的 agent.selectModel。
-  const bad = [{ intentId: 'intent_create', atom: 'agent.selectModel', params: {} }, { intentId: 'intent_save', atom: 'workflow.save', params: {} }];
+  const bad = [{ intentId: 'intent_create', atom: 'agent.selectModel', params: {}, entityBindings: [{ candidateId: 'candidate-workflow-main', role: 'subject' }] }, { intentId: 'intent_save', atom: 'workflow.save', params: {}, entityBindings: [{ candidateId: 'candidate-workflow-main', role: 'subject' }] }];
   const mf = writeMapping(bad, 'm-c5.json'); const od = join(tmp, 'c5');
   const r = bridge(CASE_ID, mf, od);
   if (r.status !== 65) throw new Error(`册内无编译知识原子应 exit 65，实际 ${r.status}`);
@@ -98,12 +100,13 @@ await checkAsync('C5【真缝】册内(60)但无编译知识原子（如 agent.s
 });
 
 // ---------- C6 破坏性前缀 + 模板保留 ----------
-await checkAsync('C6 破坏性原子实体名无 uniquePrefix → 拒；{{uniqueName}} 模板原样保留不冻字面量', async () => {
-  const badPrefix = [{ intentId: 'intent_create', atom: 'workflow.create', params: { name: '目录CRUD无前缀', category: 'x' } }];
+await checkAsync('C6 破坏性原子实体名无 uniquePrefix → 精确拒因；{{uniqueName}} 模板原样保留不冻字面量', async () => {
+  const badPrefix = [{ intentId: 'intent_create', atom: 'workflow.create', params: { name: '目录CRUD无前缀', category: 'x' }, entityBindings: [{ candidateId: 'candidate-workflow-main', role: 'subject' }] }];
   const tcOne = join(tmp, 'tc-c6.json'); writeFileSync(tcOne, JSON.stringify({ ...TESTCASE, steps: [TESTCASE.steps[0]] }));
   const mf = writeMapping(badPrefix, 'm-c6.json'); const od = join(tmp, 'c6');
   const r = bridge(CASE_ID, mf, od, tcOne);
   if (r.status !== 65) throw new Error(`裸名破坏性原子应拒 exit 65，实际 ${r.status}`);
+  if (!/前缀/.test((r.stderr || '') + (r.stdout || ''))) throw new Error('拒因须点名前缀（防实体闸接拒错因假绿）');
   // 模板保留：happy mapping 的 {{uniqueName}} 不被冻成字面量
   const mf2 = writeMapping(MAPPING, 'm-c6b.json'); const od2 = join(tmp, 'c6b');
   if (bridge(CASE_ID, mf2, od2).status !== 0) throw new Error('happy 应 exit 0');
@@ -111,19 +114,25 @@ await checkAsync('C6 破坏性原子实体名无 uniquePrefix → 拒；{{unique
 });
 
 // ---------- C7 投影忠实闸双向 ----------
-await checkAsync('C7 投影忠实：漏覆盖 intent → 拒；mapping 造 TestCase 不存在的 intentId → 拒', async () => {
-  const miss = [{ intentId: 'intent_create', atom: 'workflow.create', params: { name: 'atl_{{uniqueName}}', category: 'x' } }]; // 漏 intent_save
-  if (bridge(CASE_ID, writeMapping(miss, 'm-c7a.json'), join(tmp, 'c7a')).status !== 65) throw new Error('漏覆盖 intent 应拒 exit 65');
-  const phantom = [...MAPPING, { intentId: 'intent_ghost', atom: 'workflow.save', params: {} }];
-  if (bridge(CASE_ID, writeMapping(phantom, 'm-c7b.json'), join(tmp, 'c7b')).status !== 65) throw new Error('凭空 intentId 应拒 exit 65');
+await checkAsync('C7 投影忠实：漏覆盖 intent → 精确拒因；mapping 造 TestCase 不存在的 intentId → 精确拒因', async () => {
+  const miss = [{ intentId: 'intent_create', atom: 'workflow.create', params: { name: 'atl_{{uniqueName}}', category: 'x' }, entityBindings: [{ candidateId: 'candidate-workflow-main', role: 'subject' }] }]; // 漏 intent_save
+  const ra = bridge(CASE_ID, writeMapping(miss, 'm-c7a.json'), join(tmp, 'c7a'));
+  if (ra.status !== 65) throw new Error('漏覆盖 intent 应拒 exit 65');
+  if (!/未被任何 flow 原子覆盖/.test((ra.stderr || '') + (ra.stdout || ''))) throw new Error('漏覆盖拒因须精确点名（防错因假绿）');
+  const phantom = [...MAPPING, { intentId: 'intent_ghost', atom: 'workflow.save', params: {}, entityBindings: [{ candidateId: 'candidate-workflow-main', role: 'subject' }] }];
+  const rb = bridge(CASE_ID, writeMapping(phantom, 'm-c7b.json'), join(tmp, 'c7b'));
+  if (rb.status !== 65) throw new Error('凭空 intentId 应拒 exit 65');
+  if (!/凭空造步/.test((rb.stderr || '') + (rb.stdout || ''))) throw new Error('凭空拒因须精确点名（防错因假绿）');
 });
 
 // ---------- C8 凭据兜底门 ----------
-await checkAsync('C8 凭据兜底门：mapping params 含凭据关键词 → 拒写 零落盘', async () => {
-  const leaky = [{ intentId: 'intent_create', atom: 'workflow.create', params: { name: 'atl_{{uniqueName}}', category: 'token=abc123' } }, { intentId: 'intent_save', atom: 'workflow.save', params: {} }];
+await checkAsync('C8 凭据兜底门：mapping params 含凭据关键词 → exit 1 精确诊断 零落盘', async () => {
+  // 带合法绑定（refit R2-①：不带则凭据门回归后实体闸接拒、仅断非零照样绿=错因假绿）
+  const leaky = [{ intentId: 'intent_create', atom: 'workflow.create', params: { name: 'atl_{{uniqueName}}', category: 'token=abc123' }, entityBindings: [{ candidateId: 'candidate-workflow-main', role: 'subject' }] }, { intentId: 'intent_save', atom: 'workflow.save', params: {}, entityBindings: [{ candidateId: 'candidate-workflow-main', role: 'subject' }] }];
   const od = join(tmp, 'c8');
   const r = bridge(CASE_ID, writeMapping(leaky, 'm-c8.json'), od);
-  if (r.status === 0) throw new Error('凭据门应拦截含 token= 的 params');
+  if (r.status !== 1) throw new Error(`凭据门应 exit 1，实际 ${r.status}`);
+  if (!/凭据兜底门拦截输入/.test((r.stderr || '') + (r.stdout || ''))) throw new Error('拒因须为凭据兜底门精确诊断（防实体闸接拒错因假绿）');
   if (existsSync(flowOut(od))) throw new Error('凭据门拦截应零落盘');
 });
 
@@ -188,9 +197,13 @@ await checkAsync('C14 isCompilableAtom 语义：25 命名 + login + assert.* 真
 await checkAsync('C15 原型链原子（toString/constructor）不可编译且桥拒；导出 Set 被 .add 不影响 isCompilableAtom', async () => {
   const ca = await import(`file://${join(ROOT, 'lib', 'compile-atoms.mjs').replace(/\\/g, '/')}`);
   for (const a of ['toString', 'constructor', '__proto__', 'hasOwnProperty']) if (ca.isCompilableAtom(a)) throw new Error(`原型链键 ${a} 不应可编译`);
-  // 桥拒（toString 不在注册表 → validateDraft 未知原子）
-  const bad = [{ intentId: 'intent_create', atom: 'toString', params: {} }, MAPPING[1]];
-  if (bridge(CASE_ID, writeMapping(bad, 'm-c15.json'), join(tmp, 'c15')).status !== 65) throw new Error('原型链原子桥应拒 exit 65');
+  // 桥拒（toString 不在注册表 → validateDraft 未知原子）；toString 元素带合法绑定隔离拒因（refit）
+  const bad = [{ intentId: 'intent_create', atom: 'toString', params: {}, entityBindings: [{ candidateId: 'candidate-workflow-main', role: 'subject' }] }, MAPPING[1]];
+  const rc15 = bridge(CASE_ID, writeMapping(bad, 'm-c15.json'), join(tmp, 'c15'));
+  if (rc15.status !== 65) throw new Error('原型链原子桥应拒 exit 65');
+  // 实测拒因：registry.atoms['toString'] 经原型链取到 Function.prototype 方法 → 判「在册」→ 走「暂无编译知识」拒
+  // （fail-closed 语义正确；断言钉「原子「toString」」点名肇事元素——实体闸拒因不含此词，错因假绿仍被排除）
+  if (!/原子「toString」/.test((rc15.stderr || '') + (rc15.stdout || ''))) throw new Error('拒因须点名原子「toString」（防实体闸接拒错因假绿）');
   // 导出 Set 可变性：篡改不影响行为判定（isCompilableAtom 直查私有分派表）。
   ca.COMPILE_KNOWN_ATOMS.add('agent.selectModel');
   if (ca.isCompilableAtom('agent.selectModel')) throw new Error('篡改导出 Set 不得让 isCompilableAtom 漂移');
@@ -202,6 +215,16 @@ await checkAsync('C16 mapping:[null]/非对象元素 → 桥 exit 65（契约码
   if (r1.status !== 65) throw new Error(`mapping:[null] 应 exit 65，实际 ${r1.status}`);
   const r2 = bridge(CASE_ID, writeMapping(['not-an-object'], 'm-c16b.json'), join(tmp, 'c16b'));
   if (r2.status !== 65) throw new Error(`mapping 非对象元素应 exit 65，实际 ${r2.status}`);
+});
+
+// ---------- C17 反向锁（flow-bridge-golden-refit）：dfee72c 收紧冻进金牌，内核回退放宽必被抓 ----------
+await checkAsync('C17 反向锁：mutation 步缺 entityBindings → exit 65 + 精确 ENTITY_BINDING_REQUIRED_ROLES_INVALID + 零落盘', async () => {
+  const noBind = [{ intentId: 'intent_create', atom: 'workflow.create', params: { name: 'atl_{{uniqueName}}', category: '测试分类' } }, { intentId: 'intent_save', atom: 'workflow.save', params: {} }];
+  const od = join(tmp, 'c17');
+  const r = bridge(CASE_ID, writeMapping(noBind, 'm-c17.json'), od);
+  if (r.status !== 65) throw new Error(`缺绑定应 exit 65，实际 ${r.status}`);
+  if (!/实体绑定策略未闭合（ENTITY_BINDING_REQUIRED_ROLES_INVALID）/.test((r.stderr || '') + (r.stdout || ''))) throw new Error('应报精确错误码 ENTITY_BINDING_REQUIRED_ROLES_INVALID（宽因绿=错因假绿）');
+  if (existsSync(flowOut(od))) throw new Error('拒应零落盘');
 });
 
 console.log(`flow-bridge golden: ${pass} 过 / ${fails.length} 败`);

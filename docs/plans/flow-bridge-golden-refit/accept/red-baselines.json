@@ -1,0 +1,64 @@
+[
+  {
+    "name": "flow-bridge",
+    "cmd": "node tests/_golden/flow-bridge.golden.mjs",
+    "exit": 1,
+    "keyLines": [
+      "FAIL C2 happy：桥产 flow {id,name,category,steps[{atom,params}]}，steps 顺序=mapping、无 intentId: 桥应 exit 0，实际 65：flow-bridge: 桥闸拒（1 问题，fail-closed 不落 flow）：",
+      "- 实体绑定策略未闭合（ENTITY_BINDING_REQUIRED_ROLES_INVALID）",
+      "FAIL C3 round-trip：桥产 flow → casey compile --flow gate 段 exit 0 落 flow-<caseId>.json: 桥应 exit 0，实际 65",
+      "FAIL C6 破坏性原子实体名无 uniquePrefix → 拒；{{uniqueName}} 模板原样保留不冻字面量: happy 应 exit 0"
+    ],
+    "recordedAt": "2026-07-21T01:19:10.894Z"
+  },
+  {
+    "name": "ingest",
+    "cmd": "node tests/_golden/ingest.golden.mjs",
+    "exit": 1,
+    "keyLines": [
+      "FAIL C3 round-trip：ingest 产物 → casey flow-bridge exit 0 → casey compile --flow gate 段 exit 0: flow-bridge 应 exit 0，实际 65：flow-bridge: 桥闸拒（1 问题，fail-closed 不落 fl",
+      "- 实体绑定策略未闭合（ENTITY_BINDING_REQUIRED_ROLES_INVALID）"
+    ],
+    "recordedAt": "2026-07-21T01:19:23.769Z"
+  },
+  {
+    "name": "cli-mcp-face",
+    "cmd": "node tests/_golden/cli-mcp-face.golden.mjs",
+    "exit": 1,
+    "keyLines": [
+      "FAIL A6 MCP intake happy：真 record 接缝产干净 capture → tools/call casey_intake → exit 0 + 台账 accepted、无凭据/无裸 ://、回显无绝对路径: MCP intake happy 应成功（result 且 isError false"
+    ],
+    "recordedAt": "2026-07-21T01:19:48.978Z"
+  },
+  {
+    "name": "record-distill",
+    "cmd": "node tests/_golden/record-distill.golden.mjs",
+    "exit": 1,
+    "keyLines": [
+      "record-distill golden failed: 前置 intake 应 exit 0（tc_d_usage）stderr=intake: 示教三件套缺 identity-observations.json（规范同级旁车/清单缺失或不可读；须先关窗产完整三件套；路径不回显）"
+    ],
+    "recordedAt": "2026-07-21T01:42:37.678Z"
+  },
+  {
+    "name": "authority-root",
+    "cmd": "node tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs",
+    "exit": 1,
+    "keyLines": [
+      "FAIL A2 正向 authority 只能来自固定路径真实 append transaction: REAL_APPEND_AUTHORITY_NOT_MINTED:CAPTURE_PATH_NOT_CANONICAL",
+      "FAIL B1 accepted authority 单独或 plain receipt 均不得 trusted；opaque receipt 正向才可 trusted: accepted authority 前提失败",
+      "FAIL B2 receipt 精确绑定 eventSeq/kind/name/code/platformId/scope/evidenceSha256: eventSeq: accepted authority 前提失败",
+      "FAIL B3 同名 click 不能给无关 sidecar trusted: accepted authority 前提失败"
+    ],
+    "recordedAt": "2026-07-21T01:20:02.515Z"
+  },
+  {
+    "name": "term-lint",
+    "cmd": "node loop-kit/bin/term-lint.mjs --file docs/design/txt2testreport-design.md docs/plans/bootstrap/plan.md",
+    "exit": 1,
+    "keyLines": [
+      "ERROR docs/plans/bootstrap/plan.md:85  弃用别名「新原子」→ 应改用「原子候选」",
+      "WARN  docs/plans/bootstrap/plan.md:142  加粗中文词「拒绝」未登记——若作为术语使用请登记；若仅是强调可忽略"
+    ],
+    "recordedAt": "2026-07-21T01:20:03.381Z"
+  }
+]

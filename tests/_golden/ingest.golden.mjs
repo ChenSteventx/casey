@@ -40,8 +40,8 @@ const GOOD = {
   uniquePrefix: 'atl_',
 };
 const MAPPING = [
-  { intentId: 'intent_create', atom: 'workflow.create', params: { name: 'atl_{{uniqueName}}', category: '测试分类' } },
-  { intentId: 'intent_save', atom: 'workflow.save', params: {} },
+  { intentId: 'intent_create', atom: 'workflow.create', params: { name: 'atl_{{uniqueName}}', category: '测试分类' }, entityBindings: [{ candidateId: 'candidate-workflow-main', role: 'subject' }] },
+  { intentId: 'intent_save', atom: 'workflow.save', params: {}, entityBindings: [{ candidateId: 'candidate-workflow-main', role: 'subject' }] },
 ];
 function writeCand(obj, name) { const f = join(tmp, name); writeFileSync(f, typeof obj === 'string' ? obj : JSON.stringify(obj)); return f; }
 function ingest(caseId, inFile, outDir) { mkdirSync(outDir, { recursive: true }); return run([INGEST, caseId, '--in', inFile, '--out-dir', outDir]); }

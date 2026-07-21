@@ -3,8 +3,10 @@
   "task": "teachin-observation-authority-root（full）：替代并收严身份观察最终受信根。公开 plain ledgerEntries/bytes/pathFacts 不得自铸 accepted authority；正向只认固定 canonical package/ledger 真实追加事务铸造的 opaque handle；trusted identity 还须消费平台运行时 opaque readback receipt 并精确绑定 eventSeq、对象身份六元组与 evidenceSha256；百分号每轮及最终解码拒 C0/C1/DEL；package/intake/ledger/receipt 顶层与嵌套 Proxy/accessor 在任何 trap/getter 前拒绝。",
   "specPath": "docs/plans/teachin-observation-authority-root/plan.md",
   "testChecksums": {
-    "tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs": "7fb6f783469c862ee0a2ff5234a0fc3baab60b1ac08e9a58d64cd87f91482312",
-    "tests/_golden/fixtures/teachin-observation-authority-root/identity-readback-receipt.json": "ac3936ae3524ea8943c7f657e710b875b9ae7aa7c2e052862ce95099f53a0d6c"
+    "tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs": "0519cf098294a3b0718a6450f0b53714e67c42caa2195183ac186a3a436f5cde",
+    "tests/_golden/fixtures/teachin-observation-authority-root/identity-readback-receipt.json": "ac3936ae3524ea8943c7f657e710b875b9ae7aa7c2e052862ce95099f53a0d6c",
+    "tests/_golden/teachin-observation-authority-root.worker.mjs": "ab6328dbf619f7f263bb24150b6abb320d480dd4d54b1728eb2b65ab5ef13068",
+    "tests/_golden/support/ephemeral-driver-publication.mjs": "eada8b25310d25306d476e3857c9b74fa695f7a6f54af7acf46c9655006b3688"
   },
   "observability": [
     {
@@ -33,7 +35,7 @@
         "node tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-17T03:58:20.432Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T02:55:26.108Z 全部 acceptance exit 0"
     }
   ]
 }

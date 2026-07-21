@@ -20,7 +20,7 @@
         "node tests/_golden/flow-bridge.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-07T15:59:48.751Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T02:56:12.180Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-resign-and-regression",
@@ -30,7 +30,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-07T16:03:39.011Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T02:56:15.661Z 全部 acceptance exit 0"
     }
   ]
 }

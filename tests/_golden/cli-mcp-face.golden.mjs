@@ -5,11 +5,21 @@
 // A4 覆盖断言：bin/casey.mjs switch 派生命令集 − EXCLUDED 每条须有对应 casey_* 工具（防 CLI 长了 MCP 没跟）；C3 正路 lint 真跑；
 // C4 反路：未知工具 -32602 + 缺参调用如实回传 [exitCode=…] 非「尚未实现」；C5 漂移锁：逐生命周期工具
 // 空参调用须落各 bin 真实用法错码（64 全仓统一；report 历史例外 2 已由 report-exit64 收敛）——工具映射断线/退化成桩即红；
-// A6 MCP 层 intake happy 全管道（真 record --from-events 接缝产 capture → 经协议 casey_intake → 台账 accepted）。
+// A6 重建（B1，docs/plans/flow-bridge-golden-refit/plan.md）：MCP 层 intake happy 全管道，改用临时密钥动态
+// 签名先例（租约固定根 + lib 建造函数手造三件套、哈希互锁真算 + 共用 support 件动态签 receipt）——
+// 独立正控（直调 bin/intake.mjs 先行 accepted，排除自伤因素）+ 成对证据（同包跑两个独立 MCP server：
+// 无 NODE_OPTIONS 挂 loader 精确 DRIVER_NOT_PUBLISHED 且台账零变化；有 loader 挂载经 MCP 透传生效、
+// 台账恰新增一条 accepted）+ happy 主断言 + 负向姊妹（缺三件套 isError+exitCode=65）。
 import { spawnSync, spawn } from 'node:child_process';
 import { resolve, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readFileSync } from 'node:fs';
+import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import * as identityApi from '../../lib/teachin-identity-observations.mjs';
+import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+import * as packageApi from '../../lib/entity-semantic-lock-package.mjs';
+import { acquireCanonicalCaseLease } from './support/canonical-case-lease.mjs';
+import { createEphemeralDriverPublication } from './support/ephemeral-driver-publication.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -23,8 +33,10 @@ const deepEq = (a, b) => JSON.stringify(a) === JSON.stringify(b);
 function runCli(args) { return spawnSync(process.execPath, [CASEY, ...args], { encoding: 'utf8', timeout: 60000 }); }
 
 // 最小 MCP 客户端（newline-delimited JSON-RPC over stdio；诊断走 stderr 不干扰协议流）。
-function mcpClient() {
-  const child = spawn(process.execPath, [SERVER], { stdio: ['pipe', 'pipe', 'pipe'] });
+// env 可选：不传时子进程默认继承 process.env（既有全部调用点行为不变）；A6 成对证据显式传入
+// 剔除/挂载 NODE_OPTIONS 的独立 env，验证 --experimental-loader 经 MCP 透传是否真生效。
+function mcpClient(env = process.env) {
+  const child = spawn(process.execPath, [SERVER], { stdio: ['pipe', 'pipe', 'pipe'], env });
   const pending = new Map();
   let buf = '';
   child.stdout.on('data', (d) => {
@@ -209,37 +221,157 @@ try {
     if (!existsSync(join(tmp, 'testcase-tc_mcp_face.json'))) throw new Error('MCP 全管道应真落 testcase 产物');
   });
 
-  // ---------- A6 MCP 层 intake happy 全管道（复现真 record --from-events 接缝产 capture → 经协议 intake → 真台账）----------
-  // 复现冻结接缝、不 rig：干净 capture 由真 casey record --from-events 产（hermetic，无浏览器），不手写伪造 doc 倒着裁到 accept。
-  await checkAsync('A6 MCP intake happy：真 record 接缝产干净 capture → tools/call casey_intake → exit 0 + 台账 accepted、无凭据/无裸 ://、回显无绝对路径', async () => {
-    const { mkdtempSync, writeFileSync, existsSync, readFileSync: rf } = await import('node:fs');
-    const { tmpdir } = await import('node:os');
-    const tmp = mkdtempSync(join(tmpdir(), 'casey-mcp-intake-'));
-    const events = join(tmp, 'clean-events.json');
-    // 全字段无裸 ://、action ∈ {click,dblclick,fill,press,nav}——过 reviewCapture 复核闸。
-    writeFileSync(events, JSON.stringify([{ action: 'click', path: '/atl_x/list', selector: 'button.new', text: '新增' }]));
-    // 真 record --from-events 接缝（非浏览器路径，hermetic）产规范布局 capture（intake 前置守卫认这条路径）。
-    const rec = runCli(['record', 'tc_mcp_intake', '--from-events', events, '--sut', 'http://127.0.0.1:9', '--no-login', '--out-dir', tmp]);
-    if (rec.status !== 0) throw new Error(`record --from-events 接缝应 exit 0，实际 ${rec.status}：${(rec.stderr || '').slice(-200)}`);
-    const capture = join(tmp, 'tc_mcp_intake', 'record-capture', 'teach-in-capture.json');
-    if (!existsSync(capture)) throw new Error('record 接缝应产 teach-in-capture.json 规范布局');
-    // 经协议调用 casey_intake。
-    const r = await mcp.rpc('tools/call', { name: 'casey_intake', arguments: { caseId: 'tc_mcp_intake', capture } });
-    if (!r.result || r.result.isError) throw new Error(`MCP intake happy 应成功（result 且 isError false），实际 ${JSON.stringify(r).slice(0, 300)}`);
-    const text = r.result.content.map((c) => c.text).join('');
-    if (!text.includes('[exitCode=0]')) throw new Error('应含 [exitCode=0] 退出码语义标注');
-    // 真台账落地 + accepted 条目校验（复现真接缝字段，不 rig）。
-    const ledger = join(tmp, 'tc_mcp_intake', 'record-capture', 'intake-ledger.jsonl');
-    if (!existsSync(ledger)) throw new Error('MCP 全管道应真落 intake-ledger.jsonl');
-    const ledgerRaw = rf(ledger, 'utf8');
-    const last = JSON.parse(ledgerRaw.trim().split('\n').filter(Boolean).pop());
-    if (last.intakeStatus !== 'accepted') throw new Error(`末行应 intakeStatus=accepted，实际 ${last.intakeStatus}`);
-    if (last.eventCount !== 1) throw new Error(`eventCount 应与夹具事件数 1 一致，实际 ${last.eventCount}`);
-    if (last.reason !== null) throw new Error(`accepted 条目 reason 应 null，实际 ${JSON.stringify(last.reason)}`);
-    // 台账全文过凭据门口径：无裸 ://（无目标地址泄漏）。
-    if (/:\/\//.test(ledgerRaw)) throw new Error('台账不得含裸 :// 目标地址');
-    // 成功回显不含用户绝对路径（output-seal 纪律——只报定名产物 <case-dir>/…）。
-    if (text.includes(tmp)) throw new Error('MCP intake 成功回显不得含用户绝对路径');
+  // ---------- A6 重建（B1）：MCP 层 intake happy 全管道，临时密钥动态签名先例 ----------
+  // 手造三件套（真哈希互锁，lib 建造函数产，非手写伪造）+ 共用 support 件动态签 receipt；
+  // 独立正控先行（同包同 loader 直调 bin/intake.mjs） → 成对证据（同包跑两个独立 MCP server：
+  // 无 loader 精确 DRIVER_NOT_PUBLISHED + 台账零变化；有 loader exit 0 + 台账恰新增一条 accepted）。
+  {
+    const HAPPY_CASE_ID = 'tc_mcp_intake_signed';
+    const SCOPE = `sha256:${'a'.repeat(64)}`;
+    const EVIDENCE = `sha256:${'b'.repeat(64)}`;
+    const lease = acquireCanonicalCaseLease({ caseId: HAPPY_CASE_ID });
+    const publication = createEphemeralDriverPublication({});
+    try {
+      let capturePath = null;
+      let ledgerPath = null;
+      let baseline = null; // 正控后台账基线：{ sha256, lines }
+      try {
+        const observations = [{
+          kind: 'workflow', name: 'MCP intake 自检工作流', code: 'wf-mcp-intake', platformId: '90071992547409931234',
+          scopeFingerprint: SCOPE, parent: null, evidenceKind: 'detail-dual-anchor-readback', eventSeq: 1,
+          evidenceSha256: EVIDENCE,
+        }];
+        const sidecar = identityApi.buildIdentityObservationSidecar({ caseId: HAPPY_CASE_ID, observations });
+        const sidecarRaw = identityApi.serializeIdentityObservationSidecar(sidecar);
+        const bound = identityApi.bindCaptureIdentityObservations({
+          capture: buildTeachInCapture({
+            caseId: HAPPY_CASE_ID, startUrl: '/atl_x/list', createdAt: '2026-07-20T00:00:00.000Z',
+            events: [{ action: 'click', path: '/atl_x/list', selector: 'button.new', text: '新增' }],
+          }),
+          observationRaw: sidecarRaw,
+        });
+        const sidecarDoc = JSON.parse(sidecarRaw);
+        const capture = JSON.parse(JSON.stringify(bound));
+        capture.identityObservations.sha256 = `sha256:${createHash('sha256').update(sidecarRaw).digest('hex')}`;
+        capture.identityObservations.count = sidecarDoc.observations.length;
+        const captureRaw = `${JSON.stringify(capture, null, 2)}\n`;
+        const manifest = packageApi.buildTeachInPackageManifest({
+          caseId: HAPPY_CASE_ID, captureBytes: captureRaw, sidecarBytes: sidecarRaw,
+          observationCount: sidecarDoc.observations.length, observationSchemaVersion: sidecarDoc.schemaVersion,
+        });
+        const manifestRaw = packageApi.serializeTeachInPackageManifest(manifest);
+        const review = packageApi.verifyTeachInPackage({ caseId: HAPPY_CASE_ID, captureBytes: captureRaw, sidecarBytes: sidecarRaw, manifestBytes: manifestRaw });
+        if (!review.ok) throw new Error(`三件套自建前提失败（联合闸拒）：${review.reason}`);
+        const only = sidecarDoc.observations[0];
+        const receiptSansSignature = {
+          schemaVersion: 1, artifactKind: 'platform-identity-readback-receipt', source: 'platform-runtime',
+          keyId: publication.keyId, algorithm: 'Ed25519', sessionNonce: 'mcp-intake-session-1',
+          caseId: sidecarDoc.caseId, captureSha256: review.captureSha256, sidecarSha256: review.sidecarSha256,
+          manifestSha256: review.manifestSha256, kind: only.kind, name: only.name, code: only.code,
+          platformId: only.platformId, scopeFingerprint: only.scopeFingerprint, eventSeq: only.eventSeq,
+          evidenceSha256: only.evidenceSha256,
+        };
+        const signedReceipt = publication.signReceipt(receiptSansSignature);
+
+        mkdirSync(lease.packageDir, { recursive: true });
+        capturePath = join(lease.packageDir, 'teach-in-capture.json');
+        ledgerPath = join(lease.packageDir, 'intake-ledger.jsonl');
+        writeFileSync(capturePath, captureRaw);
+        writeFileSync(join(lease.packageDir, 'identity-observations.json'), sidecarRaw);
+        writeFileSync(join(lease.packageDir, 'teach-in-package.json'), manifestRaw);
+        writeFileSync(join(lease.packageDir, 'identity-readback-receipt.json'), `${JSON.stringify(signedReceipt, null, 2)}\n`);
+      } catch (error) {
+        fails.push(`A6 三件套自建/签名前置失败：${String((error && error.message) || error)}`);
+      }
+
+      if (capturePath) {
+        const INTAKE_BIN = join(ROOT, 'bin', 'intake.mjs');
+
+        await checkAsync('A6 独立正控：直接 spawn bin/intake.mjs（同包 + loader，不经 MCP）必须先 accepted——正控不过即本方缺陷，禁降级', async () => {
+          const r = spawnSync(process.execPath, ['--experimental-loader', publication.loaderPath, INTAKE_BIN, HAPPY_CASE_ID, '--capture', capturePath], {
+            cwd: ROOT, encoding: 'utf8', timeout: 30000, env: { ...process.env },
+          });
+          if (r.status !== 0) throw new Error(`正控应 exit 0，实际 ${r.status}：${(r.stderr || '').slice(-300)}`);
+          const raw = readFileSync(ledgerPath, 'utf8');
+          const lines = raw.trim().split('\n').filter(Boolean);
+          if (lines.length !== 1) throw new Error(`正控后台账应恰一行，实际 ${lines.length}`);
+          const entry = JSON.parse(lines[0]);
+          if (entry.intakeStatus !== 'accepted') throw new Error(`正控首行应 accepted，实际 ${entry.intakeStatus}`);
+          if (entry.ledgerGeneration !== 1) throw new Error(`正控首行 generation 应为 1，实际 ${entry.ledgerGeneration}`);
+          baseline = { sha256: createHash('sha256').update(raw).digest('hex'), lines: lines.length };
+        });
+
+        await checkAsync('A6 成对证据·无 loader：MCP tools/call casey_intake 精确 DRIVER_NOT_PUBLISHED + [exitCode=65] + 台账字节零变化（对正控后基线）', async () => {
+          if (!baseline) throw new Error('正控未产出基线，禁伪造基线继续判定（正控须先修复）');
+          const envNoLoader = { ...process.env };
+          delete envNoLoader.NODE_OPTIONS;
+          const mcpNoLoader = mcpClient(envNoLoader);
+          try {
+            const r = await mcpNoLoader.rpc('tools/call', { name: 'casey_intake', arguments: { caseId: HAPPY_CASE_ID, capture: capturePath } });
+            if (!r.result || !r.result.isError) throw new Error(`无 loader 应 isError true，实际 ${JSON.stringify(r).slice(0, 300)}`);
+            const text = r.result.content.map((c) => c.text).join('');
+            if (!text.includes('[exitCode=65]')) throw new Error(`无 loader 应含 [exitCode=65]，实际尾部：${text.slice(-200)}`);
+            if (!text.includes('DRIVER_NOT_PUBLISHED')) throw new Error(`无 loader 应精确拒因 DRIVER_NOT_PUBLISHED，实际尾部：${text.slice(-300)}`);
+          } finally {
+            mcpNoLoader.close();
+          }
+          const raw = readFileSync(ledgerPath, 'utf8');
+          const lines = raw.trim().split('\n').filter(Boolean);
+          const sha = createHash('sha256').update(raw).digest('hex');
+          if (lines.length !== baseline.lines || sha !== baseline.sha256) {
+            throw new Error(`无 loader 后台账应字节零变化，实际行数 ${lines.length}（基线 ${baseline.lines}）、sha ${sha.slice(0, 12)}（基线 ${baseline.sha256.slice(0, 12)}）`);
+          }
+        });
+
+        await checkAsync('A6 MCP intake happy（有 loader）：NODE_OPTIONS 挂 loader 经 MCP 透传生效 → tools/call casey_intake exit 0 + isError:false + 台账恰新增一条 accepted（generation 2）+ 回显无凭据/无裸 ://、无绝对路径', async () => {
+          if (!baseline) throw new Error('正控未产出基线，禁伪造基线继续判定（正控须先修复）');
+          const envWithLoader = { ...process.env, NODE_OPTIONS: `--experimental-loader=${publication.loaderPath}` };
+          const mcpWithLoader = mcpClient(envWithLoader);
+          let text = '';
+          try {
+            const r = await mcpWithLoader.rpc('tools/call', { name: 'casey_intake', arguments: { caseId: HAPPY_CASE_ID, capture: capturePath } });
+            if (!r.result || r.result.isError) throw new Error(`有 loader 应成功（isError false），实际 ${JSON.stringify(r).slice(0, 300)}`);
+            text = r.result.content.map((c) => c.text).join('');
+            if (!text.includes('[exitCode=0]')) throw new Error('有 loader 应含 [exitCode=0] 退出码语义标注');
+          } finally {
+            mcpWithLoader.close();
+          }
+          if (text.includes(lease.caseDir)) throw new Error('MCP intake 成功回显不得含用户绝对路径');
+          if (/:\/\//.test(text)) throw new Error('回显不得含裸 :// 目标地址');
+          const raw = readFileSync(ledgerPath, 'utf8');
+          const lines = raw.trim().split('\n').filter(Boolean);
+          if (lines.length !== baseline.lines + 1) throw new Error(`有 loader 后台账应恰新增一条，实际行数 ${lines.length}（基线 ${baseline.lines}）`);
+          const last = JSON.parse(lines[lines.length - 1]);
+          if (last.intakeStatus !== 'accepted') throw new Error(`新增条目应 accepted，实际 ${last.intakeStatus}`);
+          if (last.ledgerGeneration !== 2) throw new Error(`新增条目 generation 应为 2，实际 ${last.ledgerGeneration}`);
+          if (/:\/\//.test(raw)) throw new Error('台账全文不得含裸 :// 目标地址');
+        });
+      }
+    } finally {
+      // 租约清理必须恒执行：publication.cleanup() 的 rmSync 可能抛（EBUSY/权限/DrvFS 瞬态），
+      // 不能让它跳过 lease.cleanup()、留 tc_mcp_intake_signed 租约孤儿污染 cases/（codex 评审 round1 Medium）。
+      let pubErr = null;
+      try { publication.cleanup(); } catch (e) { pubErr = e; }
+      const cleaned = lease.cleanup();
+      if (!cleaned.ok) fails.push(`A6 租约清理拒绝：${cleaned.reason}`);
+      if (pubErr) fails.push(`A6 临时发布清理失败：${String((pubErr && pubErr.message) || pubErr)}`);
+    }
+  }
+
+  // ---------- A6 负向姊妹：缺三件套 ----------
+  await checkAsync('A6 负向姊妹：缺三件套 → MCP casey_intake isError:true + [exitCode=65] + 不回显绝对路径', async () => {
+    const negLease = acquireCanonicalCaseLease({ caseId: 'tc_mcp_intake_missing' });
+    try {
+      const missingCapture = join(negLease.packageDir, 'teach-in-capture.json');
+      const r = await mcp.rpc('tools/call', { name: 'casey_intake', arguments: { caseId: 'tc_mcp_intake_missing', capture: missingCapture } });
+      if (!r.result || !r.result.isError) throw new Error(`缺三件套应 isError true，实际 ${JSON.stringify(r).slice(0, 300)}`);
+      const text = r.result.content.map((c) => c.text).join('');
+      if (!text.includes('[exitCode=65]')) throw new Error(`缺三件套应含 [exitCode=65]，实际尾部：${text.slice(-200)}`);
+      if (text.includes(negLease.caseDir)) throw new Error('缺三件套失败回显不得含用户绝对路径');
+    } finally {
+      const cleaned = negLease.cleanup();
+      if (!cleaned.ok) throw new Error(`负向姊妹租约 cleanup 拒绝：${cleaned.reason}`);
+    }
   });
 } finally {
   mcp.close();

@@ -14,7 +14,7 @@
 非目标（本期明确不做）：
 - 端态运行时 A/B/C 拍板 —— 待 spike 证据，ADR-0006 推翻条件保持开放。
 - 归一前段 L1（杂乱文本 → 平台无关意图）—— 单列后续 story，不进第一刀。
-- P3 recorder-as-library —— 降级为「陌生站点孵化新原子」支线，移出 MVP 关键路径（见 S3 对账）。
+- P3 recorder-as-library —— 降级为「陌生站点孵化原子候选」支线，移出 MVP 关键路径（见 S3 对账）。
 - 多 channel（cef/arbitrary）、并发回放 —— MVP 串行、Heren-only。
 
 ## Story S1：catalog_wf_crud 贯通 spike（MVP 第一刀）

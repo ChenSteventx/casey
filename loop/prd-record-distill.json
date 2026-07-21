@@ -3,7 +3,8 @@
   "task": "record-distill（full）：示教兜底第三契约，新增 casey distill——把已入账 capture 蒸馏成候选流程（v1 零 LLM 全 pending 骨架：候选 TestCase source.kind:'json' + 候选 mapping=[] + pending 清单 + 溯源 manifest）+ intake→distill captureSha256 TOCTOU 硬门（verifyIntaken：NOT_INTAKEN/CAPTURE_SWAPPED + 当前字节重跑 reviewCapture REREVIEW_FAILED）+ 采集忠实闸 validateCaptureFidelity（--verify --mapping）；重走 ingest→compile→draft→sign，绝不直通回放。零冻结 schema 涟漪。决策 docs/plans/record-distill/proposed/GRILL.md（Steven grill 签核 7 项）。",
   "specPath": "docs/plans/record-distill/plan.md",
   "testChecksums": {
-    "tests/_golden/record-distill.golden.mjs": "f673665c9db6c558296abc85f8f3028118469320a0ec949fbef1b7b879c9696e"
+    "tests/_golden/record-distill.golden.mjs": "0f0508d6cdae40148dd53cac321238be20d40061929a7b7631c35675696b278e",
+    "tests/_golden/support/ephemeral-driver-publication.mjs": "eada8b25310d25306d476e3857c9b74fa695f7a6f54af7acf46c9655006b3688"
   },
   "observability": [
     {
@@ -28,7 +29,7 @@
         "node tests/_golden/record-distill.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T03:31:12.591Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T02:52:36.728Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-tier1-regression",
@@ -38,7 +39,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T03:31:13.653Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T02:52:40.625Z 全部 acceptance exit 0"
     }
   ]
 }

@@ -21,7 +21,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-06T13:21:36.549Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T02:44:51.788Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-ripple-locks",
@@ -33,7 +33,7 @@
         "node tests/_golden/compile-caseid-shape.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-06T13:23:35.867Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T02:45:29.636Z 全部 acceptance exit 0"
     }
   ]
 }

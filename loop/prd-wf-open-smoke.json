@@ -20,7 +20,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-07T11:21:12.769Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T02:56:45.135Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-ripple-flip-and-locks",
@@ -30,7 +30,7 @@
         "node tests/_golden/flow-bridge.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-07T11:23:57.331Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T02:57:06.882Z 全部 acceptance exit 0"
     }
   ]
 }

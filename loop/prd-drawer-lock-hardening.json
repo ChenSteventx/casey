@@ -25,8 +25,8 @@
       "acceptance": [
         "node tests/_golden/flow-bridge.golden.mjs"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-07-21T02:47:24.371Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-regression-and-selftest",
@@ -37,8 +37,8 @@
         "node tests/_golden/report-workflow-structure.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-07-21T02:47:29.489Z 全部 acceptance exit 0"
     }
   ]
 }

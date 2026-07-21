@@ -1,0 +1,78 @@
+{
+  "schemaVersion": 1,
+  "task": "flow-bridge-golden-refit（full）：2026-07-17/18 三波信任根收紧（dfee72c 桥闸实体绑定 / 05573d1 intake 三件套 / edea1f9 canonical 固定根）落地未复跑受影响冻结金牌（护栏 #19），留六条陈旧绿。全部修夹具侧、生产零改：A 家族（flow-bridge/ingest）happy 与负向非目标原子补显式 entityBindings + 精确拒因断言 + 反向锁（mutation 缺绑定必拒 ENTITY_BINDING_REQUIRED_ROLES_INVALID）+ 一次性 worktree 内核 mutant 突变红证；B 家族（cli-mcp-face A6 重建 MCP happy / record-distill 改形 / authority-root bootstrap-worker 两段式）走临时 Ed25519 动态签名 + 租约固定根 + 测试发布 loader 先例，B2 语义迁移按三列账审计件（14 段：保留 11/迁移 3/丢失 4 项挂账 record-three-piece-producer）；C 家族 bootstrap/plan.md:85 术语正名。修后按冻结执行账（22 prd / 41 story：35 绿刷新 / 4 红→绿 / 2 隔离恒红）先全批重签人签、后固定顺序一次性复 gate。设计=GRILL.md（D1-D3 Steven 2026-07-21 裁）+ plan.md（sol max 五轮共识 R5 终判可进 accept，review/ 全档）。",
+  "specPath": "docs/plans/flow-bridge-golden-refit/plan.md",
+  "testChecksums": {
+    "docs/plans/flow-bridge-golden-refit/accept/red-baselines.json": "d68cbfbf5c43d7de383e5feb730c5e07b6c8854d83ef2044ee3d2b4ccf344a64",
+    "docs/plans/flow-bridge-golden-refit/accept/execution-account.json": "6805f1b70576f2d6d017ef3941203e279196c8545ea61554d189e5151be46867",
+    "docs/plans/flow-bridge-golden-refit/accept/b2-migration-table.md": "c01d67f822691d95dce5034a930ad9e0b89fe96f73cc582fc9e8509871153c2d",
+    "tests/_golden/support/refit-regate-verify.mjs": "9b9b28030f400ed93784492cd14c70d2e5553e5851aa9b9cd83f13dcddeb261d"
+  },
+  "observability": [
+    {
+      "dimension": "ADR-0004 冻结面人签：五入口金牌字节变更 + 原字节处置 + 六处既有 checksum owner 重签（prd-flow-bridge / prd-integrate-regress-agent-tool-slice / prd-ingest / prd-mcp-parity / prd-record-distill / prd-teachin-observation-authority-root）+ 新增件（authority-root worker + ephemeral-driver-publication support，support 注册进三个依赖 prd）+ B3 旧无签名 receipt 夹具保留作负例。",
+      "route": "human"
+    },
+    {
+      "dimension": "波0 承接确认：drawer-lock-hardening s1 与 replay-nth-visible-hardening s2 由 false→true（其 acceptance 经生命周期重裁已是纯 zero-SUT 残余、fake-SUT 半由各自隔离 story 恒红承接）；与 DIRECTION-AFTER-CODEX「波0 保留即权威」旧令的关系由 Steven 签字确认。",
+      "route": "human"
+    },
+    {
+      "dimension": "B2 语义迁移确认：三列账审计件（14 段）+ 四丢失项挂账 record-three-piece-producer（record 真 CLI 产出 / record→intake 字节接缝 / 旧单文件布局隐性作废 / distill 内联编码门行为覆盖）+ prd-mcp-parity 与 prd-record-distill 语义文本改写。",
+      "route": "human"
+    },
+    {
+      "dimension": "B1 若触发降级（三条件与：直调正控成功 ∧ MCP 无 loader 拒 DRIVER_NOT_PUBLISHED ∧ 有 loader 仍拒同码）：降级为纯负向 + MCP happy 零覆盖显式挂账，由 Steven 确认。",
+      "route": "human"
+    },
+    {
+      "dimension": "mutant 突变红证复核：一次性 worktree 内冻结金牌投影 sha 一致 + baseline GREEN → mutant RED 同树对照实录 + 主树字节前后 sha 双录一致。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-family-a-bridge",
+      "desc": "dfee72c 桥闸家族：flow-bridge/ingest 金牌 happy 与负向非目标原子补显式 entityBindings（mutation 恰一 subject）、负向分支精确拒因断言（C4 未知原子/C5 编译知识/C6 uniquePrefix/C7 投影忠实/C8 凭据门 exit1+精确诊断/C15 原型链）、新增反向锁（缺绑定→exit 65 + ENTITY_BINDING_REQUIRED_ROLES_INVALID + 零落盘）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/ingest.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-21T04:26:13.969Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-family-b-intake",
+      "desc": "05573d1/edea1f9 intake-固定根家族：cli-mcp-face A6 重建 MCP happy（NODE_OPTIONS loader 透传 + 独立正控先行 + 双 server 成对证据 + 台账基线字节级对账 + 负向姊妹断言）；record-distill 改形（手造三件套/租约固定根/动态签→真 intake→真 distill，三列账 14 段落地，C2d/C2f/C2h 新拒因实测定谳后冻）；authority-root bootstrap/worker 两段式（prd acceptance 保持裸 node）。租约全 try/finally、测试体零 process.exit、cases/ 零残留。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/cli-mcp-face.golden.mjs",
+        "node tests/_golden/record-distill.golden.mjs",
+        "node tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-21T04:28:48.573Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-family-c-term",
+      "desc": "术语正名：docs/plans/bootstrap/plan.md:85 弃用旧称改「原子候选」，prd-p2-intent-compile s3 的 term-lint acceptance 转绿。",
+      "lane": "implementation",
+      "acceptance": [
+        "node loop-kit/bin/term-lint.mjs --file docs/design/txt2testreport-design.md docs/plans/bootstrap/plan.md"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-21T04:28:49.495Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4-regate-closure",
+      "desc": "全量复 gate 闭合：先全批重签人签、后按冻结执行账固定顺序一次性复 gate；校验器逐 story 对账预期翻转（35 绿刷新/4 红→绿/2 隔离恒红），evidence 时间戳须晚于红基线，隔离恒红被翻绿即红。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/support/refit-regate-verify.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-21T04:28:49.999Z 全部 acceptance exit 0"
+    }
+  ]
+}

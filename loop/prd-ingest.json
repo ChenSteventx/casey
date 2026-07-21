@@ -3,7 +3,7 @@
   "task": "相0 归一 ingest（full）：杂乱输入（excel/json/txt/自由文本）→ 规范 TestCase 聚合根（design §2）。LLM 在 CLI 外把杂乱原文归一成候选 JSON（同 mapping/patch 先例）；进程零 LLM 零真机。三件套：tests/_golden/schemas/testcase.schema.json 冻结形态契约（draft-07、additionalProperties:false 处处、必填 schemaVersion/caseId/source.kind/steps/uniquePrefix——D3 已签；uniquePrefix 拒纯空白封 compile 长度闸缝、preconditions 数组形态是唯一守点防下游静默吞）+ lib/parse-testcase.mjs（纯函数手写字段闸与 schema 同刻——项目习惯无 ajv 零运行期 schema 加载，加语义闸 intentId 全局唯一 + caseId 一致）+ bin/ingest.mjs（薄 CLI 镜像 flow-bridge：缺参 64 / 输入坏闸拒 65 零落盘 / 凭据门前置扫输入原文 exit 1 早于解析回显 mkdir——D6 已签存 source.raw 前置门兜底；缺席 ingestedAt 落章）+ bin/casey.mjs 接线（notImplemented 桩换 runNode 一行式 + help 真实旗标）。产物 testcase-<caseId>.json 直喂相1 flow-bridge。决策全表 docs/plans/ingest/proposed/GRILL.md（D1-D7 已签 2026-07-06）。",
   "specPath": "docs/plans/ingest/plan.md",
   "testChecksums": {
-    "tests/_golden/ingest.golden.mjs": "028f1b8eb62aa954826ddcc7104cf816e24181968b4377de894bdb2507d1b1a6",
+    "tests/_golden/ingest.golden.mjs": "f399c81d4dd77a9e68f2a42e480527cb80d2789aa7f66e3ad6b4cfef6db57178",
     "tests/_golden/schemas/testcase.schema.json": "c27faa174a4ab363690046a8eef564fb3032e167fbf62e222d36e8e711847233"
   },
   "observability": [
@@ -26,7 +26,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-06T12:35:10.541Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T02:49:42.154Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-ripple-locks",
@@ -36,7 +36,7 @@
         "node tests/_golden/flow-bridge.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-06T12:37:56.181Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T02:50:02.623Z 全部 acceptance exit 0"
     }
   ]
 }

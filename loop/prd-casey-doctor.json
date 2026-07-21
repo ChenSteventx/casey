@@ -24,7 +24,7 @@
         "node tests/_golden/doctor.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T09:12:15.797Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T03:33:09.003Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-ripple-regression",
@@ -35,7 +35,7 @@
         "node tests/_golden/cli-mcp-face.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T09:12:31.744Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T03:33:46.113Z 全部 acceptance exit 0"
     }
   ]
 }

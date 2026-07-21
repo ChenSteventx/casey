@@ -1,0 +1,9 @@
+# PASS
+
+- Finding 1（High）：闭合，无新问题。文档已统一为签后状态，Steven 的签署人、日期、AskUserQuestion 方式及决定均有记录；两处最终 SHA 及重签归属完整，且与当前文件及 PRD checksum 一致。[HUMAN-SIGN.md:3](/mnt/d/ctx/heren/casey/docs/plans/flow-bridge-golden-refit/HUMAN-SIGN.md:3)、[HUMAN-SIGN.md:19](/mnt/d/ctx/heren/casey/docs/plans/flow-bridge-golden-refit/HUMAN-SIGN.md:19)、[HUMAN-SIGN.md:21](/mnt/d/ctx/heren/casey/docs/plans/flow-bridge-golden-refit/HUMAN-SIGN.md:21)、[HUMAN-SIGN.md:23](/mnt/d/ctx/heren/casey/docs/plans/flow-bridge-golden-refit/HUMAN-SIGN.md:23)、[HUMAN-SIGN.md:24](/mnt/d/ctx/heren/casey/docs/plans/flow-bridge-golden-refit/HUMAN-SIGN.md:24)、[prd-mcp-parity.json:6](/mnt/d/ctx/heren/casey/loop/prd-mcp-parity.json:6)、[prd-flow-bridge-golden-refit.json:9](/mnt/d/ctx/heren/casey/loop/prd-flow-bridge-golden-refit.json:9)。未发现“待/需/如需签”残留造成的状态矛盾，ADR-0004 人签—重签链闭合。
+
+- Finding 2（Medium）：闭合，无新问题。正面复 gate 证明仅用于绿色 story，要求 `passes===true` 且 evidence 晚于红基线；恒红分支只检查 `passes===false`，明确不声称已复 gate。[refit-regate-verify.mjs:42](/mnt/d/ctx/heren/casey/tests/_golden/support/refit-regate-verify.mjs:42)、[refit-regate-verify.mjs:44](/mnt/d/ctx/heren/casey/tests/_golden/support/refit-regate-verify.mjs:44)、[refit-regate-verify.mjs:53](/mnt/d/ctx/heren/casey/tests/_golden/support/refit-regate-verify.mjs:53)、[refit-regate-verify.mjs:55](/mnt/d/ctx/heren/casey/tests/_golden/support/refit-regate-verify.mjs:55)、[refit-regate-verify.mjs:59](/mnt/d/ctx/heren/casey/tests/_golden/support/refit-regate-verify.mjs:59)、[refit-regate-verify.mjs:66](/mnt/d/ctx/heren/casey/tests/_golden/support/refit-regate-verify.mjs:66)。兄弟 evidence 逻辑已彻底移除；未知分类仍 fail-closed，未发现新增绕过或错分类。[refit-regate-verify.mjs:60](/mnt/d/ctx/heren/casey/tests/_golden/support/refit-regate-verify.mjs:60)
+
+- Finding 3：按要求不重开，维持 round2“已闭合”。
+
+本次仅只读静态复审并核对现成证据，未修改文件、未复跑测试。

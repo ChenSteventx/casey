@@ -6,7 +6,7 @@
     "tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs": "2e213e76170046864844c7033a7f6b200c290570dbe88a32ec2cf50fd643ef06",
     "tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs": "5e41993bb9deaa831c0eafb255455cb5af2d07c8fd26f03e706b98423c4c1dec",
     "tests/_golden/regress-agent-tool-integration-hardening.zero-sut.golden.mjs": "bea7927d8c2f8b9c3491a53237bff6b8168c595cb9fc7e1d3d234c936e479f3d",
-    "tests/_golden/flow-bridge.golden.mjs": "122977f61e3729b096c832936ec1722f965a9c9734b446e34ffd21a5f2156731",
+    "tests/_golden/flow-bridge.golden.mjs": "1864f99249d688cf4bb52e0e3bb0659e8c702bcc804927afcda6137cd7e6d701",
     "docs/plans/regress-agent-tool-first-slice/candidate/agent-tool-add.flow.json": "544052807f28c27e619cd6eb5c304b691bb222b06ee4e0a3afb2f1ff04ca6cbe"
   },
   "observability": [
@@ -27,7 +27,7 @@
         "node tests/_golden/flow-bridge.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-16T07:17:57.547Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T03:11:32.472Z 全部 acceptance exit 0"
     }
   ]
 }

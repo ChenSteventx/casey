@@ -25,8 +25,8 @@
         "node tests/_golden/flow-bridge.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-07-21T02:53:27.178Z 全部 acceptance exit 0"
     }
   ]
 }

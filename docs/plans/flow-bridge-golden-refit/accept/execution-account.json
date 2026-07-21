@@ -1,0 +1,806 @@
+{
+  "generatedAt": "2026-07-21T01:25:42.627Z",
+  "fixedSet": [
+    "tests/_golden/flow-bridge.golden.mjs",
+    "tests/_golden/ingest.golden.mjs",
+    "tests/_golden/cli-mcp-face.golden.mjs",
+    "tests/_golden/record-distill.golden.mjs",
+    "tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs",
+    "docs 术语修(term-lint 命令绿)"
+  ],
+  "prdCount": 22,
+  "account": [
+    {
+      "prd": "prd-caseid-echo-mask.json",
+      "stories": [
+        {
+          "id": "s1-echo-mask",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/caseid-echo-mask.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-ripple-locks",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/flow-bridge.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            },
+            {
+              "cmd": "node tests/_golden/draft-cli.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/compile-caseid-shape.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-casey-doctor.json",
+      "stories": [
+        {
+          "id": "s1-doctor-pure-and-shell",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/doctor.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-ripple-regression",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/cli-mcp-face.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-distribution.json",
+      "stories": [
+        {
+          "id": "s1-mcp-config-and-onboarding",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/distribution.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-ripple-locks",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/handover-pack.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/cli-mcp-face.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-drawer-lock-hardening.json",
+      "stories": [
+        {
+          "id": "s1-drawer-lock-hardening-e2e",
+          "currentPasses": false,
+          "expectedFlip": "红→绿",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/flow-bridge.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-regression-and-selftest",
+          "currentPasses": false,
+          "expectedFlip": "红→绿",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/p5-replay-coverage.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/report-workflow-structure.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-flow-bridge.json",
+      "stories": [
+        {
+          "id": "s1-bridge-and-gate",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/flow-bridge.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            },
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-ripple-locks",
+          "currentPasses": false,
+          "expectedFlip": "红保持(隔离)",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "隔离恒红(78)"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-handover-pack.json",
+      "stories": [
+        {
+          "id": "s1-handover",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/handover-pack.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-ripple-locks",
+          "currentPasses": false,
+          "expectedFlip": "红→绿",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/flow-bridge.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            },
+            {
+              "cmd": "node tests/_golden/ingest.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            },
+            {
+              "cmd": "node tests/_golden/cli-mcp-face.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-ingest.json",
+      "stories": [
+        {
+          "id": "s1-parse-and-cli",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/ingest.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            },
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-ripple-locks",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/flow-bridge.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-integrate-regress-agent-tool-slice.json",
+      "stories": [
+        {
+          "id": "s1-agent-tool-slice-integration",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/regress-agent-tool-integration-hardening.zero-sut.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/flow-bridge.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-mcp-parity.json",
+      "stories": [
+        {
+          "id": "s1-mcp-parity",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/cli-mcp-face.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            },
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-ripple-record",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/record-capture.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/record-intake.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-p2-intent-compile.json",
+      "stories": [
+        {
+          "id": "s1-spike-verdict",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/p2-verdict.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/p2-forensics.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/p2-check-vocab.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-compile-gate",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/p2-compile-gate.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            }
+          ]
+        },
+        {
+          "id": "s3-reconcile",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node loop-kit/bin/term-lint.mjs --registry",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node loop-kit/bin/term-lint.mjs --file docs/design/txt2testreport-design.md docs/plans/bootstrap/plan.md",
+              "safety": "非金牌命令",
+              "verdict": "修后预期绿"
+            },
+            {
+              "cmd": "node tests/_golden/p2-reconcile.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-record-distill.json",
+      "stories": [
+        {
+          "id": "s1-distill-toctou-projection-fidelity",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/record-distill.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-tier1-regression",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-regress-agent-tool-first-slice.json",
+      "stories": [
+        {
+          "id": "s1-agent-tool-add-zero-sut",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/regress-agent-tool-first-slice.zero-sut.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/flow-bridge.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-replay-nth-visible-hardening.json",
+      "stories": [
+        {
+          "id": "s1-three-fixes-red-golden",
+          "currentPasses": false,
+          "expectedFlip": "红保持(隔离)",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "隔离恒红(78)"
+            }
+          ]
+        },
+        {
+          "id": "s2-resign-and-regression",
+          "currentPasses": false,
+          "expectedFlip": "红→绿",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/flow-bridge.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            },
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-report-exit64.json",
+      "stories": [
+        {
+          "id": "s1-exit64",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/report-exit64.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/cli-mcp-face.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            },
+            {
+              "cmd": "node tests/_golden/p7-report.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-resign-drift-closure.json",
+      "stories": [
+        {
+          "id": "s1-resign-drift-closure",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/p2-verdict.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/cli-mcp-face.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            },
+            {
+              "cmd": "node tests/_golden/p2-compile-gate.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-teachin-observation-authority-root.json",
+      "stories": [
+        {
+          "id": "s1-observation-authority-root",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-wf-add-node.json",
+      "stories": [
+        {
+          "id": "s1-atom-and-flip",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/flow-bridge.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-dragto-seams",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/seams-freeze.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/seams-freeze-v2.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            }
+          ]
+        },
+        {
+          "id": "s3-fixture-and-chain",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-wf-connect-nodes.json",
+      "stories": [
+        {
+          "id": "s1-connect-atom-and-coverage",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/flow-bridge.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-resign-and-regression",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-wf-open-node.json",
+      "stories": [
+        {
+          "id": "s1-opennode-atom-e2e",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/flow-bridge.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-resign-and-regression",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-wf-open-smoke.json",
+      "stories": [
+        {
+          "id": "s1-open-atoms",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-ripple-flip-and-locks",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/flow-bridge.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-wf-select-node-dropdown.json",
+      "stories": [
+        {
+          "id": "s1-selectnodedropdown-atom-e2e",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/flow-bridge.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-resign-and-regression",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/p5-replay-coverage.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/seams-freeze.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/seams-freeze-v2.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "prd": "prd-wf-set-node-field.json",
+      "stories": [
+        {
+          "id": "s1-setnodefield-atom-e2e",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/flow-bridge.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "修后预期绿"
+            }
+          ]
+        },
+        {
+          "id": "s2-resign-and-regression",
+          "currentPasses": true,
+          "expectedFlip": "绿→绿刷新",
+          "rows": [
+            {
+              "cmd": "node tests/_golden/p5-replay-coverage.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/seams-freeze.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node tests/_golden/seams-freeze-v2.golden.mjs",
+              "safety": "zero-SUT 两层过滤过",
+              "verdict": "普查已证绿"
+            },
+            {
+              "cmd": "node bin/casey.mjs selftest --tier1",
+              "safety": "非金牌命令",
+              "verdict": "普查已证绿"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

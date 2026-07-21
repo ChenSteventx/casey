@@ -21,7 +21,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T11:10:56.659Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T03:33:54.256Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-ripple-locks",
@@ -32,7 +32,7 @@
         "node tests/_golden/cli-mcp-face.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T11:11:13.809Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T03:34:29.888Z 全部 acceptance exit 0"
     }
   ]
 }
