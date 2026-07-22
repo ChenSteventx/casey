@@ -1,0 +1,2 @@
+RED  draft-cli: D10 补缝 intentId 不存在于 observed → 65 且不落草稿（错位断言禁止静默成孤儿）: 错位 intentId 应 exit 65，实际 0
+RED  draft-cli: 10 过 / 1 红

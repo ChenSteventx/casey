@@ -75,6 +75,20 @@ if (!gate.ok) {
   process.exit(65);
 }
 
+// intentId 存在性闸（drafter-patch-intent-guard；置于词表硬闸之后=闸序不动 output-seal F4 冻结面）：
+// 草稿 intent 只许挂在 observed 真实 intent 上——此前未知 intentId 会静默新建孤儿 intent，断言冻进
+// expected 但回放期永不匹配（real-uat R2 实证：补缝 intent_open/intent_1 错位，裁定退化只剩全局取证）。
+// 基准取 observed 全集而非 skeleton 的 intents（后者只含已有断言的 intent，会误杀合法新建）；
+// 违例值不回显（output-seal 遮值纪律：patch 是 LLM/人编文件，内容可携任意种子），报序号定位。
+{
+  const knownIntents = new Set((observed.steps || []).map((s) => s && s.intentId).filter(Boolean));
+  const ghosts = draft.intents.map((it, i) => (knownIntents.has(it.intentId) ? null : i)).filter((i) => i !== null);
+  if (ghosts.length) {
+    console.error(`draft: 存在性闸拒（fail-closed 不落草稿）：草稿 intents[${ghosts.join('],intents[')}] 的 intentId 不存在于 observed intents（值不回显——错位补缝会静默成孤儿断言、回放永不匹配）`);
+    process.exit(65);
+  }
+}
+
 const outFile = join(resolve(String(args['out-dir'])), `expected.draft-${caseId}.json`);
 const text = JSON.stringify(draft, null, 2) + '\n';
 const cg = credentialGate({ [outFile]: text });

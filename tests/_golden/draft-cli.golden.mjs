@@ -132,6 +132,35 @@ check('D9 凭据门拦截 exit 1（R1-F4 修正采纳：同 compile 先例，1=�
   if (existsSync(join(cleanDir, `expected.draft-${CASE_ID}.json`))) throw new Error('凭据门拦截后不得落草稿');
 });
 
+// ---------- drafter-patch-intent-guard（real-uat R2 实证工装缝）----------
+check('D10 补缝 intentId 不存在于 observed → 65 且不落草稿（错位断言禁止静默成孤儿）', () => {
+  const gDir = join(tmp, 'out-ghost');
+  mkdirSync(gDir, { recursive: true });
+  const PATCH_GHOST = join(tmp, 'patch-ghost.json');
+  writeFileSync(PATCH_GHOST, JSON.stringify([
+    { intentId: 'intent_open', kind: 'urlPathname', op: 'startsWith', value: '/heren/aimanagement/edit' },
+  ]));
+  const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE, '--compile-report', REPORT, '--out-dir', gDir, '--patch', PATCH_GHOST]);
+  if (r.status !== 65) throw new Error(`错位 intentId 应 exit 65，实际 ${r.status}`);
+  if (existsSync(join(gDir, `expected.draft-${CASE_ID}.json`))) throw new Error('错位补缝拒后不得落草稿');
+  if (!/intent_open|存在|observed/.test(String(r.stderr || ''))) throw new Error('stderr 须点名违例 intentId 或存在性闸');
+});
+
+check('D11 正控：observed 真实 intent（骨架无断言者）补缝仍成、不误杀合法新建', () => {
+  const pDir = join(tmp, 'out-pos');
+  mkdirSync(pDir, { recursive: true });
+  const PATCH_POS = join(tmp, 'patch-pos.json');
+  writeFileSync(PATCH_POS, JSON.stringify([
+    { intentId: 'intent_0', kind: 'urlPathname', op: 'startsWith', value: '/heren/aimanagement/list' },
+  ]));
+  const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE, '--compile-report', REPORT, '--out-dir', pDir, '--patch', PATCH_POS]);
+  if (r.status !== 0) throw new Error(`合法 intentId 应 exit 0，实际 ${r.status}：${(r.stderr || '').slice(-160)}`);
+  const d = JSON.parse(readFileSync(join(pDir, `expected.draft-${CASE_ID}.json`), 'utf8'));
+  const i0 = (d.intents || []).find((it) => it.intentId === 'intent_0');
+  if (!(i0?.expected || []).some((a) => a.kind === 'urlPathname')) throw new Error('合法补缝未挂上');
+  for (const it of d.intents || []) if (!['intent_0', 'intent_1', 'intent_2'].includes(it.intentId)) throw new Error(`草稿含 observed 之外的 intent：${it.intentId}`);
+});
+
 if (fails.length) {
   for (const f of fails) console.error(`RED  draft-cli: ${f}`);
   console.error(`RED  draft-cli: ${pass} 过 / ${fails.length} 红`);
