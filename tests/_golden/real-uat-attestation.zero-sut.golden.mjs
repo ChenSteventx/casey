@@ -70,9 +70,9 @@ check('V4 发现账齐全且与 axes 网络账相符（503 两实例复现+归�
   // 回放② axes 必须零 5xx（未开详情）。账与网络证据任一不符即红。
   const bad1 = [];
   for (const s of jread(join(RUN, 'run2-replay1', 'axes.json')).steps) {
-    for (const r of s.forensics.network) if (Number(r.status) >= 500) bad1.push({ url: String(r.url).split('?')[0], attr: r.attributedStepId });
+    for (const r of s.forensics.network) if (Number(r.status) >= 500) bad1.push({ url: String(r.url).split('?')[0], st: Number(r.status), attr: r.attributedStepId });
   }
-  must(bad1.length === 2 && bad1.every((r) => r.attr === null), `回放① 5xx 网络账应恰两条且归因 null，实 ${JSON.stringify(bad1)}`);
+  must(bad1.length === 2 && bad1.every((r) => r.st === 503 && r.attr === null), `回放① 5xx 网络账应恰两条 503 且归因 null，实 ${JSON.stringify(bad1)}`);
   must(bad1.some((r) => r.url.endsWith('/agentPlus/queryPlus')) && bad1.some((r) => r.url.endsWith('/getAgentDetail')), '回放① 503 端点与账不符');
   const bad2 = [];
   for (const s of jread(join(RUN, 'run2-replay2', 'axes.json')).steps) {
@@ -114,6 +114,18 @@ check('V6 报告交付四项齐：录屏+视觉复核+附件实存+账实 sha �
       must(existsSync(join(d, e.file)), `run2-replay${n} 视觉复核引证帧缺席：${e.file}`);
     }
     if (n === 1) must((rm.visualReview.summary || '').includes('操作失败'), '回放①复核摘要未记失败提示可视面');
+    // 交付面全锁（codex R3-B High）：复核源件+JSON/HTML/MD 三形态逐一核状态，假 CONSISTENT 任一面复活即红。
+    const vr = jread(join(d, 'visual-review.json'));
+    must(vr.status === wantVr && vr.status === rm.visualReview.status, `run2-replay${n} visual-review.json 状态与账/模型不符（${vr.status}）`);
+    if (n === 1) must((vr.summary || '').includes('操作失败'), '回放① visual-review.json 摘要未记失败提示');
+    const rj = jread(join(d, 'tc_agent_id_readback_real_uat_v1.report.json'));
+    must(rj.visualReview && rj.visualReview.status === wantVr, `run2-replay${n} report.json 视觉复核状态不符`);
+    const html = readFileSync(join(d, 'tc_agent_id_readback_real_uat_v1.report.html'), 'utf8');
+    const md = readFileSync(join(d, 'tc_agent_id_readback_real_uat_v1.report.md'), 'utf8');
+    for (const [name, text] of [['html', html], ['md', md]]) {
+      if (n === 1) must(text.includes('画面与裁定不一致'), `回放① report.${name} 未渲染「画面与裁定不一致」`);
+      else must(text.includes('画面与裁定一致') && !text.includes('画面与裁定不一致'), `回放② report.${name} 视觉复核渲染不符`);
+    }
     for (const f of ['axes.json', 'verdict.json', 'video.webm', 'tc_agent_id_readback_real_uat_v1.report.json']) {
       must(evid.includes(sha8(join(d, f))), `账实不符：run2-replay${n}/${f} 的 sha 前缀未见于证据文档`);
     }
