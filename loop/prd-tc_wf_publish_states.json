@@ -3,7 +3,9 @@
   "caseId": "tc_wf_publish_states",
   "task": "tc_wf_publish_states 人签断言契约（扁平每用例 prd；2026-07-07 真机合并行程首签，sign 写 expectedFrozenPath + checksum）",
   "testChecksums": {
-    "cases/tc_wf_publish_states/expected.frozen.json": "dd656bd4873751b8d3716d21eae3f2a06873ed77a6cba242ac440a4a0c7d1cc0"
+    "cases/tc_wf_publish_states/expected.frozen.json": "dad058f3847acbbface71d237f62a4c09f2bb19ae656a8eacdde8e1e421de2c9",
+    "runs/real-uat-20260722/tc_wf_publish_states/execute-authority.json": "315a282bfa089177ca8d8d9767485b272b4837f8b8567d37422f3c35466ac976",
+    "cases/tc_wf_publish_states/entity-locks.frozen.json": "1791ef5eba9a844ec54f2b80e906fa72477941437802e3410739a8f05a700501"
   },
   "stories": [],
   "expectedFrozenPath": "cases/tc_wf_publish_states/expected.frozen.json"
