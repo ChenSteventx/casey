@@ -3,7 +3,7 @@
   "task": "相2 草拟命令化（light）：casey draft <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]——薄 CLI 零 LLM 包已收口函数层（synthesizeSkeleton + validateDraft）：assertionAtoms 唯一源 = compile-report.handoff.assertionAtoms（P4 交接面既定位）；--patch 为 LLM 补缝文件通道（CLI 外产出，同 P3 flow 范式，prompt 用 p4-drafter 既定件）；合并后整份过闸、违规 exit 65 不落草稿（半份草稿比没有更危险）；caseId 三方一致闸；产物 expected.draft-<caseId>.json 带 pending 留痕、经凭据门落盘。人签 UX 照 p4-drafter 既定 route:human 不做。决策 GRILL G1–G4（Steven「继续开」授权 HANDOFF ①）。",
   "specPath": "docs/plans/draft-cli/plan.md",
   "testChecksums": {
-    "tests/_golden/draft-cli.golden.mjs": "d3485a9d2fac86794d45075885fc89ceee5ca056c75253238458ee297fedcad5"
+    "tests/_golden/draft-cli.golden.mjs": "3ce92b181be49f2b92e3b03d6a4c25121c2a0281c61df75509863151fcfd1ddd"
   },
   "observability": [
     {
@@ -21,7 +21,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T23:47:04.253Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T23:55:47.597Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-regression-locks",
@@ -31,7 +31,7 @@
         "node tests/_golden/p4-drafter.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T23:47:06.347Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T23:55:49.323Z 全部 acceptance exit 0"
     }
   ],
   "checksumAmendments": [
@@ -41,6 +41,13 @@
         "tests/_golden/draft-cli.golden.mjs"
       ],
       "reason": "drafter-patch-intent-guard 修单（断言零弱化、纯加钉）：--patch 错位 intentId 此前静默新建孤儿 intent（real-uat-attestation R2 真机实证：断言冻进 expected 但回放永不匹配）。bin/draft.mjs 加存在性闸（置词表硬闸后=闸序不动 output-seal F4 冻结面；基准=observed.steps 全集防误杀合法新建；违例值不回显报序号——output-seal 遮值纪律）。金牌加 D10 负控（错位必 65+零落盘+红先行实证 exit 0 落孤儿，红证 docs/plans/drafter-patch-intent-guard/accept/red-proofs/draft-cli-d10.red.txt）+D11 正控（合法新建不误杀+草稿不含 observed 外 intent）。修后 draft-cli 11/11、output-seal 27/27、caseid-echo-mask/p4-drafter/tier1 全 exit 0。"
+    },
+    {
+      "amendedAt": "2026-07-23",
+      "files": [
+        "tests/_golden/draft-cli.golden.mjs"
+      ],
+      "reason": "drafter-patch-intent-guard 评审 R1 修单（codex R3-Medium，断言零弱化纯收紧）：D10 遮值约束入冻——种子 intentId（SEEDVAL_D10GHOST_x9）+输出流反向断言（原值回显即红）+「存在性闸」定位词+intents[序号] 必在；原正则允许 intent_open 出现在 stderr、遮值回归测不出的缺口封死。"
     }
   ]
 }

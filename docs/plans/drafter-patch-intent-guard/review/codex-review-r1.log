@@ -1,0 +1,1900 @@
+Reading additional input from stdin...
+2026-07-22T23:49:49.907616Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when UnexpectedServerResponse("HTTP 403: {\"message\":\"missing csrf token\"}")
+OpenAI Codex v0.144.1
+--------
+workdir: /mnt/d/ctx/heren/casey
+model: gpt-5.6-sol
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: none
+session id: 019f8c3c-2aad-73f3-ae82-34f6e36aee64
+--------
+user
+你是 Casey 仓 drafter-patch-intent-guard 契约的异构评审员（评审家族≠实现家族：Claude 实现→codex 评）。这是一个 light 车道小修单：封「bin/draft.mjs --patch 错位 intentId 静默新建孤儿 intent」的工装缝（real-uat-attestation R2 真机实证：错位断言冻进 expected 但回放永不匹配）。工作目录 /mnt/d/ctx/heren/casey（只读）。
+
+【材料】
+1. 契约件：docs/plans/drafter-patch-intent-guard/{GRILL.md, plan.md, accept/red-proofs/draft-cli-d10.red.txt}
+2. 修复提交：git show ced85db（bin/draft.mjs 存在性闸 + 金牌 D10/D11 + owner prd checksumAmendments + 契约 prd）
+3. 现成证据（勿重跑）：红先行 D10 实证修前 exit 0 落孤儿；修后 draft-cli 11/11、output-seal 27/27、caseid-echo-mask/p4-drafter/tier1 全 exit 0；prd-draft-cli 与契约 prd 双 gate GREEN。
+
+【评审维度】
+R1 闸的正确性：存在性闸置 validateDraft（词表硬闸）之后、credentialGate/落盘之前——闸序是否确实不动 output-seal F4 冻结面（F4 的 observed 无 steps、patch 携词表外 kind/op 种子）；基准=observed.steps 全集（而非 skeleton intents）是否正确防误杀；对 compile-report 侧 assertionAtoms 造出的 observed 外 intent 是否同样拦住（这是刻意的同病同封，见提交注释）。
+R2 遮值纪律：违例值不回显、报 intents[序号]——与 output-seal 遮值+可诊断定位词的既有口径是否一致；有无新的内容泄漏面。
+R3 金牌钉质量：D10 负控（65+零落盘+stderr 定位词）与 D11 正控（合法新建不误杀+草稿不含 observed 外 intent）是否足钉本缝；红证是否真实（修前 exit 0）。
+R4 记账：owner prd checksumAmendments 修单账与契约 prd 是否账实相符。
+
+【输出要求】
+逐维度裁定 OK / FINDING（给 文件:行号 与级别）；最后单独一行终判：PASS 或 FAIL（FAIL 列阻塞项）。
+deprecated: `[features].enable_experimental_windows_sandbox` is deprecated. Use `[features].experimental_windows_sandbox` instead.
+Enable it with `--enable experimental_windows_sandbox` or `[features].experimental_windows_sandbox` in config.toml. See https://developers.openai.com/codex/config-basic#feature-flags for details.
+codex
+我会按 Casey 的评审入口读取权威规则与指定契约件，只做静态异构评审，不重跑现成证据。Casey skill 会约束我不把桩或文件存在误当通过，并严格按确定性证据口径裁定。
+exec
+/bin/bash -lc "sed -n '1,260p' /mnt/d/ctx/heren/casey/.claude/skills/casey/SKILL.md" in /mnt/d/ctx/heren/casey
+ succeeded in 0ms:
+---
+name: casey
+description: 用自然语言把测试用例跑成 Casey 测试报告，或启动示教录制。当用户说"跑一下历史版本用例""把这段用例测一遍""生成测试报告""我要手动录制"时使用。用户操作面必须只收自然语言；底层 CLI/MCP 参数由代理内部处理，绝不要求用户复制命令，绝不把桩当成已完成。
+---
+
+# casey — 自然语言 → 测试报告
+
+本 skill 的用户操作面只接受自然语言。真正的活由 `bin/casey.mjs` 与 `loop-kit/bin/*` 干（在仓根执行），但命令、路径、参数是代理内部实现细节，不作为用户要手动复制的步骤输出。
+
+## 用户怎么说
+
+用户只需要这样说：
+
+- “帮我跑刚刚那个历史版本用例，生成测试报告。”
+- “跑一个 0 error 的真实用例给我看报告。”
+- “我要手动录制一个新流程，名字叫采购审批冒烟。”
+- “把这段用例在中台上测一遍，出 HTML 报告。”
+- “打开最近一次报告给我看。”
+- “给我看一份样例报告 / Casey 产物长啥样 / 先看看报告长什么样。”
+
+代理职责：
+
+1. 自行判断可用入口：已有签署用例走回放报告；新自然语言用例先走归一/编译/草拟/人签流程；手动操作走示教录制。
+2. 自行检查环境：仓根、反向隧道、本地基址、凭据文件是否具备；缺失时用一句自然语言说明缺什么，不输出复杂命令清单。
+3. 自行执行底层命令，最后只给用户报告链接、四态计数、是否 0 error、失败原因摘要。
+4. 用户明确问“给我命令”时才展示命令；否则不要把 CLI 参数当成使用说明。
+
+## 内部动作表（不要直接要求用户照抄）
+
+| 自然语言意图 | 代理内部动作 |
+|---|---|
+| “跑刚刚那个历史版本用例/跑历史版本报告” | 跑 `tc_wf_history_version`，生成报告后用 `verify-zero-error-report` 校验，返回 HTML/MD/JSON 链接。 |
+| “跑一个真实 0 error 用例” | 优先选择最近现场复跑已 0 error 的用例；当前已现场验证的是 `tc_wf_history_version`。不要把历史绿但今天复跑红的用例冒充 0 error。 |
+| “手动录制/示教录制” | 启动 `casey record`，打开浏览器让用户操作；关闭浏览器后返回 `teach-in-capture.json` 路径，并说明它只是蒸馏语料、不是正式报告。 |
+| “把这段文本用例跑成报告” | 若已有完整签署产物则直接跑；否则先产候选 TestCase/flow/expected 草稿并要求用户签署，不能代签。 |
+| “把一段自由文本用例变成候选骨架 / 我要从头写个用例” | 代理内部跑 `scaffold-case` 把自由文本零 LLM 包成候选骨架（`source.kind:freetext` + `route:human` 占位，开箱过 `parseTestCase`），再按归一提示模板 `docs/plans/ingest-scaffold/proposed/from-text-candidate.draft.md` 把 `source.raw` 归一成真实意图步、经 `ingest` 入场；如实说明候选须 LLM 归一 + 人签才算数、不是正式报告，别盲写 JSON。 |
+| “看最近报告” | 在 `runs/` 下找最新 `.report.html`，返回链接和四态摘要。 |
+| “看样例报告/Casey 产物长啥样” | 只返回 `runs/` 下已有的真实回放报告，并标明运行时间与四态；没有真实报告就如实说明。不得运行历史 `casey demo`，因为它会启动夹具 SUT。 |
+
+## 内核（不可让渡，违反即停）
+
+- 确定性是默认，`LLM` 是手术刀：`LLM` 只在归一(相0)、编译(相1)、断言草拟(相2)、自愈(相5) 出现；回放(相3)、多态裁定(相4)、报告(相6) 是零 `LLM` 确定性。
+- 裁判零 `LLM`：测试结论由 `casey verdict`（确定性 `verdict.mjs`）出。绝不用 `LLM` 判「过没过」，绝不把 `LLM` 的印象当裁定。
+- **fail-safe 不 fail-open**：机器只终判 `PASS` 与有取证背书的 `SUT_DEFECT`；证不出的一律 `NEEDS_HUMAN`，写 Inbox 等人裁。绝不默认成「可自愈」或自动记缺陷。
+- **完成是退出码，不是声明**：报告里「通过/失败」必须来自真实回放 + `verdict.json`，别拿「文件存在」或桩命令（exit 3）当通过。
+
+## 区分三类错误（用户的核心要求，别混淆）
+
+测试失败时，先分清是哪一类——这是 `verdict.mjs` 的判定树（设计 §4.2），不是凭感觉：
+
+| 裁定 | 含义 | 谁的错 |
+|---|---|---|
+| `SUT_DEFECT` 被测缺陷 | 动作做对了、断言硬失败、且有取证背书（5xx/pageerror/crash/错误信封） | **被测系统**（真 bug，出缺陷单给研发） |
+| `HARNESS_ERROR` 过程错误 | 正向确证的工装定位漂移（locator 不再命中，但同签名唯一元素仍在） | **测试工装**（步骤/录制层，可自愈） |
+| `CASE_DEFECT` 用例缺陷（`NEEDS_HUMAN` 子类） | 编译期入口可证缺席或期望自相矛盾 | **测试用例本身**（修用例） |
+| `AMBIGUOUS_ACTION`/`INDETERMINATE` 等 | 点没点对存疑 / 纯未知 | **机器不敢判，路由人** |
+
+「测试用例的错误」≈ `CASE_DEFECT`；「测试步骤/工装的错误」≈ `HARNESS_ERROR`；「被测系统的错误」= `SUT_DEFECT`。三者落点不同，绝不能都报成「失败」了事。
+
+## 底层命令映射（仅供代理内部执行）
+
+| 用户意图 | 执行 |
+|---|---|
+| 相3-4-6 编排（回放→裁定→报告） | `node bin/casey.mjs run <caseId> --sut <url> --events <f> --expected <f> --profile <f> [--run-dir <d> --login-bootstrap --no-video]`（相0-2 前段须先各自跑完备好 events 与已签 expected） |
+| 相0 前段脚手架（自由文本 → 候选骨架） | `node bin/casey.mjs scaffold-case <caseId> --from-text <text-file> --out-dir <d>`（零 LLM 产候选骨架，开箱过 `parseTestCase`；再按归一提示模板 `docs/plans/ingest-scaffold/proposed/from-text-candidate.draft.md` 把 `source.raw` 归一成真实意图步 → `ingest` 入场；候选非权威，须归一 + 重走全链 + 人签，门拒 fail-closed） |
+| 相0 归一（候选须先由 LLM 在 CLI 外产出） | `node bin/casey.mjs ingest <caseId> --in <candidate.json> --out-dir <d>` |
+| 相1 flow 桥（mapping 由 LLM 在 CLI 外产出） | `node bin/casey.mjs flow-bridge <caseId> --testcase <f> --mapping <f> --out-dir <d>` |
+| 相1 编译（三段式：闸→人 confirm→执行） | `node bin/casey.mjs compile <caseId> --testcase <f> --flow <f> --out-dir <d>`；执行段加 `--execute --sut <url> --profile <f>`（须 flow 已 confirm，否则 exit 66） |
+| 相2 草拟断言 | `node bin/casey.mjs draft <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]` |
+| 相2 人签冻结断言 | `node bin/casey.mjs sign <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id>`（**让用户签**，CC 不代签） |
+| 示教录制（相外兜底，产蒸馏语料） | `node bin/casey.mjs record <caseId> --sut <本地基址> --out-dir <d> (--login-bootstrap\|--no-login) [--from-events <f> --headless --max-ms <ms>]`（示教语料，非正式回放输入） |
+| 示教入账（安全复核 → 入账台账） | `node bin/casey.mjs intake <caseId> --capture <f>`（安全复核录制包 → 登记入账台账，拒账 fail-closed） |
+| 相3 确定性回放 | `node bin/casey.mjs replay --events <f> --sut <url> --expected <f> --profile <f> --out <axes.json>`（未签契约拒回放） |
+| 相4 出多态裁定 | `node bin/casey.mjs verdict --axes <f> --out <f>` |
+| 相5 自愈（仅工装漂移） | `node bin/casey.mjs heal <caseId>`（诚实桩 exit 3，相5 只有 lib 件） |
+| 相6 出报告 | `node bin/casey.mjs report --model <f> --out <d> [--run-history <f> --run-metrics <f>]` |
+| 链路自检 | 仅在逐项确认命令不启动/连接任何 SUT 后，直接运行对应静态、schema 或纯函数检查；不得调用未审计的整包 gate。 |
+| 看样例报告 | 从 `runs/` 读取已有真实报告；`casey demo` 已按 real-SUT-only 策略禁用。 |
+| loop 纪律 | `node bin/casey.mjs lint\|gate\|breaker\|contract ...` |
+
+相1 mapping 的实体角色必须由代理显式写出且经用户/只读候选确认：mutation（变更）原子使用单个 `{candidateId, role:'subject'}`；relation（关系变更）原子同时使用 `{role:'source'}` 与 `{role:'target'}`。candidateId、名称、编号都不得按列表顺序或同名猜测；缺失时 route:human，不得让 flow bridge 代猜或代签。
+
+执行后回给用户的标准格式：
+
+- 报告：`<html 链接>`，必要时附 `<md/json 链接>`。
+- 结论：`PASS=n / SUT_DEFECT=n / HARNESS_ERROR=n / NEEDS_HUMAN=n`。
+- 0 error：只有 `SUT_DEFECT=0`、`HARNESS_ERROR=0`、`NEEDS_HUMAN=0` 且每步都是 `PASS` 才能说 0 error。
+- 失败时只解释一层原因：被测缺陷、工装问题、用例问题或机器不敢判；不要用 LLM 自己裁定过没过。
+
+> 当前进度：七相全建且 hermetic「文本→报告」全链已由集成金牌贯通（`tests/_golden/e2e-chain.golden.mjs`）；`heal` 是唯一诚实桩（exit 3，相5 未吃过真场景）。真机端到端仍需一次真机 compile bring-up + 人签在场（route:human）。桩返回 exit 3 时**如实告诉用户该阶段未实现**，绝不假装跑完了；全部生命周期命令用法错统一 exit 64（`report` 历史例外 2 已由 report-exit64 契约收敛）。
+
+## 报告交付最低内容（Steven 2026-07-15，硬要求）
+
+每一个测试用例必须生成一份独立 HTML 正式报告；聚合 HTML 只作索引，不承载或替代单用例正文。每份独立 HTML 必须同时包含以下四项；只给四态计数或报告链接不算完整交付：
+
+1. **测试用例（自然语言描述）**：取自已签 `testcase.json` 的前置条件与 intent 文本。字段缺失时必须明确标“缺失/待补”，不得由代理临场编造另一套用例冒充签署原文。
+2. **分解后的原子操作**：逐条列出动作与断言，至少包含顺序号、代表 `stepId`/`intentId` 和原子描述；来源以同次 run 的 `*.report.json.atomicSteps` 为准。
+3. **录屏**：报告内提供可播放的回放录像，并同时给直接附件链接；默认不得用 `--no-video` 生成正式交付，除非用户明确要求无录屏。
+4. **附件**：至少附 HTML/Markdown/JSON 报告、`verdict.json`、`axes.json`、`run-history.jsonl`、`run-metrics.json`、`video.json`；有截图、trace、文本/抓取输出、缺陷单时一并附上。
+
+四项内容必须与同一次真机 run 对齐。聚合 HTML 必须逐例链接到独立 HTML，可列 caseId、四态摘要和视觉复核摘要，但不得复制单例正文形成第二份事实源；凭据、Cookie 和真实目标地址仍绝不进入任一正文或附件索引。
+
+## 报告里有什么（设计 §6）
+
+操作说明 + 标注（`LLM` 接口/生命周期取证/网络取证）+ 回放录屏(mp4) + 文本/抓取输出（含 `LLM` 的回答原文 + 截图）+ 每步裁定徽章 + 缺陷单（仅 `SUT_DEFECT`）+ trace + 截图。机读产物 `verdict.json` 是 golden 唯一校验对象。
+
+## 执行边界（重要）
+
+- **假被测系统只读，所有行为验收只驱真机**（Steven 2026-07-15 定，强制执行）：假被测系统（`fake-sut`）和夹具 `SUT` 只允许读取源码作为迁移参考，任何代理不得启动、连接或回放它们，也不得用 `casey demo` 顶替真机运行。`golden` / `gate` / `selftest --tier1` 仅在可证明不启动、不连接、不回放任何假 `SUT` 时才允许执行；静态检查、schema 检查和不接触 `SUT` 的纯函数检查可执行。所有浏览器/通道行为测试、回放、复跑与验收一律联网驱真实目标，`--sut` 只喂隧道回环基址（`site.json` 的 `devProxyUrl`，形如 `http://127.0.0.1:15519`）；无网络、仅本地监听、代理池未连真站或网络受限时一律不得开始行为验收。前置 = 相位0 三关（`casey doctor` 就绪 / Steven 带外确认 `.auth` = `autotest` / 反向隧道单实例；全流程见 `docs/runbooks/real-uat-runbook.md`；隧道两命令：`WSL` 侧 `node scripts/wsl-reverse-listen.mjs`、`Windows` 侧 `node scripts/win-reverse-agent.mjs`，顺序先 `WSL` 后 `Windows`）；除 `doctor` 外还必须取得 Windows→真站与 `WSL` 回环→真站两段真实 HTTP 成功证据。没有同次真实回放、确定性 `verdict.json`、录屏、视觉复核和独立单用例 HTML，不得声称行为验收完成。
+- **凭据让用户设**：`.auth/`、`site.json` 是凭据，CC 不把账号密码写进命令行/文件/报告。
+- **冻结断言只读**：人签后改断言 = Test Ratchet 判红，别去改。
+- 改实现先 `contract`：动 `lib`/`bin` 前先 `node loop-kit/bin/contract.mjs init <slug> --lane <...> --reason "..."`，否则 hook 拦截。
+- **真机变更有副作用**：编辑型用例（新建/发布/删除）回放=真实改环境数据，实体必带 Reserved Prefix `atl_`。
+
+exec
+/bin/bash -lc "wc -l .claude/skills/casey/SKILL.md && sed -n '261,520p' .claude/skills/casey/SKILL.md" in /mnt/d/ctx/heren/casey
+ succeeded in 0ms:
+113 .claude/skills/casey/SKILL.md
+
+exec
+/bin/bash -lc 'wc -l CLAUDE.md CONTEXT.md docs/HANDOFF.md loop/GUARDRAILS.md README.md' in /mnt/d/ctx/heren/casey
+ succeeded in 208ms:
+    54 CLAUDE.md
+   169 CONTEXT.md
+   816 docs/HANDOFF.md
+    44 loop/GUARDRAILS.md
+    96 README.md
+  1179 total
+
+exec
+/bin/bash -lc "sed -n '1,240p' CLAUDE.md && sed -n '1,260p' CONTEXT.md" in /mnt/d/ctx/heren/casey
+ succeeded in 259ms:
+# CLAUDE.md
+
+**Casey（测易）** —— LLM 驱动的「文本用例 → 测试报告」自动化测试系统。一段文本用例（excel/json/txt/自由文本）→ LLM 编译成确定性可回放 spec → 确定性回放（录屏 + 抓输出）→ 零 LLM 多态裁定出严格结论 → 自包含测试报告。三处统一标识符 `casey`：CLI `bin/casey.mjs`、skill `casey`、MCP server `casey`。
+
+复用 autotester 的 **loop-kit**（loop engineering 工具箱）作为第二消费者（ADR-0001）。Casey 是 autotester（人录、机回放、零 LLM）的「翻面」：输入端改 LLM，但「确定性是默认、LLM 是手术刀、完成是退出码、裁判零 LLM」的内核一字不让。
+
+## 必读顺序
+
+1. `CONTEXT.md` —— 统一语言注册表：**所有概念命名以它为准**，弃用别名列是黑名单；
+2. `docs/design/txt2testreport-design.md` —— 端到端设计（v0.2，已并入 4 路红队修订）；
+3. `docs/plans/bootstrap/plan.md` —— 落地计划（P0–P9 里程碑）；
+4. `loop/GUARDRAILS.md` —— 护栏清单，逐条有效（1–12 迁移，13–16 Casey 新增）。
+
+## Bootstrap（`loop-kit` 兄弟目录）
+
+`loop-kit` 已提取为独立包（ADR-0008）：Casey 与 autotester 双消费者。拓扑关系优先于绝对路径——包是消费树的**兄弟目录**独立仓（`../loop-kit` 与 `../<本仓目录名>` 平级），任何机器、任何 OS 同构；`/mnt/d/ctx/heren/loop-kit` 只是当前环境下的一个实例位置，不是必须坐落的路径。新机器 bootstrap：把包 clone 到消费树的兄弟目录；非同层布局须显式设 `LOOP_KIT_PKG` 指向实际位置（只改包位置，不豁免身份锁校验）。
+
+注意：`hook-loop-guard` 遇包缺失或身份锁（`kit-lock.json`）失配会 fail-closed（拦，见护栏与 D5 降级矩阵），这会连带拦住用来修复现场的工具调用本身——恢复动作（clone 包或设 `LOOP_KIT_PKG`）须在 hook 触发范围之外（人工终端等）完成，不能指望在被拦的同一回合里用工具调用修。
+
+## 硬规则（由机制强制，不是建议）
+
+- 双 hook 在 `.claude/settings.json` 生效：回合输出与写入的 md/json 都会被 `loop-kit/bin/term-lint.mjs` 扫描，术语违例与繁体字会被拦截（ADR-0005）。新概念先查既有学科术语，造词必须先登记 CONTEXT.md；英文术语首次出现附中文白话解释。
+- 阶段互锁：实现编辑/提交前必须先 `contract init` 声明入口分流；缺上一阶段交付物时 `hook-loop-guard` 拦截（护栏 #11）。
+- `loop/prd-<slug>.json` 的 `passes` 字段只有 `loop-kit/bin/gate.mjs` 有权写入；`testChecksums` 冻结的断言文件对实现者只读。
+- **裁判零 LLM**：多态裁定由 `bin/verdict.mjs`（零 LLM）出，自愈（LLM）是其下游消费者，不得进裁判进程（护栏 #15）。
+- **fail-safe 不 fail-open**：机器只终判 `PASS` 与有取证背书的 `SUT_DEFECT`；证不出的一律 `NEEDS_HUMAN`（护栏 #14）。自愈只对确证 `HARNESS_ERROR` 开闸（护栏 #13）。
+- `.auth/` 与 `site.json` 是凭据，内容不得进任何输出、日志、提交、报告。
+
+## 常用命令
+
+```
+node loop-kit/bin/term-lint.mjs --registry              # 术语表完整性检查
+node loop-kit/bin/breaker.mjs --reset                   # 熔断器清零（loop 开始时）
+node loop-kit/bin/gate.mjs --prd loop/prd-<slug>.json   # 质量门禁（确定性裁判，唯一写 passes）
+node loop-kit/bin/contract.mjs init <slug> --lane <direct|light|full> --reason "<一句理由>"
+node bin/casey.mjs selftest --tier1                     # 链路自检（hermetic，零外部依赖）
+```
+
+业务命令（ingest/compile/sign/replay/verdict/report）见 `bin/casey.mjs --help` 与 README；当前实现进度见计划 P0–P9。
+
+## 开发工作法（准则，非机制强制）
+
+- **长链条走确定性编排**：起 subagent 前先估链条长度。短活/单步——直接派 `Agent` 或自己做；长链/多阶段（多契约并行落地 + 逐个异构评审 + 分波合并这类）——走 ultracode 模式（`Workflow` 工具编排：`pipeline` 各契约 + 并行评审 + 对抗式核验 findings + 循环到干），别手派一堆 `Agent` 自己盯完成再手接下一步。已在跑的手派 `Agent` 不为切换而杀重来（浪费），从下一个编排步（某波收口 / 下一波落地）起改走 `Workflow`。（Steven 2026-07-09 定。）
+- 配套既有准则：可并行的活优先 `fan-out` 子代理；碰 `lib`/`bin` 的真并行走 `worktree`（护栏 #18）；异构评审家族≠实现家族（`codex` 评 Claude 实现）。
+- **Claude Code 额度纪律**：评审先跑确定性检查，再用 `pi.dev` 的 `deepseek-v4-pro` high 清普通问题；Claude Code 只审已收敛的高风险小差异。每次只开一个进程，输入必须限定基线、文件白名单、风险清单与现成证据；禁止全仓漫游、派生子代理和无上限续跑。首轮只报 `Critical`/`High`/`Medium`，复审只看已确认 finding 的修复 hunks。额度不可用时，不反复探测；有 Steven 明确授权可由 `pi.dev` 代审，否则诚实挂账。详细操作见 `docs/runbooks/review-model-budget.md`。
+
+## 决策档案
+
+- `docs/adr/` —— 难逆转决策（复用 loop-kit / 多态裁定 fail-safe / 编译再回放 / 断言冻结人签 / 统一语言强制）；
+- `docs/design/`、`docs/plans/` —— 端到端设计与里程碑计划。
+
+## git 分支
+
+`master`（稳定主干）/ `dev`（日常开发，默认工作分支）/ `test`（提测/真机 UAT）。
+# CONTEXT.md — 统一语言注册表
+
+> 本文件是本仓库「什么叫好」的唯一事实源之一（术语部分）。决策记录见 `docs/adr/`，需求级决策见 `docs/decisions/`，端到端设计见 `docs/design/`。
+>
+> 规则（详见 ADR-0005，机制同 autotester ADR-0004）：
+> 1. 设计文档、代码标识符、prompt、config 字段名共用本表术语；
+> 2. 新概念命名先查既有学科（DDD → SRE → 控制论 → CI/CD → XP/BDD → ITIL），映射不到才造词，且必须先登记本表；
+> 3. 英文术语在文档中首次出现必须附中文白话解释；
+> 4. 标记约定：凡作为术语使用的词必须加粗或反引号标记——`term-lint` 据此做白名单检查；
+> 5. 弃用别名列是 `term-lint` 黑名单：命中即红；中文一律标准简体，禁繁体。
+>
+> 本仓库当前含两个限界上下文（Bounded Context）：孵化自 autotester 的 **loop-kit** 通用子域（编排/验证域）与 **Casey** 核心域（文本用例→测试报告域）。同名术语跨上下文含义以所在分节为准。Casey 是 autotester（人录、机回放、零 LLM）的「翻面」：输入端改为 LLM 读懂用例直接跑，但「确定性是默认、LLM 是手术刀、完成是退出码、裁判零 LLM」的内核一字不让。
+
+## loop-kit 通用子域（编排/验证域）
+
+| 术语 | 中文译名 | 白话解释 | 弃用别名 |
+|---|---|---|---|
+| Loop Contract | loop 契约 | 开任何 loop 前必须存在的约定：目标、非目标、验收、停止条件、预算、护栏、升级路径、审计（八要素） | — |
+| Quality Gate | 质量门禁 | 一组必须全部通过才允许提交或进入下一阶段的可运行检查；默认 FAIL，凭证据翻绿（CI/CD 术语） | 出口闸, 门禁闸 |
+| Executable Specification | 可执行规格 | 验收标准写成能直接运行的命令或测试，而不是散文描述（BDD/实例化需求术语） | 验收命令化 |
+| Acceptance Test | 验收测试 | 钉死在验收点上的 story 级测试；实现期间冻结（xUnit/ATDD 术语） | — |
+| ATDD | 验收测试驱动开发 | 实现开始之前先把验收标准写成会失败的测试（Acceptance Test-Driven Development） | — |
+| Golden Test | 黄金标准测试 | 固定输入跑确定性转换，输出与人工确认过的存档做 diff；一致绿、不一致红（特征测试的一种） | — |
+| Fixture | 固定语料 | 测试使用的固定输入数据；golden test 只能测到语料中出现过的模式（xUnit 术语） | — |
+| Test Ratchet | 测试棘轮 | 测试只许加严不许放松；实现者改动验收测试文件 = 质量门禁直接判红（checksum 校验） | — |
+| Toil | 事务性工作 | 需要读懂但不需要做决定的有界重复工作：模板化、错误廉价、判断不外溢（Google SRE 术语） | 流水活 |
+| Lane | 车道 | 按职责与模型分层划分的模型道（config.json `lanes`）：`toil` / `implementation` / `review`；story 的 lane 取其子集 `toil`/`implementation`。与「入口分流」正交 | — |
+| 入口分流 | Entry-Triage Lane | contract.mjs 的 `--lane`：按需求成本把任务分到 `direct`（仅契约+一行理由）/ `light`（加 plan 门）/ `full`（全链）；与模型道 Lane 正交 | — |
+| Dissimilar Redundancy | 异构冗余 | 用不同实现/不同模型家族的组件互相校验，避免共享盲区（容错工程术语）；本仓库指 Codex 评审 Claude 产出 | 跨族评审, 异族评审 |
+| Circuit Breaker | 熔断器 | 连续异常达到阈值就自动停机的保护装置：迭代上限/连续零进展/同错重复（Nygard《Release It!》） | — |
+| Escalation Path | 升级路径 | 机器搞不定的事项移交给人的固定通道：写 Inbox + 通知（ITIL 术语） | 升级通道 |
+| `commit` | 提交 | git 提交；阶段互锁中 `commit-impl` 需 loop done 才放行（护栏 #11，only when user asks） | — |
+| `push` | 推送 | git 推送远端；阶段互锁中 `push` 需 review done 才放行（护栏 #11） | — |
+| Inbox | 收件箱 | 等待人裁决事项的落点文件 `loop/inbox.md`（GTD 术语） | — |
+| Guardrail | 护栏 | 永不可违反的约束清单 `loop/GUARDRAILS.md`；每条标注 [enforced]/[prose] 与它编码的假设 | — |
+| Reserved Prefix | 保留前缀 | loop 在真实环境创建的一切实体必须以 `atl_` 开头；Teardown 清扫按前缀识别（命名空间隔离） | — |
+| Teardown | 测试数据清理 | 清除测试在环境中产生的数据；本仓库策略 = Reserved Prefix + 定期纯脚本清扫兜底（xUnit 术语） | 残留治理 |
+| Uniqueness Guard | 唯一性保障 | 新建实体前先在目标系统查重（搜列表）；撞名则保留原名 + 追加 Reserved Prefix 令牌派生不撞的新名并记录（数据库唯一约束 + 幂等创建的冲突消解） | — |
+| `Spike` | 技术预研 | 用最小一次性探查回答某个未知、专为消除不确定性，不进产品代码（XP 术语）；本仓库指 plan 前对外部系统能力的只读探查 | — |
+| Observability | 可观测性 | 系统状态能否从外部信号推知；质量门禁测不到的维度必然放行，必须显式申报去向（控制论术语） | 无传感器维度 |
+| Ubiquitous Language | 统一语言 | 文档、代码、对话共用同一套术语，消灭翻译损耗（DDD 术语）；本文件即其注册表 | — |
+| Bounded Context | 限界上下文 | 一套术语有效的边界，跨边界同一个词允许含义不同（DDD 术语） | — |
+| 标记约定 | Marking Convention | 凡作为术语使用的词必须加粗或反引号标记，使术语可被 `term-lint` 机器识别 | — |
+| Published Language | 发布语言 | 两个系统间共享的、版本化的正式交换格式（DDD 术语） | — |
+| `acceptance-gate` | 验收门禁工序 | 项目 skill：读 plan.md 验收点 → 写红测试（运行验证确实红）→ checksum 登记 → 冻结；ATDD + Test Ratchet 的工序化 | tdd-gate |
+| `loop-kit` | （产品名） | 可复用 loop engineering 工具箱；已提取为独立包（ADR-0008、`loop-kit-extract` 契约），Casey 与 autotester 双消费者；分发 = 兄弟目录直解析（正式前置条件：包与消费树同层），npm 本地路径依赖出口按 route:human #4 已裁定取甲、本契约不采用 | — |
+| `shim` | 垫片 | 只做包定位、ROOT 注入与命令/导出转发的薄层，零业务逻辑（校验与降级逻辑单点收在 `loop-kit/lib/boot.mjs`，`shim` 以最小内联 `try/catch` 边界调它）；提取后 in-repo `loop-kit/bin/*.mjs` 十件的形态，由单一模板展开生成、金牌逐字比对钉死（`loop-kit-extract` 契约） | — |
+| `kit-lock` | 包身份锁 | Casey 侧 git 跟踪的包内容全清单（除 `.git` 外逐文件 sha256，严格集合相等、纯内容寻址、不含包仓 commit），任何定位方式（兄弟约定/`LOOP_KIT_PKG`）每次转发前校验，失配按降级矩阵处置（`loop-kit-extract` 契约） | — |
+| 观测基线 | Observation Baseline | 切换前于旧引擎录制的规范化行为存档（完整 exit code / stdout / stderr / 文件系统差量），行为等价断言的比对锚（既有学科词 golden master 范式，登记取其本仓专义，`loop-kit-extract` 契约） | — |
+| 并行工作树 baton | Per-Worktree Baton | 每棵 git worktree 各自独立的活契约槽；`active-contract.json` 与熔断态均 gitignored、每树一份、互不共享，故 N 棵 worktree = N 个并行 baton，零机制改动即多路并行落地（取代「单活契约 baton 真天花板」，见 roadmap v3 §二） | — |
+| `contract list` | 跨树 baton 总览 | 枚举所有 worktree 的活 baton 与阶段进度的 read-only 视图（一屏看全并行轨）；遇坏契约/无 baton 降级显示、绝不抛 | — |
+| `contract worktree` | 起树脚手架 | 一条命令起 git worktree + 立 baton，起一条并行开发轨；slug 全局唯一硬拒（防同名骑 gate-绿串味）、落点已存在拒、部分失败回滚 | — |
+| Execution Profile | 执行剖面 | 同一工作流内核下可互换的执行面配置：`claude-code`（主）与 `codex`（接续，配额受限时顶上），同状态/同门禁/同完成判据；切换只在已过节点边界或配额中断协议下发生（loop 双 profile 改革 §6）。与 Casey 域「通道剖面」无关 | — |
+| Durable Workflow State | 持久工作流状态 | 每 worktree 一份的 16 节点机读工作流状态（`loop/state.json` + `loop/events.jsonl`，gitignored），经有界切换后成为唯一可写的当前工作流真相；六阶段台账降为其只读投影；只有 `workflow-state.mjs` 有转移写权（改革 §3/§4） | — |
+| Ownership Lease | 所有权租约 | 同一节点尝试同时至多一个写者的租约；配额中断时旧尝试封存 blocked 并释放租约，新剖面开新尝试、可复用字节但绝不继承未经验证的通过结果；两租约绝不同时有效（改革 §6.3/§9） | — |
+| `kernel` 车道 | Kernel Lane | 入口分流第四车道：触 verdict/sign/凭据门/fail-safe/冻结协议/强制层（gate/contract/hook/签名写路径/批量重签写面）的改动，强制双设计审 + 异构冗余实现审 + round-2 + 全仓门禁 + 人签（改革 §5）；车道只许升不许降 | — |
+| Review Receipt | 评审收据 | 版本化结构化评审证据（`docs/plans/<slug>/reviews/`）：绑 plan/验收/diff/门禁证据 hash 与作者·评审双方家族及 requested/reported 模型身份；被绑输入一变即失效；同族、家族测不出、超时无有效产出一律不满足异构门（改革 §7） | — |
+| Readiness View | 就绪视图 | 从 `git worktree list` 与各树只读投影派生的调度视图：只读、无全局可写队列文件、无合并权，调度注解只经转移引擎写入（护栏 #18 兼容，改革 §11） | — |
+| Fitness Function | 适应度函数 | 可执行的架构结构规则检查（演进式架构学科术语）：如 loop-kit 不得依赖 Casey 核心域、report 不得写 verdict、只有 gate 写 `passes`；复用 `verdict-purity-guard` 依赖闭包范式，查不了的规则显式留作评审义务（改革 §12） | — |
+
+## Casey 核心域（文本用例→测试报告域）
+
+| 术语 | 中文译名 | 白话解释 | 弃用别名 |
+|---|---|---|---|
+| `Casey` | 测易 | 本项目代号：LLM 驱动的「文本用例→测试报告」自动化测试系统；skill·MCP·CLI 三处统一标识符（CLI `bin/casey.mjs`、命令 `casey`、skill `casey`、MCP server `casey`） | — |
+| `txt2testreport` | 文本转测试报告 | Casey 核心端到端能力：一段文本用例（excel/json/txt/自由文本）→ 编译 → 回放 → 裁定 → 自包含报告 | — |
+| `SUT` | 被测系统 | System Under Test：被测的真实平台（Heren 中台 web / Hi小助 CEF / 任意站点）（xUnit 术语） | — |
+| `TestCase` | 测试用例聚合根 | DDD 聚合根：excel/json/txt/自由文本归一后的唯一内部用例对象（含 target/steps/expected/uniquePrefix）；推广 autotester 的 Dataset | — |
+| 归一 | Normalization | 相0：杂乱 excel/txt/自由文本 → 规范 `TestCase`，由确定性 `parseTestCase` 校验，不合规 fail-closed | 输入清洗 |
+| `intentId` | 意图步标识 | 用例语义步 id（人/LLM authoring 时写）；区别于回放事件的位置式 `stepId`（一条 intent 可裂成 N 个 event） | — |
+| 编译 | Compile | 相1：LLM 唯一一次直接跑用例，把 intent 翻译成确定性可回放 spec + 落观测现状；此后回放不再烧 LLM、结果可复现 | — |
+| 登录预备动作 | Login Bootstrap | 回放/编译开始前把浏览器带到已登录态的开场步；不产 event、不进 spec（凭据红线护栏 #7），凭据只经 `.auth/` 与 env 进内存；复用件按 ADR-0001 拷快照范式取自 autotester（登录选择器 + `loadCreds` + `loadSiteConfig`）；`TestCase.preconditions` 记「已登录」、`target.auth` 记 `ref:site.json` | — |
+| 观测现状 | Observed Reality | 编译期落盘的地面真值（真实成功 URL/提示/回复/请求日志），存 `observed-<caseId>.json`；断言草拟与裁定的依据 | — |
+| 断言词汇表 | Assertion Vocabulary | 带类型的断言枚举（urlPathname/textVisible/countChange/streamReplyReceived/...）+ 每种允许的 op；LLM 不准发明自由断言 | — |
+| 动作词汇表 | Action Vocabulary | 已冻 events.schema action 枚举（click/dblclick/fill/selectOption/press/nav/newpage/dragTo）的治理投影层：每动作登记 paramSchema 投影/所属 channel/坐标兜底治理/三轴证据产出/驱动指针/golden/fail-closed；action 名权威仍在 events.schema，verdict.mjs 对 action 不可知（护栏 #17 动作侧对称）。与 断言词汇表 对称 | — |
+| 断言草拟 | Assertion Drafting | 相2：LLM 从 intent + 观测现状 推导带类型 `expected[]`（只用断言词汇表 + op 约束，默认结构式、易变值模板化） | — |
+| 冻结断言契约 | Frozen Assertion Contract | 人签后写入 `loop/prd-<caseId>.json` 并 checksum 冻结的断言；只冻断言文件，不冻 spec（自愈改 locator 合法、改断言触棘轮） | — |
+| 多态裁定 | Polymorphic Verdict | 零 LLM 的 `verdict.mjs` 按判定树给每步四态之一的分类；区别于 gate 的二值 `passes` | 判官 |
+| `PASS` | 通过 | 机器终判：动作执行成功且全部冻结断言满足 | — |
+| `SUT_DEFECT` | 被测缺陷 | 机器终判（需取证背书）：用例已人签 + 工装做了对的动作 + 可观测响应违反期望 + 取证背书；禁止自愈、自动出缺陷单 | — |
+| `HARNESS_ERROR` | 过程错误 | 可自愈：正向确证的工装定位漂移（录制 locator 不再命中，但同稳定签名的唯一元素仍在） | — |
+| `NEEDS_HUMAN` | 待人裁决 | 路由人：机器无法证明上述任一者；绝不自愈、绝不自动记缺陷；带 reason 子类 | — |
+| `SUT_DEFECT_OR_STALE` | 缺陷或期望过时 | `NEEDS_HUMAN` 子类：动作对、断言硬失败、但取证干净；人裁「确认回归→记缺陷」或「有意改版→重签新基线」 | — |
+| `CASE_DEFECT` | 用例缺陷 | `NEEDS_HUMAN` 子类：仅编译期/人签前判候选——入口可证缺席或期望自相矛盾，即用例本身有 bug | — |
+| `AMBIGUOUS_ACTION` | 动作歧义 | `NEEDS_HUMAN` 子类：多匹配/坐标兜底点击，点没点对存疑；收紧用例 locator 后重编译 | — |
+| `AFFORDANCE_ABSENT` | 入口缺席 | `NEEDS_HUMAN` 子类（人签后）：编译时够到的入口回归时没了，又无漂移信号无取证；走缺陷-或-过程错误分诊 | — |
+| `INDETERMINATE` | 未定 | `NEEDS_HUMAN` 子类：纯未知失败，看证据人判；catch-all 的 fail-safe 默认落点 | — |
+| 点击身份门 | Click Identity Gate | 仅当解析目标唯一（过滤后 count===1）或点击后身份回读成立才置 `actionPerformed=true`；多匹配/坐标兜底 → ambiguous |
+| 容器归属闸 | Container Membership Gate | 文本精确唯一命中后仍须证明命中元素落在预期记录容器内（表格行/卡片/条目容器，剖面可覆写容器选择器）；容器外命中=同名非记录控件碰撞，硬阻断 fail-closed 不点。wf-open-smoke 首立（workflow.open），entity-ui-wiring 抽为 agent.searchOpen 编译/回放共享门 | — |
+| 关系原子 | Relation Atom | 动作效果为建立两个业务对象间关系的原子（首例 `workflow.bindAgent`：把智能体绑进工作流节点）；准入策略 `effect=relation`，必须同时携 `source` 与 `target` 双角色绑定且双边独立锁定（各自 lockId+收据 hash），缺任一边整份拒绝，绝不单边降级 | — |
+| 业务对象语义锁 | Business Object Semantic Lock | 手录后把工作流、智能体等业务对象从脆弱 DOM 位置提升为冻结身份；回放前重新只读解析并与已签身份收据确定性比较，只有 `SAME` 可重绑定临时 UI 句柄，业务身份变化一律零点击并路由人 | — |
+| 业务对象身份收据 | Entity Identity Receipt | 业务对象语义锁的不可变权威载体：至少锁 `kind + name + code + scopeFingerprint`，平台提供稳定 ID、父对象或版本时一并锁定；收据带内容 hash，外部对象须用户确认、自建对象须平台权威读回，LLM/视觉只可提候选不可确认同一性 | — |
+| 身份观察旁车 | Identity Observation Sidecar | 示教录制期间与操作事件分开落盘的最小业务身份候选；只收 `kind/name/code/platformId/scopeFingerprint/parent/evidenceKind/eventSeq`，永远未签且 `replayReady:false`，与 示教录制包 通过两个字节 hash 的联合绑定防换包；缺编号只保留 pending，绝不升格为权威收据 | — |
+| 身份迁移 | Identity Transition | 已签用例有意改名/改码时声明的 `旧身份 → 变更动作 → 新身份`；动作后须平台权威读回新名称与编号并生成链接旧收据 hash 的 successor，未声明或读回失败不得静默更新锁 | — |
+| `resolution` | 定位解析态 | 点击身份门为每个动作步吐的解析结果（落进 三轴 的动作轴），枚举 `unique`（唯一命中、可动作）/ `ambiguous`（多匹配、点没点对存疑、绝不变更 SUT）/ `none`（录制 locator 全失配、走漂移探针）/ `action_failed`（唯一但动作抛错）/ `absent`（编译期候选零命中）；`verdict.mjs` 据此推 `actionPerformed` 四态。多匹配的唯一合法字面量 = `ambiguous`（点击身份门 count>1 的收口词、三门 emitters 同源）；收敛前的 `multi`（编译门）/`fallback_first`（回放通用门）是旧写法、仅在动作轴/裁定链语境弃用——`fallback_first`/`coord_fallback` 在 run-history 诊断 `locatorResolution` 枚举里仍是合法可表征锁值（seams-freeze-v2 治理），故不登为全仓黑名单弃用别名 | — |
+| 语义定位器 | Semantic Locator | 按 ARIA 角色/可访问名/标签/文本定位（getByRole/getByText/getByLabel），对照 CSS 选择器与坐标兜底；回放定位与点击身份门的基础（迁自 autotester 核心域） | — | — |
+| 网络取证 | Network Forensics | `watchNetworkForensics`：记 response/requestfailed 的 {url,status,initiator} + error-envelope，按请求发起方归因（非时间窗） | — |
+| 错误信封 | Error Envelope | 响应 body 的成功字段判失败的软失败（典型：HTTP 200 但 body 表失败）；`noErrorEnvelope` 断言据此取证；成功字段按 channel 参数化、经`通道剖面`注入（web/Heren 实测为 body `status===200`，非早期假设的 `code!=0`） | — |
+| 通道剖面 | Channel Profile | runner 回放某 channel 所需的非凭据配置：背景 denylist + 错误信封成功字段/值 + 可选加载占位 selectors/text；与 `site.json` 凭据密文严格分离（护栏 #7 边界），hermetic 经 `--profile` 传合成值、tier-2 由 site.json 非凭据子集投影 | — |
+| 通道驱动 | channelDriver | 端口适配器式接缝：声明某驱动在某 channel 上能执行的动作能力集（actionSpace，严格 ⊆ events.schema 枚举）+ 每动作 call 指针 + coordinateSpace + 取证能力；只声明能力，transport/denylist/成功字段归 通道剖面（只带 profileRef 指针不内嵌）。分工镜像 动作词汇表 : channelDriver ≈ 断言词汇表 : 通道剖面；verdict.mjs 绝不读它、对 action 不可知（护栏 #17） | — |
+| 三轴 | Three-Axis | 回放期每个原子步吐的三组事实——动作（过点击身份门判 true/ambiguous/false）/ 逐条断言（typed kind 各一条，断言续跑、不首错即停）/ 取证（网络取证 + 生命周期）；零 LLM 的 `verdict.mjs` 据此跑判定树出四态，是裁判·桥·报告共吃的数据契约 | — |
+| 自愈 | Self-heal | 相5：仅对确证 `HARNESS_ERROR` 的有界重锚；是裁定的下游消费者，绝不反向进入裁判进程 | — |
+| 自愈准入门 | Self-heal Admission Gate | 护栏：自愈只对确证 `HARNESS_ERROR` 开闸；`SUT_DEFECT`/`NEEDS_HUMAN` 一律拒绝自愈 | — |
+| 准入受众 | Admission Audience | 冻结身份准入件（`entity-locks.frozen.json`/`execute-authority.json`）的必填签名字段 `audience ∈ {test, production}`，签进内容自哈希；标记该件只许在测试上下文还是生产上下文授权回放/编译。测试夹具标 `test`，生产件须显式 `production`。防「测试锁被误指向真 SUT 授权真实改动」（ADR-0010） | — |
+| 凭据上下文门 | Credential-Context Gate | 准入铸权后、启动浏览器前的纯函数门：判本次 run 的凭据上下文（加载真 `.auth`/走登录预备动作=生产、无凭据=测试），要求准入件的准入受众严格匹配该上下文，不符即 fail-closed 不启动浏览器。判据不看 `--sut` 地址（hermetic 与真机 UAT 都走回环、分不开），只看是否加载真凭据（ADR-0010） | — |
+| 非就地自愈 | Out-of-place Self-heal | 自愈重锚写 `drift/<caseId>.<ts>.patch` 旁文件，原 spec 不变照常回放，人签后才应用 | — |
+| 漂移补丁 | Drift Patch | 非就地自愈产出的旁文件补丁，记重锚前后对照 | — |
+| 人签门 | Human Sign-off Gate | 人签掉冻结断言才算数；gate 绿 ≠ 完成，人签真机才完成；CASE_DEFECT 与 SUT_DEFECT 的分水岭 | — |
+| 期望版本化 | Expectation Versioning | 每条冻结 `expected[]` 带 `signedAt`/`signedAgainstBuild`/`signerId`；有意改版走重签、不自动记缺陷 | — |
+| 重签 | Re-sign | 系统有意改版导致期望过时时，人重签新基线（新 checksum + signedAgainstBuild，旧期望归档） | — |
+| 裁定徽章 | Verdict Badge | 报告里每步的四态标记（通过/被测缺陷/过程错误/待人裁决+子类）+ 具名理由 | — |
+| 缺陷单 | Defect Ticket | 仅 `SUT_DEFECT` 生成：步号 + 期望对实际 + 取证 + 录屏时间点 + trace 引用 | — |
+| `CSS` | 层叠样式表 | Cascading Style Sheets：报告自包含靠内联 CSS、零外部依赖（autotester report.ts 把样式内联进 HTML，Casey 报告照搬此法） | — |
+| `trace` | 回放追踪档 | Playwright 逐帧追踪归档（.zip）；报告里不内嵌、复制到 `trace/` 加下载链接与 show-trace 提示。**未建挂账**（2026-07-07 审计核实：全链无 tracing 调用、报告 traceRef 恒 null；设计文档「已知偏离」表有账） | — |
+| `channel` | 通道 | 回放目标类型：`web`（Heren 中台）/`cef`（Hi小助）/`arbitrary`（任意站点）；裁定/报告/熔断/契约层 channel 无关 | — |
+| `chat` | 对话流 | 飞轮排期第二维度：覆盖 catalog 维度碰不到的流式回复取证（`streamReplyReceived`、`waitForReplyByStream` 底座）与 `replyContains`；骑 regress `chiefcomplaint_smoke` 语料（`echo_default_on` 经 2026-07-03 摸底实证属画布维度错档：测节点抽屉开关、带坐标拖拽，不走对话流） | — |
+| `promptset` | 提示词集 | 数据驱动回归的被测参数输入层：一份 JSON 数组 `[{id,text,source,category,expect?}]`，把一条冻结 `chat` flow 复用成 N 条独立用例（每行一 caseId/录屏/裁定），聚合成一份报告；血缘 xUnit 数据驱动测试（data-driven testing）。忠实对标 regress `_promptset.ts`（字段名 `text`）。`source` 枚举 `user`（人写）｜`builtin`（随 注入向量库 发）｜`llm`（`gen-prompts` 契约扩容：CLI 外 LLM 合成，经 `promptset-freeze` 强制标注） | — |
+| 被测参数 | Prompt Parameter | `promptset` 每行的 `text`——真正打进 SUT 对话框、喂给 `chat.sendAndWait` 的 `prompt` 槽的消息文本；数据驱动多行参数化的「参数」。**消歧**：本项「参数化」专指此，显式区别于 `caseId` 并发参数化（`worktree-baton` 已解）与 `entityNameParam` 前缀参数化（R12/`compile-gate` 已落） | — |
+| 注入向量库 | Injection Vector Library | 随工具发、用户可编辑扩展的通用边界/安全被测参数库（`prompts/_lib/boundary.json` + `security.json`）；category 由文件名强制、`source` 强制 `builtin`、id 前缀 `bnd_`/`sec_` 防撞，`被测参数 overlay` 按开关并入每个数据驱动用例集；血缘安全测试注入向量 + 模糊测试语料。**消歧**：本项「内置提示词」专指此，显式区别于 Casey 自身归一/编译工装提示词（委托 CLI 外 LLM、仓内无实体，见 `归一提示模板`） | — |
+| 软期望 | Soft Expectation | `promptset` 行的 `expect{mustInclude?,mustNotInclude?,note?}`——只在报告里标命中与否的 soft 断言，绝不进多态裁定树、绝不判红（护栏 #17）；非确定性 LLM 输出不做 exact 硬断言。落地 = 强制 `soft:true` 的 `replyContains`/`replyMatches`，经 `--soft-expect` 通道并入现成 soft 链路进报告黄标（不碰 `sign-gate`、不进裁判） | — |
+| 被测参数 overlay | Prompt Overlay | `lib/promptset.mjs` 纯函数 `overlayPromptset`：定位冻结 `chat` flow 里唯一的 `{{promptText}}` 提示槽（0 或 >1 个 fail-closed），把 `promptset` N 行经 `instantiate` 回填该槽展开成 N 个回放输入；硬断言跨行同一冻结 flow 集（绝不改 flow，逐行只变 `ctx.promptText`——spec 不漂移）；新纯函数，不照搬 regress `overlayRow`（其拒 authored 场景，Casey 编译产物形同 authored） | — |
+| 多用例聚合报告 | Aggregate Report | 兑现 report-spec §7：`casey report --aggregate` 读 N 份 `<caseId>.report.json` 旁车，按 category 分段 + 置顶横幅（`SUT_DEFECT`/`NEEDS_HUMAN` 行顶上去）合成一页总目录；content-expect `软期望` 走黄标、绝不进裁定（聚合只累加旁车自带 `verdictSummary`，其本身已排除 soft） | — |
+| 移植 | — | 把 regress 现成 flow 用到的原子在 autotester L1 原语上重表达成吐三轴的纯 mjs、再配观测现状与 verdict golden 的工作；飞轮的主要人力成本。弃用口语简写见别名列（2026-06-29 清零并登记） | 港 |
+| `verdict.json` | 裁定档 | 可复现的机读最小产物：caseId + 逐步 {stepId,intentId,atom,verdict,reason} 五字段（冻结实现，golden 唯一校验对象）；期望对实际字面量与取证引用等富信息在 report-model.json（report-spec §4 两名分离裁决，2026-07-07 词条对齐实现） | — |
+| recorder-as-library | 录制器库化 | 把 autotester 人操作录制器重构成 LLM agent 拥有 context 的库（关人抖动去噪、避导航竞态）。**已被 ADR-0006 的 atoms/flow 编译路线取代**（相1 现实现 = compile-gate + compile-atoms 三段式；本概念仅存「陌生站点孵化」支线，2026-07-07 词条对齐实现） | — |
+| 示教 | Teach-in | 人在真实界面上操作，机器只采集操作语料；借工业机器人示教再现血缘。示教不等于签署，不开直通回放，产物必须经蒸馏、L0 复核和人签门 | 录制直通 |
+| 示教录制包 | Teach-in Capture | `casey record` 产出的人工操作采集包，作为后续蒸馏语料；`signed:false`、`replayReady:false`、`distillRequired:true` 是硬不变量 | — |
+| 示教入账 | Teach-in Intake | `casey intake` 把 示教录制包 经安全复核闸登记进蒸馏前置队列的动作；只复核登记、不转形、不签署、不回放，复核证不出干净合法包一律拒账（fail-closed）。蒸馏由后续 record-distill 消费 | — |
+| 示教入账台账 | Teach-in Intake Ledger | append-only 记录每次 示教入账 accept/reject 的本地台账（`intake-ledger.jsonl`，落 capture 同目录）；显式区分于 失败记录台账（裁定下游）——不进 verdict、不作自愈输入、不改任何裁定（护栏 #13/#15）；拒账只记类别码、绝不落原始脏内容 | — |
+| 示教蒸馏 | Teach-in Distillation | `casey distill` 把已入账 示教录制包 的 events 零 LLM 确定性投影成候选流程（候选 TestCase 骨架 + 候选 mapping + pending + 溯源 manifest）；蒸馏工具零 LLM，LLM 手术刀只在 CLI 外经确定性闸 + 人签入场；重走 ingest→compile→draft→sign，绝不直通回放。v1 全 pending（真机路由跨环境不稳、无可靠静态查表，不臆造脆弱匹配） | — |
+| 蒸馏候选 | Distillation Candidate | `casey distill` 产的非权威候选物（候选 TestCase + 候选 mapping + manifest）；降权标记落 manifest（`artifactKind:'distill-candidate'`）+ 文件名 + 负向不变量，绝不 `signed`/`replayReady`，须重走全链 + 人签才算数 | — |
+| 采集忠实闸 | Capture-Fidelity Gate | 示教蒸馏 的零 LLM L0 闸：校候选 mapping 对 capture 溯源忠实（每候选 atom 有 event 证据、每 event 被覆盖或落 pending）；对位 flow-bridge 投影忠实，对象是 capture 溯源而非 TestCase.steps；fail-closed 全域返回、绝不抛 | — |
+| 可信闭环自进化 | Trusted Closed-loop Evolution | 示教/真实执行产生语料，经 身份观察、语义锁、原子候选、真实 SUT 复验、确定性裁定与人签晋升形成可复用原子，并可版本化撤销的受控学习闭环；默认不自治，LLM/视觉不得裁定或直接写正式 registry | 自动学习、自进化 |
+| 身份观察 | Identity Observation | 在录制或真实执行中采集业务对象类型、名称、编号/编码、稳定属性与来源步骤的去敏旁车证据；它是语义锁的输入，不是对象相同的结论 | — |
+| 语义锁 | Semantic Lock | 跨录制与回放以对象类型 + 名称 + 编号/编码及允许的稳定属性做 SAME/DIFFERENT/INDETERMINATE 对比的 fail-closed 身份门；有编号时名称与编号必须同时一致，证据不足绝不推 SAME | — |
+| 原子候选 | Atom Candidate | 从已入账示教语料提出、逐步引用 capture 与身份观察证据的非权威可复用动作候选；须过采集忠实闸、真实 SUT 复验、确定性裁定和人签晋升，不能直接进入正式 registry | 新原子 |
+| 晋升回执 | Promotion Receipt | 原子候选经人签晋升时生成的不可变审计产物，固定候选版本、证据哈希、适用 channel/profile、对象锁策略与真实回放结果；撤销产生新状态而不覆盖历史回执 | — |
+| 归一脚手架 | Normalization Scaffold | 相0 归一的前段脚手架——把一段自由文本用例零 LLM 包成 schema 合规的 候选骨架 + 归一提示模板，供 CLI 外 LLM 归一成真实候选后经 `parseTestCase` 重新入场；脚手架零 LLM，LLM 手术刀只在 CLI 外经确定性闸 + 人签入场。喂料源是自由文本（无 events），显式区分于 示教蒸馏（喂料源是 示教录制包、有 events 可 1:1 投影） | — |
+| 候选骨架 | Candidate Skeleton | `casey scaffold-case` 产的非权威候选物；开箱过 `parseTestCase`（全 `route:human` 兜底基线），降权标记落文件名 `scaffold-candidate-<caseId>.json` + 落地提示 + 负向不变量，绝不 `signed`/`replayReady`，须 CLI 外 LLM 归一 + 重走全链 + 人签才算数；显式区分于 蒸馏候选（喂料源是 示教录制包 而非自由文本） | — |
+| 归一提示模板 | Normalization Prompt Template | 指导 CLI 外 LLM 把 `source.raw` 自由文本归一成真实候选 `TestCase` 的提示 + schema 约束（镜像 `llm-patch.draft.md` 相2 补缝模板范式）；产物必过 `parseTestCase`，违规 fail-closed 退回；语义质量 `route:human` 抽检 | — |
+| 合成种子模板 | Synthesis Seed Template | `casey promptset-seed` 零 LLM 产的给 CLI 外 LLM 看的生成指引 + 候选产物格式说明；字节稳定确定性（同输入同字节，无时刻字段）；镜像 归一提示模板 先例，喂料源是种子信息（被测 agent 名 / 可选内嵌系统提示词）而非自由文本用例（`gen-prompts` 契约） | — |
+| 被测参数候选 | Prompt Candidate | 粒度定死：**单条** `{id,text,category,expect?}` 条目；其 JSON 数组整体称**候选批**（两粒度不混用）。CLI 外 LLM 按 合成种子模板 合成、非权威，须过 `casey promptset-freeze` 校验闸 + 幂等冻结 才进 `promptset.json`，冻结时一律强制 `source:'llm'` 可追溯；显式区分于 候选骨架（喂料源与产物域都不同，`gen-prompts` 契约） | — |
+| 幂等冻结 | Idempotent Freeze | `casey promptset-freeze` 的写盘纪律：已存在 id 绝不覆盖（候选规范化后与既有条目深等则跳过，内容或来源冲突则整批拒绝）、任何失败不写盘不留半份、原子写；血缘幂等性（分布式系统术语）+ regress `gen-prompts` 冻结语义。**消歧**：与既有「冻结断言契约」体系（`sign`/`lib/sign-gate.mjs` 人签冻结）**无关**——本词条无人签、无 checksum、可持续追加，只承诺已有 id 不覆盖与失败不写盘；两者都叫「冻结」但语义完全不同，并列词条防混淆（`gen-prompts` 契约） | — |
+| `fail-safe` | 故障安全 | 失败时退到安全态：机器证不出就路由人（`NEEDS_HUMAN`），绝不默认成可自愈（fail-open 的反面） | — |
+| `fail-open` | 故障放行 | 故障时放行：基础设施/hook 自身故障不阻塞正常工作；仅用于 lint/hook，绝不用于裁定 | — |
+| `fail-closed` | 故障关闭 | 故障时拒绝：校验不过/缺数据时报红拒绝（用于 `parseTestCase` 等准入） | — |
+| `loop engineering` | 循环工程 | 以确定性退出码为唯一真相的闭环工程方法：契约/质量门禁/熔断器/统一语言/异构冗余评审；Casey 复用 autotester loop-kit | — |
+| `DDD` | 领域驱动设计 | Domain-Driven Design：按业务域建模 + 统一语言 + 限界上下文 + 聚合根的设计方法 | — |
+| `ADR` | 架构决策记录 | Architecture Decision Record：记录难逆转架构决策的短文档（背景/决策/后果），存 docs/adr/ | — |
+| `determinism` | 确定性 | 同输入同输出、可复现、可做 golden；Casey 内核「确定性是默认」的名词形态 | — |
+| `verdict-logic` | 裁判逻辑 | 红队评审维度之一：多态裁定判定树是否 fail-safe、会不会把真 bug 误判成可自愈 | — |
+| `loop-fidelity` | 循环保真 | 红队评审维度之一：loop-kit 构件复用是否名实相符、有无阻抗失配 | — |
+| `buildability` | 可建造性 | 红队评审维度之一：组件是「照搬」还是「新建」、依赖是否可实现 | — |
+| `watchNetworkForensics` | 网络取证函数 | 实现「网络取证」的函数：记 response/requestfailed + 错误信封、按请求发起方归因 | — |
+| `helper` | 辅助件 | 被复用为底层工具而非主逻辑的代码件（如报告自包含机制保留当 helper） | — |
+| `tier-1` | 第一层自检 | hermetic 自检：假 SUT、零外部依赖，验编译→回放→报告管线 + 给分类器喂合成四元组逐一触发四态 | — |
+| `tier-2` | 第二层自检 | live smoke：需 site.json + creds，覆盖 SUT_DEFECT/取证/流式分支，gated route:human | — |
+| 只读漂移探针 | Read-only Drift Probe | findEquivalentAffordance：无 spec 变更、无重跑地探明「同稳定签名唯一元素是否仍在」，供 verdict.mjs 判 `HARNESS_ERROR`；与自愈写回（相5）严格分离（拆 P5/P6 循环依赖） | — |
+| 回放历史 | Run History | 确定性回放 逐步落盘的第二层事实 run-history.jsonl（每步一行执行证据：动作/定位解析/静默点/耗时/result）+ 聚合 run-metrics.json（回放指标）；仅报告/诊断，绝不进 verdict.mjs、绝不写 passes（护栏 #15）；落盘过凭据兜底门、动作值打码（护栏 #7）。result 非四态、passedActions 非 PASS | 运行历史 |
+| 失败记录台账 | Failure Ledger | 多态裁定下游的只读诊断台账：verdict 出完四态后每条非 PASS 步级裁定追加成不可变条目，供人做失败聚类/优先级/编译期建议；血缘锚 ITIL 已知错误库（KEDB/Problem Record）+ 会计台账追加不改。绝不进 verdict.mjs、绝不作自愈输入、绝不改写原裁定（护栏 #13/#15） | — |
+| 失败指纹 | Failure Fingerprint | 失败记录台账 的可聚类指纹 = sha256(canonicalJSON(fingerprintInputs))，输入只含稳定已模板化字段（channel/verdict/reason/atom/assertionKind/assertionOp/signatureTemplate）；显式排除 caseId/stepId/runId/时间戳/实例名/凭据，故同一失败模式跨用例聚类。零 LLM、可复现、进 golden；聚类粒度 route:human（决策 3.3） | — |
+| 人裁决回填 | Human Resolution | 失败记录台账 条目里由人经签署链路写入的裁决指针（decision/resolvedAt/resolverId/ref）：只读审计引用非执行器，ref 指向权威产物（缺陷单/重签元数据/漂移补丁），绝不复制权威态、绝不改原裁定；decision=drift-healed 仅当 verdict=HARNESS_ERROR 才合法 | — |
+| route:human | 路由人 | 把某项判断/动作显式移交人裁的标注（落 Inbox + 通知，Escalation Path 的标记形态）；Observability 测不到的维度必申报为 route:human | — |
+| 静默点 | Quiet Point | 采集观测现状/落断言输入/做后检查前必达的确定性有界等待条件，替代固定睡眠保可复现（跨阶段通用）。各期判据变体：编译期 DOM 连续两拍稳定（`quietPoint`，`networkidle` 对带背景轮询的单页应用不作判据）；回放代表步在途前台请求归零 + DOM 两拍稳定（稳定对不跨零点、给应答后提交约两拍缓冲），`networkidle` 仅超预算后有界兜底一次（`settleBeforeCapture`）；删除后检查变体要求同源目标在加载结束后连续 3000 ms 精确计数为零，加载态或目标重现必须从新计时，超时或样本不足按 `fail-closed` 拒绝背书；一律有界、超预算按现状采（fail-safe） | — |
+| LLM-judge | LLM 评分员 | 独立异构家族的语义评分器；判 FAIL 可信、判 PASS 仍人抽检；严格踢出确定性裁判（verdict.mjs）之外，绝不写 passes/verdict | — |
+| `CLI` | 命令行接口 | Command-Line Interface：Casey 的确定性引擎入口 `bin/casey.mjs`；skill 与 MCP 都是它的薄壳 | — |
+| `MCP` | 模型上下文协议 | Model Context Protocol：编辑器/agent 驱动工具的协议；`mcp/casey-server.mjs` 是 CLI 的 MCP 薄壳 | — |
+| `skill` | 技能 | Claude Code 的能力封装；`.claude/skills/casey` 是把自然语言意图映射到 CLI 命令的薄壳 | — |
+| `PowerShell` | （Windows 主壳） | Casey 在 win32 主机上的主命令行壳（与 Bash 工具并存、各自语法）；运维/卸载脚本用它 | — |
+
+exec
+/bin/bash -lc "sed -n '1,90p' CONTEXT.md" in /mnt/d/ctx/heren/casey
+ succeeded in 118ms:
+ox | 收件箱 | 等待人裁决事项的落点文件 `loop/inbox.md`（GTD 术语） | — |
+| Guardrail | 护栏 | 永不可违反的约束清单 `loop/GUARDRAILS.md`；每条标注 [enforced]/[prose] 与它编码的假设 | — |
+| Reserved Prefix | 保留前缀 | loop 在真实环境创建的一切实体必须以 `atl_` 开头；Teardown 清扫按前缀识别（命名空间隔离） | — |
+| Teardown | 测试数据清理 | 清除测试在环境中产生的数据；本仓库策略 = Reserved Prefix + 定期纯脚本清扫兜底（xUnit 术语） | 残留治理 |
+| Uniqueness Guard | 唯一性保障 | 新建实体前先在目标系统查重（搜列表）；撞名则保留原名 + 追加 Reserved Prefix 令牌派生不撞的新名并记录（数据库唯一约束 + 幂等创建的冲突消解） | — |
+| `Spike` | 技术预研 | 用最小一次性探查回答某个未知、专为消除不确定性，不进产品代码（XP 术语）；本仓库指 plan 前对外部系统能力的只读探查 | — |
+| Observability | 可观测性 | 系统状态能否从外部信号推知；质量门禁测不到的维度必然放行，必须显式申报去向（控制论术语） | 无传感器维度 |
+| Ubiquitous Language | 统一语言 | 文档、代码、对话共用同一套术语，消灭翻译损耗（DDD 术语）；本文件即其注册表 | — |
+| Bounded Context | 限界上下文 | 一套术语有效的边界，跨边界同一个词允许含义不同（DDD 术语） | — |
+| 标记约定 | Marking Convention | 凡作为术语使用的词必须加粗或反引号标记，使术语可被 `term-lint` 机器识别 | — |
+| Published Language | 发布语言 | 两个系统间共享的、版本化的正式交换格式（DDD 术语） | — |
+| `acceptance-gate` | 验收门禁工序 | 项目 skill：读 plan.md 验收点 → 写红测试（运行验证确实红）→ checksum 登记 → 冻结；ATDD + Test Ratchet 的工序化 | tdd-gate |
+| `loop-kit` | （产品名） | 可复用 loop engineering 工具箱；已提取为独立包（ADR-0008、`loop-kit-extract` 契约），Casey 与 autotester 双消费者；分发 = 兄弟目录直解析（正式前置条件：包与消费树同层），npm 本地路径依赖出口按 route:human #4 已裁定取甲、本契约不采用 | — |
+| `shim` | 垫片 | 只做包定位、ROOT 注入与命令/导出转发的薄层，零业务逻辑（校验与降级逻辑单点收在 `loop-kit/lib/boot.mjs`，`shim` 以最小内联 `try/catch` 边界调它）；提取后 in-repo `loop-kit/bin/*.mjs` 十件的形态，由单一模板展开生成、金牌逐字比对钉死（`loop-kit-extract` 契约） | — |
+| `kit-lock` | 包身份锁 | Casey 侧 git 跟踪的包内容全清单（除 `.git` 外逐文件 sha256，严格集合相等、纯内容寻址、不含包仓 commit），任何定位方式（兄弟约定/`LOOP_KIT_PKG`）每次转发前校验，失配按降级矩阵处置（`loop-kit-extract` 契约） | — |
+| 观测基线 | Observation Baseline | 切换前于旧引擎录制的规范化行为存档（完整 exit code / stdout / stderr / 文件系统差量），行为等价断言的比对锚（既有学科词 golden master 范式，登记取其本仓专义，`loop-kit-extract` 契约） | — |
+| 并行工作树 baton | Per-Worktree Baton | 每棵 git worktree 各自独立的活契约槽；`active-contract.json` 与熔断态均 gitignored、每树一份、互不共享，故 N 棵 worktree = N 个并行 baton，零机制改动即多路并行落地（取代「单活契约 baton 真天花板」，见 roadmap v3 §二） | — |
+| `contract list` | 跨树 baton 总览 | 枚举所有 worktree 的活 baton 与阶段进度的 read-only 视图（一屏看全并行轨）；遇坏契约/无 baton 降级显示、绝不抛 | — |
+| `contract worktree` | 起树脚手架 | 一条命令起 git worktree + 立 baton，起一条并行开发轨；slug 全局唯一硬拒（防同名骑 gate-绿串味）、落点已存在拒、部分失败回滚 | — |
+| Execution Profile | 执行剖面 | 同一工作流内核下可互换的执行面配置：`claude-code`（主）与 `codex`（接续，配额受限时顶上），同状态/同门禁/同完成判据；切换只在已过节点边界或配额中断协议下发生（loop 双 profile 改革 §6）。与 Casey 域「通道剖面」无关 | — |
+| Durable Workflow State | 持久工作流状态 | 每 worktree 一份的 16 节点机读工作流状态（`loop/state.json` + `loop/events.jsonl`，gitignored），经有界切换后成为唯一可写的当前工作流真相；六阶段台账降为其只读投影；只有 `workflow-state.mjs` 有转移写权（改革 §3/§4） | — |
+| Ownership Lease | 所有权租约 | 同一节点尝试同时至多一个写者的租约；配额中断时旧尝试封存 blocked 并释放租约，新剖面开新尝试、可复用字节但绝不继承未经验证的通过结果；两租约绝不同时有效（改革 §6.3/§9） | — |
+| `kernel` 车道 | Kernel Lane | 入口分流第四车道：触 verdict/sign/凭据门/fail-safe/冻结协议/强制层（gate/contract/hook/签名写路径/批量重签写面）的改动，强制双设计审 + 异构冗余实现审 + round-2 + 全仓门禁 + 人签（改革 §5）；车道只许升不许降 | — |
+| Review Receipt | 评审收据 | 版本化结构化评审证据（`docs/plans/<slug>/reviews/`）：绑 plan/验收/diff/门禁证据 hash 与作者·评审双方家族及 requested/reported 模型身份；被绑输入一变即失效；同族、家族测不出、超时无有效产出一律不满足异构门（改革 §7） | — |
+| Readiness View | 就绪视图 | 从 `git worktree list` 与各树只读投影派生的调度视图：只读、无全局可写队列文件、无合并权，调度注解只经转移引擎写入（护栏 #18 兼容，改革 §11） | — |
+| Fitness Function | 适应度函数 | 可执行的架构结构规则检查（演进式架构学科术语）：如 loop-kit 不得依赖 Casey 核心域、report 不得写 verdict、只有 gate 写 `passes`；复用 `verdict-purity-guard` 依赖闭包范式，查不了的规则显式留作评审义务（改革 §12） | — |
+
+## Casey 核心域（文本用例→测试报告域）
+
+| 术语 | 中文译名 | 白话解释 | 弃用别名 |
+|---|---|---|---|
+| `Casey` | 测易 | 本项目代号：LLM 驱动的「文本用例→测试报告」自动化测试系统；skill·MCP·CLI 三处统一标识符（CLI `bin/casey.mjs`、命令 `casey`、skill `casey`、MCP server `casey`） | — |
+| `txt2testreport` | 文本转测试报告 | Casey 核心端到端能力：一段文本用例（excel/json/txt/自由文本）→ 编译 → 回放 → 裁定 → 自包含报告 | — |
+| `SUT` | 被测系统 | System Under Test：被测的真实平台（Heren 中台 web / Hi小助 CEF / 任意站点）（xUnit 术语） | — |
+| `TestCase` | 测试用例聚合根 | DDD 聚合根：excel/json/txt/自由文本归一后的唯一内部用例对象（含 target/steps/expected/uniquePrefix）；推广 autotester 的 Dataset | — |
+| 归一 | Normalization | 相0：杂乱 excel/txt/自由文本 → 规范 `TestCase`，由确定性 `parseTestCase` 校验，不合规 fail-closed | 输入清洗 |
+| `intentId` | 意图步标识 | 用例语义步 id（人/LLM authoring 时写）；区别于回放事件的位置式 `stepId`（一条 intent 可裂成 N 个 event） | — |
+| 编译 | Compile | 相1：LLM 唯一一次直接跑用例，把 intent 翻译成确定性可回放 spec + 落观测现状；此后回放不再烧 LLM、结果可复现 | — |
+| 登录预备动作 | Login Bootstrap | 回放/编译开始前把浏览器带到已登录态的开场步；不产 event、不进 spec（凭据红线护栏 #7），凭据只经 `.auth/` 与 env 进内存；复用件按 ADR-0001 拷快照范式取自 autotester（登录选择器 + `loadCreds` + `loadSiteConfig`）；`TestCase.preconditions` 记「已登录」、`target.auth` 记 `ref:site.json` | — |
+| 观测现状 | Observed Reality | 编译期落盘的地面真值（真实成功 URL/提示/回复/请求日志），存 `observed-<caseId>.json`；断言草拟与裁定的依据 | — |
+| 断言词汇表 | Assertion Vocabulary | 带类型的断言枚举（urlPathname/textVisible/countChange/streamReplyReceived/...）+ 每种允许的 op；LLM 不准发明自由断言 | — |
+| 动作词汇表 | Action Vocabulary | 已冻 events.schema action 枚举（click/dblclick/fill/selectOption/press/nav/newpage/dragTo）的治理投影层：每动作登记 paramSchema 投影/所属 channel/坐标兜底治理/三轴证据产出/驱动指针/golden/fail-closed；action 名权威仍在 events.schema，verdict.mjs 对 action 不可知（护栏 #17 动作侧对称）。与 断言词汇表 对称 | — |
+| 断言草拟 | Assertion Drafting | 相2：LLM 从 intent + 观测现状 推导带类型 `expected[]`（只用断言词汇表 + op 约束，默认结构式、易变值模板化） | — |
+| 冻结断言契约 | Frozen Assertion Contract | 人签后写入 `loop/prd-<caseId>.json` 并 checksum 冻结的断言；只冻断言文件，不冻 spec（自愈改 locator 合法、改断言触棘轮） | — |
+| 多态裁定 | Polymorphic Verdict | 零 LLM 的 `verdict.mjs` 按判定树给每步四态之一的分类；区别于 gate 的二值 `passes` | 判官 |
+| `PASS` | 通过 | 机器终判：动作执行成功且全部冻结断言满足 | — |
+| `SUT_DEFECT` | 被测缺陷 | 机器终判（需取证背书）：用例已人签 + 工装做了对的动作 + 可观测响应违反期望 + 取证背书；禁止自愈、自动出缺陷单 | — |
+| `HARNESS_ERROR` | 过程错误 | 可自愈：正向确证的工装定位漂移（录制 locator 不再命中，但同稳定签名的唯一元素仍在） | — |
+| `NEEDS_HUMAN` | 待人裁决 | 路由人：机器无法证明上述任一者；绝不自愈、绝不自动记缺陷；带 reason 子类 | — |
+| `SUT_DEFECT_OR_STALE` | 缺陷或期望过时 | `NEEDS_HUMAN` 子类：动作对、断言硬失败、但取证干净；人裁「确认回归→记缺陷」或「有意改版→重签新基线」 | — |
+| `CASE_DEFECT` | 用例缺陷 | `NEEDS_HUMAN` 子类：仅编译期/人签前判候选——入口可证缺席或期望自相矛盾，即用例本身有 bug | — |
+| `AMBIGUOUS_ACTION` | 动作歧义 | `NEEDS_HUMAN` 子类：多匹配/坐标兜底点击，点没点对存疑；收紧用例 locator 后重编译 | — |
+| `AFFORDANCE_ABSENT` | 入口缺席 | `NEEDS_HUMAN` 子类（人签后）：编译时够到的入口回归时没了，又无漂移信号无取证；走缺陷-或-过程错误分诊 | — |
+| `INDETERMINATE` | 未定 | `NEEDS_HUMAN` 子类：纯未知失败，看证据人判；catch-all 的 fail-safe 默认落点 | — |
+| 点击身份门 | Click Identity Gate | 仅当解析目标唯一（过滤后 count===1）或点击后身份回读成立才置 `actionPerformed=true`；多匹配/坐标兜底 → ambiguous |
+| 容器归属闸 | Container Membership Gate | 文本精确唯一命中后仍须证明命中元素落在预期记录容器内（表格行/卡片/条目容器，剖面可覆写容器选择器）；容器外命中=同名非记录控件碰撞，硬阻断 fail-closed 不点。wf-open-smoke 首立（workflow.open），entity-ui-wiring 抽为 agent.searchOpen 编译/回放共享门 | — |
+| 关系原子 | Relation Atom | 动作效果为建立两个业务对象间关系的原子（首例 `workflow.bindAgent`：把智能体绑进工作流节点）；准入策略 `effect=relation`，必须同时携 `source` 与 `target` 双角色绑定且双边独立锁定（各自 lockId+收据 hash），缺任一边整份拒绝，绝不单边降级 | — |
+
+exec
+/bin/bash -lc "sed -n '91,190p' CONTEXT.md" in /mnt/d/ctx/heren/casey
+ succeeded in 7ms:
+| 业务对象语义锁 | Business Object Semantic Lock | 手录后把工作流、智能体等业务对象从脆弱 DOM 位置提升为冻结身份；回放前重新只读解析并与已签身份收据确定性比较，只有 `SAME` 可重绑定临时 UI 句柄，业务身份变化一律零点击并路由人 | — |
+| 业务对象身份收据 | Entity Identity Receipt | 业务对象语义锁的不可变权威载体：至少锁 `kind + name + code + scopeFingerprint`，平台提供稳定 ID、父对象或版本时一并锁定；收据带内容 hash，外部对象须用户确认、自建对象须平台权威读回，LLM/视觉只可提候选不可确认同一性 | — |
+| 身份观察旁车 | Identity Observation Sidecar | 示教录制期间与操作事件分开落盘的最小业务身份候选；只收 `kind/name/code/platformId/scopeFingerprint/parent/evidenceKind/eventSeq`，永远未签且 `replayReady:false`，与 示教录制包 通过两个字节 hash 的联合绑定防换包；缺编号只保留 pending，绝不升格为权威收据 | — |
+| 身份迁移 | Identity Transition | 已签用例有意改名/改码时声明的 `旧身份 → 变更动作 → 新身份`；动作后须平台权威读回新名称与编号并生成链接旧收据 hash 的 successor，未声明或读回失败不得静默更新锁 | — |
+| `resolution` | 定位解析态 | 点击身份门为每个动作步吐的解析结果（落进 三轴 的动作轴），枚举 `unique`（唯一命中、可动作）/ `ambiguous`（多匹配、点没点对存疑、绝不变更 SUT）/ `none`（录制 locator 全失配、走漂移探针）/ `action_failed`（唯一但动作抛错）/ `absent`（编译期候选零命中）；`verdict.mjs` 据此推 `actionPerformed` 四态。多匹配的唯一合法字面量 = `ambiguous`（点击身份门 count>1 的收口词、三门 emitters 同源）；收敛前的 `multi`（编译门）/`fallback_first`（回放通用门）是旧写法、仅在动作轴/裁定链语境弃用——`fallback_first`/`coord_fallback` 在 run-history 诊断 `locatorResolution` 枚举里仍是合法可表征锁值（seams-freeze-v2 治理），故不登为全仓黑名单弃用别名 | — |
+| 语义定位器 | Semantic Locator | 按 ARIA 角色/可访问名/标签/文本定位（getByRole/getByText/getByLabel），对照 CSS 选择器与坐标兜底；回放定位与点击身份门的基础（迁自 autotester 核心域） | — | — |
+| 网络取证 | Network Forensics | `watchNetworkForensics`：记 response/requestfailed 的 {url,status,initiator} + error-envelope，按请求发起方归因（非时间窗） | — |
+| 错误信封 | Error Envelope | 响应 body 的成功字段判失败的软失败（典型：HTTP 200 但 body 表失败）；`noErrorEnvelope` 断言据此取证；成功字段按 channel 参数化、经`通道剖面`注入（web/Heren 实测为 body `status===200`，非早期假设的 `code!=0`） | — |
+| 通道剖面 | Channel Profile | runner 回放某 channel 所需的非凭据配置：背景 denylist + 错误信封成功字段/值 + 可选加载占位 selectors/text；与 `site.json` 凭据密文严格分离（护栏 #7 边界），hermetic 经 `--profile` 传合成值、tier-2 由 site.json 非凭据子集投影 | — |
+| 通道驱动 | channelDriver | 端口适配器式接缝：声明某驱动在某 channel 上能执行的动作能力集（actionSpace，严格 ⊆ events.schema 枚举）+ 每动作 call 指针 + coordinateSpace + 取证能力；只声明能力，transport/denylist/成功字段归 通道剖面（只带 profileRef 指针不内嵌）。分工镜像 动作词汇表 : channelDriver ≈ 断言词汇表 : 通道剖面；verdict.mjs 绝不读它、对 action 不可知（护栏 #17） | — |
+| 三轴 | Three-Axis | 回放期每个原子步吐的三组事实——动作（过点击身份门判 true/ambiguous/false）/ 逐条断言（typed kind 各一条，断言续跑、不首错即停）/ 取证（网络取证 + 生命周期）；零 LLM 的 `verdict.mjs` 据此跑判定树出四态，是裁判·桥·报告共吃的数据契约 | — |
+| 自愈 | Self-heal | 相5：仅对确证 `HARNESS_ERROR` 的有界重锚；是裁定的下游消费者，绝不反向进入裁判进程 | — |
+| 自愈准入门 | Self-heal Admission Gate | 护栏：自愈只对确证 `HARNESS_ERROR` 开闸；`SUT_DEFECT`/`NEEDS_HUMAN` 一律拒绝自愈 | — |
+| 准入受众 | Admission Audience | 冻结身份准入件（`entity-locks.frozen.json`/`execute-authority.json`）的必填签名字段 `audience ∈ {test, production}`，签进内容自哈希；标记该件只许在测试上下文还是生产上下文授权回放/编译。测试夹具标 `test`，生产件须显式 `production`。防「测试锁被误指向真 SUT 授权真实改动」（ADR-0010） | — |
+| 凭据上下文门 | Credential-Context Gate | 准入铸权后、启动浏览器前的纯函数门：判本次 run 的凭据上下文（加载真 `.auth`/走登录预备动作=生产、无凭据=测试），要求准入件的准入受众严格匹配该上下文，不符即 fail-closed 不启动浏览器。判据不看 `--sut` 地址（hermetic 与真机 UAT 都走回环、分不开），只看是否加载真凭据（ADR-0010） | — |
+| 非就地自愈 | Out-of-place Self-heal | 自愈重锚写 `drift/<caseId>.<ts>.patch` 旁文件，原 spec 不变照常回放，人签后才应用 | — |
+| 漂移补丁 | Drift Patch | 非就地自愈产出的旁文件补丁，记重锚前后对照 | — |
+| 人签门 | Human Sign-off Gate | 人签掉冻结断言才算数；gate 绿 ≠ 完成，人签真机才完成；CASE_DEFECT 与 SUT_DEFECT 的分水岭 | — |
+| 期望版本化 | Expectation Versioning | 每条冻结 `expected[]` 带 `signedAt`/`signedAgainstBuild`/`signerId`；有意改版走重签、不自动记缺陷 | — |
+| 重签 | Re-sign | 系统有意改版导致期望过时时，人重签新基线（新 checksum + signedAgainstBuild，旧期望归档） | — |
+| 裁定徽章 | Verdict Badge | 报告里每步的四态标记（通过/被测缺陷/过程错误/待人裁决+子类）+ 具名理由 | — |
+| 缺陷单 | Defect Ticket | 仅 `SUT_DEFECT` 生成：步号 + 期望对实际 + 取证 + 录屏时间点 + trace 引用 | — |
+| `CSS` | 层叠样式表 | Cascading Style Sheets：报告自包含靠内联 CSS、零外部依赖（autotester report.ts 把样式内联进 HTML，Casey 报告照搬此法） | — |
+| `trace` | 回放追踪档 | Playwright 逐帧追踪归档（.zip）；报告里不内嵌、复制到 `trace/` 加下载链接与 show-trace 提示。**未建挂账**（2026-07-07 审计核实：全链无 tracing 调用、报告 traceRef 恒 null；设计文档「已知偏离」表有账） | — |
+| `channel` | 通道 | 回放目标类型：`web`（Heren 中台）/`cef`（Hi小助）/`arbitrary`（任意站点）；裁定/报告/熔断/契约层 channel 无关 | — |
+| `chat` | 对话流 | 飞轮排期第二维度：覆盖 catalog 维度碰不到的流式回复取证（`streamReplyReceived`、`waitForReplyByStream` 底座）与 `replyContains`；骑 regress `chiefcomplaint_smoke` 语料（`echo_default_on` 经 2026-07-03 摸底实证属画布维度错档：测节点抽屉开关、带坐标拖拽，不走对话流） | — |
+| `promptset` | 提示词集 | 数据驱动回归的被测参数输入层：一份 JSON 数组 `[{id,text,source,category,expect?}]`，把一条冻结 `chat` flow 复用成 N 条独立用例（每行一 caseId/录屏/裁定），聚合成一份报告；血缘 xUnit 数据驱动测试（data-driven testing）。忠实对标 regress `_promptset.ts`（字段名 `text`）。`source` 枚举 `user`（人写）｜`builtin`（随 注入向量库 发）｜`llm`（`gen-prompts` 契约扩容：CLI 外 LLM 合成，经 `promptset-freeze` 强制标注） | — |
+| 被测参数 | Prompt Parameter | `promptset` 每行的 `text`——真正打进 SUT 对话框、喂给 `chat.sendAndWait` 的 `prompt` 槽的消息文本；数据驱动多行参数化的「参数」。**消歧**：本项「参数化」专指此，显式区别于 `caseId` 并发参数化（`worktree-baton` 已解）与 `entityNameParam` 前缀参数化（R12/`compile-gate` 已落） | — |
+| 注入向量库 | Injection Vector Library | 随工具发、用户可编辑扩展的通用边界/安全被测参数库（`prompts/_lib/boundary.json` + `security.json`）；category 由文件名强制、`source` 强制 `builtin`、id 前缀 `bnd_`/`sec_` 防撞，`被测参数 overlay` 按开关并入每个数据驱动用例集；血缘安全测试注入向量 + 模糊测试语料。**消歧**：本项「内置提示词」专指此，显式区别于 Casey 自身归一/编译工装提示词（委托 CLI 外 LLM、仓内无实体，见 `归一提示模板`） | — |
+| 软期望 | Soft Expectation | `promptset` 行的 `expect{mustInclude?,mustNotInclude?,note?}`——只在报告里标命中与否的 soft 断言，绝不进多态裁定树、绝不判红（护栏 #17）；非确定性 LLM 输出不做 exact 硬断言。落地 = 强制 `soft:true` 的 `replyContains`/`replyMatches`，经 `--soft-expect` 通道并入现成 soft 链路进报告黄标（不碰 `sign-gate`、不进裁判） | — |
+| 被测参数 overlay | Prompt Overlay | `lib/promptset.mjs` 纯函数 `overlayPromptset`：定位冻结 `chat` flow 里唯一的 `{{promptText}}` 提示槽（0 或 >1 个 fail-closed），把 `promptset` N 行经 `instantiate` 回填该槽展开成 N 个回放输入；硬断言跨行同一冻结 flow 集（绝不改 flow，逐行只变 `ctx.promptText`——spec 不漂移）；新纯函数，不照搬 regress `overlayRow`（其拒 authored 场景，Casey 编译产物形同 authored） | — |
+| 多用例聚合报告 | Aggregate Report | 兑现 report-spec §7：`casey report --aggregate` 读 N 份 `<caseId>.report.json` 旁车，按 category 分段 + 置顶横幅（`SUT_DEFECT`/`NEEDS_HUMAN` 行顶上去）合成一页总目录；content-expect `软期望` 走黄标、绝不进裁定（聚合只累加旁车自带 `verdictSummary`，其本身已排除 soft） | — |
+| 移植 | — | 把 regress 现成 flow 用到的原子在 autotester L1 原语上重表达成吐三轴的纯 mjs、再配观测现状与 verdict golden 的工作；飞轮的主要人力成本。弃用口语简写见别名列（2026-06-29 清零并登记） | 港 |
+| `verdict.json` | 裁定档 | 可复现的机读最小产物：caseId + 逐步 {stepId,intentId,atom,verdict,reason} 五字段（冻结实现，golden 唯一校验对象）；期望对实际字面量与取证引用等富信息在 report-model.json（report-spec §4 两名分离裁决，2026-07-07 词条对齐实现） | — |
+| recorder-as-library | 录制器库化 | 把 autotester 人操作录制器重构成 LLM agent 拥有 context 的库（关人抖动去噪、避导航竞态）。**已被 ADR-0006 的 atoms/flow 编译路线取代**（相1 现实现 = compile-gate + compile-atoms 三段式；本概念仅存「陌生站点孵化」支线，2026-07-07 词条对齐实现） | — |
+| 示教 | Teach-in | 人在真实界面上操作，机器只采集操作语料；借工业机器人示教再现血缘。示教不等于签署，不开直通回放，产物必须经蒸馏、L0 复核和人签门 | 录制直通 |
+| 示教录制包 | Teach-in Capture | `casey record` 产出的人工操作采集包，作为后续蒸馏语料；`signed:false`、`replayReady:false`、`distillRequired:true` 是硬不变量 | — |
+| 示教入账 | Teach-in Intake | `casey intake` 把 示教录制包 经安全复核闸登记进蒸馏前置队列的动作；只复核登记、不转形、不签署、不回放，复核证不出干净合法包一律拒账（fail-closed）。蒸馏由后续 record-distill 消费 | — |
+| 示教入账台账 | Teach-in Intake Ledger | append-only 记录每次 示教入账 accept/reject 的本地台账（`intake-ledger.jsonl`，落 capture 同目录）；显式区分于 失败记录台账（裁定下游）——不进 verdict、不作自愈输入、不改任何裁定（护栏 #13/#15）；拒账只记类别码、绝不落原始脏内容 | — |
+| 示教蒸馏 | Teach-in Distillation | `casey distill` 把已入账 示教录制包 的 events 零 LLM 确定性投影成候选流程（候选 TestCase 骨架 + 候选 mapping + pending + 溯源 manifest）；蒸馏工具零 LLM，LLM 手术刀只在 CLI 外经确定性闸 + 人签入场；重走 ingest→compile→draft→sign，绝不直通回放。v1 全 pending（真机路由跨环境不稳、无可靠静态查表，不臆造脆弱匹配） | — |
+| 蒸馏候选 | Distillation Candidate | `casey distill` 产的非权威候选物（候选 TestCase + 候选 mapping + manifest）；降权标记落 manifest（`artifactKind:'distill-candidate'`）+ 文件名 + 负向不变量，绝不 `signed`/`replayReady`，须重走全链 + 人签才算数 | — |
+| 采集忠实闸 | Capture-Fidelity Gate | 示教蒸馏 的零 LLM L0 闸：校候选 mapping 对 capture 溯源忠实（每候选 atom 有 event 证据、每 event 被覆盖或落 pending）；对位 flow-bridge 投影忠实，对象是 capture 溯源而非 TestCase.steps；fail-closed 全域返回、绝不抛 | — |
+| 可信闭环自进化 | Trusted Closed-loop Evolution | 示教/真实执行产生语料，经 身份观察、语义锁、原子候选、真实 SUT 复验、确定性裁定与人签晋升形成可复用原子，并可版本化撤销的受控学习闭环；默认不自治，LLM/视觉不得裁定或直接写正式 registry | 自动学习、自进化 |
+| 身份观察 | Identity Observation | 在录制或真实执行中采集业务对象类型、名称、编号/编码、稳定属性与来源步骤的去敏旁车证据；它是语义锁的输入，不是对象相同的结论 | — |
+| 语义锁 | Semantic Lock | 跨录制与回放以对象类型 + 名称 + 编号/编码及允许的稳定属性做 SAME/DIFFERENT/INDETERMINATE 对比的 fail-closed 身份门；有编号时名称与编号必须同时一致，证据不足绝不推 SAME | — |
+| 原子候选 | Atom Candidate | 从已入账示教语料提出、逐步引用 capture 与身份观察证据的非权威可复用动作候选；须过采集忠实闸、真实 SUT 复验、确定性裁定和人签晋升，不能直接进入正式 registry | 新原子 |
+| 晋升回执 | Promotion Receipt | 原子候选经人签晋升时生成的不可变审计产物，固定候选版本、证据哈希、适用 channel/profile、对象锁策略与真实回放结果；撤销产生新状态而不覆盖历史回执 | — |
+| 归一脚手架 | Normalization Scaffold | 相0 归一的前段脚手架——把一段自由文本用例零 LLM 包成 schema 合规的 候选骨架 + 归一提示模板，供 CLI 外 LLM 归一成真实候选后经 `parseTestCase` 重新入场；脚手架零 LLM，LLM 手术刀只在 CLI 外经确定性闸 + 人签入场。喂料源是自由文本（无 events），显式区分于 示教蒸馏（喂料源是 示教录制包、有 events 可 1:1 投影） | — |
+| 候选骨架 | Candidate Skeleton | `casey scaffold-case` 产的非权威候选物；开箱过 `parseTestCase`（全 `route:human` 兜底基线），降权标记落文件名 `scaffold-candidate-<caseId>.json` + 落地提示 + 负向不变量，绝不 `signed`/`replayReady`，须 CLI 外 LLM 归一 + 重走全链 + 人签才算数；显式区分于 蒸馏候选（喂料源是 示教录制包 而非自由文本） | — |
+| 归一提示模板 | Normalization Prompt Template | 指导 CLI 外 LLM 把 `source.raw` 自由文本归一成真实候选 `TestCase` 的提示 + schema 约束（镜像 `llm-patch.draft.md` 相2 补缝模板范式）；产物必过 `parseTestCase`，违规 fail-closed 退回；语义质量 `route:human` 抽检 | — |
+| 合成种子模板 | Synthesis Seed Template | `casey promptset-seed` 零 LLM 产的给 CLI 外 LLM 看的生成指引 + 候选产物格式说明；字节稳定确定性（同输入同字节，无时刻字段）；镜像 归一提示模板 先例，喂料源是种子信息（被测 agent 名 / 可选内嵌系统提示词）而非自由文本用例（`gen-prompts` 契约） | — |
+| 被测参数候选 | Prompt Candidate | 粒度定死：**单条** `{id,text,category,expect?}` 条目；其 JSON 数组整体称**候选批**（两粒度不混用）。CLI 外 LLM 按 合成种子模板 合成、非权威，须过 `casey promptset-freeze` 校验闸 + 幂等冻结 才进 `promptset.json`，冻结时一律强制 `source:'llm'` 可追溯；显式区分于 候选骨架（喂料源与产物域都不同，`gen-prompts` 契约） | — |
+| 幂等冻结 | Idempotent Freeze | `casey promptset-freeze` 的写盘纪律：已存在 id 绝不覆盖（候选规范化后与既有条目深等则跳过，内容或来源冲突则整批拒绝）、任何失败不写盘不留半份、原子写；血缘幂等性（分布式系统术语）+ regress `gen-prompts` 冻结语义。**消歧**：与既有「冻结断言契约」体系（`sign`/`lib/sign-gate.mjs` 人签冻结）**无关**——本词条无人签、无 checksum、可持续追加，只承诺已有 id 不覆盖与失败不写盘；两者都叫「冻结」但语义完全不同，并列词条防混淆（`gen-prompts` 契约） | — |
+| `fail-safe` | 故障安全 | 失败时退到安全态：机器证不出就路由人（`NEEDS_HUMAN`），绝不默认成可自愈（fail-open 的反面） | — |
+| `fail-open` | 故障放行 | 故障时放行：基础设施/hook 自身故障不阻塞正常工作；仅用于 lint/hook，绝不用于裁定 | — |
+| `fail-closed` | 故障关闭 | 故障时拒绝：校验不过/缺数据时报红拒绝（用于 `parseTestCase` 等准入） | — |
+| `loop engineering` | 循环工程 | 以确定性退出码为唯一真相的闭环工程方法：契约/质量门禁/熔断器/统一语言/异构冗余评审；Casey 复用 autotester loop-kit | — |
+| `DDD` | 领域驱动设计 | Domain-Driven Design：按业务域建模 + 统一语言 + 限界上下文 + 聚合根的设计方法 | — |
+| `ADR` | 架构决策记录 | Architecture Decision Record：记录难逆转架构决策的短文档（背景/决策/后果），存 docs/adr/ | — |
+| `determinism` | 确定性 | 同输入同输出、可复现、可做 golden；Casey 内核「确定性是默认」的名词形态 | — |
+| `verdict-logic` | 裁判逻辑 | 红队评审维度之一：多态裁定判定树是否 fail-safe、会不会把真 bug 误判成可自愈 | — |
+| `loop-fidelity` | 循环保真 | 红队评审维度之一：loop-kit 构件复用是否名实相符、有无阻抗失配 | — |
+| `buildability` | 可建造性 | 红队评审维度之一：组件是「照搬」还是「新建」、依赖是否可实现 | — |
+| `watchNetworkForensics` | 网络取证函数 | 实现「网络取证」的函数：记 response/requestfailed + 错误信封、按请求发起方归因 | — |
+| `helper` | 辅助件 | 被复用为底层工具而非主逻辑的代码件（如报告自包含机制保留当 helper） | — |
+| `tier-1` | 第一层自检 | hermetic 自检：假 SUT、零外部依赖，验编译→回放→报告管线 + 给分类器喂合成四元组逐一触发四态 | — |
+| `tier-2` | 第二层自检 | live smoke：需 site.json + creds，覆盖 SUT_DEFECT/取证/流式分支，gated route:human | — |
+| 只读漂移探针 | Read-only Drift Probe | findEquivalentAffordance：无 spec 变更、无重跑地探明「同稳定签名唯一元素是否仍在」，供 verdict.mjs 判 `HARNESS_ERROR`；与自愈写回（相5）严格分离（拆 P5/P6 循环依赖） | — |
+| 回放历史 | Run History | 确定性回放 逐步落盘的第二层事实 run-history.jsonl（每步一行执行证据：动作/定位解析/静默点/耗时/result）+ 聚合 run-metrics.json（回放指标）；仅报告/诊断，绝不进 verdict.mjs、绝不写 passes（护栏 #15）；落盘过凭据兜底门、动作值打码（护栏 #7）。result 非四态、passedActions 非 PASS | 运行历史 |
+| 失败记录台账 | Failure Ledger | 多态裁定下游的只读诊断台账：verdict 出完四态后每条非 PASS 步级裁定追加成不可变条目，供人做失败聚类/优先级/编译期建议；血缘锚 ITIL 已知错误库（KEDB/Problem Record）+ 会计台账追加不改。绝不进 verdict.mjs、绝不作自愈输入、绝不改写原裁定（护栏 #13/#15） | — |
+| 失败指纹 | Failure Fingerprint | 失败记录台账 的可聚类指纹 = sha256(canonicalJSON(fingerprintInputs))，输入只含稳定已模板化字段（channel/verdict/reason/atom/assertionKind/assertionOp/signatureTemplate）；显式排除 caseId/stepId/runId/时间戳/实例名/凭据，故同一失败模式跨用例聚类。零 LLM、可复现、进 golden；聚类粒度 route:human（决策 3.3） | — |
+| 人裁决回填 | Human Resolution | 失败记录台账 条目里由人经签署链路写入的裁决指针（decision/resolvedAt/resolverId/ref）：只读审计引用非执行器，ref 指向权威产物（缺陷单/重签元数据/漂移补丁），绝不复制权威态、绝不改原裁定；decision=drift-healed 仅当 verdict=HARNESS_ERROR 才合法 | — |
+| route:human | 路由人 | 把某项判断/动作显式移交人裁的标注（落 Inbox + 通知，Escalation Path 的标记形态）；Observability 测不到的维度必申报为 route:human | — |
+| 静默点 | Quiet Point | 采集观测现状/落断言输入/做后检查前必达的确定性有界等待条件，替代固定睡眠保可复现（跨阶段通用）。各期判据变体：编译期 DOM 连续两拍稳定（`quietPoint`，`networkidle` 对带背景轮询的单页应用不作判据）；回放代表步在途前台请求归零 + DOM 两拍稳定（稳定对不跨零点、给应答后提交约两拍缓冲），`networkidle` 仅超预算后有界兜底一次（`settleBeforeCapture`）；删除后检查变体要求同源目标在加载结束后连续 3000 ms 精确计数为零，加载态或目标重现必须从新计时，超时或样本不足按 `fail-closed` 拒绝背书；一律有界、超预算按现状采（fail-safe） | — |
+| LLM-judge | LLM 评分员 | 独立异构家族的语义评分器；判 FAIL 可信、判 PASS 仍人抽检；严格踢出确定性裁判（verdict.mjs）之外，绝不写 passes/verdict | — |
+| `CLI` | 命令行接口 | Command-Line Interface：Casey 的确定性引擎入口 `bin/casey.mjs`；skill 与 MCP 都是它的薄壳 | — |
+| `MCP` | 模型上下文协议 | Model Context Protocol：编辑器/agent 驱动工具的协议；`mcp/casey-server.mjs` 是 CLI 的 MCP 薄壳 | — |
+| `skill` | 技能 | Claude Code 的能力封装；`.claude/skills/casey` 是把自然语言意图映射到 CLI 命令的薄壳 | — |
+| `PowerShell` | （Windows 主壳） | Casey 在 win32 主机上的主命令行壳（与 Bash 工具并存、各自语法）；运维/卸载脚本用它 | — |
+
+exec
+/bin/bash -lc "sed -n '1,220p' docs/HANDOFF.md" in /mnt/d/ctx/heren/casey
+ succeeded in 0ms:
+# HANDOFF — 当前工作状态与下一步（活文档）
+
+> 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
+> 下方「当前状态」是权威现状；「历史层」仅供溯源。
+
+## 2026-07-23 凌晨（续）real-uat-attestation 六阶段全收口（本节为最新现状）
+
+Steven 两裁（人签采认+评审 codex）后走完：codex 四轮评审 R1/R2/R3 FAIL→逐轮全采信修复→**R4 终判
+PASS**，契约六阶段全 done、audit 终账（rounds 4、pass）。关键修正与事实：
+
+1. **run-2 整链重跑**（R1 阻塞：报告缺录屏/附件悬空；冻结件绑已删实例 platformId→审计归档旧件+
+   重预置+重签的完整仪式）：回放①②各带录屏/run-history/run-metrics/逐帧视觉复核，附件共置三链
+   版式；预置清理脚本 fail-closed 化（严判恰等+三面归零+日志冻结入库）。
+2. **503 缺陷账被 codex R2 逮正后改写（此前对 Steven 的「实例相关/run-2 干净」口径是错的）**：
+   两条 503（agentPlus/queryPlus+getAgentDetail）在 run-1/run-2 两实例**均复现**；run-1 判
+   SUT_DEFECT 与 run-2 判 PASS 之差纯为 503 到达时序落归因窗内/外（因果作用域取证按设计工作）。
+   run-2 回放①视觉复核如实改判 INCONSISTENT（终帧两条「操作失败!」）。根因教训（引证未亲验+
+   未扫全量网络账）入 learn.md+持久记忆。
+3. 完整性金牌 V1-V6 实核化（checksum 核值/人签核件/真机产物深核/axes 网络账对刺/视觉复核全部
+   交付面锁死）；gate 多轮 GREEN。
+4. 下一步：A drafter --patch intentId 校验修单（工装缝，prd-real-uat-attestation observability）；
+   B 503 缺陷上报（Steven 渠道，取证件=run-1 report1+run-2 复核）；C 密钥签名威胁面/SKILL.md
+   措辞统一。
+
+## 2026-07-23 凌晨 real-uat-attestation 真机四步见证跑通（已被顶部续节取代，只溯源）
+
+Steven 三令（B 契约/剔除改革/修在案 bug）全部执行：
+
+1. **real-uat-attestation（light，4/6）**：agent-id-readback 冻结 uatDefinition 四步真机见证完毕，
+   GRILL 三分岔 Steven 全 A（我建我删/授权条件直签/即刻跑）。一件两放：①测试智能体
+   `atl_同名对抗0722` 全场唯一时——双证 unique+回读 ok+句柄落笔+详情路由达（身份判据全过），
+   两条**真实确定性 503**（`agentPlus/queryPlus`+`getAgentDetail`，骨架智能体详情页，跨两放复现）
+   如实裁 SUT_DEFECT=真缺陷上报；②预置精确同名第二件（覆写平台自动码破同码拒绝）后回放同一
+   冻结件——**必 AMBIGUOUS 不点击**（NEEDS_HUMAN·AMBIGUOUS_ACTION、URL 停列表页物理证据）。
+   报告三形态×2、删两件归零。真机产物本机留存（cases/runs，不入库）；入库=见证账本
+   `docs/plans/real-uat-attestation/evidence/uat-run.md`+完整性金牌（V1-V4 GREEN、gate 1/1）
+   +tc prd（authority+frozen 双件 checksum）。**待 Steven 两裁**：UAT 终局人签（含 503 采认）
+   +review 家族裁定后收 review/learn。
+2. 修单中发现并挂账：drafter `--patch` intentId 不经 observed intents 存在性校验（错位断言静默
+   孤儿——首版补缝 intent_open/intent_1 错位实证，重补缝+expected 单独重签修复）。
+3. 陈旧红 `real-run-trust.zero-sut` 已修（8/8 PASS，98b8d1b）；loop 改革全线冻结令已入
+   文档+持久记忆（d690619）。尖峰结论③「code 通道待真机回读」显式待办由本轮兑现
+   （收据 code/platformId 用真机观察读回值）。
+
+## 2026-07-22 深夜 agent-id-readback 评审闭环+合并 dev（已被顶部 07-23 节取代，只溯源）
+
+接晚间交接（下节）继续收口，契约六阶段全 done、已合并 `dev@648e09e`（merge --no-ff，70 文件）。事实链：
+
+1. **三波（sol 五面构造兑现）**：`bin/replay.mjs` 浏览器后三轴投影【逐字搬移】成生产共用纯函数
+   `lib/replay-axes.mjs`（82484ab..b920b4f 投影段零 hunks）；mock Page/forensics 测试替身
+   （`tests/_golden/fixtures/agent-id-readback/mock-page.mjs`）驱【真实】createCompileRun/compileFlow
+   与 performAction；棘轮扩面⑦⑧⑨⑩（R18-R21：compile-run-v1/action-axes-v1/axes-projection-v1/
+   verdict-report-v1，末者=axes 喂真实 verdict→report-model（--generated-at 固定）→report 三 CLI 链、
+   四态各一）。基线于 82484ab 窗口重录（九实现文件检出+身份模块移除），既有六面字节零漂移=窗口保真
+   机器证据；退窗现树 21/21 绿=「身份实现不动 v1 字节」机器证据。红证 refit-r3（窗口 6/21 红）。
+   plan §6/§8 权威修正+interface-spec §7 三波披露+prd 第五笔 checksumAmendments。gate 第五轮 GREEN 6/6。
+   两笔明示排除（sol 认可口径）：report html/md 字节=报告模板演进面（与主树未提交 lib/report.mjs
+   模板工作零冲突——其 diff 不触 renderJson）；report 成功 stdout=绝对路径打印面。
+2. **codex R3 FAIL 但机器五面判闭合**（调用矩阵/排除/搬移全接受）；余三笔四波全采信修：H1 命中卡
+   ElementHandle 全路径 try/finally dispose（compile/replay 双侧）；M1 `ctx.identityTokens` 消费即
+   delete（出账延伸到调用方层）；H6 UAT 三件套落实际字段（prd observability：
+   `uatCaseId=tc_agent_id_readback_real_uat_v1`+`successorContract=real-uat-attestation`+冻结
+   `uatDefinition` 四步定义含时间戳边界）。gate 第六轮 GREEN 6/6 → **codex R4 终判 PASS**
+   （H1/H6/M1 全 FIXED、plan §6 修正接受）。audit.jsonl 终账（rounds 4、pass）。
+3. 合并 `dev@648e09e` 后主树复验：首跑 gate RED（5/6）——唯一红=棘轮 R21，根因是主树【未提交】的
+   报告模板层给 renderJson 输出加了 `overview` 字段（开篇自然语言概述进了 JSON 面，不只 HTML/MD；
+   我此前「模板 diff 不触 renderJson」判断是只 grep 未实测，错了）。对提交态复验（stash 该文件窗口）
+   棘轮 21/21 绿 + gate 复跑 GREEN=合并本身无损，红只来自未提交覆盖层，恰证 R21 棘轮在做它该做的事。
+   **承重交接**：三线增量落地（下一步 A）提交 `lib/report.mjs` 模板时，必须同笔对
+   `prd-agent-id-readback` 走 checksumAmendments 重签 `verdict-report-v1.json`（+manifest），
+   否则棘轮红。受影响面 zero-SUT 金牌批复跑全绿。**陈旧红挂账**：
+   `tests/_golden/real-run-trust.zero-sut.golden.mjs` 红（源码字面检查在 82484ab 前已多行化失效；
+   主树/分支同红、与本契约无关、无 owner prd 引用）——待独立修单，别顺手修。
+4. worktree `../casey-agent-id-readback` 已退役（评审 PASS 合并后 worktree remove+分支删除，
+   并行槽回 4/5）。真机义务按冻结 uatDefinition 走后继契约 `real-uat-attestation`（route:human）。
+5. **loop 改革全线冻结（Steven 2026-07-22 令）**：工作流状态引擎/gate 分层一族（loop-p0-4a/4b）
+   不读、不续、不列为选项；两树冻结原地、不计入待办；下方历史层中的改革叙述只作溯源。
+   唯一解冻条件=Steven 明确要求。
+6. **三线增量已提交入 dev（Steven「继续」授权后执行，五笔显式路径提交）**：`b30fdf4` stale-red 收口
+   （两金牌+两 owner prd+契约六件套）→ `002c821` 真机三链重签（三 tc prd 换签 checksum；冻结件本体在
+   gitignore 的 `cases/`/`runs/`，按设计不入库）→ `cd8052d` 五 prd 复验 evidence 时间戳（gate 唯一写者、
+   纯 evidence diff 实核）→ `31d5169` 报告模板+棘轮 R21 重签同笔（renderJson 新增 overview；第六笔
+   checksumAmendments、基线双跑复验、gate GREEN 6/6，dev 无红窗口）→ 交接文档笔（本文件/NEXT-SESSION/
+   REQUIREMENTS-STATUS/codex HANDOFF/entity-ui 尖峰清单+发现）。提交前复跑：p3-compile 14/14、
+   report-diagnostics 12/12、tier1、棘轮 21/21 全 exit 0。主树剩余未提交=用户/并行现场
+   （.gitignore、prd-cli-authority-wiring-fill/selftest/semantic-unit-discrimination、zip、follow.mjs、
+   atom-readiness、regress-strategy、usability-audit），继续不碰。
+
+## 2026-07-22 晚 agent-id-readback 修单会话——codex 两轮评审+两波修复，评审未闭合交接（已被顶部深夜节取代，只溯源）
+
+全程在 worktree `../casey-agent-id-readback`（主树 `dev@82484ab` 零触碰），分支内快照提交 `b920b4f`
+（57 文件，未合并）。事实链与残余：
+
+1. codex 异构评审 R1 终判 `FAIL`（1 Critical+6 High+3 Medium，逐条对照代码坐实；`review/codex-review-r1.log`）。
+   最重 C1：编译产物停在 v1、`platformId` 从未进签署/回放闭环——sign 的 v2 对账链对真实产物是死代码，
+   此前 gate 6/6 绿是五金牌各自绿掩盖「链没接通」（教训入 learn.md #1：多段协议验收必含一条不许手造
+   中间件的端到端链）。
+2. 修单一波（十项全采信+修前红对抗钉）：请求级事务补有界 settle/先 seal 后 consume/查询回声；采集器
+   同源+queryParam+2xx+successField（导出纯函数钉验）；双证门 dom.code 必备；物理卡片双锚+句柄内点击；
+   编译 v2 草稿真接线+观察基数强校验；sign 义务集合从 events 字面量独立推导；回放账本只随 v2 权威激活、
+   缺已签三元组立拒、信封先决优先于 DOM 分类。修金牌合法路径=零弱化+外科 stash 无实现态重钉红
+   （refit-*.red.txt 五份）+prd `checksumAmendments`（四笔）。新夹具场景 iddom-skew/idpaged-dupdom/
+   idtwins-sync（后者=C7 考场确定性化：回放 press→click 零等待使旧 DOM-only 门在 fetch 渲染页有固有
+   竞态，gate 两轮 none 红实证——同步渲卡+信封两行同名，M3 失守必 ambiguous 一击红）。
+3. R2 终判 `FAIL` 但大幅收敛：7 `FIXED`、3 `PARTIAL`（H1/H6/M1）、零新增独立问题；H6「修单侧缩窄」被拒
+   （plan 是权威，改义务须正式修 plan）。二波修复已落：H1=evaluateHandle 原子快照取 ElementHandle、
+   同物理节点重验+子句柄点击；M1=WeakSet+消费即出账（钉 O8c）；H6 部分=面③④落地（sign v1 三流+完整
+   产物集+逐文件 sha 面——双跑探针实证跨运行字节确定、「不确定」假设实测收回，候选输出与 82484ab 基线
+   逐字节相等成为「v1 路径逐字不变」的机器证据；compile/replay 无参三流面；过校验真路径负控 R15-R17）。
+   gate 第四轮 GREEN 6/6。
+4. 残余（Steven 拍板交接下一 session）：sol max 咨询判 `CHANGES REQUIRED`（`review/sol-consult-plan6.log`）——
+   「动作轴/axes/report 字节面零 SUT 不可达」不成立，给出五面构造（mock 替身驱真实 `createCompileRun`/
+   `compileFlow`/`performAction`+axes 投影抽生产纯函数+固定 `generatedAt` 报告装配）；实现后修 plan §6
+   再发 codex R3。构造清单与评审状态快照：worktree `docs/plans/agent-id-readback/review/fix-dispositions-r1.md`
+   末两节；R3 复审料草稿 `r3-packet-draft.md`；两波修复 hunks 已存档。audit.jsonl 已入账（in-progress、
+   rounds 2）。评审 `PASS` 前不合并。
+5. 教训沉淀 learn.md 十条（评审待闭合状态明标）：中心病灶「协议写全、接线接半」；判定序是安全属性；
+   义务集合绝不由被验件自报驱动；poison spy 要真实加载证据；「不可达/不确定」先实测再落账（两次被
+   异构评审逼收回）；竞态考场确定性化不靠重试。
+
+> 本节已被顶部深夜节取代（评审已闭环、已合并）。下方「2026-07-22（续 82484ab 之后）当日四线推进」
+> 为同日早前快照，只溯源、勿据其判现状。
+
+## 2026-07-22（续 `82484ab` 之后）当日四线推进——三线主树未提交、一线 worktree 未合并
+
+`82484ab`（entity-ui-wiring）合入后，本会话续推四线（均 Claude 实现→`codex`/`gpt-5.6-sol` 异构评审）：
+
+1. `stale-red-admission-refit`（light，六阶段全 done，主树活契约）：收口两陈旧红金牌 `p3-compile`（4/14→14/14）、`report-diagnostics`（11/12→12/12）。红因是实体语义锁准入面拦夹具旧式调用（`git stash` 实证红先于当日改动、非回归），夹具侧铸测试受众准入件、生产 `lib`/`bin` 零改、走 `checksumAmendments` 修单重钉两 owner prd。`gpt-5.6-sol` max 咨询定形（E1 改只读白名单信封 / C8 收紧四证防准入拒绝冒充多匹配 / 临时 prd `wx`+`finally`）+ `codex` high 评审 4 Medium 全采信修复。**主树未提交**。
+2. 报告固定模板（改 `lib/report.mjs`，未提交）：开篇自然语言概述（确定性投影四态裁定+步数、非全过 fail-safe 措辞不冒充通过）+ 回放对照同屏（录屏左 sticky·测试用例/原子操作右，窄屏退单列）。报告族金牌 + tier1 续绿。
+3. 真机三链重表达全 `PASS`（`cases/` 刷新未提交）：旧冻结件被准入面拦属设计——完整重表达（扩 flow 实体绑定→铸预执行权威件→哨兵探针→真机重编译→草拟补缝对齐已签基线→人签→全新令牌回放）后 CRUD 4/4、发布 4/4、历史 8/8 `PASS` 零 error，删后归零双证有清理证据，三份独立 HTML 报告交付。配方存 `runs/real-uat-20260722/`。
+4. `agent-id-readback`（full，worktree `../casey-agent-id-readback`，契约至 loop done、gate 6/6 GREEN，**未合并**）：智能体平台 ID 网络信封读回 + DOM/信封双证门。`gpt-5.6-sol` max 四轮设计共识（R1 三 P0=解析竞态/假唯一/剖面当安全开关，R4 可进 accept）；请求级身份观察事务（`arm`/归属请求时刻冻结/`settle` 终态/`seal`+`consume`）、完整性先决（`total===records.length`）、完整集合内同名>1 才 `AMBIGUOUS`、点击前对已签 `platformId` 比对（双定位闭合到点击那一刻）、观察↔确认哈希闭环（`sign` v2 `--entity-observations` 五元 join）。真机活数据双证实证绿（`docs/plans/agent-id-readback/evidence/realmachine-live-verify.md`），三层真机剖面字段名经实测纠正（`data.list`/`data.pageInfo.totalItems`）。待 `codex` 异构 review + learn + 合并 dev（见「下一步 A」）。需求进度已更 `docs/REQUIREMENTS-STATUS.md`（§3 实体身份）与 `docs/codex/HANDOFF.md`。
+
+> 本节为 2026-07-22 早段快照（最新现状见顶部「2026-07-22 晚」节；本节第 4 条的「待 codex 异构
+> review + learn + 合并」已被晚间会话推进两轮评审、现停 R2 FAIL 待 H6 五面构造）。下方各
+> 「当前状态（2026-07-XX）」节为更早历史快照，只溯源、勿据其判现状。
+
+## 2026-07-22 entity-ui-wiring 收口合入 dev（worktree 契约，merge `82484ab`）
+
+语义锁 UI 接线第一波（Steven 需求「名称+ID 联合定位/双边锁定」的 hermetic 轨）落地：
+`agent.searchOpen` 收紧（共享门 `lib/agent-search-gate.mjs`：`exact:true` 精确锚+容器归属闸，
+编译门=回放门同刻；同名双条目 AMBIGUOUS 硬阻断；registry 补 `code` 编码收敛参数）+
+`workflow.bindAgent` 关系原子全线接通（编译知识 25→26、registry 词条、回放专用门；抽屉钉扎
+域锁+触发器/选项物理句柄+全时点三闸重判+物理句柄内可见恰一精确回读；双 receipt 锁链端到端
++单边缺失必红）。gate GREEN 4/4（主树复验同绿）+ tier1 绿；codex（gpt-5.6-sol high）四轮异构
+评审 R1 FAIL(2H+3M)→R4 PASS 全闭环（audit.jsonl 有账，修复全带修前红对抗钉）；涟漪 9 prd
+重签复 gate 零账变差（flow-bridge s2 陈旧绿被 gate 如实翻红=隔离义务账按设计恒非绿；
+p5-replay 1/2→2/2、replay-settle-mount 0/2→1/2 翻好）；例翻三金牌 25→26；CONTEXT 补登
+「容器归属闸」「关系原子」。接线红基线（真机轨，2026-07-18「单元导出+真机双轨」已裁）由
+s4 守恒金牌钉死零触碰。worktree 已退役（并行槽 4/5）。
+
+真机挂账（route:human）：`docs/plans/entity-ui-wiring/realmachine-spike-checklist.md`——
+智能体平台 ID 三通道观察（列表行属性/URL/详情接口）+ 同名对抗 + bindAgent 真机配方四停站
+复核 + searchOpen 容器类名采样；采齐后另立契约接 ID 读回。教训见
+`docs/plans/entity-ui-wiring/learn.md`（execute 权威链金牌法/身份门全协议一步到位/冻结中修
+金牌的合法路径等七条）。
+
+另：同日早前本会话完成 casey×agent-loop-harness 交接包 TASK-000 本地重审计（15 条 claim
+裁定、双仓二元绑定、产唯一 zip 已交 Steven；只审计零实现，详见包内 evidence）。
+
+## 2026-07-21 starter 后刷新：task #17 已完成核账，停在 grill 人签裁决
+
+本次只刷新交接文档、不改实现。实时事实：主树 `dev@1207776`；前序
+`flow-bridge-golden-refit` 已 full 六阶段全 done，现役主树活契约是 `checksum-drift-closure`
+（full，六阶段均 `done:false`），baton 占用中。starter 已完成 task #17 的只读核账并写出
+`docs/plans/checksum-drift-closure/GRILL.md`；该目录是本契约进行中产物，不属于用户或并行现场。
+除本契约产物与本次写入的 `docs/HANDOFF.md`、`docs/NEXT-SESSION.md` 外，现场另有非本次交接改动：
+`.gitignore`、三份 PRD
+（`prd-cli-authority-wiring-fill` / `prd-selftest` / `prd-semantic-unit-discrimination`）为修改态，另有
+`casey-agent-loop-local-first-total.zip`、`docs/atom-readiness-assessment-20260715.md`、`docs/codex/`、
+`docs/plans/regress-strategy/SCOPE-OPTIONS.md`、`docs/plans/usability-audit/`、`follow.mjs` 未跟踪；全部视为
+用户或并行现场，不碰、不顺手提交。
+
+核账已把 4 处 `testChecksums` 漂移分为两类：`prd-delete-confirm-causal-binding` 与
+`prd-seams-freeze` 是真实漏签；`driver-canonical-root` 与 `transaction-root` 两金牌是同一提交写入的
+有意安全撤销墓碑，不是并发污染。当前停点是请 Steven 裁决 `GRILL.md` 的 D1/D2/D3；签认前不
+`advance grill`，不写 plan/prd，不改 checksum、`passes`、冻结金牌或 `loop-kit`。不得重复
+`contract init`，也不得把「发现漂移」直接当成自动重签授权。
+
+残留 worktree 分三类：`loop-p0-4a-state-engine` 为真实暂停 WIP（3/6，落后 dev 165 个提交），
+`loop-p0-4b-gate-layering` 为真实暂停 WIP（2/6，落后 dev 163 个提交），两者都必须先重对当前基线，
+不得沿用旧红基线直接续实现；`mountdelay-fidelity` 已 6/6 done 且并入 dev，只是完成后的残留树，
+不是待续契约。下方所有更早日期段落均为历史快照；与本节冲突时只作溯源。
+
+## 2026-07-20 活动增量：阶段二生命周期重裁 + mountdelay-fidelity 全收口并入 dev
+
+阶段二 `hermetic-golden-zero-sut-lifecycle` 六阶段全 done（dev `95bb6bb`，ADR-0004 人签已落）：
+全量清点 27 个会启动 fake-SUT/浏览器的金牌，按逐 check 义务拆出 zero-SUT 存活单元，其余浏览器
+义务进入隔离账（239 obligations / 27 live executables，`agentExecution=forbidden`、route:human）。闭合机器
+包含依赖扫描、source-obligations、subsumption matrix、retirement/isolation receipts、PRD 反向闭包与突变
+电池；55/55 checksum 人签 GREEN。Pi DeepSeek V4 Pro 与 Grok 复审均 ACCEPT；Grok R1 的扫描器
+High/Medium 已补正负控修复。旧 fake-SUT 金牌没有被重新运行或伪称已迁真机。
+
+`mountdelay-fidelity` 六阶段全 done，merge `6f244fb` 入 dev：原计划依赖共享 fake-SUT 的部分按
+生命周期契约删除，不改/不跑共享 fixture。`lib/replay-settle.mjs` 新增严格 `profile.loading`
+selectors/text、DOM/占位同刻快照、所有模式至少三拍静止窗；配置态还须连续两拍证实占位消失，
+probe unknown 保持 `settled:false`。`bin/replay.mjs` 在浏览器前校验 profile 并只把 profile（不把
+expected）传给静默点。新 zero-SUT 验收 4/4、Grok R1 回归锁 2/2、既有存活单元 9/9、gate 4/4
+GREEN；生命周期闭合保持 GREEN。
+
+**异构评审链诚实收口**：Pi R1/R2 均 ACCEPT；Grok direct R1 两条有效 Medium 先造 0/2 红锁再修；
+Grok R2 要求 placeholderGone 连续三拍的争议，经 Claude Code Opus 无工具时间线裁决为不成立——
+`stableSamples>=3` 已保证配置态不弱于无配置，DOM 长度变化时自然重置为三拍 gone，长度不变时两拍
+gone 是原授权语义。完整收据见 `docs/plans/mountdelay-fidelity/review/summary.md`。
+
+本链剩余项全部是 route:human，不是 agent 可自行翻绿的实现尾巴：① 阶段一
+`admission-trust-root-separation` 的人签/真机 execute UAT；② 阶段二隔离浏览器义务的真实 UAT 存证、
+可信签名与迁移机制（已明确延期给后续 `real-uat-attestation` 类契约）；③ mountdelay 真机多次回放、
+`profile.loading` selector/text 与时序标定；④ mountdelay 本次新增冻结验收的 ADR-0004 人签确认。
+单次真机绿不得宣称 flaky 已消除。
+
+主树既有未提交现场（`.gitignore`、三份无关 PRD、`docs/codex/` 等）均为用户/并行工作，合并时未触碰。
+
+## 2026-07-20 活动增量：阶段一（生产/测试信任根分离 kernel 契约）六阶段 done + codex 六轮异构评审 PASS，待 route:human 人签
+
+契约 `admission-trust-root-separation`（kernel/full）六阶段全 done（grill/plan/accept/loop/review/learn），dev 到 `dd09ae7`。给冻结身份准入件加签名进自哈希的必填 `audience` 字段（准入受众 test|production）+ 铸权后启动浏览器前的纯函数凭据上下文门（严格匹配受众与凭据上下文：真凭据 run↔production、无凭据 run↔test，不符 fail-closed 不启动浏览器），机制阻断「测试锁被误指向真 SUT 授权真实改动」。设计=ADR-0010 + `docs/plans/admission-trust-root-separation/`（GRILL/plan/learn）。明确不覆盖（ADR-0010 划界，后续契约）：密钥签名/signerId 认证、不可变发布 manifest 根、receipt 读路复验、撤销、锁绑 SUT/环境 scope——本契约诚实划界为「防误用/泄漏」有界威胁。
+
+codex gpt-5.6-sol high 六轮异构评审 PASS（`docs/plans/admission-trust-root-separation/review/`，入 audit）——kernel 强制层异构评审真挣钱的极强实证。逐轮逼出我 Claude 家族自审看漏的洞 + 我三次自造的假绿/弱证：① 生产门零削弱不成立(锁不绑 --sut) ② SKILL.md:107 冲突 ③ 我用错 grep 标记误报绿+提假绿(已沉淀记忆「判金牌只信退出码」) ④ sign 写路径未迁移 ⑤ compile 假凭据判据 ⑥ W2 没真测门 ⑦ C5b 错误原因假绿 ⑧「无产物≠没启动」⑨ W1b 不证 compile 哨兵。全消解，Medium-4 六轮闭合（浏览器启动哨兵机械化 + 双正控 W1b replay/W3b compile）。
+
+待 route:human（kernel 纪律，交 Steven）：① 冻结夹具/金牌改动的 ADR-0004 人签（3 preflight 夹具重签 audience:test + sidecar golden/schema + 3 敌意夹具 + 新增验收金牌与夹具）；② compile --execute 真机 execute 授权路径端到端 UAT 抽验（audience-mismatch 分支，W3 已覆盖其 hermetic 可执行回归证据）。
+
+
+exec
+/bin/bash -lc "sed -n '221,440p' docs/HANDOFF.md" in /mnt/d/ctx/heren/casey
+ succeeded in 161ms:
+与阶段二关系：本契约独立加固、非阶段二前置（Q1 决策）——阶段二 hermetic 金牌生命周期重裁主力走 zero-SUT、不碰准入门；见 `docs/plans/replay-admission-hermetic-migration/DIRECTION-AFTER-CODEX.md`。下一步：阶段二（金牌生命周期重裁）或 mountdelay-fidelity 续（视基础债方向落地）。主树活契约槽收口后归还 alh-open-entry。
+
+## 2026-07-19 晚活动增量：基础债规模远超预估 + codex 讨论推翻锁绿路径 → 转两阶段方向（信任根分离 → 金牌生命周期重裁）
+
+权威后续方向 = `docs/plans/replay-admission-hermetic-migration/DIRECTION-AFTER-CODEX.md`。本会话把基础债从「5 金牌」推进到坐实真实规模并**转向**：
+
+1. 规模真相：enforcement `9ee2731`→`dfee72c`（2026-07-17）落地未迁移测试套件，把整个 hermetic 浏览器回放金牌套件（约 24 金牌 / 40 prd）打成陈旧绿，非最初发现的 5 个。债务全貌钉死在 `DEBT-REGISTER.md`（18 复签即真绿集 + 12 翻红集 + 7 额外红金牌 sweep 范围）。
+2. codex gpt-5.6-sol high 异构讨论真挣钱（Steven 指示做，`review/codex-sol-strategy-20260719.md`，入 audit）：逮到 Claude 家族自审看漏的四承重问题——① 路 a「生产门零削弱」不成立（测试锁绑 events 不绑 `--sut`、生产 reader 不分测试/生产 signer = 利用既有 trust-root 缺口）；② `SKILL.md:107` 冲突；③ p5 墓碑不该借删两案翻绿；④ mint 工具语义授权不可信。
+3. Steven 2026-07-19 两裁决（AskUserQuestion）：Q1 = SKILL.md:107 fake-SUT 只读规则也约束 dev gate/golden（hermetic 金牌不该被 agent 跑、须按生命周期重裁，非重跑锁绿）；Q2 = 先修生产/测试信任根分离再迁移（codex 荐）。→ 原执行路径（重跑 fake-sut + 注入测试锁锁绿）**作废**。
+4. 正确方向两阶段（各另立契约、均须 Steven 参与，见 DIRECTION-AFTER-CODEX.md）：阶段一 生产/测试信任根分离（kernel 车道：生产 reader 只读不可变发布 manifest、artifact 带不可伪造 audience 分根签、拒测试 signer、绑环境/SUT scope、验 receipt、反向验收测试锁必被生产 reader 拒）；阶段二 hermetic 金牌套件逐个生命周期重裁（(a) 转 zero-SUT 确定性喂冻结 axes/纯裁判=主力出路 / (b) 真机 UAT-only 墓碑 fake-sut / (c) 教义作废墓碑+命名后继，如 p5 drift/vanished：原 story superseded-not-pass + successor PRD + 自愈 liveness 另立）。
+5. 本契约收口姿态：`replay-admission-hermetic-migration` 转调查/决策契约（prd stories 空、方向记 observability）。已做：波0 五核心 prd honest 翻红（保留权威——按 Q1 不得再跑 gate 启动 fake-sut，passes:false 不可撤了重生）；波1 settle 锁绿已 `git revert`（含 mint 工具，codex 判语义授权不可信）；复签 sweep 工具 `tests/_golden/support/resign-changed-goldens.mjs` 保留（生命周期工作仍用）。约 35 个非核心 prd 仍陈旧绿（未翻红）待阶段二清偿（DEBT-REGISTER C 组）。dev HEAD 5df2c17。
+6. mountdelay-fidelity 仍挂起（worktree 存、grill+plan done）：原被基础债阻塞，现基础债转为两阶段大工程、mountdelay 继续排后待方向落地。
+7. 主树未提交现场：`.gitignore` + 一批 prd（M，gate evidence 时间戳漂移）+ 用户未跟踪件（docs/codex/、follow.mjs 等）——别碰别提交。主树活契约槽已归还 alh-open-entry（外部仓 agent-loop-harness 接入，Steven 上下文，与本线无关；本会话曾临时占槽跑 replay-admission-hermetic-migration，收口后已恢复原槽）。replay-admission-hermetic-migration 契约转调查/决策姿态、不走 loop/review/learn 正常流，其完整状态在 `docs/plans/replay-admission-hermetic-migration/`（DIRECTION-AFTER-CODEX/DEBT-REGISTER/prd）与本节，不依赖契约槽。阶段一另立新 slug。
+
+以下为本会话早段快照（其「路 a 锁绿」执行序已被本节转向推翻），只溯源、勿据其判现状：
+
+## 2026-07-19 活动增量：发现基础债——一批浏览器回放金牌 runtime-RED + prd 陈旧绿（semantic-lock 准入门 enforcement 落地未复跑），mountdelay 挂起排后
+
+基础阻塞（亲核坐实）：2026-07-17 提交 `9ee2731`「feat: enforce semantic lock admission gates」→`dfee72c` 落地 semantic-lock 准入门 enforcement——含 mutation atom 的 events 现要求签名冻结锁（`--entity-locks` + 注册 prd checksum，`lib/entity-semantic-lock-preflight.mjs:checkReplayEntityAdmission`，`bin/replay.mjs:238-247`）。合成 caseId 的 hermetic 浏览器回放金牌满足不了 → 一批金牌全 runtime-RED（`FROZEN_ENTITY_LOCKS`）：`p5-replay`/`wf-publish-states`/`replay-settle-mount`/`drawer-lock-hardening`/`replay-nth-visible-hardening`。enforcement 落地时未复跑这些金牌，其 prd 全带陈旧 `passes:true`；`tier1` GREEN 掩盖（不跑浏览器回放金牌）。亲核：`replay-settle-mount.golden.mjs` 主树 9 过/7 红（7 红全 FROZEN_ENTITY_LOCKS），prd evidence 停在 gate@2026-07-14。本会话第三次逮同模式（enforcement/迁移落地未复跑受影响金牌→陈旧绿；前两次 record-intake、supersession）。
+
+Steven 2026-07-19 可点选项决策：先修基础债（另立契约）+ mountdelay 排后。方案已侦察定清并落盘 `docs/plans/replay-admission-hermetic-migration/PROPOSAL.md`（供直接接手）：采路 (a) 测试签名锁注入 + 金牌迁移，不触准入门 kernel——准入读路无 Ed25519/无收据验证/无真 SUT 依赖，只认 结构+内容自哈希+prd checksum，故 hermetic 测试锁可确定性铸造 + 经生产接口合法注册、不削弱生产门（否决路 b hermetic seam：触 kernel、fail-open 缝、违护栏 #14）。分层：简单案（p5-replay/replay-settle-mount/wf-publish-states 静态 events 直接铸锁）+ 摩擦案（drawer-lock/nth-visible compile-driven 非确定性 + 双门，须冻编译产物或拆轨）+ 独立门（p5 drift/vanished 的 deleteByName 死在另一道 binding 门）。陈旧绿先翻红记账再修绿（不手改/不随迁移补绿）。full 车道、非 kernel、不必 worktree。
+
+mountdelay-fidelity 契约挂起（worktree `casey-mountdelay-fidelity`，grill+plan done）：核心设计已亲定并落 `docs/plans/mountdelay-fidelity/plan.md`（settle 加占位门+静止窗兜底、fake-sut 补延迟提交子形态、hermetic/真机边界）。因基础阻塞（原设计驱 `bin/replay.mjs` 红先行的红会是准入门失败而非预期 buttonState 假阴）挂起，基础修好后可直接续实现。
+
+次要发现（纠正 plan/侦察冻结清单不准，实现代理核实）：`lib/replay-settle.mjs` 冻在 0 个 prd（非 1，强化它不用重签）；`server.mjs` 冻 4 个（drawer-lock/p5-replay/replay-nth/replay-settle-mount，非 5——`prd-resolution` 只冻 `resolution.golden.mjs`）；`CONTRACT.md` 冻 3 个（+drawer-lock，非 2）；mountdelay plan B 兜底 `STILL_TICKS=4`（≈480ms）会让 `replay-settle-mount.golden` U3（floorMs 0→waitedMs<300）转红，兜底静止窗须改 opt-driven（裸调用保持 2 拍）。
+
+## 2026-07-18 夜活动增量：obs-cases-isolation 契约收口并入 dev，三金牌主树 DrvFs 稳定绿 + W2 环境敏感挂账连带清偿
+
+`obs-cases-isolation`（full，merge 于 dev）：修三 observation 金牌主树 WSL DrvFs 必红。诊断三层纠偏（初判「扫真实 cases 数据」→「同名残留撞守卫」→ 最终只 supersession 一个真故障，cli-authority/unsafe 被残留连累）；方案两次修正（Steven 批的 rename→copy+自回收被侦察探针推翻——copy 铸新 inode 破坏 T2 身份语义、自回收触双冻结安全 primitive 高风险且不必要）。最终修：supersession `spawnSync` timeout 30s→180s（确定性 ETIMEDOUT 根因，SAFE_V2 9p 跑约47s）+ SAFE_V2 T2 rename/mkdir/rmdir 包有界 retry（新增 `retry-transient-fs.mjs` 吸收 9p 偶发 sharing-violation EACCES，retry 内每次重验身份）。codex 异构评审三轮闭环——逮 High（原属 prd 重签延后）+ Medium（T2 retry 的 check-then-act TOCTOU 窗口，逐个破坏性分支 L302/L304/L286 收干净）→ 全 RESOLVED PASS。不触 kernel lib/bin、不触安全 primitive `canonical-case-lease.mjs`、不改 caseId/active-suite 11/6 契约。原属两 prd（safe-case-lease-v2、observation-runtime-trust-root）同步重签。
+
+主树复验：三金牌全绿（cli-authority 8/8、unsafe 3/3、supersession 从必红 ETIMEDOUT 转 3/3）、零残留；ratchet 4 存量债零新增、tier1 GREEN。**连带清偿**：W2 `prd-cli-authority-wiring-fill` 之前诊断为环境敏感挂账的主树 gate 3/4，obs 修复后主树 gate 复验 GREEN 4/4（其 observability 第 4 条环境敏感诊断条目为历史记录，问题已由本契约根治）。
+
+## 2026-07-18 傍晚活动增量：两契约 codex 评审闭环并入 dev（单元轨 + W2 接线，各真挣钱一 finding）
+
+session limit 恢复后续完两契约，均 codex 异构评审闭环并合并 dev：
+
+1. 单元轨 `semantic-unit-discrimination` 已并 dev（merge `56ff17f` + cert 重签 `dade165`）：判别纯函数剥壳导出面 `compareCandidateFacts`，单元金牌 38/38 hermetic 证判别基元。codex 三轮：逮 High-1 硬门旁路（导出 `allowAction`）→ 剥离重修 → 复审 High-1/Med-1/Med-2 全 RESOLVED PASS。合并点原子重签 cert-closure 冻的 lib sha `4b370340→b7b5a47e`（消解 codex High-2 账实不符）。
+2. W2 接线 `cli-authority-wiring-fill` 已并 dev（merge 于 `dade165` 之后）：intake 补三件套接线 + 两旧金牌对齐 trust-root + record-intake 陈旧绿翻真。codex 两轮：逮 intake TOCTOU High（一致性检查在 append 后、换包时脏包已 committed = 失败留脏账）→ 一致性前置进 authority 原子事务修复（落账前 no-follow 重验、不一致落账前拒、committed ledger 零新增）→ 复审 RESOLVED PASS。并发换包红先行金牌 3/3。
+3. 合并后主树复验诊断（承重，防误判）：W2 gate 主树显 3/4 RED，已决定性诊断为非 W2 回归——s3 的三个 observation 金牌（cli-authority-wiring/unsafe-golden-revocation/active-suite-supersession）环境敏感，扫主树 12 个用户真机 `cases/` 目录时红；换回 W2 前 lib（dade165）跑主树同样全红，红纯是 `cases/` 真实数据、与 authority-root 改动无关。契约树 hermetic 干净 `cases/` 下 gate GREEN 4/4 是有效零回归证明。三金牌 `cases/` 隔离改造挂账另立契约。
+4. 两 WIP 抢救提交已转正：`ffb4433`/`cf9cbc2`（session limit 中断时从 stash 恢复的现场）经主会话验证后各以 `fbca49c`/`3049b52` 转正、随契约合并入 dev。
+5. 异构评审本 session 实证四次真挣钱：cert pi PASS + 单元轨 codex 逮 allowAction 旁路 + W2 codex 逮 TOCTOU + 合并后主树诊断纠偏——坐实「评审家族≠实现家族」+「hermetic 绿≠主树绿，合并后必主树复验」。audit.jsonl 五笔评审入账（两 changes_required→修复→pass 的完整轨迹）。
+6. **下一步**：① 前瞻红基线 `runtime-discrimination-successor`（0/26）真机轨填绿仍待真机运行时权威（route:human）；② 三 observation 金牌 `cases/` 隔离改造；③ mountdelay 保真契约（7/15 头号）；④ 两 WIP 特性（跨平台安装/账户配置）验收后合并；⑤ worktree 卫生（两契约树可清）。
+
+## 2026-07-18 下午活动增量：判别双轨 + W2 接线两契约进行中（session limit 中断，两 WIP 现场已抢救提交，待续接）
+
+三条线全部未合并 dev（dev 停 `f9de8b8`），两个契约现场因 session limit（Perth 3pm 重置）中断、已抢救提交为明确「不可合并」WIP：
+
+1. `semantic-unit-discrimination`（light，worktree `casey-semantic-unit-discrimination`）：兑现 Steven「单元导出+真机双轨」裁决的 hermetic 轨——给 `lib/entity-semantic-lock-v2.mjs` 判别纯函数加只读导出面做单元级攻击金牌。codex 异构评审逮到 High-1（导出 `compareCandidate` 返回 `allowAction:true` = 硬门旁路），Steven 裁「剥离 allowAction 重修」→ 重修 `e481d85`（导出面换剥壳 `compareCandidateFacts`，只出 `status/reason/candidateCount`）→ codex 聚焦复审判 High-1 已消解（RESOLVED），但 Med-1（反滥用静态扫描可被 `.join` 拼接绕）/Med-2（`bindingMode`·`provenance.kind` 未证被 canonical hash 覆盖，可能藏真 fail-open 洞）判 PARTIAL。Med 收尾代理挂在验零回归前，金牌现场抢救提交 `ffb4433`（WIP，未验证）。lib 当前 sha `b7b5a47e`（初版 `4b370340`→`40fd8eb0`→`b7b5a47e`）。
+   - **续接**：确认 Med-2 取证结论（若 `canonicalReceipt` 真没覆盖 `bindingMode`/`provenance.kind` 则是真 fail-open 洞、停手上报改内核另立契约；否则补隔离断言）→ 邻接十金牌零回归 → gate → 纪律②重签 prd 金牌 checksum → codex 复审两 PARTIAL 消解。
+2. `cli-authority-wiring-fill`（full，worktree `casey-cli-authority-wiring-fill`）：W2 接线，对齐现役 trust-root 模型（Steven 裁）——`bin/intake.mjs` 补三件套接线 + 两旧金牌对齐重写 + `record-intake` 陈旧绿翻真（`05573d1`，已核账三 gate GREEN）。codex 异构评审逮到 High（intake TOCTOU：`append` 后才比对、换包时报 exit65 但脏包已 committed = 失败留脏账，违 fail-safe「失败必须干净」）。修复代理触权威内核 `lib/teachin-observation-authority-root.mjs`（append 原子性）+ `bin/intake.mjs`（一致性前置）+ 并发换包红先行金牌，挂在 `git stash pop` timeout、现场从 stash 恢复后抢救提交 `cf9cbc2`（WIP，未验证，自报零回归但未跑完 gate）。
+   - **续接**：验并发换包金牌 exit0（不一致→denied+accepted ledger 零新增）+ 邻接零回归（observation 全套+tier1）+ gate → 报权威内核 lib 新 sha（跨契约共享冻结）→ codex 复审。
+3. 合并点统一动作（两契约各自 codex 复审 PASS 后）：顺序合并回 dev，**原子重签跨契约共享冻结**——`lib/entity-semantic-lock-v2.mjs`（cert-closure prd 冻旧 `4b370340`，须重签到最终 sha，codex High-2 NOT-RESOLVED 即此，合并点消解）+ `lib/teachin-observation-authority-root.mjs`（被哪些 prd 冻结待 grep 清单）；各带 3-way + 全仓 ratchet + tier1。
+4. 异构评审本 session 实证三次真挣钱：cert 收口 pi PASS + 单元轨 codex 逮 allowAction 旁路 + W2 codex 逮 TOCTOU——后两个都是 Claude 家族自实现+自审未抓、跨 codex 一眼看穿，坐实「评审家族≠实现家族」铁律。audit.jsonl 三笔已入账（含两 changes_required 诚实留痕）。
+
+## 2026-07-18 凌晨活动增量：codex 语义锁线核账 + Claude 接管认证漂移收口（已收口并入 dev，merge `bf39d7e`）
+
+1. **三路核账**：codex 自报（7/16 17:03 止）全部属实；其后 codex 又推进约 60 提交至 `observation-contract-closure @ e0ffe16`（语义锁 v2/旁车/wiring 合流，未并 dev）。Claude 攻击式异构评审 PASS（已接线路径无 Critical/High/Medium），档案 `docs/plans/closed-loop-evolution/review-claude-20260717.md`。5 个 P0 防御代码闭合，但认证账漂移：两个 prd `passes:true` 与实跑 gate RED 不符、判别攻击金牌全线红。
+2. **现场处置**：Steven 拍板停 codex、Claude 接管；两处 `/tmp` 未提交特性抢救提交（`902216e` 跨平台安装 / `02f4361` 账户配置）。九个 `/tmp` worktree 重启会丢目录（提交已安全），待 `git worktree prune` 收口。
+3. W1 契约 `semantic-lock-cert-closure`（light）已到 review 门前：worktree `/mnt/d/ctx/heren/casey-semantic-lock-cert-closure`，提交 `9803f73`。分面重证（可达面三金牌全绿：v2 2/2、capability 2/2、runtime-authority 9/9）+ 前瞻红基线 `runtime-discrimination-successor`（0/26 诚实红，收纳被 `819015f` 不可执行姿态挡住的全部运行时判别攻击）+ 三僵死金牌墓碑吊销（收据 `supersession-revocation.json`）+ 五 prd 纪律②重签。gate/ratchet（7 问题全存量零新增）/tier1 全背书；lib 零触碰有 checksum 机制证明。契约 grill/plan/accept/loop 四阶段 done。
+4. **已完成收口（2026-07-18 凌晨续）**：契约六阶段全 done——异构评审改走 pi（Steven 指定：codex 无额度、Grok 包已备未用）：`pi.dev deepseek-v4-pro thinking high --no-tools` 冒烟验通后一次 PASS（七检查域实审，7/16 两次超时挂账清偿），入账 `loop/audit.jsonl`（主树+契约树双份）。merge `bf39d7e` 并入 dev（ort 零冲突；排除两 WIP 特性分支）；主树复验：ratchet 4 存量债零新增（report-model 与 workflow-delete 两处遗产期漂移 + 两安全墓碑永久信号）、tier1 GREEN、cert gate 主树重打 GREEN 2/2。评审包与 pi verdict 存 `D:\ctx\heren\review-packets\`。
+5. **待办（顺序，2026-07-18 凌晨续更）**：① 判别分岔**已裁**（Steven 可点选项）：「单元导出+真机双轨」——判别纯函数只读导出做单元级攻击金牌（契约 `semantic-unit-discrimination` 已开工），接线路径 0/26 保持红等真机权威，「可验证接缝」否决；② W2 接线契约 `cli-authority-wiring-fill` 已开工（填 intake-joint + cli-authority-wiring 两冻结红基线）；③ mountdelay 保真契约排回（7/15 头号，零后续，worktree `casey-replay-settle-fidelity` 留作占位）；④ worktree 卫生已做：`/tmp` 十树与空壳树、cert 树全清，仅剩四棵有主持久树；⑤ 两 WIP 特性（跨平台安装 `902216e` / 账户配置 `02f4361`）待验收后另走合并。
+5. **存量债新观测**：ratchet 7 问题含 `report-model.schema.json` 与 `workflow-delete-causal-binding.static` 两处更早漂移（疑遗产整合期引入，非本轮文件）+ 三个真机产物缺件 + 两个安全墓碑永久信号；`intake-joint` 金牌是真实 intake 接线缺口（非孤儿，保持红）。
+
+## 2026-07-16 活动增量：可信闭环自进化纳入正式计划
+
+Steven 已要求把“形成可以放心使用的闭环自进化”纳入计划。现役入口为 `docs/plans/closed-loop-evolution/plan.md`：在既有 `record → intake → distill` 底座上，补齐身份观察、名称+编号语义锁、候选原子忠实闸、联网真实 SUT 复验、逐用例 HTML/录屏/附件、人签晋升、版本化撤销以及 P6 有界自愈接合。当前不得宣称闭环已完成：语义锁 v1 仍有假 SAME 风险，成功回放到正式 registry 的晋升链和可运行 `casey heal` 尚未落地。
+
+当前执行序：① 语义锁 v2 修掉假一致 P0；② 接入录制后身份对比与回放前复核；③ 候选原子 schema/忠实闸；④ 真实 SUT 回放证据闭环；⑤ 人签晋升与撤销。Claude Code 额度采用风险触发：`fable high` 只做一次安全边界计划审和一次合并前核心 diff 终审；机械接线不重复送审，除非产生新的 HIGH/P0 或关键 diff 改变。
+
+> 以下为 2026-07-21 快照，只溯源、勿据其判现状（`checksum-drift-closure` 据 `docs/codex/HANDOFF.md` 已由 codex 侧收口；最新现状见顶部 2026-07-22 节）。
+
+## 当前状态（2026-07-21，checksum-drift-closure 已 init，grill 待 Steven 裁决）
+
+前序 `flow-bridge-golden-refit`（full，六阶段全 done）收掉 2026-07-17/18 三波信任根收紧（dfee72c 桥闸实体绑定 / 05573d1 intake 三件套 / edea1f9 canonical 固定根）落地未复跑受影响冻结金牌（护栏 #19）留下的六条陈旧绿，全部修夹具侧、生产零改：
+
+1. A 家族（桥闸）：flow-bridge/ingest 金牌补显式 entityBindings + 负向精确拒因 + C17 反向锁；内核 mutant 突变红证（一次性隔离树 baseline 17/0 → mutant 16/1 唯 C17 翻红、主树字节前后 sha 双录一致，`evidence/mutant-proof.md`）。
+2. B 家族（intake-固定根）：cli-mcp-face 重建 MCP intake happy（未降级、台账 generation 2）/ record-distill 改形 + 三列账迁移（C2d→`CAPTURE_URL_LEAK`、C2f/C2h→`CRED_GATE_HIT`，保留 11/迁移 3/丢失 4 挂账 `record-three-piece-producer`）/ authority-root bootstrap-worker 两段式 + 三金牌共用 ephemeral 动态签名 support 件。
+3. C 家族：bootstrap + integrate-regress + p2-intent-compile 三 plan.md 术语正名（改「原子候选」）。
+4. ADR-0004 人签（Steven 三项 + 评审补签两处字节）+ 重签 6 owner + 4 新条目（worker/support）；全 22 prd 复 gate；s4 校验器 `refit-regate-verify.mjs`：39 复gate刷新绿（正面证明）+ 2 恒红守诚实（未违规翻绿）= 41 对账、0 败。人签留痕 `HUMAN-SIGN.md`。
+5. 异构评审 codex gpt-5.6-sol high 三轮 R1 FAIL（人签留痕 / s4 恒红过度声称 / A6 清理孤儿窗口三缺陷）→二次修（撤兄弟反证改诚实标注 + 全文时态归一 + Steven 补签评审后两处字节）→ R3 三缺陷全闭合 PASS（`review/codex-review-{request,reply}-r{1,2,3}.md`）。
+6. task #17 已由 `checksum-drift-closure` 接棒：只读核账确认 2 处真实漏签 + 2 处有意安全撤销，不是四处并发污染；`GRILL.md` 已给 D1/D2/D3 分岔与推荐方案，当前等待 Steven 签认，尚未 advance grill。前序教训见 `docs/plans/flow-bridge-golden-refit/learn.md`。
+
+以下为 2026-07-15 凌晨快照，只溯源、勿据其判现状：
+
+## 当前状态（2026-07-15 凌晨，B/C 双契约收口并入 dev；replay-settle-mount 真机复验暴露修复不足——保真缺口未真补平，需再一轮）
+
+1. B `drawer-lock-hardening`（light）已合并 dev（merge `a65ccca` + 复验 `c5789a2`）：画布三原子域锁跨抽屉硬化，codex∥pi 六轮双路复核逐轮逼真缝到双 PASS——r1 域锁 TOCTOU 漂移窗(2 HIGH)/r2 pin 语义/r3 句柄未闭合(fable 汇裁亲读代码坐实 codex、纠 pi 漏报)/r4 空白归一 MED/r5 纯空白 label fail-open/r6 双 PASS。抗漂移绑定(物理句柄快照+pin 挂点第三闸)+run 态失效+任一可见判定。红先行金牌 G18-G20，全量 39/0。家族差异实证：pi 三轮漏报 vs codex 三轮逮到。
+2. `replay-settle-mount`（full）已合并 dev（merge `e7b3f79`）：回放侧代表步采断言前补有界静默点，修 buttonState SPA 挂载计时假阴（`tc_wf_publish_states` intent_1 真机误判 NEEDS_HUMAN 的根因——编译侧有 quietPoint、回放侧代表步无等价静默点）。小固定下限 250ms（Steven 批准，仅起步垫）+ 复合条件（在途 API 归零 ∧ DOM 两拍稳定）预算 2500ms 对齐编译期 + networkidle 兜底 + 超预算 fail-safe。codex fast 设计审逮真 HIGH（静默点无硬时间上界/I5 金牌矛盾）、实现审逮真 MED（小固定下限吃掉条件预算——你批的垫引入的 bug，fable 独立复现坐实、pi 漏报），r2/r3 修死到双 PASS。fake-sut 加 mountdelay 忠实复现真机接缝。ADR-0009 甲方案第一块保真缺口。
+3. 合并收尾：两契约共改 `fake-sut/server.mjs`——冲突人裁取并集（B 的 twin*/pin* 11 场景 + 静默点 mountdelay/churn，零重叠纯加法）；4 个冻结 server.mjs/CONTRACT.md 的 prd（drawer/p5-replay/replay-nth/replay-settle-mount）按并集实际字节重签。4 gate 全 GREEN（顺序跑避争用 flake）+ ratchet 72 PRD/195 冻结/0 问题 + tier1 GREEN。
+4. 真机计时修复确认——【更正：修复不足，真机仍假阴，需再一轮】：平台 `saveOrModifyProcess` 一度持续 503（两次连撞、机器正确判 SUT_DEFECT）后于 2026-07-15 恢复（返 200）；save 恢复后干净重跑 `tc_wf_publish_states`（run_1784069823273）——`intent_1` 仍判 NEEDS_HUMAN、发布/保存 actual 0，而同用例 `intent_2` 成功点中「发布」（PASS）、按钮在 intent_1 断言后约 2.7s 才挂出。即 replay-settle-mount 的静默点修复没兜住真机计时假阴：静默点接线在、跑了（quiet=true、全程等 8430ms），但条件（在途 API 归零 ∧ DOM 两拍稳定）在发布/保存挂载前就满足放行。根因 = codex 设计审曾提、被挂账的 MED「请求结束但 UI 延迟提交的 SPA 形态未覆盖」：真平台 editorData 请求结束、DOM 在早期状态两拍稳定后才由框架延迟挂载按钮；fake-sut 的 mountdelay 场景是「应答后立即替换 DOM」，未忠实复现此真子接缝——hermetic 金牌绿、真机仍红，保真缺口未真正补平。之前「翻正」是 hermetic-only 的过早结论，特此更正。ADR-0009「真机 UAT 升必过闸」被反向坐实（hermetic 绿不算完成，真机 UAT 逮住残留假阴）。下一步（新 full 契约）：① fake-sut mountdelay 补「应答结束 + DOM 早期稳定 + 按钮延迟提交」子形态忠实复现真机；② 强化静默点条件覆盖「请求结束但 UI 延迟提交」——注意不得读 expected（I4 禁倒着裁），须用域通用信号（加载占位消失 / 更长静止窗 / 变更静默）。挂账：平台 saveOrModifyProcess 一度 503（已恢复，值记账观察是否复发）。
+5. flake 发现（挂账）：drawer-lock-hardening 金牌有条计时敏感检查在 chromium/CPU 争用下偶发翻红（本 session 主题的又一实例）——无争用直跑 39/0，值将来硬化（放宽为 settled 判据主）。
+6. 保真审计程序（ADR-0009 甲）：mountdelay 是第一块补平的保真缺口；剩余 fake-sut 场景（~22 个）逐条对真机采样审计 + 每条回放用例真机 UAT 升必过完成闸——待平台恢复后系统推进。
+7. **未清理债**：B worktree 物理目录删除撞 DrvFs 权限（work 已在 dev、cosmetic 债）；`replay-settle-mount` worktree 待清；隧道 stdio 桥脚本（`scripts/stdio-supply.mjs`/`win-stdio-agent.mjs` + `win-reverse-agent.mjs` 的 CASEY_TUNNEL_HOST 改动）未提交（dev 工具、wslrelay/NAT 挂时的兜底通道，值单独提交）。
+
+以下为 2026-07-14 凌晨快照（提取契约收口），只溯源、勿据其判现状：
+
+## 当前状态（2026-07-14 凌晨，提取契约全收口并入 dev：新 loop 现役，B/C 已在新引擎下恢复执行中）
+
+1. `loop-kit-extract` 六阶段全 done 并入 dev：实现审走 codex sol@medium ∥ pi deepseek-v4pro@high 双路共八轮到双 PASS（round-1 逮 7 条含 3 HIGH：ROOT 认领槽须进程级 `globalThis` 共享、`boot.mjs` 补入 `testChecksums` 冻结面、D5 故障域金牌补行为级——全部红先行修死；末三轮教训：评审记录自身准确性也要被复核）。主会话独立复验（gate 5/5 + tier1 + ratchet + 核心 `bin`/`lib` 零触碰 diff 实证）后合并 `b3a0f64`、主树复验提交 `976a414`（gate 经 `shim`→包 5/5 GREEN、全仓 ratchet 69 PRD/190 冻结文件/0 问题）。提取树与分支已按惯例清理。包仓 `/mnt/d/ctx/heren/loop-kit`@`ea5ed85`。
+2. 待 Steven 终签三项（learn.md 与 prd observability 有账，不阻塞后续）：route:human #5 跨仓棘轮形态确认 / #6 每调用 `kit-lock` 校验性能预算（实测全清单 sha256 约 130-145ms、端到端约 480-510ms，建议预算 150-200ms、禁 mtime 缓存）/ #7 进程唯一 ROOT 对 `node:vm` 场景的范围表述。
+3. B/C 已在新引擎下恢复执行（Steven 2026-07-14 指令：loop 完成即直通 B/C 不再请示）：两树先并 dev 对账（B `f4bae4f` / C `95b44d8`，零冲突，新引擎跨树自锚实证 OK）；编排 v2 `docs/plans/_session-resume/bc-contracts-workflow-v2.js`（对原版打异构硬门补丁：plan 设计审必须真 codex、同族兜底判 blocked——原 `endsWith('PASS')` 放行洞已封）在跑，run `wf_dfd25052-144`，八段到 learn，合并收尾归主会话。
+4. **异构评审硬规则**（Steven 2026-07-13 定，已入记忆与 v2 脚本）：plan/设计评审无兜底、必须异构本尊出结论，不通即 blocked；代码实现审仍允许「全断时诚实末位同族兜底 + 挂账」。
+5. **下一步**：B/C 各自 mergeReady 后顺序合并（3-way 人裁冲突 + 既有 sign 流程重签共享冻结 + 全仓 ratchet 总核 + tier1）→ 改革续 P0-4a/P0-4b（`kernel` 车道契约）。A 真机 UAT 照旧 route:human 挂账。autotester 侧迁移 = 另一有界工作流未启动。
+
+以下为 2026-07-13 深夜快照（提取契约实现期，其「下一步」已被上节完成），只溯源、勿据其判现状：
+
+## 当前状态（2026-07-13 深夜，`loop-kit-extract` 契约收口：`loop-kit` 提取为独立包 + Casey 切换完成，gate GREEN）
+
+P0-3（`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §14 排期）在本次 session 于契约 worktree `casey-loop-kit-extract`（分支 `loop-kit-extract`，lane full，kernel 级加严）落地收口：
+
+1. **包仓落成**：`loop-kit` 通用内核提取为独立包 `/mnt/d/ctx/heren/loop-kit`（兄弟目录，`fresh git init` 不携历史，首提交 `0f34cc0`，出处记 `casey@f9f9019`）——十脚本迁入（8 份字节一致件 + `contract.mjs` 以 Casey 版为准含 `worktree` baton 全套 + `ratchet.mjs` Casey 独有件，除 ROOT 锚定行外逐字节照搬），新增 `lib/root.mjs`（提取后唯一新逻辑：`resolveRoot()` 单点解析 + 原子认领，env 有效必须校验/无效不回退/上溯找根标记/`realpath` 规范化/认领后不可变）。
+2. Casey 侧单提交切换：`loop-kit/bin/*.mjs` 十文件原地换薄转发层（`shim`，由单一模板 `tests/fixtures/loop-kit-expected/shim-template.mjs` 展开生成、逐字比对钉死）+ 新增共享引导助手 `loop-kit/lib/boot.mjs`（包定位 `LOOP_KIT_PKG`/兄弟约定 → `kit-lock.json` 包身份锁全清单 sha256 校验（两定位方式均不豁免）→ env 注入 → CLI `spawnSync` 转发或库模式动态 import + re-export → D5 全故障域降级：cli 类 64/guard 类 2/lint 类 0）。
+3. **红先行铁律走完**：`tests/_golden/loop-kit-extract.golden.mjs`（C0–C7，55 检查）落地前逐条验红——C0 包不存在、C2 全量引擎无视 `LOOP_KIT_PKG`（转发未生效）、C3 异地布局/跨树部分场景、C4 全部故障族（无降级协议）、C5 现文件非 `shim`；C1（API 面）与 C6（三存量金牌非回归）依设计全程照绿。`contract advance accept --red-verified` 之后才动 `loop-kit/bin` 字节；建成后 55/55 转绿。
+4. **切换前观测基线**：隔离测试树逐案录制 26 个命令/hook 用例（`gate --dry`/`contract` 全子命令/`breaker`/`term-lint`/`ratchet`/四 hook 正常路径），原始与规范化输出并存（`tests/fixtures/loop-kit-expected/baseline/`），规范化器（时间戳 + 隔离树绝对路径两条白名单规则）自身入冻结面；C2 每次复跑与此基线整树比对（exit code + stdout/stderr 全文 + 声明写集之外零变化）、含反向扰动自检证明规范化不吞真实差异。
+5. **三存量金牌零重签**：`worktree-baton`/`term-guard`/`ratchet-reverse-index` 三金牌与其 prd 字节等于切换前 git blob 锚（已逐一核验相等）；经 `shim` 复跑，结果与切换前实测锚一致——`worktree-baton` 因自身含一条与「本 worktree 活动 contract slug 恰为 worktree-baton」耦合的既有断言（G6，与本契约无关、字节冻结不可改），本树（活动 slug 是 `loop-kit-extract`）复跑现状是 exit 1，非本契约引入的回归，详见 prd observability 与 `tests/fixtures/loop-kit-expected/baseline/c6-rerun-anchor.json`。
+6. **全量复验**：`loop/prd-loop-kit-extract.json` gate GREEN（5/5 story）；`node bin/casey.mjs selftest --tier1` GREEN；`node loop-kit/bin/ratchet.mjs verify` 除两条与本契约无关的既有缺口外零问题（`cases/tc_wf_history_version`、`cases/tc_wf_publish_states` 的 `expected.frozen.json` 属未入库真机运行产物缺失，早于本契约 commit `24865f4`）。
+7. **文档同步**：`CONTEXT.md` 登记三术语（`shim`/`kit-lock`/观测基线）+ `loop-kit` 词条白话解释更新（已提取、分发形态、route:human #4 取甲不采用 npm 本地路径依赖）；`CLAUDE.md` 新增 Bootstrap 段（包是消费树兄弟目录、任何机器同构；`hook-loop-guard` 缺包/锁失配 fail-closed 会连带拦住修复用的工具调用，恢复须在 hook 触发范围之外人工完成）。
+8. **下一步**：`contract advance loop` → 异构冗余实现审（codex 评 Claude 实现，仅喂 spec+diff+门禁证据，护栏 #9）→ Steven 人签收尾 → `advance learn`。之后排期续 P0-4a（状态引擎）/ P0-4b（gate 分层），均为触强制层的 `kernel` 车道契约。非本契约范围：autotester 侧迁移与其 `contract.mjs` 对齐（另一有界工作流）、npm 本地路径依赖出口（route:human #4 已裁定不采用，如后续确需另立契约）、R2-L1 每调用锁校验性能预算收口（route:human #6 待 Steven 续裁，codex 实测指示值已挂账）。
+
+以下为 2026-07-13 晚（loop 双 profile 改革批准）快照，只溯源、勿据其判现状：
+
+## 当前状态（2026-07-13 晚，loop 双 profile 改革批准激活：PROPOSAL 为唯一设计源、B/C 冻结延后、ratchet 验证器已落主树）
+
+1. **批准落盘**：Steven 显式批准 `docs/plans/loop-dual-profile-reform/PROPOSAL.md` 反转旧决策 ①（B/C 先行）与 ③（本期不建 `state.json`）——B/C 延后、采纳 16 节点 `Durable Workflow State`、该提案为唯一活动改革设计源（批准记录在其 §0，溯源按 §4.2 标 user-asserted）。`loop-ddd-overhaul/DESIGN.md` 与 `loop-orchestration-reform/NEXT-SESSION-PROPOSAL.md` 已标 `SUPERSEDED` 只作历史。中文决策摘要 = `DECISION-SUMMARY.zh.md`；`CONTEXT.md` 登记七新术语（`Execution Profile` / `Durable Workflow State` / `Ownership Lease` / `kernel` 车道 / `Review Receipt` / `Readiness View` / `Fitness Function`），term-lint 0 提示。
+2. **评审链闭环**：Fable 只读仓地架构审 `PASS WITH REQUIRED CHANGES`（HIGH-1 治理取代记账 + MED-1..5 全并入提案文本）→ 聚焦复核四收窄 ACCEPT → codex 事实更正（`countChange` 候选已于 `dbc0d0d` 落地、被当前代码证伪；P0-9 自托管候选改为 intake 时按实时代码/git 历史选定）终态 `ACCEPT WITH FACTUAL CORRECTION`。完整处置账在 `FABLE-REVIEW-DISPOSITION.md`。教训已入工作记忆：backlog 行承重引用前必核当前代码。
+3. 本 session 已落 dev：文档收口 `7a2ce6d`；`ratchet-reverse-index` 只读反向索引验证器合并 `164636e` + 主树复验 `e81ce7f`（gate GREEN 2/2、全仓核验 68 PRD/103 冻结文件/0 问题；该契约六阶段全 done、pi+deepseek 异构冗余评审 round-2 PASS；已按惯例移树删支）。
+4. P0-2 已执行（两子代理并行、各驻一树）：B `drawer-lock-hardening` 冻结提交 `178408b`（fake-sut WIP +33/-3 零字节改动入分支 + plan 产物 + checkpoint 台账，显式非 merge-ready）；C `gen-prompts` 冻结提交 `33c382a`（plan 产物含早间编排中断遗留的 `planreview-material.md` + checkpoint 台账）。两树 baton 保持 2/6、基点仍 `1e3c8cc`（落后 dev 属预期，恢复时按 P1-3 实算分叉）。
+5. 早间 B/C 编排已停（Steven 改序）：Workflow run `wf_25ac75de-8f2` 已停止；B/C 恢复走 PROPOSAL P1（经新 loop），不再直接续跑 `bc-contracts-workflow.js`。
+6. 下一步（按 PROPOSAL §14）：P0-3 loop-kit 提取 vs 显式分叉决策（Steven 拍板、落新 ADR；注意 `gate.mjs` 等 8 份脚本仍与 autotester 字节一致，动它们前必须先定所有权）→ P0-4a 状态引擎 / P0-4b gate 分层（每项单独验收的 `kernel` 车道契约、旧 loop 互锁下执行、隔离 worktree 顺序合并）→ … → P0-12 有界切换。多 subagent/`Workflow` 编排为默认工作法（Steven 2026-07-13 重申）。A 真机 UAT 继续挂 route:human。主树活契约槽 = `loop-reform-p0-docs`（direct，纯文档收口用）。
+
+以下为 2026-07-13 早间快照，只溯源、勿据其判现状（其「先收 B/C」执行序已被上节批准反转）：
+
+## 当前状态（2026-07-13，B/C 在制 + loop 改革方案评审批准：先收 B/C 后启改革）
+
+上一 session（2026-07-13 上午）因 `wsl --shutdown` 根治隧道中继强制重启，A+B+C+D 四线（Steven 拍板全做）中断点如下（执行指令见 `docs/plans/_session-resume/RESUME-2026-07-13.md`，本笔已入 git）：
+
+1. D 归档清理**已完成**：三棵已合并契约旧 worktree 移除 + 十个已核实合并分支删除；保留 `run-convention-claude` 存档分支 + 三 `archive/codex-wip-*` tags。
+2. B `drawer-lock-hardening`（light）与 C `gen-prompts`（full）两棵 worktree **在制**：baton 各 2/6（grill+plan done、产物落盘），`dev..分支` 零提交（Build 被关机丢失，需重起编排续跑）；B 树有未提交红先行夹具半成品（`M tests/fixtures/fake-sut/server.mjs`，续接勿重敲）。编排脚本 `docs/plans/_session-resume/bc-contracts-workflow.js`（8 段，Plan 段读盘幂等，跨 session 重 launch 非 resume）。
+3. A 真机 UAT 卡相位0 关三（wslrelay 隧道数据面），重启后按 `docs/runbooks/real-uat-runbook.md` 重拉标准隧道；route:human，需 Steven 在场。
+4. loop 编排改革两份文档评审毕、Steven 批准（2026-07-13）：`docs/plans/loop-ddd-overhaul/DESIGN.md` = 唯一设计源；`docs/plans/loop-orchestration-reform/NEXT-SESSION-PROPOSAL.md` = 评审后执行摘要（内含 Claude 方案审查 HIGH×4/MED×6/LOW×4 与批准记录七决策）。要点：B/C 先行；护栏 #18 不推翻（无共享 registry/自动 merge queue）；扩展现有 contract 台账、不建 `state.json`；强制层（gate/contract/hook/term-lint/签名写路径）改动按 kernel 治理；默认 2 限界上下文；round-2 只 HIGH/MED 强制；backlog drop 须 Steven 确认。
+5. 本 session 执行序：Phase1 文档收口（本笔）→ Phase2 重起 bc-contracts 编排收 B/C → Phase3 主树落**只读** ratchet 反向索引验证器（light 契约，不写 testChecksums/passes/签名，批量重签写面=未来单独 kernel 契约）→ Phase4 顺序合并收尾（人裁冲突 + 既有流程重签 + 验证器全仓总核 + tier1 + 刷新交接文档）→ Phase5 改革按 DESIGN.md Phase 1 范围正式立项（16 节点迁移不并入、另行提案）。
+6. 未提交现场保持不动：`M .gitignore`（Steven 的）+ `M loop/prd-selftest.json`（gate 时间戳漂移、不并提交）+ `docs/codex/`（并行 codex 会话产物）+ `docs/plans/regress-strategy/`、`docs/plans/usability-audit/` 草稿。
+
+以下为 2026-07-10 快照，只溯源、勿据其判现状：
+
+## 当前状态（2026-07-10，三契约 + 漂移收口合并回 dev：画布第五原子 setNodeField + replay-nth 硬化 + regress scope A + 两处既有漂移收口）
+
+本 session 承接上个 session 起好的三棵 codex worktree 在制品，走「Claude 补齐/评审 + 多 subagent 编排 + codex 异构评审 + 协调合并 + 全量复验」，三契约 + 一漂移收口契约齐落 `dev`（`68f1fe0`→`ff73011`）。dev 全量复验绿：全仓 115 条 ratchet 全 MATCH + `selftest --tier1` 裁判零 LLM GREEN。落地清单：
+
+1. `wf-set-node-field`（light，画布第五原子 `workflow.setNodeField`，merge `6f021a4`）：节点抽屉按 placeholder 填值（域锁 `.hr-drawer__content-wrapper` 内 `getByPlaceholder` + nth + 填后 `inputValue` 精确回读身份门）+ 专用回放门 `doSetNodeField` + fake-sut 字段夹具，`COMPILE_KNOWN_ATOMS` 17→18。codex-sol@xhigh 异构冗余评审揪出 HIGH（显式非法 nth 静默降级 index0 fail-open——我 subagent 补齐时照抄了旧写法）+ 3 MED 硬化，红先行修毕。原 codex 半成品 impl 因误判被弃、由 Claude subagent 从冻结 spec 全新实现（详见历史层教训）。
+2. `replay-nth-visible-hardening`（light，merge `cb084aa`）：`selectNodeDropdown` 同域三修（非法 nth 硬阻断 fail-closed / 触发器域锁补 `:visible` / fake-sut 注释订正）+ 编译门 `waitFor` 时序修（codex 自查 F2、恢复两门同刻）。codex 实现→Claude 3 视角异构冗余评审（fail-safe / golden 真伪 / 时序对称）2 CLEAN + 1 弃用词订正。
+3. `resign-drift-closure`（light，`791cef1`）：收口八契约遗留两处「共享冻结文件只签一处」的 ratchet 漂移——① `p2-verdict` 陈旧夹具 `verdict-cases.json` line42 `fallback_first`→`ambiguous`（resolution 收敛漏改该 sha256 冻结夹具，致 `ambiguous_action` 落 INDETERMINATE 非 AMBIGUOUS_ACTION）+ 重签 `prd-p2-intent-compile`；② 重签 `prd-mcp-parity` 的 `cli-mcp-face.golden` checksum（casey-doctor/distribution 改金牌加 EXCLUDED 漏签它）。红先行 `p2-verdict.golden` RED→GREEN(8/8)，`gpt-5.6-terra`@max 异构评审零 findings（网络提断未盖形式化章）+ Claude 亲核 + Steven 人签（触裁判内核冻结面 ADR-0004）。
+4. `regress-promptset`（full，merge `0333f83`）：regress scope A 数据驱动被测参数 overlay（N 行 prompt 灌进一条冻结 chat flow 参数槽展开成 N caseId）+ 内置注入向量库 `prompts/_lib`（boundary/security）+ 多用例聚合报告。铁不变量：裁判零 LLM/冻结核零改——content-match（软期望）只作报告 soft 黄标、绝不进裁判进程、绝不判红；`verdict.mjs` 字节未改。codex 实现→Claude 3 视角评审（裁判纯度 CLEAN + 正确性 MED `report.mjs` 聚合非确定性 + spec-golden），round-2 修毕。
+5. 合并收尾三笔：B+D 合并后重签 `prd-replay-nth-visible-hardening` 的 server.mjs checksum（`2481309`）；C 合并收尾重签 `prd-seams-freeze` 的 report-model.schema.json checksum（C 兼容加 promptset 报告块 40+/0-，seams-freeze 金牌不变量全过，`89b29e3`）；B 的 codex-sol MED#2（域锁跨抽屉边界）补挂账进 observability（`ff73011`）。
+
+本 session 关键教训（已并入准则）：合并收尾必跑全仓 ratchet 总核（遍历每 prd testChecksums 对实际文件 sha256）——逮出 3 处「共享冻结文件只在一个 prd 重签、漏签另一个」的复发债（D-prd server.mjs / prd-mcp-parity / prd-seams-freeze），单靠各 prd 的 gate 逮不到跨契约漂移。异构冗余评审真挣钱：codex-sol 逮出 Claude 实现的真 HIGH。**过程踩坑并诚实纠正**：曾把「codex 昨晚做完没提交」误判成「停摆」而误起 Workflow 重实现，wf-set-node-field 的 codex 原 impl 因此被弃（spec 蓝图未丢、由 Claude subagent 全新实现顶上，功能等价）；崩溃两次（内存泄漏）都从 git + 磁盘恢复零丢活。
+
+活契约槽（主树）= `resign-drift-closure`（六阶段全 done、baton 空闲，下一契约直接 `contract init`）。未提交现场：`M .gitignore`（Steven 的）+ `M loop/prd-selftest.json`（无关 gate 时间戳）+ `?? docs/codex/`（并行 codex 会话的 handoff 功能产物、别碰）+ 两草稿目录。codex 升级到 0.144.1（走 GitHub release 手动装，chatgpt.com 在 WSL 抖动），异构评审可用 `gpt-5.6-sol/terra/luna`@xhigh/max。
+
+**下一步**（详见 `docs/NEXT-SESSION.md` 下一步节）：A 真机 UAT（route:human，最高优先，需 Steven 在场 + 隧道 + `.auth`=autotest）/ B 画布三原子域锁硬化契约（MED#2 挂账）/ C regress gen-prompts（scope C LLM 合成，刻意延后）/ D 归档分支清理。
+
+---
+以下为 2026-07-09 晚快照，只溯源、勿据其判现状：
+
+## 当前状态（2026-07-09 晚，「全做」易用性+分发一趟并行落地：六 A-契约 + 画布第四原子 + 裁判词表统一，全合并回 dev）
+
+本 session 走大规模并行（`worktree` fan-out 起草 + subagent 各驻树实现 + `Workflow` 编排逐契约收口评审 + 协调合并），把排队的候选契约与两个新契约一趟落地、全部合并回 `dev`（`b4f5c27`→`44df070`）。dev 现干净：只剩 Steven 的 `M .gitignore`（别动别提交）+ `?? docs/plans/usability-audit/`（母审计草稿、非契约）。八契约 + codex 的 `run-convention` 齐落，逐一 gate 复验绿（各契约 prd + `cli-mcp-face` 全 GREEN、`selftest --tier1` 裁判零 LLM、全部判内核/画布金牌 exit 0）。落地清单：
+
+1. `run-convention`（light，`b4f5c27`，codex 实现）：`casey run <caseId> --sut` 缩八旗标为 `caseId` + `cases/<caseId>/` 约定布局解析（显式旗标恒赢）+ caseId 穿越守卫 + `AT_CASES_DIR` 锚仓根防 cwd 漂移。**两处各做了一份**（并行 codex 会话 + 本会话）——DeepSeek 三轮评审的 codex 版多修了 `AT_CASES_DIR` cwd 漂移（本会话版有同款隐患），Steven 拍板取 codex 版落 dev；Claude 那份（含 HIGH 穿越修 + 红先行金牌 A9）存档在分支 `run-convention-claude`、没丢。
+2. `mcp-parity`（light）：`MCP` 面补 `casey_record`/`casey_intake` 两工具（14 工具）+ 版本单源（`serverInfo.version===package.json.version`）+ 新增 `CLI⊆MCP` 覆盖断言（switch 派生命令集 − `CLI_MCP_EXCLUDED` 须各有 `casey_*` 工具）。keystone——doctor/distribution/集成修都往 `EXCLUDED` 加各自 CLI-only 命令。
+3. `ingest-scaffold`（full）：`casey scaffold-case <caseId> --from-text` 相0 前段脚手架——自由文本零 LLM 包成 schema 合规候选骨架（`source.kind:'freetext'` + 单条 `route:human` 占位步、不臆断切分），开箱过 `parseTestCase`，供 CLI 外 LLM 归一后经 `ingest` 重新入场。CONTEXT 登记三术语（归一脚手架/候选骨架/归一提示模板）。
+4. `casey-demo`（light）：`casey demo` 零真机零凭据（需 chromium）出一份自包含 `PASS` 样例报告——`scripts/sample-report.mjs` 提升为 `bin/demo.mjs` + 门面 + skill/README 自然语言入口。
+5. `casey-doctor`（full）：`casey doctor` 跨平台就绪自检——纯函数层（零 fs/spawn/os）+ 采集壳分离，逐项查 node/playwright/字体/凭据·site.json/隧道，OS 分支修复建议，零凭据值零目标地址（哨兵夹具实证）。
+6. `distribution`（light）：`casey mcp-config --agent <claude|codex>` 自适应挂载配置打印（`PROJECT_ROOT` 派生、无盘符硬编码、serverAbs TOML/shell 转义）+ 仓根 `AGENTS.md` 分家接入 + `docs/runbooks/onboarding.md` 跨平台上手。
+7. `wf-select-node-dropdown`（light）：画布第四原子 `workflow.selectNodeDropdown`——节点抽屉「请选择」下拉 `click`+`nth` 承载（零冻结 `events.schema` 改，`COMPILE_KNOWN_ATOMS` 16→17）+ `doSelectNodeDropdown` 域锁回放门 + 点击身份门（缺 option 多选项浮层绝不点首项、返 `ambiguous`）。
+8. `resolution`（full，触裁判内核）：多匹配 `resolution` 词表统一——裁判识别端 `verdict.mjs` + `report-model.mjs` 一手同步收敛到 CONTEXT 登记词 `ambiguous`（多匹配 → `AMBIGUOUS_ACTION`）+ 三门 emitters（compile `multi`/replay `fallback_first`）收敛 + 删识别端幽灵 `coord_fallback`（run-history 诊断可表征锁保留）。fail-safe 不破（A2/A3/A4 golden 钉死多匹配≠PASS/SUT_DEFECT）+ 裁判零 LLM 不破（`verdict-purity-guard`），Claude 亲核 + codex 评审双 CLEAN。
+
+**异构评审真挣了钱**（gate 全绿的契约里逐个揪出真 bug、红先行修死）：run-convention 路径穿越（HIGH）+ `AT_CASES_DIR` cwd 漂移、`wf-select-node-dropdown` fail-safe 假绿（HIGH，缺 option 误点首项返 unique）、distribution 路径转义、ingest-scaffold output-seal 路径回显、casey-demo 注释违 GRILL D6。另有批一合并集成缝：`scaffold-case`/`demo` 需进 `cli-mcp-face` `EXCLUDED`（各契约单树皆绿、合到一起 `CLI⊆MCP` 断言才逮到）；终版 `EXCLUDED` 九项，三次冲突逐个 3-way 解 + 重签 `prd-cli-mcp-face`。
+
+活契约槽（主树）= `run-convention`（六阶段全 done、baton 空闲，下一契约直接 `contract init`）。八个已合并契约分支保留为存档（`git branch -d` 可清、work 已在 dev 史）。本仓无 git 远端。
+
+本 session 新锁工程纪律：① 长链条走确定性编排（ultracode/`Workflow`；`CLAUDE.md` 新增「开发工作法」节、Steven 定）——多契约并行落地 + 逐个异构评审 + 分波合并这类别手派一堆 `Agent` 自己盯。② 协调合并手法：跨契约共改冻结金牌（如 `cli-mcp-face` `EXCLUDED`）走顺序合并 + 3-way 解冲突 + 合并后重签 + 全量复验，绝不各合各的撞多次。③ 栈式起树：依赖契约（doctor 栈 mcp-parity、distribution 栈 doctor、resolution 栈 D）栈在栈父 `worktree` 分支上起，避免并行改同批文件冲突。
+
+以下为 2026-07-09 早段快照（示教兜底人录收尾 record-intake+distill + worktree-baton），只溯源、勿据其判现状：
+
+本 session 三笔提交入 dev（`46ae7a3`→`ef94da4`），活契约槽 `worktree-baton` 六阶段全 done、baton 空闲，下一契约直接 `contract init`（或起 worktree 并行，见下）。工作树仍剩 Steven 的 `M .gitignore`（别动别提交）+ 七个未跟踪 `docs/plans/` 草稿目录（run-convention / mcp-parity / casey-demo / casey-doctor / distribution / ingest-scaffold / usability-audit——排队的候选契约、未入 git）。收口清单（按提交序）：
+
+1. `record-intake`（full，`46ae7a3`）：示教兜底第二契约——`casey intake` 入账安全复核闸 + append-only 入账台账（`intake-ledger.jsonl`）。跨族异构冗余评审 codex R1-R9 九轮逐类真发现全采信、红先行修死：TOCTOU 换包假背书 / 中文敏感字段绕英文凭据门 / URL 判据漏 IPv6·非白名单 scheme / `normConverge` %HH+反斜杠归一到不动点普适前置每道检查 / schema 三层闭合白名单 + `hasDuplicateKeys` 重复键 tokenizer / symlink 四段守卫 / 凭据门 raw+canon+decoded 三扫。R10 formal PASS 撞 codex 后端 outage 挂账，同族 fresh-eyes 兜底 backstop 补跑（非跨族、信任非对称，audit 两条）。
+2. `record-distill`（full，`4bce3a5`）：示教兜底第三契约——`casey distill` 把已入账 capture 零 LLM 全 pending 投影成候选流程（候选 `source.kind:'json'` 降权、绝不 signed/replayReady/直通回放）+ intake→distill `captureSha256` TOCTOU 硬门（`verifyIntaken`：NOT_INTAKEN/CAPTURE_SWAPPED + 当前字节重跑 reviewCapture）+ 采集忠实闸 `validateCaptureFidelity`。跨族 codex R1-R3 PASS（--verify 绕 TOCTOU / 写盘半份·路径泄漏 / 忠实闸抛 三发现 + 同族补 F4 超深编码凭据不收敛 `!converged` fail-closed，红先行修死）+ 同族 backstop corroboration。示教兜底人录三环 record-capture→intake→distill 全建。
+3. `worktree-baton`（full，`ef94da4`）：解 roadmap v3 §二「单活契约 baton 真天花板」——实证每 git worktree 各有独立 baton（`active-contract.json` 与熔断态 gitignored、每树一份、互不共享），N 路并行 = N 棵 worktree、零机制改动。只加 `contract list`（跨树 read-only baton 总览）+ `contract worktree`（起树脚手架：slug 校验 + slug 全局唯一硬拒 + 落点仓库内部守卫 + git worktree add + 立 baton + 部分失败回滚）+ 六纯函数；`hook-loop-guard.mjs`/`breaker.mjs`/现有 init·advance·check·show 逐字节零改。否决共享池（背离 worktree + 设计红队 1 High+4 Med）。跨族 codex R1-R5 PASS（F1 路径 containment 深洞逐轮深挖五轮：词法守卫→软链父目录别名→`..name` 谓词假阴→深祖先投影→canonical 单点 guard==git==baton；R5 实测 point-4 无污染判 false-positive）+ 同族 backstop PASS。文档：CONTEXT 三术语 + GUARDRAILS #18 + `WORKTREE-PARALLEL.md` 手册 + roadmap v3 §三刷新（「解锁前提」bullet）。
+
+并行开发已解锁（本 session 关键基建）：碰 `lib`/`bin` 的多契约真并行落地现走 worktree——`node loop-kit/bin/contract.mjs worktree <slug> --lane full --reason "…"` 起一棵、`contract list` 跨树总览、各树自绿后 git-native 合并回 `dev`（绝不 `cp` 进 `lib`/`bin`）。取代旧「单活契约 baton 天花板」（下方 337 单 baton 教训已过时，见其更新与护栏 #18）。
+
+以下为 2026-07-08 下午—晚快照（示教兜底人录首环 + 用户易操作文档 + P7 报告五增量收口），只溯源：
+
+本 session 八笔提交入 dev（`bb0ee3c`→`d9a39df`），活契约槽 `report-workflow-structure` 六阶段全 done、baton 空闲、下一契约直接 `contract init`。工作树仅剩 Steven 的 `M .gitignore`（别动别提交）。收口清单（按提交序）：
+
+1. `record-capture`（full，`bb0ee3c`）：示教兜底人录第一契约（战略 item 1）——`casey record` CLI + `lib/record-capture.mjs` 产安全示教录制包（`signed:false`/`replayReady:false`/`distillRequired:true` 硬不变量、全文过凭据门 + host 安全 URL 投影、脏事件拒写不留半包）。codex 自评标 done、但 audit 写「非正式异构待补」即不算数，Claude 补跑正式异构冗余评审：三视角 fan-out 子代理揪 3 High（host 泄漏 ws/blob/协议相对/query 内嵌绕过 scrubUrlLike、caseId 路径穿越无守卫破 draft.mjs:42 先例、中文敏感字段 密码/验证码 明文）+ 3 Med（形态 fail-closed / 裸旗标 / stderr 路径回显），红先行全修毕。
+2. 用户易操作线文档（`62ad838`，战略 item 3）：SKILL.md 自然语言操作面 + 两 runbook（报告输出要求 / 真实 0 error 用例现状）+ `verify-zero-error-report.mjs`；`report-spec.md` §3 codex 加的报告新需求经异构核为文实不符（report-model/renderReport 未落地）→ 记进「目标态、尚未实现」对账表（errata）。
+3. P7 报告五增量（各六阶段全契约、红先行金牌、缺字段零行为差不动共享 fixture、codex 跨族异构冗余评审 PASS）：`report-nl-atomic`（`0719919`，naturalLanguage + atomicSteps）+ 对账表收缩（`ed3e6ea`）/ `report-video-block`（`8f7bcf5`，回放录像块）/ `report-cleanup-evidence`（`6267dff`，清理证据块 surface countChange 删前后命中数）/ `report-workflow-structure`（`1ad0702` + 跨族复审补强 `d9a39df`，工作流画布结构块，#11 诚实收缩为三类：节点/连线/节点配置覆盖判 + 空/半成警示）。report-model 报告块从 0 到 5；report-spec §3 六项报告块落五，余 #12 变量默认自定义属编译/草拟期规则、非报告渲染（对账表标明）。report-workflow-structure 因 codex 撞额度先走末位同族兜底评审、额度回来后补正式跨族异构冗余复审（audit 两条：末位条 + 取代它的正式条），挂账清。
+
+以下为本日早前快照（wf-open-node 画布第三原子收口 + 隧道 agent 修复 + 战略重排，只溯源、勿据其判现状；其「下一步 item 1 人录 / item 3 用户易操作」均已由本 session 收口）：
+
+意外关机三连后从会话转录（`ade30962`）恢复现场，补跑评审、收口画布第三原子。两笔提交入 dev，baton 空闲、下一契约直接 `contract init`：
+
+1. `wf-open-node`（light，`657556a`）：画布第三原子 `workflow.openNode` 建成（`COMPILE_KNOWN_ATOMS` 15→16）——单击节点中心开配置抽屉（GRILL D1 单击定案、Steven 拍板否决 HANDOFF「双击」笔误）+ `doOpenNode` 专用回放门（`.lf-canvas-overlay` 域锁 + 域内唯一才点 + 缺席守卫 + 抽屉可见含【精确】标题双证回读）+ `compileWorkflowOpenNode` 编译门同刻 + fake-sut 抽屉夹具。例翻四金牌集 15→16 + 五 prd 重签。评审补跑（关机丢了原评审）：codex 正式异构 FAIL 3 发现 + Claude 五视角 + DDD 视角（Opus 4.8 重跑）。修两真缝——F1（High 抽屉回读子串 `hasText` 假绿：「模型节点副本」含子串被判开对 → 改精确 `filter({ has: getByText(label, exact) })` 两侧同刻，堵「点了没开/开错抽屉」两向假绿）+ F3（Med 缺反面覆盖 → fake-sut 加场景 `drawersuperset`/`drawernone`（弃 URL query——replay nav 走 `pathOf` 剥 query）+ 金牌 C3e（开错抽屉 F1 红证）/C3f（点了不开）+ C3a blocker 收紧）；证伪 F2（编译门=回放门，两 helper 都 `getByText(exact).first()` 同门）+ DDD「未登记新概念」（双证/域锁是点击身份门实例化）。红先行 C3e 改前红改后金牌 9/0；回归八金牌 + tier1 全绿；gate 两 prd GREEN。
+
+2. 隧道 agent 修复（`3d7513c`，dev 工具非产品链路）：反向隧道 Windows 代理连接风暴修复——失败 socket `error`+`close` 双触发把连接池计数 `live` 减成负数 → `fill` 无限开连接耗尽端口打瘫整机网络（含 Clash）。修：一次性 `settled` 守卫 + 失败重连逐步退避（500ms 起、封顶 10s）。沙盒红绿：旧 2.5s 16376 次尝试 `live=-8184` → 新 8s 40 次 `live` 恒正常。隧道现关着、收口不需它。
+
+3. 战略重排（Steven 2026-07-08）：真机 bring-up / 拉隧道那类 route:human 真机趟（含 openNode 真机保真度复核），优先级**低于** item 1 兜底（人录）+ item 3 用户易操作——先做 1 和 3、真机趟往后压攒一趟合并跑。
+
+4. 挂账另立 full 契约（触裁判内核，DDD 视角揪出）：resolution 词表统一——CONTEXT 登记 `resolution` 枚举 + 裁判 `verdict.mjs`/`report-model.mjs` 认已登记的 `ambiguous`（多匹配 → AMBIGUOUS_ACTION）+ 删幽灵 `coord_fallback`（无门吐）+ 统一多匹配字面量口径（compile `multi` / replay `fallback_first` / openNode `ambiguous`）+ 补金牌钉 C3d `reason===AMBIGUOUS_ACTION`。fail-safe 现不破（多匹配仍 NEEDS_HUMAN、仅子类退化 INDETERMINATE）。根因：doOpenNode 是第一个说出 CONTEXT 已登记词 `ambiguous` 的门、反被裁判丢弃。
+
+下一步（按 Steven 优先级）：① item 1 兜底人录（record-capture/intake/distill，参考 autotester；最小应急脚本随关机清、需重建）；② item 3 用户易操作（cli/mcp/skill 说清输入/结果位置 + 如何入 git + 如何接入各家 coding agent：claude code/codex/pi）；③ resolution 词表 full 契约；④ 真机 bring-up 趟（route:human，压后）。
+
+以下为 2026-07-07 下午—晚快照（真机合并行程首航 + 画布两原子 + 两 C 线契约 + 并发 connectNodes 补收口），只溯源：
+
+本 session 五笔提交入 dev，baton 空闲、下一契约直接 `contract init`：
+
+0. `wf-connect-nodes`（full，`efaa41a`）：并发 session（codex 实现）补收口——`workflow.connectNodes` 画布连线原子（`COMPILE_KNOWN_ATOMS` 14→15，复用 `dragTo` 不扩枚举 + `doConnectNodes` 专用回放门按 `ev.atom` 分发 + `.lf-edge` +1 身份回读）+ `addNode` `expectedNodeDelta` 精化（真并行网关开始 +2）+ fake-sut 连线夹具。codex 已把实现/金牌写对、真机验过，但六阶段治理未走：无契约、四棘轮 prd 未重签（golden 改了 checksum 漂移、gate 必红）、无端到端连线金牌。Claude 侧补：契约台账 + 端到端金牌（8 检查填覆盖缺口）+ 四漂移 prd 重签 + 修 codex 两健壮性缝（F1 `nodeBoxByLabel`/`workflowNodeBox` 两处 `waitFor` 未守卫→节点缺席崩整轮回放/无诊断 exit 1；F2 目标缺席无 blocker→加三分支预检替 `ox`/`oy` `:0` 兜底）。评审归属反转：codex 主实现→Claude 侧对抗评审（异构原则实现方≠评审方避同族自评），四主线交叉核验 PASS。画布维度现两原子（addNode + connectNodes），R9 余量 openNode/setNodeField 等续建。
+
+exec
+/bin/bash -lc "sed -n '1,120p' loop/GUARDRAILS.md && sed -n '1,180p' README.md" in /mnt/d/ctx/heren/casey
+ succeeded in 0ms:
+# GUARDRAILS — 护栏清单（Casey）
+
+> 永不可违反的约束。每条标注执行方式（[enforced:由谁] / [prose]）与它编码的假设——模型升级时逐条审计假设是否过期。
+> [prose] 条目是欠账：能转为确定性检查的应尽快转。
+> 1–12 迁移自 autotester（loop-kit 通用子域）；13–16 是 Casey 核心域新增，守「LLM 驱动但裁判零 LLM、fail-safe 不 fail-open」的内核。
+
+1. **[enforced:gate]** 验收测试与 golden 存档冻结：`prd.json.testChecksums` 校验不符 = 直接红，无论测试本身过没过。
+   假设：模型会修改测试让其变绿（Test Ratchet / 奖励钻营）。
+2. **[enforced:gate]** 完成判定只认可执行规格的 exit code；任何「我已完成/已验证」的自我报告不作数。
+   假设：模型会声称未验证的工作已完成。
+3. **[enforced:breaker]** 迭代上限 20 / 连续 3 轮零进展 / 同错 5 轮 / 8 小时——任一越限即熔断写 Inbox。
+   假设：无停止条件的 loop 会空转烧钱。Casey 回放/自愈 loop 的「零进展」改喂每步进展哈希（非 git HEAD）。
+4. **[enforced:hook+gate]** 统一语言白名单（ADR-0005）：弃用别名与未登记加粗英文术语 = 红。
+   假设：散文纪律约束不了模型命名行为。
+5. **[enforced:gate]** 冻结断言契约只读、自愈非就地：人签后的 `expected[]` 改动 = Test Ratchet 判红；自愈绝不就地改 spec/断言，只写漂移补丁旁文件、人签后才应用（spec 指纹另由 gate 检查项守）。
+   假设：自动重建/就地重锚会冲掉人工语义评审成果、把会变动的靶子抹成假绿。
+6. **[prose→待enforced]** loop 在真实环境创建的一切实体必须带 Reserved Prefix `atl_`；回放期实例化、绝不冻成字面量。
+   假设：变更类回放中途失败必留残留，共用环境他人数据不可误删；冻成字面量第二次必撞或假红。
+7. **[prose]** `.auth/` 与 `site.json` 内容不得出现在任何输出、日志、commit、报告中；报告落盘前过凭据兜底门。
+   假设：凭据泄漏不可逆。
+8. **[prose]** auth/计费/安全类代码改动一律走 Escalation Path 给人，不进无人值守 loop。
+   假设：这类 bug 不出现在单元测试里，出现在事故报告里。
+9. **[prose]** review 道输入只含 spec+diff+门禁证据，不含实现者推理过程。
+   假设：实现者的叙述会把锚定偏差传染给评审者（同族合谋的变体）。
+10. **[prose]** 任何模型（含 Codex）产出一律过 Quality Gate，无直通仓库权限（"Read, write, propose"）。
+    假设：任何模型的产出未经确定性验证都不可信，与家族无关。
+11. **[enforced:hook]** 阶段互锁（Loop Contract）：每阶段交付物缺失时，下一阶段的工具动作被 `hook-loop-guard` 拦——写 prd 需 plan、改 `lib`/`bin`/`web` 需冻结的红测试（accept）、提交实现需门禁绿（loop）；任何实现编辑/提交前必须先 `contract init` 声明入口分流。
+    假设：模型会「需要 loop 时不走 loop」——跳过 grill/门禁/异构评审直接动手。
+12. **[enforced:hook+gate]** 中文一律标准简体，禁繁体：`term-lint` 繁体检测命中即红，走 Stop hook + PostToolUse hook + Quality Gate。`term-lint:allow` 行豁免。
+    假设：模型偶发把简体误写成繁体；散文提醒约束不住用字，必须机制兜底。
+13. **[prose→待enforced]** 自愈准入门：自愈只对正向确证的 `HARNESS_ERROR` 开闸；`SUT_DEFECT` 与 `NEEDS_HUMAN` 一律拒绝自愈。缺取证 ≠ 工装错。
+    假设：真 bug 表现成「元素不见了」时，若默认成可自愈会被悄悄抹平——这是最危险的假绿（design §10）。
+14. **[prose→待enforced]** fail-safe 不 fail-open：机器只能终判 `PASS` 与有取证背书的 `SUT_DEFECT`；凡证不出的一律路由 `NEEDS_HUMAN`，绝不默认成可自愈或自动记缺陷。catch-all 默认是 `NEEDS_HUMAN`。
+    假设：未知失败若 fail-open 会被洗成绿或假缺陷，操作员学会无视 verdict、信号自毁。
+15. **[prose→待enforced]** 裁判零 LLM、与自愈分进程：多态裁定由零 LLM 的 `verdict.mjs` 出，自愈（LLM）是它的下游消费者，不得反向进入裁判进程。`actionPerformed` 经点击身份门判定、取证按请求发起方归因（非时间窗）。
+    假设：让 LLM 进裁判进程会把真 bug「重锚」成绿；按时间窗归因会让背景轮询 401 翻 verdict。
+16. **[prose]** gate 绿 ≠ 完成：冻结断言须经人签门才算数，需求完成以人签真机 UAT 为准（gate 是必要非充分）。
+    假设：可命令化的验收测不到语义正确性（用例是否真表达意图、真站是否真 bug），这些必须人裁。
+17. **[prose→待enforced]** 裁判按断言种类不可知：`verdict.mjs` 消费已判好的 `StepAxes`，对 `postAssertions` 只 AND 硬断言的 `ok`、忽略 `soft`，绝不按 `kind` 分支；取证缺失子字段当「本步无此特征」、不报解析错；断言 `kind` 的枚举只在 `check.mjs` 一处。
+    假设：若 `verdict.mjs` 按 kind 分支，每加一个新维度（对话/发布/画布）都要改裁判内核、重开 accept，飞轮的加法式复利失效；新 kind 应只加 `check.mjs` + 加 golden（岔一，2026-06-29 锁）。
+18. **[prose→待enforced]** 并行工作树纪律（worktree-baton）：多路并行开发碰 `lib`/`bin` 用 git worktree 隔离，每棵树各一独立 baton（`active-contract.json` 与熔断态 gitignored、每树一份、互不共享）——不建共享池、不加 `LOOP_CONTRACT_FILE` 选槽或 `breaker --state`（引入即背红队 1 High + 4 Med）。`contract worktree <slug>` 起树时 slug 全局唯一硬拒（已占用 `loop/prd-<slug>.json` 或 `docs/plans/<slug>/` 即 exit 3），防同名 baton 骑另一 baton 的 gate-绿、覆盖冻结断言；各树自绿后 git-native 合并回 `dev`（`merge`/`cherry-pick`，绝不 `cp` 进 `lib`/`bin`）；`contract list` 跨树一屏看全并行轨；建议并发 ≤5 树；每树 loop 前自己 `breaker --reset`；合并冲突人裁（route:human）。
+    假设：worktree 数无廉价全局锁（多进程 TOCTOU），硬编码上限收益低且背「零机制改动」初衷；合并策略与冲突裁定是纪律非机制，自动合并守卫不建。实证：每 worktree 的 gitignored loop 状态天然隔离，单槽机制每树各跑各的（2026-07-09 实测钉成金牌 G7）。
+19. **[prose→待enforced]** 强制层/迁移/共享冻结面改动落地必复跑全部受影响金牌，别信 `tier1` 分层绿：任何准入门 enforcement、契约层迁移、共享冻结面改动落地时，必须复跑其影响面的全部金牌——尤其起浏览器/真实回放的 browser-replay 层。`selftest --tier1` 只覆盖确定性内核（term-lint/breaker/gate demo/verdict-purity），从不跑 browser-replay 金牌；其 GREEN 掩盖不了回放层 runtime-RED。落地未复跑 = 受影响金牌陈旧绿（prd `passes:true` 与实跑 runtime-RED 脱节），fail-open 掩盖真红，直到主树/真机复跑才暴露。合并回 `dev` 后必主树复验受影响面（hermetic 契约树绿 ≠ 主树绿，与护栏 #16「gate 绿 ≠ 完成」同源）。
+    假设：模型/迁移会「只跑与本改动直接相关的金牌 + `tier1`」，漏掉被 enforcement 间接破坏的邻接面。2026-07 一会话内三次同模式实证：record-intake 陈旧绿（trust-root 迁移 `1e6c3c5` 未复跑）、supersession DrvFs 陈旧绿（timeout/租约破而 prd 仍绿）、semantic-lock 准入门 enforcement `9ee2731`/`dfee72c` 破一批 browser-replay 金牌（p5-replay/wf-publish-states/replay-settle-mount/drawer-lock/replay-nth 全 runtime-RED 而 prd `passes:true`）——每次都是 `tier1` GREEN 掩盖、直到主树/真机复跑才暴露。
+# Casey（测易）
+
+LLM 驱动的「文本用例 → 测试报告」自动化测试系统：一段文本用例（excel/json/txt/自由文本）→ LLM
+编译成确定性可回放 spec → 确定性回放（录屏 + 抓输出）→ 零 LLM 多态裁定出严格结论 → 自包含测试报告。
+内核纪律：**确定性是默认、LLM 是手术刀、完成是退出码、裁判零 LLM**（详见 `CLAUDE.md` 与 `docs/adr/`）。
+
+## 三面统一标识符 `casey`
+
+| 面 | 入口 | 用法 |
+|---|---|---|
+| CLI | `bin/casey.mjs` | `node bin/casey.mjs help` 看全命令表 |
+| skill | `.claude/skills/casey/` | Claude Code 打开本仓即自动可用 |
+| MCP server | `mcp/casey-server.mjs` | 见下「MCP 挂载」 |
+
+七相流水线（相0 归一 → 相1 编译 → 相2 草拟+人签 → 相3 回放 → 相4 裁定 → 相5 自愈 → 相6 报告）
+全部建成且有金牌背书；`casey heal` 是唯一诚实桩（exit 3，相5 只有 lib 件）。
+当前进度权威源：`docs/HANDOFF.md` 顶部「当前状态」。
+
+## 安装
+
+```bash
+# 前置：node >= 22.12（见 package.json engines）
+npm install                          # @playwright/test 精确 pin 1.60.0
+npx playwright install chromium      # 回放/编译执行段硬依赖真浏览器
+```
+
+WSL 环境另需中文字体（截图/录屏中文空白的根因）：装用户级 Noto Sans CJK 后 `fc-list :lang=zh` 核实。
+
+## 环境验收（三级，逐级递进）
+
+一键就绪自检：`node bin/casey.mjs doctor` —— 逐项查 node/playwright/中文字体/凭据·`site.json`/隧道就绪，逐项 `ok`/缺失+按平台分支给修复建议（就绪级任一缺 exit 1；字体/凭据/隧道缺只提示不阻塞）。绝不回显凭据值与真目标地址；只诊断不自动修。
+
+1. **机制自检**（零外部依赖，npm install 前即可跑）：`node bin/casey.mjs selftest --tier1`
+   ——验确定性内核 + 统一语言，**不验浏览器/凭据/隧道**，全绿不代表能回放。
+2. **hermetic 回放就绪**（验 npm install + chromium）：`node tests/_golden/e2e-chain.golden.mjs`
+   ——十站全链集成金牌（文本→报告，约 35 秒），8/8 过即本机可跑全部 hermetic 面。
+   看样例报告：`node bin/casey.mjs demo`——零真机零凭据出一份自包含 `PASS` 报告（含裁定徽章），落
+   `runs/sample-wf-publish/`；与上一级 `selftest --tier1` 的区别：demo 需 chromium、不是零依赖，
+   不冒充「零依赖一句话出报告」。
+3. **真机连通**（需凭据与隧道，见下两节）：`node scripts/win-probe-target.mjs`（Windows 侧）
+   只回显状态码不回显目标地址。
+
+## 凭据面（格式说明——真值一律带外交付，绝不入库/提交/回显）
+
+两件均已 gitignored，新环境须自建；本节只写字段形状，不含任何真值：
+
+- `.auth/credentials.json`：`{ "user": "<账号>", "pass": "<口令>" }`。env 覆盖：`AT_CREDS_USER` /
+  `AT_CREDS_PASS`（值对）或 `AT_CREDS_FILE`（换文件路径）。
+- `site.json`（仓根）：`target.startUrl`（真机入口地址）与 `target.devProxyUrl`（WSL 内隧道基址，
+  形如 `http://127.0.0.1:15519`）为必备；`login` / `select` 两段可选覆盖内置选择器（深合并，
+  字段见 `lib/login-bootstrap.mjs` 的 `DEFAULT_SITE`）。env 覆盖：`AT_SITE_JSON`（换文件路径）。
+
+目标地址只活在 `site.json`，绝不进命令行/日志/输出（护栏 #7）——CLI 的 `--sut` 参数**只喂隧道
+回环基址**（即 `devProxyUrl`，形如 `http://127.0.0.1:15519`）或 hermetic 夹具地址，真目标地址
+绝不出现在 shell 历史里。
+
+## 真机链路（反向隧道，仅真机需要）
+
+启动顺序敏感（先 WSL 后 Windows，反了会留僵尸连接占池不补）：
+
+1. WSL 侧：`node scripts/wsl-reverse-listen.mjs`（后台，监听 15519/15520）；
+2. Windows 侧：双击 `scripts/win-forward-start.cmd`。
+
+**真机命令一律 WSL 侧跑**（G6 人签硬约束：Windows 侧回放必败——playwright 浏览器装在 Linux 侧，
+且 Windows 直连需把真目标地址写进命令行、违护栏 #7）。
+
+## MCP 挂载（WSL 侧）
+
+跑一句自适应吐出本仓正确挂载配置（绝对路径由结构派生，免手抄改盘符——消灭 F10「抄命令改路径」反模式）：
+
+```bash
+node bin/casey.mjs mcp-config --agent claude   # claude code：.mcp.json 片段 + 一行 claude mcp add
+node bin/casey.mjs mcp-config --agent codex    # codex：~/.codex/config.toml 的 [mcp_servers.casey] 段
+```
+
+必须挂 WSL 侧 node（回放依赖 Linux 侧 playwright，Windows 原生侧挂载必败，G6）。分家 agent（codex 等无
+`skill` 自动加载机制）接入入口见 `AGENTS.md`；跨平台上手与同事移交清单见 `docs/runbooks/onboarding.md`。
+
+14 个工具（`casey_ingest` … `casey_run`，含示教录制/入账的 `casey_record`/`casey_intake`），签名与 CLI 真面对齐并有漂移锁金牌盯防
+（`tests/_golden/cli-mcp-face.golden.mjs`：工具名集 `deepEq` 钉死，另有「CLI 生命周期命令集 ⊆ MCP 工具集」覆盖断言——CLI 长了新命令而 MCP 没跟即红）。
+
+## Claude Code hooks 行为预告
+
+`.claude/settings.json` 随仓生效：写 md/json 会被统一语言检查拦（术语/繁体，`CONTEXT.md` 是唯一
+词表）、改 `lib/ bin/` 或复合 Bash 命令会被阶段互锁拦（要求先 `casey contract init`）。**这是 loop
+纪律特性不是故障**——纯终端使用 CLI 零影响；要参与开发先读 `CLAUDE.md` 必读顺序与 `loop/GUARDRAILS.md`。
+
+## 分发现状
+
+本仓当前无 git 远端（本地 `master`/`dev`/`test` 三分支）。移交走「建远端 push / `git bundle` /
+整目录拷贝」由维护者定夺；注意 `cases/` `runs/` `.auth/` `site.json` 均不入库，真机现场须带外补齐。
+
+## 开发者入口
+
+`CLAUDE.md`（必读顺序）→ `CONTEXT.md`（统一语言）→ `docs/HANDOFF.md`（当前状态权威源）→
+`loop/GUARDRAILS.md`（17 条护栏）→ `docs/adr/`（难逆转决策）。新 session 开工：`/starter`。
+
+codex
+权威现状已确认：该修单正是 real-uat-attestation 顶部交接列出的下一项，且红证来源与用户给出的 R2 现场事实一致。下面我会逐项对照提交差异、测试断言和两份 PRD 的 checksum 账。
+exec
+/bin/bash -lc 'git status --short && git show --stat --oneline --decorate=short ced85db && git show --name-status --format=fuller ced85db' in /mnt/d/ctx/heren/casey
+exec
+/bin/bash -lc 'git show --stat --oneline ced85db' in /mnt/d/ctx/heren/casey
+ succeeded in 1020ms:
+ced85db fix(drafter-patch-intent-guard): --patch 错位 intentId 静默孤儿断言缝封口——存在性闸置词表硬闸后（零涟漪 output-seal F4）、基准 observed 全集防误杀、遮值报序号；D10 红先行+D11 正控，draft-cli 11/11、output-seal 27/27、双 gate GREEN
+ bin/draft.mjs                                      | 14 +++++++++++
+ docs/plans/drafter-patch-intent-guard/GRILL.md     | 15 +++++++++++
+ .../accept/red-proofs/draft-cli-d10.red.txt        |  2 ++
+ docs/plans/drafter-patch-intent-guard/plan.md      | 22 ++++++++++++++++
+ loop/prd-draft-cli.json                            | 15 ++++++++---
+ loop/prd-drafter-patch-intent-guard.json           | 23 +++++++++++++++++
+ tests/_golden/draft-cli.golden.mjs                 | 29 ++++++++++++++++++++++
+ 7 files changed, 117 insertions(+), 3 deletions(-)
+
+ succeeded in 19619ms:
+ M .gitignore
+ M loop/prd-cli-authority-wiring-fill.json
+ M loop/prd-selftest.json
+ M loop/prd-semantic-unit-discrimination.json
+?? casey-agent-loop-local-first-total.zip
+?? docs/atom-readiness-assessment-20260715.md
+?? docs/plans/drafter-patch-intent-guard/review/
+?? docs/plans/regress-strategy/SCOPE-OPTIONS.md
+?? docs/plans/usability-audit/
+?? follow.mjs
+ced85db (HEAD -> dev) fix(drafter-patch-intent-guard): --patch 错位 intentId 静默孤儿断言缝封口——存在性闸置词表硬闸后（零涟漪 output-seal F4）、基准 observed 全集防误杀、遮值报序号；D10 红先行+D11 正控，draft-cli 11/11、output-seal 27/27、双 gate GREEN
+ bin/draft.mjs                                      | 14 +++++++++++
+ docs/plans/drafter-patch-intent-guard/GRILL.md     | 15 +++++++++++
+ .../accept/red-proofs/draft-cli-d10.red.txt        |  2 ++
+ docs/plans/drafter-patch-intent-guard/plan.md      | 22 ++++++++++++++++
+ loop/prd-draft-cli.json                            | 15 ++++++++---
+ loop/prd-drafter-patch-intent-guard.json           | 23 +++++++++++++++++
+ tests/_golden/draft-cli.golden.mjs                 | 29 ++++++++++++++++++++++
+ 7 files changed, 117 insertions(+), 3 deletions(-)
+commit ced85db9b1dfd3c09aa4e98a89e0e2e9b657644c
+Author:     Steven <ctxsteven2001@gmail.com>
+AuthorDate: Thu Jul 23 07:48:52 2026 +0800
+Commit:     Steven <ctxsteven2001@gmail.com>
+CommitDate: Thu Jul 23 07:48:52 2026 +0800
+
+    fix(drafter-patch-intent-guard): --patch 错位 intentId 静默孤儿断言缝封口——存在性闸置词表硬闸后（零涟漪 output-seal F4）、基准 observed 全集防误杀、遮值报序号；D10 红先行+D11 正控，draft-cli 11/11、output-seal 27/27、双 gate GREEN
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_011nMDhn1pds7CLqXyJDDXYm
+
+M	bin/draft.mjs
+A	docs/plans/drafter-patch-intent-guard/GRILL.md
+A	docs/plans/drafter-patch-intent-guard/accept/red-proofs/draft-cli-d10.red.txt
+A	docs/plans/drafter-patch-intent-guard/plan.md
+M	loop/prd-draft-cli.json
+A	loop/prd-drafter-patch-intent-guard.json
+M	tests/_golden/draft-cli.golden.mjs
+
+exec
+/bin/bash -lc 'git show --format=fuller --find-renames --find-copies ced85db -- bin/draft.mjs tests/_golden/draft-cli.golden.mjs loop/prd-draft-cli.json loop/prd-drafter-patch-intent-guard.json docs/plans/drafter-patch-intent-guard/GRILL.md docs/plans/drafter-patch-intent-guard/plan.md docs/plans/drafter-patch-intent-guard/accept/red-proofs/draft-cli-d10.red.txt' in /mnt/d/ctx/heren/casey
+ succeeded in 2104ms:
+commit ced85db9b1dfd3c09aa4e98a89e0e2e9b657644c
+Author:     Steven <ctxsteven2001@gmail.com>
+AuthorDate: Thu Jul 23 07:48:52 2026 +0800
+Commit:     Steven <ctxsteven2001@gmail.com>
+CommitDate: Thu Jul 23 07:48:52 2026 +0800
+
+    fix(drafter-patch-intent-guard): --patch 错位 intentId 静默孤儿断言缝封口——存在性闸置词表硬闸后（零涟漪 output-seal F4）、基准 observed 全集防误杀、遮值报序号；D10 红先行+D11 正控，draft-cli 11/11、output-seal 27/27、双 gate GREEN
+    
+    Co-Authored-By: Claude Fable 5 <noreply@anthropic.com>
+    Claude-Session: https://claude.ai/code/session_011nMDhn1pds7CLqXyJDDXYm
+
+diff --git a/bin/draft.mjs b/bin/draft.mjs
+index b48d387..7114e66 100644
+--- a/bin/draft.mjs
++++ b/bin/draft.mjs
+@@ -75,6 +75,20 @@ if (!gate.ok) {
+   process.exit(65);
+ }
+ 
++// intentId 存在性闸（drafter-patch-intent-guard；置于词表硬闸之后=闸序不动 output-seal F4 冻结面）：
++// 草稿 intent 只许挂在 observed 真实 intent 上——此前未知 intentId 会静默新建孤儿 intent，断言冻进
++// expected 但回放期永不匹配（real-uat R2 实证：补缝 intent_open/intent_1 错位，裁定退化只剩全局取证）。
++// 基准取 observed 全集而非 skeleton 的 intents（后者只含已有断言的 intent，会误杀合法新建）；
++// 违例值不回显（output-seal 遮值纪律：patch 是 LLM/人编文件，内容可携任意种子），报序号定位。
++{
++  const knownIntents = new Set((observed.steps || []).map((s) => s && s.intentId).filter(Boolean));
++  const ghosts = draft.intents.map((it, i) => (knownIntents.has(it.intentId) ? null : i)).filter((i) => i !== null);
++  if (ghosts.length) {
++    console.error(`draft: 存在性闸拒（fail-closed 不落草稿）：草稿 intents[${ghosts.join('],intents[')}] 的 intentId 不存在于 observed intents（值不回显——错位补缝会静默成孤儿断言、回放永不匹配）`);
++    process.exit(65);
++  }
++}
++
+ const outFile = join(resolve(String(args['out-dir'])), `expected.draft-${caseId}.json`);
+ const text = JSON.stringify(draft, null, 2) + '\n';
+ const cg = credentialGate({ [outFile]: text });
+diff --git a/docs/plans/drafter-patch-intent-guard/GRILL.md b/docs/plans/drafter-patch-intent-guard/GRILL.md
+new file mode 100644
+index 0000000..2510424
+--- /dev/null
++++ b/docs/plans/drafter-patch-intent-guard/GRILL.md
+@@ -0,0 +1,15 @@
++# drafter-patch-intent-guard · GRILL（阶段0）
++
++> 工装缝修单（real-uat-attestation R2 实证挂账）：`bin/draft.mjs` 的 `--patch` 合并对未知 intentId
++> **静默新建孤儿 intent**——错位断言被冻进 expected 但回放期永不匹配（表现=冻结面缺该断言、
++> 裁定退化只剩全局取证）。UAT 链首版补缝 `intent_open`/`intent_1` 错位即此。
++
++## 决策（均按仓内既有纪律直裁，无 Steven 分岔）
++
++- D1 处置=fail-closed 拒绝（exit 65），不是告警放行：与 draft 既有闸（缺 intentId/非数组均 65）
++  同律；孤儿断言无任何合法用途。
++- D2 存在性基准=observed 的真实 intent 集（`observed.steps[].intentId` 全集）：skeleton 的
++  `draft.intents` 只含已有断言的 intent（UAT 实证 0 断言时为空），不能作基准，否则合法补缝也被拒。
++- D3 范围收窄：只封 intentId 存在性这一缝；kind/op 语义仍由既有 `validateDraft` 闸管，不重复造闸。
++- D4 金牌钉=红先行：owner 金牌加「错位 intentId 必 65 + 正控合法 intentId 仍过」两检查，
++  修前红实证（现行为 exit 0 落盘孤儿）；冻结金牌修改走 owner prd `checksumAmendments` 修单路径。
+diff --git a/docs/plans/drafter-patch-intent-guard/accept/red-proofs/draft-cli-d10.red.txt b/docs/plans/drafter-patch-intent-guard/accept/red-proofs/draft-cli-d10.red.txt
+new file mode 100644
+index 0000000..8cf89f8
+--- /dev/null
++++ b/docs/plans/drafter-patch-intent-guard/accept/red-proofs/draft-cli-d10.red.txt
+@@ -0,0 +1,2 @@
++RED  draft-cli: D10 补缝 intentId 不存在于 observed → 65 且不落草稿（错位断言禁止静默成孤儿）: 错位 intentId 应 exit 65，实际 0
++RED  draft-cli: 10 过 / 1 红
+diff --git a/docs/plans/drafter-patch-intent-guard/plan.md b/docs/plans/drafter-patch-intent-guard/plan.md
+new file mode 100644
+index 0000000..ea7c58a
+--- /dev/null
++++ b/docs/plans/drafter-patch-intent-guard/plan.md
+@@ -0,0 +1,22 @@
++# drafter-patch-intent-guard · plan（light，v1）
++
++## 改动面
++
++1. `bin/draft.mjs` `--patch` 合并段：合并前构造 `knownIntents = Set(observed.steps[].intentId)`；
++   补缝条目 intentId ∉ 集合 → `exit 65`（错误信息含违例 intentId——步标识符非敏感面）；
++   合法条目行为一字不变（含挂到 skeleton 尚无断言的 intent 上的合法新建）。
++2. owner 金牌（draft CLI 面）加两检查（红先行）：
++   - 负控：patch 携不存在 intentId → 必 exit 65、零落盘；
++   - 正控：patch 携 observed 真实 intentId（skeleton 无断言者）→ exit 0 且断言挂上（防把合法
++     新建一起误杀）。
++3. owner prd `checksumAmendments` 记账重钉金牌 checksum。
++
++## 验收点
++
++- 修前红证：现行 bin 对错位 intentId exit 0 且落盘孤儿 intent（红证文件留档）。
++- 修后：新负控/正控绿 + owner 金牌全绿 + gate GREEN + 受影响面（p4-drafter/draft-cli/e2e-chain
++  等吃 drafter 的 zero-SUT 金牌）复跑退出码 0。
++
++## 评审
++
++light 车道：codex（Steven 既裁家族）聚焦审 diff+红证+金牌钉。
+diff --git a/loop/prd-draft-cli.json b/loop/prd-draft-cli.json
+index 1203da4..b0a5c87 100644
+--- a/loop/prd-draft-cli.json
++++ b/loop/prd-draft-cli.json
+@@ -3,7 +3,7 @@
+   "task": "相2 草拟命令化（light）：casey draft <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]——薄 CLI 零 LLM 包已收口函数层（synthesizeSkeleton + validateDraft）：assertionAtoms 唯一源 = compile-report.handoff.assertionAtoms（P4 交接面既定位）；--patch 为 LLM 补缝文件通道（CLI 外产出，同 P3 flow 范式，prompt 用 p4-drafter 既定件）；合并后整份过闸、违规 exit 65 不落草稿（半份草稿比没有更危险）；caseId 三方一致闸；产物 expected.draft-<caseId>.json 带 pending 留痕、经凭据门落盘。人签 UX 照 p4-drafter 既定 route:human 不做。决策 GRILL G1–G4（Steven「继续开」授权 HANDOFF ①）。",
+   "specPath": "docs/plans/draft-cli/plan.md",
+   "testChecksums": {
+-    "tests/_golden/draft-cli.golden.mjs": "a40ddc8aec236df349035349ab297f2969dc7dc21cef0e3a423e05b4a433864f"
++    "tests/_golden/draft-cli.golden.mjs": "d3485a9d2fac86794d45075885fc89ceee5ca056c75253238458ee297fedcad5"
+   },
+   "observability": [
+     {
+@@ -21,7 +21,7 @@
+         "node bin/casey.mjs selftest --tier1"
+       ],
+       "passes": true,
+-      "evidence": "gate@2026-07-02T15:37:26.973Z 全部 acceptance exit 0"
++      "evidence": "gate@2026-07-22T23:47:04.253Z 全部 acceptance exit 0"
+     },
+     {
+       "id": "s2-regression-locks",
+@@ -31,7 +31,16 @@
+         "node tests/_golden/p4-drafter.golden.mjs"
+       ],
+       "passes": true,
+-      "evidence": "gate@2026-07-02T15:37:27.814Z 全部 acceptance exit 0"
++      "evidence": "gate@2026-07-22T23:47:06.347Z 全部 acceptance exit 0"
++    }
++  ],
++  "checksumAmendments": [
++    {
++      "amendedAt": "2026-07-23",
++      "files": [
++        "tests/_golden/draft-cli.golden.mjs"
++      ],
++      "reason": "drafter-patch-intent-guard 修单（断言零弱化、纯加钉）：--patch 错位 intentId 此前静默新建孤儿 intent（real-uat-attestation R2 真机实证：断言冻进 expected 但回放永不匹配）。bin/draft.mjs 加存在性闸（置词表硬闸后=闸序不动 output-seal F4 冻结面；基准=observed.steps 全集防误杀合法新建；违例值不回显报序号——output-seal 遮值纪律）。金牌加 D10 负控（错位必 65+零落盘+红先行实证 exit 0 落孤儿，红证 docs/plans/drafter-patch-intent-guard/accept/red-proofs/draft-cli-d10.red.txt）+D11 正控（合法新建不误杀+草稿不含 observed 外 intent）。修后 draft-cli 11/11、output-seal 27/27、caseid-echo-mask/p4-drafter/tier1 全 exit 0。"
+     }
+   ]
+ }
+diff --git a/loop/prd-drafter-patch-intent-guard.json b/loop/prd-drafter-patch-intent-guard.json
+new file mode 100644
+index 0000000..4f53f72
+--- /dev/null
++++ b/loop/prd-drafter-patch-intent-guard.json
+@@ -0,0 +1,23 @@
++{
++  "schemaVersion": 1,
++  "task": "drafter-patch-intent-guard（light）：bin/draft.mjs --patch 存在性闸修单——错位 intentId 静默孤儿断言缝（real-uat R2 实证挂账）封口；闸序置词表硬闸后零涟漪 output-seal；红先行 D10+正控 D11。",
++  "specPath": "docs/plans/drafter-patch-intent-guard/plan.md",
++  "testChecksums": {
++    "tests/_golden/draft-cli.golden.mjs": "d3485a9d2fac86794d45075885fc89ceee5ca056c75253238458ee297fedcad5",
++    "docs/plans/drafter-patch-intent-guard/accept/red-proofs/draft-cli-d10.red.txt": "21a9aa7ef5a9d63098dd0119241f473e9f80f7bc39225036296639bfe5759eca"
++  },
++  "observability": [],
++  "stories": [
++    {
++      "id": "s1-intent-guard",
++      "desc": "存在性闸：D10 错位必65零落盘（红先行）+D11 合法新建不误杀；受影响面 output-seal/caseid-echo-mask/p4-drafter/tier1 复跑绿。",
++      "lane": "implementation",
++      "acceptance": [
++        "node tests/_golden/draft-cli.golden.mjs",
++        "node tests/_golden/output-seal.golden.mjs"
++      ],
++      "passes": true,
++      "evidence": "gate@2026-07-22T23:48:10.073Z 全部 acceptance exit 0"
++    }
++  ]
++}
+diff --git a/tests/_golden/draft-cli.golden.mjs b/tests/_golden/draft-cli.golden.mjs
+index 0e87f4e..0080b97 100644
+--- a/tests/_golden/draft-cli.golden.mjs
++++ b/tests/_golden/draft-cli.golden.mjs
+@@ -132,6 +132,35 @@ check('D9 凭据门拦截 exit 1（R1-F4 修正采纳：同 compile 先例，1=
+   if (existsSync(join(cleanDir, `expected.draft-${CASE_ID}.json`))) throw new Error('凭据门拦截后不得落草稿');
+ });
+ 
++// ---------- drafter-patch-intent-guard（real-uat R2 实证工装缝）----------
++check('D10 补缝 intentId 不存在于 observed → 65 且不落草稿（错位断言禁止静默成孤儿）', () => {
++  const gDir = join(tmp, 'out-ghost');
++  mkdirSync(gDir, { recursive: true });
++  const PATCH_GHOST = join(tmp, 'patch-ghost.json');
++  writeFileSync(PATCH_GHOST, JSON.stringify([
++    { intentId: 'intent_open', kind: 'urlPathname', op: 'startsWith', value: '/heren/aimanagement/edit' },
++  ]));
++  const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE, '--compile-report', REPORT, '--out-dir', gDir, '--patch', PATCH_GHOST]);
++  if (r.status !== 65) throw new Error(`错位 intentId 应 exit 65，实际 ${r.status}`);
++  if (existsSync(join(gDir, `expected.draft-${CASE_ID}.json`))) throw new Error('错位补缝拒后不得落草稿');
++  if (!/intent_open|存在|observed/.test(String(r.stderr || ''))) throw new Error('stderr 须点名违例 intentId 或存在性闸');
++});
++
++check('D11 正控：observed 真实 intent（骨架无断言者）补缝仍成、不误杀合法新建', () => {
++  const pDir = join(tmp, 'out-pos');
++  mkdirSync(pDir, { recursive: true });
++  const PATCH_POS = join(tmp, 'patch-pos.json');
++  writeFileSync(PATCH_POS, JSON.stringify([
++    { intentId: 'intent_0', kind: 'urlPathname', op: 'startsWith', value: '/heren/aimanagement/list' },
++  ]));
++  const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE, '--compile-report', REPORT, '--out-dir', pDir, '--patch', PATCH_POS]);
++  if (r.status !== 0) throw new Error(`合法 intentId 应 exit 0，实际 ${r.status}：${(r.stderr || '').slice(-160)}`);
++  const d = JSON.parse(readFileSync(join(pDir, `expected.draft-${CASE_ID}.json`), 'utf8'));
++  const i0 = (d.intents || []).find((it) => it.intentId === 'intent_0');
++  if (!(i0?.expected || []).some((a) => a.kind === 'urlPathname')) throw new Error('合法补缝未挂上');
++  for (const it of d.intents || []) if (!['intent_0', 'intent_1', 'intent_2'].includes(it.intentId)) throw new Error(`草稿含 observed 之外的 intent：${it.intentId}`);
++});
++
+ if (fails.length) {
+   for (const f of fails) console.error(`RED  draft-cli: ${f}`);
+   console.error(`RED  draft-cli: ${pass} 过 / ${fails.length} 红`);
+
+exec
+/bin/bash -lc "nl -ba bin/draft.mjs | sed -n '1,150p' && nl -ba tests/_golden/draft-cli.golden.mjs | sed -n '1,210p' && rg -n \"F4|draft|patch|credential|词表|kind|op\" tests/_golden/output-seal.golden.mjs" in /mnt/d/ctx/heren/casey
+ succeeded in 193ms:
+     1	#!/usr/bin/env node
+     2	// 冻结黄金标准（draft-cli · hermetic）：casey draft 薄 CLI——骨架 + 补缝合并 + 闸 + 落草稿。
+     3	// 决策依 docs/plans/draft-cli/proposed/GRILL.md（G1–G4 机械决策）；函数层已经 p4-drafter 收口，本 golden 只钉 CLI 面。
+     4	// 实现前必红：casey draft 现为 notImplemented 桩（exit 3）。改本文件 = Test Ratchet 判红。
+     5	import { readFileSync, writeFileSync, existsSync, mkdtempSync, mkdirSync } from 'node:fs';
+     6	import { spawnSync } from 'node:child_process';
+     7	import { resolve, dirname, join } from 'node:path';
+     8	import { fileURLToPath } from 'node:url';
+     9	import { tmpdir } from 'node:os';
+    10	
+    11	const HERE = dirname(fileURLToPath(import.meta.url));
+    12	const ROOT = resolve(HERE, '..', '..');
+    13	const CASEY = join(ROOT, 'bin', 'casey.mjs');
+    14	const OBSERVED_FIXTURE = join(ROOT, 'tests', '_golden', 'fixtures', 'seams', 'observed-reality.fixture.json');
+    15	const tmp = mkdtempSync(join(tmpdir(), 'casey-draftcli-'));
+    16	
+    17	const fails = [];
+    18	let pass = 0;
+    19	function check(name, fn) {
+    20	  try { fn(); pass++; } catch (e) { fails.push(`${name}: ${String(e && (e.stderr || e.message)).slice(-300)}`); }
+    21	}
+    22	function run(args) {
+    23	  return spawnSync(process.execPath, [CASEY, 'draft', ...args], { encoding: 'utf8', timeout: 60000 });
+    24	}
+    25	
+    26	// 合成输入：observed 用已冻 seams fixture（caseId=tc_workflow_create_smoke）；compile-report 只需 handoff.assertionAtoms。
+    27	const CASE_ID = 'tc_workflow_create_smoke';
+    28	const REPORT = join(tmp, 'compile-report.json');
+    29	writeFileSync(REPORT, JSON.stringify({
+    30	  caseId: CASE_ID,
+    31	  handoff: { assertionAtoms: [
+    32	    { intentId: 'intent_1', atom: 'assert.onPage', params: { urlIncludes: '/heren/aimanagement/edit' } },
+    33	    { intentId: 'intent_1', atom: 'assert.textVisible', params: { text: '新增成功' } },
+    34	  ] },
+    35	}));
+    36	const outDir = join(tmp, 'out');
+    37	mkdirSync(outDir, { recursive: true });
+    38	const DRAFT = join(outDir, `expected.draft-${CASE_ID}.json`);
+    39	
+    40	// ---------- D1 纯骨架：落草稿 + 卷回 + 全局取证 + soft 语义 ----------
+    41	check('D1 纯骨架草拟落盘', () => {
+    42	  const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE, '--compile-report', REPORT, '--out-dir', outDir]);
+    43	  if (r.status !== 0) throw new Error(`应 exit 0，实际 ${r.status}：${(r.stderr || r.stdout || '').slice(-200)}`);
+    44	  if (!existsSync(DRAFT)) throw new Error('草稿未落盘');
+    45	  const d = JSON.parse(readFileSync(DRAFT, 'utf8'));
+    46	  if (d.caseId !== CASE_ID) throw new Error(`caseId 应卷回 ${CASE_ID}，实际 ${d.caseId}`);
+    47	  const gk = new Set((d.globalAssertions || []).map((a) => a.kind));
+    48	  for (const k of ['noPageError', 'noErrorEnvelope']) if (!gk.has(k)) throw new Error(`全局取证缺 ${k}`);
+    49	  const i1 = (d.intents || []).find((it) => it.intentId === 'intent_1');
+    50	  const tv = (i1?.expected || []).find((a) => a.kind === 'textVisible');
+    51	  if (!tv || tv.soft === true) throw new Error('textVisible 应在场且已提硬（kinds-harden 后不标 soft）');
+    52	  if (!Array.isArray(d.pending)) throw new Error('草稿须带 pending 留痕（可空数组）');
+    53	});
+    54	
+    55	// ---------- D2 补缝合并：合法 patch 进草稿 ----------
+    56	check('D2 补缝合并', () => {
+    57	  const PATCH = join(tmp, 'patch-ok.json');
+    58	  writeFileSync(PATCH, JSON.stringify([
+    59	    { intentId: 'intent_2', kind: 'textVisible', op: 'appears', value: '生成节点建议' },
+    60	    { intentId: 'intent_0', kind: 'urlPathname', op: 'startsWith', value: '/heren/aimanagement/list' },
+    61	  ]));
+    62	  const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE, '--compile-report', REPORT, '--out-dir', outDir, '--patch', PATCH]);
+    63	  if (r.status !== 0) throw new Error(`应 exit 0，实际 ${r.status}：${(r.stderr || '').slice(-200)}`);
+    64	  const d = JSON.parse(readFileSync(DRAFT, 'utf8'));
+    65	  const i2 = (d.intents || []).find((it) => it.intentId === 'intent_2');
+    66	  if (!(i2?.expected || []).some((a) => a.kind === 'textVisible' && a.value === '生成节点建议')) throw new Error('补缝断言未合并进草稿');
+    67	  const i0 = (d.intents || []).find((it) => it.intentId === 'intent_0');
+    68	  if (!(i0?.expected || []).some((a) => a.kind === 'urlPathname' && a.soft !== true)) throw new Error('已实现 kind 补缝应为硬断言');
+    69	});
+    70	
+    71	// ---------- D3 违规补缝 fail-closed：闸拒 65 且不落草稿 ----------
+    72	check('D3 违规补缝整份拒、不落草稿', () => {
+    73	  const dirtyDir = join(tmp, 'out-dirty');
+    74	  mkdirSync(dirtyDir, { recursive: true });
+    75	  const PATCH_BAD = join(tmp, 'patch-bad.json');
+    76	  writeFileSync(PATCH_BAD, JSON.stringify([
+    77	    { intentId: 'intent_1', kind: 'inputReadback', op: 'equals', value: 'atl_目录CRUD_1782634443', soft: true },
+    78	  ]));
+    79	  const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE, '--compile-report', REPORT, '--out-dir', dirtyDir, '--patch', PATCH_BAD]);
+    80	  if (r.status !== 65) throw new Error(`违规补缝应 exit 65，实际 ${r.status}`);
+    81	  if (existsSync(join(dirtyDir, `expected.draft-${CASE_ID}.json`))) throw new Error('闸拒后不得落草稿（半份草稿比没有更危险）');
+    82	  if (!/atl_|problems|违规|字面量/.test(String(r.stderr || ''))) throw new Error('stderr 须给 problems 落点');
+    83	});
+    84	
+    85	// ---------- D4 caseId 一致性闸 ----------
+    86	check('D4 caseId 不一致拒', () => {
+    87	  const r = run(['tc_other', '--observed', OBSERVED_FIXTURE, '--compile-report', REPORT, '--out-dir', outDir]);
+    88	  if (r.status !== 65) throw new Error(`caseId 不一致应 exit 65，实际 ${r.status}`);
+    89	});
+    90	
+    91	// ---------- D5 缺参 ----------
+    92	check('D5 缺参 64', () => {
+    93	  const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE]);
+    94	  if (r.status !== 64) throw new Error(`缺参应 exit 64，实际 ${r.status}`);
+    95	});
+    96	
+    97	// ---------- codex R1 四发现回归锁 ----------
+    98	check('D6 compile-report 缺 caseId 拒（R1-F1：证不出一致即拒）', () => {
+    99	  const R2F = join(tmp, 'report-nocase.json');
+   100	  writeFileSync(R2F, JSON.stringify({ handoff: { assertionAtoms: [] } }));
+   101	  const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE, '--compile-report', R2F, '--out-dir', outDir]);
+   102	  if (r.status !== 65) throw new Error(`compile-report 缺 caseId 应 exit 65，实际 ${r.status}`);
+   103	});
+   104	
+   105	check('D7 caseId 路径字符拒（R1-F2：不得穿越 out-dir）', () => {
+   106	  const evil = '../evil';
+   107	  const OBS_EVIL = join(tmp, 'observed-evil.json');
+   108	  const obs = JSON.parse(readFileSync(OBSERVED_FIXTURE, 'utf8'));
+   109	  obs.caseId = evil;
+   110	  writeFileSync(OBS_EVIL, JSON.stringify(obs));
+   111	  const REP_EVIL = join(tmp, 'report-evil.json');
+   112	  writeFileSync(REP_EVIL, JSON.stringify({ caseId: evil, handoff: { assertionAtoms: [] } }));
+   113	  const r = run([evil, '--observed', OBS_EVIL, '--compile-report', REP_EVIL, '--out-dir', outDir]);
+   114	  if (r.status !== 65) throw new Error(`路径字符 caseId 应 exit 65，实际 ${r.status}`);
+   115	  if (existsSync(join(tmp, 'expected.draft-..', 'evil.json')) || existsSync(join(tmp, 'evil.json'))) throw new Error('产物穿越出 out-dir');
+   116	});
+   117	
+   118	check('D8 裸 --patch 拒（R1-F3：缺文件值不得静默忽略）', () => {
+   119	  const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE, '--compile-report', REPORT, '--out-dir', outDir, '--patch']);
+   120	  if (r.status !== 65) throw new Error(`裸 --patch 应 exit 65，实际 ${r.status}`);
+   121	});
+   122	
+   123	check('D9 凭据门拦截 exit 1（R1-F4 修正采纳：同 compile 先例，1=凭据门拦）', () => {
+   124	  const cleanDir = join(tmp, 'out-cred');
+   125	  mkdirSync(cleanDir, { recursive: true });
+   126	  const PATCH_CRED = join(tmp, 'patch-cred.json');
+   127	  writeFileSync(PATCH_CRED, JSON.stringify([
+   128	    { intentId: 'intent_1', kind: 'textVisible', op: 'appears', value: 'password: hunter2 明文' },
+   129	  ]));
+   130	  const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE, '--compile-report', REPORT, '--out-dir', cleanDir, '--patch', PATCH_CRED]);
+   131	  if (r.status !== 1) throw new Error(`凭据门拦截应 exit 1（compile 先例），实际 ${r.status}`);
+   132	  if (existsSync(join(cleanDir, `expected.draft-${CASE_ID}.json`))) throw new Error('凭据门拦截后不得落草稿');
+   133	});
+   134	
+   135	// ---------- drafter-patch-intent-guard（real-uat R2 实证工装缝）----------
+   136	check('D10 补缝 intentId 不存在于 observed → 65 且不落草稿（错位断言禁止静默成孤儿）', () => {
+   137	  const gDir = join(tmp, 'out-ghost');
+   138	  mkdirSync(gDir, { recursive: true });
+   139	  const PATCH_GHOST = join(tmp, 'patch-ghost.json');
+   140	  writeFileSync(PATCH_GHOST, JSON.stringify([
+   141	    { intentId: 'intent_open', kind: 'urlPathname', op: 'startsWith', value: '/heren/aimanagement/edit' },
+   142	  ]));
+   143	  const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE, '--compile-report', REPORT, '--out-dir', gDir, '--patch', PATCH_GHOST]);
+   144	  if (r.status !== 65) throw new Error(`错位 intentId 应 exit 65，实际 ${r.status}`);
+   145	  if (existsSync(join(gDir, `expected.draft-${CASE_ID}.json`))) throw new Error('错位补缝拒后不得落草稿');
+   146	  if (!/intent_open|存在|observed/.test(String(r.stderr || ''))) throw new Error('stderr 须点名违例 intentId 或存在性闸');
+   147	});
+   148	
+   149	check('D11 正控：observed 真实 intent（骨架无断言者）补缝仍成、不误杀合法新建', () => {
+   150	  const pDir = join(tmp, 'out-pos');
+   151	  mkdirSync(pDir, { recursive: true });
+   152	  const PATCH_POS = join(tmp, 'patch-pos.json');
+   153	  writeFileSync(PATCH_POS, JSON.stringify([
+   154	    { intentId: 'intent_0', kind: 'urlPathname', op: 'startsWith', value: '/heren/aimanagement/list' },
+   155	  ]));
+   156	  const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE, '--compile-report', REPORT, '--out-dir', pDir, '--patch', PATCH_POS]);
+   157	  if (r.status !== 0) throw new Error(`合法 intentId 应 exit 0，实际 ${r.status}：${(r.stderr || '').slice(-160)}`);
+   158	  const d = JSON.parse(readFileSync(join(pDir, `expected.draft-${CASE_ID}.json`), 'utf8'));
+   159	  const i0 = (d.intents || []).find((it) => it.intentId === 'intent_0');
+   160	  if (!(i0?.expected || []).some((a) => a.kind === 'urlPathname')) throw new Error('合法补缝未挂上');
+   161	  for (const it of d.intents || []) if (!['intent_0', 'intent_1', 'intent_2'].includes(it.intentId)) throw new Error(`草稿含 observed 之外的 intent：${it.intentId}`);
+   162	});
+   163	
+   164	if (fails.length) {
+   165	  for (const f of fails) console.error(`RED  draft-cli: ${f}`);
+   166	  console.error(`RED  draft-cli: ${pass} 过 / ${fails.length} 红`);
+   167	  process.exit(1);
+   168	}
+   169	console.log(`ok   draft-cli: ${pass}/${pass} 全过（骨架落盘+补缝合并+违规整份拒+一致性闸+缺参）`);
+   170	process.exit(0);
+2:// 缝谱系：docs/plans/output-seal/proposed/AUDIT.md（A1–A13/B1–B8/C 点名）；决策 proposed/GRILL.md D1–D6；改动清单 plan.md。
+23:const FIX_DRAFT = join(HERE, 'fixtures', 'seams', 'expected-draft.fixture.json');
+46:const DRAFT = BIN('draft.mjs');
+50:const signArgs = (caseId, draft, prd, frozen) => [SIGN, caseId, '--draft', draft, '--prd', prd, '--frozen-out', frozen, '--signer', 'qa.steven', '--against-build', 'b1'];
+56:  d.intents[0].expected.push({ kind: 'textVisible', op: 'appears', value: 'atl_SEEDVAL_A1_x9' });
+57:  const r = run(signArgs('tc_sign_probe', wf('a1-draft.json', d), writePrd('a1-prd.json', 'tc_sign_probe'), join(tmp, 'a1-frozen.json')));
+65:  d.intents[0].expected.push({ kind: 'textVisible', op: 'appears', value: 'SEEDVAL_A2_x9 t=1234567890' });
+66:  const r = run(signArgs('tc_sign_probe', wf('a2-draft.json', d), writePrd('a2-prd.json', 'tc_sign_probe'), join(tmp, 'a2-frozen.json')));
+70:// ---------- A3 draft --patch problems：lib/assertion-draft 两条易变字面量问题遮值 ----------
+71:check('A3 draft 校验闸 problems 不回显补缝断言值（atl_ 与数字长串两形态）', () => {
+73:  const patch = wf('a3-patch.json', [
+74:    { intentId: 'intent_1', kind: 'textVisible', op: 'appears', value: 'atl_SEEDVAL_A3A_x9' },
+75:    { intentId: 'intent_1', kind: 'textVisible', op: 'appears', value: 'SEEDVAL_A3B_x9 t=1234567890' },
+77:  const r = run([DRAFT, 'tc_workflow_create_smoke', '--observed', FIX_OBSERVED, '--compile-report', rep, '--out-dir', join(tmp, 'a3out'), '--patch', patch]);
+78:  // codex R1-F3：where 定位用结构性下标（不回显 --patch 文件侧 intentId）。
+83:check('A4 sign 拒 draft.caseId 不一致时不回显文件侧值', () => {
+86:  const r = run(signArgs('tc_sign_probe', wf('a4-draft.json', d), writePrd('a4-prd.json', 'tc_sign_probe'), join(tmp, 'a4-frozen.json')));
+90:  const r = run(signArgs('tc_sign_probe', wf('a5-draft.json', readJson(FIX_DRAFT)), writePrd('a5-prd.json', 'SEEDVAL_A5_x9'), join(tmp, 'a5-frozen.json')));
+94:// ---------- A6/A7 draft 两处 caseId 遮值 ----------
+95:check('A6 draft 拒 observed.caseId 不一致时不回显文件侧值', () => {
+101:check('A7 draft 拒 compile-report.caseId 不一致时不回显文件侧值', () => {
+127:  const exp = wf('a10-expected.json', signExpected({ caseId: 'SEEDVAL_A10X_x9', channel: 'web', intents: [{ intentId: 'intent_1', expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/plain' }] }], globalAssertions: [] }));
+137:  const r = run([...signArgs('tc_sign_probe', wf('a11-draft.json', readJson(FIX_DRAFT)), writePrd('a11-prd.json', 'tc_sign_probe'), join(tmp, 'a11-frozen.json')), '--verdict-baseline', vb]);
+141:// ---------- F4 assertion-draft kind/op 非法分支遮值（--patch 任意 kind/op 可携种子） ----------
+142:check('F4 draft kind/op 不过词表时不回显文件侧 kind/op 原值（codex R2-F4）', () => {
+144:  const patch = wf('f4-patch.json', [{ intentId: 'intent_1', kind: 'SEEDVAL_F4K_x9', op: 'SEEDVAL_F4O_x9', value: 'x' }]);
+145:  const r = run([DRAFT, 'tc_f4', '--observed', wf('f4-observed.json', { caseId: 'tc_f4' }), '--compile-report', rep, '--out-dir', join(tmp, 'f4out'), '--patch', patch]);
+146:  assertSeal(r, { label: 'F4', exit: 65, seeds: ['SEEDVAL_F4K_x9', 'SEEDVAL_F4O_x9'], mustHave: ['词表硬闸', 'intents['] });
+183:check('B1 sign readJson 坏 draft JSON 不透传内容片段', () => {
+184:  const bad = wf('b1-draft.json', BAD_JSON('SEEDVAL_B1_x9'));
+188:check('B2 draft readJson 坏 observed JSON 不透传内容片段', () => {
+217:  const exp = wf('b5-expected.json', signExpected({ caseId: 'tc_b5', channel: 'web', intents: [{ intentId: 'intent_1', expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/ai-manager/process/list' }] }], globalAssertions: [] }));
+229:// 原设计只断「不含多行栈帧」——但剥栈后首行仍是 V8 JSON.parse 报文（携内容片段）。loop 段照 B1-B3/B8
+260:// ---------- inbox 过门：term-judge 路由人写 loop/inbox.md 前过凭据门（命中拒写非零退出） ----------
+
+exec
+/bin/bash -lc "nl -ba tests/_golden/output-seal.golden.mjs | sed -n '1,175p' && nl -ba lib/assertion-draft.mjs | sed -n '1,280p' && nl -ba tests/_golden/fixtures/seams/observed-reality.fixture.json | sed -n '1,220p'" in /mnt/d/ctx/heren/casey
+ succeeded in 129ms:
+     1	{
+     2	  "schemaVersion": 1,
+     3	  "caseId": "tc_workflow_create_smoke",
+     4	  "channel": "web",
+     5	  "capturedAt": "2026-06-29T08:14:02.511Z",
+     6	  "capturedAgainstBuild": "heren-aimgmt@2026.06.0",
+     7	  "steps": [
+     8	    {
+     9	      "stepId": "atstep_0",
+    10	      "intentId": "intent_0",
+    11	      "atom": "nav.wf",
+    12	      "urlPathnameAfter": "/heren/aimanagement/list",
+    13	      "cleanTitles": [
+    14	        "工作流管理"
+    15	      ],
+    16	      "toastTexts": [],
+    17	      "replyText": null,
+    18	      "replyStreamUrl": null,
+    19	      "requestLog": [
+    20	        {
+    21	          "url": "/ai-manager/process/listProcessData?pageNo=1",
+    22	          "method": "GET",
+    23	          "status": 200,
+    24	          "ts": 1782634442310,
+    25	          "initiator": "atstep_0",
+    26	          "attributedStepId": "atstep_0",
+    27	          "errorEnvelope": {
+    28	            "field": "status",
+    29	            "expected": 200,
+    30	            "actual": 200,
+    31	            "ok": true
+    32	          }
+    33	        }
+    34	      ],
+    35	      "quietPointReached": true
+    36	    },
+    37	    {
+    38	      "stepId": "atstep_1",
+    39	      "intentId": "intent_1",
+    40	      "atom": "wf.create",
+    41	      "urlPathnameAfter": "/heren/aimanagement/edit/8f3a21",
+    42	      "cleanTitles": [
+    43	        "编辑工作流",
+    44	        "atl_目录CRUD_1782634443"
+    45	      ],
+    46	      "toastTexts": [
+    47	        "新增成功"
+    48	      ],
+    49	      "replyText": null,
+    50	      "replyStreamUrl": null,
+    51	      "requestLog": [
+    52	        {
+    53	          "url": "/ai-manager/process/saveOrModifyProcessData",
+    54	          "method": "POST",
+    55	          "status": 200,
+    56	          "ts": 1782634443002,
+    57	          "initiator": "atstep_1",
+    58	          "attributedStepId": "atstep_1",
+    59	          "errorEnvelope": {
+    60	            "field": "status",
+    61	            "expected": 200,
+    62	            "actual": 200,
+    63	            "ok": true
+    64	          }
+    65	        },
+    66	        {
+    67	          "url": "/ai-manager/auths/poll",
+    68	          "method": "GET",
+    69	          "status": 401,
+    70	          "ts": 1782634443105,
+    71	          "initiator": "background",
+    72	          "attributedStepId": null,
+    73	          "errorEnvelope": {
+    74	            "field": "status",
+    75	            "expected": 200,
+    76	            "actual": 401,
+    77	            "ok": false
+    78	          }
+    79	        }
+    80	      ],
+    81	      "quietPointReached": true
+    82	    },
+    83	    {
+    84	      "stepId": "atstep_2",
+    85	      "intentId": "intent_2",
+    86	      "atom": "chat.send",
+    87	      "urlPathnameAfter": "/heren/aimanagement/edit/8f3a21",
+    88	      "cleanTitles": [
+    89	        "编辑工作流"
+    90	      ],
+    91	      "toastTexts": [],
+    92	      "replyText": "已为该工作流生成节点建议：1) 接收患者主诉 2) 调用分诊模型 3) 输出建议科室。",
+    93	      "replyStreamUrl": "/ai-manager/llm/streamReply?sessionId=atl_sess_1782634444",
+    94	      "requestLog": [
+    95	        {
+    96	          "url": "/ai-manager/llm/streamReply?sessionId=atl_sess_1782634444",
+    97	          "method": "POST",
+    98	          "status": 200,
+    99	          "ts": 1782634444870,
+   100	          "initiator": "atstep_2",
+   101	          "attributedStepId": "atstep_2",
+   102	          "errorEnvelope": {
+   103	            "field": "status",
+   104	            "expected": 200,
+   105	            "actual": 200,
+   106	            "ok": true
+   107	          }
+   108	        }
+   109	      ],
+   110	      "quietPointReached": true
+   111	    }
+   112	  ]
+   113	}
+
+exec
+/bin/bash -lc 'sha256sum tests/_golden/draft-cli.golden.mjs docs/plans/drafter-patch-intent-guard/accept/red-proofs/draft-cli-d10.red.txt && nl -ba docs/plans/drafter-patch-intent-guard/plan.md && nl -ba docs/plans/drafter-patch-intent-guard/GRILL.md && nl -ba loop/prd-draft-cli.json && nl -ba loop/prd-drafter-patch-intent-guard.json && git show ced85db''^:tests/_golden/draft-cli.golden.mjs | sha256sum' in /mnt/d/ctx/heren/casey
+ succeeded in 787ms:
+     1	# drafter-patch-intent-guard · plan（light，v1）
+     2	
+     3	## 改动面
+     4	
+     5	1. `bin/draft.mjs` `--patch` 合并段：合并前构造 `knownIntents = Set(observed.steps[].intentId)`；
+     6	   补缝条目 intentId ∉ 集合 → `exit 65`（错误信息含违例 intentId——步标识符非敏感面）；
+     7	   合法条目行为一字不变（含挂到 skeleton 尚无断言的 intent 上的合法新建）。
+     8	2. owner 金牌（draft CLI 面）加两检查（红先行）：
+     9	   - 负控：patch 携不存在 intentId → 必 exit 65、零落盘；
+    10	   - 正控：patch 携 observed 真实 intentId（skeleton 无断言者）→ exit 0 且断言挂上（防把合法
+    11	     新建一起误杀）。
+    12	3. owner prd `checksumAmendments` 记账重钉金牌 checksum。
+    13	
+    14	## 验收点
+    15	
+    16	- 修前红证：现行 bin 对错位 intentId exit 0 且落盘孤儿 intent（红证文件留档）。
+    17	- 修后：新负控/正控绿 + owner 金牌全绿 + gate GREEN + 受影响面（p4-drafter/draft-cli/e2e-chain
+    18	  等吃 drafter 的 zero-SUT 金牌）复跑退出码 0。
+    19	
+    20	## 评审
+    21	
+    22	light 车道：codex（Steven 既裁家族）聚焦审 diff+红证+金牌钉。
+     1	# drafter-patch-intent-guard · GRILL（阶段0）
+     2	
+     3	> 工装缝修单（real-uat-attestation R2 实证挂账）：`bin/draft.mjs` 的 `--patch` 合并对未知 intentId
+     4	> **静默新建孤儿 intent**——错位断言被冻进 expected 但回放期永不匹配（表现=冻结面缺该断言、
+     5	> 裁定退化只剩全局取证）。UAT 链首版补缝 `intent_open`/`intent_1` 错位即此。
+     6	
+     7	## 决策（均按仓内既有纪律直裁，无 Steven 分岔）
+     8	
+     9	- D1 处置=fail-closed 拒绝（exit 65），不是告警放行：与 draft 既有闸（缺 intentId/非数组均 65）
+    10	  同律；孤儿断言无任何合法用途。
+    11	- D2 存在性基准=observed 的真实 intent 集（`observed.steps[].intentId` 全集）：skeleton 的
+    12	  `draft.intents` 只含已有断言的 intent（UAT 实证 0 断言时为空），不能作基准，否则合法补缝也被拒。
+    13	- D3 范围收窄：只封 intentId 存在性这一缝；kind/op 语义仍由既有 `validateDraft` 闸管，不重复造闸。
+    14	- D4 金牌钉=红先行：owner 金牌加「错位 intentId 必 65 + 正控合法 intentId 仍过」两检查，
+    15	  修前红实证（现行为 exit 0 落盘孤儿）；冻结金牌修改走 owner prd `checksumAmendments` 修单路径。
+     1	{
+     2	  "schemaVersion": 1,
+     3	  "task": "相2 草拟命令化（light）：casey draft <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]——薄 CLI 零 LLM 包已收口函数层（synthesizeSkeleton + validateDraft）：assertionAtoms 唯一源 = compile-report.handoff.assertionAtoms（P4 交接面既定位）；--patch 为 LLM 补缝文件通道（CLI 外产出，同 P3 flow 范式，prompt 用 p4-drafter 既定件）；合并后整份过闸、违规 exit 65 不落草稿（半份草稿比没有更危险）；caseId 三方一致闸；产物 expected.draft-<caseId>.json 带 pending 留痕、经凭据门落盘。人签 UX 照 p4-drafter 既定 route:human 不做。决策 GRILL G1–G4（Steven「继续开」授权 HANDOFF ①）。",
+     4	  "specPath": "docs/plans/draft-cli/plan.md",
+     5	  "testChecksums": {
+     6	    "tests/_golden/draft-cli.golden.mjs": "d3485a9d2fac86794d45075885fc89ceee5ca056c75253238458ee297fedcad5"
+     7	  },
+     8	  "observability": [
+     9	    {
+    10	      "dimension": "真机第二条用例（chiefcomplaint_smoke）走 casey draft 产草稿 → LLM 补缝 → 人签，验 CLI 面在真数据上的可用性",
+    11	      "route": "human"
+    12	    }
+    13	  ],
+    14	  "stories": [
+    15	    {
+    16	      "id": "s1-draft-cli",
+    17	      "desc": "bin/draft.mjs 新薄 CLI + casey.mjs draft 分支改派发。golden 5 检查：骨架落盘（卷回/全局取证/soft）/ 补缝合并（硬软语义）/ 违规整份拒不落草稿 / caseId 一致闸 / 缺参 64（实现前 5 红全核：桩 exit 3）。",
+    18	      "lane": "implementation",
+    19	      "acceptance": [
+    20	        "node tests/_golden/draft-cli.golden.mjs",
+    21	        "node bin/casey.mjs selftest --tier1"
+    22	      ],
+    23	      "passes": true,
+    24	      "evidence": "gate@2026-07-22T23:47:04.253Z 全部 acceptance exit 0"
+    25	    },
+    26	    {
+    27	      "id": "s2-regression-locks",
+    28	      "desc": "回归锁：p4-drafter golden（函数层零改动）原样绿。",
+    29	      "lane": "implementation",
+    30	      "acceptance": [
+    31	        "node tests/_golden/p4-drafter.golden.mjs"
+    32	      ],
+    33	      "passes": true,
+    34	      "evidence": "gate@2026-07-22T23:47:06.347Z 全部 acceptance exit 0"
+    35	    }
+    36	  ],
+    37	  "checksumAmendments": [
+    38	    {
+    39	      "amendedAt": "2026-07-23",
+    40	      "files": [
+    41	        "tests/_golden/draft-cli.golden.mjs"
+    42	      ],
+    43	      "reason": "drafter-patch-intent-guard 修单（断言零弱化、纯加钉）：--patch 错位 intentId 此前静默新建孤儿 intent（real-uat-attestation R2 真机实证：断言冻进 expected 但回放永不匹配）。bin/draft.mjs 加存在性闸（置词表硬闸后=闸序不动 output-seal F4 冻结面；基准=observed.steps 全集防误杀合法新建；违例值不回显报序号——output-seal 遮值纪律）。金牌加 D10 负控（错位必 65+零落盘+红先行实证 exit 0 落孤儿，红证 docs/plans/drafter-patch-intent-guard/accept/red-proofs/draft-cli-d10.red.txt）+D11 正控（合法新建不误杀+草稿不含 observed 外 intent）。修后 draft-cli 11/11、output-seal 27/27、caseid-echo-mask/p4-drafter/tier1 全 exit 0。"
+    44	    }
+    45	  ]
+    46	}
+     1	{
+     2	  "schemaVersion": 1,
+     3	  "task": "drafter-patch-intent-guard（light）：bin/draft.mjs --patch 存在性闸修单——错位 intentId 静默孤儿断言缝（real-uat R2 实证挂账）封口；闸序置词表硬闸后零涟漪 output-seal；红先行 D10+正控 D11。",
+     4	  "specPath": "docs/plans/drafter-patch-intent-guard/plan.md",
+     5	  "testChecksums": {
+     6	    "tests/_golden/draft-cli.golden.mjs": "d3485a9d2fac86794d45075885fc89ceee5ca056c75253238458ee297fedcad5",
+     7	    "docs/plans/drafter-patch-intent-guard/accept/red-proofs/draft-cli-d10.red.txt": "21a9aa7ef5a9d63098dd0119241f473e9f80f7bc39225036296639bfe5759eca"
+     8	  },
+     9	  "observability": [],
+    10	  "stories": [
+    11	    {
+    12	      "id": "s1-intent-guard",
+    13	      "desc": "存在性闸：D10 错位必65零落盘（红先行）+D11 合法新建不误杀；受影响面 output-seal/caseid-echo-mask/p4-drafter/tier1 复跑绿。",
+    14	      "lane": "implementation",
+    15	      "acceptance": [
+    16	        "node tests/_golden/draft-cli.golden.mjs",
+    17	        "node tests/_golden/output-seal.golden.mjs"
+    18	      ],
+    19	      "passes": true,
+    20	      "evidence": "gate@2026-07-22T23:48:10.073Z 全部 acceptance exit 0"
+    21	    }
+    22	  ]
+    23	}
+a40ddc8aec236df349035349ab297f2969dc7dc21cef0e3a423e05b4a433864f  -
+
+exec
+/bin/bash -lc "rg -n \"draft|fake-sut|server|listen|replay\" tests/_golden/e2e-chain.golden.mjs | sed -n '1,120p' && nl -ba docs/plans/drafter-patch-intent-guard/accept/red-proofs/draft-cli-d10.red.txt" in /mnt/d/ctx/heren/casey
+ succeeded in 306ms:
+3:// → compile gate → confirm 门(手编，镜像 p3 金牌 golden-human 先例) → compile --execute(fake-sut + --skip-login)
+4:// → 相2 draft(+patch=mock LLM 补缝) → 相2 sign(CLI 真签面) → 相3-4-6 casey run → 报告三件 + verdict 全 PASS。
+17:import { startFakeSut, FAKE_SITE_DENYLIST } from '../fixtures/fake-sut/server.mjs';
+95:const draftFile = join(gateDir, `expected.draft-${CASE_ID}.json`);
+158:  // ---------- C5 相2 draft（骨架断链前置断言 + 显式补缝，codex R1-F5/F8） ----------
+159:  await checkAsync('C5 相2 draft：assertionAtoms 钉死 → 骨架硬覆盖 intent_1/intent_2 → 显式 patch 只补 intent_0 与信封 → pending 空', async () => {
+163:    const skeletonProbe = run([CASEY, 'draft', CASE_ID, '--observed', observedFile, '--compile-report', reportFile, '--out-dir', gateDir]);
+164:    if (skeletonProbe.status !== 0) throw new Error(`draft 骨架应 exit 0，实际 ${skeletonProbe.status}：${(skeletonProbe.stderr || '').slice(-200)}`);
+165:    const skeleton = readJson(draftFile);
+169:    const r = run([CASEY, 'draft', CASE_ID, '--observed', observedFile, '--compile-report', reportFile, '--out-dir', gateDir, '--patch', pf]);
+170:    if (r.status !== 0) throw new Error(`draft+patch 应 exit 0，实际 ${r.status}：${(r.stderr || '').slice(-300)}`);
+171:    const draft = readJson(draftFile);
+172:    if ((draft.pending || []).length !== 0) throw new Error(`pending 应空，实际 ${JSON.stringify(draft.pending)}`);
+173:    if (!deepEq(draft.intents.map((i) => i.intentId), EXPECT_INTENT_SET)) throw new Error(`草稿 intent 集应恰 ${JSON.stringify(EXPECT_INTENT_SET)}`);
+174:    for (const it of draft.intents) if (!(it.expected || []).some((a) => !a.soft)) throw new Error(`intent ${it.intentId} 缺硬断言（verdict 会判 INDETERMINATE）`);
+179:    const r = run([CASEY, 'sign', CASE_ID, '--draft', draftFile, '--prd', prdFixtureFile, '--frozen-out', frozenFile, '--signer', 'qa.hermetic', '--against-build', 'hermetic-b0', '--signed-at', '2026-07-06T00:00:00.000Z']);
+247:    // 核心确定性产物（events/frozen/draft/observed）零 sut host（axes/报告呈现层 URL 剥离由各自契约金牌守）。
+248:    for (const f of [eventsFile, frozenFile, draftFile, observedFile]) if (readFileSync(f, 'utf8').includes(sutHost)) throw new Error(`${f} 携 sut host`);
+     1	RED  draft-cli: D10 补缝 intentId 不存在于 observed → 65 且不落草稿（错位断言禁止静默成孤儿）: 错位 intentId 应 exit 65，实际 0
+     2	RED  draft-cli: 10 过 / 1 红
+
+codex
+R1 闸的正确性：OK
+
+- [bin/draft.mjs:71](/mnt/d/ctx/heren/casey/bin/draft.mjs:71) 先执行 `validateDraft`，存在性闸位于其后、凭据门和落盘之前；F4 的非法 kind/op 会先被词表硬闸拒绝，不改变冻结面。
+- [bin/draft.mjs:84](/mnt/d/ctx/heren/casey/bin/draft.mjs:84) 以 `observed.steps` 全集为基准，能容纳 skeleton 尚无断言的合法 intent。
+- 闸检查完整 `draft.intents`，因此 compile-report 的 `assertionAtoms` 生成的 observed 外 intent 同样会被拒绝，符合刻意同病同封。
+
+R2 遮值纪律：OK
+
+- [bin/draft.mjs:85](/mnt/d/ctx/heren/casey/bin/draft.mjs:85) 只收集结构性数组序号；[bin/draft.mjs:87](/mnt/d/ctx/heren/casey/bin/draft.mjs:87) 仅输出 `intents[序号]`，不输出文件侧 intentId。
+- 定位形式与 output-seal 的“结构下标定位、输入值不回显”口径一致；当前实现没有新增内容泄漏面。
+
+R3 金牌钉质量：FINDING
+
+- D10 的 exit 65、零落盘和 D11 的合法新建正控覆盖本缝；[红证:1](/mnt/d/ctx/heren/casey/docs/plans/drafter-patch-intent-guard/accept/red-proofs/draft-cli-d10.red.txt:1) 真实记录修前 exit 0。
+- **Medium — 遮值约束没有被金牌冻结。** [draft-cli.golden.mjs:146](/mnt/d/ctx/heren/casey/tests/_golden/draft-cli.golden.mjs:146) 的正则允许 stderr 出现 `intent_open`，所以未来若回归为直接回显违例 intentId，D10 仍会通过。应使用唯一种子 intentId，显式断言输出不含该种子，同时要求“存在性闸”和 `intents[0]` 定位词。
+
+R4 记账：FINDING
+
+- 实际 SHA-256 与 owner PRD、契约 PRD 登记值一致；owner `checksumAmendments` 对闸序、基准、遮值及现成绿证的记载账实相符。
+- **Medium — 权威 plan 与实现及 owner 账直接矛盾。** [plan.md:6](/mnt/d/ctx/heren/casey/docs/plans/drafter-patch-intent-guard/plan.md:6) 明确要求错误信息包含违例 intentId，并称其非敏感；这与 [bin/draft.mjs:82](/mnt/d/ctx/heren/casey/bin/draft.mjs:82) 的遮值实现及 [prd-draft-cli.json:43](/mnt/d/ctx/heren/casey/loop/prd-draft-cli.json:43) 的“不回显报序号”修单账相反。
+- **Medium — plan 声明的验收没有对应证据。** [plan.md:17](/mnt/d/ctx/heren/casey/docs/plans/drafter-patch-intent-guard/plan.md:17) 要求复跑 `e2e-chain`，但契约 PRD 和现成证据均未包含；而该金牌明确启动 fake-SUT（[e2e-chain.golden.mjs:3](/mnt/d/ctx/heren/casey/tests/_golden/e2e-chain.golden.mjs:3)），不属于允许代理执行的 zero-SUT 面。应订正 plan 为实际获准且已有证据的检查集，而不是补跑它。
+
+FAIL（阻塞项：R3 遮值金牌缺口；R4 plan 的遮值口径与验收账不实）
+tokens used
+107,768
+R1 闸的正确性：OK
+
+- [bin/draft.mjs:71](/mnt/d/ctx/heren/casey/bin/draft.mjs:71) 先执行 `validateDraft`，存在性闸位于其后、凭据门和落盘之前；F4 的非法 kind/op 会先被词表硬闸拒绝，不改变冻结面。
+- [bin/draft.mjs:84](/mnt/d/ctx/heren/casey/bin/draft.mjs:84) 以 `observed.steps` 全集为基准，能容纳 skeleton 尚无断言的合法 intent。
+- 闸检查完整 `draft.intents`，因此 compile-report 的 `assertionAtoms` 生成的 observed 外 intent 同样会被拒绝，符合刻意同病同封。
+
+R2 遮值纪律：OK
+
+- [bin/draft.mjs:85](/mnt/d/ctx/heren/casey/bin/draft.mjs:85) 只收集结构性数组序号；[bin/draft.mjs:87](/mnt/d/ctx/heren/casey/bin/draft.mjs:87) 仅输出 `intents[序号]`，不输出文件侧 intentId。
+- 定位形式与 output-seal 的“结构下标定位、输入值不回显”口径一致；当前实现没有新增内容泄漏面。
+
+R3 金牌钉质量：FINDING
+
+- D10 的 exit 65、零落盘和 D11 的合法新建正控覆盖本缝；[红证:1](/mnt/d/ctx/heren/casey/docs/plans/drafter-patch-intent-guard/accept/red-proofs/draft-cli-d10.red.txt:1) 真实记录修前 exit 0。
+- **Medium — 遮值约束没有被金牌冻结。** [draft-cli.golden.mjs:146](/mnt/d/ctx/heren/casey/tests/_golden/draft-cli.golden.mjs:146) 的正则允许 stderr 出现 `intent_open`，所以未来若回归为直接回显违例 intentId，D10 仍会通过。应使用唯一种子 intentId，显式断言输出不含该种子，同时要求“存在性闸”和 `intents[0]` 定位词。
+
+R4 记账：FINDING
+
+- 实际 SHA-256 与 owner PRD、契约 PRD 登记值一致；owner `checksumAmendments` 对闸序、基准、遮值及现成绿证的记载账实相符。
+- **Medium — 权威 plan 与实现及 owner 账直接矛盾。** [plan.md:6](/mnt/d/ctx/heren/casey/docs/plans/drafter-patch-intent-guard/plan.md:6) 明确要求错误信息包含违例 intentId，并称其非敏感；这与 [bin/draft.mjs:82](/mnt/d/ctx/heren/casey/bin/draft.mjs:82) 的遮值实现及 [prd-draft-cli.json:43](/mnt/d/ctx/heren/casey/loop/prd-draft-cli.json:43) 的“不回显报序号”修单账相反。
+- **Medium — plan 声明的验收没有对应证据。** [plan.md:17](/mnt/d/ctx/heren/casey/docs/plans/drafter-patch-intent-guard/plan.md:17) 要求复跑 `e2e-chain`，但契约 PRD 和现成证据均未包含；而该金牌明确启动 fake-SUT（[e2e-chain.golden.mjs:3](/mnt/d/ctx/heren/casey/tests/_golden/e2e-chain.golden.mjs:3)），不属于允许代理执行的 zero-SUT 面。应订正 plan 为实际获准且已有证据的检查集，而不是补跑它。
+
+FAIL（阻塞项：R3 遮值金牌缺口；R4 plan 的遮值口径与验收账不实）
+CODEX-DONE rc=0

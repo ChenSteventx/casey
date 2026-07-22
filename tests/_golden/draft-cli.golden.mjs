@@ -133,17 +133,23 @@ check('D9 凭据门拦截 exit 1（R1-F4 修正采纳：同 compile 先例，1=�
 });
 
 // ---------- drafter-patch-intent-guard（real-uat R2 实证工装缝）----------
-check('D10 补缝 intentId 不存在于 observed → 65 且不落草稿（错位断言禁止静默成孤儿）', () => {
+check('D10 补缝 intentId 不存在于 observed → 65 且不落草稿且遮值（错位断言禁止静默成孤儿）', () => {
   const gDir = join(tmp, 'out-ghost');
   mkdirSync(gDir, { recursive: true });
   const PATCH_GHOST = join(tmp, 'patch-ghost.json');
+  // 种子 intentId（codex R1-R3：遮值约束也要冻）：违例值绝不许出现在任何输出流——patch 是 LLM/人编
+  // 文件、值可携任意内容（output-seal 同律）；诊断靠「存在性闸」定位词 + intents[序号]。
+  const SEED = 'SEEDVAL_D10GHOST_x9';
   writeFileSync(PATCH_GHOST, JSON.stringify([
-    { intentId: 'intent_open', kind: 'urlPathname', op: 'startsWith', value: '/heren/aimanagement/edit' },
+    { intentId: SEED, kind: 'urlPathname', op: 'startsWith', value: '/heren/aimanagement/edit' },
   ]));
   const r = run([CASE_ID, '--observed', OBSERVED_FIXTURE, '--compile-report', REPORT, '--out-dir', gDir, '--patch', PATCH_GHOST]);
   if (r.status !== 65) throw new Error(`错位 intentId 应 exit 65，实际 ${r.status}`);
   if (existsSync(join(gDir, `expected.draft-${CASE_ID}.json`))) throw new Error('错位补缝拒后不得落草稿');
-  if (!/intent_open|存在|observed/.test(String(r.stderr || ''))) throw new Error('stderr 须点名违例 intentId 或存在性闸');
+  const out = String(r.stderr || '') + String(r.stdout || '');
+  if (out.includes(SEED)) throw new Error('违例 intentId 原值回显（遮值纪律破，output-seal 同律）');
+  if (!out.includes('存在性闸')) throw new Error('stderr 缺「存在性闸」定位词（遮值不得降诊断）');
+  if (!/intents\[\d+\]/.test(out)) throw new Error('stderr 缺 intents[序号] 定位');
 });
 
 check('D11 正控：observed 真实 intent（骨架无断言者）补缝仍成、不误杀合法新建', () => {

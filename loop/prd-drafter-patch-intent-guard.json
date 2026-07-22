@@ -3,7 +3,7 @@
   "task": "drafter-patch-intent-guard（light）：bin/draft.mjs --patch 存在性闸修单——错位 intentId 静默孤儿断言缝（real-uat R2 实证挂账）封口；闸序置词表硬闸后零涟漪 output-seal；红先行 D10+正控 D11。",
   "specPath": "docs/plans/drafter-patch-intent-guard/plan.md",
   "testChecksums": {
-    "tests/_golden/draft-cli.golden.mjs": "d3485a9d2fac86794d45075885fc89ceee5ca056c75253238458ee297fedcad5",
+    "tests/_golden/draft-cli.golden.mjs": "3ce92b181be49f2b92e3b03d6a4c25121c2a0281c61df75509863151fcfd1ddd",
     "docs/plans/drafter-patch-intent-guard/accept/red-proofs/draft-cli-d10.red.txt": "21a9aa7ef5a9d63098dd0119241f473e9f80f7bc39225036296639bfe5759eca"
   },
   "observability": [],
@@ -17,7 +17,7 @@
         "node tests/_golden/output-seal.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T23:48:10.073Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T23:56:51.857Z 全部 acceptance exit 0"
     }
   ]
 }
