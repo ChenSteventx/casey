@@ -28,7 +28,7 @@
         "git diff --check"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-21T06:55:39.065Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T23:38:40.779Z 全部 acceptance exit 0"
     }
   ]
 }

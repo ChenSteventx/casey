@@ -24,7 +24,7 @@
         "node tests/_golden/intent-event-fold.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-15T16:36:41.696Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T23:38:23.905Z 全部 acceptance exit 0"
     }
   ]
 }

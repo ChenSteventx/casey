@@ -20,7 +20,7 @@
         "node tests/_golden/agent-delete-zero-window.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-16T07:17:58.006Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T23:38:25.226Z 全部 acceptance exit 0"
     }
   ]
 }

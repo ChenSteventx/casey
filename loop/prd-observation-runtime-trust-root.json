@@ -64,7 +64,7 @@
         "node tests/_golden/observation-unsafe-golden-revocation.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-17T05:46:43.426Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-21T07:14:01.779Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-active-suite-supersession-ledger",

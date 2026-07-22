@@ -35,7 +35,7 @@
         "node tests/_golden/entity-ui-wiring.searchopen.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-21T19:38:59.560Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T01:48:31.609Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-bindagent-lockchain",
@@ -45,7 +45,7 @@
         "node tests/_golden/entity-ui-wiring.bindagent-lockchain.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-21T19:39:03.099Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T01:48:35.370Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-bindagent-replay",
@@ -55,7 +55,7 @@
         "node tests/_golden/entity-ui-wiring.bindagent-replay.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-21T19:40:11.198Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T01:49:38.636Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-guards-and-terms",
@@ -66,7 +66,7 @@
         "node loop-kit/bin/term-lint.mjs --registry"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-21T19:40:13.709Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T01:49:40.475Z 全部 acceptance exit 0"
     }
   ],
   "checksumAmendments": [
