@@ -50,9 +50,23 @@ plan §6 修正案本 session 未落（等构造实现后一并改，避免 plan
 route:human）；② compile 清场清单已含 identity-observations.compile.json（bin/compile.mjs 失败路径
 rmSync 已覆盖，sol 引用的行号为 82484ab 旧影——下一 session 复核一眼即可）。
 
-## 评审状态快照（交接时点）
+# 三波修复（sol 五面构造兑现，2026-07-22 晚；H6 残余收口）
 
-R1 FAIL(1C+6H+3M) → 修单一波+钉 → R2 FAIL(H1/H6/M1 PARTIAL、7 FIXED、零新增) → 二波修复已落
+| 项 | 三波落点 | 钉/证据 |
+|---|---|---|
+| H6 残余「动作轴/axes/report 字节面零 SUT 不可达」 | sol 咨询证伪后按其构造清单全数落地：①面⑦ `compile-run-v1.json`——mock Page/forensics 测试替身（`tests/_golden/fixtures/agent-id-readback/mock-page.mjs`，行为全由 dom 规格表决定、未登记 evaluate 形态一律抛错）驱【真实】`createCompileRun`/`compileFlow` 走 v1 flow（nav 路由+搜索编码收敛 fill/press/click 文本锚），冻 events/verification/provenance/observed 全量+「v1 零身份观察」不变量（?? 归一使 82484ab 与现行同字节）；②面⑧ `action-axes-v1.json`——同替身驱【真实】`performAction` 固定 12 分支 v1 事件脚本（unique fill/press/click、searchOpen 同名双条目 ambiguous、缺席 none、唯一但动作失败 action_failed、通用多匹配/缺席+漂移探针形状、selectOption 双分支、纯断言 kind:none、nav→null），冻逐事件动作轴；③面⑨ `axes-projection-v1.json`——`bin/replay.mjs:799-881` 投影段逐字搬移成生产共用纯函数 `lib/replay-axes.mjs`（bin 与金牌消费同一实现；82484ab..b920b4f 对投影段零 hunks，搬移 diff 交 R3 静态核），固定证据结构（归因归一/孤儿并入/凭据路由段打码/blob: 脱敏/协议相对拒绝/intent 折叠洗白禁/软断言透传/多 kind 断言）冻完整 axes；④面⑩ `verdict-report-v1.json`——面⑨ axes 喂真实 `bin/verdict.mjs`→`bin/report-model.mjs --generated-at 2026-07-22T08:00:00.000Z`→`bin/report.mjs` 三 CLI 链，四态各一（PASS/SUT_DEFECT/NEEDS_HUMAN·INDETERMINATE/NEEDS_HUMAN·AMBIGUOUS_ACTION），冻三流+verdict JSON 全文+axes/verdict/report-model/report JSON 逐文件 sha+产物文件名集 | R18-R21 逐字对照；红证 `refit-r3-agent-id-regression-diff.zero-sut.red.txt`（82484ab 窗口 6/21 红=R1 清单不齐+R12 正控+R18-R21 基线缺席）；基线 82484ab 窗口重录、既有六面字节零漂移（窗口保真机器证据）；退窗现树 21/21 绿=「身份实现不动 v1 字节」机器证据 |
+| plan §6 权威修正 | §6 新增修正条（sol 认可措辞边界）：面②字节面由「不可达随真机链」修正为【具体调用矩阵冻结】（上述①-④逐条列明）；明示排除=sign 无参 usage（已声明接口演进）+ report html/md 字节（报告模板演进面，义务=report 的 JSON 字节、文件名集仍冻）+ `bin/report.mjs` 成功 stdout（resolve 后绝对路径，冻它破跨树可移植/R13 零绝对路径纪律，改冻 status/stderr+sha 集）；§8 route:human 只留真机事实面+绑结构化 uatCaseId+命名后继契约 `real-uat-attestation` | plan.md §6 修正条+§8；interface-spec §7 三波增补段同步 |
+| sol 附带两笔既有账复核 | ① SKILL.md:107 措辞统一：已在 prd observability route:human（Steven 另日处理，未动）；② compile 失败路径清场含 `identity-observations.compile.json`：现行 `bin/compile.mjs` rmSync 清场清单已含该件（sol 引用行号为 82484ab 旧影，复核毕无需改） | 只读复核，零实现改动 |
+
+三波过程附加事实：面⑩首録断链（`assembleReportModel` 拒缺 `op` 的 postAssertion）——夹具断言改 schema 规范形
+（`envelopeOk`/`absent`/`appears`）后全链 exit 0；断链版基线未冻结、红证/基线同窗重取重录。
+受影响面复跑：zero-SUT 金牌批（mountdelay-fidelity/replay-entity-anchor/teachin 系/静态预检/units 全批）全绿；
+`real-run-trust.zero-sut` 红为先于本契约的陈旧红（其源码字面检查 `const ctx = { uniqueName, baseUrl: sut` 在
+82484ab 已不成立，主树同红、无 owner prd 引用——如实挂账交接，不在本契约内顺手修）。
+
+## 评审状态快照（当前）
+
+R1 FAIL(1C+6H+3M) → 修单一波+钉 → R2 FAIL(H1/H6/M1 PARTIAL、7 FIXED、零新增) → 二波修复
 （H1 ElementHandle 钉扎、M1 WeakSet+消费出账+O8c、H6 面③④+过校验负控 R15-R17）→ gate 第四轮
-GREEN 6/6 → 残余=H6 的 sol 五面构造实现 + plan §6 修正 → 然后 codex R3（r3-packet-draft.md 已备，
-补上五面实现后更新其材料 4 与证据行再发）。
+GREEN 6/6 → 三波修复（sol 五面构造⑦⑧⑨⑩全数落地 + plan §6/§8 权威修正 + interface-spec §7 披露，
+棘轮 21/21）→ 待 gate 第五轮 + codex R3 终判。

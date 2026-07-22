@@ -62,6 +62,12 @@ v1 经 sol max 判 CHANGES REQUIRED（review/sol-r1.log，三 P0）；v2 吸收�
 - chat-sut 新场景（纯加法、既有场景 byte-identical）：搜索走 fetch 的 `idhappy / idtwins-hidden / idcode-mismatch / idmissing / idpaged`（`total=2` 单页一行）。
 - 存量零回归证明（sol P0-6，R2-6 扩全）：82484ab 差分棘轮金牌——固定 clock/`signedAt`/uniqueName/mock 采集序列下，未声明路径逐字对照：①CDP listener 注册与 `send` 调用序列；②`records()`/动作轴/events/report 的 JSON 字节；③CLI exit/stdout/stderr 三流；④**完整输出文件集合 + 逐文件 sha256**；⑤poison spy 证身份解析器/事务模块未被触达。不以「旧金牌仍绿」替代、不 normalize 后冒充 byte-identical。
 - 存量回归金牌逐项分类（R2-6）：zero-SUT 者（bindagent-lockchain、guards、entity-binding 系）进机器 acceptance；启动浏览器者（searchopen、bindagent-replay）按 §6 治理裁定归类，不整体笼统列跑。
+- §6 修正（2026-07-22 晚；Steven 拍板送 `sol` max 咨询后授权，`review/sol-consult-plan6.log`，与 codex R2「plan 权威修正」指引同轨）：上条面②中「动作轴/axes/report 的 JSON 字节」此前被修单诚实缩窄为「浏览器绑定、零 SUT 不可达」——该判定经咨询证伪，兑现口径修正为【具体调用矩阵冻结】（差分棘轮面⑦⑧⑨⑩，R18-R21）：
+  ① events 字节：mock Page/forensics 测试替身驱【真实】`createCompileRun`/`compileFlow`（v1 flow），冻 events/verification/provenance/observed 全量 JSON；
+  ② 动作轴字节：同替身驱【真实】`performAction` 固定 v1 事件脚本，冻逐事件动作轴 JSON；
+  ③ axes 字节：`bin/replay.mjs` 浏览器后三轴投影抽生产共用纯函数 `lib/replay-axes.mjs`（逐字搬移、生产与金牌消费同一实现），固定证据结构驱之冻完整 axes；
+  ④ report 字节：面③ axes 喂真实 `verdict`→`report-model`（`--generated-at` 固定）→`report` CLI 链，冻三流+verdict/report JSON。
+  基线仍于 82484ab 窗口录制（既有面字节未变=窗口保真机器证据）。冻结对象是上述调用矩阵的字节；明示排除口径同 interface-spec §7（sign 无参 usage 属已声明接口演进；report 的 html/md 字节属报告模板演进面、成功 stdout 属绝对路径打印面——义务=report 的 JSON 字节）。route:human 自此只承接真实 DOM/CDP/SUT 行为保真与完整真机 UAT 链，不再承载可零 SUT 兑现的字节面。
 
 ## 7. 验收点（accept 相冻结，红先行）
 
@@ -75,7 +81,7 @@ v1 经 sol max 判 CHANGES REQUIRED（review/sol-r1.log，三 P0）；v2 吸收�
 ## 8. 观察义务
 
 - machine：真机只读实证脚本（活数据跑判定纯函数，证据入 evidence/）。
-- route:human：完整真机用例链（执行权威→签署消费观察件→回放点击前比对）；SKILL.md 执行边界条文与夹具金牌实践的口径收口；密钥签名威胁面后续契约。
+- route:human：完整真机用例链（执行权威→签署消费观察件→回放点击前比对）——绑结构化 uatCaseId、交后继契约 `real-uat-attestation` 承接（§6 修正 2026-07-22：本路只留真机事实面）；SKILL.md 执行边界条文与夹具金牌实践的口径收口；密钥签名威胁面后续契约。
 
 ## 9. 评审
 

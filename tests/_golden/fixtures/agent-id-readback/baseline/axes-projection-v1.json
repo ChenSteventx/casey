@@ -1,0 +1,300 @@
+{
+  "caseId": "tc_air_axes_proj",
+  "steps": [
+    {
+      "stepId": "s2",
+      "intentId": "i1",
+      "atom": "agent.searchOpen",
+      "action": {
+        "resolution": "unique",
+        "candidateCount": 1,
+        "identityReadback": {
+          "ok": true
+        }
+      },
+      "eventActions": [
+        {
+          "stepId": "s1",
+          "action": {
+            "resolution": "unique",
+            "identityReadback": {
+              "ok": true
+            }
+          }
+        },
+        {
+          "stepId": "s2",
+          "action": {
+            "resolution": "unique",
+            "candidateCount": 1,
+            "identityReadback": {
+              "ok": true
+            }
+          }
+        }
+      ],
+      "postAssertions": [
+        {
+          "kind": "urlPathname",
+          "op": "startsWith",
+          "value": "/agent",
+          "soft": false,
+          "ok": true,
+          "actual": "/agent/list"
+        },
+        {
+          "kind": "countChange",
+          "op": "up",
+          "value": 1,
+          "soft": false,
+          "ok": true,
+          "actual": "2→3"
+        },
+        {
+          "kind": "textVisible",
+          "op": "appears",
+          "value": "互联网问诊-主诉",
+          "soft": false,
+          "ok": true,
+          "actual": 2
+        },
+        {
+          "kind": "noErrorEnvelope",
+          "op": "envelopeOk",
+          "value": "status==200",
+          "soft": false,
+          "ok": true,
+          "actual": 0
+        },
+        {
+          "kind": "textVisible",
+          "op": "appears",
+          "value": "全局软锚",
+          "soft": true,
+          "ok": false,
+          "actual": null
+        }
+      ],
+      "forensics": {
+        "network": [
+          {
+            "url": "/api/agents/query?nameLike=alice",
+            "status": 200,
+            "ts": 1001.001,
+            "initiator": "script",
+            "attributedStepId": "s2",
+            "errorEnvelope": {
+              "ok": true,
+              "status": 200
+            },
+            "streamFinished": null,
+            "streamStatus": null
+          },
+          {
+            "url": "/api/<redacted:cred-route>/refresh",
+            "status": 200,
+            "ts": 1002.002,
+            "initiator": "script",
+            "attributedStepId": null,
+            "errorEnvelope": null,
+            "streamFinished": null,
+            "streamStatus": null
+          },
+          {
+            "url": "<redacted:non-http-url>",
+            "status": 200,
+            "ts": 1004.004,
+            "initiator": "other",
+            "attributedStepId": null,
+            "errorEnvelope": null,
+            "streamFinished": null,
+            "streamStatus": null
+          },
+          {
+            "url": "/ai-api/background/poll",
+            "status": 401,
+            "ts": 1005.005,
+            "initiator": "script",
+            "attributedStepId": null,
+            "errorEnvelope": null,
+            "streamFinished": null,
+            "streamStatus": null
+          }
+        ],
+        "lifecycle": {
+          "crashed": false,
+          "crashedAtStepId": null,
+          "pageerror": []
+        }
+      }
+    },
+    {
+      "stepId": "s4",
+      "intentId": "i2",
+      "atom": "agent.searchOpen",
+      "action": {
+        "resolution": "none",
+        "candidateCount": 0,
+        "driftProbe": {
+          "sameSignatureUniquePresent": false,
+          "candidateCount": 0,
+          "matchedSignature": null
+        }
+      },
+      "eventActions": [
+        {
+          "stepId": "s3",
+          "action": {
+            "resolution": "none",
+            "candidateCount": 0,
+            "driftProbe": {
+              "sameSignatureUniquePresent": false,
+              "candidateCount": 0,
+              "matchedSignature": null
+            }
+          }
+        },
+        {
+          "stepId": "s4",
+          "action": {
+            "resolution": "unique",
+            "candidateCount": 1,
+            "identityReadback": {
+              "ok": true
+            }
+          }
+        }
+      ],
+      "postAssertions": [
+        {
+          "kind": "noErrorEnvelope",
+          "op": "envelopeOk",
+          "value": "status==200",
+          "soft": false,
+          "ok": false,
+          "actual": 1
+        },
+        {
+          "kind": "textVisible",
+          "op": "appears",
+          "value": "全局软锚",
+          "soft": true,
+          "ok": false,
+          "actual": null
+        }
+      ],
+      "forensics": {
+        "network": [
+          {
+            "url": "/api/agents/save",
+            "status": 500,
+            "ts": 1003.003,
+            "initiator": "script",
+            "attributedStepId": "s4",
+            "errorEnvelope": {
+              "ok": false,
+              "status": 500
+            },
+            "streamFinished": null,
+            "streamStatus": null
+          }
+        ],
+        "lifecycle": {
+          "crashed": false,
+          "crashedAtStepId": null,
+          "pageerror": []
+        }
+      }
+    },
+    {
+      "stepId": "s5",
+      "intentId": "i3",
+      "atom": "agent.openTestPanel",
+      "action": {
+        "resolution": "unique",
+        "candidateCount": 1,
+        "identityReadback": {
+          "ok": true
+        }
+      },
+      "eventActions": [
+        {
+          "stepId": "s5",
+          "action": {
+            "resolution": "unique",
+            "candidateCount": 1,
+            "identityReadback": {
+              "ok": true
+            }
+          }
+        }
+      ],
+      "postAssertions": [
+        {
+          "kind": "textVisible",
+          "op": "appears",
+          "value": "全局软锚",
+          "soft": true,
+          "ok": false,
+          "actual": null
+        }
+      ],
+      "forensics": {
+        "network": [],
+        "lifecycle": {
+          "crashed": false,
+          "crashedAtStepId": null,
+          "pageerror": []
+        }
+      }
+    },
+    {
+      "stepId": "s6",
+      "intentId": "i4",
+      "atom": "workflow.bindAgent",
+      "action": {
+        "resolution": "ambiguous",
+        "candidateCount": 2
+      },
+      "eventActions": [
+        {
+          "stepId": "s6",
+          "action": {
+            "resolution": "ambiguous",
+            "candidateCount": 2
+          }
+        }
+      ],
+      "postAssertions": [
+        {
+          "kind": "noPageError",
+          "op": "absent",
+          "soft": false,
+          "ok": false,
+          "actual": 1
+        },
+        {
+          "kind": "textVisible",
+          "op": "appears",
+          "value": "全局软锚",
+          "soft": true,
+          "ok": false,
+          "actual": null
+        }
+      ],
+      "forensics": {
+        "network": [],
+        "lifecycle": {
+          "crashed": false,
+          "crashedAtStepId": null,
+          "pageerror": [
+            {
+              "attributedStepId": "s6",
+              "message": "TypeError: 演示页错误"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

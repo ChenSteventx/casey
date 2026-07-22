@@ -1,0 +1,247 @@
+[
+  {
+    "label": "纯断言步→kind:none",
+    "ev": {
+      "stepId": "ax1",
+      "intentId": "ai1",
+      "atom": "assert.textVisible",
+      "action": "none"
+    },
+    "axis": {
+      "kind": "none"
+    }
+  },
+  {
+    "label": "nav→null 交回编排器",
+    "ev": {
+      "stepId": "ax2",
+      "intentId": "ai2",
+      "atom": "nav.agentManagement",
+      "action": "nav",
+      "url": "{{baseUrl}}/agent/list"
+    },
+    "axis": null
+  },
+  {
+    "label": "fill 唯一",
+    "ev": {
+      "stepId": "ax3",
+      "intentId": "ai3",
+      "atom": "agent.searchOpen",
+      "action": "fill",
+      "semantic": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "输入智能体名称或编码进行搜索",
+        "exact": true
+      },
+      "value": "AG-IM-001"
+    },
+    "axis": {
+      "resolution": "unique",
+      "candidateCount": 1,
+      "identityReadback": {
+        "ok": true
+      }
+    }
+  },
+  {
+    "label": "press 唯一",
+    "ev": {
+      "stepId": "ax4",
+      "intentId": "ai3",
+      "atom": "agent.searchOpen",
+      "action": "press",
+      "key": "Enter",
+      "semantic": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "输入智能体名称或编码进行搜索",
+        "exact": true
+      }
+    },
+    "axis": {
+      "resolution": "unique",
+      "candidateCount": 1,
+      "identityReadback": {
+        "ok": true
+      }
+    }
+  },
+  {
+    "label": "searchOpen v1 click 唯一",
+    "ev": {
+      "stepId": "ax5",
+      "intentId": "ai3",
+      "atom": "agent.searchOpen",
+      "action": "click",
+      "semantic": {
+        "kind": "text",
+        "name": "互联网问诊-主诉",
+        "exact": true
+      },
+      "text": "互联网问诊-主诉"
+    },
+    "axis": {
+      "resolution": "unique",
+      "candidateCount": 1,
+      "identityReadback": {
+        "ok": true
+      }
+    }
+  },
+  {
+    "label": "searchOpen v1 同名双条目→ambiguous",
+    "ev": {
+      "stepId": "ax6",
+      "intentId": "ai4",
+      "atom": "agent.searchOpen",
+      "action": "click",
+      "semantic": {
+        "kind": "text",
+        "name": "双子智能体",
+        "exact": true
+      },
+      "text": "双子智能体"
+    },
+    "axis": {
+      "resolution": "ambiguous",
+      "candidateCount": 2,
+      "identityReadback": {
+        "ok": false
+      }
+    }
+  },
+  {
+    "label": "searchOpen v1 缺席→none",
+    "ev": {
+      "stepId": "ax7",
+      "intentId": "ai5",
+      "atom": "agent.searchOpen",
+      "action": "click",
+      "semantic": {
+        "kind": "text",
+        "name": "幽灵智能体",
+        "exact": true
+      },
+      "text": "幽灵智能体"
+    },
+    "axis": {
+      "resolution": "none",
+      "candidateCount": 0,
+      "identityReadback": {
+        "ok": false
+      }
+    }
+  },
+  {
+    "label": "唯一但动作失败→action_failed",
+    "ev": {
+      "stepId": "ax8",
+      "intentId": "ai6",
+      "atom": "workflow.saveDraft",
+      "action": "click",
+      "semantic": {
+        "kind": "role",
+        "role": "button",
+        "name": "保存草稿",
+        "exact": true
+      }
+    },
+    "axis": {
+      "resolution": "action_failed",
+      "candidateCount": 1,
+      "identityReadback": {
+        "ok": false
+      }
+    }
+  },
+  {
+    "label": "通用多匹配→ambiguous 不落笔",
+    "ev": {
+      "stepId": "ax9",
+      "intentId": "ai7",
+      "atom": "workflow.publish",
+      "action": "click",
+      "semantic": {
+        "kind": "role",
+        "role": "button",
+        "name": "发布",
+        "exact": true
+      }
+    },
+    "axis": {
+      "resolution": "ambiguous",
+      "candidateCount": 2
+    }
+  },
+  {
+    "label": "通用缺席→none+漂移探针形状",
+    "ev": {
+      "stepId": "ax10",
+      "intentId": "ai8",
+      "atom": "workflow.publish",
+      "action": "click",
+      "semantic": {
+        "kind": "role",
+        "role": "button",
+        "name": "幽灵按钮",
+        "exact": true
+      },
+      "targetName": "某行"
+    },
+    "axis": {
+      "resolution": "none",
+      "candidateCount": 0,
+      "driftProbe": {
+        "sameSignatureUniquePresent": false,
+        "candidateCount": 0,
+        "matchedSignature": null
+      }
+    }
+  },
+  {
+    "label": "selectOption 唯一",
+    "ev": {
+      "stepId": "ax11",
+      "intentId": "ai9",
+      "atom": "workflow.selectModel",
+      "action": "selectOption",
+      "dropdownUnit": {
+        "fieldLabel": "模型",
+        "optionListSelector": ".hr-select__list",
+        "optionText": "平衡"
+      }
+    },
+    "axis": {
+      "resolution": "unique",
+      "candidateCount": 1,
+      "identityReadback": {
+        "ok": true
+      }
+    }
+  },
+  {
+    "label": "selectOption 缺席→none+漂移探针形状",
+    "ev": {
+      "stepId": "ax12",
+      "intentId": "ai10",
+      "atom": "workflow.selectModel",
+      "action": "selectOption",
+      "dropdownUnit": {
+        "fieldLabel": "幽灵下拉",
+        "optionListSelector": ".hr-select__list",
+        "optionText": "平衡"
+      }
+    },
+    "axis": {
+      "resolution": "none",
+      "candidateCount": 0,
+      "driftProbe": {
+        "sameSignatureUniquePresent": false,
+        "candidateCount": 0,
+        "matchedSignature": null
+      }
+    }
+  }
+]

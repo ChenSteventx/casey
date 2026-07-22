@@ -67,6 +67,8 @@ join 只对终端 click binding；见 plan §4。
 
 `tests/_golden/fixtures/agent-id-readback/baseline/`：冻结时在未实现树上录制（等价 82484ab）：mock 采集序列下 records() 字节、api 面、CDP listener/send 调用名序列（四面逐字对照消费）。
 修单增补（R1-H6，诚实缩窄+补强）：poison spy 升级为真实加载证据——`spy-loader.mjs`/`spy-hooks.mjs` 经 node --import 注入解析钩子，负控（compile/replay/sign 三 CLI 入口未声明路径零身份模块解析）+ 正控（显式 import 必须被逮到）；compile-atoms/replay-actions 对身份门一律动态按需加载。plan §6 允诺的「CLI 三流 + 完整输出文件集逐字节」面不冻结：sign 产物含 receipt 等跨运行确定性未证的字节，冻不确定字节=制造 flaky 假红；该面改由 chat-sut 金牌 C6（真实全链行为钉）与 C7（v1 零行为差行为钉）覆盖，axes/events/report 字节面依赖浏览器执行、随真机链义务 route:human。此缩窄为修单披露项，评审复核。
+二波增补（R2-H6）：面⑤ `sign-v1-cli.json`（sign v1 happy 三流+完整输出集+逐文件 sha+prd 字节；双跑探针实证跨运行字节确定——「receipt 确定性未证」假设实测收回；相对路径零绝对路径泄漏）+ 面⑥ `cli-early-reject.json`（compile/replay 无参三流；sign 无参 usage 含 `--entity-observations` 新旗标文档，属已声明接口合法演进不入未声明面）+ R15-R17 过校验真路径负控。
+三波增补（sol 咨询后兑现，2026-07-22 晚）：一波「axes/events/report 字节面零 SUT 不可达」判定被 sol max 咨询证伪（`review/sol-consult-plan6.log`）——五面构造落地为面⑦⑧⑨⑩（`compile-run-v1.json` / `action-axes-v1.json` / `axes-projection-v1.json` / `verdict-report-v1.json`，R18-R21 逐字对照）：mock Page/forensics 测试替身（`fixtures/agent-id-readback/mock-page.mjs`）驱【真实】`createCompileRun`/`compileFlow` 与 `performAction`；`bin/replay.mjs` 浏览器后三轴投影抽生产共用纯函数 `lib/replay-axes.mjs`（逐字搬移，82484ab..实现快照对投影段零改动、搬移 diff 交评审静态核）；`verdict`→`report-model`（`--generated-at` 固定）→`report` 真 CLI 链（四态各一）。基线仍于 82484ab 窗口录制，既有六面字节未变=窗口保真机器证据。两笔明示排除（同 sign usage 排除口径，冻结的是具体调用矩阵）：report 的 html/md 字节属报告模板演进面（义务=report 的 JSON 字节，产物文件名集仍冻）；`bin/report.mjs` 成功 stdout 打印 resolve 后绝对路径，冻它破跨树可移植（R13 零绝对路径纪律），改冻 status/stderr+产物文件名集+逐文件 sha。真实 DOM/CDP/SUT 行为保真与真机 UAT 仍 route:human（绑 uatCaseId、后继契约 `real-uat-attestation`，见 plan §6/§8 修正）。
 
 ## 8. accept 期裁量记录（金牌作者申报，实现对表权威）
 

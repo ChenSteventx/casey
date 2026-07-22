@@ -6,13 +6,13 @@
     "tests/_golden/agent-id-observation.zero-sut.golden.mjs": "97d4a81cd909c95e2c3a7c39c4c5f4e4aa093f72992090b4e950c166433245f6",
     "tests/_golden/agent-id-gate.zero-sut.golden.mjs": "e8ff621bdf7651662f01eb0b3c3c1ecb972bf219d70b79eb3851aed42cb586ce",
     "tests/_golden/agent-id-sign-observation.zero-sut.golden.mjs": "269e54c31442a8527208a9a92546f02d3b674eb2ddd9bd8d82aae1efb5f14cd8",
-    "tests/_golden/agent-id-regression-diff.zero-sut.golden.mjs": "d7bf03706d1246a2b403fb04e0ea29a4dd4fad9da1da465476b8d97dac7a6f92",
+    "tests/_golden/agent-id-regression-diff.zero-sut.golden.mjs": "2f6c18b85962c44363b851b5f6cba1cb9140f16ac6b0ff691a7d9d9e1c5cb225",
     "tests/_golden/agent-id-readback.chat-sut.golden.mjs": "6058e5ae62dfe98d5d53dfcf3890761717362ca7a06f2a7ca2e90132c21c7447",
     "tests/fixtures/chat-sut/server.mjs": "959e18c5dd28f35b38e3cf3f2acf350db7906c554ba700a1a4c0a96bd90cbf6e",
-    "docs/plans/agent-id-readback/accept/interface-spec.md": "cbcc04ee118d826372bcde46d647bac96c1d23bec3999b32e4458c800dc4b207",
+    "docs/plans/agent-id-readback/accept/interface-spec.md": "da2273aa8d7bf0d053b1eeb6abdcbcf1f0da4d7e263a335641c0e5aad9e32cbf",
     "tests/_golden/fixtures/agent-id-readback/baseline/api-surface.json": "0e9a6d8d18e0ddd60adda54d7f0c647baf3d4ebaf7e892f336f8fa444a805fd8",
     "tests/_golden/fixtures/agent-id-readback/baseline/cdp-calls.json": "f5a1c0db1bb27fa7158666ebcf7f451c1123b96329077e588c881bd1e1b9dfe5",
-    "tests/_golden/fixtures/agent-id-readback/baseline/manifest.json": "d14c56b33d33dc0065c822ea8aa27cc11672576b0c62db5ab82d8c3d89e0a893",
+    "tests/_golden/fixtures/agent-id-readback/baseline/manifest.json": "f2adeb72f721b92339726b5e61f0b52fffbc80a6e172b8ce865ea34f91ea0663",
     "tests/_golden/fixtures/agent-id-readback/baseline/records.post-drain.json": "57db565f10704c0f182abfee5278fc468fdc213e8c3facd44f311242a8516bd1",
     "tests/_golden/fixtures/agent-id-readback/baseline/records.pre-drain.json": "0f36dcd464ea6a3b6374362e527db3a17b2e0104a94aec2315b31105a69e45b4",
     "docs/plans/agent-id-readback/accept/red-proofs/agent-id-gate.red.txt": "d698208d5aaec703e397c3f4153398e4e9d5202d11560cf511ba37ada44abae0",
@@ -28,7 +28,13 @@
     "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-regression-diff.zero-sut.red.txt": "f9bd1e7054beeb250cbcb3f25957494d3e5a04289f9f04ba2a99f6d1ee7953b1",
     "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-readback.chat-sut.red.txt": "a0c7d474d997090f477ad502f8b68c83fcfdc4b2b592567a67af5c348f21abcf",
     "tests/_golden/fixtures/agent-id-readback/baseline/sign-v1-cli.json": "bf163a09487688c4ef5d0864e7d8c9fc2d4ee9a4ef9549961905521df9b7fac6",
-    "tests/_golden/fixtures/agent-id-readback/baseline/cli-early-reject.json": "6362f01a66fb0248f2b8d8b393820f01d5727dc6dbb47eb25829c252c90a2af4"
+    "tests/_golden/fixtures/agent-id-readback/baseline/cli-early-reject.json": "6362f01a66fb0248f2b8d8b393820f01d5727dc6dbb47eb25829c252c90a2af4",
+    "tests/_golden/fixtures/agent-id-readback/baseline/compile-run-v1.json": "ea7ab4d05fb09a187c280db4c84d46b9b326838b1f65d3b6f8cbb20e9311a612",
+    "tests/_golden/fixtures/agent-id-readback/baseline/action-axes-v1.json": "b9f7b15c8cae51f8d2139d7b29f477aa60b14591516d19e650e761a00ad46293",
+    "tests/_golden/fixtures/agent-id-readback/baseline/axes-projection-v1.json": "a0917229013b49255651a90d86998e43f8ce8dcb8111c69f81ea994419828b9b",
+    "tests/_golden/fixtures/agent-id-readback/baseline/verdict-report-v1.json": "4e6e001d7ec5b8e74e25527f4634453a6d133d038e67cc569c83ad568531ada3",
+    "tests/_golden/fixtures/agent-id-readback/mock-page.mjs": "119cb04ade4c40b4278ed2c2ef4da2e71f024f521c761c2ee84f4db49378d087",
+    "docs/plans/agent-id-readback/accept/red-proofs/refit-r3-agent-id-regression-diff.zero-sut.red.txt": "ad4e7f50fc36e98de7301c7502d7847ce7b459aaf7b5cc24a940ac82bd194cca"
   },
   "observability": [
     {
@@ -53,7 +59,7 @@
         "node tests/_golden/agent-id-observation.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T09:51:03.577Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T11:07:01.532Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-dual-identity-gate",
@@ -63,7 +69,7 @@
         "node tests/_golden/agent-id-gate.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T09:51:03.809Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T11:07:01.791Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-sign-observation-join",
@@ -73,17 +79,17 @@
         "node tests/_golden/agent-id-sign-observation.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T09:51:18.911Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T11:07:15.747Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-regression-diff-ratchet",
-      "desc": "82484ab 差分棘轮（冻结即绿=回归保护）：mock CDP 下 listener/send 序列、records() 字节、api 键集、基线文件集+逐文件 sha 逐字对照；poison spy 证未声明通道路径零加载身份模块。绿基线：red-proofs/agent-id-regression-diff.green.txt。",
+      "desc": "82484ab 差分棘轮（冻结即绿=回归保护）：mock CDP 下 listener/send 序列、records() 字节、api 键集、基线文件集+逐文件 sha 逐字对照；poison spy 证未声明通道路径零加载身份模块；三波扩 sol 五面构造 R18-R21（替身驱真实 compile/action 链、axes 投影生产纯函数、verdict→report 真 CLI 链，见第五笔 checksumAmendments）。绿基线：red-proofs/agent-id-regression-diff.green.txt。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/agent-id-regression-diff.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T09:52:00.458Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T11:08:03.390Z 全部 acceptance exit 0"
     },
     {
       "id": "s5-browser-recipe",
@@ -93,7 +99,7 @@
         "node tests/_golden/agent-id-readback.chat-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T09:54:49.751Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T11:11:09.158Z 全部 acceptance exit 0"
     },
     {
       "id": "s6-regression-locks",
@@ -107,7 +113,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T09:56:26.260Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T11:13:07.071Z 全部 acceptance exit 0"
     }
   ],
   "checksumAmendments": [
@@ -160,6 +166,21 @@
         "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-observation.zero-sut.red.txt"
       ],
       "reason": "codex R2 三阻塞项二波修单（断言零弱化、全为收紧/新增；处置表 review/fix-dispositions-r1.md R2 轮增补节）：M1 引用释放（tokens 改 WeakSet+consume 即出账，钉 O8c）；H1 句柄连续性（evaluateHandle 原子快照取 ElementHandle、同物理节点重验+card.$ 子句柄点击、句柄释放；行为面 C6/C7/C9 覆盖、连续性交 R3 静态核）；H6 面③④落地+负控升级（sign-v1-cli.json 三流+完整输出集+逐文件 sha+prd 字节——双跑探针实证跨运行字节确定、相对路径零绝对路径泄漏，R2 前「确定性未证」假设实测收回；cli-early-reject.json compile/replay 无参三流；R15-R17 过校验真路径负控=sign 真执行/replay 到 launch 哨兵 exit 66/compile 闸段全跑，全程零身份模块解析；R13 面对照绿=候选 sign v1 输出与 82484ab 基线逐字节相等的机器证据）。基线于 82484ab stash 窗口重录（含新二面；既有四面字节未变）；红证同窗重取（棘轮=恰 R12 正控红 1/17、观察 30 检查全红）。残余=plan §6 面② 动作轴/axes/report 字节（浏览器绑定）——Steven 2026-07-22 拍板先送 sol max 咨询一轮再定 plan 权威修正。"
+    },
+    {
+      "amendedAt": "2026-07-22",
+      "files": [
+        "tests/_golden/agent-id-regression-diff.zero-sut.golden.mjs",
+        "tests/_golden/fixtures/agent-id-readback/baseline/manifest.json",
+        "tests/_golden/fixtures/agent-id-readback/baseline/compile-run-v1.json",
+        "tests/_golden/fixtures/agent-id-readback/baseline/action-axes-v1.json",
+        "tests/_golden/fixtures/agent-id-readback/baseline/axes-projection-v1.json",
+        "tests/_golden/fixtures/agent-id-readback/baseline/verdict-report-v1.json",
+        "tests/_golden/fixtures/agent-id-readback/mock-page.mjs",
+        "docs/plans/agent-id-readback/accept/interface-spec.md",
+        "docs/plans/agent-id-readback/accept/red-proofs/refit-r3-agent-id-regression-diff.zero-sut.red.txt"
+      ],
+      "reason": "三波修单（sol 五面构造兑现，断言零弱化、纯加面；处置表三波节+plan §6/§8 权威修正+interface-spec §7 三波增补）：R2 轮「动作轴/axes/report 字节面零 SUT 不可达」判定被 sol max 咨询证伪（review/sol-consult-plan6.log，Steven 拍板送审），按其构造清单落地棘轮面⑦⑧⑨⑩（R18-R21 逐字对照）——⑦mock Page/forensics 测试替身驱真实 createCompileRun/compileFlow（v1 flow）冻 events/verification/provenance/observed；⑧同替身驱真实 performAction 12 分支冻逐事件动作轴；⑨bin/replay.mjs 浏览器后三轴投影逐字搬移成生产共用纯函数 lib/replay-axes.mjs（82484ab..b920b4f 投影段零 hunks、搬移 diff 交 R3 静态核）冻完整 axes；⑩axes 喂真实 verdict→report-model（--generated-at 固定）→report CLI 链冻三流+verdict/report JSON（四态各一）。明示排除口径入 interface-spec §7（report html/md 字节=报告模板演进面、report 成功 stdout=绝对路径打印面）。红证 82484ab 窗口重取（refit-r3：6/21 红=R1+R12+R18-R21 基线缺席）；基线同窗重录、既有六面字节零漂移（窗口保真机器证据）；退窗现树 21/21 绿=身份实现不动 v1 字节的机器证据。受影响面复跑 zero-SUT 金牌批全绿；real-run-trust.zero-sut 红为 82484ab 前既有陈旧红（主树同红），挂账交接不顺手修。"
     }
   ]
 }
