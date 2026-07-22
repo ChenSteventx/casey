@@ -38,6 +38,16 @@ autotest 创建单个测试智能体 X（名=「测易同名对抗<日期>」，
    （verdict NEEDS_HUMAN·AMBIGUOUS_ACTION，详情未开）→ 报告②。
 4. 报告三形态交付（①②各一套）+ 清理：删除两个 X、搜索计数归零证据。四步全过=UAT 过闸（ADR-0009）。
 
+## 4a. 修正注记（codex R1 修单，2026-07-23）
+
+- §4 预期「回放①→PASS」在 run-1 实际为 `PASS+SUT_DEFECT`：X（run-1 实例，编码被平台自动生成）
+  详情页两 API 确定性 503——身份判据全过、503 属真缺陷上报（Steven 已采认）。run-2（重预置 X、
+  显式编码）回放① 2/2 全 PASS，与本节预期一致；两轮账均保留，run-2 为交付权威。
+- run-1 交付缺录屏/附件/视觉复核（codex R1-R2 阻塞）：run-2 整链重跑兑现（--video-dir+run-history/
+  metrics+逐帧视觉复核+附件共置三链版式）；run-1 冻结件人工审计归档（archive/run1-20260723/）。
+- 预置/清理脚本 fail-closed 化（前后计数严格恰等、编码回读必等、归零三面核+日志冻结）；
+  脚本四件入库 scripts/ 供审计。
+
 ## 5. 验收与记账
 
 - 新 prd `tc_agent_id_readback_real_uat_v1`：authority/冻结件 checksum + observability 记录两放行为

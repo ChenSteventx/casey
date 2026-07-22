@@ -70,6 +70,32 @@
 4. ADR-0009 完成闸：本见证的最终「过闸」由 Steven 对本文+双报告人签后成立（尤其发现 1 的
    SUT_DEFECT 判定采认）。
 
+## run-2（codex R1 修单重跑，2026-07-23——本节为交付权威，run-1 账保留作缺陷取证与溯源）
+
+codex R1 FAIL 四阻塞（报告缺录屏/附件悬空、金牌自证账本、prd 错账、预置清理 fail-open）全采信；
+录屏/附件义务只能整链重跑兑现（冻结件绑已删 X 实例的 platformId——身份锁语义使然）：
+
+- **重跑仪式**：run-1 冻结件人工审计归档（`cases/…/archive/run1-20260723/`，tc prd 陈旧账同步摘除
+  ——sign 的「无 publication journal 拒猜残留」fail-closed 实证有效）；重预置 X（fail-closed 严判
+  0→1、编码回读必等）→ 重编译（观察 code=`atl_dup0722_a`、platformId=19 长纯数字新实例）→
+  确认→草拟（同 patch）→ 全新签署（frozen `78530d5c…`、locks v2 `a2261aed…`、events `4440f8d1…`、
+  观察件 `5c559d34…`）。
+- **回放①（run2-replay1，录屏+全附件）**：双证 unique+回读 ok+落笔+详情路由，**verdict 2/2 全 PASS**
+  （axes `e4ac5201…`、verdict `29b63e5c…`、video `5d93e93d…`、report JSON `bb1a1932…`）；
+  视觉复核 CONSISTENT（逐帧：列表搜索态→详情页，frames/ 共置）。
+- **回放②（run2-replay2，录屏+全附件）**：同名对在场必 AMBIGUOUS 不点击——
+  NEEDS_HUMAN·AMBIGUOUS_ACTION（axes `ae3b2fd3…`、verdict `8c4c88bc…`、video `f822fbf3…`、
+  report JSON `4cc8bf0d…`）；视觉复核 CONSISTENT（终帧=恰两同名异码卡、全程无详情画面=不点击铁证）。
+- **附件共置**（三链版式）：两 run 目录各含 report 三形态+`verdict.json`+`axes.json`+
+  `run-history.jsonl`+`run-metrics.json`+`video.json`+`video.webm`+`visual-review.json`+`frames/`
+  ——报告附件链接全部落地，SKILL.md 报告交付最低内容四项齐。
+- **清理（fail-closed 三面归零）**：删两件→名称归零+逐编码搜索归零（`atl_dup0722_a`/`_b` 各 0）；
+  运行日志冻结入库 `evidence/cleanup-run2.log`。
+- **503 缺陷相关性精化**：run-1 X（编码被平台自动生成 `znt_atl_tmdk0722`）详情页两 API 确定性 503
+  （跨两放复现）；run-2 X（显式编码覆写生效）详情页干净、全 PASS——缺陷与实例/创建路径相关，
+  非全局；Steven 已采认的 SUT_DEFECT 取证件（run-1 report1）连同其冻结件归档保留。
+- 脚本四件（预置/清理/铸件/确认）拷贝入库 `docs/plans/real-uat-attestation/scripts/`（审计可核）。
+
 ## 五元对账快照（sign 时点）
 
 observations(1 行) ↔ confirmations(4 行同收据) ↔ draft v2（identityProfileDigest=`sha256:8b839a20…`、

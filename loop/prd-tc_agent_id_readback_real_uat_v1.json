@@ -1,11 +1,11 @@
 {
   "schemaVersion": 2,
   "caseId": "tc_agent_id_readback_real_uat_v1",
-  "task": "agent-id-readback 真机 UAT 见证用例（uatDefinition 四步；契约 real-uat-attestation，GRILL 三分岔 Steven 全 A）：测试智能体 atl_同名对抗0722 一件两放——全场唯一时全链 PASS；预置精确同名第二件后回放同一冻结件必 AMBIGUOUS 不点击（NEEDS_HUMAN·AMBIGUOUS_ACTION 为预期正确行为）。用后即删+归零证据。",
+  "task": "agent-id-readback 真机 UAT 见证用例（uatDefinition 四步；契约 real-uat-attestation，GRILL 三分岔 Steven 全 A）：测试智能体 atl_同名对抗0722 一件两放——全场唯一时全链 PASS；预置精确同名第二件后回放同一冻结件必 AMBIGUOUS 不点击（NEEDS_HUMAN·AMBIGUOUS_ACTION 为预期正确行为）。用后即删+归零证据。【run-1 冻结件 2026-07-23 人工审计归档（cases/.../archive/run1-20260723/，绑已删 X 实例的 platformId；prd 陈旧账同步摘除）；run-2 按 codex R1 修单整链重跑（录屏+全附件+视觉复核）。】",
   "testChecksums": {
     "runs/real-uat-attestation/tc_agent_id_readback_real_uat_v1/execute-authority.json": "1d334e39188d129886db189477f4d057d977514c53761aeb7b6a5dff7523d2a8",
-    "cases/tc_agent_id_readback_real_uat_v1/expected.frozen.json": "be609d20703d401dbf5df70a7c37223d33046f35377c25cb55d5ce798ff4eeef",
-    "cases/tc_agent_id_readback_real_uat_v1/entity-locks.frozen.json": "b1ffdb86cc574edb30f5667e6b18855e24012c4a510a61c7b9210fa382c3b186"
+    "cases/tc_agent_id_readback_real_uat_v1/expected.frozen.json": "78530d5cef34d8b6d48f85ae2d17dd8354c83af439baebcc9c8870baedfb9e49",
+    "cases/tc_agent_id_readback_real_uat_v1/entity-locks.frozen.json": "a2261aed19275e65eb92058df34340a2f7a5ce20f858356114ab6616b63f5d4c"
   },
   "stories": [],
   "expectedFrozenPath": "cases/tc_agent_id_readback_real_uat_v1/expected.frozen.json"

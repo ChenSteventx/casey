@@ -1,11 +1,16 @@
 {
   "schemaVersion": 1,
-  "task": "real-uat-attestation（light）：agent-id-readback 冻结 uatDefinition 四步真机见证（GRILL 三分岔 Steven 全 A：我建我删/授权条件直签/即刻跑）。一件两放：X 全场唯一时身份判据全过（unique+回读 ok+落笔+详情路由；两条真实 503 如实 SUT_DEFECT=真缺陷上报交 Steven 裁）；精确同名对在场回放同一冻结件必 AMBIGUOUS 不点击（NEEDS_HUMAN·AMBIGUOUS_ACTION、URL 停列表页物理证据）。报告三形态×2、清理归零。真机产物本机留存不入库；见证账本与完整性金牌入库。最终过闸=Steven 人签（ADR-0009）。",
+  "task": "real-uat-attestation（light）：agent-id-readback 冻结 uatDefinition 四步真机见证（GRILL 三分岔 Steven 全 A：我建我删/授权条件直签/即刻跑）。一件两放：X 全场唯一时身份判据全过（unique+回读 ok+落笔+详情路由；两条真实 503 如实 SUT_DEFECT=真缺陷上报交 Steven 裁）；精确同名对在场回放同一冻结件必 AMBIGUOUS 不点击（NEEDS_HUMAN·AMBIGUOUS_ACTION、URL 停列表页物理证据）。报告三形态×2、清理归零。真机产物本机留存不入库；见证账本与完整性金牌入库。最终过闸=Steven 人签（ADR-0009）。【codex R1 修单 2026-07-23：run-2 整链重跑（录屏+全附件+视觉复核、fail-closed 预置清理、金牌 V1-V6 实核化、三处错账修正）；run-1 账保留=缺陷取证与溯源。】",
   "specPath": "docs/plans/real-uat-attestation/plan.md",
   "testChecksums": {
-    "tests/_golden/real-uat-attestation.zero-sut.golden.mjs": "56094f65f60883dc8a442936769dad6500d3e60fd9f202b73a7749e167f4b18e",
-    "docs/plans/real-uat-attestation/evidence/uat-run.md": "df0ce58f7d22d952285ef1dd85c25bf26bd6f515b6728b113ca062c85191c8b9",
-    "docs/plans/real-uat-attestation/evidence/uat-signoff.md": "29a3a0294f65b4d0346695a16d6ddb34b3e9ca01dae16b3637ac77838579a91c"
+    "tests/_golden/real-uat-attestation.zero-sut.golden.mjs": "b74f7a8e9402c87196a989a632c47acc9ddaaa5a75cc68b4ce65471e2cfb5e4b",
+    "docs/plans/real-uat-attestation/evidence/uat-run.md": "dc08afe483502c4187f0b01ef7045de3178e547079f5e8ce9a1452f6944dae08",
+    "docs/plans/real-uat-attestation/evidence/uat-signoff.md": "29a3a0294f65b4d0346695a16d6ddb34b3e9ca01dae16b3637ac77838579a91c",
+    "docs/plans/real-uat-attestation/evidence/cleanup-run2.log": "22974df9f11e5fa6799b51a67b534f8f03a0e73251234d7b12fd1033df8d95a6",
+    "docs/plans/real-uat-attestation/scripts/create-agent.mjs": "4ff58f5f6e459ee22a381a7d7666e68ee0edb8e12d113e199d418172b4db5a78",
+    "docs/plans/real-uat-attestation/scripts/cleanup-agents.mjs": "5a77dc16532531841b3f9605dd9b192f1408538a2c27aff14a974e90038ea744",
+    "docs/plans/real-uat-attestation/scripts/craft-uat.mjs": "136b30bf381a33bb6a72024b7b4bace5e682b92c554e34b9707017f4b2aa6b62",
+    "docs/plans/real-uat-attestation/scripts/craft-confirmations-uat.mjs": "4b6533ad25300d8ad30a8b61aa44c64026c2eb7f3b0636c070d4af38cb18e72b"
   },
   "observability": [
     {
@@ -30,7 +35,7 @@
         "node tests/_golden/real-uat-attestation.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T16:30:50.248Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T17:01:24.793Z 全部 acceptance exit 0"
     }
   ]
 }
