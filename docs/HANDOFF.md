@@ -3,7 +3,27 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 2026-07-22 深夜 agent-id-readback 评审闭环+合并 dev（本节为最新现状）
+## 2026-07-23 凌晨 real-uat-attestation 真机四步见证跑通（本节为最新现状）
+
+Steven 三令（B 契约/剔除改革/修在案 bug）全部执行：
+
+1. **real-uat-attestation（light，4/6）**：agent-id-readback 冻结 uatDefinition 四步真机见证完毕，
+   GRILL 三分岔 Steven 全 A（我建我删/授权条件直签/即刻跑）。一件两放：①测试智能体
+   `atl_同名对抗0722` 全场唯一时——双证 unique+回读 ok+句柄落笔+详情路由达（身份判据全过），
+   两条**真实确定性 503**（`agentPlus/queryPlus`+`getAgentDetail`，骨架智能体详情页，跨两放复现）
+   如实裁 SUT_DEFECT=真缺陷上报；②预置精确同名第二件（覆写平台自动码破同码拒绝）后回放同一
+   冻结件——**必 AMBIGUOUS 不点击**（NEEDS_HUMAN·AMBIGUOUS_ACTION、URL 停列表页物理证据）。
+   报告三形态×2、删两件归零。真机产物本机留存（cases/runs，不入库）；入库=见证账本
+   `docs/plans/real-uat-attestation/evidence/uat-run.md`+完整性金牌（V1-V4 GREEN、gate 1/1）
+   +tc prd（authority+frozen 双件 checksum）。**待 Steven 两裁**：UAT 终局人签（含 503 采认）
+   +review 家族裁定后收 review/learn。
+2. 修单中发现并挂账：drafter `--patch` intentId 不经 observed intents 存在性校验（错位断言静默
+   孤儿——首版补缝 intent_open/intent_1 错位实证，重补缝+expected 单独重签修复）。
+3. 陈旧红 `real-run-trust.zero-sut` 已修（8/8 PASS，98b8d1b）；loop 改革全线冻结令已入
+   文档+持久记忆（d690619）。尖峰结论③「code 通道待真机回读」显式待办由本轮兑现
+   （收据 code/platformId 用真机观察读回值）。
+
+## 2026-07-22 深夜 agent-id-readback 评审闭环+合并 dev（已被顶部 07-23 节取代，只溯源）
 
 接晚间交接（下节）继续收口，契约六阶段全 done、已合并 `dev@648e09e`（merge --no-ff，70 文件）。事实链：
 

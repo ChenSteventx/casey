@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "task": "real-uat-attestation（light）：agent-id-readback 冻结 uatDefinition 四步真机见证（GRILL 三分岔 Steven 全 A：我建我删/授权条件直签/即刻跑）。一件两放：X 全场唯一时身份判据全过（unique+回读 ok+落笔+详情路由；两条真实 503 如实 SUT_DEFECT=真缺陷上报交 Steven 裁）；精确同名对在场回放同一冻结件必 AMBIGUOUS 不点击（NEEDS_HUMAN·AMBIGUOUS_ACTION、URL 停列表页物理证据）。报告三形态×2、清理归零。真机产物本机留存不入库；见证账本与完整性金牌入库。最终过闸=Steven 人签（ADR-0009）。",
+  "specPath": "docs/plans/real-uat-attestation/plan.md",
+  "testChecksums": {
+    "tests/_golden/real-uat-attestation.zero-sut.golden.mjs": "56094f65f60883dc8a442936769dad6500d3e60fd9f202b73a7749e167f4b18e",
+    "docs/plans/real-uat-attestation/evidence/uat-run.md": "df0ce58f7d22d952285ef1dd85c25bf26bd6f515b6728b113ca062c85191c8b9"
+  },
+  "observability": [
+    {
+      "dimension": "SUT 真缺陷上报：骨架智能体详情页 agentPlus/queryPlus 与 getAgentDetail 确定性 503（回放①报告即自包含取证件）；采认与上报由 Steven 裁。",
+      "route": "human"
+    },
+    {
+      "dimension": "drafter --patch intentId 不经 observed intents 存在性校验，错位断言静默成孤儿——另立修单收口。",
+      "route": "human"
+    },
+    {
+      "dimension": "UAT 终局采认（ADR-0009 完成闸）：Steven 对 evidence/uat-run.md + 双报告人签。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-attestation-ledger",
+      "desc": "见证账本完整性（零 SUT）：四步账/两放判据/冻结三件套/uatCaseId 绑定闭合/发现账（V1-V4）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/real-uat-attestation.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-22T16:14:15.786Z 全部 acceptance exit 0"
+    }
+  ]
+}

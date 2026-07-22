@@ -42,7 +42,7 @@
       "route": "human"
     },
     {
-      "dimension": "完整真机用例链（执行权威→sign 消费观察件→回放点击前对已签 platformId）；bindAgent 抽屉配方与同名对抗预置（继承 entity-ui-wiring 挂账）；密钥签名威胁面（内容自哈希不防有写权限者整链重算，ADR-0010 口径如实挂账）。",
+      "dimension": "完整真机用例链（执行权威→sign 消费观察件→回放点击前对已签 platformId）；bindAgent 抽屉配方与同名对抗预置（继承 entity-ui-wiring 挂账）；密钥签名威胁面（内容自哈希不防有写权限者整链重算，ADR-0010 口径如实挂账）。【进展 2026-07-23：后继契约 real-uat-attestation 已按 uatDefinition 四步真机执行完毕（一件两放：唯一时身份判据全过+真实 503 如实 SUT_DEFECT；同名对必 AMBIGUOUS 不点击；报告×2+清理归零），见证账本 docs/plans/real-uat-attestation/evidence/uat-run.md+完整性金牌 GREEN；终局采认待 Steven 人签（ADR-0009）。】",
       "route": "human",
       "uatCaseId": "tc_agent_id_readback_real_uat_v1",
       "successorContract": "real-uat-attestation",

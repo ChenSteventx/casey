@@ -118,11 +118,13 @@ loop-kit 已按 ADR-0008 提取为兄弟目录独立包，Casey 与 autotester �
   atom-readiness、regress-strategy、usability-audit），不碰不提交。提交只走显式路径、绝不 -A。
 
 【下一步】
-A（进行中，Steven 2026-07-22 指令）真机 UAT 后继契约 real-uat-attestation（冻结 uatDefinition
-  已入 prd-agent-id-readback observability，绑 uatCaseId=tc_agent_id_readback_real_uat_v1）；
-  同名敌意用例含在 UAT 定义内。
-B route:human 其余面：密钥签名威胁面 / SKILL.md 措辞统一（见各 prd observability）。
-C P8 多通道 / P10 可信闭环自进化等排期线（见【排期】）。
+A（待 Steven 两裁）real-uat-attestation 收口：①UAT 终局人签（evidence/uat-run.md+双报告；
+  尤其发现 1「骨架智能体详情页两 API 确定性 503」的 SUT_DEFECT 采认/上报）；②本 light 契约
+  review 家族裁定（评审家族≠实现家族）后 review/learn 收尾（现 4/6）。
+B 工装修单：drafter --patch intentId 不经 observed intents 存在性校验（错位断言静默孤儿，
+  见 prd-real-uat-attestation observability 第 2 项）。
+C route:human 其余面：密钥签名威胁面 / SKILL.md 措辞统一（见各 prd observability）。
+D P8 多通道 / P10 可信闭环自进化等排期线（见【排期】）。
 
 改冻结金牌一律走 checksumAmendments 修单路径。
 
