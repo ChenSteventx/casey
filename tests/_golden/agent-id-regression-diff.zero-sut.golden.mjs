@@ -20,8 +20,23 @@
 //     含 --entity-observations 新旗标文档，属已声明接口合法演进、不入未声明路径冻结面）；
 //   R15-R17 过校验负控——sign 真执行 / replay 真 v1 件过全部准入到 chromium.launch 哨兵(exit 66) /
 //     compile 闸段合法 flow 全跑，全程零身份模块解析（回应「无参早退证不了过校验路径」）。
-//   残余义务如实声明：plan §6 面②的「动作轴/axes/report JSON 字节」依赖浏览器执行产物，零 SUT
-//     不可达——须 plan 权威修正或随真机链义务处置（修单挂账，不静默消灭）。
+//
+// sol 五面构造落地（R2-H6 残余，sol-consult-plan6 判「零 SUT 不可达」不成立后兑现；R18-R21）：
+//   面⑦ compile-run-v1.json——mock Page/forensics 替身（fixtures/agent-id-readback/mock-page.mjs）驱
+//     【真实】createCompileRun/compileFlow 走 v1（未声明身份通道）flow，冻 events/verification/
+//     provenance/observed 全量 JSON 字节；
+//   面⑧ action-axes-v1.json——同替身驱【真实】performAction 固定 v1 事件脚本（unique/ambiguous/
+//     none/action_failed/纯断言/selectOption/漂移探针形状全分支），冻逐事件动作轴 JSON 字节；
+//   面⑨ axes-projection-v1.json——固定证据结构驱生产共用纯函数 lib/replay-axes.mjs（自 bin/replay.mjs
+//     逐字搬移，82484ab..b920b4f 对投影段零改动、搬移 diff 交异构评审静态核）冻完整 axes 字节
+//     （归因归一/孤儿并入/凭据路由打码/非 http 脱敏/intent 折叠洗白禁/软断言透传全覆盖）；
+//   面⑩ verdict-report-v1.json——面⑨ axes 喂真实 bin/verdict.mjs → bin/report-model.mjs
+//     （--generated-at 固定）→ bin/report.mjs 全链，冻三流+verdict JSON+report JSON 字节
+//     （四态 PASS/SUT_DEFECT/NEEDS_HUMAN(INDETERMINATE)/AMBIGUOUS_ACTION 各一）。
+//   面⑩ 两笔明示排除（同 sign usage 排除先例，冻的是具体调用矩阵）：report 的 html/md 字节属报告
+//     模板演进面（plan §6 面②义务=report 的 JSON 字节；文件名集仍冻）；bin/report.mjs 成功 stdout
+//     打印 resolve 后绝对路径——冻它=冻树根、破跨树可移植（R13 零绝对路径纪律），改冻 status/stderr+
+//     产物文件名集+逐文件 sha（产物字节面才是义务对象）。
 //
 // poison spy（plan §6-⑤）：未声明身份通道路径下身份模块不得被采集器触达——
 //   lib/agent-identity-observation.mjs / lib/agent-identity-gate.mjs 今日不存在 → 通过（无从加载）；
@@ -41,6 +56,10 @@ import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { watchNetworkForensics } from '../../lib/replay-forensics.mjs';
+import { createCompileRun, compileFlow } from '../../lib/compile-atoms.mjs';
+import { performAction } from '../../lib/replay-actions.mjs';
+import { projectReplayAxes } from '../../lib/replay-axes.mjs';
+import { createMockPage } from './fixtures/agent-id-readback/mock-page.mjs';
 
 const TAG = 'agent-id-regression-diff';
 const HERE = dirname(fileURLToPath(import.meta.url));
@@ -280,9 +299,185 @@ for (const [tag, entry] of [['compile', 'bin/compile.mjs'], ['replay', 'bin/repl
 }
 const earlyRejectFace = JSON.stringify(earlyReject, null, 2) + '\n';
 
+// ── sol 五面构造（R2-H6 兑现；面⑦⑧⑨⑩，全程零浏览器/零网络/零 SUT、逐字比较不 normalize）──────
+const AGENT_SEARCH_NAME_FACE = '输入智能体名称或编码进行搜索'; // 与 lib/compile-atoms.mjs AGENT_SEARCH_NAME 同字面（编译期作者与回放期消费者同构）
+const V1_SEARCHBOX = `role:textbox:${AGENT_SEARCH_NAME_FACE}`;
+const jsonFace = (v) => JSON.stringify(v, null, 2) + '\n';
+
+// 面⑦：mock Page/forensics 替身驱【真实】createCompileRun/compileFlow —— v1（未声明身份通道）flow。
+// identityObservations/identityGateOutcome 用 ?? 归一：82484ab（字段不存在）与现行（空值）投影同字节，
+// 既保跨窗口可录，又冻死「v1 路径零身份观察」这条不变量本身。
+async function buildCompileRunV1Face() {
+  const page = createMockPage({
+    dom: {
+      [V1_SEARCHBOX]: { count: 1 },
+      [`text:${AGENT_NAME_V1}:exact`]: { count: 1, inContainer: true },
+      'role:button:测试': { count: 1 },
+    },
+    url: 'http://127.0.0.1:4173/',
+    titles: ['智能体管理'],
+  });
+  const run = createCompileRun({
+    page, forensics: { records: () => [] }, state: { currentStepId: null },
+    sut: 'http://127.0.0.1:4173', uniqueName: 'atl_fixed', site: null,
+    agentListRoute: '/agent/list', profile: null, identityLedger: null,
+  });
+  await compileFlow(run, {
+    id: 'tc_air_ratchet_face_compile',
+    steps: [
+      { atom: 'nav.agentManagement', params: {}, sourceIntentId: 'intent_nav', entityBindings: [{ candidateId: 'candidate-agent-list', role: 'subject' }] },
+      { atom: 'agent.searchOpen', params: { searchKeyword: AGENT_NAME_V1, openName: AGENT_NAME_V1, code: 'AG-IM-001' }, sourceIntentId: 'intent_open', entityBindings: [{ candidateId: 'candidate-agent-main', role: 'subject' }] },
+    ],
+  });
+  return jsonFace({
+    events: run.events,
+    verification: run.verification,
+    entityBindingProvenance: run.entityBindingProvenance,
+    observed: run.observed,
+    assertionAtoms: run.assertionAtoms,
+    notes: run.notes,
+    blockers: run.blockers ?? [],
+    identityObservations: run.identityObservations ?? [],
+    identityGateOutcome: run.identityGateOutcome ?? null,
+  });
+}
+
+// 面⑧：同款替身驱【真实】performAction —— 固定 v1 事件脚本逐分支冻动作轴。
+async function buildActionAxesV1Face() {
+  const page = createMockPage({
+    dom: {
+      [V1_SEARCHBOX]: { count: 1 },
+      [`text:${AGENT_NAME_V1}:exact`]: { count: 1, inContainer: true },
+      'text:双子智能体:exact': { count: 2 },
+      'role:button:保存草稿': { count: 1, click: 'throw' },
+      'role:button:发布': { count: 2 },
+      'role:combobox:模型': { count: 1 },
+      'css:.hr-select__list>text:平衡:exact': { count: 1 },
+    },
+  });
+  const ctx = { uniqueName: 'atl_fixed', baseUrl: 'http://127.0.0.1:4173' };
+  const SEARCH = { kind: 'role', role: 'textbox', name: AGENT_SEARCH_NAME_FACE, exact: true };
+  const script = [
+    ['纯断言步→kind:none', { stepId: 'ax1', intentId: 'ai1', atom: 'assert.textVisible', action: 'none' }],
+    ['nav→null 交回编排器', { stepId: 'ax2', intentId: 'ai2', atom: 'nav.agentManagement', action: 'nav', url: '{{baseUrl}}/agent/list' }],
+    ['fill 唯一', { stepId: 'ax3', intentId: 'ai3', atom: 'agent.searchOpen', action: 'fill', semantic: SEARCH, value: 'AG-IM-001' }],
+    ['press 唯一', { stepId: 'ax4', intentId: 'ai3', atom: 'agent.searchOpen', action: 'press', key: 'Enter', semantic: SEARCH }],
+    ['searchOpen v1 click 唯一', { stepId: 'ax5', intentId: 'ai3', atom: 'agent.searchOpen', action: 'click', semantic: { kind: 'text', name: AGENT_NAME_V1, exact: true }, text: AGENT_NAME_V1 }],
+    ['searchOpen v1 同名双条目→ambiguous', { stepId: 'ax6', intentId: 'ai4', atom: 'agent.searchOpen', action: 'click', semantic: { kind: 'text', name: '双子智能体', exact: true }, text: '双子智能体' }],
+    ['searchOpen v1 缺席→none', { stepId: 'ax7', intentId: 'ai5', atom: 'agent.searchOpen', action: 'click', semantic: { kind: 'text', name: '幽灵智能体', exact: true }, text: '幽灵智能体' }],
+    ['唯一但动作失败→action_failed', { stepId: 'ax8', intentId: 'ai6', atom: 'workflow.saveDraft', action: 'click', semantic: { kind: 'role', role: 'button', name: '保存草稿', exact: true } }],
+    ['通用多匹配→ambiguous 不落笔', { stepId: 'ax9', intentId: 'ai7', atom: 'workflow.publish', action: 'click', semantic: { kind: 'role', role: 'button', name: '发布', exact: true } }],
+    ['通用缺席→none+漂移探针形状', { stepId: 'ax10', intentId: 'ai8', atom: 'workflow.publish', action: 'click', semantic: { kind: 'role', role: 'button', name: '幽灵按钮', exact: true }, targetName: '某行' }],
+    ['selectOption 唯一', { stepId: 'ax11', intentId: 'ai9', atom: 'workflow.selectModel', action: 'selectOption', dropdownUnit: { fieldLabel: '模型', optionListSelector: '.hr-select__list', optionText: '平衡' } }],
+    ['selectOption 缺席→none+漂移探针形状', { stepId: 'ax12', intentId: 'ai10', atom: 'workflow.selectModel', action: 'selectOption', dropdownUnit: { fieldLabel: '幽灵下拉', optionListSelector: '.hr-select__list', optionText: '平衡' } }],
+  ];
+  const rows = [];
+  for (const [label, ev] of script) rows.push({ label, ev, axis: await performAction(page, ev, ctx) });
+  return jsonFace(rows);
+}
+
+// 面⑨：固定证据结构驱生产共用纯函数 projectReplayAxes（lib/replay-axes.mjs，自 bin/replay.mjs 逐字搬移）。
+// 覆盖：归因归一到代表步 / 孤儿并入首 intent / 凭据路由段打码 / blob: 非 http 脱敏 / intent 折叠洗白禁 /
+// 断言多 kind（urlPathname/countChange/textVisible/noErrorEnvelope/noPageError）/ 全局软断言透传。
+function buildAxesProjectionV1Face() {
+  const ev = (stepId, atom) => ({ stepId, atom });
+  return projectReplayAxes({
+    caseId: 'tc_air_axes_proj',
+    records: [
+      { url: 'http://127.0.0.1:4173/api/agents/query?nameLike=alice', status: 200, ts: 1001.001, initiator: 'script', firingStepId: 's1', attributedStepId: 's1', errorEnvelope: { ok: true, status: 200 }, streamFinished: null, streamStatus: null },
+      { url: 'http://127.0.0.1:4173/api/token/refresh', status: 200, ts: 1002.002, initiator: 'script', firingStepId: 's1', attributedStepId: null, errorEnvelope: null, streamFinished: null, streamStatus: null },
+      { url: 'http://127.0.0.1:4173/api/agents/save', status: 500, ts: 1003.003, initiator: 'script', firingStepId: 's4', attributedStepId: 's4', errorEnvelope: { ok: false, status: 500 }, streamFinished: null, streamStatus: null },
+      { url: 'blob:http://127.0.0.1:4173/uuid-0001', status: 200, ts: 1004.004, initiator: 'other', firingStepId: null, attributedStepId: null, errorEnvelope: null, streamFinished: null, streamStatus: null },
+      { url: 'http://127.0.0.1:4173/ai-api/background/poll', status: 401, ts: 1005.005, initiator: 'script', firingStepId: 's9', attributedStepId: null, errorEnvelope: null, streamFinished: null, streamStatus: null },
+    ],
+    intentOrder: ['i1', 'i2', 'i3', 'i4'],
+    intentEvents: new Map([
+      ['i1', [ev('s1', 'nav.agentManagement'), ev('s2', 'agent.searchOpen')]],
+      ['i2', [ev('s3', 'agent.searchOpen'), ev('s4', 'agent.searchOpen')]],
+      ['i3', [ev('s5', 'agent.openTestPanel')]],
+      ['i4', [ev('s6', 'workflow.bindAgent')]],
+    ]),
+    reprStepOf: new Map([['i1', 's2'], ['i2', 's4'], ['i3', 's5'], ['i4', 's6']]),
+    actionByStep: new Map([
+      ['s1', { resolution: 'unique', identityReadback: { ok: true } }],
+      ['s2', { resolution: 'unique', candidateCount: 1, identityReadback: { ok: true } }],
+      ['s3', { resolution: 'none', candidateCount: 0, driftProbe: { sameSignatureUniquePresent: false, candidateCount: 0, matchedSignature: null } }],
+      ['s4', { resolution: 'unique', candidateCount: 1, identityReadback: { ok: true } }],
+      ['s5', { resolution: 'unique', candidateCount: 1, identityReadback: { ok: true } }],
+      ['s6', { resolution: 'ambiguous', candidateCount: 2 }],
+    ]),
+    pageErrors: [{ attributedStepId: 's6', message: 'TypeError: 演示页错误' }],
+    intentCount: new Map([
+      ['i1', { before: 2, after: 3 }], ['i2', { before: null, after: null }],
+      ['i3', { before: 1, after: 1 }], ['i4', { before: 0, after: 0 }],
+    ]),
+    expectedByIntent: new Map([
+      ['i1', [
+        { kind: 'urlPathname', op: 'startsWith', value: '/agent' },
+        { kind: 'countChange', op: 'up', value: 1 },
+        { kind: 'textVisible', value: AGENT_NAME_V1 },
+        { kind: 'noErrorEnvelope' },
+      ]],
+      ['i2', [{ kind: 'noErrorEnvelope' }]],
+      ['i3', []],
+      ['i4', [{ kind: 'noPageError' }]],
+    ]),
+    globalAssertions: [{ kind: 'textVisible', value: '全局软锚', soft: true }],
+    intentUrl: new Map([['i1', '/agent/list'], ['i2', '/agent/list'], ['i3', '/agent/detail'], ['i4', '/process/list']]),
+    intentToasts: new Map([['i1', []], ['i2', []], ['i3', []], ['i4', []]]),
+    intentTextHits: new Map([['i1', { [AGENT_NAME_V1]: 2 }], ['i2', {}], ['i3', {}], ['i4', {}]]),
+    intentButtonHits: new Map(),
+    intentButtonSeen: new Map(),
+    intentButtonDisabledHits: new Map(),
+    intentReply: new Map(),
+    intentInputReadback: new Map(),
+    chatCfg: null,
+    allStepIds: new Set(['s1', 's2', 's3', 's4', 's5', 's6']),
+  });
+}
+
+// 面⑩：面⑨ axes → 真实 bin/verdict.mjs → bin/report-model.mjs（--generated-at 固定）→ bin/report.mjs。
+// 四态各一（PASS / SUT_DEFECT / NEEDS_HUMAN·INDETERMINATE / NEEDS_HUMAN·AMBIGUOUS_ACTION）。
+// 明示排除（头注）：html/md 字节、report 成功 stdout（绝对路径打印面）。
+function buildVerdictReportV1Face(axesProjectionText) {
+  const REL = '.golden-scratch-agent-id-regression-diff-axes';
+  const DIR = join(ROOT, REL);
+  try {
+    rmSync(DIR, { recursive: true, force: true });
+    mkdirSync(join(DIR, 'report'), { recursive: true });
+    wf(join(DIR, 'axes.json'), axesProjectionText);
+    const runCli = (argv) => {
+      const r = spawnSync(process.execPath, argv, { cwd: ROOT, encoding: 'utf8', timeout: 60000 });
+      return { status: r.status, stdout: r.stdout, stderr: r.stderr };
+    };
+    const verdictRun = runCli([join(ROOT, 'bin', 'verdict.mjs'), '--axes', `${REL}/axes.json`, '--out', `${REL}/verdict.json`]);
+    const reportModelRun = runCli([join(ROOT, 'bin', 'report-model.mjs'), '--verdict', `${REL}/verdict.json`, '--axes', `${REL}/axes.json`, '--out', `${REL}/report-model.json`, '--generated-at', '2026-07-22T08:00:00.000Z']);
+    const rr = runCli([join(ROOT, 'bin', 'report.mjs'), '--model', `${REL}/report-model.json`, '--out', `${REL}/report`]);
+    const reportRun = { status: rr.status, stderr: rr.stderr, stdoutNote: '<excluded: 成功 stdout 打印 resolve 后绝对路径，冻它破跨树可移植——见头注排除条>' };
+    const shaOf = (rel) => (existsSync(join(DIR, rel)) ? sha256(readFileSync(join(DIR, rel))) : null);
+    return jsonFace({
+      verdictRun, reportModelRun, reportRun,
+      verdictJson: existsSync(join(DIR, 'verdict.json')) ? readFileSync(join(DIR, 'verdict.json'), 'utf8') : null,
+      outputs: {
+        'axes.json': shaOf('axes.json'),
+        'verdict.json': shaOf('verdict.json'),
+        'report-model.json': shaOf('report-model.json'),
+        'report/tc_air_axes_proj.report.json': shaOf('report/tc_air_axes_proj.report.json'),
+      },
+      reportFiles: existsSync(join(DIR, 'report')) ? readdirSync(join(DIR, 'report')).sort() : [],
+    });
+  } finally {
+    rmSync(DIR, { recursive: true, force: true });
+  }
+}
+
 const { faces } = await runRecorder();
 faces['sign-v1-cli.json'] = signV1Face;
 faces['cli-early-reject.json'] = earlyRejectFace;
+faces['compile-run-v1.json'] = await buildCompileRunV1Face();
+faces['action-axes-v1.json'] = await buildActionAxesV1Face();
+faces['axes-projection-v1.json'] = buildAxesProjectionV1Face();
+faces['verdict-report-v1.json'] = buildVerdictReportV1Face(faces['axes-projection-v1.json']);
 const FACE_NAMES = Object.keys(faces).sort();
 
 // ── 录制模式（仅未实现树合法一次；见头注）────────────────────────────────────────────
@@ -409,6 +604,12 @@ check('R17 compile 闸段真执行（合法 flow 全跑、零浏览器）零身�
   must(compileControl.status === 0, `闸段应 exit 0，实得 ${compileControl.status}：${compileControl.stderrTail}`);
   must(compileControl.touches === '', `compile 闸段路径解析了身份模块：\n${compileControl.touches}`);
 });
+
+// ── sol 五面构造（R2-H6 兑现）：面⑦⑧⑨⑩逐字节对照 ──────────────────────────────────
+faceCheck('R18 面⑦ 替身驱真实 createCompileRun/compileFlow：v1 flow 全量产物 JSON 逐字节等于基线（events 字节面）', 'compile-run-v1.json');
+faceCheck('R19 面⑧ 替身驱真实 performAction：固定 v1 事件脚本逐事件动作轴逐字节等于基线', 'action-axes-v1.json');
+faceCheck('R20 面⑨ 生产共用纯函数 projectReplayAxes：固定证据结构完整 axes 逐字节等于基线', 'axes-projection-v1.json');
+faceCheck('R21 面⑩ verdict→report-model→report 真 CLI 链（固定 generatedAt）：三流+verdict/report JSON 逐字节等于基线', 'verdict-report-v1.json');
 
 // ── 收口 ──────────────────────────────────────────────────────────────────────────
 const total = passes + failures;
