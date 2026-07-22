@@ -112,23 +112,24 @@ loop-kit 已按 ADR-0008 提取为兄弟目录独立包，Casey 与 autotester �
   （light，六阶段全 done、产物未提交）。
 - worktree ../casey-agent-id-readback：已退役（分支并入 dev 后 worktree remove+分支删除，
   并行槽回 4/5）。
-- 并发 baton 4/5：stale-red 主树 6/6 / loop-p0-4a 3/6、loop-p0-4b 2/6（别 session 暂停树，
-  续前先重对 dev@648e09e 基线）/ mountdelay 6/6 残留。
+- 并发 baton：主树 stale-red 6/6（已收口，槽位可由新契约接管）/ mountdelay 6/6 残留。
 - 主树未提交现场（三线增量已于五笔提交入 dev，至 31d5169+交接文档笔）：剩余全部为用户/并行现场
   （.gitignore、prd-cli-authority-wiring-fill/selftest/semantic-unit-discrimination、zip、follow.mjs、
   atom-readiness、regress-strategy、usability-audit），不碰不提交。提交只走显式路径、绝不 -A。
 
 【下一步】
-A（推荐）恢复 loop 改革（4a 3/6 / 4b 2/6，先重对最新 dev 基线；两树都落后逾 165 提交，
-  沿用旧红基线直接续实现是禁手）。
-B route:human 面：真机 UAT 后继契约 real-uat-attestation（冻结 uatDefinition 已入
-  prd-agent-id-readback observability，绑 uatCaseId=tc_agent_id_readback_real_uat_v1）/
-  同名敌意用例/密钥签名威胁面/SKILL.md 措辞统一。
-C 陈旧红独立修单：real-run-trust.zero-sut（源码字面检查 82484ab 前已失效，主树同红、
-  无 owner prd 引用）。
-D P8 多通道 / P10 可信闭环自进化等排期线（见【排期】）。
+A（进行中，Steven 2026-07-22 指令）真机 UAT 后继契约 real-uat-attestation（冻结 uatDefinition
+  已入 prd-agent-id-readback observability，绑 uatCaseId=tc_agent_id_readback_real_uat_v1）；
+  同名敌意用例含在 UAT 定义内。
+B route:human 其余面：密钥签名威胁面 / SKILL.md 措辞统一（见各 prd observability）。
+C P8 多通道 / P10 可信闭环自进化等排期线（见【排期】）。
 
-改冻结金牌一律走 checksumAmendments 修单路径；A/B 择向建议先问 Steven。
+改冻结金牌一律走 checksumAmendments 修单路径。
+
+【铁律追加（Steven 2026-07-22）】
+loop 改革（工作流状态引擎/gate 分层一族）全线冻结：不读、不续、不列为选项、不出现在任何
+建议里；loop-p0-4a-state-engine 与 loop-p0-4b-gate-layering 两树冻结原地、不计入待办。
+唯一解冻条件=Steven 明确要求。
 
 【环境坑】
 - /mnt/d 是 DrvFs，git status/diff 慢（16-18 秒），15 秒超时的工具会必败——用 300 秒超时。

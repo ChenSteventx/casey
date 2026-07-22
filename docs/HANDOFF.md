@@ -34,7 +34,10 @@
    主树/分支同红、与本契约无关、无 owner prd 引用）——待独立修单，别顺手修。
 4. worktree `../casey-agent-id-readback` 已退役（评审 PASS 合并后 worktree remove+分支删除，
    并行槽回 4/5）。真机义务按冻结 uatDefinition 走后继契约 `real-uat-attestation`（route:human）。
-5. **三线增量已提交入 dev（Steven「继续」授权后执行，五笔显式路径提交）**：`b30fdf4` stale-red 收口
+5. **loop 改革全线冻结（Steven 2026-07-22 令）**：工作流状态引擎/gate 分层一族（loop-p0-4a/4b）
+   不读、不续、不列为选项；两树冻结原地、不计入待办；下方历史层中的改革叙述只作溯源。
+   唯一解冻条件=Steven 明确要求。
+6. **三线增量已提交入 dev（Steven「继续」授权后执行，五笔显式路径提交）**：`b30fdf4` stale-red 收口
    （两金牌+两 owner prd+契约六件套）→ `002c821` 真机三链重签（三 tc prd 换签 checksum；冻结件本体在
    gitignore 的 `cases/`/`runs/`，按设计不入库）→ `cd8052d` 五 prd 复验 evidence 时间戳（gate 唯一写者、
    纯 evidence diff 实核）→ `31d5169` 报告模板+棘轮 R21 重签同笔（renderJson 新增 overview；第六笔
