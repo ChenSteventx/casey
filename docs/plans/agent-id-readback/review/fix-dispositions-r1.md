@@ -64,9 +64,21 @@ rmSync 已覆盖，sol 引用的行号为 82484ab 旧影——下一 session 复
 `real-run-trust.zero-sut` 红为先于本契约的陈旧红（其源码字面检查 `const ctx = { uniqueName, baseUrl: sut` 在
 82484ab 已不成立，主树同红、无 owner prd 引用——如实挂账交接，不在本契约内顺手修）。
 
+# 四波修复（codex R3 三 PARTIAL 全采信，2026-07-22 晚）
+
+R3 终判 FAIL 但机器五面被判「已闭合」（R18-R21 驱动生产链成立、投影搬移语义成立、调用矩阵与两笔排除接受）；
+三笔残余全采信修复：
+
+| R3 裁定 | 四波落点 | 说明 |
+|---|---|---|
+| H1 PARTIAL·Medium（命中卡 ElementHandle 转交调用方后无 dispose，成功/双证拒/点击失败路径持有到页面关闭） | `lib/compile-atoms.mjs` 与 `lib/replay-actions.mjs` 身份路径：cardGate 取得后整段 try/finally，`cardGate.card.dispose()` 全路径兜底释放（clickAgentCardWithin 只释放自建 name 子句柄，命中卡句柄的账在调用方——与 selectNodeDropdown 释放纪律对齐） | 资源纪律面，零 SUT 无确定性构造（同 R2 对句柄连续性的处理口径），交 R4 静态核；行为面 C6/C7/C9 复跑绿 |
+| M1 PARTIAL·Medium（`ctx.identityTokens` 强引用 Map 消费后不删，长流程按身份 intent 累积已消费 token） | `lib/replay-actions.mjs` doAgentSearchOpen：`consume(token)` 后随即 `ctx.identityTokens.delete(ev.intentId)`——消费即出账延伸到调用方层（账本层 O8c 钉不变） | 调用方 Map 属 bin 进程内态、零 SUT 无金牌可钉，交 R4 静态核 |
+| H6 PARTIAL·High（plan 只有散文「绑结构化 uatCaseId」、无实际字段与冻结 UAT 定义） | sol 必改项三件套落实际字段：prd observability route:human 项新增 `uatCaseId: tc_agent_id_readback_real_uat_v1` + `successorContract: real-uat-attestation` + `uatDefinition`（冻结四步定义：真机执行权威产 v2 产物→sign 五元 join 人签→回放点击前对已签 platformId+同名敌意必 AMBIGUOUS→报告三形态交付=过闸；真机产物含时间戳按行为核验、不宣称跨运行逐字基线——sol 咨询边界一并冻入）；plan §8 绑同一具体值与定义指针 | plan §6 修正的其余部分（调用矩阵/排除/机器边界）R3 已接受，本笔只补 UAT 绑定前提 |
+
 ## 评审状态快照（当前）
 
 R1 FAIL(1C+6H+3M) → 修单一波+钉 → R2 FAIL(H1/H6/M1 PARTIAL、7 FIXED、零新增) → 二波修复
 （H1 ElementHandle 钉扎、M1 WeakSet+消费出账+O8c、H6 面③④+过校验负控 R15-R17）→ gate 第四轮
 GREEN 6/6 → 三波修复（sol 五面构造⑦⑧⑨⑩全数落地 + plan §6/§8 权威修正 + interface-spec §7 披露，
-棘轮 21/21）→ 待 gate 第五轮 + codex R3 终判。
+棘轮 21/21）→ gate 第五轮 GREEN 6/6 → codex R3 FAIL（机器五面闭合；余 H1 句柄释放/M1 调用方
+Map 出账/H6 UAT 三件套未落字段）→ 四波修复已落 → 待 gate 第六轮 + codex R4 终判。

@@ -81,7 +81,7 @@ v1 经 sol max 判 CHANGES REQUIRED（review/sol-r1.log，三 P0）；v2 吸收�
 ## 8. 观察义务
 
 - machine：真机只读实证脚本（活数据跑判定纯函数，证据入 evidence/）。
-- route:human：完整真机用例链（执行权威→签署消费观察件→回放点击前比对）——绑结构化 uatCaseId、交后继契约 `real-uat-attestation` 承接（§6 修正 2026-07-22：本路只留真机事实面）；SKILL.md 执行边界条文与夹具金牌实践的口径收口；密钥签名威胁面后续契约。
+- route:human：完整真机用例链（执行权威→签署消费观察件→回放点击前比对）——绑结构化 uatCaseId=`tc_agent_id_readback_real_uat_v1`、交后继契约 `real-uat-attestation` 承接；冻结 UAT 定义见 prd observability 同名字段（真机执行权威产 v2 产物→sign 五元 join 人签→回放点击前对已签 platformId、同名敌意必 AMBIGUOUS→报告三形态交付=过闸；真机产物含时间戳按行为与裁定核验、不宣称跨运行逐字基线——sol 咨询边界）（§6 修正 2026-07-22：本路只留真机事实面）；SKILL.md 执行边界条文与夹具金牌实践的口径收口；密钥签名威胁面后续契约。
 
 ## 9. 评审
 

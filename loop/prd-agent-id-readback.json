@@ -43,7 +43,10 @@
     },
     {
       "dimension": "完整真机用例链（执行权威→sign 消费观察件→回放点击前对已签 platformId）；bindAgent 抽屉配方与同名对抗预置（继承 entity-ui-wiring 挂账）；密钥签名威胁面（内容自哈希不防有写权限者整链重算，ADR-0010 口径如实挂账）。",
-      "route": "human"
+      "route": "human",
+      "uatCaseId": "tc_agent_id_readback_real_uat_v1",
+      "successorContract": "real-uat-attestation",
+      "uatDefinition": "冻结 UAT 定义（sol-consult-plan6 必改项三件套；plan §8 同指针）：真机智能体列表页——①执行权威：真机重编译产 v2 产物（events + entity-bindings.draft v2 双 digest + identity-observations.compile.json，观察行 platformId=19 位纯数字）；②sign --entity-observations 消费观察件五元 join 人签出 frozen v2；③回放消费 frozen v2：点击前信封读回+DOM 物理卡片双证对已签 platformId 全等才落笔，同名敌意用例（同名双条目）必 AMBIGUOUS 不点击；④报告三形态交付。四步全过=本 UAT 过闸（ADR-0009 完成闸）。真机产物含时间戳：按行为与裁定核验，不宣称跨运行逐字基线（sol 咨询边界）。"
     },
     {
       "dimension": "真机只读实证脚本：真机搜索后对活数据跑 resolveDualIdentity/信封投影，证据落 docs/plans/agent-id-readback/evidence/（本契约 loop 相内跑，machine）。",
@@ -59,7 +62,7 @@
         "node tests/_golden/agent-id-observation.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T11:07:01.532Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T11:27:48.190Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-dual-identity-gate",
@@ -69,7 +72,7 @@
         "node tests/_golden/agent-id-gate.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T11:07:01.791Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T11:27:48.423Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-sign-observation-join",
@@ -79,7 +82,7 @@
         "node tests/_golden/agent-id-sign-observation.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T11:07:15.747Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T11:28:02.178Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-regression-diff-ratchet",
@@ -89,7 +92,7 @@
         "node tests/_golden/agent-id-regression-diff.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T11:08:03.390Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T11:28:50.360Z 全部 acceptance exit 0"
     },
     {
       "id": "s5-browser-recipe",
@@ -99,7 +102,7 @@
         "node tests/_golden/agent-id-readback.chat-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T11:11:09.158Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T11:31:54.388Z 全部 acceptance exit 0"
     },
     {
       "id": "s6-regression-locks",
@@ -113,7 +116,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T11:13:07.071Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T11:33:43.909Z 全部 acceptance exit 0"
     }
   ],
   "checksumAmendments": [
