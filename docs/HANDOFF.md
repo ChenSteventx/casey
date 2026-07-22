@@ -3,16 +3,152 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
+## 2026-07-22 深夜 agent-id-readback 评审闭环+合并 dev（本节为最新现状）
+
+接晚间交接（下节）继续收口，契约六阶段全 done、已合并 `dev@648e09e`（merge --no-ff，70 文件）。事实链：
+
+1. **三波（sol 五面构造兑现）**：`bin/replay.mjs` 浏览器后三轴投影【逐字搬移】成生产共用纯函数
+   `lib/replay-axes.mjs`（82484ab..b920b4f 投影段零 hunks）；mock Page/forensics 测试替身
+   （`tests/_golden/fixtures/agent-id-readback/mock-page.mjs`）驱【真实】createCompileRun/compileFlow
+   与 performAction；棘轮扩面⑦⑧⑨⑩（R18-R21：compile-run-v1/action-axes-v1/axes-projection-v1/
+   verdict-report-v1，末者=axes 喂真实 verdict→report-model（--generated-at 固定）→report 三 CLI 链、
+   四态各一）。基线于 82484ab 窗口重录（九实现文件检出+身份模块移除），既有六面字节零漂移=窗口保真
+   机器证据；退窗现树 21/21 绿=「身份实现不动 v1 字节」机器证据。红证 refit-r3（窗口 6/21 红）。
+   plan §6/§8 权威修正+interface-spec §7 三波披露+prd 第五笔 checksumAmendments。gate 第五轮 GREEN 6/6。
+   两笔明示排除（sol 认可口径）：report html/md 字节=报告模板演进面（与主树未提交 lib/report.mjs
+   模板工作零冲突——其 diff 不触 renderJson）；report 成功 stdout=绝对路径打印面。
+2. **codex R3 FAIL 但机器五面判闭合**（调用矩阵/排除/搬移全接受）；余三笔四波全采信修：H1 命中卡
+   ElementHandle 全路径 try/finally dispose（compile/replay 双侧）；M1 `ctx.identityTokens` 消费即
+   delete（出账延伸到调用方层）；H6 UAT 三件套落实际字段（prd observability：
+   `uatCaseId=tc_agent_id_readback_real_uat_v1`+`successorContract=real-uat-attestation`+冻结
+   `uatDefinition` 四步定义含时间戳边界）。gate 第六轮 GREEN 6/6 → **codex R4 终判 PASS**
+   （H1/H6/M1 全 FIXED、plan §6 修正接受）。audit.jsonl 终账（rounds 4、pass）。
+3. 合并 `dev@648e09e` 后主树复验：首跑 gate RED（5/6）——唯一红=棘轮 R21，根因是主树【未提交】的
+   报告模板层给 renderJson 输出加了 `overview` 字段（开篇自然语言概述进了 JSON 面，不只 HTML/MD；
+   我此前「模板 diff 不触 renderJson」判断是只 grep 未实测，错了）。对提交态复验（stash 该文件窗口）
+   棘轮 21/21 绿 + gate 复跑 GREEN=合并本身无损，红只来自未提交覆盖层，恰证 R21 棘轮在做它该做的事。
+   **承重交接**：三线增量落地（下一步 A）提交 `lib/report.mjs` 模板时，必须同笔对
+   `prd-agent-id-readback` 走 checksumAmendments 重签 `verdict-report-v1.json`（+manifest），
+   否则棘轮红。受影响面 zero-SUT 金牌批复跑全绿。**陈旧红挂账**：
+   `tests/_golden/real-run-trust.zero-sut.golden.mjs` 红（源码字面检查在 82484ab 前已多行化失效；
+   主树/分支同红、与本契约无关、无 owner prd 引用）——待独立修单，别顺手修。
+4. worktree `../casey-agent-id-readback` 已退役（评审 PASS 合并后 worktree remove+分支删除，
+   并行槽回 4/5）。真机义务按冻结 uatDefinition 走后继契约 `real-uat-attestation`（route:human）。
+5. **三线增量已提交入 dev（Steven「继续」授权后执行，五笔显式路径提交）**：`b30fdf4` stale-red 收口
+   （两金牌+两 owner prd+契约六件套）→ `002c821` 真机三链重签（三 tc prd 换签 checksum；冻结件本体在
+   gitignore 的 `cases/`/`runs/`，按设计不入库）→ `cd8052d` 五 prd 复验 evidence 时间戳（gate 唯一写者、
+   纯 evidence diff 实核）→ `31d5169` 报告模板+棘轮 R21 重签同笔（renderJson 新增 overview；第六笔
+   checksumAmendments、基线双跑复验、gate GREEN 6/6，dev 无红窗口）→ 交接文档笔（本文件/NEXT-SESSION/
+   REQUIREMENTS-STATUS/codex HANDOFF/entity-ui 尖峰清单+发现）。提交前复跑：p3-compile 14/14、
+   report-diagnostics 12/12、tier1、棘轮 21/21 全 exit 0。主树剩余未提交=用户/并行现场
+   （.gitignore、prd-cli-authority-wiring-fill/selftest/semantic-unit-discrimination、zip、follow.mjs、
+   atom-readiness、regress-strategy、usability-audit），继续不碰。
+
+## 2026-07-22 晚 agent-id-readback 修单会话——codex 两轮评审+两波修复，评审未闭合交接（已被顶部深夜节取代，只溯源）
+
+全程在 worktree `../casey-agent-id-readback`（主树 `dev@82484ab` 零触碰），分支内快照提交 `b920b4f`
+（57 文件，未合并）。事实链与残余：
+
+1. codex 异构评审 R1 终判 `FAIL`（1 Critical+6 High+3 Medium，逐条对照代码坐实；`review/codex-review-r1.log`）。
+   最重 C1：编译产物停在 v1、`platformId` 从未进签署/回放闭环——sign 的 v2 对账链对真实产物是死代码，
+   此前 gate 6/6 绿是五金牌各自绿掩盖「链没接通」（教训入 learn.md #1：多段协议验收必含一条不许手造
+   中间件的端到端链）。
+2. 修单一波（十项全采信+修前红对抗钉）：请求级事务补有界 settle/先 seal 后 consume/查询回声；采集器
+   同源+queryParam+2xx+successField（导出纯函数钉验）；双证门 dom.code 必备；物理卡片双锚+句柄内点击；
+   编译 v2 草稿真接线+观察基数强校验；sign 义务集合从 events 字面量独立推导；回放账本只随 v2 权威激活、
+   缺已签三元组立拒、信封先决优先于 DOM 分类。修金牌合法路径=零弱化+外科 stash 无实现态重钉红
+   （refit-*.red.txt 五份）+prd `checksumAmendments`（四笔）。新夹具场景 iddom-skew/idpaged-dupdom/
+   idtwins-sync（后者=C7 考场确定性化：回放 press→click 零等待使旧 DOM-only 门在 fetch 渲染页有固有
+   竞态，gate 两轮 none 红实证——同步渲卡+信封两行同名，M3 失守必 ambiguous 一击红）。
+3. R2 终判 `FAIL` 但大幅收敛：7 `FIXED`、3 `PARTIAL`（H1/H6/M1）、零新增独立问题；H6「修单侧缩窄」被拒
+   （plan 是权威，改义务须正式修 plan）。二波修复已落：H1=evaluateHandle 原子快照取 ElementHandle、
+   同物理节点重验+子句柄点击；M1=WeakSet+消费即出账（钉 O8c）；H6 部分=面③④落地（sign v1 三流+完整
+   产物集+逐文件 sha 面——双跑探针实证跨运行字节确定、「不确定」假设实测收回，候选输出与 82484ab 基线
+   逐字节相等成为「v1 路径逐字不变」的机器证据；compile/replay 无参三流面；过校验真路径负控 R15-R17）。
+   gate 第四轮 GREEN 6/6。
+4. 残余（Steven 拍板交接下一 session）：sol max 咨询判 `CHANGES REQUIRED`（`review/sol-consult-plan6.log`）——
+   「动作轴/axes/report 字节面零 SUT 不可达」不成立，给出五面构造（mock 替身驱真实 `createCompileRun`/
+   `compileFlow`/`performAction`+axes 投影抽生产纯函数+固定 `generatedAt` 报告装配）；实现后修 plan §6
+   再发 codex R3。构造清单与评审状态快照：worktree `docs/plans/agent-id-readback/review/fix-dispositions-r1.md`
+   末两节；R3 复审料草稿 `r3-packet-draft.md`；两波修复 hunks 已存档。audit.jsonl 已入账（in-progress、
+   rounds 2）。评审 `PASS` 前不合并。
+5. 教训沉淀 learn.md 十条（评审待闭合状态明标）：中心病灶「协议写全、接线接半」；判定序是安全属性；
+   义务集合绝不由被验件自报驱动；poison spy 要真实加载证据；「不可达/不确定」先实测再落账（两次被
+   异构评审逼收回）；竞态考场确定性化不靠重试。
+
+> 本节已被顶部深夜节取代（评审已闭环、已合并）。下方「2026-07-22（续 82484ab 之后）当日四线推进」
+> 为同日早前快照，只溯源、勿据其判现状。
+
+## 2026-07-22（续 `82484ab` 之后）当日四线推进——三线主树未提交、一线 worktree 未合并
+
+`82484ab`（entity-ui-wiring）合入后，本会话续推四线（均 Claude 实现→`codex`/`gpt-5.6-sol` 异构评审）：
+
+1. `stale-red-admission-refit`（light，六阶段全 done，主树活契约）：收口两陈旧红金牌 `p3-compile`（4/14→14/14）、`report-diagnostics`（11/12→12/12）。红因是实体语义锁准入面拦夹具旧式调用（`git stash` 实证红先于当日改动、非回归），夹具侧铸测试受众准入件、生产 `lib`/`bin` 零改、走 `checksumAmendments` 修单重钉两 owner prd。`gpt-5.6-sol` max 咨询定形（E1 改只读白名单信封 / C8 收紧四证防准入拒绝冒充多匹配 / 临时 prd `wx`+`finally`）+ `codex` high 评审 4 Medium 全采信修复。**主树未提交**。
+2. 报告固定模板（改 `lib/report.mjs`，未提交）：开篇自然语言概述（确定性投影四态裁定+步数、非全过 fail-safe 措辞不冒充通过）+ 回放对照同屏（录屏左 sticky·测试用例/原子操作右，窄屏退单列）。报告族金牌 + tier1 续绿。
+3. 真机三链重表达全 `PASS`（`cases/` 刷新未提交）：旧冻结件被准入面拦属设计——完整重表达（扩 flow 实体绑定→铸预执行权威件→哨兵探针→真机重编译→草拟补缝对齐已签基线→人签→全新令牌回放）后 CRUD 4/4、发布 4/4、历史 8/8 `PASS` 零 error，删后归零双证有清理证据，三份独立 HTML 报告交付。配方存 `runs/real-uat-20260722/`。
+4. `agent-id-readback`（full，worktree `../casey-agent-id-readback`，契约至 loop done、gate 6/6 GREEN，**未合并**）：智能体平台 ID 网络信封读回 + DOM/信封双证门。`gpt-5.6-sol` max 四轮设计共识（R1 三 P0=解析竞态/假唯一/剖面当安全开关，R4 可进 accept）；请求级身份观察事务（`arm`/归属请求时刻冻结/`settle` 终态/`seal`+`consume`）、完整性先决（`total===records.length`）、完整集合内同名>1 才 `AMBIGUOUS`、点击前对已签 `platformId` 比对（双定位闭合到点击那一刻）、观察↔确认哈希闭环（`sign` v2 `--entity-observations` 五元 join）。真机活数据双证实证绿（`docs/plans/agent-id-readback/evidence/realmachine-live-verify.md`），三层真机剖面字段名经实测纠正（`data.list`/`data.pageInfo.totalItems`）。待 `codex` 异构 review + learn + 合并 dev（见「下一步 A」）。需求进度已更 `docs/REQUIREMENTS-STATUS.md`（§3 实体身份）与 `docs/codex/HANDOFF.md`。
+
+> 本节为 2026-07-22 早段快照（最新现状见顶部「2026-07-22 晚」节；本节第 4 条的「待 codex 异构
+> review + learn + 合并」已被晚间会话推进两轮评审、现停 R2 FAIL 待 H6 五面构造）。下方各
+> 「当前状态（2026-07-XX）」节为更早历史快照，只溯源、勿据其判现状。
+
+## 2026-07-22 entity-ui-wiring 收口合入 dev（worktree 契约，merge `82484ab`）
+
+语义锁 UI 接线第一波（Steven 需求「名称+ID 联合定位/双边锁定」的 hermetic 轨）落地：
+`agent.searchOpen` 收紧（共享门 `lib/agent-search-gate.mjs`：`exact:true` 精确锚+容器归属闸，
+编译门=回放门同刻；同名双条目 AMBIGUOUS 硬阻断；registry 补 `code` 编码收敛参数）+
+`workflow.bindAgent` 关系原子全线接通（编译知识 25→26、registry 词条、回放专用门；抽屉钉扎
+域锁+触发器/选项物理句柄+全时点三闸重判+物理句柄内可见恰一精确回读；双 receipt 锁链端到端
++单边缺失必红）。gate GREEN 4/4（主树复验同绿）+ tier1 绿；codex（gpt-5.6-sol high）四轮异构
+评审 R1 FAIL(2H+3M)→R4 PASS 全闭环（audit.jsonl 有账，修复全带修前红对抗钉）；涟漪 9 prd
+重签复 gate 零账变差（flow-bridge s2 陈旧绿被 gate 如实翻红=隔离义务账按设计恒非绿；
+p5-replay 1/2→2/2、replay-settle-mount 0/2→1/2 翻好）；例翻三金牌 25→26；CONTEXT 补登
+「容器归属闸」「关系原子」。接线红基线（真机轨，2026-07-18「单元导出+真机双轨」已裁）由
+s4 守恒金牌钉死零触碰。worktree 已退役（并行槽 4/5）。
+
+真机挂账（route:human）：`docs/plans/entity-ui-wiring/realmachine-spike-checklist.md`——
+智能体平台 ID 三通道观察（列表行属性/URL/详情接口）+ 同名对抗 + bindAgent 真机配方四停站
+复核 + searchOpen 容器类名采样；采齐后另立契约接 ID 读回。教训见
+`docs/plans/entity-ui-wiring/learn.md`（execute 权威链金牌法/身份门全协议一步到位/冻结中修
+金牌的合法路径等七条）。
+
+另：同日早前本会话完成 casey×agent-loop-harness 交接包 TASK-000 本地重审计（15 条 claim
+裁定、双仓二元绑定、产唯一 zip 已交 Steven；只审计零实现，详见包内 evidence）。
+
+## 2026-07-21 starter 后刷新：task #17 已完成核账，停在 grill 人签裁决
+
+本次只刷新交接文档、不改实现。实时事实：主树 `dev@1207776`；前序
+`flow-bridge-golden-refit` 已 full 六阶段全 done，现役主树活契约是 `checksum-drift-closure`
+（full，六阶段均 `done:false`），baton 占用中。starter 已完成 task #17 的只读核账并写出
+`docs/plans/checksum-drift-closure/GRILL.md`；该目录是本契约进行中产物，不属于用户或并行现场。
+除本契约产物与本次写入的 `docs/HANDOFF.md`、`docs/NEXT-SESSION.md` 外，现场另有非本次交接改动：
+`.gitignore`、三份 PRD
+（`prd-cli-authority-wiring-fill` / `prd-selftest` / `prd-semantic-unit-discrimination`）为修改态，另有
+`casey-agent-loop-local-first-total.zip`、`docs/atom-readiness-assessment-20260715.md`、`docs/codex/`、
+`docs/plans/regress-strategy/SCOPE-OPTIONS.md`、`docs/plans/usability-audit/`、`follow.mjs` 未跟踪；全部视为
+用户或并行现场，不碰、不顺手提交。
+
+核账已把 4 处 `testChecksums` 漂移分为两类：`prd-delete-confirm-causal-binding` 与
+`prd-seams-freeze` 是真实漏签；`driver-canonical-root` 与 `transaction-root` 两金牌是同一提交写入的
+有意安全撤销墓碑，不是并发污染。当前停点是请 Steven 裁决 `GRILL.md` 的 D1/D2/D3；签认前不
+`advance grill`，不写 plan/prd，不改 checksum、`passes`、冻结金牌或 `loop-kit`。不得重复
+`contract init`，也不得把「发现漂移」直接当成自动重签授权。
+
+残留 worktree 分三类：`loop-p0-4a-state-engine` 为真实暂停 WIP（3/6，落后 dev 165 个提交），
+`loop-p0-4b-gate-layering` 为真实暂停 WIP（2/6，落后 dev 163 个提交），两者都必须先重对当前基线，
+不得沿用旧红基线直接续实现；`mountdelay-fidelity` 已 6/6 done 且并入 dev，只是完成后的残留树，
+不是待续契约。下方所有更早日期段落均为历史快照；与本节冲突时只作溯源。
+
 ## 2026-07-20 活动增量：阶段二生命周期重裁 + mountdelay-fidelity 全收口并入 dev
 
-**阶段二 `hermetic-golden-zero-sut-lifecycle` 六阶段全 done**（dev `95bb6bb`，ADR-0004 人签已落）：
+阶段二 `hermetic-golden-zero-sut-lifecycle` 六阶段全 done（dev `95bb6bb`，ADR-0004 人签已落）：
 全量清点 27 个会启动 fake-SUT/浏览器的金牌，按逐 check 义务拆出 zero-SUT 存活单元，其余浏览器
 义务进入隔离账（239 obligations / 27 live executables，`agentExecution=forbidden`、route:human）。闭合机器
 包含依赖扫描、source-obligations、subsumption matrix、retirement/isolation receipts、PRD 反向闭包与突变
 电池；55/55 checksum 人签 GREEN。Pi DeepSeek V4 Pro 与 Grok 复审均 ACCEPT；Grok R1 的扫描器
 High/Medium 已补正负控修复。旧 fake-SUT 金牌没有被重新运行或伪称已迁真机。
 
-**`mountdelay-fidelity` 六阶段全 done，merge `6f244fb` 入 dev**：原计划依赖共享 fake-SUT 的部分按
+`mountdelay-fidelity` 六阶段全 done，merge `6f244fb` 入 dev：原计划依赖共享 fake-SUT 的部分按
 生命周期契约删除，不改/不跑共享 fixture。`lib/replay-settle.mjs` 新增严格 `profile.loading`
 selectors/text、DOM/占位同刻快照、所有模式至少三拍静止窗；配置态还须连续两拍证实占位消失，
 probe unknown 保持 `settled:false`。`bin/replay.mjs` 在浏览器前校验 profile 并只把 profile（不把
@@ -24,7 +160,7 @@ Grok R2 要求 placeholderGone 连续三拍的争议，经 Claude Code Opus 无�
 `stableSamples>=3` 已保证配置态不弱于无配置，DOM 长度变化时自然重置为三拍 gone，长度不变时两拍
 gone 是原授权语义。完整收据见 `docs/plans/mountdelay-fidelity/review/summary.md`。
 
-**本链剩余项全部是 route:human，不是 agent 可自行翻绿的实现尾巴**：① 阶段一
+本链剩余项全部是 route:human，不是 agent 可自行翻绿的实现尾巴：① 阶段一
 `admission-trust-root-separation` 的人签/真机 execute UAT；② 阶段二隔离浏览器义务的真实 UAT 存证、
 可信签名与迁移机制（已明确延期给后续 `real-uat-attestation` 类契约）；③ mountdelay 真机多次回放、
 `profile.loading` selector/text 与时序标定；④ mountdelay 本次新增冻结验收的 ADR-0004 人签确认。
@@ -34,37 +170,37 @@ gone 是原授权语义。完整收据见 `docs/plans/mountdelay-fidelity/review
 
 ## 2026-07-20 活动增量：阶段一（生产/测试信任根分离 kernel 契约）六阶段 done + codex 六轮异构评审 PASS，待 route:human 人签
 
-**契约 `admission-trust-root-separation`（kernel/full）六阶段全 done**（grill/plan/accept/loop/review/learn），dev 到 `dd09ae7`。给冻结身份准入件加签名进自哈希的必填 `audience` 字段（准入受众 test|production）+ 铸权后启动浏览器前的纯函数**凭据上下文门**（严格匹配受众与凭据上下文：真凭据 run↔production、无凭据 run↔test，不符 fail-closed 不启动浏览器），机制阻断「测试锁被误指向真 SUT 授权真实改动」。设计=ADR-0010 + `docs/plans/admission-trust-root-separation/`（GRILL/plan/learn）。**明确不覆盖（ADR-0010 划界，后续契约）**：密钥签名/signerId 认证、不可变发布 manifest 根、receipt 读路复验、撤销、锁绑 SUT/环境 scope——本契约诚实划界为「防误用/泄漏」有界威胁。
+契约 `admission-trust-root-separation`（kernel/full）六阶段全 done（grill/plan/accept/loop/review/learn），dev 到 `dd09ae7`。给冻结身份准入件加签名进自哈希的必填 `audience` 字段（准入受众 test|production）+ 铸权后启动浏览器前的纯函数凭据上下文门（严格匹配受众与凭据上下文：真凭据 run↔production、无凭据 run↔test，不符 fail-closed 不启动浏览器），机制阻断「测试锁被误指向真 SUT 授权真实改动」。设计=ADR-0010 + `docs/plans/admission-trust-root-separation/`（GRILL/plan/learn）。明确不覆盖（ADR-0010 划界，后续契约）：密钥签名/signerId 认证、不可变发布 manifest 根、receipt 读路复验、撤销、锁绑 SUT/环境 scope——本契约诚实划界为「防误用/泄漏」有界威胁。
 
-**codex gpt-5.6-sol high 六轮异构评审 PASS**（`docs/plans/admission-trust-root-separation/review/`，入 audit）——kernel 强制层异构评审真挣钱的极强实证。逐轮逼出我 Claude 家族自审看漏的洞 + 我三次自造的假绿/弱证：① 生产门零削弱不成立(锁不绑 --sut) ② SKILL.md:107 冲突 ③ 我用错 grep 标记误报绿+提假绿(已沉淀记忆「判金牌只信退出码」) ④ sign 写路径未迁移 ⑤ compile 假凭据判据 ⑥ W2 没真测门 ⑦ C5b 错误原因假绿 ⑧「无产物≠没启动」⑨ W1b 不证 compile 哨兵。全消解，Medium-4 六轮闭合（浏览器启动哨兵机械化 + 双正控 W1b replay/W3b compile）。
+codex gpt-5.6-sol high 六轮异构评审 PASS（`docs/plans/admission-trust-root-separation/review/`，入 audit）——kernel 强制层异构评审真挣钱的极强实证。逐轮逼出我 Claude 家族自审看漏的洞 + 我三次自造的假绿/弱证：① 生产门零削弱不成立(锁不绑 --sut) ② SKILL.md:107 冲突 ③ 我用错 grep 标记误报绿+提假绿(已沉淀记忆「判金牌只信退出码」) ④ sign 写路径未迁移 ⑤ compile 假凭据判据 ⑥ W2 没真测门 ⑦ C5b 错误原因假绿 ⑧「无产物≠没启动」⑨ W1b 不证 compile 哨兵。全消解，Medium-4 六轮闭合（浏览器启动哨兵机械化 + 双正控 W1b replay/W3b compile）。
 
-**待 route:human（kernel 纪律，交 Steven）**：① 冻结夹具/金牌改动的 ADR-0004 人签（3 preflight 夹具重签 audience:test + sidecar golden/schema + 3 敌意夹具 + 新增验收金牌与夹具）；② compile --execute 真机 execute 授权路径端到端 UAT 抽验（audience-mismatch 分支，W3 已覆盖其 hermetic 可执行回归证据）。
+待 route:human（kernel 纪律，交 Steven）：① 冻结夹具/金牌改动的 ADR-0004 人签（3 preflight 夹具重签 audience:test + sidecar golden/schema + 3 敌意夹具 + 新增验收金牌与夹具）；② compile --execute 真机 execute 授权路径端到端 UAT 抽验（audience-mismatch 分支，W3 已覆盖其 hermetic 可执行回归证据）。
 
-**与阶段二关系**：本契约独立加固、非阶段二前置（Q1 决策）——阶段二 hermetic 金牌生命周期重裁主力走 zero-SUT、不碰准入门；见 `docs/plans/replay-admission-hermetic-migration/DIRECTION-AFTER-CODEX.md`。**下一步**：阶段二（金牌生命周期重裁）或 mountdelay-fidelity 续（视基础债方向落地）。主树活契约槽收口后归还 alh-open-entry。
+与阶段二关系：本契约独立加固、非阶段二前置（Q1 决策）——阶段二 hermetic 金牌生命周期重裁主力走 zero-SUT、不碰准入门；见 `docs/plans/replay-admission-hermetic-migration/DIRECTION-AFTER-CODEX.md`。下一步：阶段二（金牌生命周期重裁）或 mountdelay-fidelity 续（视基础债方向落地）。主树活契约槽收口后归还 alh-open-entry。
 
 ## 2026-07-19 晚活动增量：基础债规模远超预估 + codex 讨论推翻锁绿路径 → 转两阶段方向（信任根分离 → 金牌生命周期重裁）
 
-**权威后续方向 = `docs/plans/replay-admission-hermetic-migration/DIRECTION-AFTER-CODEX.md`**。本会话把基础债从「5 金牌」推进到坐实真实规模并**转向**：
+权威后续方向 = `docs/plans/replay-admission-hermetic-migration/DIRECTION-AFTER-CODEX.md`。本会话把基础债从「5 金牌」推进到坐实真实规模并**转向**：
 
-1. **规模真相**：enforcement `9ee2731`→`dfee72c`（2026-07-17）落地未迁移测试套件，把**整个 hermetic 浏览器回放金牌套件**（约 24 金牌 / 40 prd）打成陈旧绿，非最初发现的 5 个。债务全貌钉死在 `DEBT-REGISTER.md`（18 复签即真绿集 + 12 翻红集 + 7 额外红金牌 sweep 范围）。
-2. **codex gpt-5.6-sol high 异构讨论真挣钱**（Steven 指示做，`review/codex-sol-strategy-20260719.md`，入 audit）：逮到 Claude 家族自审看漏的四承重问题——① 路 a「生产门零削弱」不成立（测试锁绑 events 不绑 `--sut`、生产 reader 不分测试/生产 signer = 利用既有 trust-root 缺口）；② `SKILL.md:107` 冲突；③ p5 墓碑不该借删两案翻绿；④ mint 工具语义授权不可信。
-3. **Steven 2026-07-19 两裁决**（AskUserQuestion）：**Q1 = SKILL.md:107 fake-SUT 只读规则也约束 dev gate/golden**（hermetic 金牌不该被 agent 跑、须按生命周期重裁，非重跑锁绿）；**Q2 = 先修生产/测试信任根分离再迁移**（codex 荐）。→ 原执行路径（重跑 fake-sut + 注入测试锁锁绿）**作废**。
-4. **正确方向两阶段**（各另立契约、均须 Steven 参与，见 DIRECTION-AFTER-CODEX.md）：**阶段一** 生产/测试信任根分离（kernel 车道：生产 reader 只读不可变发布 manifest、artifact 带不可伪造 audience 分根签、拒测试 signer、绑环境/SUT scope、验 receipt、反向验收测试锁必被生产 reader 拒）；**阶段二** hermetic 金牌套件逐个生命周期重裁（(a) 转 zero-SUT 确定性喂冻结 axes/纯裁判=主力出路 / (b) 真机 UAT-only 墓碑 fake-sut / (c) 教义作废墓碑+命名后继，如 p5 drift/vanished：原 story superseded-not-pass + successor PRD + 自愈 liveness 另立）。
-5. **本契约收口姿态**：`replay-admission-hermetic-migration` 转**调查/决策契约**（prd stories 空、方向记 observability）。已做：波0 五核心 prd honest 翻红（**保留权威——按 Q1 不得再跑 gate 启动 fake-sut，passes:false 不可撤了重生**）；波1 settle 锁绿已 `git revert`（含 mint 工具，codex 判语义授权不可信）；复签 sweep 工具 `tests/_golden/support/resign-changed-goldens.mjs` 保留（生命周期工作仍用）。约 35 个非核心 prd 仍陈旧绿（未翻红）待阶段二清偿（DEBT-REGISTER C 组）。dev HEAD 5df2c17。
-6. **mountdelay-fidelity 仍挂起**（worktree 存、grill+plan done）：原被基础债阻塞，现基础债转为两阶段大工程、mountdelay 继续排后待方向落地。
-7. **主树未提交现场**：`.gitignore` + 一批 prd（M，gate evidence 时间戳漂移）+ 用户未跟踪件（docs/codex/、follow.mjs 等）——别碰别提交。**主树活契约槽已归还 alh-open-entry**（外部仓 agent-loop-harness 接入，Steven 上下文，与本线无关；本会话曾临时占槽跑 replay-admission-hermetic-migration，收口后已恢复原槽）。replay-admission-hermetic-migration 契约转调查/决策姿态、不走 loop/review/learn 正常流，其完整状态在 `docs/plans/replay-admission-hermetic-migration/`（DIRECTION-AFTER-CODEX/DEBT-REGISTER/prd）与本节，不依赖契约槽。阶段一另立新 slug。
+1. 规模真相：enforcement `9ee2731`→`dfee72c`（2026-07-17）落地未迁移测试套件，把整个 hermetic 浏览器回放金牌套件（约 24 金牌 / 40 prd）打成陈旧绿，非最初发现的 5 个。债务全貌钉死在 `DEBT-REGISTER.md`（18 复签即真绿集 + 12 翻红集 + 7 额外红金牌 sweep 范围）。
+2. codex gpt-5.6-sol high 异构讨论真挣钱（Steven 指示做，`review/codex-sol-strategy-20260719.md`，入 audit）：逮到 Claude 家族自审看漏的四承重问题——① 路 a「生产门零削弱」不成立（测试锁绑 events 不绑 `--sut`、生产 reader 不分测试/生产 signer = 利用既有 trust-root 缺口）；② `SKILL.md:107` 冲突；③ p5 墓碑不该借删两案翻绿；④ mint 工具语义授权不可信。
+3. Steven 2026-07-19 两裁决（AskUserQuestion）：Q1 = SKILL.md:107 fake-SUT 只读规则也约束 dev gate/golden（hermetic 金牌不该被 agent 跑、须按生命周期重裁，非重跑锁绿）；Q2 = 先修生产/测试信任根分离再迁移（codex 荐）。→ 原执行路径（重跑 fake-sut + 注入测试锁锁绿）**作废**。
+4. 正确方向两阶段（各另立契约、均须 Steven 参与，见 DIRECTION-AFTER-CODEX.md）：阶段一 生产/测试信任根分离（kernel 车道：生产 reader 只读不可变发布 manifest、artifact 带不可伪造 audience 分根签、拒测试 signer、绑环境/SUT scope、验 receipt、反向验收测试锁必被生产 reader 拒）；阶段二 hermetic 金牌套件逐个生命周期重裁（(a) 转 zero-SUT 确定性喂冻结 axes/纯裁判=主力出路 / (b) 真机 UAT-only 墓碑 fake-sut / (c) 教义作废墓碑+命名后继，如 p5 drift/vanished：原 story superseded-not-pass + successor PRD + 自愈 liveness 另立）。
+5. 本契约收口姿态：`replay-admission-hermetic-migration` 转调查/决策契约（prd stories 空、方向记 observability）。已做：波0 五核心 prd honest 翻红（保留权威——按 Q1 不得再跑 gate 启动 fake-sut，passes:false 不可撤了重生）；波1 settle 锁绿已 `git revert`（含 mint 工具，codex 判语义授权不可信）；复签 sweep 工具 `tests/_golden/support/resign-changed-goldens.mjs` 保留（生命周期工作仍用）。约 35 个非核心 prd 仍陈旧绿（未翻红）待阶段二清偿（DEBT-REGISTER C 组）。dev HEAD 5df2c17。
+6. mountdelay-fidelity 仍挂起（worktree 存、grill+plan done）：原被基础债阻塞，现基础债转为两阶段大工程、mountdelay 继续排后待方向落地。
+7. 主树未提交现场：`.gitignore` + 一批 prd（M，gate evidence 时间戳漂移）+ 用户未跟踪件（docs/codex/、follow.mjs 等）——别碰别提交。主树活契约槽已归还 alh-open-entry（外部仓 agent-loop-harness 接入，Steven 上下文，与本线无关；本会话曾临时占槽跑 replay-admission-hermetic-migration，收口后已恢复原槽）。replay-admission-hermetic-migration 契约转调查/决策姿态、不走 loop/review/learn 正常流，其完整状态在 `docs/plans/replay-admission-hermetic-migration/`（DIRECTION-AFTER-CODEX/DEBT-REGISTER/prd）与本节，不依赖契约槽。阶段一另立新 slug。
 
 以下为本会话早段快照（其「路 a 锁绿」执行序已被本节转向推翻），只溯源、勿据其判现状：
 
 ## 2026-07-19 活动增量：发现基础债——一批浏览器回放金牌 runtime-RED + prd 陈旧绿（semantic-lock 准入门 enforcement 落地未复跑），mountdelay 挂起排后
 
-**基础阻塞（亲核坐实）**：2026-07-17 提交 `9ee2731`「feat: enforce semantic lock admission gates」→`dfee72c` 落地 semantic-lock 准入门 enforcement——含 mutation atom 的 events 现要求签名冻结锁（`--entity-locks` + 注册 prd checksum，`lib/entity-semantic-lock-preflight.mjs:checkReplayEntityAdmission`，`bin/replay.mjs:238-247`）。合成 caseId 的 hermetic 浏览器回放金牌满足不了 → 一批金牌全 runtime-RED（`FROZEN_ENTITY_LOCKS`）：`p5-replay`/`wf-publish-states`/`replay-settle-mount`/`drawer-lock-hardening`/`replay-nth-visible-hardening`。enforcement 落地时**未复跑这些金牌**，其 prd 全带陈旧 `passes:true`；`tier1` GREEN 掩盖（不跑浏览器回放金牌）。亲核：`replay-settle-mount.golden.mjs` 主树 9 过/7 红（7 红全 FROZEN_ENTITY_LOCKS），prd evidence 停在 gate@2026-07-14。**本会话第三次逮同模式**（enforcement/迁移落地未复跑受影响金牌→陈旧绿；前两次 record-intake、supersession）。
+基础阻塞（亲核坐实）：2026-07-17 提交 `9ee2731`「feat: enforce semantic lock admission gates」→`dfee72c` 落地 semantic-lock 准入门 enforcement——含 mutation atom 的 events 现要求签名冻结锁（`--entity-locks` + 注册 prd checksum，`lib/entity-semantic-lock-preflight.mjs:checkReplayEntityAdmission`，`bin/replay.mjs:238-247`）。合成 caseId 的 hermetic 浏览器回放金牌满足不了 → 一批金牌全 runtime-RED（`FROZEN_ENTITY_LOCKS`）：`p5-replay`/`wf-publish-states`/`replay-settle-mount`/`drawer-lock-hardening`/`replay-nth-visible-hardening`。enforcement 落地时未复跑这些金牌，其 prd 全带陈旧 `passes:true`；`tier1` GREEN 掩盖（不跑浏览器回放金牌）。亲核：`replay-settle-mount.golden.mjs` 主树 9 过/7 红（7 红全 FROZEN_ENTITY_LOCKS），prd evidence 停在 gate@2026-07-14。本会话第三次逮同模式（enforcement/迁移落地未复跑受影响金牌→陈旧绿；前两次 record-intake、supersession）。
 
-**Steven 2026-07-19 可点选项决策**：先修基础债（另立契约）+ mountdelay 排后。**方案已侦察定清并落盘 `docs/plans/replay-admission-hermetic-migration/PROPOSAL.md`（供直接接手）**：采路 (a) 测试签名锁注入 + 金牌迁移，**不触准入门 kernel**——准入读路无 Ed25519/无收据验证/无真 SUT 依赖，只认 结构+内容自哈希+prd checksum，故 hermetic 测试锁可确定性铸造 + 经生产接口合法注册、不削弱生产门（否决路 b hermetic seam：触 kernel、fail-open 缝、违护栏 #14）。分层：简单案（p5-replay/replay-settle-mount/wf-publish-states 静态 events 直接铸锁）+ 摩擦案（drawer-lock/nth-visible compile-driven 非确定性 + 双门，须冻编译产物或拆轨）+ 独立门（p5 drift/vanished 的 deleteByName 死在另一道 binding 门）。陈旧绿先翻红记账再修绿（不手改/不随迁移补绿）。full 车道、非 kernel、不必 worktree。
+Steven 2026-07-19 可点选项决策：先修基础债（另立契约）+ mountdelay 排后。方案已侦察定清并落盘 `docs/plans/replay-admission-hermetic-migration/PROPOSAL.md`（供直接接手）：采路 (a) 测试签名锁注入 + 金牌迁移，不触准入门 kernel——准入读路无 Ed25519/无收据验证/无真 SUT 依赖，只认 结构+内容自哈希+prd checksum，故 hermetic 测试锁可确定性铸造 + 经生产接口合法注册、不削弱生产门（否决路 b hermetic seam：触 kernel、fail-open 缝、违护栏 #14）。分层：简单案（p5-replay/replay-settle-mount/wf-publish-states 静态 events 直接铸锁）+ 摩擦案（drawer-lock/nth-visible compile-driven 非确定性 + 双门，须冻编译产物或拆轨）+ 独立门（p5 drift/vanished 的 deleteByName 死在另一道 binding 门）。陈旧绿先翻红记账再修绿（不手改/不随迁移补绿）。full 车道、非 kernel、不必 worktree。
 
-**mountdelay-fidelity 契约挂起**（worktree `casey-mountdelay-fidelity`，grill+plan done）：核心设计已亲定并落 `docs/plans/mountdelay-fidelity/plan.md`（settle 加占位门+静止窗兜底、fake-sut 补延迟提交子形态、hermetic/真机边界）。因基础阻塞（原设计驱 `bin/replay.mjs` 红先行的红会是准入门失败而非预期 buttonState 假阴）挂起，基础修好后可直接续实现。
+mountdelay-fidelity 契约挂起（worktree `casey-mountdelay-fidelity`，grill+plan done）：核心设计已亲定并落 `docs/plans/mountdelay-fidelity/plan.md`（settle 加占位门+静止窗兜底、fake-sut 补延迟提交子形态、hermetic/真机边界）。因基础阻塞（原设计驱 `bin/replay.mjs` 红先行的红会是准入门失败而非预期 buttonState 假阴）挂起，基础修好后可直接续实现。
 
-**次要发现（纠正 plan/侦察冻结清单不准，实现代理核实）**：`lib/replay-settle.mjs` 冻在 **0** 个 prd（非 1，强化它不用重签）；`server.mjs` 冻 **4** 个（drawer-lock/p5-replay/replay-nth/replay-settle-mount，非 5——`prd-resolution` 只冻 `resolution.golden.mjs`）；`CONTRACT.md` 冻 **3** 个（+drawer-lock，非 2）；mountdelay plan B 兜底 `STILL_TICKS=4`（≈480ms）会让 `replay-settle-mount.golden` U3（floorMs 0→waitedMs<300）转红，兜底静止窗须改 opt-driven（裸调用保持 2 拍）。
+次要发现（纠正 plan/侦察冻结清单不准，实现代理核实）：`lib/replay-settle.mjs` 冻在 0 个 prd（非 1，强化它不用重签）；`server.mjs` 冻 4 个（drawer-lock/p5-replay/replay-nth/replay-settle-mount，非 5——`prd-resolution` 只冻 `resolution.golden.mjs`）；`CONTRACT.md` 冻 3 个（+drawer-lock，非 2）；mountdelay plan B 兜底 `STILL_TICKS=4`（≈480ms）会让 `replay-settle-mount.golden` U3（floorMs 0→waitedMs<300）转红，兜底静止窗须改 opt-driven（裸调用保持 2 拍）。
 
 ## 2026-07-18 夜活动增量：obs-cases-isolation 契约收口并入 dev，三金牌主树 DrvFs 稳定绿 + W2 环境敏感挂账连带清偿
 
@@ -76,29 +212,29 @@ gone 是原授权语义。完整收据见 `docs/plans/mountdelay-fidelity/review
 
 session limit 恢复后续完两契约，均 codex 异构评审闭环并合并 dev：
 
-1. **单元轨 `semantic-unit-discrimination` 已并 dev**（merge `56ff17f` + cert 重签 `dade165`）：判别纯函数剥壳导出面 `compareCandidateFacts`，单元金牌 38/38 hermetic 证判别基元。codex 三轮：逮 High-1 硬门旁路（导出 `allowAction`）→ 剥离重修 → 复审 High-1/Med-1/Med-2 全 RESOLVED PASS。合并点原子重签 cert-closure 冻的 lib sha `4b370340→b7b5a47e`（消解 codex High-2 账实不符）。
-2. **W2 接线 `cli-authority-wiring-fill` 已并 dev**（merge 于 `dade165` 之后）：intake 补三件套接线 + 两旧金牌对齐 trust-root + record-intake 陈旧绿翻真。codex 两轮：逮 intake TOCTOU High（一致性检查在 append 后、换包时脏包已 committed = 失败留脏账）→ 一致性前置进 authority 原子事务修复（落账前 no-follow 重验、不一致落账前拒、committed ledger 零新增）→ 复审 RESOLVED PASS。并发换包红先行金牌 3/3。
-3. **合并后主树复验诊断（承重，防误判）**：W2 gate 主树显 3/4 RED，已决定性诊断为**非 W2 回归**——s3 的三个 observation 金牌（cli-authority-wiring/unsafe-golden-revocation/active-suite-supersession）环境敏感，扫主树 12 个用户真机 `cases/` 目录时红；换回 W2 前 lib（dade165）跑主树同样全红，红纯是 `cases/` 真实数据、与 authority-root 改动无关。契约树 hermetic 干净 `cases/` 下 gate GREEN 4/4 是有效零回归证明。三金牌 `cases/` 隔离改造挂账另立契约。
-4. **两 WIP 抢救提交已转正**：`ffb4433`/`cf9cbc2`（session limit 中断时从 stash 恢复的现场）经主会话验证后各以 `fbca49c`/`3049b52` 转正、随契约合并入 dev。
-5. **异构评审本 session 实证四次真挣钱**：cert pi PASS + 单元轨 codex 逮 allowAction 旁路 + W2 codex 逮 TOCTOU + 合并后主树诊断纠偏——坐实「评审家族≠实现家族」+「hermetic 绿≠主树绿，合并后必主树复验」。audit.jsonl 五笔评审入账（两 changes_required→修复→pass 的完整轨迹）。
+1. 单元轨 `semantic-unit-discrimination` 已并 dev（merge `56ff17f` + cert 重签 `dade165`）：判别纯函数剥壳导出面 `compareCandidateFacts`，单元金牌 38/38 hermetic 证判别基元。codex 三轮：逮 High-1 硬门旁路（导出 `allowAction`）→ 剥离重修 → 复审 High-1/Med-1/Med-2 全 RESOLVED PASS。合并点原子重签 cert-closure 冻的 lib sha `4b370340→b7b5a47e`（消解 codex High-2 账实不符）。
+2. W2 接线 `cli-authority-wiring-fill` 已并 dev（merge 于 `dade165` 之后）：intake 补三件套接线 + 两旧金牌对齐 trust-root + record-intake 陈旧绿翻真。codex 两轮：逮 intake TOCTOU High（一致性检查在 append 后、换包时脏包已 committed = 失败留脏账）→ 一致性前置进 authority 原子事务修复（落账前 no-follow 重验、不一致落账前拒、committed ledger 零新增）→ 复审 RESOLVED PASS。并发换包红先行金牌 3/3。
+3. 合并后主树复验诊断（承重，防误判）：W2 gate 主树显 3/4 RED，已决定性诊断为非 W2 回归——s3 的三个 observation 金牌（cli-authority-wiring/unsafe-golden-revocation/active-suite-supersession）环境敏感，扫主树 12 个用户真机 `cases/` 目录时红；换回 W2 前 lib（dade165）跑主树同样全红，红纯是 `cases/` 真实数据、与 authority-root 改动无关。契约树 hermetic 干净 `cases/` 下 gate GREEN 4/4 是有效零回归证明。三金牌 `cases/` 隔离改造挂账另立契约。
+4. 两 WIP 抢救提交已转正：`ffb4433`/`cf9cbc2`（session limit 中断时从 stash 恢复的现场）经主会话验证后各以 `fbca49c`/`3049b52` 转正、随契约合并入 dev。
+5. 异构评审本 session 实证四次真挣钱：cert pi PASS + 单元轨 codex 逮 allowAction 旁路 + W2 codex 逮 TOCTOU + 合并后主树诊断纠偏——坐实「评审家族≠实现家族」+「hermetic 绿≠主树绿，合并后必主树复验」。audit.jsonl 五笔评审入账（两 changes_required→修复→pass 的完整轨迹）。
 6. **下一步**：① 前瞻红基线 `runtime-discrimination-successor`（0/26）真机轨填绿仍待真机运行时权威（route:human）；② 三 observation 金牌 `cases/` 隔离改造；③ mountdelay 保真契约（7/15 头号）；④ 两 WIP 特性（跨平台安装/账户配置）验收后合并；⑤ worktree 卫生（两契约树可清）。
 
 ## 2026-07-18 下午活动增量：判别双轨 + W2 接线两契约进行中（session limit 中断，两 WIP 现场已抢救提交，待续接）
 
-三条线全部**未合并 dev**（dev 停 `f9de8b8`），两个契约现场因 session limit（Perth 3pm 重置）中断、已抢救提交为明确「不可合并」WIP：
+三条线全部未合并 dev（dev 停 `f9de8b8`），两个契约现场因 session limit（Perth 3pm 重置）中断、已抢救提交为明确「不可合并」WIP：
 
-1. **`semantic-unit-discrimination`（light，worktree `casey-semantic-unit-discrimination`）**：兑现 Steven「单元导出+真机双轨」裁决的 hermetic 轨——给 `lib/entity-semantic-lock-v2.mjs` 判别纯函数加只读导出面做单元级攻击金牌。codex 异构评审逮到 High-1（导出 `compareCandidate` 返回 `allowAction:true` = 硬门旁路），Steven 裁「剥离 allowAction 重修」→ 重修 `e481d85`（导出面换剥壳 `compareCandidateFacts`，只出 `status/reason/candidateCount`）→ codex 聚焦复审判 High-1 已消解（RESOLVED），但 Med-1（反滥用静态扫描可被 `.join` 拼接绕）/Med-2（`bindingMode`·`provenance.kind` 未证被 canonical hash 覆盖，**可能藏真 fail-open 洞**）判 PARTIAL。Med 收尾代理挂在验零回归前，金牌现场抢救提交 **`ffb4433`（WIP，未验证）**。lib 当前 sha `b7b5a47e`（初版 `4b370340`→`40fd8eb0`→`b7b5a47e`）。
+1. `semantic-unit-discrimination`（light，worktree `casey-semantic-unit-discrimination`）：兑现 Steven「单元导出+真机双轨」裁决的 hermetic 轨——给 `lib/entity-semantic-lock-v2.mjs` 判别纯函数加只读导出面做单元级攻击金牌。codex 异构评审逮到 High-1（导出 `compareCandidate` 返回 `allowAction:true` = 硬门旁路），Steven 裁「剥离 allowAction 重修」→ 重修 `e481d85`（导出面换剥壳 `compareCandidateFacts`，只出 `status/reason/candidateCount`）→ codex 聚焦复审判 High-1 已消解（RESOLVED），但 Med-1（反滥用静态扫描可被 `.join` 拼接绕）/Med-2（`bindingMode`·`provenance.kind` 未证被 canonical hash 覆盖，可能藏真 fail-open 洞）判 PARTIAL。Med 收尾代理挂在验零回归前，金牌现场抢救提交 `ffb4433`（WIP，未验证）。lib 当前 sha `b7b5a47e`（初版 `4b370340`→`40fd8eb0`→`b7b5a47e`）。
    - **续接**：确认 Med-2 取证结论（若 `canonicalReceipt` 真没覆盖 `bindingMode`/`provenance.kind` 则是真 fail-open 洞、停手上报改内核另立契约；否则补隔离断言）→ 邻接十金牌零回归 → gate → 纪律②重签 prd 金牌 checksum → codex 复审两 PARTIAL 消解。
-2. **`cli-authority-wiring-fill`（full，worktree `casey-cli-authority-wiring-fill`）**：W2 接线，对齐现役 trust-root 模型（Steven 裁）——`bin/intake.mjs` 补三件套接线 + 两旧金牌对齐重写 + `record-intake` 陈旧绿翻真（`05573d1`，已核账三 gate GREEN）。codex 异构评审逮到 High（intake TOCTOU：`append` 后才比对、换包时报 exit65 但脏包已 committed = 失败留脏账，违 fail-safe「失败必须干净」）。修复代理触权威内核 `lib/teachin-observation-authority-root.mjs`（append 原子性）+ `bin/intake.mjs`（一致性前置）+ 并发换包红先行金牌，挂在 `git stash pop` timeout、现场从 stash 恢复后抢救提交 **`cf9cbc2`（WIP，未验证，自报零回归但未跑完 gate）**。
+2. `cli-authority-wiring-fill`（full，worktree `casey-cli-authority-wiring-fill`）：W2 接线，对齐现役 trust-root 模型（Steven 裁）——`bin/intake.mjs` 补三件套接线 + 两旧金牌对齐重写 + `record-intake` 陈旧绿翻真（`05573d1`，已核账三 gate GREEN）。codex 异构评审逮到 High（intake TOCTOU：`append` 后才比对、换包时报 exit65 但脏包已 committed = 失败留脏账，违 fail-safe「失败必须干净」）。修复代理触权威内核 `lib/teachin-observation-authority-root.mjs`（append 原子性）+ `bin/intake.mjs`（一致性前置）+ 并发换包红先行金牌，挂在 `git stash pop` timeout、现场从 stash 恢复后抢救提交 `cf9cbc2`（WIP，未验证，自报零回归但未跑完 gate）。
    - **续接**：验并发换包金牌 exit0（不一致→denied+accepted ledger 零新增）+ 邻接零回归（observation 全套+tier1）+ gate → 报权威内核 lib 新 sha（跨契约共享冻结）→ codex 复审。
-3. **合并点统一动作（两契约各自 codex 复审 PASS 后）**：顺序合并回 dev，**原子重签跨契约共享冻结**——`lib/entity-semantic-lock-v2.mjs`（cert-closure prd 冻旧 `4b370340`，须重签到最终 sha，codex High-2 NOT-RESOLVED 即此，合并点消解）+ `lib/teachin-observation-authority-root.mjs`（被哪些 prd 冻结待 grep 清单）；各带 3-way + 全仓 ratchet + tier1。
-4. **异构评审本 session 实证三次真挣钱**：cert 收口 pi PASS + 单元轨 codex 逮 allowAction 旁路 + W2 codex 逮 TOCTOU——后两个都是 Claude 家族自实现+自审未抓、跨 codex 一眼看穿，坐实「评审家族≠实现家族」铁律。audit.jsonl 三笔已入账（含两 changes_required 诚实留痕）。
+3. 合并点统一动作（两契约各自 codex 复审 PASS 后）：顺序合并回 dev，**原子重签跨契约共享冻结**——`lib/entity-semantic-lock-v2.mjs`（cert-closure prd 冻旧 `4b370340`，须重签到最终 sha，codex High-2 NOT-RESOLVED 即此，合并点消解）+ `lib/teachin-observation-authority-root.mjs`（被哪些 prd 冻结待 grep 清单）；各带 3-way + 全仓 ratchet + tier1。
+4. 异构评审本 session 实证三次真挣钱：cert 收口 pi PASS + 单元轨 codex 逮 allowAction 旁路 + W2 codex 逮 TOCTOU——后两个都是 Claude 家族自实现+自审未抓、跨 codex 一眼看穿，坐实「评审家族≠实现家族」铁律。audit.jsonl 三笔已入账（含两 changes_required 诚实留痕）。
 
 ## 2026-07-18 凌晨活动增量：codex 语义锁线核账 + Claude 接管认证漂移收口（已收口并入 dev，merge `bf39d7e`）
 
 1. **三路核账**：codex 自报（7/16 17:03 止）全部属实；其后 codex 又推进约 60 提交至 `observation-contract-closure @ e0ffe16`（语义锁 v2/旁车/wiring 合流，未并 dev）。Claude 攻击式异构评审 PASS（已接线路径无 Critical/High/Medium），档案 `docs/plans/closed-loop-evolution/review-claude-20260717.md`。5 个 P0 防御代码闭合，但认证账漂移：两个 prd `passes:true` 与实跑 gate RED 不符、判别攻击金牌全线红。
 2. **现场处置**：Steven 拍板停 codex、Claude 接管；两处 `/tmp` 未提交特性抢救提交（`902216e` 跨平台安装 / `02f4361` 账户配置）。九个 `/tmp` worktree 重启会丢目录（提交已安全），待 `git worktree prune` 收口。
-3. **W1 契约 `semantic-lock-cert-closure`（light）已到 review 门前**：worktree `/mnt/d/ctx/heren/casey-semantic-lock-cert-closure`，提交 `9803f73`。分面重证（可达面三金牌全绿：v2 2/2、capability 2/2、runtime-authority 9/9）+ 前瞻红基线 `runtime-discrimination-successor`（0/26 诚实红，收纳被 `819015f` 不可执行姿态挡住的全部运行时判别攻击）+ 三僵死金牌墓碑吊销（收据 `supersession-revocation.json`）+ 五 prd 纪律②重签。gate/ratchet（7 问题全存量零新增）/tier1 全背书；lib 零触碰有 checksum 机制证明。契约 grill/plan/accept/loop 四阶段 done。
+3. W1 契约 `semantic-lock-cert-closure`（light）已到 review 门前：worktree `/mnt/d/ctx/heren/casey-semantic-lock-cert-closure`，提交 `9803f73`。分面重证（可达面三金牌全绿：v2 2/2、capability 2/2、runtime-authority 9/9）+ 前瞻红基线 `runtime-discrimination-successor`（0/26 诚实红，收纳被 `819015f` 不可执行姿态挡住的全部运行时判别攻击）+ 三僵死金牌墓碑吊销（收据 `supersession-revocation.json`）+ 五 prd 纪律②重签。gate/ratchet（7 问题全存量零新增）/tier1 全背书；lib 零触碰有 checksum 机制证明。契约 grill/plan/accept/loop 四阶段 done。
 4. **已完成收口（2026-07-18 凌晨续）**：契约六阶段全 done——异构评审改走 pi（Steven 指定：codex 无额度、Grok 包已备未用）：`pi.dev deepseek-v4-pro thinking high --no-tools` 冒烟验通后一次 PASS（七检查域实审，7/16 两次超时挂账清偿），入账 `loop/audit.jsonl`（主树+契约树双份）。merge `bf39d7e` 并入 dev（ort 零冲突；排除两 WIP 特性分支）；主树复验：ratchet 4 存量债零新增（report-model 与 workflow-delete 两处遗产期漂移 + 两安全墓碑永久信号）、tier1 GREEN、cert gate 主树重打 GREEN 2/2。评审包与 pi verdict 存 `D:\ctx\heren\review-packets\`。
 5. **待办（顺序，2026-07-18 凌晨续更）**：① 判别分岔**已裁**（Steven 可点选项）：「单元导出+真机双轨」——判别纯函数只读导出做单元级攻击金牌（契约 `semantic-unit-discrimination` 已开工），接线路径 0/26 保持红等真机权威，「可验证接缝」否决；② W2 接线契约 `cli-authority-wiring-fill` 已开工（填 intake-joint + cli-authority-wiring 两冻结红基线）；③ mountdelay 保真契约排回（7/15 头号，零后续，worktree `casey-replay-settle-fidelity` 留作占位）；④ worktree 卫生已做：`/tmp` 十树与空壳树、cert 树全清，仅剩四棵有主持久树；⑤ 两 WIP 特性（跨平台安装 `902216e` / 账户配置 `02f4361`）待验收后另走合并。
 5. **存量债新观测**：ratchet 7 问题含 `report-model.schema.json` 与 `workflow-delete-causal-binding.static` 两处更早漂移（疑遗产整合期引入，非本轮文件）+ 三个真机产物缺件 + 两个安全墓碑永久信号；`intake-joint` 金牌是真实 intake 接线缺口（非孤儿，保持红）。
@@ -109,36 +245,38 @@ Steven 已要求把“形成可以放心使用的闭环自进化”纳入计划�
 
 当前执行序：① 语义锁 v2 修掉假一致 P0；② 接入录制后身份对比与回放前复核；③ 候选原子 schema/忠实闸；④ 真实 SUT 回放证据闭环；⑤ 人签晋升与撤销。Claude Code 额度采用风险触发：`fable high` 只做一次安全边界计划审和一次合并前核心 diff 终审；机械接线不重复送审，除非产生新的 HIGH/P0 或关键 diff 改变。
 
-## 当前状态（2026-07-21，flow-bridge-golden-refit 契约收口——六陈旧绿修夹具侧/生产零改 + 全 22 prd 复 gate + codex 异构三轮 PASS）
+> 以下为 2026-07-21 快照，只溯源、勿据其判现状（`checksum-drift-closure` 据 `docs/codex/HANDOFF.md` 已由 codex 侧收口；最新现状见顶部 2026-07-22 节）。
 
-`flow-bridge-golden-refit`（full，六阶段全 done）收掉 2026-07-17/18 三波信任根收紧（dfee72c 桥闸实体绑定 / 05573d1 intake 三件套 / edea1f9 canonical 固定根）落地未复跑受影响冻结金牌（护栏 #19）留下的六条陈旧绿，全部修夹具侧、生产零改：
+## 当前状态（2026-07-21，checksum-drift-closure 已 init，grill 待 Steven 裁决）
+
+前序 `flow-bridge-golden-refit`（full，六阶段全 done）收掉 2026-07-17/18 三波信任根收紧（dfee72c 桥闸实体绑定 / 05573d1 intake 三件套 / edea1f9 canonical 固定根）落地未复跑受影响冻结金牌（护栏 #19）留下的六条陈旧绿，全部修夹具侧、生产零改：
 
 1. A 家族（桥闸）：flow-bridge/ingest 金牌补显式 entityBindings + 负向精确拒因 + C17 反向锁；内核 mutant 突变红证（一次性隔离树 baseline 17/0 → mutant 16/1 唯 C17 翻红、主树字节前后 sha 双录一致，`evidence/mutant-proof.md`）。
 2. B 家族（intake-固定根）：cli-mcp-face 重建 MCP intake happy（未降级、台账 generation 2）/ record-distill 改形 + 三列账迁移（C2d→`CAPTURE_URL_LEAK`、C2f/C2h→`CRED_GATE_HIT`，保留 11/迁移 3/丢失 4 挂账 `record-three-piece-producer`）/ authority-root bootstrap-worker 两段式 + 三金牌共用 ephemeral 动态签名 support 件。
 3. C 家族：bootstrap + integrate-regress + p2-intent-compile 三 plan.md 术语正名（改「原子候选」）。
 4. ADR-0004 人签（Steven 三项 + 评审补签两处字节）+ 重签 6 owner + 4 新条目（worker/support）；全 22 prd 复 gate；s4 校验器 `refit-regate-verify.mjs`：39 复gate刷新绿（正面证明）+ 2 恒红守诚实（未违规翻绿）= 41 对账、0 败。人签留痕 `HUMAN-SIGN.md`。
-5. 异构评审 codex gpt-5.6-sol high 三轮 R1 FAIL（人签留痕 / s4 恒红过度声称 / A6 清理孤儿窗口三缺陷）→二次修（撤兄弟反证改诚实标注 + 全文时态归一 + Steven 补签评审后两处字节）→ R3 三缺陷全闭合 **PASS**（`review/codex-review-{request,reply}-r{1,2,3}.md`）。
-6. 契约外遗留（不阻塞）：全仓漂移扫逆出 4 处既有 testChecksums 漂移（`prd-delete-confirm-causal-binding` / `prd-seams-freeze` / `driver-canonical-root` 与 `transaction-root` 两金牌 sha 相同、疑并发合并），Steven 定另开独立契约修（先核非并发在手，task #17）。教训沉淀见 `docs/plans/flow-bridge-golden-refit/learn.md`。
+5. 异构评审 codex gpt-5.6-sol high 三轮 R1 FAIL（人签留痕 / s4 恒红过度声称 / A6 清理孤儿窗口三缺陷）→二次修（撤兄弟反证改诚实标注 + 全文时态归一 + Steven 补签评审后两处字节）→ R3 三缺陷全闭合 PASS（`review/codex-review-{request,reply}-r{1,2,3}.md`）。
+6. task #17 已由 `checksum-drift-closure` 接棒：只读核账确认 2 处真实漏签 + 2 处有意安全撤销，不是四处并发污染；`GRILL.md` 已给 D1/D2/D3 分岔与推荐方案，当前等待 Steven 签认，尚未 advance grill。前序教训见 `docs/plans/flow-bridge-golden-refit/learn.md`。
 
 以下为 2026-07-15 凌晨快照，只溯源、勿据其判现状：
 
 ## 当前状态（2026-07-15 凌晨，B/C 双契约收口并入 dev；replay-settle-mount 真机复验暴露修复不足——保真缺口未真补平，需再一轮）
 
-1. **B `drawer-lock-hardening`（light）已合并 dev**（merge `a65ccca` + 复验 `c5789a2`）：画布三原子域锁跨抽屉硬化，codex∥pi 六轮双路复核逐轮逼真缝到双 PASS——r1 域锁 TOCTOU 漂移窗(2 HIGH)/r2 pin 语义/r3 句柄未闭合(fable 汇裁亲读代码坐实 codex、纠 pi 漏报)/r4 空白归一 MED/r5 纯空白 label fail-open/r6 双 PASS。抗漂移绑定(物理句柄快照+pin 挂点第三闸)+run 态失效+任一可见判定。红先行金牌 G18-G20，全量 39/0。家族差异实证：pi 三轮漏报 vs codex 三轮逮到。
-2. **`replay-settle-mount`（full）已合并 dev**（merge `e7b3f79`）：回放侧代表步采断言前补有界静默点，修 buttonState SPA 挂载计时假阴（`tc_wf_publish_states` intent_1 真机误判 NEEDS_HUMAN 的根因——编译侧有 quietPoint、回放侧代表步无等价静默点）。小固定下限 250ms（Steven 批准，仅起步垫）+ 复合条件（在途 API 归零 ∧ DOM 两拍稳定）预算 2500ms 对齐编译期 + networkidle 兜底 + 超预算 fail-safe。codex fast 设计审逮真 HIGH（静默点无硬时间上界/I5 金牌矛盾）、实现审逮真 MED（小固定下限吃掉条件预算——你批的垫引入的 bug，fable 独立复现坐实、pi 漏报），r2/r3 修死到双 PASS。fake-sut 加 mountdelay 忠实复现真机接缝。ADR-0009 甲方案第一块保真缺口。
-3. **合并收尾**：两契约共改 `fake-sut/server.mjs`——冲突人裁取**并集**（B 的 twin*/pin* 11 场景 + 静默点 mountdelay/churn，零重叠纯加法）；4 个冻结 server.mjs/CONTRACT.md 的 prd（drawer/p5-replay/replay-nth/replay-settle-mount）按并集实际字节重签。4 gate 全 GREEN（顺序跑避争用 flake）+ ratchet 72 PRD/195 冻结/0 问题 + tier1 GREEN。
-4. **真机计时修复确认——【更正：修复不足，真机仍假阴，需再一轮】**：平台 `saveOrModifyProcess` 一度持续 503（两次连撞、机器正确判 SUT_DEFECT）后于 2026-07-15 恢复（返 200）；save 恢复后干净重跑 `tc_wf_publish_states`（run_1784069823273）——**`intent_1` 仍判 NEEDS_HUMAN、发布/保存 actual 0**，而同用例 `intent_2` 成功点中「发布」（PASS）、按钮在 intent_1 断言后约 2.7s 才挂出。**即 replay-settle-mount 的静默点修复没兜住真机计时假阴**：静默点接线在、跑了（quiet=true、全程等 8430ms），但条件（在途 API 归零 ∧ DOM 两拍稳定）在发布/保存挂载前就满足放行。根因 = codex 设计审曾提、被挂账的 MED「请求结束但 UI 延迟提交的 SPA 形态未覆盖」：真平台 editorData 请求结束、DOM 在早期状态两拍稳定后才由框架延迟挂载按钮；fake-sut 的 mountdelay 场景是「应答后立即替换 DOM」，未忠实复现此真子接缝——hermetic 金牌绿、真机仍红，**保真缺口未真正补平**。之前「翻正」是 hermetic-only 的过早结论，特此更正。ADR-0009「真机 UAT 升必过闸」被反向坐实（hermetic 绿不算完成，真机 UAT 逮住残留假阴）。**下一步（新 full 契约）**：① fake-sut mountdelay 补「应答结束 + DOM 早期稳定 + 按钮延迟提交」子形态忠实复现真机；② 强化静默点条件覆盖「请求结束但 UI 延迟提交」——注意不得读 expected（I4 禁倒着裁），须用域通用信号（加载占位消失 / 更长静止窗 / 变更静默）。挂账：平台 saveOrModifyProcess 一度 503（已恢复，值记账观察是否复发）。
-5. **flake 发现（挂账）**：drawer-lock-hardening 金牌有条计时敏感检查在 chromium/CPU 争用下偶发翻红（本 session 主题的又一实例）——无争用直跑 39/0，值将来硬化（放宽为 settled 判据主）。
-6. **保真审计程序（ADR-0009 甲）**：mountdelay 是第一块补平的保真缺口；剩余 fake-sut 场景（~22 个）逐条对真机采样审计 + 每条回放用例真机 UAT 升必过完成闸——待平台恢复后系统推进。
+1. B `drawer-lock-hardening`（light）已合并 dev（merge `a65ccca` + 复验 `c5789a2`）：画布三原子域锁跨抽屉硬化，codex∥pi 六轮双路复核逐轮逼真缝到双 PASS——r1 域锁 TOCTOU 漂移窗(2 HIGH)/r2 pin 语义/r3 句柄未闭合(fable 汇裁亲读代码坐实 codex、纠 pi 漏报)/r4 空白归一 MED/r5 纯空白 label fail-open/r6 双 PASS。抗漂移绑定(物理句柄快照+pin 挂点第三闸)+run 态失效+任一可见判定。红先行金牌 G18-G20，全量 39/0。家族差异实证：pi 三轮漏报 vs codex 三轮逮到。
+2. `replay-settle-mount`（full）已合并 dev（merge `e7b3f79`）：回放侧代表步采断言前补有界静默点，修 buttonState SPA 挂载计时假阴（`tc_wf_publish_states` intent_1 真机误判 NEEDS_HUMAN 的根因——编译侧有 quietPoint、回放侧代表步无等价静默点）。小固定下限 250ms（Steven 批准，仅起步垫）+ 复合条件（在途 API 归零 ∧ DOM 两拍稳定）预算 2500ms 对齐编译期 + networkidle 兜底 + 超预算 fail-safe。codex fast 设计审逮真 HIGH（静默点无硬时间上界/I5 金牌矛盾）、实现审逮真 MED（小固定下限吃掉条件预算——你批的垫引入的 bug，fable 独立复现坐实、pi 漏报），r2/r3 修死到双 PASS。fake-sut 加 mountdelay 忠实复现真机接缝。ADR-0009 甲方案第一块保真缺口。
+3. 合并收尾：两契约共改 `fake-sut/server.mjs`——冲突人裁取并集（B 的 twin*/pin* 11 场景 + 静默点 mountdelay/churn，零重叠纯加法）；4 个冻结 server.mjs/CONTRACT.md 的 prd（drawer/p5-replay/replay-nth/replay-settle-mount）按并集实际字节重签。4 gate 全 GREEN（顺序跑避争用 flake）+ ratchet 72 PRD/195 冻结/0 问题 + tier1 GREEN。
+4. 真机计时修复确认——【更正：修复不足，真机仍假阴，需再一轮】：平台 `saveOrModifyProcess` 一度持续 503（两次连撞、机器正确判 SUT_DEFECT）后于 2026-07-15 恢复（返 200）；save 恢复后干净重跑 `tc_wf_publish_states`（run_1784069823273）——`intent_1` 仍判 NEEDS_HUMAN、发布/保存 actual 0，而同用例 `intent_2` 成功点中「发布」（PASS）、按钮在 intent_1 断言后约 2.7s 才挂出。即 replay-settle-mount 的静默点修复没兜住真机计时假阴：静默点接线在、跑了（quiet=true、全程等 8430ms），但条件（在途 API 归零 ∧ DOM 两拍稳定）在发布/保存挂载前就满足放行。根因 = codex 设计审曾提、被挂账的 MED「请求结束但 UI 延迟提交的 SPA 形态未覆盖」：真平台 editorData 请求结束、DOM 在早期状态两拍稳定后才由框架延迟挂载按钮；fake-sut 的 mountdelay 场景是「应答后立即替换 DOM」，未忠实复现此真子接缝——hermetic 金牌绿、真机仍红，保真缺口未真正补平。之前「翻正」是 hermetic-only 的过早结论，特此更正。ADR-0009「真机 UAT 升必过闸」被反向坐实（hermetic 绿不算完成，真机 UAT 逮住残留假阴）。下一步（新 full 契约）：① fake-sut mountdelay 补「应答结束 + DOM 早期稳定 + 按钮延迟提交」子形态忠实复现真机；② 强化静默点条件覆盖「请求结束但 UI 延迟提交」——注意不得读 expected（I4 禁倒着裁），须用域通用信号（加载占位消失 / 更长静止窗 / 变更静默）。挂账：平台 saveOrModifyProcess 一度 503（已恢复，值记账观察是否复发）。
+5. flake 发现（挂账）：drawer-lock-hardening 金牌有条计时敏感检查在 chromium/CPU 争用下偶发翻红（本 session 主题的又一实例）——无争用直跑 39/0，值将来硬化（放宽为 settled 判据主）。
+6. 保真审计程序（ADR-0009 甲）：mountdelay 是第一块补平的保真缺口；剩余 fake-sut 场景（~22 个）逐条对真机采样审计 + 每条回放用例真机 UAT 升必过完成闸——待平台恢复后系统推进。
 7. **未清理债**：B worktree 物理目录删除撞 DrvFs 权限（work 已在 dev、cosmetic 债）；`replay-settle-mount` worktree 待清；隧道 stdio 桥脚本（`scripts/stdio-supply.mjs`/`win-stdio-agent.mjs` + `win-reverse-agent.mjs` 的 CASEY_TUNNEL_HOST 改动）未提交（dev 工具、wslrelay/NAT 挂时的兜底通道，值单独提交）。
 
 以下为 2026-07-14 凌晨快照（提取契约收口），只溯源、勿据其判现状：
 
 ## 当前状态（2026-07-14 凌晨，提取契约全收口并入 dev：新 loop 现役，B/C 已在新引擎下恢复执行中）
 
-1. **`loop-kit-extract` 六阶段全 done 并入 dev**：实现审走 codex sol@medium ∥ pi deepseek-v4pro@high 双路共八轮到双 PASS（round-1 逮 7 条含 3 HIGH：ROOT 认领槽须进程级 `globalThis` 共享、`boot.mjs` 补入 `testChecksums` 冻结面、D5 故障域金牌补行为级——全部红先行修死；末三轮教训：评审记录自身准确性也要被复核）。主会话独立复验（gate 5/5 + tier1 + ratchet + 核心 `bin`/`lib` 零触碰 diff 实证）后合并 `b3a0f64`、主树复验提交 `976a414`（gate 经 `shim`→包 5/5 GREEN、全仓 ratchet 69 PRD/190 冻结文件/0 问题）。提取树与分支已按惯例清理。包仓 `/mnt/d/ctx/heren/loop-kit`@`ea5ed85`。
-2. **待 Steven 终签三项**（learn.md 与 prd observability 有账，不阻塞后续）：route:human #5 跨仓棘轮形态确认 / #6 每调用 `kit-lock` 校验性能预算（实测全清单 sha256 约 130-145ms、端到端约 480-510ms，建议预算 150-200ms、禁 mtime 缓存）/ #7 进程唯一 ROOT 对 `node:vm` 场景的范围表述。
-3. **B/C 已在新引擎下恢复执行**（Steven 2026-07-14 指令：loop 完成即直通 B/C 不再请示）：两树先并 dev 对账（B `f4bae4f` / C `95b44d8`，零冲突，新引擎跨树自锚实证 OK）；编排 v2 `docs/plans/_session-resume/bc-contracts-workflow-v2.js`（对原版打异构硬门补丁：plan 设计审必须真 codex、同族兜底判 blocked——原 `endsWith('PASS')` 放行洞已封）在跑，run `wf_dfd25052-144`，八段到 learn，合并收尾归主会话。
+1. `loop-kit-extract` 六阶段全 done 并入 dev：实现审走 codex sol@medium ∥ pi deepseek-v4pro@high 双路共八轮到双 PASS（round-1 逮 7 条含 3 HIGH：ROOT 认领槽须进程级 `globalThis` 共享、`boot.mjs` 补入 `testChecksums` 冻结面、D5 故障域金牌补行为级——全部红先行修死；末三轮教训：评审记录自身准确性也要被复核）。主会话独立复验（gate 5/5 + tier1 + ratchet + 核心 `bin`/`lib` 零触碰 diff 实证）后合并 `b3a0f64`、主树复验提交 `976a414`（gate 经 `shim`→包 5/5 GREEN、全仓 ratchet 69 PRD/190 冻结文件/0 问题）。提取树与分支已按惯例清理。包仓 `/mnt/d/ctx/heren/loop-kit`@`ea5ed85`。
+2. 待 Steven 终签三项（learn.md 与 prd observability 有账，不阻塞后续）：route:human #5 跨仓棘轮形态确认 / #6 每调用 `kit-lock` 校验性能预算（实测全清单 sha256 约 130-145ms、端到端约 480-510ms，建议预算 150-200ms、禁 mtime 缓存）/ #7 进程唯一 ROOT 对 `node:vm` 场景的范围表述。
+3. B/C 已在新引擎下恢复执行（Steven 2026-07-14 指令：loop 完成即直通 B/C 不再请示）：两树先并 dev 对账（B `f4bae4f` / C `95b44d8`，零冲突，新引擎跨树自锚实证 OK）；编排 v2 `docs/plans/_session-resume/bc-contracts-workflow-v2.js`（对原版打异构硬门补丁：plan 设计审必须真 codex、同族兜底判 blocked——原 `endsWith('PASS')` 放行洞已封）在跑，run `wf_dfd25052-144`，八段到 learn，合并收尾归主会话。
 4. **异构评审硬规则**（Steven 2026-07-13 定，已入记忆与 v2 脚本）：plan/设计评审无兜底、必须异构本尊出结论，不通即 blocked；代码实现审仍允许「全断时诚实末位同族兜底 + 挂账」。
 5. **下一步**：B/C 各自 mergeReady 后顺序合并（3-way 人裁冲突 + 既有 sign 流程重签共享冻结 + 全仓 ratchet 总核 + tier1）→ 改革续 P0-4a/P0-4b（`kernel` 车道契约）。A 真机 UAT 照旧 route:human 挂账。autotester 侧迁移 = 另一有界工作流未启动。
 
@@ -149,7 +287,7 @@ Steven 已要求把“形成可以放心使用的闭环自进化”纳入计划�
 P0-3（`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §14 排期）在本次 session 于契约 worktree `casey-loop-kit-extract`（分支 `loop-kit-extract`，lane full，kernel 级加严）落地收口：
 
 1. **包仓落成**：`loop-kit` 通用内核提取为独立包 `/mnt/d/ctx/heren/loop-kit`（兄弟目录，`fresh git init` 不携历史，首提交 `0f34cc0`，出处记 `casey@f9f9019`）——十脚本迁入（8 份字节一致件 + `contract.mjs` 以 Casey 版为准含 `worktree` baton 全套 + `ratchet.mjs` Casey 独有件，除 ROOT 锚定行外逐字节照搬），新增 `lib/root.mjs`（提取后唯一新逻辑：`resolveRoot()` 单点解析 + 原子认领，env 有效必须校验/无效不回退/上溯找根标记/`realpath` 规范化/认领后不可变）。
-2. **Casey 侧单提交切换**：`loop-kit/bin/*.mjs` 十文件原地换薄转发层（`shim`，由单一模板 `tests/fixtures/loop-kit-expected/shim-template.mjs` 展开生成、逐字比对钉死）+ 新增共享引导助手 `loop-kit/lib/boot.mjs`（包定位 `LOOP_KIT_PKG`/兄弟约定 → `kit-lock.json` 包身份锁全清单 sha256 校验（两定位方式均不豁免）→ env 注入 → CLI `spawnSync` 转发或库模式动态 import + re-export → D5 全故障域降级：cli 类 64/guard 类 2/lint 类 0）。
+2. Casey 侧单提交切换：`loop-kit/bin/*.mjs` 十文件原地换薄转发层（`shim`，由单一模板 `tests/fixtures/loop-kit-expected/shim-template.mjs` 展开生成、逐字比对钉死）+ 新增共享引导助手 `loop-kit/lib/boot.mjs`（包定位 `LOOP_KIT_PKG`/兄弟约定 → `kit-lock.json` 包身份锁全清单 sha256 校验（两定位方式均不豁免）→ env 注入 → CLI `spawnSync` 转发或库模式动态 import + re-export → D5 全故障域降级：cli 类 64/guard 类 2/lint 类 0）。
 3. **红先行铁律走完**：`tests/_golden/loop-kit-extract.golden.mjs`（C0–C7，55 检查）落地前逐条验红——C0 包不存在、C2 全量引擎无视 `LOOP_KIT_PKG`（转发未生效）、C3 异地布局/跨树部分场景、C4 全部故障族（无降级协议）、C5 现文件非 `shim`；C1（API 面）与 C6（三存量金牌非回归）依设计全程照绿。`contract advance accept --red-verified` 之后才动 `loop-kit/bin` 字节；建成后 55/55 转绿。
 4. **切换前观测基线**：隔离测试树逐案录制 26 个命令/hook 用例（`gate --dry`/`contract` 全子命令/`breaker`/`term-lint`/`ratchet`/四 hook 正常路径），原始与规范化输出并存（`tests/fixtures/loop-kit-expected/baseline/`），规范化器（时间戳 + 隔离树绝对路径两条白名单规则）自身入冻结面；C2 每次复跑与此基线整树比对（exit code + stdout/stderr 全文 + 声明写集之外零变化）、含反向扰动自检证明规范化不吞真实差异。
 5. **三存量金牌零重签**：`worktree-baton`/`term-guard`/`ratchet-reverse-index` 三金牌与其 prd 字节等于切换前 git blob 锚（已逐一核验相等）；经 `shim` 复跑，结果与切换前实测锚一致——`worktree-baton` 因自身含一条与「本 worktree 活动 contract slug 恰为 worktree-baton」耦合的既有断言（G6，与本契约无关、字节冻结不可改），本树（活动 slug 是 `loop-kit-extract`）复跑现状是 exit 1，非本契约引入的回归，详见 prd observability 与 `tests/fixtures/loop-kit-expected/baseline/c6-rerun-anchor.json`。
@@ -163,10 +301,10 @@ P0-3（`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §14 排期）在本次
 
 1. **批准落盘**：Steven 显式批准 `docs/plans/loop-dual-profile-reform/PROPOSAL.md` 反转旧决策 ①（B/C 先行）与 ③（本期不建 `state.json`）——B/C 延后、采纳 16 节点 `Durable Workflow State`、该提案为唯一活动改革设计源（批准记录在其 §0，溯源按 §4.2 标 user-asserted）。`loop-ddd-overhaul/DESIGN.md` 与 `loop-orchestration-reform/NEXT-SESSION-PROPOSAL.md` 已标 `SUPERSEDED` 只作历史。中文决策摘要 = `DECISION-SUMMARY.zh.md`；`CONTEXT.md` 登记七新术语（`Execution Profile` / `Durable Workflow State` / `Ownership Lease` / `kernel` 车道 / `Review Receipt` / `Readiness View` / `Fitness Function`），term-lint 0 提示。
 2. **评审链闭环**：Fable 只读仓地架构审 `PASS WITH REQUIRED CHANGES`（HIGH-1 治理取代记账 + MED-1..5 全并入提案文本）→ 聚焦复核四收窄 ACCEPT → codex 事实更正（`countChange` 候选已于 `dbc0d0d` 落地、被当前代码证伪；P0-9 自托管候选改为 intake 时按实时代码/git 历史选定）终态 `ACCEPT WITH FACTUAL CORRECTION`。完整处置账在 `FABLE-REVIEW-DISPOSITION.md`。教训已入工作记忆：backlog 行承重引用前必核当前代码。
-3. **本 session 已落 dev**：文档收口 `7a2ce6d`；`ratchet-reverse-index` 只读反向索引验证器合并 `164636e` + 主树复验 `e81ce7f`（gate GREEN 2/2、全仓核验 68 PRD/103 冻结文件/0 问题；该契约六阶段全 done、pi+deepseek 异构冗余评审 round-2 PASS；已按惯例移树删支）。
-4. **P0-2 已执行**（两子代理并行、各驻一树）：B `drawer-lock-hardening` 冻结提交 `178408b`（fake-sut WIP +33/-3 零字节改动入分支 + plan 产物 + checkpoint 台账，显式非 merge-ready）；C `gen-prompts` 冻结提交 `33c382a`（plan 产物含早间编排中断遗留的 `planreview-material.md` + checkpoint 台账）。两树 baton 保持 2/6、基点仍 `1e3c8cc`（落后 dev 属预期，恢复时按 P1-3 实算分叉）。
-5. **早间 B/C 编排已停**（Steven 改序）：Workflow run `wf_25ac75de-8f2` 已停止；B/C 恢复走 PROPOSAL P1（经新 loop），不再直接续跑 `bc-contracts-workflow.js`。
-6. **下一步（按 PROPOSAL §14）**：P0-3 loop-kit 提取 vs 显式分叉决策（Steven 拍板、落新 ADR；注意 `gate.mjs` 等 8 份脚本仍与 autotester 字节一致，动它们前必须先定所有权）→ P0-4a 状态引擎 / P0-4b gate 分层（每项单独验收的 `kernel` 车道契约、旧 loop 互锁下执行、隔离 worktree 顺序合并）→ … → P0-12 有界切换。多 subagent/`Workflow` 编排为默认工作法（Steven 2026-07-13 重申）。A 真机 UAT 继续挂 route:human。主树活契约槽 = `loop-reform-p0-docs`（direct，纯文档收口用）。
+3. 本 session 已落 dev：文档收口 `7a2ce6d`；`ratchet-reverse-index` 只读反向索引验证器合并 `164636e` + 主树复验 `e81ce7f`（gate GREEN 2/2、全仓核验 68 PRD/103 冻结文件/0 问题；该契约六阶段全 done、pi+deepseek 异构冗余评审 round-2 PASS；已按惯例移树删支）。
+4. P0-2 已执行（两子代理并行、各驻一树）：B `drawer-lock-hardening` 冻结提交 `178408b`（fake-sut WIP +33/-3 零字节改动入分支 + plan 产物 + checkpoint 台账，显式非 merge-ready）；C `gen-prompts` 冻结提交 `33c382a`（plan 产物含早间编排中断遗留的 `planreview-material.md` + checkpoint 台账）。两树 baton 保持 2/6、基点仍 `1e3c8cc`（落后 dev 属预期，恢复时按 P1-3 实算分叉）。
+5. 早间 B/C 编排已停（Steven 改序）：Workflow run `wf_25ac75de-8f2` 已停止；B/C 恢复走 PROPOSAL P1（经新 loop），不再直接续跑 `bc-contracts-workflow.js`。
+6. 下一步（按 PROPOSAL §14）：P0-3 loop-kit 提取 vs 显式分叉决策（Steven 拍板、落新 ADR；注意 `gate.mjs` 等 8 份脚本仍与 autotester 字节一致，动它们前必须先定所有权）→ P0-4a 状态引擎 / P0-4b gate 分层（每项单独验收的 `kernel` 车道契约、旧 loop 互锁下执行、隔离 worktree 顺序合并）→ … → P0-12 有界切换。多 subagent/`Workflow` 编排为默认工作法（Steven 2026-07-13 重申）。A 真机 UAT 继续挂 route:human。主树活契约槽 = `loop-reform-p0-docs`（direct，纯文档收口用）。
 
 以下为 2026-07-13 早间快照，只溯源、勿据其判现状（其「先收 B/C」执行序已被上节批准反转）：
 
@@ -177,7 +315,7 @@ P0-3（`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §14 排期）在本次
 1. D 归档清理**已完成**：三棵已合并契约旧 worktree 移除 + 十个已核实合并分支删除；保留 `run-convention-claude` 存档分支 + 三 `archive/codex-wip-*` tags。
 2. B `drawer-lock-hardening`（light）与 C `gen-prompts`（full）两棵 worktree **在制**：baton 各 2/6（grill+plan done、产物落盘），`dev..分支` 零提交（Build 被关机丢失，需重起编排续跑）；B 树有未提交红先行夹具半成品（`M tests/fixtures/fake-sut/server.mjs`，续接勿重敲）。编排脚本 `docs/plans/_session-resume/bc-contracts-workflow.js`（8 段，Plan 段读盘幂等，跨 session 重 launch 非 resume）。
 3. A 真机 UAT 卡相位0 关三（wslrelay 隧道数据面），重启后按 `docs/runbooks/real-uat-runbook.md` 重拉标准隧道；route:human，需 Steven 在场。
-4. **loop 编排改革两份文档评审毕、Steven 批准**（2026-07-13）：`docs/plans/loop-ddd-overhaul/DESIGN.md` = 唯一设计源；`docs/plans/loop-orchestration-reform/NEXT-SESSION-PROPOSAL.md` = 评审后执行摘要（内含 Claude 方案审查 HIGH×4/MED×6/LOW×4 与批准记录七决策）。要点：B/C 先行；护栏 #18 不推翻（无共享 registry/自动 merge queue）；扩展现有 contract 台账、不建 `state.json`；强制层（gate/contract/hook/term-lint/签名写路径）改动按 kernel 治理；默认 2 限界上下文；round-2 只 HIGH/MED 强制；backlog drop 须 Steven 确认。
+4. loop 编排改革两份文档评审毕、Steven 批准（2026-07-13）：`docs/plans/loop-ddd-overhaul/DESIGN.md` = 唯一设计源；`docs/plans/loop-orchestration-reform/NEXT-SESSION-PROPOSAL.md` = 评审后执行摘要（内含 Claude 方案审查 HIGH×4/MED×6/LOW×4 与批准记录七决策）。要点：B/C 先行；护栏 #18 不推翻（无共享 registry/自动 merge queue）；扩展现有 contract 台账、不建 `state.json`；强制层（gate/contract/hook/term-lint/签名写路径）改动按 kernel 治理；默认 2 限界上下文；round-2 只 HIGH/MED 强制；backlog drop 须 Steven 确认。
 5. 本 session 执行序：Phase1 文档收口（本笔）→ Phase2 重起 bc-contracts 编排收 B/C → Phase3 主树落**只读** ratchet 反向索引验证器（light 契约，不写 testChecksums/passes/签名，批量重签写面=未来单独 kernel 契约）→ Phase4 顺序合并收尾（人裁冲突 + 既有流程重签 + 验证器全仓总核 + tier1 + 刷新交接文档）→ Phase5 改革按 DESIGN.md Phase 1 范围正式立项（16 节点迁移不并入、另行提案）。
 6. 未提交现场保持不动：`M .gitignore`（Steven 的）+ `M loop/prd-selftest.json`（gate 时间戳漂移、不并提交）+ `docs/codex/`（并行 codex 会话产物）+ `docs/plans/regress-strategy/`、`docs/plans/usability-audit/` 草稿。
 
@@ -219,7 +357,7 @@ P0-3（`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §14 排期）在本次
 
 活契约槽（主树）= `run-convention`（六阶段全 done、baton 空闲，下一契约直接 `contract init`）。八个已合并契约分支保留为存档（`git branch -d` 可清、work 已在 dev 史）。本仓无 git 远端。
 
-本 session 新锁工程纪律：① **长链条走确定性编排**（ultracode/`Workflow`；`CLAUDE.md` 新增「开发工作法」节、Steven 定）——多契约并行落地 + 逐个异构评审 + 分波合并这类别手派一堆 `Agent` 自己盯。② **协调合并手法**：跨契约共改冻结金牌（如 `cli-mcp-face` `EXCLUDED`）走顺序合并 + 3-way 解冲突 + 合并后重签 + 全量复验，绝不各合各的撞多次。③ **栈式起树**：依赖契约（doctor 栈 mcp-parity、distribution 栈 doctor、resolution 栈 D）栈在栈父 `worktree` 分支上起，避免并行改同批文件冲突。
+本 session 新锁工程纪律：① 长链条走确定性编排（ultracode/`Workflow`；`CLAUDE.md` 新增「开发工作法」节、Steven 定）——多契约并行落地 + 逐个异构评审 + 分波合并这类别手派一堆 `Agent` 自己盯。② 协调合并手法：跨契约共改冻结金牌（如 `cli-mcp-face` `EXCLUDED`）走顺序合并 + 3-way 解冲突 + 合并后重签 + 全量复验，绝不各合各的撞多次。③ 栈式起树：依赖契约（doctor 栈 mcp-parity、distribution 栈 doctor、resolution 栈 D）栈在栈父 `worktree` 分支上起，避免并行改同批文件冲突。
 
 以下为 2026-07-09 早段快照（示教兜底人录收尾 record-intake+distill + worktree-baton），只溯源、勿据其判现状：
 
@@ -305,7 +443,7 @@ P0-3（`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §14 排期）在本次
 2. `report-diagnostics`（light，P7 报告消费侧）：报告加「回放诊断」栏目——`renderReport(model, diagnostics)` 可选第二参（单参字节级零差异，`DIAG_CSS` 条件注入）+ `bin/report.mjs` 旁件旗标（缺席零行为差、坏件六形态 fail-closed）+ `casey run` 相6 接线；`run-metrics` 全局指标行（标注仅诊断不进裁定）+ `run-history` 按 `intentId` 嵌步卡 + 未归属小节。诊断标量 `://` 零容忍脱敏（路 B 绕过装配器脱敏，呈现层补防线）。codex 三轮 R3 PASS（R1 四发现 + R2 一发现：CSS 零行为差、旁件值走私绝对 URL、坏件语义枚举）。replyText 摘录挂账经侦察核销（`observed.replyText` + 断言 `actual` 两通道早已在渲染）+ U5 回归锁。`report-model` 与全部冻结 schema 零动。`7ca5fc6`。
 3. `wf-history-version`（direct，飞轮第四条）：历史版本弹窗，零机制缝——机制缝递减 3→1→0 终点验证。两纯加法编译原子（`workflow.clickEditorButton` click / `workflow.closeDrawer` press Escape）+ publish-sut 夹具扩历史版本弹窗，断言全为已实现 kind（`textVisible`/`buttonState`/`textHidden`）。codex 三轮 R3 PASS（R1 三 High + R2 一残项：direct 不豁免评审深度——关闭效果没断、event shape 没全锁、断言 intent 挂靠没验）。共享夹具耦合当场捕获修复（历史版本钮走 `mk()` 保 divButtons role 全盲，wf-publish-states I3 涟漪重签）。`7ec2ff2`。
 4. A 会话异常闭环机器可备部分就绪：`runs/tc_chiefcomplaint_smoke/run_1783054730282/defect-handoff.md` 已写（两笔缺陷单——① 智能体回复「会话异常」② 登录凭据走 GET query，各带现象/裁定依据/建议，零凭据值零目标地址）。剩余全 route:human：Steven 转交平台 → 修复后拉隧道复跑见绿。
-5. 新挂账（本 session 用户三问揪出）：**回放报告无视频根因 = `bin/replay.mjs` 的 `newContext()` 未启 `recordVideo`**（报告 `attachments.video` 槽永空，非隧道问题）——补录视频是 P7/replay 加法契约候选。`cases/`/`runs/` 全 gitignored（凭据卫生），报告只在真机 `casey run` 后本地产；新两条 tc（`tc_wf_publish_states`/`tc_wf_history_version`）从未真机跑、无报告，四停站待 route:human。
+5. 新挂账（本 session 用户三问揪出）：回放报告无视频根因 = `bin/replay.mjs` 的 `newContext()` 未启 `recordVideo`（报告 `attachments.video` 槽永空，非隧道问题）——补录视频是 P7/replay 加法契约候选。`cases/`/`runs/` 全 gitignored（凭据卫生），报告只在真机 `casey run` 后本地产；新两条 tc（`tc_wf_publish_states`/`tc_wf_history_version`）从未真机跑、无报告，四停站待 route:human。
 
 以下为本日早前时段快照（七契约六提交，飞轮第二条真机贯通 + Casey 首个真机 `SUT_DEFECT`），只溯源：
 
@@ -315,7 +453,7 @@ P0-3（`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §14 排期）在本次
 4. `chief-bringup`（direct，真机 bring-up 四修）：五只读探针定点四处假设差——`nav.agentManagement` 路由导航优先（`profile.routes.agentList` 接线；点击被 `hr-submenu`/spacer 拦 + 父 `li` 多匹配实证）；失败步不堆等（30s 级后置等待堆积曾撞死 120s 看门狗、连诊断不落）；消息框语义 `exact:false`（真名「请输入消息...」带省略号）；`agent.openTestPanel` networkidle 有界前置 + 点空重点采集自愈（间歇吞点实证；重点不产 event，回放期风险 fail-safe 兜）。真机编译零非 unique 步跑通。二手结论过时实证：真机 `fill` 即 enable（regress 的 keydown 判据已过时，垫无害保留）。`0ddd7b7`。
 5. `cred-route-mask`（direct，Steven 拍板「源头打码」）：`maskCredentialRoute` 路径段打码（observed+axes 投影），凭据门零弱化（门配对机器证明：原样必拦/打码必过）；codex R1 High 挖出 axes 历史债（从无凭据门、query 可携凭据裸落盘）→ 落盘前补门拒写 exit 1 + leaky 场景退桩红。真机误伤原型 = 发送期应用自取临时凭据路由 `getTempTokenForApi`（路由名字面含 `token`）。`60e89d4`。
 6. `login-traffic-drop`（direct，真泄露向量修复）：真机停站④两连门拦揪出 `GET doLogin` 凭据走 query → `loginMark` 切断登录期流量（CONTEXT「登录预备动作…不进 axes」字面兑现——此前只做到归因 null、记录本体经孤儿并入落盘）；axes 投影剥 host 只留 `pathname+search`（目标地址绝不进输出）；codex 三轮再挖三缝全采信（`blob:` pathname 内嵌 origin 穿透/代理型自嵌 `://`/`//host/x` 协议相对引用——非白名单形态一律 `<redacted:non-http-url>`）。`f0bd596`。
-7. 真机四停站全走完（Steven 在场）：flow confirm（八步）→ `compile --execute` 零非 unique 步落四件套（10 events / 10 observed / 0 候选，打码痕迹在、零原始路由名）→ `casey draft` 骨架 + LLM 补缝 + `validateDraft` 闸 → Steven 人签 6 条全硬（`signedAgainstBuild=1.1.2`）→ `casey run` 端到端落七件 `runs/tc_chiefcomplaint_smoke/run_1783054730282`——**`intent_3` `SUT_DEFECT`（有取证背书）**：所签 `textHidden(会话异常)` 命中（被测智能体真回复「会话异常」四字，彩排两次+编译一次三次一致）+ `noErrorEnvelope` 坏信封同步翻红、流未见 finished，三路证据同源；其余四 intent 全 PASS、动作 10/10、`locatorHitRate`=1。回放历史/回放指标首次真机产出（`runId` 落章）。
+7. 真机四停站全走完（Steven 在场）：flow confirm（八步）→ `compile --execute` 零非 unique 步落四件套（10 events / 10 observed / 0 候选，打码痕迹在、零原始路由名）→ `casey draft` 骨架 + LLM 补缝 + `validateDraft` 闸 → Steven 人签 6 条全硬（`signedAgainstBuild=1.1.2`）→ `casey run` 端到端落七件 `runs/tc_chiefcomplaint_smoke/run_1783054730282`——`intent_3` `SUT_DEFECT`（有取证背书）：所签 `textHidden(会话异常)` 命中（被测智能体真回复「会话异常」四字，彩排两次+编译一次三次一致）+ `noErrorEnvelope` 坏信封同步翻红、流未见 finished，三路证据同源；其余四 intent 全 PASS、动作 10/10、`locatorHitRate`=1。回放历史/回放指标首次真机产出（`runId` 落章）。
 8. 凭据卫生收口：历史落盘泄露（catalog 时代 axes 无门期，`doLogin` 带值 query 4 处）就地打码洗盘、终扫 49 件产物零凭据值（git 历史清白，`cases`/`runs` 从未入库）；`testcase` source 措辞消噪（`regress` 仓名后缀撞 `creds.user` 常见词，纯巧合零披露）。
 9. 新挂账：平台侧缺陷上报两笔待 Steven 转交——① `doLogin` GET 凭据进 URL/服务端日志（安全面）；② 「互联网问诊-主诉」智能体回复「会话异常」（`run_1783054730282` 报告即证据）。回放期面板吞点观察（回放单击无采集自愈，fail-safe 兜底不假绿；真机回放若频发另起契约议回放器通用机制，动内核须 full）。
 
@@ -523,6 +661,19 @@ P5 回放内核 loop 绿后接异构评审（与上节 P2/verdict 评审不同�
 - 并行开发经 worktree、不建共享池（已锁，worktree-baton）：碰 `lib`/`bin` 的多契约真并行落地走 git worktree 隔离——每树各一独立 baton（`active-contract.json` 与熔断态 gitignored、每树一份不共享），实证零机制改动即 N 路并行。`contract worktree <slug>` 起树 + `contract list` 跨树总览；slug 全局唯一（防同名骑另一 baton 的 gate-绿覆盖冻结断言）；各树自绿后 git-native 合并回 `dev`、绝不 `cp` 进 `lib`/`bin`；建议并发 ≤5 树；每树 loop 前自己 `breaker --reset`。**否决共享池**（`loop/active/` + `LOOP_CONTRACT_FILE` 选槽 + `breaker --state`）：那是「多 session 挤同一 checkout」的解、背离 worktree，设计红队判 1 High（`breaker --state` 路径注入覆盖冻结 PRD）+ 4 Med。roadmap v3 §三「解锁真多轨落地的前提（暂不投 `LOOP_CONTRACT_FILE` 参数化 + `breaker --state`）」已被 worktree 原生隔离绕过解决（§二「真天花板：单活契约 baton」随之破）——下方 337 单 baton 教训已被此取代。落护栏 #18，见记忆 [[worktree-baton-parallel-dev]]。
 - codex 逐轮深挖路径安全边角（累积教训，worktree-baton F1 五轮）：`--path`/落点 containment 这类路径洞，词法 `relative` 判定远不够——软链父目录别名指回仓内、`..name` 仓内名被 `startsWith('..')` 误判外部、缺失中间目录、lexical-`..` 跨软链，逐个是坑。收口靠三件：真实路径投影（`realpath` 上溯真实祖先再拼不存在后缀）+ 正确 containment 谓词（只 `rel==='..'` 或 `../` 前缀算外部）+ guard 检查路径 == 实际执行路径 canonical 单点（消除 guard≠git 分歧）。安全类边角每轮采信、别急着判 false-positive（point-4 是实测证伪无污染才放行、不是嘴上说）。
 
+### 现役机制边界纠偏（2026-07-21，按源码锁定）
+
+- `contract.mjs` 当前只接受 `direct|light|full`；`kernel` 已登记且已批准为改革目标车道，但 CLI 尚未接线，
+  现阶段所谓 kernel 契约实际是 `lane=full` 加严人工治理。不得输出一个当前会被拒绝的 `--lane kernel`。
+- 现役阶段互锁真判据：`direct` 全放行；`light` 写 prd / 改实现 / 提交实现需连续完成到 plan，推送需到 loop；
+  `full` 写 prd 需到 plan、改实现需到 accept、提交实现需到 loop、推送需到 review。旧「light 跳 grill、accept
+  任何车道都不跳」是目标口径，不是当前代码事实。
+- 护栏现为 19 条。第 13/14/15/17 条文档标签仍写 prose 待强制，但裁判与回放已有主要机械守点；反向地，
+  breaker 的「每步进展哈希」仍未建，现役零进展只看 git HEAD。交接须同时写标签与代码边界，不能把任一侧
+  单独冒充完整事实。
+- 回放看门狗现为 120 秒；超时尽力清录像、关浏览器并非零退出。fake-SUT 对 agent 只读，任何行为验收只驱
+  真机；旧 ADR-0009「保留 hermetic 浏览器地基」不得被解释为授权 agent 重跑已隔离浏览器金牌。
+
 ### 模型分层升级 + 三级兜底（2026-07-01，已锁）
 
 > **范围**：仅**开发流程**的模型分层道（谁来跑 loop：`toil`/`implementation`/`review`），不涉及 Casey 产品功能——编译/回放/裁定/报告 的运行时 LLM 接缝（相1 编译、相5 自愈、将来 `LLM-judge`）均不在本决策内；`verdict.mjs` 恒零 LLM。即配置顶层「两类 lane 正交」里的「模型分层道」那一类。
@@ -533,27 +684,68 @@ P5 回放内核 loop 绿后接异构评审（与上节 P2/verdict 评审不同�
   - I1 裁判零 LLM（护栏 #15，承重）：`bin/verdict.mjs` 传递依赖闭包零 LLM/网络客户端——「上游随便换模型都不出静默假 PASS」的根兜底。
   - I2 异构评审不塌同族（护栏 #9 / ADR 异构冗余）：`review.model` 家族 ≠ `implementation.model` 家族，`sonnet`/`opus` 只能在 review `fallback`、绝不当主 `model`。
   - I3「Sonnet 5 只作 subagent 不换主环」是编排期运行时属性、静态不可查，不假装可强制；其兜底即 I1（verdict 零 LLM + 冻结 golden + gate 三重网）。
-- **已建**（`model-lane-guard` 契约收口，2026-07-01）：I1 verdict 零依赖断言已入 `casey selftest --tier1`（`bin/verdict-purity-guard.mjs` 静态扫依赖闭包）；I2 config 不变量 PostToolUse 钩子已接（`bin/config-lane-guard{,-hook}.mjs` + `.claude/settings.json` 独立条）。**仍待建**：三级兜底 watcher 读 `loop/.breaker-state.json` 自动再派——另起辐条、不在 model-lane-guard 契约内（别 ad-hoc 破护栏 #11、别改 loop-kit engine ADR-0001）。config 的 `_doc` 是当前策略事实源。
+- 已建（`model-lane-guard` 契约收口，2026-07-01）：I1 verdict 零依赖断言已入 `casey selftest --tier1`（`bin/verdict-purity-guard.mjs` 静态扫依赖闭包）；I2 config 不变量 PostToolUse 钩子已接（`bin/config-lane-guard{,-hook}.mjs` + `.claude/settings.json` 独立条）。仍待建：三级兜底 watcher 读 `loop/.breaker-state.json` 自动再派——另起辐条、不在 model-lane-guard 契约内（别 ad-hoc 破护栏 #11、别改 loop-kit engine ADR-0001）。config 的 `_doc` 是当前策略事实源。
 
 ## 下一步
 
-> 新会话接续顺序（2026-07-09 刷新，本 session 三提交：record-intake + record-distill + worktree-baton）：活契约槽 baton 空闲（`worktree-baton` 六阶段全 done），下一契约直接 `contract init`；多契约并行改起 worktree（`contract worktree <slug> --lane full --reason "…"`，每树一独立 baton，护栏 #18）。示教兜底人录三环 record-capture→intake→distill 全建、hermetic 机制面七相全建首尾成链、画布维度三原子已建。**并行开发已解锁**——排队的候选契约（`docs/plans/` 下七个未跟踪草稿目录：用户易操作/分发线的 `casey-demo`/`casey-doctor`/`distribution`/`ingest-scaffold`/`usability-audit`/`mcp-parity`/`run-convention`，属战略「cli-mcp-skill 易用 + 分发」）现可开多棵 worktree 并行推。真机 route:human 项须先过账户禁令（`autotest` 唯一许用，动真机前带外核 `.auth`）。**最高优先真机项：真机退化追因**——`tc_catalog_wf_crud`（现 PASS=2/NEEDS_HUMAN=2）、`tc_wf_publish_states`（现 PASS=2/SUT_DEFECT=1/NEEDS_HUMAN=1）从历史绿转非绿，SUT 变了还是环境漂移待查（现状见 `docs/runbooks/real-zero-error-examples.md`）。机器可独立推进项：上述草稿契约线（可并行）/ resolution 词表 full 契约（触裁判内核、挂账未做）/ report-spec #12 / #11 per-node 细分 / 画布 selectNodeDropdown+setNodeField。以下 0–8 为 2026-07-07/08 排的接续单，示教三环 + 并行基建已全收口，其余真机/机器项仍有效：
+### A（推荐）· `agent-id-readback` 收口：codex 异构 review → learn → 合并 dev
 
-0. 真机合并行程续跑（route:human，需拉反向隧道 + Steven 在场 + 先带外确认 `.auth` 为 `autotest`）：① 飞轮第五条 `wf_open_smoke` 四停站——三件已备（`cases/tc_wf_open_smoke/`），出发前须 Steven 现场把 `<OPEN_NAME_TBD>`/`<OPEN_NAME_BODY_TBD>` 定为平台稳定存在的工作流名（真机列表当前近空），再 flow confirm → `compile --execute` → 人签 → 报告过目。`wf_publish_states` / `wf_history_version` 已真机全绿（见顶部当前状态 1，无需复跑）。② 会话异常闭环——`runs/tc_chiefcomplaint_smoke/run_1783054730282/defect-handoff.md` 两笔缺陷单（「互联网问诊-主诉」智能体回复异常 + `doLogin` GET 凭据走 query）转交平台、修后 `casey run` 复跑见绿。③ 移交包真机侧——MCP 真机挂载核验 + 凭据带外交付演练（handover-pack 挂账）。④ 顺带真机采 `wf-add-node` 四项观测（21 面板项文本 / `lf-node` 族类名 / 拖拽时序 / `window.lf` 图对象口）+ disabled 类名填 `profile.buttons.disabledClass`。
-1. 真机 compile bring-up 后接线 `casey run` 相0–2 前段（编排器现起于相3，prd-e2e-chain observability 记；ADR-0003 LLM 编译期真机跑亦在此程）。
-2. 画布维度续建（addNode/connectNodes/openNode 三原子已建——openNode 单击开配置抽屉、`657556a` 收口，非双击）：下一 `selectNodeDropdown`（+此原子按贪心序解锁 9/23）→ `setNodeField`。建原子须例翻当时仍无知识的反例 + 重签 prd。connectNodes 的 window.lf 图对象口挂账（连对哪两个的确定性取证）route:human。
-3. 示教（teach-in）手动录制兜底：**三环全建**——`record-capture`（`bb0ee3c`）+ `record-intake`（`46ae7a3`，入账闸 + append-only 台账）+ `record-distill`（`4bce3a5`，零 LLM 全 pending 投影候选 + TOCTOU 硬门 + 采集忠实闸）。余真机验证 route:human：真机人工录制一次 → `casey intake` 过闸 → `casey distill` → 候选真过 ingest→compile→draft→人签（拉隧道 + `autotest` + 包内卫生目检）；record-distill 的 `learn.md` 待补（machine，非阻塞）。
-4. 余 kind 按需加法（护栏 #17，`inputReadback`/`requiredFilled` 采集最便宜）/ 错误 toast 结构类名采样（卡真机，撞上顺手采）/ `switchState` kind（画布维度 echo flow 核心断言仍 soft）/ 相5 自愈真机首触（需真 `HARNESS_ERROR`）/ 回放期面板吞点观察。
-5. `term-guard` 乙真接线（待 `~/.loop-kit` 非 Claude 密钥）：`bin/term-judge.mjs` 的 `callRealJudge` 接真评分员（复用 review 道 DeepSeek/codex 路径），观察期无误判后把 `bin/term-guard-hook.mjs` 的 `WARN_ONLY` 置 false 切硬拦。接线骨架（spawn + 结果解析，密钥缺失自然回落 unreachable→路由人）+ `docs/plans/term-guard/learn.md` 补账两件不卡密钥、可先行。
-6. push：本仓无 git 远端（`git remote` 空），待定 GitHub 目标仓。
-7. 坏引用挂账（route:human）：loop 纪律 hook 引的 `docs/decisions/2026-06-12-loop-kit.md` 不存在，根在冻结 `loop-kit/bin/hook-loop-triage.mjs:8` 与 `.claude/skills/acceptance-gate/SKILL.md:8`，真身 `docs/adr/0001-reuse-loop-kit.md`。
-8. 已核销（2026-07-09 本 session）：示教兜底人录三环全建（record-intake `46ae7a3` + record-distill `4bce3a5`）/ 单活契约 baton 天花板解锁（worktree-baton `ef94da4`，并行开发经 worktree、护栏 #18）——从前版下一步「record-intake+record-distill」「未来真并行须 LOOP_CONTRACT_FILE+breaker --state」清出。此前核销（report-exit64 / output-seal / p2-intent-compile 盘点）见历史层。
+worktree `../casey-agent-id-readback` 契约已 loop done、gate 6/6 GREEN、真机活数据双证实证绿。剩两阶段：
+① 异构评审——Claude 实现故须 `codex`/`gpt-5.6-sol`（家族≠实现家族铁律），受限评审包只喂 diff + plan v4 +
+红基线 + 真机实证，重点核请求级事务协议实现忠实度、双证门/sign 观察对账/replay 点击前比对的准入不弱化、
+生产改动（`lib/replay-forensics.mjs`/`compile-atoms.mjs`/`replay-actions.mjs`/`sign.mjs`/`entity-semantic-lock-preflight.mjs`/
+`sign-cli-args.mjs`/`mcp/casey-server.mjs`）未声明剖面路径零回归；② learn 落 `docs/plans/agent-id-readback/learn.md`；
+③ 合并回 dev（git-native）。评审 PASS 前不合并。注：worktree 借符号链接 `node_modules`（两树 lock 同 blob）——
+合并时裁处保留或改真装（C 路作者已挂账）。
+
+### B · 提交当日主树三线增量入 dev
+
+`stale-red-admission-refit`（六阶段全 done）+ 报告固定模板（`lib/report.mjs`）+ 真机三链 `cases/` 刷新目前均主树
+未提交。按「文档先于 dev 提交」（记忆）已把交接文档补齐，可择时只提显式路径入 dev（并发共享树、绝不 `-A`）。
+两 owner prd（`prd-p3-compile`/`prd-report-diagnostics`）的 `checksumAmendments` 修单已记、gate 复跑 exit 0。
+
+### C · 恢复 loop 改革（别 session 的暂停树）
+
+`loop-p0-4a-state-engine` 现 3/6、`loop-p0-4b-gate-layering` 现 2/6（均落后 dev 一大截、别 session 所有）。
+先重对当前 dev、独立 `loop-kit` 所有权和现行信任根 / 生命周期纪律，再续 4a 后 4b；旧验收与红基线不自动继承。
+并发 baton 已达 5/5 上限（D6 建议 ≤5），起新 full worktree 前先收口或退役一棵。
+
+### D · 真机与人签收口（route:human）
+
+需 Steven 在场、凭据带外核验、真环境可达：`agent-id-readback` 完整真机用例链（执行权威→`sign` 消费观察件→
+回放点击前对已签 `platformId`）与同名敌意真机用例（预置一对真同名智能体验 `AMBIGUOUS`）；名称+ID 双定位红基线
+`runtime-discrimination-successor`（0/26 前瞻红，只准真机权威填绿）；阶段一/二冻结件签认与隔离浏览器义务真实 UAT；
+mountdelay 多次真机回放与时序标定。单次真机绿不得宣称 flaky 已消除。
 
 ## 契约 / 运维
 
-- 活契约 `loop/active-contract.json`（runtime、gitignored）现 = `worktree-baton`（full，六阶段全 done，2026-07-09）——baton 空闲，下一契约直接 `contract init <slug>`（重置台账、不丢磁盘草稿）；**多契约并行**改起 worktree：`contract worktree <slug> --lane full --reason "…"` 每树一独立 baton（护栏 #18、见「当前状态」并行开发已解锁）。2026-07-06 白天时段三契约（均六阶段全 done、codex PASS 记 audit、learn 各落 `docs/plans/<slug>/learn.md`）：`sign`（相2 人签门，full，七轮 R7，`2497309`）/ `flow-bridge`（相1 flow 桥，full，三轮 R3，`ef13787`）/ `video-login-carry`（相3 回放，full，四轮 R4，`bb6f594`）。`sign` 未签闸硬接 `bin/replay.mjs` 的涟漪九件 golden 经 `signExpected` 重签、各 prd testChecksums 同步重签；`flow-bridge` 的 `compile-atoms` 分派重构涟漪 `p3-compile`/`chiefcomplaint-smoke`/`wf-publish-states`/`wf-history-version` 复跑零行为差。要提交而活契约是 pre-loop 的 full：先 `init` 一个 `direct` 契约授权 commit、提完 re-init 原契约恢复 baton；light 契约 plan 后 commit-impl 即放行、无 lib/bin 的提交任何时候放行；post-loop 的 full 契约提交放行。恢复某已 done / 被覆盖 契约的台账：re-init + 逐阶段 re-advance（grill 带 `--user-confirmed`、accept 带 `--red-verified`、artifact 交对应产物），gate 复验绿背书。
+- 主树活契约 `loop/active-contract.json` 现为 `stale-red-admission-refit`（light，六阶段全 `done`，2026-07-22 当日收口，
+  见顶部最新节）；其产物（两金牌修单 + 两 owner prd 重钉）**主树未提交**。`checksum-drift-closure` 据 `docs/codex/HANDOFF.md`
+  已由 codex 侧收口（Claude 根部 HANDOFF 旧「下一步 A」已过期，勿再据其裁 D1/D2/D3）。主树 `dev@82484ab`；当日另有报告模板
+  `lib/report.mjs` 与真机三链 `cases/` 刷新等未提交现场，详见顶部最新节，提交只走显式路径、绝不 `-A`。
+  并行改 `lib`/`bin` 走独立 worktree + 各树独立 baton，最后 git-native 合并回 dev，绝不复制进实现目录。
+- 并发 baton 现 5/5（`contract list` 实测，D6 建议 ≤5，已满）：`stale-red-admission-refit`（主树，6/6 done）/
+  `agent-id-readback`（worktree，4/6，待 review+learn+合并，见「下一步 A」）/ `loop-p0-4a-state-engine` 3/6 /
+  `loop-p0-4b-gate-layering` 2/6（后两棵别 session 暂停改革树、须先重对基线）/ `mountdelay-fidelity` 6/6（已收口残留、
+  领先 dev 0、不得再列为待实现）。起新 full worktree 前先收口或退役一棵。
+- 现役 contract CLI 只有 `direct|light|full`；需要 kernel 级纪律时用 full + 加严人工治理。恢复旧契约前
+  必核其基线与冻结件，不能机械 re-init 后沿用旧证据。
 - 契约一览：
-  - `flow-bridge-golden-refit`（full，2026-07-21，六阶段全 done、codex gpt-5.6-sol high 三轮 R1 FAIL→R3 PASS 记 audit、learn 落 `docs/plans/flow-bridge-golden-refit/learn.md`）：护栏 #19 六陈旧绿修夹具侧/生产零改——A 家族 flow-bridge/ingest 补 entityBindings + C17 反向锁 + 内核 mutant 突变红证 / B 家族 cli-mcp-face·record-distill·authority-root 改形 + ephemeral 动态签名 support 件 / C 家族三 plan.md 术语正名。ADR-0004 人签（三项 + 评审补签两处字节）+ 重签 6 owner + 4 新条目、全 22 prd 复 gate（s4：39 复gate刷新绿 + 2 恒红守诚实 = 41 对账）。契约外 4 处既有 testChecksums 漂移挂账 task #17（Steven 定另开独立契约修）。
+  - `agent-id-readback`（full，2026-07-22，worktree `../casey-agent-id-readback`，loop done / gate 6/6 GREEN，未合并）：
+    智能体平台 ID 网络信封读回 + DOM/信封双证门（`agent.searchOpen` 搜索步网络信封提三元组、DOM 无 ID 属性故走信封）。
+    `gpt-5.6-sol` max 四轮设计共识（R1 三 P0=解析竞态/假唯一/剖面当安全开关，R4 可进 accept）；请求级身份观察事务、
+    完整性先决、完整集合内同名>1 才 `AMBIGUOUS`、点击前对已签 `platformId` 比对、`sign` v2 `--entity-observations`
+    五元 join 哈希闭环。真机活数据双证实证绿；三层真机剖面字段名实测纠正（`data.list`/`data.pageInfo.totalItems`）。
+    生产改 7 文件（`replay-forensics`/`compile-atoms`/`replay-actions`/`sign`/`entity-semantic-lock-preflight`/`sign-cli-args`/
+    `mcp/casey-server`）+ 3 新 lib/金牌。待 `codex` 异构 review + learn + 合并（见「下一步 A」）。
+  - `stale-red-admission-refit`（light，2026-07-22，六阶段全 done、主树活契约、未提交）：护栏 #19 陈旧红收口——
+    `p3-compile` 4/14→14/14、`report-diagnostics` 11/12→12/12，红因实体准入面拦夹具旧调用（`git stash` 实证非回归），
+    夹具侧铸测试受众准入件生产零改，`gpt-5.6-sol` max 咨询 + `codex` high 4 Medium 全采信修复，两 owner prd
+    `checksumAmendments` 重钉、gate 复跑 exit 0。learn 落 `docs/plans/stale-red-admission-refit/learn.md`。
+  - `checksum-drift-closure`（full，2026-07-21，grill 未 advance）：task #17 只读核账已完成，确认
+    `prd-seams-freeze` 与 `prd-delete-confirm-causal-binding` 为真实漏签，两个 observation 旧金牌为有意
+    安全撤销墓碑；当前等待 Steven 裁决 D1/D2/D3，签认前不写 plan/prd、checksum、`passes` 或冻结件。
+  - `flow-bridge-golden-refit`（full，2026-07-21，六阶段全 done、codex gpt-5.6-sol high 三轮 R1 FAIL→R3 PASS 记 audit、learn 落 `docs/plans/flow-bridge-golden-refit/learn.md`）：护栏 #19 六陈旧绿修夹具侧/生产零改——A 家族 flow-bridge/ingest 补 entityBindings + C17 反向锁 + 内核 mutant 突变红证 / B 家族 cli-mcp-face·record-distill·authority-root 改形 + ephemeral 动态签名 support 件 / C 家族三 plan.md 术语正名。ADR-0004 人签（三项 + 评审补签两处字节）+ 重签 6 owner + 4 新条目、全 22 prd 复 gate（s4：39 复gate刷新绿 + 2 恒红守诚实 = 41 对账）。其契约外 4 处既有 testChecksums 漂移已由现役 `checksum-drift-closure` 接棒并完成只读分型。
   - 2026-07-09 三契约（均六阶段全 done、跨族异构冗余评审 + 同族 backstop 记 audit；活契约槽 worktree-baton 六阶段全 done）：`record-intake`（full，`46ae7a3`——示教兜底第二契约 `casey intake` 入账闸 + append-only 台账；codex R1-R9 九轮逐类全采信红先行修死 + R10 formal PASS 撞 codex outage 挂账、同族 fresh-eyes backstop 补，audit 两条）/ `record-distill`（full，`4bce3a5`——示教兜底第三契约 `casey distill` 零 LLM 全 pending 投影候选 + intake→distill `captureSha256` TOCTOU 硬门 + 采集忠实闸；codex R1-R3 PASS + 同族 backstop，audit 两条）/ `worktree-baton`（full，`ef94da4`——解单活契约 baton 天花板：`contract list` 跨树总览 + `contract worktree` 起树脚手架 + 护栏 #18 + CONTEXT 三术语 + `WORKTREE-PARALLEL.md` 手册；codex R1-R5 PASS（F1 路径 containment 五轮深挖收口）+ 同族 backstop，audit 两条；`loop-kit` 仅 `contract.mjs` +109/-3、hook/breaker 逐字节零改）。示教兜底人录三环 record-capture→intake→distill 全建；并行开发经 worktree 解锁。
   - 2026-07-08 下午—晚八契约（均收口入 dev、异构冗余评审记 audit、learn 各落 `docs/plans/<slug>/learn.md`；活契约槽 report-workflow-structure 六阶段全 done）：`record-capture`（full，`bb0ee3c`——示教兜底人录；codex 自评标 done 但 audit「非正式异构待补」不算数，Claude 补正式异构冗余评审 3 High+3 Med 红先行修毕）/ 用户易操作线文档（`62ad838`，纯 docs+scripts 非 lib/bin 契约）/ `report-nl-atomic`（full，codex 一轮，`0719919`——naturalLanguage+atomicSteps）+ 对账表收缩（`ed3e6ea`）/ `report-video-block`（full，codex 一轮，`8f7bcf5`）/ `report-cleanup-evidence`（full，codex 一轮，`6267dff`）/ `report-workflow-structure`（full，`1ad0702`+跨族复审补强 `d9a39df`——codex 撞额度先末位同族兜底、回来后补正式跨族异构冗余复审，audit 两条、正式条取代末位条）。P7 报告消费侧 report-model 报告块 0→5（report-spec §3 六项落五，余 #12 属编译/草拟期）；五增量每轮改 report-model.schema.json 涟漪 prd-seams-freeze schema checksum 均重签。
   - 2026-07-07 下午—晚五契约（均收口入 dev、异构评审 PASS 记 audit、learn 各落 `docs/plans/<slug>/learn.md`；活契约槽 wf-connect-nodes 六阶段全 done）：真机合并行程首航（route:human，`24865f4`——`sign` 真 prd 首航，扁平每用例 prd `prd-tc_wf_publish_states` / `prd-tc_wf_history_version` 两份，真机四停站 4/4 + 8/8 PASS）/ `wf-add-node`（full，codex 两轮 R2，`dbc0d0d`——画布首原子 `workflow.addNode` + `dragTo` 动作类入双冻结、六 prd 十四键重签）/ `report-exit64`（light，codex 一轮 R1，`407b511`）/ `output-seal`（full，codex 三轮 R3，`cc7a3c2`——全仓输出通道封缝 23 口 + 顺修 report-exit64 尾巴 + prd-p7-report 重签）/ `wf-connect-nodes`（full，Claude 侧对抗评审 PASS，`efaa41a`——并发 codex 实现补收口：`workflow.connectNodes` 集 14→15 + 端到端金牌填覆盖缺口 + 修 codex F1/F2 健壮性缝 + 四漂移棘轮 prd 重签；评审归属反转 codex 实现→Claude 评）。
@@ -569,7 +761,7 @@ P5 回放内核 loop 绿后接异构评审（与上节 P2/verdict 评审不同�
   - `hermetic-gap-freeze`（direct）：done（两份缺口 coverage golden 补冻入 prd-p7-report / prd-p6-selfheal，gate 各 2/2）。
   - `p5-replay`（full）：6 阶段全 done（learn 见 `docs/plans/p5-replay/learn.md`）；其 prd 的 tier-2 route:human 标注未正式核销，但回放内核已随 P3/P4 真机多轮实跑全绿（回放核验两轮 + `casey run` 三轮，2026-07-02/03）。
   - `p2-intent-compile`：仅 learn 待。其余（seams-freeze / p2-failsafe-coverage / p7-report / p4-freeze / p6-selfheal）loop done、产物落 dev。
-- 单活契约 baton 教训（重要）：loop-kit 是单活契约（hook 读主树共享 `active-contract.json`）。本会话并行起多契约（worktree 隔离）撞了这个单 baton 槽——worktree 子代理 commit 受主树 baton 互锁：P6 子代理曾临时翻主 baton（已还原）、P4 子代理被拦只暂存未提交。landing 办法：已 committed 的分支用 `git merge`（不被 commit 互锁拦）；未提交的（P4）把文件拷进 dev、把主 baton 临时切到其真实 loop-done 契约提交、再还原。**已解决（2026-07-09 `worktree-baton`，`ef94da4`）**：真并行不走 `LOOP_CONTRACT_FILE` 参数化 / `breaker --state` 那条（背离 worktree、设计红队 1 High+4 Med 否决），而是每 worktree 天然一独立 baton（`active-contract.json` 与熔断态 gitignored、每树一份）——`contract worktree` 起树 + `contract list` 跨树总览 + git-native 合并回 `dev`（护栏 #18）。本条教训现仅溯源，并行落地照 #18 走。
+- 单活契约 baton 教训（重要）：loop-kit 是单活契约（hook 读主树共享 `active-contract.json`）。本会话并行起多契约（worktree 隔离）撞了这个单 baton 槽——worktree 子代理 commit 受主树 baton 互锁：P6 子代理曾临时翻主 baton（已还原）、P4 子代理被拦只暂存未提交。landing 办法：已 committed 的分支用 `git merge`（不被 commit 互锁拦）；未提交的（P4）把文件拷进 dev、把主 baton 临时切到其真实 loop-done 契约提交、再还原。已解决（2026-07-09 `worktree-baton`，`ef94da4`）：真并行不走 `LOOP_CONTRACT_FILE` 参数化 / `breaker --state` 那条（背离 worktree、设计红队 1 High+4 Med 否决），而是每 worktree 天然一独立 baton（`active-contract.json` 与熔断态 gitignored、每树一份）——`contract worktree` 起树 + `contract list` 跨树总览 + git-native 合并回 `dev`（护栏 #18）。本条教训现仅溯源，并行落地照 #18 走。
 - push：本仓无 git 远端（`git remote` 空），待定 GitHub 目标仓（参考 autotester = 私有 `ChenSteventx/autotester`）。
 - 删不动的残留：`docs/plans/seams-freeze/proposed/`（评审副本，破坏性删除被权限层拦，待人 `! Remove-Item -Recurse -Force` 清）。
 - 旧 `p2-testcase` 契约已被取代作废。term-lint 全程过；Windows git 需 `git config windows.appendAtomically false`（已设，否则 merge 报 index.lock 写错）。

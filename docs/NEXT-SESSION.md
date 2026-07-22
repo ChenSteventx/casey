@@ -1,6 +1,8 @@
 # 下个 session 接续提示词（Casey）
 
-> 用法：下次开新 session 只需 `/starter`（等价于说「读 `docs/NEXT-SESSION.md` 接着干」）——把本文件内容当开场提示词读进来、按其【下一步】执行。本文件是给接续 Claude 的执行指令；状态事实以 `docs/HANDOFF.md` 为准，二者冲突时信 HANDOFF。本文件由 `/session-handoff` 自动刷新（整节替换为最新开场提示词，剪掉过期内容）。
+> 用法：下次开新 session 只需 `/starter`（等价于说「读 `docs/NEXT-SESSION.md` 接着干」）。
+> 本文件只作入口索引与开场指令；状态事实以 `docs/HANDOFF.md`、各树 `loop/active-contract.json`
+> 和实时 `git status --short` 为准，冲突时信这三处。
 
 ## 开场提示词
 
@@ -9,94 +11,138 @@
 工作目录 /mnt/d/ctx/heren/casey，分支 dev（master 稳定 / test 提测）。
 你是接手者，零上下文起步——先读文档对齐，再按下一步动手。
 
-【2026-07-20 最新覆盖层】
-阶段二 hermetic-golden-zero-sut-lifecycle 已 6/6 done 并由 Steven 人签；mountdelay-fidelity 也已
-6/6 done、merge 6f244fb 入 dev。下方所有写“阶段二待做 / mountdelay 挂起”的 2026-07-19 段落只作
-历史溯源，不得据此重复实现。机器门禁：mountdelay 新验收 4/4、Grok R1 锁 2/2、既有单元 9/9、
-PRD gate 4/4 GREEN；旧 fake-SUT/browser 金牌仍 agentExecution=forbidden，绝不重跑。
+【2026-07-22 深夜 最新覆盖层（agent-id-readback 评审闭环+合并）】
+契约六阶段全 done、codex 四轮异构评审 R4 终判 PASS、已合并 dev@648e09e（主树复验对提交态
+gate GREEN；未提交报告模板层触棘轮 R21——renderJson 新增 overview 字段，重签义务见下一步 A）。
+① 三波=sol 五面构造兑现：bin/replay.mjs 三轴投影逐字搬移成生产纯函数 lib/replay-axes.mjs；
+  mock Page/forensics 替身（tests/_golden/fixtures/agent-id-readback/mock-page.mjs）驱【真实】
+  createCompileRun/compileFlow/performAction；棘轮扩 R18-R21 四冻结面（events/动作轴/axes/
+  verdict→report 真 CLI 链四态各一）。基线 82484ab 窗口重录、既有六面零漂移=窗口保真机器证据；
+  退窗现树 21/21 绿=身份实现不动 v1 字节的机器证据。plan §6/§8 权威修正+interface-spec §7 披露
+  +prd 第五笔 checksumAmendments。
+② R3 FAIL（机器五面判闭合）→四波全采信：H1 命中卡句柄全路径 finally dispose、M1 identityTokens
+  消费即出账、H6 UAT 三件套落字段（prd observability：uatCaseId=tc_agent_id_readback_real_uat_v1
+  +successorContract=real-uat-attestation+冻结 uatDefinition 四步定义）→R4 PASS（全 FIXED、
+  plan §6 修正接受）。audit.jsonl 终账（rounds 4、pass）。
+③ 陈旧红挂账（别顺手修）：tests/_golden/real-run-trust.zero-sut.golden.mjs 红——源码字面检查
+  在 82484ab 前已失效（ctx 多行化）、主树/分支同红、无 owner prd 引用；待独立修单。
+④ worktree ../casey-agent-id-readback 可退役（分支已并入 dev）；真机义务按冻结 uatDefinition
+  走后继契约 real-uat-attestation（route:human）。
+上一 session 同日早前四线（stale-red 修单/报告模板/真机三链）见 HANDOFF 溯源层。
 
 【一句话定位 + 血缘】
-Casey 是 autotester（人录·机回放·零 LLM）的「翻面」：输入端改 LLM 读懂文本用例，
-但「确定性是默认、LLM 是手术刀、完成是退出码、裁判零 LLM」的内核一字不让。
-复用 autotester 的 loop-kit 作第二消费者（ADR-0001）。三处统一标识符 casey：
-CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
+Casey 是 autotester（人录·机回放·零 LLM）的「翻面」：输入端改为 LLM 读懂文本用例，
+但「确定性是默认、LLM 是手术刀、完成是退出码、裁判零 LLM」的内核不让渡。
+loop-kit 已按 ADR-0008 提取为兄弟目录独立包，Casey 与 autotester 是双消费者。
+三处统一标识符 casey：CLI bin/casey.mjs、skill .claude/skills/casey、MCP mcp/casey-server.mjs。
 
-【先读，别现编已决的事】（必读顺序）
-1. CLAUDE.md + CONTEXT.md（统一语言注册表，命名以它为准；弃用别名黑名单；繁体禁用）
-2. docs/HANDOFF.md（最新进度，冲突以它为准；已更到 2026-07-20：阶段二与 mountdelay 全收口）
-3. loop/GUARDRAILS.md（19 条护栏逐条有效；#19=强制层/迁移落地必复跑受影响金牌、别信 tier1 分层绿）
-4. 追溯「为何这么定」：docs/adr/（架构决策主事实源）、docs/design/（端到端设计）。
+【先读，别现编已决的事】
+1. CLAUDE.md + CONTEXT.md：硬规则与统一语言；弃用别名是黑名单，中文禁繁体。
+2. docs/HANDOFF.md：当前状态权威源；只信最新覆盖层，较早日期段落只作溯源。
+3. docs/REQUIREMENTS-STATUS.md：用户需求/缺陷/完成度统一入口（含 §3 实体身份与双定位）。
+4. loop/GUARDRAILS.md：现有 19 条护栏逐条有效。
+5. docs/adr/：难逆转决策；docs/design/：端到端设计，顶部“已知偏离”优先于历史正文。
 
-【历史状态（2026-07-19 晚）——已被上方 2026-07-20 覆盖层接管，仅供溯源】
-本会话把「semantic-lock 准入门基础债」从 5 金牌口径推进到坐实真实规模并转向：
-- 规模真相：enforcement 9ee2731→dfee72c（2026-07-17）落地未迁移测试套件，把整个 hermetic
-  浏览器回放金牌套件（约 24 金牌 / 40 prd）打成陈旧绿，非最初发现的 5 个。债务全貌钉死在
-  docs/plans/replay-admission-hermetic-migration/DEBT-REGISTER.md。
-- codex gpt-5.6-sol high 异构讨论真挣钱（review/codex-sol-strategy-20260719.md，入 audit）：
-  逮到 Claude 家族自审看漏的四承重问题——① 路 a「生产门零削弱」不成立（测试锁绑 events 不绑
-  --sut、生产 reader 不分测试/生产 signer=利用既有 trust-root 缺口）；② SKILL.md:107 真机规则
-  冲突；③ p5 墓碑不该借删两案翻绿；④ mint 工具语义授权不可信（占位身份、同源盲区、可能假绿）。
-- Steven 2026-07-19 两裁决：Q1=SKILL.md:107 fake-SUT 只读规则也约束 dev gate/golden（hermetic
-  金牌不该被 agent 跑、须按生命周期重裁，非重跑锁绿）；Q2=先修生产/测试信任根分离再迁移。
-  → 原执行路径（重跑 fake-sut + 注入测试锁锁绿）作废。
-- 本契约 replay-admission-hermetic-migration 转调查/决策契约（状态全在其 docs、不走 loop 正常流；
-  活契约槽已归还 alh-open-entry 外部仓、阶段一另立新 slug）：波0 五核心 prd honest 翻红保留权威
-  （按 Q1 不得再跑 gate 启动 fake-sut、
-  passes:false 不可撤了重生）；波1 settle 锁绿已 git revert（含 mint 工具）；复签 sweep 工具
-  tests/_golden/support/resign-changed-goldens.mjs 保留（生命周期工作仍用）。dev HEAD 5df2c17。
-- mountdelay-fidelity 仍挂起（worktree 存、grill+plan done）；基础债转大工程、mountdelay 继续排后。
-- 主树未提交现场：.gitignore + 一批 prd（M，gate evidence 时间戳漂移，无害别当实质改动）+
-  用户未跟踪件（docs/codex/、follow.mjs、docs/atom-readiness-*、docs/plans/regress-strategy|
-  usability-audit）——全是用户的/无关漂移，别碰别提交。
+【项目历史 / ADR】
+- ADR-0001：Casey 成为 loop-kit 第二消费者；同仓复制/延期提取两条已被 ADR-0008 取代。
+- ADR-0002：gate 二值与 verdict 四态分写者；fail-safe 默认；自愈只收确证 HARNESS_ERROR。
+- ADR-0003：LLM 一次编译、日常确定性回放；自愈非就地写补丁，人签后应用。
+- ADR-0004：typed 断言草拟→冻结→人签；改版走重签；gate 绿不等于完成。
+- ADR-0005：CONTEXT.md 统一语言经 hook + gate 强制；hook 故障放行、门禁失败关闭。
+- ADR-0006：Casey 分层融合 autotester 与 regress；先把原子重表达为三轴，否决单 bit 直通裁判。
+- ADR-0007：Playwright 回放基座；取证按真发起方归因，含糊归 null；非凭据通道配置进 profile。
+- ADR-0008：loop-kit 提取为独立包；通用引擎归包，Casey 保留项目配置与契约实例。
+- ADR-0009：hermetic 绿只是必要条件，真机 UAT 人签才是完成；注意当前 agent 不得运行 fake-SUT。
+- ADR-0010：准入件必填 audience，凭据上下文严格匹配；密钥签名、manifest 根、receipt 复验、
+  撤销与 SUT scope 明确留后续。
 
-【DDD / 统一语言】（领域模型）
-- 七相流水线（LLM 只在相 0/1/2/5；相 3/4/6 纯零 LLM 确定性）：
-  相0 归一 ingest → 相1 编译 compile → 相2 冻结+人签 sign → 相3 回放 replay
+【DDD / 统一语言】
+- 七相：相0 归一 ingest → 相1 编译 compile → 相2 草拟/冻结/人签 sign → 相3 回放 replay
   → 相4 裁定 verdict → 相5 自愈 self-heal → 相6 报告 report。
-- 核心词汇：三轴 StepAxes；多态裁定四态 PASS/SUT_DEFECT（人签+动作对+响应违期+取证背书，禁自愈）/
-  HARNESS_ERROR（正向确证漂移，可自愈）/ NEEDS_HUMAN（证不出，带 reason 子类）；点击身份门（唯一或
-  点后回读成立才 actionPerformed，多匹配/坐标→ambiguous→NEEDS_HUMAN）；取证按请求发起方归因；
-  语义锁=类型+名称+编号联合，同名/缺号/冲突/漂移 fail-closed。
-- 裁判与自愈分进程：verdict.mjs 零 LLM，自愈是下游消费者、绝不反向进裁判进程。
+- LLM 只在相0/1/2/5；相3/4/6 为零 LLM 确定性。
+- TestCase 是归一聚合根；intentId 是语义步，stepId 是回放事件位置，一 intent 可裂成 N event。
+- 三轴 StepAxes = 动作轴 + typed 断言轴 + 取证轴，是裁判、桥与报告共享的数据契约。
+- 四态：PASS；有本步取证背书的 SUT_DEFECT；正向确证定位漂移的 HARNESS_ERROR；
+  其余证不出的 NEEDS_HUMAN。后者含 SUT_DEFECT_OR_STALE / CASE_DEFECT /
+  AMBIGUOUS_ACTION / AFFORDANCE_ABSENT / INDETERMINATE。
+- 点击身份门：只有唯一解析或点击后身份回读成立才算动作对；多匹配/坐标兜底为 ambiguous。
+- 实体身份与双定位（P0 信任边界）：业务对象按 kind + name + code + platformId + scope 联合定位；
+  同名不同 ID 判 DIFFERENT，多匹配绝不取 first 必判 AMBIGUOUS，缺 ID/坏候选不得推 SAME。
+  智能体侧 ID 走列表接口网络信封读回（agent-id-readback）；DOM 物理卡片+信封双证、
+  身份观察事务 arm→settle→seal→consume、sign 五元 join、回放点击前对已签 platformId 比对。
+- 取证按 attributedStepId 精确归因，不按时间窗；背景轮询不能翻本步裁定。
+- 通道剖面只承载非凭据配置；site.json 与 .auth 内容不得进入输出。
+- verdict.mjs 零 LLM；自愈是其下游消费者，绝不反向进入裁判进程。
 
-【开发准则（机制强制）】
-- 阶段互锁：改 lib/bin/web 或提交前必先 contract init 声明入口分流（direct|light|full），
-  hook-loop-guard 按 contract 互锁；缺上一阶段交付物拦红。accept 任何车道都不跳。
-- 碰 lib/bin 真并行走 worktree（护栏 #18），各树自绿后 git-native 合并回 dev（绝不 cp 进 lib/bin），
-  合并后必主树复验受影响面（护栏 #19：hermetic 契约树绿≠主树绿）+ 全仓 ratchet 总核。
-- passes 只 gate 写；testChecksums 冻结文件对实现者只读；改冻结须重签+人签。
-- 异构评审铁律：评审家族≠实现家族（Claude 实现→codex/pi 评）；只喂 spec+diff+门禁证据。
-  本会话 codex 讨论七次+本次策略讨论真挣钱（逮 Claude 同族自审看漏的真缺陷），铁律必要性强实证。
-- 双 hook 术语拦截：回合输出与写 md/json 都被 term-lint 扫，违例/繁体/未登记加粗英文拦红（加粗只给中文）。
+【开发准则：现役代码事实】
+- contract CLI 当前只接受 direct|light|full；kernel 是已批准但尚未接线的目标车道。
+- 现役互锁：direct 全放行；light 写 prd/改实现/提交需连续到 plan、推送到 loop；
+  full 写 prd 到 plan、改实现到 accept、提交到 loop、推送到 review。
+- passes 只有 gate.mjs 可写；testChecksums 冻结件对实现者只读，改 checksum/重签须走 ADR-0004 人签；
+  修金牌合法路径=断言零弱化+外科 stash 无实现态重钉红+prd checksumAmendments 记账（本会话四笔实证）。
+- 碰 lib/bin 的并行落地用独立 worktree + 每树独立 baton；git-native 合回 dev，绝不复制实现文件。
+- 强制层、迁移或共享冻结面落地后，须复跑全部受影响金牌并回主树复验；tier1 绿不能代替影响闭包。
+- 评审家族必须不同于实现家族；只喂 spec、diff、门禁证据，不喂实现者推理。策略/前提也送异构评审。
+- 「不可达/不确定」断言先实测再落账（本会话两次被异构评审逼收回：sign 字节确定性、五面可达性）。
 
 【兜底 / fail-safe】
-- 四态 catch-all：证不出→NEEDS_HUMAN，绝不静默 PASS；fail-safe 不 fail-open（护栏 #14）。
-- fake-SUT 只读铁律（SKILL.md:107，Steven 2026-07-15 定、2026-07-19 重申约束 dev gate/golden）：
-  假被测系统只允许读源码作迁移参考，任何 agent 不得启动/连接/回放；golden/gate/selftest --tier1
-  仅在可证明不启动/不连接/不回放任何假 SUT 时才允许执行；行为验收一律联网驱真机（route:human）。
-- 陈旧绿翻真纪律：enforcement/迁移落地必复跑受影响金牌（护栏 #19）；先翻红记账再修，不手改 passes、
-  不盲目复签掩盖债（撞 fidelity-audit 翻真纪律）。
+- verdict 输入整体畸形 exit 65；单步畸形不丢弃，落 NEEDS_HUMAN(INDETERMINATE)。
+- intent 内逐事件动作折叠 fail-safe：前序 ambiguous/none/action_failed 不得被末事件 unique 洗成 PASS。
+- 动作成功但没有硬断言不能空 PASS；多匹配落 AMBIGUOUS_ACTION；本步 5xx/错误信封/pageerror/crash
+  才可背书 SUT_DEFECT；正向漂移双证才可落 HARNESS_ERROR；其余一律 NEEDS_HUMAN。
+- replay 只写三轴，不裁定、不写 passes；行计数异常回 null，不回 0；看门狗现为 120 秒。
+- gate 是单 PRD 门，checksum/术语/任一验收红则 exit 1；--dry 不是完成证据，受影响闭包仍靠纪律核全。
+- fake-SUT 和夹具 SUT 只允许读源码作迁移参考；agent 会话语境不得启动、连接或回放。
+  例外=契约级范围化例外（Steven 拍板、prd observability 记账，如 agent-id-readback 五场景金牌）。
+- 身份观察账本 fail-safe：完整性先决（total 恰等行数、hasNextPath 声明即严格 false）、
+  整页坏行拒、查询回声不符不入账、200 失败信封拒、consume 先 seal、消费即出账。
 
-【下一步（2026-07-20 最新）】
-A. 没有本链的 agent 可执行实现尾巴；不得重复做阶段二或 mountdelay。
-B. 需 Steven 在场的 route:human：阶段一 admission-trust-root-separation 人签/真机 execute UAT；
-   mountdelay 真机多次回放 + profile.loading 标定；隔离浏览器义务的真实 UAT 存证/可信签名/迁移机制
-   另立后续契约；mountdelay 新冻结验收仍需 ADR-0004 人签。单次绿不算 flaky 消除。
-C. 若暂不做真机，回到 HANDOFF 其它未完成候选重新 contract init；不要动主树既有用户未提交文件。
+【排期】
+- P0–P2 已完成。P3 编译机制与真机 bring-up 已收口。P4 草拟/冻结/人签主机制已建。
+- P5 回放/取证/零 LLM 裁定/只读漂移探针已建；余真机义务 route:human。
+- P6 hermetic 自愈机制已建；真 HARNESS_ERROR 首触仍待真机。P7 报告主链已建。
+- P8 多通道尚未完整收口。P9 tier-1 已建；tier-2 真机 UAT 未完成。P10 可信闭环自进化在建。
+- 实体身份与双定位（独立 P0 信任边界）：hermetic 轨全收口——身份模型/判别内核/信封读回/双证
+  联合定位经 codex 四轮修单加固、R4 PASS 并入 dev@648e09e（差分棘轮 21 检查含 sol 五面构造）；
+  完整真机 UAT 链绑 uatCaseId=tc_agent_id_readback_real_uat_v1 走后继契约 real-uat-attestation、
+  同名敌意真机用例仍 route:human。
 
-【环境坑（WSL）】
-- 行尾/checksum 整库 LF 一致；查行尾用 node 数 0x0d、别用 grep -c $'\r'（git-bash 退化误报）。
-- loop-guard 误判：读类/contract 命令带重定向且含 lib/bin/loop 路径 token 会被判 edit-impl 拦——直接跑别加重定向。
-- 路径 D:\→/mnt/d/；/mnt/d 是 9p/DrvFs（rename 目录偶发 sharing-violation EACCES，用有界 retry 吸收）；
-  worktree 无 node_modules（软链主树进去）、cases/ gitignored 不随 worktree 带。别混用 Windows/WSL git。
-- codex 异构评审/讨论：codex exec --skip-git-repo-check -C <dir> -s read-only -m gpt-5.6-sol
-  -c model_reasoning_effort=high - < 料.md；评审包放仓库外（/mnt/d/ctx/heren/review-packets）。
-  pi 亦可（deepseek-v4-pro，先冒烟验通）。缺席不阻塞、如实挂账。
+【当前契约 / 工作树】
+- 主树：dev@648e09e（agent-id-readback 已并入）；活契约 stale-red-admission-refit
+  （light，六阶段全 done、产物未提交）。
+- worktree ../casey-agent-id-readback：已退役（分支并入 dev 后 worktree remove+分支删除，
+  并行槽回 4/5）。
+- 并发 baton 4/5：stale-red 主树 6/6 / loop-p0-4a 3/6、loop-p0-4b 2/6（别 session 暂停树，
+  续前先重对 dev@648e09e 基线）/ mountdelay 6/6 残留。
+- 主树未提交现场（三线增量已于五笔提交入 dev，至 31d5169+交接文档笔）：剩余全部为用户/并行现场
+  （.gitignore、prd-cli-authority-wiring-fill/selftest/semantic-unit-discrimination、zip、follow.mjs、
+  atom-readiness、regress-strategy、usability-audit），不碰不提交。提交只走显式路径、绝不 -A。
 
-【硬约束（贯穿全程）】
-裁判零 LLM；fail-safe 不 fail-open（证不出→NEEDS_HUMAN）；冻结测试只读（改须重签+人签）；
-凭据不进任何输出/日志/提交/报告；回合输出禁加粗英文与繁体（加粗只给中文）；
-新概念先查既有学科术语、造词先登记 CONTEXT.md；fake-SUT 只读、行为验收只驱真机（SKILL.md:107）；
-enforcement/迁移落地必复跑受影响金牌（护栏 #19）；可并行的活优先 fan-out 子代理；
-碰 lib/bin 走 worktree；合并后主树复验；决策分岔用可点选项呈现、别散文长问。
+【下一步】
+A（推荐）恢复 loop 改革（4a 3/6 / 4b 2/6，先重对最新 dev 基线；两树都落后逾 165 提交，
+  沿用旧红基线直接续实现是禁手）。
+B route:human 面：真机 UAT 后继契约 real-uat-attestation（冻结 uatDefinition 已入
+  prd-agent-id-readback observability，绑 uatCaseId=tc_agent_id_readback_real_uat_v1）/
+  同名敌意用例/密钥签名威胁面/SKILL.md 措辞统一。
+C 陈旧红独立修单：real-run-trust.zero-sut（源码字面检查 82484ab 前已失效，主树同红、
+  无 owner prd 引用）。
+D P8 多通道 / P10 可信闭环自进化等排期线（见【排期】）。
+
+改冻结金牌一律走 checksumAmendments 修单路径；A/B 择向建议先问 Steven。
+
+【环境坑】
+- /mnt/d 是 DrvFs，git status/diff 慢（16-18 秒），15 秒超时的工具会必败——用 300 秒超时。
+- codex exec 评审纪律：-s read-only + 受限包；后台跑配哨兵；实现审 high、设计咨询 max。
+- gate 全跑约 10-15 分钟（含浏览器金牌），nohup 脱壳+哨兵等终账行，别让工具超时杀掉。
+- 回放事件环 press→click 零等待：旧 DOM-only 门在 fetch 渲染页有固有竞态——考场要确定性化
+  （同步渲染场景），别用重试遮竞态。
+- 行尾/checksum 用 node 数 0x0d；整库保持 LF；不要混用 Windows/WSL git。
+- 读类命令不要带重定向并混入 lib/bin/loop 路径 token，避免 hook 误判 edit-impl。
+- 真机一律 WSL 侧经回环隧道；凭据与真实目标地址不得进命令行、日志、报告或提交。
+
+【硬约束】
+裁判零 LLM；fail-safe 不 fail-open；冻结测试只读；凭据不外泄；中文禁繁体；
+新概念先查既有学科，造词先登记 CONTEXT.md；fake-SUT 只读（范围化例外须 Steven 拍板+记账）；
+行为验收只驱真机；强制层/迁移后复跑受影响面；碰 lib/bin 走 worktree；合并后主树复验；
+异构评审家族≠实现家族；完成只认退出码与人签真机证据，不把桩、文件存在或模型印象当完成。
 ```

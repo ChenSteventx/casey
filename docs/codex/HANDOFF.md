@@ -2,13 +2,19 @@
 
 > 本文件是 Casey 的 `Codex` 当前状态主文档。根部 `docs/HANDOFF.md` 与 `docs/NEXT-SESSION.md` 属于 Claude Code，只读参考；冲突时按「实际 `git` 与活契约 > 本文件 > `docs/codex/NEXT-SESSION.md` > 根部交接」处理。
 
-最后核对：2026-07-21，工作目录 `/mnt/d/ctx/heren/casey`，分支 `dev`，本轮起点 `1207776`。
+最后核对：2026-07-21，工作目录 `/mnt/d/ctx/heren/casey`，分支 `dev`，本轮起点 `1207776`。（2026-07-22 Claude 侧追加当日进展至「当前工作目标」末与 `docs/REQUIREMENTS-STATUS.md`；`dev` 已推进至 `82484ab`，另有当日未提交增量与一条在飞 worktree 契约，见下。）
 
 ## 当前工作目标
 
 - `checksum-drift-closure` 已完成：两处普通 checksum 漂移经零 SUT 回归、Steven 精确人签与 owner gate 收口。
 - `review-provider-inline-auth-hook` 已完成：Casey hook 与 `AGENTS.md` 固定注入 Grok/pi.dev 内联认证纪律，阻止再次从公开位置寻找凭据或用裸 CLI 误判供应方不可用。
 - 下一条主线是恢复 `ratchet-security-revocation` 的设计复审；它仍是设计期工作，尚未进入 plan、验收或实现。
+- 后续用户需求、缺陷与完成进度统一入口为 `docs/REQUIREMENTS-STATUS.md`。其中“智能体等业务实体以类型 + 名称 + 编号/编码 + 平台 ID 联合定位”是独立 P0 信任边界：身份模型与确定性内核已建，2026-07-22 起智能体真实页面 ID 采集与联合定位亦已接线（见下），但关系双锁真机与完整真机 UAT 链仍未完成，不得用“语义锁已建”或“信封读回已接线”概括为整体完成。
+- 2026-07-22 Claude 侧当日进展（Claude 实现→codex/sol 异构评审；部分未提交、一条在 worktree 未合并，详见 `docs/REQUIREMENTS-STATUS.md` 与根部 `docs/HANDOFF.md`）：
+  - `stale-red-admission-refit`（light，已 learn done）：收口两陈旧红金牌 `p3-compile`、`report-diagnostics`——红因是实体准入面拦夹具旧式调用（stash 实证非回归），夹具侧铸测试受众准入件、生产零改、走 checksumAmendments 修单；`gpt-5.6-sol` max 咨询定形 + codex high 评审 4 Medium 全采信修复。
+  - 报告固定模板：开篇自然语言概述（确定性四态投影、非全过 fail-safe 措辞）+ 回放对照同屏（录屏左·测试用例/原子操作右，sticky）；`lib/report.mjs` 未提交增量。
+  - 真机三链重表达（CRUD/发布/历史）：旧冻结件被准入面拦属设计，完整重表达（扩 flow 实体绑定→铸权→哨兵→重编译→补缝→人签→回放）后真机复跑全 PASS 零 error，三份独立 HTML 报告交付；配方存 `runs/real-uat-20260722/`。
+  - `agent-id-readback`（full，worktree `../casey-agent-id-readback`，契约至 loop done、gate 6/6 GREEN）：智能体平台 ID 网络信封读回 + DOM/信封双证门（完整性先决、完整集合内同名>1 才 AMBIGUOUS、点击前对已签 `platformId` 比对）。`gpt-5.6-sol` max 四轮设计共识（R1 三 P0=解析竞态/假唯一/剖面当安全开关，R4 终判可进 accept），真机活数据双证实证绿（三层真机剖面字段名经实测纠正：`data.list`/`data.pageInfo.totalItems`）。（2026-07-22 深夜更新：codex gpt-5.6-sol 四轮异构评审 R4 终判 PASS，六阶段全 done，已合并 `dev@648e09e`，worktree 已退役；三线增量与报告模板+棘轮 R21 重签亦已入 dev，见主仓 `docs/HANDOFF.md` 顶层节。）
 
 ## 已完成事项及验证证据
 
