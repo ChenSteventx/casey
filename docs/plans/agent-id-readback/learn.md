@@ -1,10 +1,11 @@
 # agent-id-readback · learn（阶段 5 沉淀）
 
-> 状态注记（2026-07-22 晚，交接时点）：评审未闭合——R1 FAIL(1C+6H+3M)→修单→R2 FAIL(H1/H6/M1
-> PARTIAL、7 FIXED、零新增)→H1/M1 二波已修、H6 余 sol 五面构造未实现（sol max 咨询 CHANGES
-> REQUIRED，构造清单见 review/fix-dispositions-r1.md 末节）。gate 第四轮 GREEN 6/6。plan §6 修正
-> 与 codex R3 随五面实现走（Steven 2026-07-22 拍板交接下一 session）。本文教训按已发生事实成稿，
-> R3 收口后补终判记录。诚实标注，不预支结论。
+> 状态注记（2026-07-22 晚，评审已闭合）：R1 FAIL(1C+6H+3M)→修单一波→R2 FAIL(H1/H6/M1 PARTIAL、
+> 7 FIXED、零新增)→二波（H1 ElementHandle 钉扎/M1 WeakSet+出账+O8c/H6 面③④+R15-R17）→三波
+> （sol 五面构造⑦⑧⑨⑩落地：替身驱真实 compile/action 链、axes 投影抽生产纯函数 lib/replay-axes.mjs、
+> verdict→report 真 CLI 链；plan §6/§8 权威修正）→R3 FAIL（机器五面判闭合；余句柄释放/调用方 Map
+> 出账/UAT 三件套未落字段）→四波（全采信修）→**R4 终判 PASS**（H1/H6/M1 全 FIXED、plan §6 修正
+> 接受）。gate 第六轮 GREEN 6/6。全程 codex gpt-5.6-sol（异构非同族），账见 loop/audit.jsonl。
 
 ## 交付结果
 
@@ -47,6 +48,12 @@
 10. **回放 press→click 零等待是旧 DOM-only 门在 fetch 渲染页上的固有竞态**（gate 两轮 C7 none 红
    实证；settleBeforeCapture 只跑 intent 末事件、searchOpen 末事件即 click）。考场治法=确定性化
    （idtwins-sync 同步渲卡），不用重试遮竞态；真机侧该竞态的实际影响随真机链义务评估。
+
+11. **冻结面口径要点名到「具体调用矩阵+明示排除清单」，散文承诺不算落地**：三波把「不可达」证伪后，
+    可冻的面全部落成具体调用矩阵（替身驱真实函数/纯函数/真 CLI 链），不可冻的逐笔明示排除并说理
+    （sign 无参 usage=已声明接口演进、report html/md=模板演进面、report 成功 stdout=绝对路径可移植性）；
+    R3 又逮住「绑 uatCaseId」只有散文没有字段——机读账（prd observability 结构化字段）才算绑定，
+    R4 补落字段后即 PASS。泛称「整面冻结/整面移交」两个方向都过不了异构评审。
 
 ## 挂账（route:human，见 prd observability）
 
