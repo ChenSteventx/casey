@@ -34,7 +34,9 @@ import {
   checkReplayEntityAdmission as checkCompileIdentityAdmission,
   readIdentityAdmissionAuthorityFromPrd,
   checkCredentialAudienceGate,
+  readFrozenIdentityObservations,
 } from '../lib/entity-semantic-lock-preflight.mjs';
+import { createHash } from 'node:crypto';
 import { PROJECT_ROOT } from '../lib/paths.mjs';
 
 const { chromium } = pw;
@@ -221,6 +223,33 @@ async function main() {
     console.error('replay: profile.loading 形状非法，浏览器启动前拒绝');
     process.exit(65);
   }
+  // 身份通道剖面（agent-id-readback；与 compile 同律：未声明零行为差、声明则形状非法浏览器前拒）。
+  let identityChannelCfg = null;
+  if (profile && profile.agents !== undefined && profile.agents !== null) {
+    const a = profile.agents;
+    if (!a || typeof a !== 'object' || Array.isArray(a)) { console.error('replay: 通道剖面 agents 形状非法，浏览器启动前拒绝'); process.exit(65); }
+    if (a.listApi !== undefined && a.listApi !== null) {
+      const l = a.listApi;
+      const s = (v) => typeof v === 'string' && v.trim() !== '';
+      const shapeOk = l && typeof l === 'object' && !Array.isArray(l)
+        && s(l.pathname) && l.pathname.startsWith('/') && s(l.method)
+        && s(l.recordsPath) && s(l.totalPath) && s(l.queryParam)
+        && (l.hasNextPath === null || l.hasNextPath === undefined || s(l.hasNextPath))
+        && l.fields && typeof l.fields === 'object' && !Array.isArray(l.fields)
+        && s(l.fields.id) && s(l.fields.code) && s(l.fields.name);
+      if (!shapeOk) { console.error('replay: 通道剖面 agents.listApi 形状非法（身份通道声明不完整，含 queryParam），浏览器启动前拒绝'); process.exit(65); }
+      const cardOk = s(a.itemContainer)
+        && a.cardFields && typeof a.cardFields === 'object' && !Array.isArray(a.cardFields)
+        && s(a.cardFields.name) && s(a.cardFields.code);
+      if (!cardOk) { console.error('replay: 身份通道声明缺物理卡片面（agents.itemContainer + agents.cardFields.name/code），浏览器启动前拒绝'); process.exit(65); }
+      identityChannelCfg = {
+        pathname: l.pathname, method: l.method, recordsPath: l.recordsPath, totalPath: l.totalPath,
+        queryParam: l.queryParam,
+        hasNextPath: l.hasNextPath ?? null,
+        fields: { id: l.fields.id, code: l.fields.code, name: l.fields.name },
+      };
+    }
+  }
   const events = eventsDoc.events || [];
   // 破坏性删除的陈旧 spec 必须在启动浏览器、接触 SUT 前拒绝。否则前序创建/发布已发生后，
   // 两个无 value 的 click 才 fail-safe，会制造可避免的 atl_ 残留。正确恢复路径是重编译 events，
@@ -252,6 +281,34 @@ async function main() {
     console.error(`replay: frozen identity locks 未过（${identityAdmission.reason}），未启动浏览器；下一步 ${identityAdmission.nextAction}`);
     process.exit(65);
   }
+  // v2 冻结锁期望三元组（agent-id-readback plan §5）：v2 件在场时回放闭环到点击前——
+  // 缺剖面或通道指纹不符=浏览器前拒（plan §3：换旧剖面无法降级新签用例）。
+  const frozenIdentityRows = frozenLockAuthority ? readFrozenIdentityObservations(frozenLockAuthority) : null;
+  let identityExpectedByStep = null;
+  if (frozenIdentityRows && frozenIdentityRows.length) {
+    if (!identityChannelCfg) {
+      console.error('replay: v2 冻结锁携身份观察但通道剖面未声明 agents.listApi（剖面只是适配器、不得降级），未启动浏览器');
+      process.exit(65);
+    }
+    const sortKeys = (v) => (Array.isArray(v) ? v.map(sortKeys)
+      : (v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, sortKeys(v[k])])) : v));
+    const liveDigest = `sha256:${createHash('sha256').update(JSON.stringify(sortKeys(identityChannelCfg))).digest('hex')}`;
+    let lockDigest = null;
+    try { lockDigest = JSON.parse(readFileSync(resolve(PROJECT_ROOT, String(args.entityLocks)), 'utf8')).identityProfileDigest ?? null; } catch { lockDigest = null; }
+    if (lockDigest !== liveDigest) {
+      console.error('replay: 身份通道指纹与 v2 冻结锁不符（identityProfileDigest 错配），未启动浏览器');
+      process.exit(65);
+    }
+    identityExpectedByStep = new Map();
+    for (const row of frozenIdentityRows) {
+      identityExpectedByStep.set(row.evidenceStepId, { signedName: row.name, signedCode: row.code, signedPlatformId: row.platformId });
+    }
+  }
+  // 身份账本激活判据（codex R1-M3）：只由已验证 v2 冻结权威激活——真 v1 件即使换上声明了
+  // listApi 的新剖面也固定走旧 DOM-only 路径（剖面只是适配器，不得反向改变签署件版本语义）。
+  const identityLedger = identityExpectedByStep
+    ? (await import('../lib/agent-identity-observation.mjs')).createIdentityObservationLedger({ channel: identityChannelCfg })
+    : null;
   const sut = String(args.sut).replace(/\/$/, '');
   // 确定性令牌（可 golden）；真机由 compile-gate 注入带 Reserved Prefix 的实体名。
   // baseUrl：G6 分岔三取 C——events url 走 {{baseUrl}} 占位符，回放期回填 --sut（对完整 URL 的旧 fixture 是 no-op）。
@@ -262,6 +319,9 @@ async function main() {
     ...(args.promptText != null ? { promptText: String(args.promptText) } : {}),
     // 容器覆写同参（codex R1-M1）：把通道剖面带给动作门（agent.searchOpen 条目容器覆写与编译侧同一通道）。
     ...(profile && typeof profile === 'object' ? { profile } : {}),
+    // 身份双证（agent-id-readback plan §5）：账本+已签期望三元组带给动作门；fill 时 arm、click 时 settle/consume。
+    ...(identityLedger ? { identityLedger, identityTokens: new Map() } : {}),
+    ...(identityExpectedByStep ? { identityExpectedByStep } : {}),
   };
 
   // 登录预备动作前置（GRILL 人签取 A）：凭据/站点配置在开浏览器前加载，任一失败 exit 65（fail-closed）。
@@ -424,6 +484,14 @@ async function main() {
     successField: profile.successField,
     successValue: profile.successValue,
     currentStep: () => state.currentStepId,
+    ...(identityLedger ? {
+      identityChannel: {
+        ...identityChannelCfg,
+        sutOrigin: new URL(sut).origin, // 同源判据（codex R1-H2）：跨源同路径响应不入身份通道
+        onRequest: (x) => identityLedger.onRequestWillBeSent(x),
+        onTerminal: (x) => identityLedger.onBodyTerminal(x),
+      },
+    } : {}),
   });
 
   // 登录预备动作执行（无录像的单 page 路径，原样）：forensics 已接线、事件循环未开——此刻 currentStepId=null，
@@ -538,6 +606,12 @@ async function main() {
       } else {
         // 动作作用域：归因开放，覆盖动作 + 静默期（save/stream 异步在此窗回来）。
         state.currentStepId = ev.stepId;
+        // 身份观察事务武装（agent-id-readback）：searchOpen 的 fill 步 arm——归属自此刻起冻结到本 intent 事务；
+        // expectedQuery 同刻冻结为实例化后的 fill 值（codex R1-H2：查询回声不符的请求不入事务）。
+        if (ctx.identityLedger && ev.atom === 'agent.searchOpen' && ev.action === 'fill' && !ctx.identityTokens.has(ev.intentId)) {
+          const expectedQuery = ev.value == null ? null : instantiate(ev.value, ctx);
+          ctx.identityTokens.set(ev.intentId, ctx.identityLedger.arm({ intentId: ev.intentId, expectedQuery }));
+        }
         const respWait = ev.action === 'click'
           ? page.waitForResponse((r) => /saveOrModifyProcessData|streamReply/.test(r.url()), { timeout: 600 }).catch(() => null)
           : Promise.resolve(null);

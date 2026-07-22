@@ -1,0 +1,12 @@
+{
+  "compile": {
+    "status": 64,
+    "stdout": "",
+    "stderr": "compile: 缺 <caseId>\n"
+  },
+  "replay": {
+    "status": 64,
+    "stdout": "",
+    "stderr": "replay: 缺 --events\n"
+  }
+}

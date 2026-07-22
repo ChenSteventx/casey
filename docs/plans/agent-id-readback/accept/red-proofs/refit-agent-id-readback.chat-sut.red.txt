@@ -1,0 +1,11 @@
+ok   agent-id-readback.chat-sut: C7 v1 件+新剖面 idtwins-sync 回放：走旧 DOM-only 路径点击 unique（剖面不得反向改变版本语义）
+RED  agent-id-readback.chat-sut: C1 idhappy 名码唯一命中 → execute exit 0 + click event + fill=openName + 身份观察件: 身份通道下 fill 值应【精确】openName「互联网问诊-主诉」（完整性查询固定名称，codex R1-H2），实际 "诱饵关键词不得进搜索框"
+RED  agent-id-readback.chat-sut: C2 idtwins-hidden DOM 假唯一·信封两行同名 → 硬阻断（blockers 非空、无 click event）: 阶段[execute]：完整信封内 sameName=2（DOM 只渲一卡是假唯一，plan §2：先数同名再查唯一行）——应硬阻断非零退出，实际 exit 0（旧 DOM-only 门被骗放行点击）
+RED  agent-id-readback.chat-sut: C3 idcode-mismatch 期望码≠信封码 → 硬阻断（blockers 非空、无 click event）: 阶段[execute]：期望 code=AG-IM-001 而信封行 code=AG-WRONG-999（唯一行联合判据任一不等=action_failed，plan §2 表）——应硬阻断非零退出，实际 exit 0（旧 DOM-only 门被骗放行点击）
+RED  agent-id-readback.chat-sut: C4 idmissing API 500 → 硬阻断（blockers 非空、无 click event；今日或因 DOM absent 恰好绿，见头注）: 阶段[execute]：compile-report.identityGate.resolution 应【精确】'action_failed'（HTTP 500——事务无合格成功响应（plan §2 表：HTTP·API 失败=action_failed）），实际 undefined
+RED  agent-id-readback.chat-sut: C5 idpaged total=2 单页一行 → 完整性先决失败硬阻断（blockers 非空、无 click event）: 阶段[execute]：total(2)!==records.length(1)——完整性先决未过=action_failed 不是 ambiguous（plan §2 R2-2 统一口径）——应硬阻断非零退出，实际 exit 0（旧 DOM-only 门被骗放行点击）
+RED  agent-id-readback.chat-sut: C6 idhappy 真实 compile→sign→replay 闭环：draft v2+双 digest、sign exit 0、frozen v2 携三元组、replay 点击 unique: 真实 compile 草稿应 schemaVersion=2（codex R1-C1：v2 不接线则 platformId 进不了签署闭环），实际 1
+RED  agent-id-readback.chat-sut: C8 伪造锚错位 v2 锁回放：目标 click 缺已签三元组 → action_failed 不点击: ENOENT: no such file or directory, open '/tmp/casey-agentid-chat-MlXLWA/idforge/identity-observations.compile.json'
+RED  agent-id-readback.chat-sut: C9 iddom-skew DOM 假码 → 硬阻断 action_failed（物理卡片双锚：DOM code 必读必比）: 阶段[execute]：DOM 卡片副标题 AG-DOM-999 ≠ 信封码 AG-IM-001（dom.code 必须从同一物理卡片读出并比对，name 单锚必被骗）——应硬阻断非零退出，实际 exit 0（旧 DOM-only 门被骗放行点击）
+RED  agent-id-readback.chat-sut: C10 idpaged-dupdom 完整性失败+DOM 双卡 → action_failed（完整性先决优先于 DOM 分类，判定序不得倒置）: 阶段[execute]：compile-report.identityGate.resolution 应【精确】'action_failed'（total(2)!==records.length(1) 完整性先决未过；DOM 同名双卡只是伴随噪声，绝不得洗成 ambiguous），实际 undefined
+RED  agent-id-readback.chat-sut: 1 过 / 9 红

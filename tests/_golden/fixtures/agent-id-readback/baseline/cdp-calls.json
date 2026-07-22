@@ -1,0 +1,13 @@
+{
+  "listenersRegistered": [
+    "Network.requestWillBeSent",
+    "Network.responseReceived",
+    "Network.eventSourceMessageReceived",
+    "Network.loadingFailed",
+    "Network.loadingFinished"
+  ],
+  "sendCalls": [
+    "Network.getResponseBody",
+    "Network.getResponseBody"
+  ]
+}

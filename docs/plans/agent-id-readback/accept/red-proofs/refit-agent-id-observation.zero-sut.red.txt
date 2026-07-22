@@ -1,0 +1,31 @@
+RED  agent-id-observation: O1 arm 前请求不入账（归属在 requestWillBeSent 冻结，无 armed token 不入账）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O2a B 的 settle 不被 A 的晚到终态误判满足（必须等 B 自己的终态）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O2b A seal 后的晚到 body 不得进 token B（consume(B) 无污染行）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O2c sealed 的 A 不得被晚到 body 造出 ok 信封（只能回 A 生前账或落 lateDrops）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O3a settle 等全部请求：一请求未终态则 pending，failed 也是显式终态: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O3b failed≠空数组语义：唯一请求 failed 后 consume 绝不得是 ok+rows:[]: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O3c timeout 与 invalid 同为显式终态：settle 不悬挂，consume 非 ok: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O4a seal 后新请求不入本 token（consume 只见封存前的账）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O4b consume 一次性：二次 consume→'consumed': 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O5a 两响应 rows 不一致→'conflict'（完成序倒置也不得取『最近』蒙混）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O5b 多响应集合一致（rows 相等）不误判冲突，按 requestSeq 序取完整终态放行: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O6a 行数 >200（201 行）→该响应 'invalid': 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O6b 字段空串→整页 'invalid'（禁过滤坏行后拿好行判唯一）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O6c id 非全数字 string（'12a3'）→整页 'invalid': 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O6d id 以 JSON number 形态传入（安全整数也拒，禁 String(Number(id)) 洗白）→整页 'invalid': 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O6e id 为越过安全整数的 JSON number→整页 'invalid'（无损字符串义务）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O7 未 settle 就 consume→'unsettled'（请求未达终态，禁未决消费）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O8a settle 有界：请求永不终态时 settle({timeoutMs}) 界内解决且该请求显式 timeout 终态、consume 非 ok: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O8b consume 前必须 seal：settle 完但未 seal 即 consume→'unsealed'（未封存事务禁消费）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O8c 消费即出账（codex R2-M1 引用释放观察面）：consume 后同 seq 晚到终态按未归属丢弃（lateDrops 不增）、复消费恒 'consumed': 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O9 queryEcho≠expectedQuery 的请求不入账：唯一请求为异查询→consume 'empty'（绝不消费别人查询的完整集合）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O10a 声明 hasNextPath 但字段缺席（投影 undefined）→'invalid'（缺席不是完整页证据）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O10b 声明 hasNextPath 且值非严格 false（null/0/true 各一）→'invalid': 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O10c 声明 hasNextPath 且严格 false→'ok'（正控：义务可满足）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O10d 未声明 hasNextPath 但投影携 hasNext→'invalid'（投影异常拒，禁静默放行）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-observation.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-observation: O11a 同源+method+pathname+queryParam 命中→回声按剖面 queryParam 提取（正控）: 采集器未导出 matchIdentityRequest/projectIdentityEnvelope（修复前红）；检查无法执行，判红
+RED  agent-id-observation: O11b 跨源同路径请求不入身份通道（origin 精确等，codex R1-H2）: 采集器未导出 matchIdentityRequest/projectIdentityEnvelope（修复前红）；检查无法执行，判红
+RED  agent-id-observation: O11c pathname 必须精确等（子串/超集路径拒）: 采集器未导出 matchIdentityRequest/projectIdentityEnvelope（修复前红）；检查无法执行，判红
+RED  agent-id-observation: O11d HTTP 200 的 API 失败信封（successField 不符）→'failed'（codex R1-H4：绝不当成功身份页）: 采集器未导出 matchIdentityRequest/projectIdentityEnvelope（修复前红）；检查无法执行，判红
+RED  agent-id-observation: O11e 非 2xx 明确成功态之外（302）→'failed'；2xx+成功信封→'parsed'（正控）: 采集器未导出 matchIdentityRequest/projectIdentityEnvelope（修复前红）；检查无法执行，判红
+RED  agent-id-observation: 30/30 检查未过

@@ -1,0 +1,19 @@
+RED  agent-id-gate: G1-invalid envelope.status 'invalid'→action_failed（完整性先决，禁点击）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G1-conflict envelope.status 'conflict'→action_failed（完整性先决，禁点击）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G1-unsettled envelope.status 'unsettled'→action_failed（完整性先决，禁点击）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G1-empty envelope.status 'empty'→action_failed（完整性先决，禁点击）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G2 dom.status 'failed'→action_failed: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G3 完整集合内名称命中 0→absent: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G4a DOM ambiguous（多卡）→ambiguous: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G4b 完整集合内同名>1→ambiguous（即使 DOM 只见一卡）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G4c sol 假唯一攻击：同名两行且其一码中，仍必须 ambiguous（禁先按名+码过滤成一条）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G5a expected.code 不等→action_failed: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G5b dom.code（DOM 副标题 code）不等→action_failed: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G5c 信封 code 不等→action_failed: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G5d signedPlatformId 不等→action_failed（已签 id 是硬判据）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G5e dom.code 缺席→action_failed（codex R1-H1 修复钉：物理卡片双锚缺一不放行，缺码不是豁免）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G5f dom.code 空串同缺席→action_failed（空证据不是证据）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G6 DOM/信封/已签期望三方全等→unique，matched 三元组 deepEqual: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G7a 编译首采（无已签三元）三方其余全等→unique，matched 取信封 platformId: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: G7b 编译首采下码不等仍 action_failed（缺签不豁免其余判据）: 模块缺席（ERR_MODULE_NOT_FOUND）——lib/agent-identity-gate.mjs 尚未实现，红先行；检查无法执行，判红
+RED  agent-id-gate: 18/18 检查未过

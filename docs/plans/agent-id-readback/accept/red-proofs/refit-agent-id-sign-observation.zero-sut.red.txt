@@ -1,0 +1,20 @@
+FAIL c1 v2 draft+齐全观察件+join 对齐 → sign exit 0 且冻结锁携期望三元组（今日红：不识 --entity-observations/v2 形状）: v2 happy 应 exit 0；实得 exit 64（今日红：sign 不识 --entity-observations 旗标 / v2 draft 形状）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+ok   c2 v2 draft 缺观察件（不带 --entity-observations）→ exit 65 拒签
+FAIL c3 join 错位（evidenceStepId=atstep_1 指 fill 非终端 click）→ exit 65 拒签: join 错位 应 exit 65；实得 exit 64（今日红：sign-cli-args 白名单不识 --entity-observations，参数面 64 拒）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+FAIL c4 错配：capturedAgainstBuild≠--against-build → exit 65 拒签: capturedAgainstBuild≠--against-build 应 exit 65；实得 exit 64（今日红：sign-cli-args 白名单不识 --entity-observations，参数面 64 拒）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+FAIL c4 错配：identityProfileDigest 不符（观察件携异剖面 digest） → exit 65 拒签: identityProfileDigest 不符（观察件携异剖面 digest） 应 exit 65；实得 exit 64（今日红：sign-cli-args 白名单不识 --entity-observations，参数面 64 拒）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+FAIL c4 错配：eventsSha256 不符（观察件携异字节 sha） → exit 65 拒签: eventsSha256 不符（观察件携异字节 sha） 应 exit 65；实得 exit 64（今日红：sign-cli-args 白名单不识 --entity-observations，参数面 64 拒）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+FAIL c5 陈旧观察件复用（观察件自洽于另一 events 字节）→ exit 65 拒签: 陈旧观察件复用 应 exit 65；实得 exit 64（今日红：sign-cli-args 白名单不识 --entity-observations，参数面 64 拒）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+ok   c6 拒签零新增：失败 sign 前后夹具目录快照逐字节一致 + prd 零动 + 无 journal/tmp
+ok   c7 v1 draft 不带 --entity-observations 走既有 happy → exit 0 且冻结锁形状为 v1（回归保护，今日绿）
+FAIL c8a 观察件自报别的 atom 把矛头错开（真 searchOpen 无观察）→ exit 65 拒签（修前红：自报 atom 驱动 join、exit 0 过签）: 观察件自报 atom 转移矛头 应 exit 65；实得 exit 64（今日红：sign-cli-args 白名单不识 --entity-observations，参数面 64 拒）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+FAIL c8b 观察行 kind 非 agent（kind:workflow）→ exit 65 拒签（修前红：kind 只查非空、exit 0 过签）: 观察行 kind 非 agent 应 exit 65；实得 exit 64（今日红：sign-cli-args 白名单不识 --entity-observations，参数面 64 拒）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+RED  agent-id-sign-observation: c1 v2 draft+齐全观察件+join 对齐 → sign exit 0 且冻结锁携期望三元组（今日红：不识 --entity-observations/v2 形状）: v2 happy 应 exit 0；实得 exit 64（今日红：sign 不识 --entity-observations 旗标 / v2 draft 形状）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+RED  agent-id-sign-observation: c3 join 错位（evidenceStepId=atstep_1 指 fill 非终端 click）→ exit 65 拒签: join 错位 应 exit 65；实得 exit 64（今日红：sign-cli-args 白名单不识 --entity-observations，参数面 64 拒）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+RED  agent-id-sign-observation: c4 错配：capturedAgainstBuild≠--against-build → exit 65 拒签: capturedAgainstBuild≠--against-build 应 exit 65；实得 exit 64（今日红：sign-cli-args 白名单不识 --entity-observations，参数面 64 拒）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+RED  agent-id-sign-observation: c4 错配：identityProfileDigest 不符（观察件携异剖面 digest） → exit 65 拒签: identityProfileDigest 不符（观察件携异剖面 digest） 应 exit 65；实得 exit 64（今日红：sign-cli-args 白名单不识 --entity-observations，参数面 64 拒）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+RED  agent-id-sign-observation: c4 错配：eventsSha256 不符（观察件携异字节 sha） → exit 65 拒签: eventsSha256 不符（观察件携异字节 sha） 应 exit 65；实得 exit 64（今日红：sign-cli-args 白名单不识 --entity-observations，参数面 64 拒）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+RED  agent-id-sign-observation: c5 陈旧观察件复用（观察件自洽于另一 events 字节）→ exit 65 拒签: 陈旧观察件复用 应 exit 65；实得 exit 64（今日红：sign-cli-args 白名单不识 --entity-observations，参数面 64 拒）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+RED  agent-id-sign-observation: c8a 观察件自报别的 atom 把矛头错开（真 searchOpen 无观察）→ exit 65 拒签（修前红：自报 atom 驱动 join、exit 0 过签）: 观察件自报 atom 转移矛头 应 exit 65；实得 exit 64（今日红：sign-cli-args 白名单不识 --entity-observations，参数面 64 拒）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+RED  agent-id-sign-observation: c8b 观察行 kind 非 agent（kind:workflow）→ exit 65 拒签（修前红：kind 只查非空、exit 0 过签）: 观察行 kind 非 agent 应 exit 65；实得 exit 64（今日红：sign-cli-args 白名单不识 --entity-observations，参数面 64 拒）；stderr=sign: 参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试
+RED  agent-id-sign-observation/all: 3 过 / 8 红
