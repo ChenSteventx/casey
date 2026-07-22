@@ -4,7 +4,8 @@
   "specPath": "docs/plans/real-uat-attestation/plan.md",
   "testChecksums": {
     "tests/_golden/real-uat-attestation.zero-sut.golden.mjs": "56094f65f60883dc8a442936769dad6500d3e60fd9f202b73a7749e167f4b18e",
-    "docs/plans/real-uat-attestation/evidence/uat-run.md": "df0ce58f7d22d952285ef1dd85c25bf26bd6f515b6728b113ca062c85191c8b9"
+    "docs/plans/real-uat-attestation/evidence/uat-run.md": "df0ce58f7d22d952285ef1dd85c25bf26bd6f515b6728b113ca062c85191c8b9",
+    "docs/plans/real-uat-attestation/evidence/uat-signoff.md": "29a3a0294f65b4d0346695a16d6ddb34b3e9ca01dae16b3637ac77838579a91c"
   },
   "observability": [
     {
@@ -16,7 +17,7 @@
       "route": "human"
     },
     {
-      "dimension": "UAT 终局采认（ADR-0009 完成闸）：Steven 对 evidence/uat-run.md + 双报告人签。",
+      "dimension": "UAT 终局采认（ADR-0009 完成闸）：Steven 对 evidence/uat-run.md + 双报告人签。【已人签 2026-07-23，见 evidence/uat-signoff.md：四步全过、过闸；503 SUT_DEFECT 采认】",
       "route": "human"
     }
   ],
@@ -29,7 +30,7 @@
         "node tests/_golden/real-uat-attestation.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T16:14:15.786Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T16:30:50.248Z 全部 acceptance exit 0"
     }
   ]
 }
