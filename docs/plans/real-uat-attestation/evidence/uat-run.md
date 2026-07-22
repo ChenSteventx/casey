@@ -80,9 +80,11 @@ codex R1 FAIL 四阻塞（报告缺录屏/附件悬空、金牌自证账本、pr
   0→1、编码回读必等）→ 重编译（观察 code=`atl_dup0722_a`、platformId=19 长纯数字新实例）→
   确认→草拟（同 patch）→ 全新签署（frozen `78530d5c…`、locks v2 `a2261aed…`、events `4440f8d1…`、
   观察件 `5c559d34…`）。
-- **回放①（run2-replay1，录屏+全附件）**：双证 unique+回读 ok+落笔+详情路由，**verdict 2/2 全 PASS**
-  （axes `e4ac5201…`、verdict `29b63e5c…`、video `5d93e93d…`、report JSON `bb1a1932…`）；
-  视觉复核 CONSISTENT（逐帧：列表搜索态→详情页，frames/ 共置）。
+- **回放①（run2-replay1，录屏+全附件）**：双证 unique+回读 ok+落笔+详情路由，**verdict 2/2 PASS**
+  （axes `e4ac5201…`、verdict `29b63e5c…`、video `5d93e93d…`、report JSON `b086240f…`）。**视觉复核 INCONSISTENT（codex R2
+  逮正后改判）**：终帧详情页两条「操作失败!」提示=两条 503 的可视面；该两条在本次 axes 为归因窗外
+  【孤儿记录】（attributedStepId=null，并入首 intent 网络账）——裁定 PASS 是归因规则（因果作用域非
+  时间窗）下的机械正确，画面异常由视觉复核通道如实上报，正是视觉复核补归因窗盲区的本职。
 - **回放②（run2-replay2，录屏+全附件）**：同名对在场必 AMBIGUOUS 不点击——
   NEEDS_HUMAN·AMBIGUOUS_ACTION（axes `ae3b2fd3…`、verdict `8c4c88bc…`、video `f822fbf3…`、
   report JSON `4cc8bf0d…`）；视觉复核 CONSISTENT（终帧=恰两同名异码卡、全程无详情画面=不点击铁证）。
@@ -91,9 +93,13 @@ codex R1 FAIL 四阻塞（报告缺录屏/附件悬空、金牌自证账本、pr
   ——报告附件链接全部落地，SKILL.md 报告交付最低内容四项齐。
 - **清理（fail-closed 三面归零）**：删两件→名称归零+逐编码搜索归零（`atl_dup0722_a`/`_b` 各 0）；
   运行日志冻结入库 `evidence/cleanup-run2.log`。
-- **503 缺陷相关性精化**：run-1 X（编码被平台自动生成 `znt_atl_tmdk0722`）详情页两 API 确定性 503
-  （跨两放复现）；run-2 X（显式编码覆写生效）详情页干净、全 PASS——缺陷与实例/创建路径相关，
-  非全局；Steven 已采认的 SUT_DEFECT 取证件（run-1 report1）连同其冻结件归档保留。
+- **503 缺陷账（codex R2 逮正改写；撤回此前「实例相关/run-2 干净」的错误精化）**：
+  `agentPlus/queryPlus` 与 `getAgentDetail` 两条 503 在 run-1 与 run-2 的 X 实例上**均复现**
+  （run2-replay1 axes 孤儿记录+终帧「操作失败!」可视证据）；run-1 判 SUT_DEFECT 与 run-2 判 PASS
+  的差异**纯粹是 503 到达时序落在归因窗内/外**（因果作用域取证按设计工作），不是缺陷消失。
+  结论升级：该缺陷对 autotest 新建骨架智能体**稳定复现、与实例无关**；Steven 已采认的 SUT_DEFECT
+  取证件（run-1 report1）+run-2 视觉复核 INCONSISTENT 记录共同构成取证链。此错源自我
+  「引 end.png 未亲验+未对 axes 全网络账」——已改判并入教训。
 - 脚本四件（预置/清理/铸件/确认）拷贝入库 `docs/plans/real-uat-attestation/scripts/`（审计可核）。
 
 ## 五元对账快照（sign 时点）

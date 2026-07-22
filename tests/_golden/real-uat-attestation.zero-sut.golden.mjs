@@ -61,11 +61,24 @@ check('V3 绑定与人签闭合（uatCaseId ↔ tc prd ↔ GRILL 裁决 ↔ 终�
   must(s.includes('Steven') && s.includes('过闸') && s.includes('SUT_DEFECT'), '签认件缺过闸/503 采认要素');
 });
 
-check('V4 发现账齐全（503 缺陷+实例相关性精化+drafter 工装缝+人签闸）', () => {
+check('V4 发现账齐全且与 axes 网络账相符（503 两实例复现+归因窗时序解释+drafter 工装缝+人签闸）', () => {
   const t = readFileSync(EVIDENCE, 'utf8');
-  must(t.includes('503') && t.includes('相关性精化'), 'SUT 缺陷账/精化不在');
+  must(t.includes('503') && t.includes('均复现') && t.includes('归因窗'), 'SUT 缺陷账/时序解释不在');
   must(t.includes('intentId') && t.includes('孤儿'), 'drafter 工装缝不在账');
   must(t.includes('ADR-0009') && t.includes('人签'), '人签闸不在账');
+  // 账实对刺（codex R2-B）：账称「两实例复现+run2 归因窗外孤儿」→ axes 必须真有恰两条 503 且归因 null；
+  // 回放② axes 必须零 5xx（未开详情）。账与网络证据任一不符即红。
+  const bad1 = [];
+  for (const s of jread(join(RUN, 'run2-replay1', 'axes.json')).steps) {
+    for (const r of s.forensics.network) if (Number(r.status) >= 500) bad1.push({ url: String(r.url).split('?')[0], attr: r.attributedStepId });
+  }
+  must(bad1.length === 2 && bad1.every((r) => r.attr === null), `回放① 5xx 网络账应恰两条且归因 null，实 ${JSON.stringify(bad1)}`);
+  must(bad1.some((r) => r.url.endsWith('/agentPlus/queryPlus')) && bad1.some((r) => r.url.endsWith('/getAgentDetail')), '回放① 503 端点与账不符');
+  const bad2 = [];
+  for (const s of jread(join(RUN, 'run2-replay2', 'axes.json')).steps) {
+    for (const r of s.forensics.network) if (Number(r.status) >= 500) bad2.push(r.url);
+  }
+  must(bad2.length === 0, `回放②应零 5xx，实 ${JSON.stringify(bad2)}`);
 });
 
 check('V5 真机产物深核：签署件/两放 axes·verdict 实际内容与判据相等', () => {
@@ -93,7 +106,14 @@ check('V6 报告交付四项齐：录屏+视觉复核+附件实存+账实 sha �
     }
     const rm = jread(join(d, 'report-model.json'));
     must(rm.replayVideo && rm.replayVideo.file === 'video.webm', `run2-replay${n} 报告缺录屏元数据`);
-    must(rm.visualReview && rm.visualReview.status === 'CONSISTENT', `run2-replay${n} 视觉复核缺席/非 CONSISTENT`);
+    // 视觉复核判定与账一致（codex R2-B）：回放①=INCONSISTENT（终帧两条失败提示=503 可视面）、
+    // 回放②=CONSISTENT；且复核引证的每个帧文件必须实存（引证未亲验的病根由此钉死）。
+    const wantVr = n === 1 ? 'INCONSISTENT' : 'CONSISTENT';
+    must(rm.visualReview && rm.visualReview.status === wantVr, `run2-replay${n} 视觉复核应 ${wantVr}，实 ${rm.visualReview && rm.visualReview.status}`);
+    for (const e of rm.visualReview.evidence || []) {
+      must(existsSync(join(d, e.file)), `run2-replay${n} 视觉复核引证帧缺席：${e.file}`);
+    }
+    if (n === 1) must((rm.visualReview.summary || '').includes('操作失败'), '回放①复核摘要未记失败提示可视面');
     for (const f of ['axes.json', 'verdict.json', 'video.webm', 'tc_agent_id_readback_real_uat_v1.report.json']) {
       must(evid.includes(sha8(join(d, f))), `账实不符：run2-replay${n}/${f} 的 sha 前缀未见于证据文档`);
     }

@@ -3,8 +3,8 @@
   "task": "real-uat-attestation（light）：agent-id-readback 冻结 uatDefinition 四步真机见证（GRILL 三分岔 Steven 全 A：我建我删/授权条件直签/即刻跑）。一件两放：X 全场唯一时身份判据全过（unique+回读 ok+落笔+详情路由；两条真实 503 如实 SUT_DEFECT=真缺陷上报交 Steven 裁）；精确同名对在场回放同一冻结件必 AMBIGUOUS 不点击（NEEDS_HUMAN·AMBIGUOUS_ACTION、URL 停列表页物理证据）。报告三形态×2、清理归零。真机产物本机留存不入库；见证账本与完整性金牌入库。最终过闸=Steven 人签（ADR-0009）。【codex R1 修单 2026-07-23：run-2 整链重跑（录屏+全附件+视觉复核、fail-closed 预置清理、金牌 V1-V6 实核化、三处错账修正）；run-1 账保留=缺陷取证与溯源。】",
   "specPath": "docs/plans/real-uat-attestation/plan.md",
   "testChecksums": {
-    "tests/_golden/real-uat-attestation.zero-sut.golden.mjs": "b74f7a8e9402c87196a989a632c47acc9ddaaa5a75cc68b4ce65471e2cfb5e4b",
-    "docs/plans/real-uat-attestation/evidence/uat-run.md": "dc08afe483502c4187f0b01ef7045de3178e547079f5e8ce9a1452f6944dae08",
+    "tests/_golden/real-uat-attestation.zero-sut.golden.mjs": "b030063386cfd0d68f35dfa9e180fb42bff85b2a423480150fd016942c0512f0",
+    "docs/plans/real-uat-attestation/evidence/uat-run.md": "b5954a6195e441152b515368e9ea09015d97bd7869c5905ae54bf602661c6262",
     "docs/plans/real-uat-attestation/evidence/uat-signoff.md": "29a3a0294f65b4d0346695a16d6ddb34b3e9ca01dae16b3637ac77838579a91c",
     "docs/plans/real-uat-attestation/evidence/cleanup-run2.log": "22974df9f11e5fa6799b51a67b534f8f03a0e73251234d7b12fd1033df8d95a6",
     "docs/plans/real-uat-attestation/scripts/create-agent.mjs": "4ff58f5f6e459ee22a381a7d7666e68ee0edb8e12d113e199d418172b4db5a78",
@@ -35,7 +35,7 @@
         "node tests/_golden/real-uat-attestation.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T17:01:24.793Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T17:13:40.898Z 全部 acceptance exit 0"
     }
   ]
 }
