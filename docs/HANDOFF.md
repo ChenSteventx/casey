@@ -3,7 +3,26 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 2026-07-23 凌晨 real-uat-attestation 真机四步见证跑通（本节为最新现状）
+## 2026-07-23 凌晨（续）real-uat-attestation 六阶段全收口（本节为最新现状）
+
+Steven 两裁（人签采认+评审 codex）后走完：codex 四轮评审 R1/R2/R3 FAIL→逐轮全采信修复→**R4 终判
+PASS**，契约六阶段全 done、audit 终账（rounds 4、pass）。关键修正与事实：
+
+1. **run-2 整链重跑**（R1 阻塞：报告缺录屏/附件悬空；冻结件绑已删实例 platformId→审计归档旧件+
+   重预置+重签的完整仪式）：回放①②各带录屏/run-history/run-metrics/逐帧视觉复核，附件共置三链
+   版式；预置清理脚本 fail-closed 化（严判恰等+三面归零+日志冻结入库）。
+2. **503 缺陷账被 codex R2 逮正后改写（此前对 Steven 的「实例相关/run-2 干净」口径是错的）**：
+   两条 503（agentPlus/queryPlus+getAgentDetail）在 run-1/run-2 两实例**均复现**；run-1 判
+   SUT_DEFECT 与 run-2 判 PASS 之差纯为 503 到达时序落归因窗内/外（因果作用域取证按设计工作）。
+   run-2 回放①视觉复核如实改判 INCONSISTENT（终帧两条「操作失败!」）。根因教训（引证未亲验+
+   未扫全量网络账）入 learn.md+持久记忆。
+3. 完整性金牌 V1-V6 实核化（checksum 核值/人签核件/真机产物深核/axes 网络账对刺/视觉复核全部
+   交付面锁死）；gate 多轮 GREEN。
+4. 下一步：A drafter --patch intentId 校验修单（工装缝，prd-real-uat-attestation observability）；
+   B 503 缺陷上报（Steven 渠道，取证件=run-1 report1+run-2 复核）；C 密钥签名威胁面/SKILL.md
+   措辞统一。
+
+## 2026-07-23 凌晨 real-uat-attestation 真机四步见证跑通（已被顶部续节取代，只溯源）
 
 Steven 三令（B 契约/剔除改革/修在案 bug）全部执行：
 
