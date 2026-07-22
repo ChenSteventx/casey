@@ -1,0 +1,15 @@
+{
+  "status": 0,
+  "stdout": "sign: 冻结 tc_air_ratchet_v1 —— 1 条断言盖签（signer=golden-human build=ratchet-build）→ .golden-scratch-agent-id-regression-diff-v1/tc_air_ratchet_v1/expected.frozen.json\n  testChecksums[.golden-scratch-agent-id-regression-diff-v1/tc_air_ratchet_v1/expected.frozen.json] = 8a037256ee391d9b…；expectedFrozenPath 已设\n  entity locks: 原 eventsSha256 + lockId + receiptHash 已人签冻结 → .golden-scratch-agent-id-regression-diff-v1/tc_air_ratchet_v1/entity-locks.frozen.json\n",
+  "stderr": "",
+  "outputs": {
+    "entity-bindings.draft.json": "be21f994bb8f6f7f45cc89cfa08b7c91b239f0b479f912ca94fc9acfd8716647",
+    "entity-confirmations.json": "f1afe7a3623cc9a2cce277206bc43f5f4511afe23d5e9be885cf54fd6aad0f74",
+    "entity-locks.frozen.json": "e5f686e163d7727c9e8009243b866325dc301f14b71dc6e01939f7af3cb8bc6a",
+    "events.json": "49fcf676c5c7dbcc690ad372faaf30b5ca85a669ff95bd68109cc9adb9f7d148",
+    "expected.draft.json": "0db3fcae0d09b643f7b0c79b3469d5491ae8f8846963017f03f24ec3d2f83103",
+    "expected.frozen.json": "8a037256ee391d9b00fd685628718851cab09b8652b9f0d554f8b13a8e8b5584",
+    "profile.v1.json": "fd7b04c65d8121fbdec939852629096bd9ce84756d48f3e8ad9075b967a64cef"
+  },
+  "prdSha256": "0c5e0bdb4573176b9fe18ee8dd76708a7cfa670a0729d55f7aa1a861c33d3b29"
+}

@@ -1,0 +1,9 @@
+{
+  "watcherKeys": [
+    "records",
+    "inFlightCount",
+    "awaitStreamsSettled",
+    "drain"
+  ],
+  "inFlightAfterScript": 0
+}

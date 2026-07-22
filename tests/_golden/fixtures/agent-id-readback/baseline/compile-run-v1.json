@@ -1,0 +1,188 @@
+{
+  "events": [
+    {
+      "stepId": "atstep_0",
+      "intentId": "intent_0",
+      "atom": "nav.agentManagement",
+      "action": "nav",
+      "url": "{{baseUrl}}/agent/list"
+    },
+    {
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "atom": "agent.searchOpen",
+      "action": "fill",
+      "semantic": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "输入智能体名称或编码进行搜索",
+        "exact": true
+      },
+      "value": "AG-IM-001"
+    },
+    {
+      "stepId": "atstep_2",
+      "intentId": "intent_1",
+      "atom": "agent.searchOpen",
+      "action": "press",
+      "key": "Enter",
+      "semantic": {
+        "kind": "role",
+        "role": "textbox",
+        "name": "输入智能体名称或编码进行搜索",
+        "exact": true
+      }
+    },
+    {
+      "stepId": "atstep_3",
+      "intentId": "intent_1",
+      "atom": "agent.searchOpen",
+      "action": "click",
+      "semantic": {
+        "kind": "text",
+        "name": "互联网问诊-主诉",
+        "exact": true
+      },
+      "text": "互联网问诊-主诉"
+    }
+  ],
+  "verification": [
+    {
+      "stepId": "atstep_0",
+      "intentId": "intent_0",
+      "atom": "nav.agentManagement",
+      "action": "nav",
+      "resolution": "unique",
+      "candidateCount": 1,
+      "acted": true
+    },
+    {
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "atom": "agent.searchOpen",
+      "action": "fill",
+      "resolution": "unique",
+      "candidateCount": 1,
+      "acted": true
+    },
+    {
+      "stepId": "atstep_2",
+      "intentId": "intent_1",
+      "atom": "agent.searchOpen",
+      "action": "press",
+      "resolution": "unique",
+      "candidateCount": 1,
+      "acted": true
+    },
+    {
+      "stepId": "atstep_3",
+      "intentId": "intent_1",
+      "atom": "agent.searchOpen",
+      "action": "click",
+      "resolution": "unique",
+      "candidateCount": 1,
+      "acted": true
+    }
+  ],
+  "entityBindingProvenance": [
+    {
+      "stepId": "atstep_0",
+      "intentId": "intent_0",
+      "atom": "nav.agentManagement",
+      "sourceIntentId": "intent_nav",
+      "candidateId": "candidate-agent-list",
+      "role": "subject"
+    },
+    {
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "atom": "agent.searchOpen",
+      "sourceIntentId": "intent_open",
+      "candidateId": "candidate-agent-main",
+      "role": "subject"
+    },
+    {
+      "stepId": "atstep_2",
+      "intentId": "intent_1",
+      "atom": "agent.searchOpen",
+      "sourceIntentId": "intent_open",
+      "candidateId": "candidate-agent-main",
+      "role": "subject"
+    },
+    {
+      "stepId": "atstep_3",
+      "intentId": "intent_1",
+      "atom": "agent.searchOpen",
+      "sourceIntentId": "intent_open",
+      "candidateId": "candidate-agent-main",
+      "role": "subject"
+    }
+  ],
+  "observed": [
+    {
+      "stepId": "atstep_0",
+      "intentId": "intent_0",
+      "atom": "nav.agentManagement",
+      "urlPathnameAfter": "/agent/list",
+      "cleanTitles": [
+        "智能体管理"
+      ],
+      "toastTexts": [],
+      "replyText": null,
+      "replyStreamUrl": null,
+      "recStart": 0,
+      "recEnd": 0,
+      "quietPointReached": true
+    },
+    {
+      "stepId": "atstep_1",
+      "intentId": "intent_1",
+      "atom": "agent.searchOpen",
+      "urlPathnameAfter": "/agent/list",
+      "cleanTitles": [
+        "智能体管理"
+      ],
+      "toastTexts": [],
+      "replyText": null,
+      "replyStreamUrl": null,
+      "recStart": 0,
+      "recEnd": 0,
+      "quietPointReached": true
+    },
+    {
+      "stepId": "atstep_2",
+      "intentId": "intent_1",
+      "atom": "agent.searchOpen",
+      "urlPathnameAfter": "/agent/list",
+      "cleanTitles": [
+        "智能体管理"
+      ],
+      "toastTexts": [],
+      "replyText": null,
+      "replyStreamUrl": null,
+      "recStart": 0,
+      "recEnd": 0,
+      "quietPointReached": true
+    },
+    {
+      "stepId": "atstep_3",
+      "intentId": "intent_1",
+      "atom": "agent.searchOpen",
+      "urlPathnameAfter": "/agent/list",
+      "cleanTitles": [
+        "智能体管理"
+      ],
+      "toastTexts": [],
+      "replyText": null,
+      "replyStreamUrl": null,
+      "recStart": 0,
+      "recEnd": 0,
+      "quietPointReached": true
+    }
+  ],
+  "assertionAtoms": [],
+  "notes": [],
+  "blockers": [],
+  "identityObservations": [],
+  "identityGateOutcome": null
+}

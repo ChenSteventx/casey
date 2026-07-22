@@ -1,0 +1,76 @@
+[
+  {
+    "requestId": "r1",
+    "url": "http://127.0.0.1:4173/agent/list",
+    "method": "GET",
+    "status": 200,
+    "ts": 1001.001,
+    "initiator": "other",
+    "type": "Document",
+    "firingStepId": "step_nav",
+    "attributedStepId": null,
+    "errorEnvelope": null
+  },
+  {
+    "requestId": "r2",
+    "url": "http://127.0.0.1:4173/api/agents/query?nameLike=alice",
+    "method": "GET",
+    "status": 200,
+    "ts": 1002.002,
+    "initiator": "script",
+    "type": "Fetch",
+    "firingStepId": "step_search",
+    "attributedStepId": "step_search",
+    "errorEnvelope": null
+  },
+  {
+    "requestId": "r3",
+    "url": "http://127.0.0.1:4173/ai-api/background/poll",
+    "method": "GET",
+    "status": 401,
+    "ts": 1003.003,
+    "initiator": "script",
+    "type": "XHR",
+    "firingStepId": "step_search",
+    "attributedStepId": null,
+    "errorEnvelope": null
+  },
+  {
+    "requestId": "r6",
+    "url": "http://127.0.0.1:4173/api/agents/query?nameLike=missing",
+    "method": "GET",
+    "status": 200,
+    "ts": 1003.503,
+    "initiator": "script",
+    "type": "Fetch",
+    "firingStepId": "step_search",
+    "attributedStepId": "step_search",
+    "errorEnvelope": null
+  },
+  {
+    "requestId": "r4",
+    "url": "http://127.0.0.1:4173/ai-api/tester/agent/stream",
+    "method": "GET",
+    "status": 200,
+    "ts": 1004.004,
+    "initiator": "script",
+    "type": "EventSource",
+    "firingStepId": "step_send",
+    "attributedStepId": "step_send",
+    "errorEnvelope": null,
+    "streamFinished": true,
+    "streamStatus": 200
+  },
+  {
+    "requestId": "r5",
+    "url": "http://127.0.0.1:4173/api/agents/save",
+    "method": "POST",
+    "status": null,
+    "ts": 1005.005,
+    "initiator": "script",
+    "type": "XHR",
+    "firingStepId": null,
+    "attributedStepId": null,
+    "errorEnvelope": null
+  }
+]

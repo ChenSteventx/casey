@@ -1,0 +1,351 @@
+--- /tmp/claude-1000/-mnt-d-ctx-heren-casey/05037bcb-8884-4123-b32b-b590c1266fe4/scratchpad/prefix-r2/lib/agent-identity-observation.mjs	2026-07-22 17:57:28.298567005 +0800
++++ lib/agent-identity-observation.mjs	2026-07-22 17:44:53.055725000 +0800
+@@ -30,8 +30,10 @@
+   if (!channel || typeof channel !== 'object' || Array.isArray(channel)) {
+     throw new TypeError('identity observation ledger 需通道配置（剖面 agents.listApi 闭合对象）');
+   }
+-  const tokens = new Set();
+-  const byRequestSeq = new Map(); // requestSeq -> token（归属冻结）
++  // tokens 用 WeakSet（codex R2-M1 引用释放）：账本不强持 token——调用方释放后 GC 可回收；
++  // consumed 一次性语义由 token 自身的 consumed 标记承载，不依赖账本存活集合。
++  const tokens = new WeakSet();
++  const byRequestSeq = new Map(); // requestSeq -> token（归属冻结；consume 时逐 seq 释放）
+   let armed = null;               // 当前已武装未封存事务
+   let lateDrops = 0;
+ 
+@@ -121,11 +123,16 @@
+       const t = tokenState(token);
+       if (t.consumed) return { status: 'consumed' };
+       t.consumed = true;
++      // 引用释放（codex R2-M1）：消费即出账——requestSeq 反查表逐条删除、waiters 清空；
++      // 晚到终态自此按「未归属请求」丢弃（不入任何事务、不可复活已消费集合）。
++      const reqs = [...t.requests.values()].sort((a, b) => (a.seq < b.seq ? -1 : a.seq > b.seq ? 1 : 0));
++      for (const seq of t.requests.keys()) byRequestSeq.delete(seq);
++      t.requests.clear();
++      t.waiters.length = 0;
+       // seal 先决（codex R1-M1）：未封存事务禁消费——否则消费后仍可有新请求归属进来，
+       // 「消费时刻的完整集合」承诺失真。协议序固定 arm→settle→seal→consume。
+       if (!t.sealed) return { status: 'unsealed' };
+-      if (!isComplete(t)) return { status: 'unsettled' };
+-      const reqs = [...t.requests.values()].sort((a, b) => (a.seq < b.seq ? -1 : a.seq > b.seq ? 1 : 0));
++      if (reqs.some((req) => req.outcome == null)) return { status: 'unsettled' };
+       if (reqs.length === 0) return { status: 'empty' };
+       // 全部终态必须是 parsed；failed/timeout/invalid 任一在场=证不出（fail-safe，failed≠空数组）。
+       const parsed = [];
+--- /tmp/claude-1000/-mnt-d-ctx-heren-casey/05037bcb-8884-4123-b32b-b590c1266fe4/scratchpad/prefix-r2/lib/agent-search-gate.mjs	2026-07-22 17:57:28.298309326 +0800
++++ lib/agent-search-gate.mjs	2026-07-22 17:44:50.754922800 +0800
+@@ -24,48 +24,64 @@
+   return { resolution: 'unique', candidateCount: 1 };
+ }
+ 
+-// 物理卡片双锚门（agent-id-readback，codex R1-H1）：身份通道声明时的 DOM 证据采集面——
+-// 同一物理卡片内读标题(name)+副标题(code)，返回卡片句柄供「同卡点击」消费（编译门=回放门同刻，
+-// 本文件单一事实源）。计数在容器卡片集合上做（先圈容器再数名，drawer-lock 域锁同款纪律）；
+-// 采样异常（evaluateAll 抛）按证不出处理回 failed，绝不带疑放行。
++// 物理卡片双锚门（agent-id-readback，codex R1-H1 + R2-H1 句柄连续性）：身份通道声明时的 DOM 证据
++// 采集面——同一物理卡片内读标题(name)+副标题(code)，返回【钉在快照节点上的 ElementHandle】供
++// 「同卡重验+同卡点击」消费（编译门=回放门同刻，本文件单一事实源）。R2-H1 修正：绝不用惰性
++// Locator（nth/locator 每次消费都重新解析，重排后验的是新节点）——evaluateHandle 单次快照内圈定
++// 命中卡片集合并取元素句柄，后续 evaluate/点击都作用于同一物理节点（selectNodeDropdown 同款纪律）。
++// 计数在容器卡片集合上做（先圈容器再数名）；采样异常按证不出回 failed，绝不带疑放行。
+ export async function resolveAgentCardTarget(page, { openName, containerSelector, cardFields } = {}) {
+   const name = typeof openName === 'string' ? openName : '';
+   if (!name.trim() || !containerSelector || !cardFields
+     || typeof cardFields.name !== 'string' || typeof cardFields.code !== 'string') {
+     return { resolution: 'failed', candidateCount: 0 };
+   }
+-  const cards = page.locator(containerSelector);
+-  const snapshot = await cards
+-    .evaluateAll((els, { nameSel, codeSel, wanted }) => {
+-      const hits = [];
+-      els.forEach((el, index) => {
++  let listHandle = null;
++  const disposables = [];
++  try {
++    // 单次 evaluateHandle 原子快照：容器集合内按 name 子选择器精确等圈命中卡片，回元素数组句柄。
++    listHandle = await page.evaluateHandle(({ containerSel, nameSel, wanted }) => (
++      Array.from(document.querySelectorAll(containerSel)).filter((el) => {
+         const nameNode = el.querySelector(nameSel);
+-        if (nameNode && nameNode.textContent === wanted) {
+-          const codeNode = el.querySelector(codeSel);
+-          hits.push({ index, code: codeNode ? codeNode.textContent : null });
+-        }
+-      });
+-      return hits;
+-    }, { nameSel: cardFields.name, codeSel: cardFields.code, wanted: name })
+-    .catch(() => null);
+-  if (snapshot === null) return { resolution: 'failed', candidateCount: 0 };
+-  if (snapshot.length === 0) return { resolution: 'absent', candidateCount: 0 };
+-  if (snapshot.length > 1) return { resolution: 'ambiguous', candidateCount: snapshot.length };
+-  const hit = snapshot[0];
+-  return {
+-    resolution: 'unique',
+-    candidateCount: 1,
+-    card: cards.nth(hit.index),
+-    name,
+-    code: typeof hit.code === 'string' ? hit.code : null,
+-  };
++        return !!nameNode && nameNode.textContent === wanted;
++      })
++    ), { containerSel: containerSelector, nameSel: cardFields.name, wanted: name });
++    const props = await listHandle.getProperties();
++    const hits = [];
++    for (const value of props.values()) {
++      const el = value.asElement();
++      if (el) { hits.push(el); disposables.push(el); } else { await value.dispose().catch(() => {}); }
++    }
++    if (hits.length === 0) return { resolution: 'absent', candidateCount: 0 };
++    if (hits.length > 1) return { resolution: 'ambiguous', candidateCount: hits.length };
++    const card = hits[0];
++    // code 从同一物理句柄读出（句柄即节点，重排/替换后读的仍是原节点或如实 detached 失败）。
++    const code = await card.evaluate((el, codeSel) => {
++      const codeNode = el.querySelector(codeSel);
++      return codeNode ? codeNode.textContent : null;
++    }, cardFields.code).catch(() => null);
++    disposables.splice(disposables.indexOf(card), 1); // 命中卡句柄交调用方，其余照常释放
++    return {
++      resolution: 'unique',
++      candidateCount: 1,
++      card,
++      name,
++      code: typeof code === 'string' ? code : null,
++    };
++  } catch {
++    return { resolution: 'failed', candidateCount: 0 };
++  } finally {
++    for (const h of disposables) await h.dispose().catch(() => {});
++    if (listHandle) await listHandle.dispose().catch(() => {});
++  }
+ }
+ 
+-// 句柄内点击（codex R1-H1 TOCTOU 封缝）：点击前在同一句柄内重验 connected/可见/name/code 全等，
+-// 任一不符不点（回 false，调用侧按 action_failed 处理）；点击落在卡片内 name 节点（真机语义同款），
+-// 绝不回退全页重定位。
++// 句柄内点击（codex R1-H1 TOCTOU 封缝 + R2-H1 物理同一）：card 是 resolveAgentCardTarget 钉下的
++// ElementHandle——重验与点击都作用于同一物理节点：isConnected=false（节点被替换/摘除）如实拒点，
++// 点击落在同节点内 name 子句柄（真机语义同款），绝不回退全页重定位、绝不重新解析。
+ export async function clickAgentCardWithin(card, { cardFields, name, code, timeoutMs = 10000 } = {}) {
+-  if (!card || !cardFields || typeof name !== 'string' || typeof code !== 'string') return false;
++  if (!card || typeof card.evaluate !== 'function' || typeof card.$ !== 'function'
++    || !cardFields || typeof name !== 'string' || typeof code !== 'string') return false;
+   const stillSame = await card
+     .evaluate((el, { nameSel, codeSel, wantedName, wantedCode }) => {
+       if (!el.isConnected) return false;
+@@ -77,10 +93,15 @@
+     }, { nameSel: cardFields.name, codeSel: cardFields.code, wantedName: name, wantedCode: code })
+     .catch(() => false);
+   if (stillSame !== true) return false;
++  let nameHandle = null;
+   try {
+-    await card.locator(cardFields.name).click({ timeout: timeoutMs });
++    nameHandle = await card.$(cardFields.name);
++    if (!nameHandle) return false;
++    await nameHandle.click({ timeout: timeoutMs });
+     return true;
+   } catch {
+     return false;
++  } finally {
++    if (nameHandle) await nameHandle.dispose().catch(() => {});
+   }
+ }
+--- /tmp/claude-1000/-mnt-d-ctx-heren-casey/05037bcb-8884-4123-b32b-b590c1266fe4/scratchpad/prefix-r2/tests/_golden/agent-id-observation.zero-sut.golden.mjs	2026-07-22 17:57:28.299074337 +0800
++++ tests/_golden/agent-id-observation.zero-sut.golden.mjs	2026-07-22 17:32:07.288004800 +0800
+@@ -342,6 +342,19 @@
+   must(out.status === 'unsealed', `期望 'unsealed'，实得 ${JSON.stringify(out.status)}（未封存事务被放行消费）`);
+ });
+ 
++await check("O8c 消费即出账（codex R2-M1 引用释放观察面）：consume 后同 seq 晚到终态按未归属丢弃（lateDrops 不增）、复消费恒 'consumed'", async () => {
++  const ledger = createLedger({ channel: CHANNEL });
++  const token = ledger.arm(armArgs('intent-A'));
++  ledger.onRequestWillBeSent(req(1));
++  ledger.onBodyTerminal({ requestSeq: 1, outcome: parsed([rowAlice]) });
++  await awaitBounded(ledger.settle(token), 'settle');
++  ledger.seal(token);
++  must(ledger.consume(token).status === 'ok', '前置：首次 consume 应 ok');
++  ledger.onBodyTerminal({ requestSeq: 1, outcome: parsed([rowPoison]) }); // 已出账 seq 的晚到终态
++  must(ledger.lateDropCount() === 0, `已消费事务的晚到终态应按未归属丢弃（反查表已释放），lateDrops 实得 ${ledger.lateDropCount()}`);
++  must(ledger.consume(token).status === 'consumed', '复消费应恒 consumed（一次性语义不因释放受损）');
++});
++
+ // ---- O9 查询回声判据（codex R1-H2 修复钉）：expectedQuery 不符的请求不入事务 ----
+ await check("O9 queryEcho≠expectedQuery 的请求不入账：唯一请求为异查询→consume 'empty'（绝不消费别人查询的完整集合）", async () => {
+   const ledger = createLedger({ channel: CHANNEL });
+--- /tmp/claude-1000/-mnt-d-ctx-heren-casey/05037bcb-8884-4123-b32b-b590c1266fe4/scratchpad/prefix-r2/tests/_golden/agent-id-regression-diff.zero-sut.golden.mjs	2026-07-22 17:57:28.299416494 +0800
++++ tests/_golden/agent-id-regression-diff.zero-sut.golden.mjs	2026-07-22 17:42:01.068216100 +0800
+@@ -13,6 +13,16 @@
+ // 脚本内含一条命中 /api/agents/query 形态 url 的请求（r2/r6）——未声明身份通道时它必须被当
+ // 普通前台 API 对待（正常归因、正常取 body 算信封，零特殊分支）；这正是棘轮要冻住的面。
+ //
++// codex R2-H6 升级（2026-07-22 修单）：
++//   面⑤ sign-v1-cli.json——sign v1 happy 固定夹具真执行：三流+完整输出文件集合+逐文件 sha256+prd
++//     字节全冻（双跑探针实证跨运行字节确定；相对路径调用零绝对路径泄漏、跨树可移植）；
++//   面⑥ cli-early-reject.json——compile/replay 无参拒绝三流（sign 三流由面⑤覆盖：其无参 usage 行
++//     含 --entity-observations 新旗标文档，属已声明接口合法演进、不入未声明路径冻结面）；
++//   R15-R17 过校验负控——sign 真执行 / replay 真 v1 件过全部准入到 chromium.launch 哨兵(exit 66) /
++//     compile 闸段合法 flow 全跑，全程零身份模块解析（回应「无参早退证不了过校验路径」）。
++//   残余义务如实声明：plan §6 面②的「动作轴/axes/report JSON 字节」依赖浏览器执行产物，零 SUT
++//     不可达——须 plan 权威修正或随真机链义务处置（修单挂账，不静默消灭）。
++//
+ // poison spy（plan §6-⑤）：未声明身份通道路径下身份模块不得被采集器触达——
+ //   lib/agent-identity-observation.mjs / lib/agent-identity-gate.mjs 今日不存在 → 通过（无从加载）；
+ //   文件存在后 → 断言 lib/replay-forensics.mjs 源码不含对它们的顶层静态 import（读源码字符串判定：
+@@ -146,7 +156,133 @@
+   };
+ }
+ 
++// ── sign v1 CLI 面 + 过校验路径夹具（plan §6 面③④，codex R2-H6 升级）───────────────────
++// 固定夹具（同 sign 金牌 c7 形态、固定 signedAt/scratch 名/相对路径）→ sign v1 happy 全链真执行：
++// 三流 + 完整输出文件集合 + 逐文件 sha256 + prd 字节全部冻结（2026-07-22 双跑探针实证跨运行字节确定、
++// 相对路径调用零绝对路径泄漏——跨树可移植）。产物随后喂 replay 过校验哨兵负控。
++import { spawnSync } from 'node:child_process';
++import { mkdtempSync, rmSync, writeFileSync as wf } from 'node:fs';
++import { tmpdir } from 'node:os';
++import { buildEntityBindingsDraft } from '../../lib/entity-semantic-lock-preflight.mjs';
++import { createEntityLockReceipt } from '../../lib/entity-semantic-lock.mjs';
++
++const SPY_LOADER = join(HERE, 'fixtures', 'agent-id-readback', 'spy-loader.mjs');
++const RATCHET_CASE = 'tc_air_ratchet_v1';
++const RATCHET_REL = `.golden-scratch-agent-id-regression-diff-v1/${RATCHET_CASE}`;
++const RATCHET_DIR = join(ROOT, RATCHET_REL);
++const RATCHET_PRD = join(ROOT, 'loop', `prd-${RATCHET_CASE}.json`);
++const AGENT_NAME_V1 = '互联网问诊-主诉';
++const jt = (v) => JSON.stringify(v, null, 2) + '\n';
++
++function prepareRatchetV1Fixture() {
++  rmSync(join(ROOT, '.golden-scratch-agent-id-regression-diff-v1'), { recursive: true, force: true });
++  rmSync(RATCHET_PRD, { force: true });
++  mkdirSync(RATCHET_DIR, { recursive: true });
++  const events = {
++    schemaVersion: 2, channel: 'web', caseId: RATCHET_CASE, url: '{{baseUrl}}/agent/list',
++    recordedAt: '2026-07-22T08:00:00.000Z', compiledBy: 'ratchet-fixture', authored: false,
++    events: [
++      { stepId: 'atstep_1', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'fill', value: AGENT_NAME_V1 },
++      { stepId: 'atstep_2', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'press', key: 'Enter' },
++      { stepId: 'atstep_3', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'click', text: AGENT_NAME_V1 },
++    ],
++  };
++  const eventsText = jt(events);
++  const provenance = ['atstep_1', 'atstep_2', 'atstep_3'].map((stepId) => ({
++    stepId, intentId: 'intent_1', atom: 'agent.searchOpen',
++    sourceIntentId: 'source_1', candidateId: 'candidate-agent-main', role: 'subject',
++  }));
++  const draftResult = buildEntityBindingsDraft({ eventsBytes: Buffer.from(eventsText), eventsDocument: events, provenance });
++  if (draftResult.ok !== true) throw new Error(`夹具自身红：buildEntityBindingsDraft ${draftResult.reason}`);
++  const receipt = createEntityLockReceipt({
++    lockId: 'lock-agent-main', kind: 'agent', bindingMode: 'existing', scopeFingerprint: 'sha256:scope-agent',
++    expected: { name: AGENT_NAME_V1, code: 'AG-IM-001' },
++    observed: { name: AGENT_NAME_V1, code: 'AG-IM-001', platformId: '1234567890123456789' },
++    source: 'user-confirmed',
++  });
++  wf(join(RATCHET_DIR, 'events.json'), eventsText);
++  wf(join(RATCHET_DIR, 'entity-bindings.draft.json'), jt(draftResult.draft));
++  wf(join(RATCHET_DIR, 'entity-confirmations.json'), jt({ caseId: RATCHET_CASE, confirmations: provenance.map((r) => ({ ...r, receipt })) }));
++  wf(join(RATCHET_DIR, 'expected.draft.json'), jt({ caseId: RATCHET_CASE, intents: [{ intentId: 'intent_1', expected: [{ kind: 'textVisible', op: 'appears', value: '测试' }] }], pending: [] }));
++  wf(join(RATCHET_DIR, 'profile.v1.json'), jt({ background: [], successField: 'status', successValue: 200 }));
++  wf(RATCHET_PRD, jt({ schemaVersion: 1, caseId: RATCHET_CASE, task: 'agent-id 差分棘轮 v1 面夹具（金牌自清理）', testChecksums: {}, stories: [] }), { flag: 'wx' });
++}
++function cleanupRatchetV1Fixture() {
++  rmSync(join(ROOT, '.golden-scratch-agent-id-regression-diff-v1'), { recursive: true, force: true });
++  rmSync(RATCHET_PRD, { force: true });
++}
++const spyEnvRun = (argv, extraEnv = {}) => {
++  const dir = mkdtempSync(join(tmpdir(), 'casey-agentid-spy-'));
++  const spyOut = join(dir, 'touches.txt');
++  const r = spawnSync(process.execPath, ['--import', SPY_LOADER, ...argv], {
++    cwd: ROOT, encoding: 'utf8', timeout: 120000,
++    env: { ...process.env, AGENT_ID_SPY_OUT: spyOut, ...extraEnv },
++  });
++  const touches = existsSync(spyOut) ? readFileSync(spyOut, 'utf8').trim() : '';
++  rmSync(dir, { recursive: true, force: true });
++  return { r, touches };
++};
++
++// sign v1 happy 真执行（带 spy）：face 冻三流+输出集+逐文件 sha+prd 字节；spy 必须零身份模块解析。
++let signV1Face = null;
++let signV1Touches = null;
++let replayControl = null;
++let compileControl = null;
++try {
++  prepareRatchetV1Fixture();
++  const signRun = spyEnvRun([join(ROOT, 'bin', 'sign.mjs'), RATCHET_CASE,
++    '--draft', `${RATCHET_REL}/expected.draft.json`, '--prd', `loop/prd-${RATCHET_CASE}.json`,
++    '--frozen-out', `${RATCHET_REL}/expected.frozen.json`, '--signer', 'golden-human',
++    '--against-build', 'ratchet-build', '--signed-at', '2026-07-22T08:00:00.000Z',
++    '--events', `${RATCHET_REL}/events.json`, '--entity-bindings-draft', `${RATCHET_REL}/entity-bindings.draft.json`,
++    '--entity-confirmations', `${RATCHET_REL}/entity-confirmations.json`,
++    '--entity-locks-out', `${RATCHET_REL}/entity-locks.frozen.json`, '--audience', 'test']);
++  signV1Touches = signRun.touches;
++  const outputs = {};
++  for (const f of readdirSync(RATCHET_DIR).sort()) outputs[f] = sha256(readFileSync(join(RATCHET_DIR, f)));
++  signV1Face = JSON.stringify({
++    status: signRun.r.status, stdout: signRun.r.stdout, stderr: signRun.r.stderr,
++    outputs, prdSha256: sha256(readFileSync(RATCHET_PRD)),
++  }, null, 2) + '\n';
++  // replay 过校验哨兵负控（codex R2-H6）：真 v1 件+未声明身份通道剖面，过全部参数与准入校验、
++  // 走到 chromium.launch 哨兵（exit 66）——「完成参数校验后的有效未声明路径」零身份模块解析。
++  const sentinel = join(mkdtempSync(join(tmpdir(), 'casey-agentid-sentinel-')), 'launched');
++  const rep = spyEnvRun([join(ROOT, 'bin', 'replay.mjs'),
++    '--events', `${RATCHET_REL}/events.json`, '--sut', 'http://127.0.0.1:1',
++    '--expected', `${RATCHET_REL}/expected.frozen.json`, '--profile', `${RATCHET_REL}/profile.v1.json`,
++    '--entity-locks', `${RATCHET_REL}/entity-locks.frozen.json`, '--out', `${RATCHET_REL}/axes.out.json`,
++  ], { CASEY_LAUNCH_SENTINEL: sentinel });
++  replayControl = { status: rep.r.status, sentinelWritten: existsSync(sentinel), touches: rep.touches, stderrTail: (rep.r.stderr || '').slice(-200) };
++  rmSync(dirname(sentinel), { recursive: true, force: true });
++} finally {
++  cleanupRatchetV1Fixture();
++}
++// compile 闸段过校验负控：合法 testcase+flow 非 execute 全跑（零浏览器）——真执行路径零身份模块解析。
++{
++  const dir = mkdtempSync(join(tmpdir(), 'casey-agentid-compilectl-'));
++  const tc = join(dir, 'tc.json');
++  const flow = join(dir, 'flow.json');
++  wf(tc, jt({ schemaVersion: 1, caseId: 'tc_air_ratchet_gate', channel: 'web', uniquePrefix: 'atl_', preconditions: ['已登录'], intents: [{ intentId: 'intent_nav', text: '进入智能体管理' }, { intentId: 'intent_open', text: '搜索并打开智能体' }] }));
++  wf(flow, jt({ id: 'tc_air_ratchet_gate', name: 'ratchet gate-phase control', category: 'normal', steps: [
++    { atom: 'nav.agentManagement', params: {}, sourceIntentId: 'intent_nav', entityBindings: [{ candidateId: 'candidate-agent-list', role: 'subject' }] },
++    { atom: 'agent.searchOpen', params: { searchKeyword: AGENT_NAME_V1, openName: AGENT_NAME_V1 }, sourceIntentId: 'intent_open', entityBindings: [{ candidateId: 'candidate-agent-main', role: 'subject' }] },
++  ] }));
++  const cc = spyEnvRun([join(ROOT, 'bin', 'casey.mjs'), 'compile', 'tc_air_ratchet_gate', '--testcase', tc, '--flow', flow, '--out-dir', join(dir, 'out')]);
++  compileControl = { status: cc.r.status, touches: cc.touches, stderrTail: (cc.r.stderr || '').slice(-200) };
++  rmSync(dir, { recursive: true, force: true });
++}
++// CLI 无参拒绝三流面（compile/replay；sign 的三流由 v1 happy 面覆盖——其无参 usage 行含新旗标文档，
++// 属已声明接口面的合法演进、不入未声明路径冻结面）。
++const earlyReject = {};
++for (const [tag, entry] of [['compile', 'bin/compile.mjs'], ['replay', 'bin/replay.mjs']]) {
++  const r = spawnSync(process.execPath, [join(ROOT, entry)], { cwd: ROOT, encoding: 'utf8', timeout: 60000 });
++  earlyReject[tag] = { status: r.status, stdout: r.stdout, stderr: r.stderr };
++}
++const earlyRejectFace = JSON.stringify(earlyReject, null, 2) + '\n';
++
+ const { faces } = await runRecorder();
++faces['sign-v1-cli.json'] = signV1Face;
++faces['cli-early-reject.json'] = earlyRejectFace;
+ const FACE_NAMES = Object.keys(faces).sort();
+ 
+ // ── 录制模式（仅未实现树合法一次；见头注）────────────────────────────────────────────
+@@ -255,6 +391,25 @@
+   });
+ }
+ 
++// ── 面③④ + 过校验负控（codex R2-H6 升级）────────────────────────────────────────────
++faceCheck('R13 sign v1 happy 全链：三流+完整输出文件集合+逐文件 sha256+prd 字节逐字节等于基线（面③④）', 'sign-v1-cli.json');
++faceCheck('R14 compile/replay 无参拒绝三流逐字节等于基线（未声明路径 CLI 面）', 'cli-early-reject.json');
++
++check('R15 sign v1 真执行（过全部校验+产物落盘）零身份模块解析（过校验负控）', () => {
++  must(signV1Touches === '', `sign v1 真执行解析了身份模块：\n${signV1Touches}`);
++});
++
++check('R16 replay 过校验哨兵负控：真 v1 件+未声明剖面过全部准入、到 chromium.launch 哨兵（exit 66）零身份模块解析', () => {
++  must(replayControl.status === 66, `应过全部校验到 launch 哨兵 exit 66，实得 ${replayControl.status}：${replayControl.stderrTail}`);
++  must(replayControl.sentinelWritten === true, '启动哨兵未写（未走到 launch 点=没证到过校验路径）');
++  must(replayControl.touches === '', `replay 过校验未声明路径解析了身份模块：\n${replayControl.touches}`);
++});
++
++check('R17 compile 闸段真执行（合法 flow 全跑、零浏览器）零身份模块解析（过校验负控）', () => {
++  must(compileControl.status === 0, `闸段应 exit 0，实得 ${compileControl.status}：${compileControl.stderrTail}`);
++  must(compileControl.touches === '', `compile 闸段路径解析了身份模块：\n${compileControl.touches}`);
++});
++
+ // ── 收口 ──────────────────────────────────────────────────────────────────────────
+ const total = passes + failures;
+ if (failures > 0) {

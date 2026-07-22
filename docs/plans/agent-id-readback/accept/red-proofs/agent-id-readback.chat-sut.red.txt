@@ -1,0 +1,21 @@
+# agent-id-readback.chat-sut 五场景浏览器配方金牌——红先行基线证据
+# 树: 82484ab 等价（agent-id-readback 未实现树，worktree casey-agent-id-readback @ dev；B 路 chat-sut id* 五场景已在场）
+# 命令: node tests/_golden/agent-id-readback.chat-sut.golden.mjs
+# 前置: worktree 需 node_modules（@playwright/test）；本次以符号链接指向主树 node_modules（两树 HEAD package-lock.json 同 blob）
+# 日期: 2026-07-22
+# 退出码: 1（1 过 / 4 红；下方为完整 stdout+stderr）
+#
+# 红绿分布与归因（如实注明）:
+#   C1 idhappy         红——execute exit 0、click event 在，但身份观察件 identity-observations.compile.json 未落盘（现实现无信封门/不产观察件）
+#   C2 idtwins-hidden  红——DOM 只渲一卡、信封两行同名：旧 DOM-only 门判 unique 照点，exit 0 落 events（应硬阻断）
+#   C3 idcode-mismatch 红——期望 code=AG-IM-001、信封行 code=AG-WRONG-999：旧实现看不见信封码，照点 exit 0（应硬阻断）
+#   C4 idmissing       绿（今日恰好）——fetch 500 后夹具渲零卡片，旧 DOM 门 absent 已硬阻断（exit 65、blockers 非空、无 events）。
+#                      绿因与信封门无关（action_failed 语义未实现），但断言面等价；实现后仍必须保持挡住，不构成假红也不豁免实现
+#   C5 idpaged         红——total=2 单页一行（完整性先决失败应硬阻断）：旧实现 DOM 唯一即点，exit 0 落 events
+
+ok   agent-id-readback.chat-sut: C4 idmissing API 500 → 硬阻断（blockers 非空、无 click event；今日或因 DOM absent 恰好绿，见头注）
+RED  agent-id-readback.chat-sut: C1 idhappy 名码唯一命中 → execute exit 0 + click event + 身份观察件 identity-observations.compile.json: 身份观察件 identity-observations.compile.json 未落盘（plan §5：unique 落观察件——现实现无信封门，红先行）
+RED  agent-id-readback.chat-sut: C2 idtwins-hidden DOM 假唯一·信封两行同名 → 硬阻断（blockers 非空、无 click event）: 阶段[execute]：完整信封内 sameName=2（DOM 只渲一卡是假唯一，plan §2：先数同名再查唯一行）——应硬阻断非零退出，实际 exit 0（旧 DOM-only 门被骗放行点击）
+RED  agent-id-readback.chat-sut: C3 idcode-mismatch 期望码≠信封码 → 硬阻断（blockers 非空、无 click event）: 阶段[execute]：期望 code=AG-IM-001 而信封行 code=AG-WRONG-999（唯一行联合判据任一不等=action_failed，plan §2 表）——应硬阻断非零退出，实际 exit 0（旧 DOM-only 门被骗放行点击）
+RED  agent-id-readback.chat-sut: C5 idpaged total=2 单页一行 → 完整性先决失败硬阻断（blockers 非空、无 click event）: 阶段[execute]：total(2)!==records.length(1)——完整性先决未过=action_failed 不是 ambiguous（plan §2 R2-2 统一口径）——应硬阻断非零退出，实际 exit 0（旧 DOM-only 门被骗放行点击）
+RED  agent-id-readback.chat-sut: 1 过 / 4 红

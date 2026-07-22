@@ -17,7 +17,7 @@ import { resolve, relative, dirname, join, basename, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { credentialGate } from '../lib/cred-gate.mjs';
 import { assertSignedContract } from '../lib/sign-gate.mjs';
-import { freezeEntityBindingsDraft } from '../lib/entity-semantic-lock-preflight.mjs';
+import { freezeEntityBindingsDraft, hashIdentityAdmissionBytes } from '../lib/entity-semantic-lock-preflight.mjs';
 import { publishSignPublication } from '../lib/sign-publication.mjs';
 import { parseSignArgs } from '../lib/sign-cli-args.mjs';
 import {
@@ -117,7 +117,7 @@ if (args.invalidFlags.length || args.duplicateFlags.length || args.pos.length !=
   die(64, '参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试');
 }
 if (!caseId || !args.draft || !args.prd || !args['frozen-out'] || !args.signer || !args['against-build']) {
-  die(64, '用法: casey sign <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--events <f> --entity-bindings-draft <f> --entity-confirmations <f> --entity-locks-out <f> --audience <test|production>] [--signed-at <iso>] [--verdict-baseline <f>] [--resign] [--force] [--archive-dir <d>]');
+  die(64, '用法: casey sign <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--events <f> --entity-bindings-draft <f> --entity-confirmations <f> --entity-locks-out <f> --audience <test|production> [--entity-observations <f>]] [--signed-at <iso>] [--verdict-baseline <f>] [--resign] [--force] [--archive-dir <d>]');
 }
 // caseId / 授权输入 / 产物路径安全（codex R1-F2；caseId 同 draft.mjs:40）。
 // 报错不回显原值——CLI 参数在凭据门扫描面外（ingest 契约 codex R2-F2 同族封缝，镜像 bin/ingest.mjs:29）。
@@ -229,6 +229,68 @@ if (entityLocksOut) {
   }
 }
 
+// ── 身份观察对账（agent-id-readback plan §4；v1/v2 只按 draft schemaVersion 判别）────────────────
+// v2 强制观察件、五元 join 只锚终端 click、三错配（build/digest/eventsSha）任一拒签；v1 路径逐字不变。
+let identityObservationRows = null;
+{
+  const observationsPath = typeof args['entity-observations'] === 'string' ? String(args['entity-observations']) : null;
+  const draftIsV2 = entityLocksOut != null && entityBindingsDraft?.schemaVersion === 2;
+  if (observationsPath && !entityLocksOut) die(64, '--entity-observations 仅随实体锁成组旗标使用');
+  if (observationsPath && !draftIsV2) die(65, 'v1 实体绑定草稿不接受 --entity-observations（v1/v2 只按 schemaVersion 判别）');
+  if (draftIsV2) {
+    if (!observationsPath) die(65, 'v2 实体绑定草稿必须携身份观察件（--entity-observations，缺=拒签）');
+    let obsBytes = null;
+    try { obsBytes = readFileSync(observationsPath); } catch { die(65, '读身份观察件原始字节失败（内容不回显）'); }
+    const obs = readJson(observationsPath, '身份观察件');
+    // 身份原子字面量钉死（codex R1-H5）：观察义务集合从 events 的 atom+action 独立推导，绝不由
+    // 观察件自报 source.atom 驱动——自报可把观察矛头错开到别的 atom，让真 agent.searchOpen 无观察过签。
+    const IDENTITY_OBSERVATION_ATOM = 'agent.searchOpen';
+    const obsShapeOk = obs && typeof obs === 'object' && !Array.isArray(obs)
+      && obs.schemaVersion === 1 && obs.artifactKind === 'compile-identity-observation' && obs.caseId === caseId
+      && obs.source && typeof obs.source === 'object' && !Array.isArray(obs.source)
+      && obs.source.kind === 'compile-envelope' && obs.source.atom === IDENTITY_OBSERVATION_ATOM
+      && obs.source.signed === false && obs.source.replayReady === false
+      && Array.isArray(obs.observations) && obs.observations.length > 0;
+    if (!obsShapeOk) die(65, '身份观察件闭合形状不符（compile-identity-observation schema v1，source.atom 必须 agent.searchOpen）');
+    if (obs.capturedAgainstBuild !== build) die(65, '身份观察件 capturedAgainstBuild 与 --against-build 不符（错配拒签）');
+    if (obs.identityProfileDigest !== entityBindingsDraft.identityProfileDigest) die(65, '身份观察件 identityProfileDigest 与 v2 草稿不符（错配拒签）');
+    if (obs.eventsSha256 !== hashIdentityAdmissionBytes(entityEventsBytes)) die(65, '身份观察件 eventsSha256 与签署 events 原始字节不符（陈旧/错配拒签）');
+    if (entityBindingsDraft.identityObservationsSha256 !== hashIdentityAdmissionBytes(obsBytes)) {
+      die(65, 'v2 草稿 identityObservationsSha256 与观察件原始字节不符（换件拒签）');
+    }
+    // 终端 click join：每 intent 的身份原子终端 click 事件 stepId 集合，与观察行 1:1 精确对应。
+    // 集合从 events 按字面量原子独立推导（codex R1-H5）——不消费 obs.source.atom。
+    const clickTerminals = new Map(); // intentId -> 最末 click stepId
+    for (const ev of entityEventsDocument.events || []) {
+      if (ev && ev.atom === IDENTITY_OBSERVATION_ATOM && ev.action === 'click') clickTerminals.set(ev.intentId, ev.stepId);
+    }
+    const terminalStepIds = new Set(clickTerminals.values());
+    if (terminalStepIds.size === 0) die(65, 'v2 签署缺终端 click 事件（观察无锚点，拒签）');
+    const bindingRows = Array.isArray(entityBindingsDraft.bindings) ? entityBindingsDraft.bindings : [];
+    const seenEvidence = new Set();
+    for (const row of obs.observations) {
+      const rowOk = row && typeof row === 'object' && !Array.isArray(row)
+        && ['kind', 'name', 'code', 'platformId', 'sourceIntentId', 'candidateId', 'role', 'atom', 'evidenceStepId', 'sourcePath']
+          .every((f) => typeof row[f] === 'string' && row[f].trim() !== '')
+        && row.kind === 'agent' && row.atom === IDENTITY_OBSERVATION_ATOM;
+      if (!rowOk) die(65, '身份观察行闭合形状不符（kind 必须 agent、atom 必须 agent.searchOpen，拒签）');
+      if (!terminalStepIds.has(row.evidenceStepId)) die(65, `身份观察 evidenceStepId 未锚终端 click（join 错位拒签）`);
+      if (seenEvidence.has(row.evidenceStepId)) die(65, '身份观察对同一终端 click 重复（join 基数拒签）');
+      seenEvidence.add(row.evidenceStepId);
+      const joined = bindingRows.some((b) => b && b.stepId === row.evidenceStepId
+        && b.sourceIntentId === row.sourceIntentId && b.candidateId === row.candidateId
+        && b.role === row.role && b.atom === row.atom);
+      if (!joined) die(65, '身份观察五元 join 无对应绑定行（拒签）');
+    }
+    if (seenEvidence.size !== terminalStepIds.size) die(65, '终端 click 绑定存在无观察覆盖（join 基数拒签）');
+    identityObservationRows = obs.observations.map((row) => ({
+      name: row.name, code: row.code, platformId: row.platformId,
+      sourceIntentId: row.sourceIntentId, candidateId: row.candidateId, role: row.role,
+      atom: row.atom, evidenceStepId: row.evidenceStepId,
+    }));
+  }
+}
+
 // pending 处置（D2）：非空默认拒签，--force 放行 + 留痕独立旁车（别静默丢）。
 const pending = draft.pending || [];
 if (pending.length && !args.force) {
@@ -275,6 +337,7 @@ if (entityLocksOut) {
     signerId: signer,
     signedAt,
     audience: entityAudience,
+    ...(identityObservationRows ? { identityObservations: identityObservationRows } : {}),
   });
   if (frozenResult?.ok !== true || frozenResult.artifact?.replayReady !== true) {
     die(65, `entity locks 冻结失败（${frozenResult?.reason || 'UNKNOWN'}）`);

@@ -1,0 +1,24 @@
+ok   agent-id-regression-diff: R1 基线在场且文件集与 manifest 恰等（多一件/少一件都红）
+ok   agent-id-regression-diff: R2 逐文件 sha256 与 manifest 相符（基线内部单点篡改即红）
+ok   agent-id-regression-diff: R3 CDP listener 注册名序列 + send 调用名序列逐字节等于基线
+ok   agent-id-regression-diff: R4 records() drain 前快照逐字节等于基线（归因/denylist/身份形态 url 普通对待）
+ok   agent-id-regression-diff: R5 records() drain 后快照逐字节等于基线（errorEnvelope 回填面）
+ok   agent-id-regression-diff: R6 api 面（watchNetworkForensics 返回对象键集合）逐字节等于基线
+ok   agent-id-regression-diff: R7 poison spy：lib/agent-identity-observation.mjs 未被采集器无条件拉入
+ok   agent-id-regression-diff: R8 poison spy：lib/agent-identity-gate.mjs 未被采集器无条件拉入
+ok   agent-id-regression-diff: R9 poison spy 负控：加载 bin/compile.mjs（未声明身份通道，无参早退）零身份模块解析
+ok   agent-id-regression-diff: R10 poison spy 负控：加载 bin/replay.mjs（未声明身份通道，无参早退）零身份模块解析
+ok   agent-id-regression-diff: R11 poison spy 负控：加载 bin/sign.mjs（未声明身份通道，无参早退）零身份模块解析
+RED  agent-id-regression-diff: R12 poison spy 正控：显式 import 身份门 → 探针必须逮到（机制非空）: 正控子进程应 exit 0，实得 1：t/messageport:23:28) {
+  code: 'ERR_MODULE_NOT_FOUND',
+  url: 'file:///mnt/d/ctx/heren/casey-agent-id-readback/lib/agent-identity-gate.mjs'
+}
+
+Node.js v24.18.0
+
+ok   agent-id-regression-diff: R13 sign v1 happy 全链：三流+完整输出文件集合+逐文件 sha256+prd 字节逐字节等于基线（面③④）
+ok   agent-id-regression-diff: R14 compile/replay 无参拒绝三流逐字节等于基线（未声明路径 CLI 面）
+ok   agent-id-regression-diff: R15 sign v1 真执行（过全部校验+产物落盘）零身份模块解析（过校验负控）
+ok   agent-id-regression-diff: R16 replay 过校验哨兵负控：真 v1 件+未声明剖面过全部准入、到 chromium.launch 哨兵（exit 66）零身份模块解析
+ok   agent-id-regression-diff: R17 compile 闸段真执行（合法 flow 全跑、零浏览器）零身份模块解析（过校验负控）
+RED  agent-id-regression-diff: 1/17 检查未过

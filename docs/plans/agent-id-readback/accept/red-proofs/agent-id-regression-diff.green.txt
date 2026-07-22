@@ -1,0 +1,15 @@
+# agent-id-regression-diff 差分棘轮金牌——回归保护基线证据（冻结即绿，命名 green 如实）
+# 录制树: 82484ab 等价（agent-id-readback 未实现树，worktree casey-agent-id-readback @ dev）
+# 命令: node tests/_golden/agent-id-regression-diff.zero-sut.golden.mjs
+# 日期: 2026-07-22
+# 退出码: 0（下方为完整 stdout+stderr；比对模式，基线已于同树 AGENT_ID_BASELINE_RECORD=1 先行录制）
+
+ok   agent-id-regression-diff: R1 基线在场且文件集与 manifest 恰等（多一件/少一件都红）
+ok   agent-id-regression-diff: R2 逐文件 sha256 与 manifest 相符（基线内部单点篡改即红）
+ok   agent-id-regression-diff: R3 CDP listener 注册名序列 + send 调用名序列逐字节等于基线
+ok   agent-id-regression-diff: R4 records() drain 前快照逐字节等于基线（归因/denylist/身份形态 url 普通对待）
+ok   agent-id-regression-diff: R5 records() drain 后快照逐字节等于基线（errorEnvelope 回填面）
+ok   agent-id-regression-diff: R6 api 面（watchNetworkForensics 返回对象键集合）逐字节等于基线
+ok   agent-id-regression-diff: R7 poison spy：lib/agent-identity-observation.mjs 未被采集器无条件拉入
+ok   agent-id-regression-diff: R8 poison spy：lib/agent-identity-gate.mjs 未被采集器无条件拉入
+ok   agent-id-regression-diff: 8/8 检查全过（82484ab 差分棘轮：未声明身份通道路径字节零漂移）

@@ -14,11 +14,20 @@
 //           | 'twins'（同 happy，但 /agent/list 列出两条完全同名的 .agent-item 条目——同一列表两条
 //             「互联网问诊-主诉」不同实体，钉「entity-ui-wiring W1：名字定位遇同名双条目必须 AMBIGUOUS
 //             硬阻断、绝不点 first」；纯加法，其余场景 /agent/list 一字不动）
+//           | 'idhappy'|'idtwins-hidden'|'idcode-mismatch'|'idmissing'|'idpaged'（agent-id-readback
+//             interface-spec §6 五场景：/agent/list 换 fetch 版列表页——搜索 Enter 改发
+//             fetch('/api/agents/query?nameLike=…') 按响应渲染 .agent-card 结果（标题 name + 副标题 code）；
+//             服务端按场景回 { data: { records: [{agentId,agentCode,agentName}], total } }，agentId 一律
+//             19 位纯数字字符串。idhappy=名码唯一命中；idtwins-hidden=records 两行同名但 DOM 只渲一卡
+//             （DOM 假唯一、信封现形）；idcode-mismatch=名中码不中；idmissing=该路由回 500；
+//             idpaged=total=2 records=1（完整性先决不过）。纯加法：既有场景与既有页面字节零动，
+//             id* 走独立分支）
 //   GET /                          —— 首页：侧栏 list「智能体管理」→ /agent/list
 //   GET /agent/list                —— 搜索框（placeholder 输入智能体名称或编码进行搜索）Enter 出结果项
 //   GET /agent/detail              —— 「测试」按钮 → 右抽屉：消息框（请输入消息）+ 发送箭头
 //                                     （.hr-icon.hr-icon-arrow-up，keydown 前 disabled）+ 关闭钮链
 //   GET /ai-api/tester/agent/stream —— SSE：分片吐回复（300/700/1100ms）→ 1400ms event:finished {status:200}
+//   GET /api/agents/query           —— 仅 id* 场景生效：智能体名称查询信封（idmissing 该路由回 500）
 import http from 'node:http';
 import { fork } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -63,8 +72,93 @@ const TWINS_LIST_PAGE =
   'document.getElementById("agent-open-2").addEventListener("click",function(){location.href="/agent/detail?id=2";});' +
   '</script>';
 
+// ── agent-id-readback（interface-spec §6）id* 五场景专用件——纯加法，仅 id* 场景走以下分支 ──
+const ID_AGENT_SCENARIOS = new Set(['idhappy', 'idtwins-hidden', 'idcode-mismatch', 'idmissing', 'idpaged',
+  // codex R1 修复钉场景（纯加法）：iddom-skew=信封正常但 DOM 卡片副标题渲假码 AG-DOM-999（物理卡片
+  // code 锚考场——name 单锚门必被骗、双锚门必 action_failed）；idpaged-dupdom=信封 total=2 单页一行
+  // （完整性先决失败）叠加 DOM 渲两张同名卡（判定序考场——必须 action_failed 不是 ambiguous）；
+  // idtwins-sync=按键【同步】渲一张主卡（不等 fetch，旧 DOM-only 门确定性 unique——回放 press→click
+  // 零等待、fetch 渲染有竞态，M3 版本语义考场必须确定性）+ 照发 fetch 且信封仍回两行同名
+  // （修前坏代码消费未签信封必 ambiguous，M3 信号零弱化）。
+  'iddom-skew', 'idpaged-dupdom', 'idtwins-sync']);
+// agentId 一律 19 位纯数字字符串（JSON string 形态；number 形态越过安全整数会被投影拒，plan §1）。
+const ID_AGENT_MAIN = { agentId: '1234567890123456789', agentCode: 'AG-IM-001', agentName: '互联网问诊-主诉' };
+const ID_AGENT_TWIN = { agentId: '9876543210987654321', agentCode: 'AG-IM-002', agentName: '互联网问诊-主诉' };
+const ID_AGENT_BADCODE = { agentId: '1234567890123456789', agentCode: 'AG-WRONG-999', agentName: '互联网问诊-主诉' };
+
+// 服务端场景信封 { data: { records, total } }；idmissing 不在此表——路由层直接 500。
+function idAgentQueryEnvelope(scenario) {
+  if (scenario === 'idtwins-hidden' || scenario === 'idtwins-sync') return { data: { records: [ID_AGENT_MAIN, ID_AGENT_TWIN], total: 2 } };
+  if (scenario === 'idcode-mismatch') return { data: { records: [ID_AGENT_BADCODE], total: 1 } };
+  if (scenario === 'idpaged') return { data: { records: [ID_AGENT_MAIN], total: 2 } }; // 单页一行、total=2：完整性先决考场
+  if (scenario === 'idpaged-dupdom') return { data: { records: [ID_AGENT_MAIN], total: 2 } }; // 同 idpaged 信封，DOM 侧另渲双卡
+  return { data: { records: [ID_AGENT_MAIN], total: 1 } }; // idhappy / iddom-skew（信封正常，DOM 侧渲假码）
+}
+
+// fetch 版列表页：搜索 Enter 改发 fetch('/api/agents/query?nameLike=…')，按响应渲染 .agent-card
+// （标题 .agent-card__name + 副标题 .agent-card__code：物理卡片双锚门考场，plan §2）。
+// idtwins-hidden 只渲首行——DOM 假唯一，信封两行同名现形（DOM-only 门必被骗、双证门必 ambiguous）。
+function idListPage(scenario) {
+  const renderRows = scenario === 'idtwins-hidden' ? 'rows.slice(0,1)'
+    : scenario === 'idpaged-dupdom' ? 'rows.concat(rows)'
+    : 'rows';
+  // iddom-skew：DOM 副标题渲假码（信封码正常）——物理卡片 code 锚与信封码必然不等。
+  const codeExpr = scenario === 'iddom-skew' ? '"AG-DOM-999"' : 'row.agentCode';
+  // idtwins-sync：同步渲主卡 + fire-and-forget fetch（渲染不依赖响应；信封仍两行同名供修前坏代码撞红）。
+  if (scenario === 'idtwins-sync') {
+    return (
+      SIDEBAR +
+      '<h1>智能体列表</h1>' +
+      '<input type="text" id="agent-search" placeholder="输入智能体名称或编码进行搜索">' +
+      '<div id="results" hidden></div>' +
+      '<script>' +
+      'document.getElementById("agent-search").addEventListener("keydown",function(e){' +
+      'if(e.key!=="Enter"||!this.value.trim())return;' +
+      'var box=document.getElementById("results");box.innerHTML="";' +
+      'var card=document.createElement("div");card.className="agent-card";' +
+      'var n=document.createElement("div");n.className="agent-card__name";n.textContent=' + JSON.stringify(ID_AGENT_MAIN.agentName) + ';' +
+      'var c=document.createElement("div");c.className="agent-card__code";c.textContent=' + JSON.stringify(ID_AGENT_MAIN.agentCode) + ';' +
+      'card.appendChild(n);card.appendChild(c);' +
+      'card.addEventListener("click",function(){location.href="/agent/detail";});' +
+      'box.appendChild(card);box.hidden=false;' +
+      'fetch("/api/agents/query?nameLike="+encodeURIComponent(this.value.trim())).catch(function(){});' +
+      '});' +
+      '</script>'
+    );
+  }
+  return (
+    SIDEBAR +
+    '<h1>智能体列表</h1>' +
+    '<input type="text" id="agent-search" placeholder="输入智能体名称或编码进行搜索">' +
+    '<div id="results" hidden></div>' +
+    '<script>' +
+    'document.getElementById("agent-search").addEventListener("keydown",function(e){' +
+    'if(e.key!=="Enter"||!this.value.trim())return;' +
+    'var box=document.getElementById("results");' +
+    'fetch("/api/agents/query?nameLike="+encodeURIComponent(this.value.trim()))' +
+    '.then(function(r){if(!r.ok)throw new Error("http "+r.status);return r.json();})' +
+    '.then(function(j){' +
+    'box.innerHTML="";' +
+    'var rows=(j&&j.data&&j.data.records)||[];' +
+    renderRows + '.forEach(function(row){' +
+    'var card=document.createElement("div");card.className="agent-card";' +
+    'var n=document.createElement("div");n.className="agent-card__name";n.textContent=row.agentName;' +
+    'var c=document.createElement("div");c.className="agent-card__code";c.textContent=' + codeExpr + ';' +
+    'card.appendChild(n);card.appendChild(c);' +
+    'card.addEventListener("click",function(){location.href="/agent/detail";});' +
+    'box.appendChild(card);});' +
+    'box.hidden=false;})' +
+    '.catch(function(){box.innerHTML="";box.hidden=false;});' +
+    '});' +
+    '</script>'
+  );
+}
+
 // 发送钮 enable 判据复刻 regress 实测：监听 keydown（fill 只发 input 事件不触发 keydown → 保持 disabled）。
 function detailPage(scenario) {
+  // id* 场景版本化脚本（纯加法）：compile 尾页提取 ?v= 作 capturedAgainstBuild——真实 compile→sign
+  // 对账链（agent-id-readback C6 全链金牌）需要非 null 发版号；既有场景字节零动。
+  const idBuildScript = ID_AGENT_SCENARIOS.has(scenario) ? '<script src="/static/app.js?v=chat-sut-id-1"></script>' : '';
   const staleBubble = scenario === 'stale' ? '<div class="hr-chat__text__assistant">历史回复：建议多喝水</div>' : '';
   // stale：发送死键（不开流不产新气泡）——旧气泡陈迹在场但本次无回复（codex R1-F3 考场）。
   // 真机同款时序（cred-route-mask G2）：发送先自取临时凭据（路由名字面含 token——凭据门打码考场），再开流。
@@ -84,6 +178,7 @@ function detailPage(scenario) {
   const bgLoader = scenario === 'bgstream' ? 'new EventSource("/ai-api/background/stream");' : '';
   const bgOnOpen = scenario === 'bgstream' ? 'new EventSource("/ai-api/background/stream");' : '';
   return (
+    idBuildScript +
     '<h1>互联网问诊-主诉</h1><button type="button" id="open-test">测试</button>' +
     '<div class="hr-drawer hr-drawer--right" id="drawer" hidden>' +
     '<div class="hr-drawer__content-wrapper">' +
@@ -125,6 +220,20 @@ function makeHandler(scenario) {
   return (req, res) => {
     const path = new URL(req.url, 'http://127.0.0.1').pathname;
     if (req.method === 'GET' && path === '/') return html(res, SIDEBAR + '<h1>首页</h1>');
+    // agent-id-readback id* 场景分支（纯加法）：非 id* 场景绝不进入，既有行为零动。
+    if (ID_AGENT_SCENARIOS.has(scenario) && req.method === 'GET' && path === '/agent/list') return html(res, idListPage(scenario));
+    if (ID_AGENT_SCENARIOS.has(scenario) && req.method === 'GET' && path === '/api/agents/query') {
+      if (scenario === 'idmissing') {
+        const errBody = JSON.stringify({ status: 500, message: '服务异常' });
+        res.writeHead(500, { 'Content-Type': 'application/json; charset=utf-8', 'Content-Length': Buffer.byteLength(errBody) });
+        res.end(errBody);
+        return;
+      }
+      const okBody = JSON.stringify(idAgentQueryEnvelope(scenario));
+      res.writeHead(200, { 'Content-Type': 'application/json; charset=utf-8', 'Content-Length': Buffer.byteLength(okBody) });
+      res.end(okBody);
+      return;
+    }
     if (req.method === 'GET' && path === '/agent/list') return html(res, scenario === 'twins' ? TWINS_LIST_PAGE : LIST_PAGE);
     if (req.method === 'GET' && path === '/agent/detail') return html(res, detailPage(scenario));
     if (req.method === 'GET' && path === '/ai-api/tester/agent/stream') return streamReply(res, scenario);

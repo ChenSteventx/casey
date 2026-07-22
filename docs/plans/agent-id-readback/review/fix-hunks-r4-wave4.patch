@@ -1,0 +1,192 @@
+diff --git a/docs/plans/agent-id-readback/plan.md b/docs/plans/agent-id-readback/plan.md
+index a857227..81a2f82 100644
+--- a/docs/plans/agent-id-readback/plan.md
++++ b/docs/plans/agent-id-readback/plan.md
+@@ -81,7 +81,7 @@ v1 经 sol max 判 CHANGES REQUIRED（review/sol-r1.log，三 P0）；v2 吸收
+ ## 8. 观察义务
+ 
+ - machine：真机只读实证脚本（活数据跑判定纯函数，证据入 evidence/）。
+-- route:human：完整真机用例链（执行权威→签署消费观察件→回放点击前比对）——绑结构化 uatCaseId、交后继契约 `real-uat-attestation` 承接（§6 修正 2026-07-22：本路只留真机事实面）；SKILL.md 执行边界条文与夹具金牌实践的口径收口；密钥签名威胁面后续契约。
++- route:human：完整真机用例链（执行权威→签署消费观察件→回放点击前比对）——绑结构化 uatCaseId=`tc_agent_id_readback_real_uat_v1`、交后继契约 `real-uat-attestation` 承接；冻结 UAT 定义见 prd observability 同名字段（真机执行权威产 v2 产物→sign 五元 join 人签→回放点击前对已签 platformId、同名敌意必 AMBIGUOUS→报告三形态交付=过闸；真机产物含时间戳按行为与裁定核验、不宣称跨运行逐字基线——sol 咨询边界）（§6 修正 2026-07-22：本路只留真机事实面）；SKILL.md 执行边界条文与夹具金牌实践的口径收口；密钥签名威胁面后续契约。
+ 
+ ## 9. 评审
+ 
+diff --git a/docs/plans/agent-id-readback/review/fix-dispositions-r1.md b/docs/plans/agent-id-readback/review/fix-dispositions-r1.md
+index 9b3e3e2..9da8016 100644
+--- a/docs/plans/agent-id-readback/review/fix-dispositions-r1.md
++++ b/docs/plans/agent-id-readback/review/fix-dispositions-r1.md
+@@ -64,9 +64,21 @@ rmSync 已覆盖，sol 引用的行号为 82484ab 旧影——下一 session 复
+ `real-run-trust.zero-sut` 红为先于本契约的陈旧红（其源码字面检查 `const ctx = { uniqueName, baseUrl: sut` 在
+ 82484ab 已不成立，主树同红、无 owner prd 引用——如实挂账交接，不在本契约内顺手修）。
+ 
++# 四波修复（codex R3 三 PARTIAL 全采信，2026-07-22 晚）
++
++R3 终判 FAIL 但机器五面被判「已闭合」（R18-R21 驱动生产链成立、投影搬移语义成立、调用矩阵与两笔排除接受）；
++三笔残余全采信修复：
++
++| R3 裁定 | 四波落点 | 说明 |
++|---|---|---|
++| H1 PARTIAL·Medium（命中卡 ElementHandle 转交调用方后无 dispose，成功/双证拒/点击失败路径持有到页面关闭） | `lib/compile-atoms.mjs` 与 `lib/replay-actions.mjs` 身份路径：cardGate 取得后整段 try/finally，`cardGate.card.dispose()` 全路径兜底释放（clickAgentCardWithin 只释放自建 name 子句柄，命中卡句柄的账在调用方——与 selectNodeDropdown 释放纪律对齐） | 资源纪律面，零 SUT 无确定性构造（同 R2 对句柄连续性的处理口径），交 R4 静态核；行为面 C6/C7/C9 复跑绿 |
++| M1 PARTIAL·Medium（`ctx.identityTokens` 强引用 Map 消费后不删，长流程按身份 intent 累积已消费 token） | `lib/replay-actions.mjs` doAgentSearchOpen：`consume(token)` 后随即 `ctx.identityTokens.delete(ev.intentId)`——消费即出账延伸到调用方层（账本层 O8c 钉不变） | 调用方 Map 属 bin 进程内态、零 SUT 无金牌可钉，交 R4 静态核 |
++| H6 PARTIAL·High（plan 只有散文「绑结构化 uatCaseId」、无实际字段与冻结 UAT 定义） | sol 必改项三件套落实际字段：prd observability route:human 项新增 `uatCaseId: tc_agent_id_readback_real_uat_v1` + `successorContract: real-uat-attestation` + `uatDefinition`（冻结四步定义：真机执行权威产 v2 产物→sign 五元 join 人签→回放点击前对已签 platformId+同名敌意必 AMBIGUOUS→报告三形态交付=过闸；真机产物含时间戳按行为核验、不宣称跨运行逐字基线——sol 咨询边界一并冻入）；plan §8 绑同一具体值与定义指针 | plan §6 修正的其余部分（调用矩阵/排除/机器边界）R3 已接受，本笔只补 UAT 绑定前提 |
++
+ ## 评审状态快照（当前）
+ 
+ R1 FAIL(1C+6H+3M) → 修单一波+钉 → R2 FAIL(H1/H6/M1 PARTIAL、7 FIXED、零新增) → 二波修复
+ （H1 ElementHandle 钉扎、M1 WeakSet+消费出账+O8c、H6 面③④+过校验负控 R15-R17）→ gate 第四轮
+ GREEN 6/6 → 三波修复（sol 五面构造⑦⑧⑨⑩全数落地 + plan §6/§8 权威修正 + interface-spec §7 披露，
+-棘轮 21/21）→ 待 gate 第五轮 + codex R3 终判。
++棘轮 21/21）→ gate 第五轮 GREEN 6/6 → codex R3 FAIL（机器五面闭合；余 H1 句柄释放/M1 调用方
++Map 出账/H6 UAT 三件套未落字段）→ 四波修复已落 → 待 gate 第六轮 + codex R4 终判。
+diff --git a/lib/compile-atoms.mjs b/lib/compile-atoms.mjs
+index 3569b28..3350e8e 100644
+--- a/lib/compile-atoms.mjs
++++ b/lib/compile-atoms.mjs
+@@ -1310,40 +1310,46 @@ async function compileAgentSearchOpen(run, params) {
+     containerSelector: agents.itemContainer,
+     cardFields: agents.cardFields,
+   });
+-  const dual = resolveDualIdentity({
+-    dom: { status: cardGate.resolution === 'container-out' ? 'failed' : cardGate.resolution, name: cardGate.name, code: cardGate.code },
+-    envelope,
+-    expected: { openName: target, code: typeof params.code === 'string' && params.code.trim() !== '' ? instantiate(params.code, run.ctx) : null },
+-  });
+-  // 结构化裁定出口（compile-report.identityGate）：硬阻断的类别可机器断言，不靠 blocker 文案。
+-  run.identityGateOutcome = { resolution: dual.resolution, reason: dual.reason ?? null };
+-  if (dual.resolution !== 'unique') {
+-    run.blockers.push(`agent.searchOpen「${params.openName}」双证门裁定 ${dual.resolution}（${dual.reason}）→ 硬阻断 fail-closed 不点（双证不齐绝不点击，DOM 唯一不豁免）`);
+-    run.notes.push(run.blockers[run.blockers.length - 1]);
+-    return;
+-  }
+-  // 句柄内点击（TOCTOU 封缝）：点击前同卡重验 connected/可见/name/code，任一不符按 action_failed。
+-  const r = await run.emit(
+-    { intentId: i, atom: 'agent.searchOpen', action: 'click', semantic: { kind: 'text', name: params.openName, exact: true }, text: params.openName },
+-    async () => {
+-      const acted = await clickAgentCardWithin(cardGate.card, {
+-        cardFields: agents.cardFields, name: dual.matched.name, code: dual.matched.code,
+-      });
+-      return acted
+-        ? { resolution: 'unique', candidateCount: 1, identityReadback: { ok: true } }
+-        : { resolution: 'action_failed', candidateCount: 1, identityReadback: { ok: false } };
+-    },
+-  );
+-  if (r.resolution !== 'unique') {
+-    run.identityGateOutcome = { resolution: 'action_failed', reason: 'card-click-revalidation-failed' };
+-    run.blockers.push(`agent.searchOpen「${params.openName}」句柄内点击重验失败 → 硬阻断 fail-closed（检查卡与点击卡必须同一物理句柄）`);
+-    run.notes.push(run.blockers[run.blockers.length - 1]);
+-    return;
++  // 句柄出账（codex R3-H1）：命中卡 ElementHandle 成功/双证拒/点击失败全路径 finally 释放，
++  // 不许持有到页面关闭（clickAgentCardWithin 只释放自建 name 子句柄，命中卡句柄的账在调用方）。
++  try {
++    const dual = resolveDualIdentity({
++      dom: { status: cardGate.resolution === 'container-out' ? 'failed' : cardGate.resolution, name: cardGate.name, code: cardGate.code },
++      envelope,
++      expected: { openName: target, code: typeof params.code === 'string' && params.code.trim() !== '' ? instantiate(params.code, run.ctx) : null },
++    });
++    // 结构化裁定出口（compile-report.identityGate）：硬阻断的类别可机器断言，不靠 blocker 文案。
++    run.identityGateOutcome = { resolution: dual.resolution, reason: dual.reason ?? null };
++    if (dual.resolution !== 'unique') {
++      run.blockers.push(`agent.searchOpen「${params.openName}」双证门裁定 ${dual.resolution}（${dual.reason}）→ 硬阻断 fail-closed 不点（双证不齐绝不点击，DOM 唯一不豁免）`);
++      run.notes.push(run.blockers[run.blockers.length - 1]);
++      return;
++    }
++    // 句柄内点击（TOCTOU 封缝）：点击前同卡重验 connected/可见/name/code，任一不符按 action_failed。
++    const r = await run.emit(
++      { intentId: i, atom: 'agent.searchOpen', action: 'click', semantic: { kind: 'text', name: params.openName, exact: true }, text: params.openName },
++      async () => {
++        const acted = await clickAgentCardWithin(cardGate.card, {
++          cardFields: agents.cardFields, name: dual.matched.name, code: dual.matched.code,
++        });
++        return acted
++          ? { resolution: 'unique', candidateCount: 1, identityReadback: { ok: true } }
++          : { resolution: 'action_failed', candidateCount: 1, identityReadback: { ok: false } };
++      },
++    );
++    if (r.resolution !== 'unique') {
++      run.identityGateOutcome = { resolution: 'action_failed', reason: 'card-click-revalidation-failed' };
++      run.blockers.push(`agent.searchOpen「${params.openName}」句柄内点击重验失败 → 硬阻断 fail-closed（检查卡与点击卡必须同一物理句柄）`);
++      run.notes.push(run.blockers[run.blockers.length - 1]);
++      return;
++    }
++    // 观察行待 compileFlow 按 flow 步 provenance（sourceIntentId/candidateId/role）归档；evidenceStepId=终端 click。
++    run.pendingIdentityObservation = { matched: dual.matched, evidenceStepId: r.stepId };
++    // 后置条件（registry：provides 智能体详情已开）：「测试」按钮可见；仅本步 unique 才等（G2 失败步不堆等）。
++    await run.page.getByRole('button', { name: '测试' }).waitFor({ state: 'visible', timeout: 30000 }).catch(() => {});
++  } finally {
++    if (cardGate.card) await cardGate.card.dispose().catch(() => {});
+   }
+-  // 观察行待 compileFlow 按 flow 步 provenance（sourceIntentId/candidateId/role）归档；evidenceStepId=终端 click。
+-  run.pendingIdentityObservation = { matched: dual.matched, evidenceStepId: r.stepId };
+-  // 后置条件（registry：provides 智能体详情已开）：「测试」按钮可见；仅本步 unique 才等（G2 失败步不堆等）。
+-  await run.page.getByRole('button', { name: '测试' }).waitFor({ state: 'visible', timeout: 30000 }).catch(() => {});
+ }
+ 
+ async function compileAgentOpenTestPanel(run) {
+diff --git a/lib/replay-actions.mjs b/lib/replay-actions.mjs
+index 49ca477..da1414c 100644
+--- a/lib/replay-actions.mjs
++++ b/lib/replay-actions.mjs
+@@ -317,25 +317,33 @@ async function doAgentSearchOpen(page, ev, ctx) {
+     await ctx.identityLedger.settle(token, { timeoutMs: 5000 });
+     ctx.identityLedger.seal(token);
+     const envelope = ctx.identityLedger.consume(token);
++    // 消费即出账到调用方层（codex R3-M1）：账本 consume 已一次性，调用方 Map 不得继续强持已消费 token。
++    if (ctx.identityTokens) ctx.identityTokens.delete(ev.intentId);
+     const agents = (ctx.profile && ctx.profile.agents) || {};
+     const cardGate = await resolveAgentCardTarget(page, {
+       openName: name, containerSelector: agents.itemContainer, cardFields: agents.cardFields,
+     });
+-    const dual = resolveDualIdentity({
+-      dom: { status: cardGate.resolution === 'container-out' ? 'failed' : cardGate.resolution, name: cardGate.name, code: cardGate.code },
+-      envelope,
+-      expected: { openName: name, ...signed },
+-    });
+-    if (dual.resolution !== 'unique') {
+-      const mapped = dual.resolution === 'ambiguous' ? 'ambiguous' : 'action_failed';
+-      return { resolution: mapped, candidateCount: cardGate.candidateCount, identityReadback: { ok: false } };
++    // 句柄出账（codex R3-H1）：命中卡 ElementHandle 成功/双证拒/点击失败全路径 finally 释放，
++    // 不许持有到页面关闭（clickAgentCardWithin 只释放自建 name 子句柄，命中卡句柄的账在调用方）。
++    try {
++      const dual = resolveDualIdentity({
++        dom: { status: cardGate.resolution === 'container-out' ? 'failed' : cardGate.resolution, name: cardGate.name, code: cardGate.code },
++        envelope,
++        expected: { openName: name, ...signed },
++      });
++      if (dual.resolution !== 'unique') {
++        const mapped = dual.resolution === 'ambiguous' ? 'ambiguous' : 'action_failed';
++        return { resolution: mapped, candidateCount: cardGate.candidateCount, identityReadback: { ok: false } };
++      }
++      // 句柄内点击（codex R1-H1 TOCTOU 封缝）：点击前同卡重验、句柄内落笔，绝不全页 getByText 重定位。
++      const acted = await clickAgentCardWithin(cardGate.card, {
++        cardFields: agents.cardFields, name: dual.matched.name, code: dual.matched.code,
++      });
++      if (!acted) return { resolution: 'action_failed', candidateCount: 1, identityReadback: { ok: false } };
++      return { resolution: 'unique', candidateCount: 1, identityReadback: { ok: true } };
++    } finally {
++      if (cardGate.card) await cardGate.card.dispose().catch(() => {});
+     }
+-    // 句柄内点击（codex R1-H1 TOCTOU 封缝）：点击前同卡重验、句柄内落笔，绝不全页 getByText 重定位。
+-    const acted = await clickAgentCardWithin(cardGate.card, {
+-      cardFields: agents.cardFields, name: dual.matched.name, code: dual.matched.code,
+-    });
+-    if (!acted) return { resolution: 'action_failed', candidateCount: 1, identityReadback: { ok: false } };
+-    return { resolution: 'unique', candidateCount: 1, identityReadback: { ok: true } };
+   }
+   // 旧路径（v1 件/未声明身份通道，零行为差）：共享门 + 文本锚点击。
+   const container = (ctx && ctx.profile && ctx.profile.agents && ctx.profile.agents.itemContainer) || '.agent-item';
+diff --git a/loop/prd-agent-id-readback.json b/loop/prd-agent-id-readback.json
+index 6b5259f..f290a70 100644
+--- a/loop/prd-agent-id-readback.json
++++ b/loop/prd-agent-id-readback.json
+@@ -43,7 +43,10 @@
+     },
+     {
+       "dimension": "完整真机用例链（执行权威→sign 消费观察件→回放点击前对已签 platformId）；bindAgent 抽屉配方与同名对抗预置（继承 entity-ui-wiring 挂账）；密钥签名威胁面（内容自哈希不防有写权限者整链重算，ADR-0010 口径如实挂账）。",
+-      "route": "human"
++      "route": "human",
++      "uatCaseId": "tc_agent_id_readback_real_uat_v1",
++      "successorContract": "real-uat-attestation",
++      "uatDefinition": "冻结 UAT 定义（sol-consult-plan6 必改项三件套；plan §8 同指针）：真机智能体列表页——①执行权威：真机重编译产 v2 产物（events + entity-bindings.draft v2 双 digest + identity-observations.compile.json，观察行 platformId=19 位纯数字）；②sign --entity-observations 消费观察件五元 join 人签出 frozen v2；③回放消费 frozen v2：点击前信封读回+DOM 物理卡片双证对已签 platformId 全等才落笔，同名敌意用例（同名双条目）必 AMBIGUOUS 不点击；④报告三形态交付。四步全过=本 UAT 过闸（ADR-0009 完成闸）。真机产物含时间戳：按行为与裁定核验，不宣称跨运行逐字基线（sol 咨询边界）。"
+     },
+     {
+       "dimension": "真机只读实证脚本：真机搜索后对活数据跑 resolveDualIdentity/信封投影，证据落 docs/plans/agent-id-readback/evidence/（本契约 loop 相内跑，machine）。",

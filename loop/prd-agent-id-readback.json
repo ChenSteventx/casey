@@ -1,0 +1,189 @@
+{
+  "schemaVersion": 1,
+  "task": "agent-id-readback（full）：智能体平台 ID 读回接线——名称+ID 双定位闭合到点击前。四分岔 Steven 2026-07-22 拍板（GRILL.md）：DOM+信封双证 / 剖面声明制（义务进签署件哈希面、剖面只作适配器）/ 一步到位进收据（观察↔确认五元 join+三错配拒签）/ 只读真机实证脚本。设计经 sol max 四轮共识（review/sol-r1..r4.log：R1 三 P0=解析竞态/假唯一/剖面当安全开关，R4 终判可进 accept）：请求级身份观察事务（arm/归属请求时刻冻结/settle 终态/seal+consume 一次性、晚 body 回原 token）、完整性先决（total===records.length、hasNext 严格 false、失败统一 action_failed）、完整集合内同名>1 才 ambiguous（先数同名再查码）、DOM 物理卡片双锚+TOCTOU 重验、replay 对已签 platformId、观察件 identity-observations.compile.json（signed/replayReady 于 source 内）、draft/frozen v2 哈希闭环、82484ab 差分棘轮+poison spy。浏览器金牌走 Steven 范围化例外（不入隔离冻结闭集、完成闸仍真机）。通道事实源=2026-07-22 真机只读尖峰（evidence/realmachine-spike-findings.md：queryAgentPageList 行携 agentId 19 位纯数字+agentCode，DOM 卡片无 ID 属性，nameLike 名码通吃）。",
+  "specPath": "docs/plans/agent-id-readback/plan.md",
+  "testChecksums": {
+    "tests/_golden/agent-id-observation.zero-sut.golden.mjs": "97d4a81cd909c95e2c3a7c39c4c5f4e4aa093f72992090b4e950c166433245f6",
+    "tests/_golden/agent-id-gate.zero-sut.golden.mjs": "e8ff621bdf7651662f01eb0b3c3c1ecb972bf219d70b79eb3851aed42cb586ce",
+    "tests/_golden/agent-id-sign-observation.zero-sut.golden.mjs": "269e54c31442a8527208a9a92546f02d3b674eb2ddd9bd8d82aae1efb5f14cd8",
+    "tests/_golden/agent-id-regression-diff.zero-sut.golden.mjs": "2f6c18b85962c44363b851b5f6cba1cb9140f16ac6b0ff691a7d9d9e1c5cb225",
+    "tests/_golden/agent-id-readback.chat-sut.golden.mjs": "6058e5ae62dfe98d5d53dfcf3890761717362ca7a06f2a7ca2e90132c21c7447",
+    "tests/fixtures/chat-sut/server.mjs": "959e18c5dd28f35b38e3cf3f2acf350db7906c554ba700a1a4c0a96bd90cbf6e",
+    "docs/plans/agent-id-readback/accept/interface-spec.md": "da2273aa8d7bf0d053b1eeb6abdcbcf1f0da4d7e263a335641c0e5aad9e32cbf",
+    "tests/_golden/fixtures/agent-id-readback/baseline/api-surface.json": "0e9a6d8d18e0ddd60adda54d7f0c647baf3d4ebaf7e892f336f8fa444a805fd8",
+    "tests/_golden/fixtures/agent-id-readback/baseline/cdp-calls.json": "f5a1c0db1bb27fa7158666ebcf7f451c1123b96329077e588c881bd1e1b9dfe5",
+    "tests/_golden/fixtures/agent-id-readback/baseline/manifest.json": "f2adeb72f721b92339726b5e61f0b52fffbc80a6e172b8ce865ea34f91ea0663",
+    "tests/_golden/fixtures/agent-id-readback/baseline/records.post-drain.json": "57db565f10704c0f182abfee5278fc468fdc213e8c3facd44f311242a8516bd1",
+    "tests/_golden/fixtures/agent-id-readback/baseline/records.pre-drain.json": "0f36dcd464ea6a3b6374362e527db3a17b2e0104a94aec2315b31105a69e45b4",
+    "docs/plans/agent-id-readback/accept/red-proofs/agent-id-gate.red.txt": "d698208d5aaec703e397c3f4153398e4e9d5202d11560cf511ba37ada44abae0",
+    "docs/plans/agent-id-readback/accept/red-proofs/agent-id-observation.red.txt": "1ba26221f34e2a037c5d06059a049b4019b64a8624add82fae3ef6e08ef052d6",
+    "docs/plans/agent-id-readback/accept/red-proofs/agent-id-readback.chat-sut.red.txt": "a767d181c71096c8d235b536ef0f35482b4e68447034964a9c51da8fd12e646b",
+    "docs/plans/agent-id-readback/accept/red-proofs/agent-id-regression-diff.green.txt": "0dc1e09e1f4fdf53a37724fc7b28944ff7a22e7d60417b0c57f295100bbce7f8",
+    "docs/plans/agent-id-readback/accept/red-proofs/agent-id-sign-observation.red.txt": "cc659556bfc6c6e0efee4ef65037305d7d910998bd7fd727393362c604fbc900",
+    "tests/_golden/fixtures/agent-id-readback/spy-loader.mjs": "9580249c9436604ad51e7da778eeb1a3cda0b61a2ff9cb126caba9931f7d0339",
+    "tests/_golden/fixtures/agent-id-readback/spy-hooks.mjs": "8635d3646c44eaf66f5a97af6016fd703336b6bdf2d08662c3c315e2517be2ae",
+    "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-observation.zero-sut.red.txt": "4f5f7daf9876b910644185cb12381fadb729b48baf88c7588313022324d4e5c6",
+    "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-gate.zero-sut.red.txt": "af3778f150bee7a22c87465d097c5fe84cc998aab787f0f8660c799894cd29e7",
+    "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-sign-observation.zero-sut.red.txt": "358f142daf3e98f90a16db51744029fef294ce059449f695bb54d7bd61af51c8",
+    "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-regression-diff.zero-sut.red.txt": "f9bd1e7054beeb250cbcb3f25957494d3e5a04289f9f04ba2a99f6d1ee7953b1",
+    "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-readback.chat-sut.red.txt": "a0c7d474d997090f477ad502f8b68c83fcfdc4b2b592567a67af5c348f21abcf",
+    "tests/_golden/fixtures/agent-id-readback/baseline/sign-v1-cli.json": "bf163a09487688c4ef5d0864e7d8c9fc2d4ee9a4ef9549961905521df9b7fac6",
+    "tests/_golden/fixtures/agent-id-readback/baseline/cli-early-reject.json": "6362f01a66fb0248f2b8d8b393820f01d5727dc6dbb47eb25829c252c90a2af4",
+    "tests/_golden/fixtures/agent-id-readback/baseline/compile-run-v1.json": "ea7ab4d05fb09a187c280db4c84d46b9b326838b1f65d3b6f8cbb20e9311a612",
+    "tests/_golden/fixtures/agent-id-readback/baseline/action-axes-v1.json": "b9f7b15c8cae51f8d2139d7b29f477aa60b14591516d19e650e761a00ad46293",
+    "tests/_golden/fixtures/agent-id-readback/baseline/axes-projection-v1.json": "a0917229013b49255651a90d86998e43f8ce8dcb8111c69f81ea994419828b9b",
+    "tests/_golden/fixtures/agent-id-readback/baseline/verdict-report-v1.json": "4e6e001d7ec5b8e74e25527f4634453a6d133d038e67cc569c83ad568531ada3",
+    "tests/_golden/fixtures/agent-id-readback/mock-page.mjs": "119cb04ade4c40b4278ed2c2ef4da2e71f024f521c761c2ee84f4db49378d087",
+    "docs/plans/agent-id-readback/accept/red-proofs/refit-r3-agent-id-regression-diff.zero-sut.red.txt": "ad4e7f50fc36e98de7301c7502d7847ce7b459aaf7b5cc24a940ac82bd194cca"
+  },
+  "observability": [
+    {
+      "dimension": "范围化例外（Steven 2026-07-22）：本契约五场景浏览器金牌以新增非隔离义务进机器 acceptance；isolated-browser-obligations.json 冻结闭集零改动、账内义务绝不解禁；完成闸仍=真机（ADR-0009）。SKILL.md/HANDOFF 全局条文与例外实践的措辞统一收口由 Steven 另日处理。",
+      "route": "human"
+    },
+    {
+      "dimension": "完整真机用例链（执行权威→sign 消费观察件→回放点击前对已签 platformId）；bindAgent 抽屉配方与同名对抗预置（继承 entity-ui-wiring 挂账）；密钥签名威胁面（内容自哈希不防有写权限者整链重算，ADR-0010 口径如实挂账）。",
+      "route": "human",
+      "uatCaseId": "tc_agent_id_readback_real_uat_v1",
+      "successorContract": "real-uat-attestation",
+      "uatDefinition": "冻结 UAT 定义（sol-consult-plan6 必改项三件套；plan §8 同指针）：真机智能体列表页——①执行权威：真机重编译产 v2 产物（events + entity-bindings.draft v2 双 digest + identity-observations.compile.json，观察行 platformId=19 位纯数字）；②sign --entity-observations 消费观察件五元 join 人签出 frozen v2；③回放消费 frozen v2：点击前信封读回+DOM 物理卡片双证对已签 platformId 全等才落笔，同名敌意用例（同名双条目）必 AMBIGUOUS 不点击；④报告三形态交付。四步全过=本 UAT 过闸（ADR-0009 完成闸）。真机产物含时间戳：按行为与裁定核验，不宣称跨运行逐字基线（sol 咨询边界）。"
+    },
+    {
+      "dimension": "真机只读实证脚本：真机搜索后对活数据跑 resolveDualIdentity/信封投影，证据落 docs/plans/agent-id-readback/evidence/（本契约 loop 相内跑，machine）。",
+      "route": "machine"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-observation-ledger",
+      "desc": "身份观察事务纯函数内核（lib/agent-identity-observation.mjs）：arm/归属请求时刻冻结/settle 显式终态/seal/consume 一次性；晚 body 回原 token 绝不跨事务；requestSeq 序与 conflict；有界复验（≤200 行、字段非空、id 无损全数字 string）整页拒。红基线：17/17 红（模块缺席，red-proofs/agent-id-observation.red.txt）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/agent-id-observation.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-22T11:27:48.190Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-dual-identity-gate",
+      "desc": "双证判定纯函数（lib/agent-identity-gate.mjs）：完整性先决 action_failed、完整集合同名>1 ambiguous（先数同名再查码防假唯一）、四比对方任一不等 action_failed、三方全等 unique+matched；编译首采 platformId 取信封行 id。红基线：16/16 红（模块缺席，red-proofs/agent-id-gate.red.txt）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/agent-id-gate.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-22T11:27:48.423Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-sign-observation-join",
+      "desc": "sign 观察对账（--entity-observations 入 sign-cli-args 白名单+help+MCP）：v2 draft（identityProfileDigest+identityObservationsSha256）强制观察件、五元 join 只锚终端 click、三错配（build/digest/eventsSha）各拒 65、陈旧观察件复用拒、拒签零新增（零 stdout+零产物）、v1 路径逐字兼容。红基线：6 红/3 绿（回归保护已标注，red-proofs/agent-id-sign-observation.red.txt）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/agent-id-sign-observation.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-22T11:28:02.178Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4-regression-diff-ratchet",
+      "desc": "82484ab 差分棘轮（冻结即绿=回归保护）：mock CDP 下 listener/send 序列、records() 字节、api 键集、基线文件集+逐文件 sha 逐字对照；poison spy 证未声明通道路径零加载身份模块；三波扩 sol 五面构造 R18-R21（替身驱真实 compile/action 链、axes 投影生产纯函数、verdict→report 真 CLI 链，见第五笔 checksumAmendments）。绿基线：red-proofs/agent-id-regression-diff.green.txt。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/agent-id-regression-diff.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-22T11:28:50.360Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s5-browser-recipe",
+      "desc": "五场景浏览器配方（chat-sut 纯加法场景 idhappy/idtwins-hidden/idcode-mismatch/idmissing/idpaged；范围化例外准入机器 acceptance）：happy 落观察件、其余四场景硬阻断零产物。红基线：red-proofs/agent-id-readback.chat-sut.red.txt。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/agent-id-readback.chat-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-22T11:31:54.388Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s6-regression-locks",
+      "desc": "存量回归（逐项分类，R2-6）：zero-SUT 系（bindagent-lockchain/guards）+ 浏览器系（searchopen/bindagent-replay，按 owner prd 既有裁定复跑）+ tier1。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-ui-wiring.bindagent-lockchain.zero-sut.golden.mjs",
+        "node tests/_golden/entity-ui-wiring.guards.zero-sut.golden.mjs",
+        "node tests/_golden/entity-ui-wiring.searchopen.golden.mjs",
+        "node tests/_golden/entity-ui-wiring.bindagent-replay.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-22T11:33:43.909Z 全部 acceptance exit 0"
+    }
+  ],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-22",
+      "files": [
+        "tests/_golden/agent-id-observation.zero-sut.golden.mjs",
+        "tests/_golden/agent-id-gate.zero-sut.golden.mjs",
+        "tests/_golden/agent-id-sign-observation.zero-sut.golden.mjs",
+        "tests/_golden/agent-id-regression-diff.zero-sut.golden.mjs",
+        "tests/_golden/agent-id-readback.chat-sut.golden.mjs",
+        "tests/fixtures/chat-sut/server.mjs",
+        "docs/plans/agent-id-readback/accept/interface-spec.md",
+        "tests/_golden/fixtures/agent-id-readback/spy-loader.mjs",
+        "tests/_golden/fixtures/agent-id-readback/spy-hooks.mjs",
+        "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-observation.zero-sut.red.txt",
+        "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-gate.zero-sut.red.txt",
+        "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-sign-observation.zero-sut.red.txt",
+        "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-regression-diff.zero-sut.red.txt",
+        "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-readback.chat-sut.red.txt"
+      ],
+      "reason": "codex 异构评审 R1 FAIL（C1+H1-H6+M1-M3，docs/plans/agent-id-readback/review/codex-review-r1.log）修单：断言零弱化、全部为收紧与新增。实现修复=C1 编译真接线 v2 草稿+双 digest+观察基数强校验；H1 物理卡片双锚（cardFields 声明、dom.code 必读必比、句柄内点击重验）；H2 同源+queryParam 回声判据+fill 固定 openName；H3 hasNextPath 声明即义务；H4 2xx+successField 严格判；H5 sign 义务集合从 events 独立推导+atom/kind 字面量钉死+回放缺已签三元组立拒；H6 poison spy 升级子进程真实加载探针（正负控）+身份门动态加载，plan §6 的 CLI 三流/产物集字节面因跨运行确定性未证诚实缩窄为 C6/C7 行为钉（interface-spec §7 披露）；M1 有界 settle+seal 先决；M2 判定序信封先决优先；M3 账本只随 v2 权威激活。金牌钉=观察 O8-O11、门 G5e/G5f、sign c8、chat-sut C6-C10+C1 fill 断言+identityGate 结构化类别、棘轮 R9-R12；夹具纯加法 iddom-skew/idpaged-dupdom/id* 版本脚本。无实现状态重钉红（git stash 外科式）：refit-*.red.txt 五份（4 零 SUT 全红 + chat-sut 0过/10红）。修后全绿：29/29、18/18、11/11、12/12、10/10。"
+    },
+    {
+      "amendedAt": "2026-07-22",
+      "files": [
+        "tests/_golden/agent-id-readback.chat-sut.golden.mjs"
+      ],
+      "reason": "C7 去 flake 收窄（断言零弱化）：M3 回归信号 ambiguous/action_failed 一击必红不重试；none 属 82484ab 旧 DOM-only 路径在 fetch 渲染页的既有时序竞态（click 步早于结果渲染，gate 负载下偶发、独跑绿），有界重试 3 把仍 none 才红。gate 首轮 s5 翻红即此竞态（gate-run.log C7 resolution none candidateCount 0），非 M3 失守。"
+    },
+    {
+      "amendedAt": "2026-07-22",
+      "files": [
+        "tests/_golden/agent-id-readback.chat-sut.golden.mjs",
+        "tests/fixtures/chat-sut/server.mjs",
+        "docs/plans/agent-id-readback/accept/interface-spec.md",
+        "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-readback.chat-sut.red.txt"
+      ],
+      "reason": "C7 考场确定性化（取代前笔重试方案；断言零弱化、信号收紧）：夹具新增 idtwins-sync 场景（按键同步渲一张主卡+照发 fetch、信封仍回两行同名）——回放事件环 press→click 零等待（settleBeforeCapture 只跑 intent 末事件、searchOpen 末事件即 click），旧 DOM-only 门在 fetch 渲染页有固有时序竞态（gate 两轮 C7 none 红即此、独跑绿；82484ab 既有时序非本契约改动面）。新考场确定性双向：M3 失守的坏代码消费未签信封必 ambiguous 一击红；修后 v1 不建账本、同步 DOM 确定 unique；82484ab 上守恒绿（红证如实更新为 1 过/9 红，金牌整体仍 exit 1）。C7 断言恢复严格 unique、撤重试。interface-spec §6 同步披露。"
+    },
+    {
+      "amendedAt": "2026-07-22",
+      "files": [
+        "tests/_golden/agent-id-regression-diff.zero-sut.golden.mjs",
+        "tests/_golden/agent-id-observation.zero-sut.golden.mjs",
+        "tests/_golden/fixtures/agent-id-readback/baseline/manifest.json",
+        "tests/_golden/fixtures/agent-id-readback/baseline/sign-v1-cli.json",
+        "tests/_golden/fixtures/agent-id-readback/baseline/cli-early-reject.json",
+        "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-regression-diff.zero-sut.red.txt",
+        "docs/plans/agent-id-readback/accept/red-proofs/refit-agent-id-observation.zero-sut.red.txt"
+      ],
+      "reason": "codex R2 三阻塞项二波修单（断言零弱化、全为收紧/新增；处置表 review/fix-dispositions-r1.md R2 轮增补节）：M1 引用释放（tokens 改 WeakSet+consume 即出账，钉 O8c）；H1 句柄连续性（evaluateHandle 原子快照取 ElementHandle、同物理节点重验+card.$ 子句柄点击、句柄释放；行为面 C6/C7/C9 覆盖、连续性交 R3 静态核）；H6 面③④落地+负控升级（sign-v1-cli.json 三流+完整输出集+逐文件 sha+prd 字节——双跑探针实证跨运行字节确定、相对路径零绝对路径泄漏，R2 前「确定性未证」假设实测收回；cli-early-reject.json compile/replay 无参三流；R15-R17 过校验真路径负控=sign 真执行/replay 到 launch 哨兵 exit 66/compile 闸段全跑，全程零身份模块解析；R13 面对照绿=候选 sign v1 输出与 82484ab 基线逐字节相等的机器证据）。基线于 82484ab stash 窗口重录（含新二面；既有四面字节未变）；红证同窗重取（棘轮=恰 R12 正控红 1/17、观察 30 检查全红）。残余=plan §6 面② 动作轴/axes/report 字节（浏览器绑定）——Steven 2026-07-22 拍板先送 sol max 咨询一轮再定 plan 权威修正。"
+    },
+    {
+      "amendedAt": "2026-07-22",
+      "files": [
+        "tests/_golden/agent-id-regression-diff.zero-sut.golden.mjs",
+        "tests/_golden/fixtures/agent-id-readback/baseline/manifest.json",
+        "tests/_golden/fixtures/agent-id-readback/baseline/compile-run-v1.json",
+        "tests/_golden/fixtures/agent-id-readback/baseline/action-axes-v1.json",
+        "tests/_golden/fixtures/agent-id-readback/baseline/axes-projection-v1.json",
+        "tests/_golden/fixtures/agent-id-readback/baseline/verdict-report-v1.json",
+        "tests/_golden/fixtures/agent-id-readback/mock-page.mjs",
+        "docs/plans/agent-id-readback/accept/interface-spec.md",
+        "docs/plans/agent-id-readback/accept/red-proofs/refit-r3-agent-id-regression-diff.zero-sut.red.txt"
+      ],
+      "reason": "三波修单（sol 五面构造兑现，断言零弱化、纯加面；处置表三波节+plan §6/§8 权威修正+interface-spec §7 三波增补）：R2 轮「动作轴/axes/report 字节面零 SUT 不可达」判定被 sol max 咨询证伪（review/sol-consult-plan6.log，Steven 拍板送审），按其构造清单落地棘轮面⑦⑧⑨⑩（R18-R21 逐字对照）——⑦mock Page/forensics 测试替身驱真实 createCompileRun/compileFlow（v1 flow）冻 events/verification/provenance/observed；⑧同替身驱真实 performAction 12 分支冻逐事件动作轴；⑨bin/replay.mjs 浏览器后三轴投影逐字搬移成生产共用纯函数 lib/replay-axes.mjs（82484ab..b920b4f 投影段零 hunks、搬移 diff 交 R3 静态核）冻完整 axes；⑩axes 喂真实 verdict→report-model（--generated-at 固定）→report CLI 链冻三流+verdict/report JSON（四态各一）。明示排除口径入 interface-spec §7（report html/md 字节=报告模板演进面、report 成功 stdout=绝对路径打印面）。红证 82484ab 窗口重取（refit-r3：6/21 红=R1+R12+R18-R21 基线缺席）；基线同窗重录、既有六面字节零漂移（窗口保真机器证据）；退窗现树 21/21 绿=身份实现不动 v1 字节的机器证据。受影响面复跑 zero-SUT 金牌批全绿；real-run-trust.zero-sut 红为 82484ab 前既有陈旧红（主树同红），挂账交接不顺手修。"
+    }
+  ]
+}

@@ -1,0 +1,29 @@
+{
+  "verdictRun": {
+    "status": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "reportModelRun": {
+    "status": 0,
+    "stdout": "",
+    "stderr": ""
+  },
+  "reportRun": {
+    "status": 0,
+    "stderr": "",
+    "stdoutNote": "<excluded: 成功 stdout 打印 resolve 后绝对路径，冻它破跨树可移植——见头注排除条>"
+  },
+  "verdictJson": "{\n  \"caseId\": \"tc_air_axes_proj\",\n  \"steps\": [\n    {\n      \"stepId\": \"s2\",\n      \"intentId\": \"i1\",\n      \"atom\": \"agent.searchOpen\",\n      \"verdict\": \"PASS\",\n      \"reason\": null\n    },\n    {\n      \"stepId\": \"s4\",\n      \"intentId\": \"i2\",\n      \"atom\": \"agent.searchOpen\",\n      \"verdict\": \"SUT_DEFECT\",\n      \"reason\": null\n    },\n    {\n      \"stepId\": \"s5\",\n      \"intentId\": \"i3\",\n      \"atom\": \"agent.openTestPanel\",\n      \"verdict\": \"NEEDS_HUMAN\",\n      \"reason\": \"INDETERMINATE\"\n    },\n    {\n      \"stepId\": \"s6\",\n      \"intentId\": \"i4\",\n      \"atom\": \"workflow.bindAgent\",\n      \"verdict\": \"NEEDS_HUMAN\",\n      \"reason\": \"AMBIGUOUS_ACTION\"\n    }\n  ]\n}\n",
+  "outputs": {
+    "axes.json": "a0917229013b49255651a90d86998e43f8ce8dcb8111c69f81ea994419828b9b",
+    "verdict.json": "ed0340f27788d0d9dbbe45058dbf3275e4ec8d76dec808529fb47deaa4fabfe3",
+    "report-model.json": "5708c629ca6dceaaaff05692fb126d884a5c31e0642aa7b2ec45628687fe6bfd",
+    "report/tc_air_axes_proj.report.json": "15600c193c24d851056a5bf60809509139102f0b19153e820dc2b431d7857076"
+  },
+  "reportFiles": [
+    "tc_air_axes_proj.report.html",
+    "tc_air_axes_proj.report.json",
+    "tc_air_axes_proj.report.md"
+  ]
+}

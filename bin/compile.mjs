@@ -13,6 +13,7 @@
 // 退出码：0 成功；1 运行时失败/凭据门拦；64 缺参；65 输入坏/闸拒（fail-closed）；66 flow 未 confirm。
 // 所有落盘口过 lib/cred-gate.mjs（G5 取 B，护栏 #7）。本进程零 LLM、零裁定（护栏 #15）。
 import { readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, renameSync, rmSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { join, relative, resolve, sep } from 'node:path';
 import { tmpdir } from 'node:os';
 import { spawnSync } from 'node:child_process';
@@ -215,6 +216,7 @@ async function executeMode(caseId, args) {
   // 失败路径绝不让上一轮成功产物残留假冒本轮（可进 P4 的只能是本轮全 unique 产物）。
   rmSync(join(outDir, 'events.json'), { force: true });
   rmSync(join(outDir, 'entity-bindings.draft.json'), { force: true });
+  rmSync(join(outDir, 'identity-observations.compile.json'), { force: true });
   rmSync(join(outDir, `observed-${caseId}.json`), { force: true });
   const profile = readJson(args.profile, '通道剖面');
   // 剖面可选 routes.workflowList（非凭据通道配置）：present 则须以 / 开头的路径段（R1-F5 形状校验同律），
@@ -229,6 +231,39 @@ async function executeMode(caseId, args) {
     listRoute = r.workflowList || null;
     agentListRoute = r.agentList || null; // chief-bringup G1：智能体列表路由（nav.agentManagement 路由导航优先）
   }
+  // 身份通道剖面（agent-id-readback；剖面声明制——未声明零行为差，声明则形状非法 fail-closed）。
+  let identityChannelCfg = null;
+  if (profile.agents !== undefined && profile.agents !== null) {
+    const a = profile.agents;
+    const aOk = a && typeof a === 'object' && !Array.isArray(a);
+    if (!aOk) { console.error('compile: 通道剖面 agents 形状非法，拒跑（fail-closed）'); process.exit(65); }
+    if (a.listApi !== undefined && a.listApi !== null) {
+      const l = a.listApi;
+      const s = (v) => typeof v === 'string' && v.trim() !== '';
+      const shapeOk = l && typeof l === 'object' && !Array.isArray(l)
+        && s(l.pathname) && l.pathname.startsWith('/') && s(l.method)
+        && s(l.recordsPath) && s(l.totalPath) && s(l.queryParam)
+        && (l.hasNextPath === null || l.hasNextPath === undefined || s(l.hasNextPath))
+        && l.fields && typeof l.fields === 'object' && !Array.isArray(l.fields)
+        && s(l.fields.id) && s(l.fields.code) && s(l.fields.name);
+      if (!shapeOk) { console.error('compile: 通道剖面 agents.listApi 形状非法（身份通道声明不完整，含 queryParam），拒跑（fail-closed）'); process.exit(65); }
+      // 物理卡片双锚（codex R1-H1）：声明身份通道即须声明卡片容器与 name/code 子选择器——
+      // DOM 证据必须从同一物理卡片读出，缺声明 fail-closed。
+      const cardOk = s(a.itemContainer)
+        && a.cardFields && typeof a.cardFields === 'object' && !Array.isArray(a.cardFields)
+        && s(a.cardFields.name) && s(a.cardFields.code);
+      if (!cardOk) { console.error('compile: 身份通道声明缺物理卡片面（agents.itemContainer + agents.cardFields.name/code），拒跑（fail-closed）'); process.exit(65); }
+      identityChannelCfg = {
+        pathname: l.pathname, method: l.method, recordsPath: l.recordsPath, totalPath: l.totalPath,
+        queryParam: l.queryParam,
+        hasNextPath: l.hasNextPath ?? null,
+        fields: { id: l.fields.id, code: l.fields.code, name: l.fields.name },
+      };
+    }
+  }
+  const identityLedger = identityChannelCfg
+    ? (await import('../lib/agent-identity-observation.mjs')).createIdentityObservationLedger({ channel: identityChannelCfg })
+    : null;
   const sut = String(args.sut).replace(/\/$/, '');
   const uniqueName = String(args['unique-name'] || Date.now().toString(36));
   const site = loadSiteConfig();
@@ -249,9 +284,17 @@ async function executeMode(caseId, args) {
     successField: profile.successField,
     successValue: profile.successValue,
     currentStep: () => state.currentStepId,
+    ...(identityLedger ? {
+      identityChannel: {
+        ...identityChannelCfg,
+        sutOrigin: new URL(sut).origin, // 同源判据（codex R1-H2）：跨源同路径响应不入身份通道
+        onRequest: (x) => identityLedger.onRequestWillBeSent(x),
+        onTerminal: (x) => identityLedger.onBodyTerminal(x),
+      },
+    } : {}),
   });
 
-  const run = createCompileRun({ page, forensics, state, sut, uniqueName, site, listRoute, agentListRoute, profile });
+  const run = createCompileRun({ page, forensics, state, sut, uniqueName, site, listRoute, agentListRoute, profile, identityLedger });
   let exitCode = 0;
   try {
     if (!args['skip-login']) {
@@ -284,6 +327,9 @@ async function executeMode(caseId, args) {
       caseDefectCandidates: run.caseDefectCandidates,
       handoff: { assertionAtoms: run.assertionAtoms },
       notes: run.notes,
+      // 双证门结构化裁定（codex R1-M2 断言面）：硬阻断类别（action_failed/ambiguous/absent）机器可判，
+      // 金牌不靠 blocker 文案 grep。
+      ...(run.identityGateOutcome ? { identityGate: run.identityGateOutcome } : {}),
     };
     const nonUnique = run.verification.filter((v) => v.resolution !== 'unique');
     if (nonUnique.length || run.blockers.length) {
@@ -303,8 +349,19 @@ async function executeMode(caseId, args) {
         events: run.events,
       };
       const eventsText = JSON.stringify(eventsDoc, null, 2) + '\n';
+      // 身份观察基数强校验（codex R1-C1 封缝）：声明身份通道时，events 内每个 agent.searchOpen 终端
+      // click 必须恰有一条观察行——多/少/错位都不产成功产物，绝不静默降级出可按 v1 签署的编译件。
+      let entityBindingsDraft = null;
       let entityBindingsDraftText = null;
-      if (containsEntityMutation) {
+      if (identityLedger) {
+        const terminalClicks = run.events.filter((e) => e.atom === 'agent.searchOpen' && e.action === 'click');
+        if (terminalClicks.length !== run.identityObservations.length) {
+          gatedWrite({ [join(outDir, 'compile-report.json')]: JSON.stringify(reportDoc, null, 2) + '\n' });
+          console.error(`compile: 身份观察基数不齐（终端 click ${terminalClicks.length} ≠ 观察 ${run.identityObservations.length}），不产 events/draft/observed`);
+          exitCode = 65;
+        }
+      }
+      if (exitCode === 0 && containsEntityMutation) {
         const draftResult = buildEntityBindingsDraft({
           eventsBytes: Buffer.from(eventsText),
           eventsDocument: eventsDoc,
@@ -315,7 +372,7 @@ async function executeMode(caseId, args) {
           console.error(`compile: entity binding sidecar 未闭合（${draftResult?.reason || 'UNKNOWN'}），不产 events/draft/observed`);
           exitCode = 65;
         }
-        if (draftResult?.ok === true) entityBindingsDraftText = JSON.stringify(draftResult.draft, null, 2) + '\n';
+        if (draftResult?.ok === true) entityBindingsDraft = draftResult.draft;
       }
       if (exitCode === 0) {
       // capturedAgainstBuild 提取（Steven 决议 2026-07-02 ⑥ 接线，plan-debt-sweep）：入口 HTML 脚本 src 的
@@ -333,9 +390,46 @@ async function executeMode(caseId, args) {
       } catch { capturedBuild = null; }
       if (typeof capturedBuild !== 'string' || !capturedBuild) capturedBuild = null;
       const observedDoc = projectObserved(run, { caseId, capturedAt: now, capturedAgainstBuild: capturedBuild });
+      // 身份观察件（agent-id-readback plan §5）：unique 双证放行时落盘；digest=listApi 闭合对象规范化 sha、
+      // eventsSha256 绑最终 events 字节；compile-report 只记状态与观察件 sha（不复制三元组，sol P1）。
+      let identityObservationsText = null;
+      if (identityLedger && run.identityObservations.length) {
+        const sortKeys = (v) => (Array.isArray(v) ? v.map(sortKeys)
+          : (v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, sortKeys(v[k])])) : v));
+        const digest = `sha256:${createHash('sha256').update(JSON.stringify(sortKeys(identityChannelCfg))).digest('hex')}`;
+        const observationArtifact = {
+          schemaVersion: 1,
+          artifactKind: 'compile-identity-observation',
+          caseId,
+          capturedAgainstBuild: capturedBuild,
+          identityProfileDigest: digest,
+          eventsSha256: `sha256:${createHash('sha256').update(Buffer.from(eventsText)).digest('hex')}`,
+          source: { kind: 'compile-envelope', atom: 'agent.searchOpen', signed: false, replayReady: false },
+          observations: run.identityObservations,
+        };
+        identityObservationsText = JSON.stringify(observationArtifact, null, 2) + '\n';
+        reportDoc.identityObservation = {
+          status: 'captured',
+          count: run.identityObservations.length,
+          artifactSha256: createHash('sha256').update(identityObservationsText).digest('hex'),
+        };
+        // v2 草稿真接线（codex R1-C1）：含身份观察的编译产物必须以 schemaVersion:2 落盘并绑双 digest
+        // （通道指纹 + 观察件原始字节 sha）——否则 sign 的 v2 对账路径对真实产物永不激活，
+        // platformId 进不了签署/回放闭环。
+        if (entityBindingsDraft) {
+          entityBindingsDraft = {
+            ...entityBindingsDraft,
+            schemaVersion: 2,
+            identityProfileDigest: digest,
+            identityObservationsSha256: `sha256:${createHash('sha256').update(Buffer.from(identityObservationsText)).digest('hex')}`,
+          };
+        }
+      }
+      if (entityBindingsDraft) entityBindingsDraftText = JSON.stringify(entityBindingsDraft, null, 2) + '\n';
       gatedWrite({
         [join(outDir, 'events.json')]: eventsText,
         ...(entityBindingsDraftText ? { [join(outDir, 'entity-bindings.draft.json')]: entityBindingsDraftText } : {}),
+        ...(identityObservationsText ? { [join(outDir, 'identity-observations.compile.json')]: identityObservationsText } : {}),
         [join(outDir, `observed-${caseId}.json`)]: JSON.stringify(observedDoc, null, 2) + '\n',
         [join(outDir, 'compile-report.json')]: JSON.stringify(reportDoc, null, 2) + '\n',
       });
