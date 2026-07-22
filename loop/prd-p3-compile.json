@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "task": "P3 相1 编译（★关键路径头）：把文本用例翻成确定性可回放 spec（events.json，url 走 {{baseUrl}} 占位符）+ 观测现状（observed-<caseId>.json）+ 编译期核验记录（compile-report.json）。决策依 docs/plans/p3-compile/proposed/GRILL.md（G1–G7 人签 2026-07-02）：G1 取 B 采集+立即回放核验；G2 取 A 拷快照 autotester 登录件（登录预备动作，不产 event、凭据只进内存）；G3 flow 草稿落盘+人 confirm 门、注册表整表 60 原子快照带 snapshotOf；G4 不预草 expected、交接面四件套；G5 凭据门抽共享 lib/cred-gate.mjs、requestLog url 剥 query；G6 WSL+反向隧道（loop 内 spike）、CLI 吃 --sut；G7 前置清理砍除、遮罩记已知限制、断言原子折进 intent expected 留痕。本契约 hermetic 只冻命令化层（假 SUT、零 LLM 零真机零真凭据）：flow 草稿由 LLM 在 CLI 外产出、CLI 是 L0 复核器（compile-gate 双闸 fail-closed）；入口可证缺席产 CASE_DEFECT 候选（不落该步+记候选、编译继续）；回放核验器判据 = 动作轴全 unique+performed（非 verdict 终判）。真机编译 tc_catalog_wf_crud 与隧道 spike 为 route:human tier-2。",
+  "task": "P3 相1 编译（★关键路径头）：把文本用例翻成确定性可回放 spec（events.json，url 走 {{baseUrl}} 占位符）+ 观测现状（observed-<caseId>.json）+ 编译期核验记录（compile-report.json）。决策依 docs/plans/p3-compile/proposed/GRILL.md（G1–G7 人签 2026-07-02）：G1 取 B 采集+立即回放核验；G2 取 A 拷快照 autotester 登录件（登录预备动作，不产 event、凭据只进内存）；G3 flow 草稿落盘+人 confirm 门、注册表整表原子快照带 snapshotOf（初版 60，2026-07-22 修单后 61：+workflow.bindAgent）；G4 不预草 expected、交接面四件套；G5 凭据门抽共享 lib/cred-gate.mjs、requestLog url 剥 query；G6 WSL+反向隧道（loop 内 spike）、CLI 吃 --sut；G7 前置清理砍除、遮罩记已知限制、断言原子折进 intent expected 留痕。本契约 hermetic 只冻命令化层（假 SUT、零 LLM 零真机零真凭据）：flow 草稿由 LLM 在 CLI 外产出、CLI 是 L0 复核器（compile-gate 双闸 fail-closed）；入口可证缺席产 CASE_DEFECT 候选（不落该步+记候选、编译继续）；回放核验器判据 = 动作轴全 unique+performed（非 verdict 终判）。真机编译 tc_catalog_wf_crud 与隧道 spike 为 route:human tier-2。",
   "specPath": "docs/plans/p3-compile/plan.md",
   "testChecksums": {
-    "tests/_golden/p3-compile.golden.mjs": "4f56c276e8c431afae5ffb7eb89de2a4a056f771fd60aa5399302aeb3c631b87"
+    "tests/_golden/p3-compile.golden.mjs": "01384c20b9a5bde16a3e975c034936799e2923ef91e1e869bcd5aa927334478f"
   },
   "observability": [
     {
@@ -34,13 +34,13 @@
   "stories": [
     {
       "id": "s1-compile-pipeline",
-      "desc": "编译执行引擎命令化层：casey compile 三段式 CLI（闸+落 flow / confirm 门+执行 / 回放核验）+ lib/atoms-registry.snapshot.json（整表 60 原子、snapshotOf 溯源、atomId 钉 registry 原名）+ lib/login-bootstrap.mjs（拷快照 DEFAULT_SITE.login/loadSiteConfig/loadCreds，env 覆盖优先、缺凭据 fail-closed）+ lib/cred-gate.mjs（credentialGate/stripUrlQuery 共享化，bin/report.mjs 保留 re-export）+ {{baseUrl}} 回填接线（bin/replay.mjs URL 通道过 instantiate，ctx 注 baseUrl=--sut）。产物：events（占位符纪律、authored:false、禁纯坐标步、atom 回链）+ observed（步数=events 步数、实测字面量、requestLog 剥 query、背景归 null）+ compile-report（逐步核验记录、CASE_DEFECT 候选、断言原子意图留痕）。退出码：缺参 64 / 闸拒 65 / 未 confirm 66 / 成功 0。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
+      "desc": "编译执行引擎命令化层：casey compile 三段式 CLI（闸+落 flow / confirm 门+执行 / 回放核验）+ lib/atoms-registry.snapshot.json（整表 61 原子（初版 60，2026-07-22 +workflow.bindAgent）、snapshotOf 溯源、atomId 钉 registry 原名）+ lib/login-bootstrap.mjs（拷快照 DEFAULT_SITE.login/loadSiteConfig/loadCreds，env 覆盖优先、缺凭据 fail-closed）+ lib/cred-gate.mjs（credentialGate/stripUrlQuery 共享化，bin/report.mjs 保留 re-export）+ {{baseUrl}} 回填接线（bin/replay.mjs URL 通道过 instantiate，ctx 注 baseUrl=--sut）。产物：events（占位符纪律、authored:false、禁纯坐标步、atom 回链）+ observed（步数=events 步数、实测字面量、requestLog 剥 query、背景归 null）+ compile-report（逐步核验记录、CASE_DEFECT 候选、断言原子意图留痕）。退出码：缺参 64 / 闸拒 65 / 未 confirm 66 / 成功 0。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T10:29:03.730Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T02:57:44.231Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-regression-locks",
@@ -51,7 +51,16 @@
         "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-09T10:29:59.893Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-22T02:57:46.843Z 全部 acceptance exit 0"
+    }
+  ],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-22",
+      "files": [
+        "tests/_golden/p3-compile.golden.mjs"
+      ],
+      "reason": "准入脚手架修正（被证义务零弱化+两处收紧，契约 stale-red-admission-refit、sol 逐子检查判定 review/sol-consult-r1.log）：C1 钉数 60→61（workflow.bindAgent 入注册表涟漪）；flow 步补 sourceIntentId+恰一 subject 绑定（TESTCASE 补可区分来源意图消三元组重复）；C4 e2/C5/C8 铸 audience=test 预执行权威（confirm 终写盘后精确字节、临时 prd wx 独占+owner 标识校验清理+退出钩子兜异常路径、硬杀残留下轮 wx fail-closed 报错不自动删）；C4 e1 与 C4d 不铸权保 confirm 门/重验闸红因且 C4d 新钉「重验闸」stderr；C8 收紧唯一目标行（workflow.save click ambiguous candidateCount=2 acted=false）防准入拒绝冒充多匹配；C6/C7/C7b 经 sign CLI 铸冻结锁（C7 正反共用同一锁会话、C7b 新钉 ambiguous 输出）。修前红基线 docs/plans/stale-red-admission-refit/accept/red-baselines.json。 codex R1 四 Medium 全采信修复：M1 prd 生命周期加 owner 校验+退出钩子；M2/M3 属 lib/report.mjs 概述措辞与同屏 DOM 顺序（另契约 report-opening-prose）；M4 本 prd 正文 60→61 口径同步。"
     }
   ]
 }

@@ -11,12 +11,16 @@
 //       须 flow-<caseId>.json 的 confirmedBy 非空（G3 分岔一人 confirm 门），否则 exit 66 不产 events
 //   casey compile <caseId> --verify --sut <url> --out-dir <d> --profile <f>  回放核验（G1 取 B）：动作轴全 unique 才 0
 //   缺参一律 exit 64。所有落盘口过 lib/cred-gate.mjs（G5 取 B）。
-import { readFileSync, writeFileSync, existsSync, mkdtempSync, mkdirSync, copyFileSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdtempSync, mkdirSync, copyFileSync, rmSync } from 'node:fs';
 import { execFileSync, spawnSync } from 'node:child_process';
-import { resolve, dirname, join } from 'node:path';
+import { resolve, dirname, join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
+import { createHash, randomUUID } from 'node:crypto';
 import { startFakeSut, FAKE_SITE_DENYLIST } from '../fixtures/fake-sut/server.mjs';
+// 实体准入脚手架（stale-red-admission-refit 修单）：走生产接缝铸测试受众准入件，不弱化准入。
+import { requiredFlowEntityBindings, hashIdentityAdmissionBytes, calculateIdentityAdmissionSignature, buildEntityBindingsDraft } from '../../lib/entity-semantic-lock-preflight.mjs';
+import { createEntityLockReceipt } from '../../lib/entity-semantic-lock.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -57,7 +61,8 @@ check('C1 快照完整性', () => {
   const s = JSON.parse(readFileSync(SNAPSHOT, 'utf8'));
   if (!s.snapshotOf || !s.snapshotOf.repo || !s.snapshotOf.copiedAt) throw new Error('缺 snapshotOf 溯源（repo/copiedAt）');
   const atoms = s.atoms || {};
-  if (Object.keys(atoms).length !== 60) throw new Error(`原子须整表 60，实际 ${Object.keys(atoms).length}`);
+  // 61 = 60 + workflow.bindAgent（entity-ui-wiring dev@82484ab 入表涟漪，修单重钉）。
+  if (Object.keys(atoms).length !== 61) throw new Error(`原子须整表 61，实际 ${Object.keys(atoms).length}`);
   for (const id of ['login', 'workflow.deleteByName', 'workflow.create', 'assert.onPage', 'workflow.save', 'assert.noErrorToast']) {
     if (!atoms[id]) throw new Error(`catalog_wf_crud 所用原子 ${id} 不在册`);
   }
@@ -127,26 +132,32 @@ await checkAsync('C3b 删除计数口径兼容卡片布局', async () => {
 });
 
 // ---------- 合成输入（inline fixture：TestCase 最小规范形态 + flow 草稿） ----------
+// 修单（stale-red-admission-refit，sol 咨询判定）：mutation 默认步各携非空 sourceIntentId + 恰一 subject 绑定；
+// (sourceIntentId, candidateId, role) 三元组必须唯一——按 sol 判定补可区分的来源意图逐步引用，不伪造多 candidate 躲重复。
 const TESTCASE = {
   schemaVersion: 1, caseId: CASE_ID, channel: 'web', uniquePrefix: 'atl_',
   preconditions: ['已登录'],
   intents: [
     { intentId: 'intent_list', text: '进入工作流管理列表' },
     { intentId: 'intent_create', text: '新增工作流：名称 atl_{{uniqueName}}、分类 测试分类' },
+    { intentId: 'intent_canvas', text: '确认新增后进入画布页（断言意图留痕）' },
     { intentId: 'intent_save', text: '保存工作流' },
+    { intentId: 'intent_toast', text: '保存后无错误提示弹窗（断言意图留痕）' },
+    { intentId: 'intent_cleanup', text: '按名称 atl_{{uniqueName}} 删除清理（唯一名纪律）' },
   ],
 };
+const SUBJECT = (sourceIntentId) => ({ sourceIntentId, entityBindings: [{ candidateId: 'candidate-wf-main', role: 'subject' }] });
 const FLOW_GOOD = {
   id: CASE_ID, name: '编译冒烟', category: 'normal',
   steps: [
-    { atom: 'workflow.create', params: { name: 'atl_{{uniqueName}}', category: '测试分类' } },
-    { atom: 'assert.onPage', params: { urlIncludes: '/process/detail' } },
-    { atom: 'workflow.save', params: {} },
-    { atom: 'assert.noErrorToast', params: {} },
+    { atom: 'workflow.create', params: { name: 'atl_{{uniqueName}}', category: '测试分类' }, ...SUBJECT('intent_create') },
+    { atom: 'assert.onPage', params: { urlIncludes: '/process/detail' }, ...SUBJECT('intent_canvas') },
+    { atom: 'workflow.save', params: {}, ...SUBJECT('intent_save') },
+    { atom: 'assert.noErrorToast', params: {}, ...SUBJECT('intent_toast') },
   ],
 };
-const FLOW_BAD_PREFIX = { ...FLOW_GOOD, steps: [{ atom: 'workflow.create', params: { name: '目录CRUD无前缀', category: '测试分类' } }] };
-const FLOW_WITH_DELETE = { ...FLOW_GOOD, steps: [...FLOW_GOOD.steps, { atom: 'workflow.deleteByName', params: { name: 'atl_{{uniqueName}}' } }] };
+const FLOW_BAD_PREFIX = { ...FLOW_GOOD, steps: [{ atom: 'workflow.create', params: { name: '目录CRUD无前缀', category: '测试分类' }, ...SUBJECT('intent_create') }] };
+const FLOW_WITH_DELETE = { ...FLOW_GOOD, steps: [...FLOW_GOOD.steps, { atom: 'workflow.deleteByName', params: { name: 'atl_{{uniqueName}}' }, ...SUBJECT('intent_cleanup') }] };
 
 const tcFile = join(tmp, 'testcase.json');
 writeFileSync(tcFile, JSON.stringify(TESTCASE));
@@ -155,6 +166,91 @@ writeFileSync(profFile, JSON.stringify({ background: FAKE_SITE_DENYLIST, success
 function writeFlow(obj, name) { const f = join(tmp, name); writeFileSync(f, JSON.stringify(obj)); return f; }
 const emptyExpected = join(tmp, 'expected.empty.json');
 writeFileSync(emptyExpected, JSON.stringify({ caseId: CASE_ID, channel: 'web', intents: [], globalAssertions: [] }));
+
+// ---------- 实体准入脚手架（stale-red-admission-refit 修单；sol 咨询 review/sol-consult-r1.log 判定） ----------
+// 信任锚 = 临时 loop/prd-<caseId>.json（wx 独占创建：既有残留=上轮异常，fail-closed 报错不自动删；末尾统一清理）。
+// 权威件/锁件必须落仓内（projectArtifactKey 约束），scratch 根随机命名、finally 连 prd 一并清。
+const SCRATCH_ROOT = join(ROOT, `.golden-scratch-p3compile-${randomUUID().slice(0, 8)}`);
+const TEMP_PRD = join(ROOT, 'loop', `prd-${CASE_ID}.json`);
+const OWNER_TOKEN = randomUUID();
+let prdOwned = false;
+function ensureTempPrd() {
+  if (prdOwned) return;
+  writeFileSync(TEMP_PRD, JSON.stringify({
+    schemaVersion: 1, caseId: CASE_ID,
+    task: `p3-compile golden 临时准入信任锚（owner ${OWNER_TOKEN}；运行末+退出钩子清理；残留=上轮异常退出，wx fail-closed 报错不自动删）`,
+    testChecksums: {}, stories: [],
+  }, null, 2) + '\n', { flag: 'wx' });
+  prdOwned = true;
+}
+function registerChecksum(artifactKey, text) {
+  ensureTempPrd();
+  const prd = JSON.parse(readFileSync(TEMP_PRD, 'utf8'));
+  prd.testChecksums[artifactKey] = createHash('sha256').update(text).digest('hex');
+  writeFileSync(TEMP_PRD, JSON.stringify(prd, null, 2) + '\n');
+}
+// codex R1-M1：清理前校验所有权标识（绝不删非本进程创建的同名 prd）；退出钩子兜异常路径（硬杀仍可能残留，
+// 彼时下轮 wx fail-closed 报错、人工核后清）。
+function cleanupAdmissionScaffold() {
+  rmSync(SCRATCH_ROOT, { recursive: true, force: true });
+  if (!prdOwned) return;
+  try {
+    const cur = JSON.parse(readFileSync(TEMP_PRD, 'utf8'));
+    if (String(cur.task || '').includes(OWNER_TOKEN)) rmSync(TEMP_PRD, { force: true });
+  } catch { /* 读不出所有权就不删（fail-closed） */ }
+  prdOwned = false;
+}
+process.on('exit', cleanupAdmissionScaffold);
+let authoritySeq = 0;
+// 铸 audience=test 预执行权威：必须在 confirm 终写盘之后按精确字节生成（sol：任何再写盘都会 hash mismatch）。
+function mintExecuteAuthority(flowFile) {
+  authoritySeq += 1;
+  const flowBytes = readFileSync(flowFile);
+  const tcBytes = readFileSync(tcFile);
+  const doc = JSON.parse(flowBytes.toString('utf8'));
+  const bindings = requiredFlowEntityBindings(doc.flow);
+  if (!Array.isArray(bindings) || !bindings.length) throw new Error(`铸权失败：flow 闭合绑定集投影为空（${bindings && bindings.reason}）`);
+  const artifact = {
+    schemaVersion: 1, artifactKind: 'entity-pre-execution-authority', authorizedFor: 'compile-execute',
+    caseId: CASE_ID, signed: true, signerId: 'golden-human', signedAt: '2026-07-22T00:00:00.000Z', audience: 'test',
+    flowSha256: hashIdentityAdmissionBytes(flowBytes), testcaseSha256: hashIdentityAdmissionBytes(tcBytes),
+    bindings: bindings.map((b) => ({ ...b })),
+  };
+  artifact.signature = calculateIdentityAdmissionSignature(artifact);
+  const text = JSON.stringify(artifact, null, 2) + '\n';
+  mkdirSync(SCRATCH_ROOT, { recursive: true });
+  const rel = `${basename(SCRATCH_ROOT)}/execute-authority-${authoritySeq}.json`;
+  writeFileSync(join(ROOT, rel), text);
+  registerChecksum(rel, text);
+  return rel;
+}
+// 固定夹具收据（user-confirmed；code 为夹具字面量，不冒充平台读回——平台 ID 通道等真机 spike）。
+const smokeReceipt = createEntityLockReceipt({
+  lockId: 'lock-wf-smoke', kind: 'workflow', bindingMode: 'existing', scopeFingerprint: 'sha256:scope-p3-smoke',
+  expected: { name: 'atl_{{uniqueName}}', code: 'WF-SMOKE' }, observed: { name: 'atl_{{uniqueName}}', code: 'WF-SMOKE' },
+  source: 'user-confirmed',
+});
+// 经 sign CLI 铸冻结实体锁（lockchain 金牌先例）：草稿逐行确认 + 固定收据 → audience=test 冻结 → prd checksum 发布。
+function signFrozenLocks(eventsFile, bindingsDraft, label) {
+  const dir = join(SCRATCH_ROOT, label);
+  mkdirSync(dir, { recursive: true });
+  const confirmations = bindingsDraft.bindings.map((row) => ({ ...row, receipt: smokeReceipt }));
+  const draftFile = join(dir, 'expected.draft.json');
+  writeFileSync(draftFile, JSON.stringify({ caseId: CASE_ID, intents: [{ intentId: 'intent_0', expected: [{ kind: 'textVisible', op: 'appears', value: '工作流列表' }] }], pending: [] }));
+  const bindingsFile = join(dir, 'entity-bindings.draft.json');
+  writeFileSync(bindingsFile, JSON.stringify(bindingsDraft, null, 2));
+  const confFile = join(dir, 'entity-confirmations.json');
+  writeFileSync(confFile, JSON.stringify({ caseId: CASE_ID, confirmations }, null, 2));
+  ensureTempPrd();
+  const locksRel = `${basename(SCRATCH_ROOT)}/${label}/entity-locks.frozen.json`;
+  const r = run([CASEY, 'sign', CASE_ID,
+    '--draft', draftFile, '--prd', TEMP_PRD, '--frozen-out', join(dir, 'expected.frozen.json'),
+    '--signer', 'golden-human', '--against-build', 'golden-build', '--signed-at', '2026-07-22T00:00:00.000Z',
+    '--events', eventsFile, '--entity-bindings-draft', bindingsFile, '--entity-confirmations', confFile,
+    '--entity-locks-out', join(ROOT, locksRel), '--audience', 'test']);
+  if (r.status !== 0) throw new Error(`sign 铸锁失败 exit ${r.status}：${(r.stderr || '').slice(-300)}`);
+  return locksRel;
+}
 
 // ---------- C4 闸 + 人 confirm 门 + 执行（happy 假 SUT） ----------
 const dirA = join(tmp, 'out-a'); mkdirSync(dirA, { recursive: true });
@@ -178,8 +274,9 @@ await checkAsync('C4 闸+confirm+执行 happy', async () => {
   const flow = JSON.parse(readFileSync(flowFile, 'utf8'));
   flow.confirmedBy = 'golden-human'; flow.confirmedAt = '2026-07-02T00:00:00.000Z';
   writeFileSync(flowFile, JSON.stringify(flow, null, 2));
-  // 执行：产 events + observed + 编译期核验记录
-  const e2 = run([CASEY, 'compile', CASE_ID, '--execute', '--testcase', tcFile, '--sut', sutHappy.url, '--out-dir', dirA, '--profile', profFile, '--skip-login', '--unique-name', 'g1']);
+  // 执行：产 events + observed + 编译期核验记录（修单：confirm 终写盘后铸 audience=test 预执行权威）
+  const authA = mintExecuteAuthority(flowFile);
+  const e2 = run([CASEY, 'compile', CASE_ID, '--execute', '--testcase', tcFile, '--sut', sutHappy.url, '--out-dir', dirA, '--profile', profFile, '--skip-login', '--unique-name', 'g1', '--entity-authority', authA]);
   if (e2.status !== 0) throw new Error(`confirm 后执行应 exit 0，实际 ${e2.status}：${(e2.stderr || '').slice(-300)}`);
   for (const f of ['events.json', `observed-${CASE_ID}.json`, 'compile-report.json']) {
     if (!existsSync(join(dirA, f))) throw new Error(`执行后缺产物 ${f}`);
@@ -267,7 +364,9 @@ await checkAsync('C5 CASE_DEFECT 候选', async () => {
   const flow = JSON.parse(readFileSync(flowFile, 'utf8'));
   flow.confirmedBy = 'golden-human'; flow.confirmedAt = '2026-07-02T00:00:00.000Z';
   writeFileSync(flowFile, JSON.stringify(flow, null, 2));
-  const e = run([CASEY, 'compile', CASE_ID, '--execute', '--testcase', tcFile, '--sut', sutHappy.url, '--out-dir', dirB, '--profile', profFile, '--skip-login', '--unique-name', 'g2']);
+  // 修单：deleteByName 即使最终因入口缺席不落 event，也必须先进入权威闭合绑定集（sol 判定）。
+  const authB = mintExecuteAuthority(flowFile);
+  const e = run([CASEY, 'compile', CASE_ID, '--execute', '--testcase', tcFile, '--sut', sutHappy.url, '--out-dir', dirB, '--profile', profFile, '--skip-login', '--unique-name', 'g2', '--entity-authority', authB]);
   if (e.status !== 0) throw new Error(`入口缺席不 fail 全盘、应 exit 0，实际 ${e.status}：${(e.stderr || '').slice(-300)}`);
   const ev = JSON.parse(readFileSync(join(dirB, 'events.json'), 'utf8'));
   if (ev.events.some((x) => x.atom === 'workflow.deleteByName')) throw new Error('入口缺席的原子不得落 event');
@@ -278,10 +377,14 @@ await checkAsync('C5 CASE_DEFECT 候选', async () => {
 });
 
 // ---------- C6 {{baseUrl}} 回填接线：编译产物直接可回放（p5 回放器 URL 通道过 instantiate） ----------
+let locksA = null; // dirA events 的冻结锁（C6 铸、C7 正反两向共用同一锁会话，锁后不得再写 events 字节）
 await checkAsync('C6 占位符 events 可回放', async () => {
   if (!eventsA) throw new Error('前置 C4 未产 events');
+  // 修单：mutation events 回放必须携人签冻结锁——经 sign CLI 铸（compile 产的 entity-bindings.draft.json 为草稿源）。
+  const draftA = JSON.parse(readFileSync(join(dirA, 'entity-bindings.draft.json'), 'utf8'));
+  locksA = signFrozenLocks(join(dirA, 'events.json'), draftA, 'locks-a');
   const axesFile = join(tmp, 'axes.c6.json');
-  const r = run([REPLAY, '--events', join(dirA, 'events.json'), '--sut', sutHappy.url, '--expected', emptyExpected, '--profile', profFile, '--out', axesFile]);
+  const r = run([REPLAY, '--events', join(dirA, 'events.json'), '--sut', sutHappy.url, '--expected', emptyExpected, '--profile', profFile, '--out', axesFile, '--entity-locks', locksA]);
   if (r.status !== 0) throw new Error(`占位符 events 回放应 exit 0，实际 ${r.status}：${(r.stderr || '').slice(-300)}`);
   const axes = JSON.parse(readFileSync(axesFile, 'utf8'));
   // p5 已冻接缝语义：axes 按 intentId 卷回、每 intent 一条代表步（非逐 event）。
@@ -313,6 +416,8 @@ await checkAsync('C4d 执行段重验闸（防 confirm 后篡改）', async () =
   writeFileSync(flowFile, JSON.stringify(flow, null, 2));
   const e = run([CASEY, 'compile', CASE_ID, '--execute', '--testcase', tcFile, '--sut', sutHappy.url, '--out-dir', dirC, '--profile', profFile, '--skip-login', '--unique-name', 'g3']);
   if (e.status !== 65) throw new Error(`双篡改 flow 执行应 exit 65（重验以 TestCase 为锚），实际 ${e.status}`);
+  // 修单钉红因（sol：不铸权，且 65 必须来自重验闸而非身份准入——防红因静默换血）。
+  if (!/重验闸/.test(`${e.stdout || ''}${e.stderr || ''}`)) throw new Error('篡改拒绝必须由执行前重验闸给出（stderr 须点名重验闸）');
   if (existsSync(join(dirC, 'events.json'))) throw new Error('篡改 flow 不得产 events.json');
 });
 
@@ -328,16 +433,21 @@ await checkAsync('C8 多匹配拒动作拒产出', async () => {
     const flow = JSON.parse(readFileSync(flowFile, 'utf8'));
     flow.confirmedBy = 'golden-human'; flow.confirmedAt = '2026-07-02T00:00:00.000Z';
     writeFileSync(flowFile, JSON.stringify(flow, null, 2));
+    // 修单：铸权放行准入，正向证明真正到达多匹配动作门（sol：C8 最高风险——防准入拒绝冒充多匹配红）。
+    const authD = mintExecuteAuthority(flowFile);
     // R2-F3：out-dir 预放旧「成功产物」——失败运行后不得残留假冒本轮成功。
     writeFileSync(join(dirD, 'events.json'), JSON.stringify({ stale: true }));
     writeFileSync(join(dirD, `observed-${CASE_ID}.json`), JSON.stringify({ stale: true }));
-    const e = run([CASEY, 'compile', CASE_ID, '--execute', '--testcase', tcFile, '--sut', sutAmb2.url, '--out-dir', dirD, '--profile', profFile, '--skip-login', '--unique-name', 'g4']);
+    const e = run([CASEY, 'compile', CASE_ID, '--execute', '--testcase', tcFile, '--sut', sutAmb2.url, '--out-dir', dirD, '--profile', profFile, '--skip-login', '--unique-name', 'g4', '--entity-authority', authD]);
     if (e.status !== 65) throw new Error(`保存按钮多匹配执行应 exit 65（证不出→非零，fail-safe），实际 ${e.status}`);
     if (existsSync(join(dirD, 'events.json'))) throw new Error('非唯一执行不得产/残留可进 P4 的 events.json（含旧产物清场）');
     if (existsSync(join(dirD, `observed-${CASE_ID}.json`))) throw new Error('非唯一执行不得残留旧 observed（假冒本轮成功）');
     if (!existsSync(join(dirD, 'compile-report.json'))) throw new Error('诊断用 compile-report.json 应照落（route:human 依据）');
     const rep = JSON.parse(readFileSync(join(dirD, 'compile-report.json'), 'utf8'));
-    if (!rep.verification.some((v) => v.resolution === 'ambiguous' && v.acted === false)) throw new Error('多匹配步须记 ambiguous 且 acted=false（绝不点击；resolution 词表统一后编译门多匹配收敛到 ambiguous）');
+    // 修单收紧（sol）：唯一目标行四证同立——保存步 click 多匹配 candidateCount=2 且 acted=false，准入拒绝无法冒充。
+    const ambRow = rep.verification.find((v) => v.atom === 'workflow.save' && v.action === 'click' && v.resolution === 'ambiguous');
+    if (!ambRow) throw new Error('compile-report 须记保存步 click 的 ambiguous 目标行（多匹配红因锚定）');
+    if (ambRow.candidateCount !== 2 || ambRow.acted !== false) throw new Error(`保存步多匹配行须 candidateCount=2 且 acted=false，实际 candidateCount=${ambRow.candidateCount} acted=${ambRow.acted}`);
   } finally { if (sutAmb2) await sutAmb2.close(); }
 });
 
@@ -354,21 +464,32 @@ await checkAsync('C7b verify 逐 event 不被卷回掩盖', async () => {
       { stepId: 'atstep_2', intentId: 'intent_0', atom: 'workflow.create', action: 'click', semantic: { kind: 'role', role: 'button', name: '新增工作流', exact: true }, text: '新增工作流' },
     ],
   }));
+  // 修单：手编 mutation events 也须冻结锁（sol：保持同一 intent 三事件、继续精确点名 atstep_1 并要求 ambiguous）。
+  const eventsE = JSON.parse(readFileSync(join(dirE, 'events.json'), 'utf8'));
+  const provenanceE = eventsE.events.map((ev) => ({
+    stepId: ev.stepId, intentId: ev.intentId, atom: ev.atom,
+    sourceIntentId: 'intent_create', candidateId: 'candidate-wf-main', role: 'subject',
+  }));
+  const draftE = buildEntityBindingsDraft({ eventsBytes: readFileSync(join(dirE, 'events.json')), eventsDocument: eventsE, provenance: provenanceE });
+  if (draftE.ok !== true) throw new Error(`C7b 绑定草稿构建失败：${draftE.reason}`);
+  const locksE = signFrozenLocks(join(dirE, 'events.json'), draftE.draft, 'locks-e');
   // happy 列表两行 → 「删除」count=2 = 中间步多匹配；代表步（最后一步）unique——verify 须仍红且点名 atstep_1。
-  const v = run([CASEY, 'compile', CASE_ID, '--verify', '--sut', sutHappy.url, '--out-dir', dirE, '--profile', profFile]);
+  const v = run([CASEY, 'compile', CASE_ID, '--verify', '--sut', sutHappy.url, '--out-dir', dirE, '--profile', profFile, '--entity-locks', locksE]);
   if (v.status === 0) throw new Error('intent 中间步 ambiguous 时 verify 应非零（代表步聚合不得掩盖）');
   const out = `${v.stdout || ''}${v.stderr || ''}`;
   if (!out.includes('atstep_1')) throw new Error('verify 失败输出须点名中间雷点步 atstep_1');
+  if (!out.includes('ambiguous')) throw new Error('verify 失败输出须点名 ambiguous 雷点（红因锚定，防准入拒绝冒充）');
 });
 
 // ---------- C7 回放核验器 CLI（G1 取 B）：unique 全过才 0，ambiguous 非零+雷点清单 ----------
 await checkAsync('C7 verify 正反两向', async () => {
-  const v1 = run([CASEY, 'compile', CASE_ID, '--verify', '--sut', sutHappy.url, '--out-dir', dirA, '--profile', profFile]);
+  if (!locksA) throw new Error('前置 C6 未铸 dirA 冻结锁');
+  const v1 = run([CASEY, 'compile', CASE_ID, '--verify', '--sut', sutHappy.url, '--out-dir', dirA, '--profile', profFile, '--entity-locks', locksA]);
   if (v1.status !== 0) throw new Error(`happy verify 应 exit 0，实际 ${v1.status}：${(v1.stderr || '').slice(-200)}`);
   let sutAmb;
   try {
     sutAmb = await startFakeSut({ scenario: 'ambiguous' });
-    const v2 = run([CASEY, 'compile', CASE_ID, '--verify', '--sut', sutAmb.url, '--out-dir', dirA, '--profile', profFile]);
+    const v2 = run([CASEY, 'compile', CASE_ID, '--verify', '--sut', sutAmb.url, '--out-dir', dirA, '--profile', profFile, '--entity-locks', locksA]);
     if (v2.status === 0) throw new Error('ambiguous 场景 verify 应非零退出（雷点须暴露）');
     const out = `${v2.stdout || ''}${v2.stderr || ''}`;
     if (!/ambiguous|fallback_first/.test(out)) throw new Error('verify 失败输出须点名 ambiguous/fallback_first 雷点');
@@ -376,6 +497,7 @@ await checkAsync('C7 verify 正反两向', async () => {
 });
 
 if (sutHappy) await sutHappy.close();
+cleanupAdmissionScaffold();
 
 if (fails.length) {
   for (const f of fails) console.error(`RED  p3-compile: ${f}`);

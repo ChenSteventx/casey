@@ -168,16 +168,20 @@ check('W1e 坏 metrics 语义收紧（codex R2）：合法 JSON 非对象（null
 await checkAsync('E1 casey run 端到端：report.html 含诊断栏目 + 步卡含本 intent 行 + runId=目录名', async () => {
   const srv = await startPublishSut({ scenario: 'happy' });
   try {
+    // 修单（stale-red-admission-refit，sol 甲案收敛版）：E1 被证义务是诊断栏目端到端嵌入，非实体准入——
+    // 夹具改单条只读白名单信封（nav.workflowManagement + 顶层/事件 url 逐字同 + 无 pre + 零实体锁），
+    // 走 deterministic-read-only-policy 零权威路径；断言文本随列表页改「工作流列表」。
+    // atstep_0/intent_1/诊断块标题/runId 断言原样保留（义务零弱化）。
     const EVENTS = join(tmp, 'e1-events.json');
     writeFileSync(EVENTS, JSON.stringify({
       schemaVersion: 2, channel: 'web', caseId: 'tc_diag_run',
-      url: '{{baseUrl}}/ai-manager/process/detail', recordedAt: '2026-07-03T00:00:00.000Z', compiledBy: 'golden-fixture', authored: false,
-      events: [{ stepId: 'atstep_0', intentId: 'intent_1', atom: 'nav.editor', action: 'nav', url: '{{baseUrl}}/ai-manager/process/detail' }],
+      url: '{{baseUrl}}/ai-manager/process/list', recordedAt: '2026-07-03T00:00:00.000Z', compiledBy: 'golden-fixture', authored: false,
+      events: [{ stepId: 'atstep_0', intentId: 'intent_1', atom: 'nav.workflowManagement', action: 'nav', url: '{{baseUrl}}/ai-manager/process/list' }],
     }));
     const EXP = join(tmp, 'e1-expected.json');
     writeFileSync(EXP, JSON.stringify(signExpected({
       caseId: 'tc_diag_run', channel: 'web',
-      intents: [{ intentId: 'intent_1', expected: [{ kind: 'textVisible', op: 'appears', value: '工作流编辑器', soft: false }] }],
+      intents: [{ intentId: 'intent_1', expected: [{ kind: 'textVisible', op: 'appears', value: '工作流列表', soft: false }] }],
       globalAssertions: [],
     })));
     const PROFILE = join(tmp, 'e1-profile.json');

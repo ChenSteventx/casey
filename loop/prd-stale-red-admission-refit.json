@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "task": "stale-red-admission-refit（light）：实体语义锁准入面拦夹具旧式调用致两冻结金牌陈旧红（stash 实证先于 2026-07-22 报告模板改动）。全部修夹具侧、生产零改、不弱化准入：report-diagnostics E1 取 sol 甲案收敛版（单 nav.workflowManagement 只读白名单信封、顶层与事件 url 逐字同、断言文本改列表页文案、零锁）；p3-compile 逐子检查选择性铸权（C4 e2/C5/C8 铸 audience=test 预执行权威且 confirm 终写盘后按精确字节生成、C4 e1 与 C4d 不铸权保 confirm 门/重验闸红因、C8 收紧 compile-report 唯一目标行断言防准入拒绝冒充多匹配、C6/C7/C7b 经 sign CLI 铸冻结锁、TESTCASE 补可区分来源意图消 (sourceIntentId,candidateId,role) 三元组重复、临时 prd wx 独占+逐调用 finally 清理）；C1 钉数 60→61 是 workflow.bindAgent 入注册表的涟漪同批修单。修后两金牌 sha256 重钉进各自 owner prd 并记 checksumAmendments（准入脚手架修正、被证义务零弱化）。方案=GRILL.md（Steven 2026-07-22 确认）+ plan.md + sol max 咨询（review/sol-consult-r1.log）。",
+  "specPath": "docs/plans/stale-red-admission-refit/plan.md",
+  "testChecksums": {
+    "docs/plans/stale-red-admission-refit/accept/red-baselines.json": "a399bbcab660654e6fb3bd99ac65646ae54ff1a3a094497f36481e3a84bf4d47"
+  },
+  "observability": [
+    {
+      "dimension": "codex 异构评审修后 diff（家族≠实现家族）+ 两 owner prd 的 checksumAmendments 修单记录人核；audit.jsonl 记账。",
+      "route": "human"
+    },
+    {
+      "dimension": "owner prd gate 复跑（prd-report-diagnostics / prd-p3-compile）exit 0 由本契约 evidence 记录；passes 仅 gate 有权写。",
+      "route": "machine"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-report-diagnostics-refit",
+      "desc": "E1 夹具改只读白名单信封（sol 甲案收敛版）：单 nav.workflowManagement 事件、顶层 url 与事件 url 逐字 {{baseUrl}}/ai-manager/process/list、无 pre、零实体锁走 deterministic-read-only-policy；已签断言文本改「工作流列表」；atstep_0/intent_1/诊断块标题/runId 断言原样保留（被证义务=诊断栏目端到端嵌入，零弱化）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/report-diagnostics.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-22T02:57:58.194Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-p3-compile-refit",
+      "desc": "p3-compile 选择性修形：flow 步补 sourceIntentId+恰一 subject 绑定（TESTCASE 补可区分来源意图）；C4 e2/C5/C8 铸 audience=test 预执行权威（confirm 终写盘后精确字节、临时 prd wx+finally）；C4 e1/C4d 不铸权保原红因；C8 断言收紧唯一目标行（workflow.save click ambiguous candidateCount=2 acted=false + 本轮零产物）；C6/C7/C7b 经 sign CLI 铸冻结锁（eventsA/手编 events 精确字节）；C1 钉数 61。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p3-compile.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-22T03:00:00.158Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-regression-locks",
+      "desc": "回归锁：报告族金牌与 tier1 续绿；两 owner prd 重钉后 gate 复跑 exit 0（evidence 记录）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/report-nl-atomic.golden.mjs",
+        "node tests/_golden/output-seal.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-22T03:00:52.811Z 全部 acceptance exit 0"
+    }
+  ]
+}

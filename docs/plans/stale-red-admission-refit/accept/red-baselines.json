@@ -1,0 +1,31 @@
+{
+  "capturedAt": "2026-07-22",
+  "note": "修前红基线实录（stash 实证红先于 2026-07-22 报告模板改动；两金牌红因均为实体语义锁准入面拦夹具旧式调用）",
+  "baselines": [
+    {
+      "golden": "tests/_golden/report-diagnostics.golden.mjs",
+      "exit": 1,
+      "score": "11 过 / 1 红",
+      "reds": [
+        "E1 casey run 端到端：casey run 应 exit 0，实际 1——replay: frozen identity locks 未过（FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID），未启动浏览器"
+      ]
+    },
+    {
+      "golden": "tests/_golden/p3-compile.golden.mjs",
+      "exit": 1,
+      "score": "4 过 / 10 红",
+      "reds": [
+        "C1 快照完整性: 原子须整表 60，实际 61（另因：workflow.bindAgent 上轮 dev@82484ab 入注册表的钉数涟漪）",
+        "C4 闸+confirm+执行 happy: exit 65——PRE_EXECUTION_IDENTITY_BINDINGS_INVALID → PROVIDE_CLOSED_EXECUTE_BINDINGS",
+        "C4a events 形状与占位符纪律: 前置 C4 未产 events（连锁）",
+        "C4b observed 观测现状纪律: ENOENT observed-tc_compile_smoke.json（连锁）",
+        "C4c 编译期核验记录: ENOENT compile-report.json（连锁）",
+        "C5 CASE_DEFECT 候选: exit 65——PRE_EXECUTION_IDENTITY_BINDINGS_INVALID（同因）",
+        "C6 占位符 events 可回放: 前置 C4 未产 events（连锁）",
+        "C8 多匹配拒动作拒产出: 非唯一执行不得产/残留 events.json（准入先拦、未达多匹配面）",
+        "C7b verify 逐 event 不被卷回掩盖: verify 失败输出须点名中间雷点步 atstep_1",
+        "C7 verify 正反两向: happy verify 应 exit 0，实际 65——缺 events.json（连锁）"
+      ]
+    }
+  ]
+}
