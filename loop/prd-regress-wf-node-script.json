@@ -3,8 +3,17 @@
   "task": "迁移 regress 脚本转换节点纵切：补 workflow.assertNodeFieldValue 命名断言原子与 inputReadback 精确回读接缝；不运行假被测系统，真实行为保持 route:human。",
   "specPath": "docs/plans/regress-wf-node-script/plan.md",
   "testChecksums": {
-    "tests/_golden/regress-wf-node-script.zero-sut.golden.mjs": "17c792c70284e3ea7482803b3ab7792a41184b229671639a644e1956e5955fa0"
+    "tests/_golden/regress-wf-node-script.zero-sut.golden.mjs": "a1fc4ce16c721740ac72617aee9e5810f688ca070b62bc09e88d917d6b6b0db1"
   },
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-23",
+      "files": [
+        "tests/_golden/regress-wf-node-script.zero-sut.golden.mjs"
+      ],
+      "reason": "C7 结构定位器随投影抽离刷新（护栏 #19 陈旧绿收口，Steven 2026-07-23 授权）：提交 e1f5201「axes 投影抽生产纯函数」把 evaluateAssertions 的 inputReadback 消费从 bin/replay.mjs 搬进 lib/replay-axes.mjs（回读证据仍在 bin/replay.mjs 由 inputReadbackFromAction 构建 intentInputReadback 映射并经 projectReplayAxes 交接），但 C7 仍 grep bin/replay.mjs 找 'inputReadback: intentInputReadback.get(iid)'，抽离后失配、金牌 exit 1，而本 PRD 的 gate 证据戳 2026-07-21T18:23 早于 07-22 抽离，故 passes:true 成陈旧绿。修单：C7 消费点断言定位改指 lib/replay-axes.mjs，并加验壳内构建（intentInputReadback.set）与交接（intentInputReadback 传入 projectReplayAxes）——纯定位刷新加两处收紧、零断言弱化。回读功能自 e1f5201 起从未断。金牌重跑 10/10 exit 0，新 sha256 a1fc4ce16c721740ac72617aee9e5810f688ca070b62bc09e88d917d6b6b0db1。"
+    }
+  ],
   "observability": [
     {
       "dimension": "真实 Heren 工作流画布中“脚本转换”节点的名称、配置抽屉标题、脚本字段 placeholder、写后精确回读、关闭抽屉及删除归零；须联网真机回放、录屏、视觉复核和独立单用例 HTML 后才能核销。",
@@ -25,7 +34,7 @@
         "node tests/_golden/p4-drafter.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-21T18:23:40.353Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T10:15:22.750Z 全部 acceptance exit 0"
     }
   ],
   "resignLog": [

@@ -25,6 +25,27 @@ UI 会互踩；②③吃①产物、不并发连真站。真机前置=`casey doc
 其余挂账：密钥签名威胁面 / SKILL.md 措辞统一（route:human，各 prd observability）；P8 多通道 /
 P10 排期线。
 
+## 2026-07-23 陈旧绿收口（护栏 #19，dev 维护提交，独立于 503 baton）
+
+能力评估漂移扫逮到两枚 e1f5201 遗留的陈旧绿——投影抽离（提交 e1f5201「axes 投影抽生产纯函数」把
+fold/回读接线从 bin/replay.mjs 整体搬进 lib/replay-axes.mjs）后，两枚金牌的结构定位器仍 grep 旧文件、
+抽离后失配、金牌 exit 1；而 owner PRD 的 gate 证据戳早于抽离，passes:true 成陈旧绿（护栏 #19 迁移破邻接面）：
+
+1. `tests/_golden/intent-event-fold.zero-sut.golden.mjs` 的 R17（replay 接线用 fold 输出）——定位从
+   bin/replay.mjs 刷新到接线真实所在 lib/replay-axes.mjs（import + fold 赋值 + eventActions 逐 event
+   证据保留三项现落此处），并加验生产入口 bin/replay.mjs 确有委托 projectReplayAxes 调用；金牌 17/17。
+2. `tests/_golden/regress-wf-node-script.zero-sut.golden.mjs` 的 C7（回放接线取代表事件动作轴）——
+   inputReadback 消费点定位改指 lib/replay-axes.mjs，并加验壳内构建（intentInputReadback.set）与交接
+   （intentInputReadback 传入 projectReplayAxes）；金牌 10/10。
+
+两处均纯定位刷新 + 收紧、零断言弱化；折叠/回读功能自 e1f5201 起从未断（agent-id-regression-diff R20
+一直绿覆盖同一实现）。owner PRD 各记一笔 checksumAmendments，gate 双 GREEN（证据戳更新到抽离之后）。
+改动 4 个显式路径：两金牌 + prd-intent-event-fold.json + prd-regress-wf-node-script.json。
+
+顺带：全 zero-sut 漂移扫另发现两个 meta-golden 在干净基线就红（git stash 隔离证实、非本次引入，未擅动）——
+hermetic-golden-isolation-pending（某隔离件路由/源摘要漂移）、hermetic-golden-prd-reverse-closure
+（prd-stale-red-admission-refit 的 acceptance 引用隔离 live 件 p3-compile）；挂账待 Steven 定。
+
 ## 2026-07-23 凌晨（续）real-uat-attestation 六阶段全收口（已被顶部 503 节接续，仍为有效溯源）
 
 Steven 两裁（人签采认+评审 codex）后走完：codex 四轮评审 R1/R2/R3 FAIL→逐轮全采信修复→**R4 终判

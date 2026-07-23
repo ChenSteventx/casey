@@ -3,8 +3,17 @@
   "task": "intent-event-fold（full，P0）回归棘轮：实现提交 3c4647c 已让正式回放按 intent 对完整 eventActions 做 fail-safe 折叠，禁止前序 ambiguous、none、action_failed 或坏轴被末事件 unique 洗成 PASS。本 PRD 只冻结后补的 zero-SUT 回归保护测试：使用真实 cleanup 事故的脱敏事件投影，在内存折叠后用临时 axes 驱动确定性 bin/verdict.mjs；不启动回放器、浏览器、服务器或网络，不运行 fake-SUT，不冒充 ATDD 红基线。判据见 docs/plans/intent-event-fold/plan.md。",
   "specPath": "docs/plans/intent-event-fold/plan.md",
   "testChecksums": {
-    "tests/_golden/intent-event-fold.zero-sut.golden.mjs": "b94dac60dfbf13daaaf7a4dc9d91f8fc400d58ba292c2912617c2bffb5d3f4f6"
+    "tests/_golden/intent-event-fold.zero-sut.golden.mjs": "200bb3b64124bc259ee2ab828abd472ee78ffdf12143dfc0fc64cc9184622850"
   },
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-23",
+      "files": [
+        "tests/_golden/intent-event-fold.zero-sut.golden.mjs"
+      ],
+      "reason": "R17 结构定位器随投影抽离刷新（护栏 #19 陈旧绿收口，Steven 2026-07-23 授权）：提交 e1f5201「axes 投影抽生产纯函数」把 foldIntentAction 接线从 bin/replay.mjs 整体搬进 lib/replay-axes.mjs（-78/+85 行）并同步改了 agent-id-regression-diff 金牌，但本金牌 R17 仍 grep bin/replay.mjs 找该 import，抽离后失配、金牌 exit 1，而本 PRD 的 gate 证据戳 2026-07-21T23:38 早于 07-22 抽离，故 passes:true 成陈旧绿。修单：R17 定位改指接线真实所在 lib/replay-axes.mjs（import + fold 赋值 + eventActions 逐 event 证据保留三项现落此处），并加验生产入口 bin/replay.mjs 确有委托 projectReplayAxes 调用，以保住原「回放路径可达」本意——纯定位刷新加一处收紧、零断言弱化。折叠功能自 e1f5201 起从未断（agent-id-regression-diff R20 一直绿覆盖同一实现）。金牌重跑 17/17 exit 0，新 sha256 200bb3b64124bc259ee2ab828abd472ee78ffdf12143dfc0fc64cc9184622850。"
+    }
+  ],
   "observability": [
     {
       "dimension": "zero-SUT 回归只证明折叠内核与确定性裁判接线，不证明真实页面操作。与 workflow.deleteByName 域锁合流后，发布、历史、CRUD 三条联网真机清理链须逐案核销：cleanup eventActions 全成功、签署后的目标精确计数为 0、机器 verdict 全 PASS、录像和删后截图均无目标实体；每案独立 HTML 含自然语言用例、原子操作、同次录屏和附件。",
@@ -24,7 +33,7 @@
         "node tests/_golden/intent-event-fold.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-21T23:38:23.905Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T10:08:58.891Z 全部 acceptance exit 0"
     }
   ]
 }

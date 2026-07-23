@@ -95,9 +95,16 @@ await check('C6 inputReadback 精确相等才通过', () => {
 });
 
 await check('C7 回放接线取代表事件动作轴，不另猜 DOM', () => {
+  // e1f5201 把三轴投影抽成生产纯函数 lib/replay-axes.mjs：回读证据仍在 bin/replay.mjs 构建
+  // （intentInputReadback.set(... inputReadbackFromAction(...))）并经 projectReplayAxes 交给
+  // replay-axes 消费喂 evaluateAssertions。断言随接线真实所在刷新、强度不减：验壳内提取+构建+交接，
+  // 再验 replay-axes 确以同一物理字段回读喂断言（原「消费点」grep 随之定位到 replay-axes）。
   const source = readFileSync(join(ROOT, 'bin', 'replay.mjs'), 'utf8');
   if (!source.includes('inputReadbackFromAction')) throw new Error('replay 未接动作轴回读提取器');
-  if (!source.includes('inputReadback: intentInputReadback.get(iid)')) throw new Error('evaluateAssertions 未接 intentInputReadback');
+  if (!/intentInputReadback\.set\(/u.test(source)) throw new Error('replay 未构建 intentInputReadback 回读证据');
+  if (!/intentInputReadback,/u.test(source)) throw new Error('replay 未把 intentInputReadback 交给 projectReplayAxes');
+  const axesSource = readFileSync(join(ROOT, 'lib', 'replay-axes.mjs'), 'utf8');
+  if (!axesSource.includes('inputReadback: intentInputReadback.get(iid)')) throw new Error('replay-axes 的 evaluateAssertions 未接 intentInputReadback');
   const actionSource = readFileSync(join(ROOT, 'lib', 'replay-actions.mjs'), 'utf8');
   if (!actionSource.includes('encodeInputReadback({ nodeName: label, placeholder, exact, value: got })')) throw new Error('setNodeField 成功轴未携字段身份规范值');
 });

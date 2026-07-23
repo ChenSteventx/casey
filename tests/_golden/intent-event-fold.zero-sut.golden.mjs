@@ -296,15 +296,23 @@ check('R16 nested evidence remains immutable during sanitization', () => {
 });
 
 check('R17 replay wiring uses the fold output and preserves eventActions', () => {
+  // e1f5201 把三轴投影抽成生产共用纯函数 lib/replay-axes.mjs（fold 接线随之整体搬去），
+  // bin/replay.mjs 改为委托 projectReplayAxes 调用。断言随接线的真实所在刷新定位、强度不减：
+  // 仍验 import + fold 赋值 + 逐 event 证据保留（此三项现落在 replay-axes），
+  // 并加验生产入口 bin/replay.mjs 确有委托调用（保住原「回放路径可达」的本意）。
+  const axesSource = readFileSync(join(ROOT, 'lib', 'replay-axes.mjs'), 'utf8');
+  if (!axesSource.includes("import { foldIntentAction } from './intent-action-fold.mjs';")) {
+    throw new Error('replay-axes does not import foldIntentAction');
+  }
+  if (!/action:\s*foldIntentAction\(eventActions\)/u.test(axesSource)) {
+    throw new Error('replay-axes does not assign folded intent action');
+  }
+  if (!/eventActions,\s*\n/u.test(axesSource)) {
+    throw new Error('replay-axes does not retain eventActions evidence');
+  }
   const replaySource = readFileSync(join(ROOT, 'bin', 'replay.mjs'), 'utf8');
-  if (!replaySource.includes("import { foldIntentAction } from '../lib/intent-action-fold.mjs';")) {
-    throw new Error('replay does not import foldIntentAction');
-  }
-  if (!/action:\s*foldIntentAction\(eventActions\)/u.test(replaySource)) {
-    throw new Error('replay does not assign folded intent action');
-  }
-  if (!/eventActions,\s*\n/u.test(replaySource)) {
-    throw new Error('replay does not retain eventActions evidence');
+  if (!/projectReplayAxes\(/u.test(replaySource)) {
+    throw new Error('replay does not delegate to projectReplayAxes');
   }
 });
 
