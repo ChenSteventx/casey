@@ -3,7 +3,29 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 2026-07-23 凌晨（续）real-uat-attestation 六阶段全收口（本节为最新现状）
+## 2026-07-23 sut-503-diagnosis 起（在飞·新 session 接手，本节为最新现状）
+
+主树 dev@98c4977（领先 origin/dev 24 提交，push 未做、等 Steven 令）。活契约切至
+sut-503-diagnosis（direct，六阶段 0/6，刚 `contract init` 未动手）——Steven 令开三 subagent
+解决 real-uat 逮到的 503 缺陷。已建空工作目录 `runs/sut-503-diagnosis` 与
+`docs/plans/sut-503-diagnosis`；GRILL/plan/取证/上报包/反证均未产出。
+
+缺陷事实（取证已在 real-uat 契约留档）：autotest 经标准「新增智能体」表单建的骨架智能体，详情页
+`agentPlus/queryPlus` 与 `agent/setup/getAgentDetail` 确定性 503、两实例均复现；取证件=
+`runs/real-uat-attestation/tc_agent_id_readback_real_uat_v1/run2-replay1/`（report 三形态+
+视觉复核 INCONSISTENT，终帧两条「操作失败!」）；账见
+`docs/plans/real-uat-attestation/evidence/uat-run.md`「503 缺陷账」节。
+
+三 subagent 分工（新 session 执行）：①真机差分定位（复现+响应体/头脱敏取证+变量隔离矩阵找触发
+条件，autotest 自建自删 `atl_` 件）；②上报包铸造（用①取证件铸自包含缺陷报告）；③对抗性反证
+（穷举替代解释逐一证伪/证实防误报）。真机纪律铁律：只允许一个 subagent 碰真机——同账户并发
+UI 会互踩；②③吃①产物、不并发连真站。真机前置=`casey doctor` 就绪+隧道回环单实例+`.auth`=
+`autotest` 带外核。direct 车道跳 grill/plan 门，但产物仍须落契约计划目录+证据脱敏。
+
+其余挂账：密钥签名威胁面 / SKILL.md 措辞统一（route:human，各 prd observability）；P8 多通道 /
+P10 排期线。
+
+## 2026-07-23 凌晨（续）real-uat-attestation 六阶段全收口（已被顶部 503 节接续，仍为有效溯源）
 
 Steven 两裁（人签采认+评审 codex）后走完：codex 四轮评审 R1/R2/R3 FAIL→逐轮全采信修复→**R4 终判
 PASS**，契约六阶段全 done、audit 终账（rounds 4、pass）。关键修正与事实：
@@ -23,8 +45,8 @@ PASS**，契约六阶段全 done、audit 终账（rounds 4、pass）。关键修
    入冻+D11 正控；codex 两轮 R2 PASS（R1 三 Medium 全采信）；owner prd-draft-cli 两笔
    checksumAmendments；real-uat prd 工装缝挂账核销。受影响面 draft-cli/output-seal/
    caseid-echo-mask/p4-drafter/tier1 全绿。
-5. 下一步：A 503 缺陷上报（Steven 渠道，取证件=run-1 report1+run-2 复核）；B 密钥签名威胁面/
-   SKILL.md 措辞统一；C 排期线（P8 多通道等）。
+5. 下一步（已被顶部 503 节接续、只溯源）：503 缺陷诊断已立 sut-503-diagnosis 契约在飞，见顶节；
+   密钥签名威胁面/SKILL.md 措辞统一、P8 排期线仍挂账。
 
 ## 2026-07-23 凌晨 real-uat-attestation 真机四步见证跑通（已被顶部续节取代，只溯源）
 
