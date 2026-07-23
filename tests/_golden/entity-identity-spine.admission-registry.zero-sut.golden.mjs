@@ -97,6 +97,15 @@
 //   专属语义闸（已对缺/空/非 string fail-closed），保 c5 具名码不被通用闸抢先。信任边界：输入是 JSON 解析产物，字段按 JSON 值域校验
 //   （身份 ID 须非空 string，顺带拒 BigInt/number 型 ID）；进程内注入型对抗对象（Proxy/getter-throw/BigInt）超出本纯函数信任模型。
 //
+// ── codex R6b 加固（五元键冲突绕过 bindingMode 权威 + 终端 atom 前置 fail-closed；c35-c38、e8；断言只增不减 46→51）──
+//   c35 五元键冲突[High]：终端 click 真绑定 successor(不允许) + 同五元键非终端 fill 绑定 existing 掩盖、行自报 existing
+//        → OBSERVATION_BINDING_MODE_MISMATCH（旧 modeConsistent 五元 some() 命中非终端 existing 即过 fail-open；改从唯一 anchoring binding 取权威 mode）
+//   c36 anchoring binding 多义[High]：某终端命中 >1 anchoring binding（全键同、仅 bindingMode 异）→ OBSERVATION_BINDING_JOIN_AMBIGUOUS（mode 权威须唯一、不得任一误接）
+//   c37 终端 atom 前置 fail-closed[Medium]：畸形终端 click 缺 atom → OBSERVATION_TERMINAL_FIELD_INVALID（旧 registry.has(undefined)=false 当未登记原子静默跳过返 OK）
+//   c38 合法孤儿字段齐[Medium 反面]：agent.removeToolByName click 字段齐、原子未登记 + observation=null → ok:true（区分字段畸形[拒]与原子未登记[无义务]，不误伤）
+//   e8  端到端[High]：真 sign 终端 click(successor 收据) + 同五元非终端 fill(existing 收据) + 单观察行 → 实拒 exit 65
+//        （sign 收据映射改按 binding 全键含 intentId 后，非终端 existing 不再覆盖终端 successor；退全键则 fail-open 过签、冻结件保留 successor）
+//
 // 拒绝码归类（本金牌授权、loop 实现须循，令每条 poison 只坏一维、拒绝码与实现精度顺序无关）：
 //   · 基数维（每终端 click 观察行数 ≠ requiredRoles 数，含重复锚同一终端 click；同 sign.mjs:278/285「join 基数」口径）→ OBSERVATION_ROLE_COUNT_MISMATCH
 //   · 关联维（五元 join stepId/sourceIntentId/candidateId/role/atom 与 binding/事件流不对应，单行且基数正确）→ OBSERVATION_CORRELATION_MISMATCH
@@ -118,7 +127,8 @@ import { createEntityLockReceipt } from '../../lib/entity-semantic-lock.mjs';
 const SECTION = process.argv[2] ?? 'all';
 const SECTIONS = new Set(['all', 'r0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16',
   'c17', 'c18', 'c19', 'c20', 'c21', 'c22', 'c23', 'c24', 'c25', 'c26', 'c27', 'c28', 'c29', 'c30', 'c31', 'c32', 'c33', 'c34',
-  'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7']);
+  'c35', 'c36', 'c37', 'c38',
+  'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7', 'e8']);
 if (!SECTIONS.has(SECTION)) process.exit(2);
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -165,6 +175,8 @@ const REJECT_CODES = new Set([
   'OBSERVATION_INPUT_MALFORMED',                // 整体输入 fail-closed：非数组 events/bindings 不再静默归一 []（High③）
   'OBSERVATION_REGISTRY_ENTRY_INVALID',         // 前瞻不变量：注册表条目 requiredRoles 空/重复 role（Medium④）
   'OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION', // 反向覆盖：义务原子无对应信封（obligationAtoms⊆seenEnvelopeAtom）（Medium⑤）
+  // codex R6b 加固新增（五元键冲突绕过 bindingMode 权威 + 终端 atom 前置 fail-closed）：
+  'OBSERVATION_BINDING_JOIN_AMBIGUOUS',         // 唯一 anchoring binding：某终端命中 >1 anchoring binding（mode 权威不唯一）（High）
 ]);
 
 const failures = [];
@@ -679,7 +691,70 @@ test('c34', 'c34 反向覆盖：增广双原子双终端、只给 agent 信封�
   expectReject(input, 'OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION', 'c34 义务原子缺信封');
 });
 
-// ── 端到端接线断言（e1-e7）：spawn 真 bin/sign.mjs 证生产路径实调验证器 ─────────────────────
+// ── codex R6b 加固（五元键冲突绕过 bindingMode 权威 + 终端 atom 前置 fail-closed；c35-c38、e8；断言只增不减 46→51）──
+// R6b 逮两洞：① High 五元键冲突绕过 bindingMode 权威——旧 modeConsistent/收据映射用五元键 some()「任一匹配」，同五元键
+// 不同 intent 的非终端 binding(existing) 掩盖终端真实 binding(successor 不允许)，validateObservationAdmission fail-open 过；
+// ② Medium 终端 atom 未前置 fail-closed——registry.has(ev.atom) 先执行，缺 atom 的畸形 click 被当未登记原子静默跳过、返 ok。
+// 修：row→binding join 改「唯一 anchoring binding」（全键含 intentId 消歧、>1 拒 OBSERVATION_BINDING_JOIN_AMBIGUOUS），
+// bindingMode 权威取自唯一 anchoring binding；终端 atom 非空 string 前置校验（registry.has 前）。
+// 对抗自证（scratchpad selfproof）：退唯一 anchoring binding/换轨闸→c35 五元键冲突返 OK 转红；退终端 atom 前置→c37 畸形终端返 OK 转红。
+
+// ── c35 五元键冲突绕过 bindingMode 权威（codex R6b-High）：终端真绑定 successor(不允许) + 同五元非终端 existing 掩盖 → 拒 ──
+// 一个终端 click（intentId=I1，其 binding.bindingMode=successor=注册表不允许）；另有同五元键（stepId/sourceIntentId/
+// candidateId/role/atom 全同）的非终端 fill（intentId=I2，binding.bindingMode=existing）。单观察行自报 existing。旧实现
+// modeConsistent 五元 some() 命中 I2 的 existing 即过、终端 I1 的 successor 被掩盖 fail-open。唯一 anchoring binding 后：
+// 行经全键(含终端 intentId=I1)唯一命中 I1 binding，其权威 mode=successor≠行自报 existing → OBSERVATION_BINDING_MODE_MISMATCH。
+test('c35', 'c35 五元键冲突：终端真绑定 successor(不允许) + 同五元非终端 existing 掩盖、行自报 existing → OBSERVATION_BINDING_MODE_MISMATCH（退唯一 anchoring/换轨闸则 fail-open 返 OK）', () => {
+  const collideModeEvents = [
+    { stepId: 'S', intentId: 'I1', atom: 'agent.searchOpen', action: 'click', text: AGENT_NAME }, // 终端（真 successor）
+    { stepId: 'S', intentId: 'I2', atom: 'agent.searchOpen', action: 'fill', value: AGENT_NAME },  // 非终端 fill（existing）
+  ];
+  const collideModeBindings = [
+    { stepId: 'S', intentId: 'I1', atom: 'agent.searchOpen', sourceIntentId: 'source_1', candidateId: 'candidate-agent-main', role: 'subject', bindingMode: 'successor' },
+    { stepId: 'S', intentId: 'I2', atom: 'agent.searchOpen', sourceIntentId: 'source_1', candidateId: 'candidate-agent-main', role: 'subject', bindingMode: 'existing' },
+  ];
+  const input = {
+    events: collideModeEvents,
+    observation: observationWith([validRow({ evidenceStepId: 'S', bindingMode: 'existing', provenance: 'user-confirmed' })]),
+    bindings: collideModeBindings,
+  };
+  expectReject(input, 'OBSERVATION_BINDING_MODE_MISMATCH', 'c35 五元键冲突掩盖终端 successor');
+});
+
+// ── c36 anchoring binding 多义（codex R6b-High 唯一化）：某终端命中 >1 anchoring binding（全键同、仅 bindingMode 异）→ 拒 ──
+// 两 binding 全键 {intentId,stepId,atom,sourceIntentId,candidateId,role} 完全相同、仅 bindingMode 异（existing / created-in-run）。
+// 单观察行经全键同时命中两者 → anchoring binding 非唯一、mode 权威不可裁定 → OBSERVATION_BINDING_JOIN_AMBIGUOUS（不得任一误接）。
+test('c36', 'c36 anchoring binding 多义：某终端命中两 binding（全键同、仅 bindingMode 异）→ OBSERVATION_BINDING_JOIN_AMBIGUOUS', () => {
+  const dupModeBindings = [
+    ...BINDINGS.map((b) => ({ ...b })),
+    { stepId: 'atstep_3', intentId: 'intent_1', atom: 'agent.searchOpen', sourceIntentId: 'source_1', candidateId: 'candidate-agent-main', role: 'subject', bindingMode: 'created-in-run' },
+  ];
+  const input = validInput({ bindings: dupModeBindings });
+  expectReject(input, 'OBSERVATION_BINDING_JOIN_AMBIGUOUS', 'c36 anchoring binding 多义');
+});
+
+// ── c37 终端 atom 前置 fail-closed（codex R6b-Medium）：畸形终端 click 缺 atom → 拒（registry.has 前）──────────────
+// {action:'click', stepId, intentId} 无 atom。旧实现 registry.has(undefined)=false 令其被当未登记原子静默跳过、
+// observation:null+bindings:[] 返 ok:true。前置 atom 非空 string 校验（registry.has 前）→ OBSERVATION_TERMINAL_FIELD_INVALID。
+test('c37', 'c37 终端 atom 前置 fail-closed：畸形终端 click 缺 atom（无 atom）→ OBSERVATION_TERMINAL_FIELD_INVALID（旧被当未登记原子静默跳过返 OK）', () => {
+  const input = { events: [{ action: 'click', stepId: 'S', intentId: 'I1' }], observation: null, bindings: [] };
+  expectReject(input, 'OBSERVATION_TERMINAL_FIELD_INVALID', 'c37 畸形终端缺 atom');
+});
+
+// ── c38 合法孤儿原子字段齐（codex R6b-Medium 反面）：孤儿 click 字段齐全但原子未登记 → 仍无义务通过（不误拒）──────
+// agent.removeToolByName click 字段齐全（atom 是合法 string、只是不在观察注册表）+ observation=null。区分「字段畸形」（c37 拒）
+// 与「字段齐全但原子未登记观察通道」（无义务、不误拒）——前置 atom 校验只挡畸形，不误伤合法孤儿。
+test('c38', 'c38 合法孤儿原子字段齐（agent.removeToolByName click 字段齐、原子未登记）+ observation=null → ok:true（不误拒、区分畸形与孤儿）', () => {
+  const orphanEvents = [
+    { stepId: 'rmstep_1', intentId: 'intent_rm', atom: 'agent.removeToolByName', action: 'click', text: 'some-tool' },
+  ];
+  const orphanBindings = [
+    { stepId: 'rmstep_1', intentId: 'intent_rm', atom: 'agent.removeToolByName', sourceIntentId: 'source_rm', candidateId: 'candidate-rm', role: 'subject' },
+  ];
+  expectPass({ events: orphanEvents, observation: null, bindings: orphanBindings }, 'c38 合法孤儿字段齐不误拒');
+});
+
+// ── 端到端接线断言（e1-e8）：spawn 真 bin/sign.mjs 证生产路径实调验证器 ─────────────────────
 // 上面 16 条只验孤立纯函数；codex R1 逮住「验证器未接线=假绿」——生产 sign 路径若不调它、金牌绿也无意义。
 // 这几条构造真 v2 签署夹具（本地文件、零 SUT）喂真 sign CLI：合法 agent 实过、fail-open 实拒。
 const SIGN = resolve(ROOT, 'bin', 'sign.mjs');
@@ -714,7 +789,7 @@ const DEFAULT_E2E_EVENTS = [
   { stepId: 'atstep_3', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'click', text: AGENT_NAME },
 ];
 const DEFAULT_E2E_STEPS = ['atstep_1', 'atstep_2', 'atstep_3'];
-function prepareE2ECase(caseId, { observations, sourceOverride = null, receiptOverride = {}, eventsSpec = null } = {}) {
+function prepareE2ECase(caseId, { observations, sourceOverride = null, receiptOverride = {}, eventsSpec = null, receiptForRow = null } = {}) {
   const dir = resolve(E2E_SCRATCH, caseId);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
@@ -734,12 +809,14 @@ function prepareE2ECase(caseId, { observations, sourceOverride = null, receiptOv
     }));
   const draftResult = buildEntityBindingsDraft({ eventsBytes: Buffer.from(eventsText), eventsDocument: eventsDoc, provenance });
   assert(draftResult.ok === true, `e2e 夹具自身红：buildEntityBindingsDraft ${draftResult.reason}`);
-  const receipt = createEntityLockReceipt({
+  // makeReceipt：单收据（e1-e7）或按 provenance 行富化的 per-row 收据（e8 codex R6b-High：终端 successor + 非终端 existing）。
+  const makeReceipt = (over) => createEntityLockReceipt({
     lockId: 'lock-agent-main', kind: 'agent', bindingMode: 'existing', scopeFingerprint: 'sha256:scope-agent',
     expected: { name: AGENT_NAME, code: AGENT_CODE },
     observed: { name: AGENT_NAME, code: AGENT_CODE, platformId: AGENT_PLATFORM_ID },
-    source: 'user-confirmed', ...receiptOverride,
+    source: 'user-confirmed', ...over,
   });
+  const receipt = makeReceipt(receiptOverride);
   const observation = {
     schemaVersion: 1, artifactKind: 'compile-identity-observation', caseId,
     capturedAgainstBuild: E2E_BUILD, identityProfileDigest: E2E_PROFILE_DIGEST, eventsSha256,
@@ -755,7 +832,9 @@ function prepareE2ECase(caseId, { observations, sourceOverride = null, receiptOv
   writeFileSync(p('expected.draft.json'), jt({ caseId, intents: [{ intentId: 'intent_1', expected: [{ kind: 'textVisible', op: 'appears', value: 'ready' }] }], pending: [] }));
   writeFileSync(p('events.json'), eventsText);
   writeFileSync(p('entity-bindings.draft.json'), jt(draft));
-  writeFileSync(p('entity-confirmations.json'), jt({ caseId, confirmations: provenance.map((r) => ({ ...r, receipt })) }));
+  writeFileSync(p('entity-confirmations.json'), jt({ caseId, confirmations: provenance.map((r, i) => ({
+    ...r, receipt: receiptForRow ? makeReceipt(receiptForRow(r, i)) : receipt,
+  })) }));
   writeFileSync(p('identity-observations.compile.json'), observationText);
   const prdPath = resolve(ROOT, 'loop', `prd-${caseId}.json`);
   rmSync(prdPath, { force: true });
@@ -883,6 +962,34 @@ test('e7', 'e7 端到端双向函数：双 intent 同 stepId + 两 binding 仅 i
     const r = runE2ESign(fx);
     assert(r.status === 65, `行锚多终端应 sign exit 65；实得 ${r.status}（验证器退 >1 拒时一行误满足两终端 fail-open 过签）；stderr=${String(r.stderr || '').trim().slice(0, 200)}`);
     assert(!existsSync(fx.locks), 'fail-closed 拒签后不得留 entity-locks 冻结件');
+  } finally { cleanupE2E(caseId); }
+});
+
+test('e8', 'e8 端到端五元键冲突（codex R6b-High）：终端 click(intent_click,successor 收据) + 同五元非终端 fill(intent_fill,existing 收据) + 单观察行 → 真 sign 实拒 exit 65（收据映射按全键含 intentId 后，非终端 existing 不再掩盖终端 successor；退全键则 fail-open 过签、冻结件保留 successor）', () => {
+  const caseId = 'tc_eis_e2e_modecollide';
+  try {
+    cleanupE2E(caseId);
+    const fx = prepareE2ECase(caseId, {
+      observations: [e2eRow({ evidenceStepId: 'shared' })], // 单行、默认 source_1/candidate-agent-main
+      eventsSpec: {
+        events: [
+          { stepId: 'shared', intentId: 'intent_click', atom: 'agent.searchOpen', action: 'click', text: AGENT_NAME }, // 终端（真 successor）
+          { stepId: 'shared', intentId: 'intent_fill', atom: 'agent.searchOpen', action: 'fill', value: AGENT_NAME },   // 非终端 fill（existing）
+        ],
+        // 两 provenance 行同五元键（stepId/sourceIntentId/candidateId/role/atom）、仅 intentId 异 → 旧五元键收据映射互相覆盖。
+        provenanceRows: [
+          { stepId: 'shared', intentId: 'intent_click', atom: 'agent.searchOpen', sourceIntentId: 'source_1', candidateId: 'candidate-agent-main', role: 'subject' },
+          { stepId: 'shared', intentId: 'intent_fill', atom: 'agent.searchOpen', sourceIntentId: 'source_1', candidateId: 'candidate-agent-main', role: 'subject' },
+        ],
+      },
+      // 终端 click 收据 = successor(platform-readback，越注册表允许集)；非终端 fill 收据 = existing(user-confirmed)。
+      receiptForRow: (r) => (r.intentId === 'intent_click'
+        ? { bindingMode: 'successor', source: 'platform-readback' }
+        : { bindingMode: 'existing', source: 'user-confirmed' }),
+    });
+    const r = runE2ESign(fx);
+    assert(r.status === 65, `五元键冲突掩盖终端 successor 应 sign exit 65；实得 ${r.status}（退全键收据映射时非终端 existing 掩盖终端 successor fail-open 过签）；stderr=${String(r.stderr || '').trim().slice(0, 200)}`);
+    assert(!existsSync(fx.locks), 'fail-closed 拒签后不得留 entity-locks 冻结件（终端 successor 不得混进冻结件）');
   } finally { cleanupE2E(caseId); }
 });
 

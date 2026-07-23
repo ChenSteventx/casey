@@ -288,32 +288,38 @@ let identityObservationRows = null;
     // bindingMode/provenance 是绑定属性、活在确认收据里（观察件本身不带）——按五元组 join 确认取，
     // 富化进观察行后传验证器，供其强制注册表 provenanceByBindingMode 不变量（收据自洽的 successor 等
     // 越注册表允许集的 mode 由此拒）。events/bindings 传原件，validateObservationAdmission 出唯一裁定。
-    const provenanceByTuple = new Map();
+    // 收据按【binding 全键（含 intentId）】与【观察行 5 元键】分别索引（codex R6b-High）：binding 携 intentId，须用
+    // 全键索引——旧实现只用 5 元键（stepId/sourceIntentId/candidateId/role/atom），不同 intent 的同五元 binding 会互相
+    // 覆盖，令终端的真 successor 收据被同五元非终端 existing 收据掩盖、验证器凭「任一匹配」的错误 mode fail-open 过签。
+    // 全键索引后每 binding 富化自其【自身 intent】的收据、互不覆盖。观察行不携 intentId、按 5 元键索引其自报 mode（其
+    // 权威由验证器凭唯一 anchoring binding 裁定，行自报 mode 仅供换轨闸比对——行自报若与终端真 binding 的权威 mode 不符
+    // 即 fail-closed，故行侧 5 元键的同五元折叠无害）。
+    const provenanceByBindingKey = new Map(); // [intentId, stepId, sourceIntentId, candidateId, role, atom] → {bindingMode, provenance}
+    const provenanceByRowKey = new Map();     // [stepId, sourceIntentId, candidateId, role, atom] → {bindingMode, provenance}
     for (const c of entityConfirmations.confirmations) {
       if (!c || typeof c !== 'object' || Array.isArray(c) || !c.receipt || typeof c.receipt !== 'object') continue;
-      provenanceByTuple.set(
-        JSON.stringify([c.stepId, c.sourceIntentId, c.candidateId, c.role, c.atom]),
-        { bindingMode: c.receipt.bindingMode, provenance: c.receipt.source },
-      );
+      const prov = { bindingMode: c.receipt.bindingMode, provenance: c.receipt.source };
+      provenanceByBindingKey.set(JSON.stringify([c.intentId, c.stepId, c.sourceIntentId, c.candidateId, c.role, c.atom]), prov);
+      provenanceByRowKey.set(JSON.stringify([c.stepId, c.sourceIntentId, c.candidateId, c.role, c.atom]), prov);
     }
     const admission = validateObservationAdmission({
       events: entityEventsDocument.events || [],
       observation: {
         source: obs.source,
         observations: obs.observations.map((row) => {
-          const prov = provenanceByTuple.get(
+          const prov = provenanceByRowKey.get(
             JSON.stringify([row.evidenceStepId, row.sourceIntentId, row.candidateId, row.role, row.atom]),
           ) || {};
           return { ...row, bindingMode: prov.bindingMode, provenance: prov.provenance };
         }),
       },
-      // bindingMode 富化进 binding（codex R5-Critical② 换轨闸权威源）：bindingMode 是绑定事实、活在确认收据里——
-      // 按 binding 五元 join 键从收据取其 mode，令验证器可校验 row.bindingMode 与 binding 事实一致（换轨闸）。row 与
-      // binding 富化自【同一收据】、五元键相等 → 生产路径恒一致（逐语义等价、零字节漂移：本富化只喂验证器、不落任何
-      // 冻结件）；纯函数金牌侧由夹具直接携 binding.bindingMode 供对抗反例。缺对应收据的 binding 保持无 mode（下游
-      // 五元关联本就要求 row 命中 binding，缺 mode 的 binding 令 row 换轨闸 fail-closed）。
+      // bindingMode 富化进 binding（codex R5-Critical② 换轨闸权威源 / R6b-High 全键唯一化）：bindingMode 是绑定事实、活在
+      // 确认收据里——按 binding【全键（含 intentId）】从收据取其 mode，令验证器可凭唯一 anchoring binding 校验 row.bindingMode
+      // 与终端真实绑定事实一致（换轨闸）。row 与其 anchoring binding 富化自【同一收据】、全键相等 → 生产路径恒一致（逐语义
+      // 等价、零字节漂移：本富化只喂验证器、不落任何冻结件）；纯函数金牌侧由夹具直接携 binding.bindingMode 供对抗反例。缺
+      // 对应收据的 binding 保持无 mode（下游 anchoring 本就要求 row 命中唯一 binding，缺 mode 的 binding 令换轨闸 fail-closed）。
       bindings: (Array.isArray(entityBindingsDraft.bindings) ? entityBindingsDraft.bindings : []).map((b) => {
-        const prov = provenanceByTuple.get(JSON.stringify([b.stepId, b.sourceIntentId, b.candidateId, b.role, b.atom]));
+        const prov = provenanceByBindingKey.get(JSON.stringify([b.intentId, b.stepId, b.sourceIntentId, b.candidateId, b.role, b.atom]));
         return prov ? { ...b, bindingMode: prov.bindingMode } : { ...b };
       }),
     });
