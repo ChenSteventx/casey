@@ -277,6 +277,13 @@ async function executeMode(caseId, args) {
   }
   let identityChannelCfg = null;
   for (const cfg of identityChannelsByKind.values()) identityChannelCfg = cfg;
+  // 身份通道指纹（identityProfileDigest = sha256(规范化 listApi)）：启动前算好，供破坏性 ref 武装取真指纹
+  // （C3 修复 Critical-1 ①：原 run.identityProfileDigest 从不赋值 → mint 恒收 null）。观察件落盘处复用同值保字节一致。
+  const canonicalSortKeys = (v) => (Array.isArray(v) ? v.map(canonicalSortKeys)
+    : (v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, canonicalSortKeys(v[k])])) : v));
+  const identityProfileDigest = identityChannelCfg
+    ? `sha256:${createHash('sha256').update(JSON.stringify(canonicalSortKeys(identityChannelCfg))).digest('hex')}`
+    : null;
   const identityLedger = identityChannelCfg
     ? (await import('../lib/agent-identity-observation.mjs')).createIdentityObservationLedger({ channel: identityChannelCfg })
     : null;
@@ -310,7 +317,7 @@ async function executeMode(caseId, args) {
     } : {}),
   });
 
-  const run = createCompileRun({ page, forensics, state, sut, uniqueName, site, listRoute, agentListRoute, profile, identityLedger });
+  const run = createCompileRun({ page, forensics, state, sut, uniqueName, site, listRoute, agentListRoute, profile, identityLedger, identityProfileDigest });
   let exitCode = 0;
   try {
     if (!args['skip-login']) {
@@ -410,9 +417,7 @@ async function executeMode(caseId, args) {
       // eventsSha256 绑最终 events 字节；compile-report 只记状态与观察件 sha（不复制三元组，sol P1）。
       let identityObservationsText = null;
       if (identityLedger && run.identityObservations.length) {
-        const sortKeys = (v) => (Array.isArray(v) ? v.map(sortKeys)
-          : (v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, sortKeys(v[k])])) : v));
-        const digest = `sha256:${createHash('sha256').update(JSON.stringify(sortKeys(identityChannelCfg))).digest('hex')}`;
+        const digest = identityProfileDigest; // 启动前已算（同一规范化 sha），复用保字节一致
         const observationArtifact = {
           schemaVersion: 1,
           artifactKind: 'compile-identity-observation',

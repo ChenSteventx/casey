@@ -5,7 +5,9 @@
   "specPath": "docs/plans/entity-destructive-continuity-guard/plan.md",
   "testChecksums": {
     "tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs": "66d80917c5c21d09f57785fe7b54d2fca6367a7437d3e4a8398a215d1f1924ab",
-    "tests/_golden/entity-destructive-continuity-guard.wiring.golden.mjs": "1fdbd19803bc4fe05383062a08cdde759741cb6c18aa44f9f9e05ef4b9e5ab2c"
+    "tests/_golden/entity-destructive-continuity-guard.wiring.golden.mjs": "1fdbd19803bc4fe05383062a08cdde759741cb6c18aa44f9f9e05ef4b9e5ab2c",
+    "tests/_golden/entity-destructive-continuity-guard.failclosed-replay.golden.mjs": "03c38f7f740d656741f19cbb05960be40b08cdd91a17313ed6b35954bd4b7bc0",
+    "tests/_golden/entity-destructive-continuity-guard.round2.golden.mjs": "f08fee45aa22df8d284901f881728b1ae1c8194c1cd13792e262e5f5efdea17c"
   },
   "observability": [
     {
@@ -30,7 +32,7 @@
         "node tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T13:39:59.367Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T17:36:51.665Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-destructive-continuity-wiring",
@@ -40,7 +42,27 @@
         "node tests/_golden/entity-destructive-continuity-guard.wiring.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T13:39:59.913Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T17:36:52.491Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-failclosed-replay-real-path",
+      "desc": "round-2 收口 codex Critical-1 ③（生产守卫不可达 + 缺 ref 直接放行=fail-open）：真 bin/replay.mjs 码路径 hermetic 证破坏动作缺已签目标连续性 ref 时【真 fail-CLOSED 被拒】。金牌 tests/_golden/entity-destructive-continuity-guard.failclosed-replay.golden.mjs：手造自洽 v2 冻结锁（携身份观察=身份锁在力）+ events 含破坏性原子 agent.delete，spawn 真 replay + CASEY_LAUNCH_SENTINEL（chromium.launch 前短路，零浏览器/零 SUT/零 fake-SUT）——D1 破坏动作 exit 65 + 具名 reason DESTRUCTIVE_ADMISSION_NO_SIGNED_CONTINUITY_REF（点名 agent.delete）+ 哨兵缺席（控制流未越浏览器前门=绝不 performAction 破坏步）；D2 正控无破坏性原子仅 searchOpen → 抵达浏览器前哨兵（exit 66、哨兵在场），证本门只拦破坏性原子、非 always-refuse 退化。语义边界：破坏链身份采集补齐让破坏步真解析 ref（proceed 路径）= route:human；本轮 hermetic 无采集件即 resolvedRefIntents 恒空 → 破坏性原子在身份锁下恒被拒（fail-CLOSED 默认，非 round-1 的 fail-open 跳守卫后照删）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-destructive-continuity-guard.failclosed-replay.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-23T17:37:06.575Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4-round2-findings-closure",
+      "desc": "round-2 收口 codex High-1/High-2/High-4 + Critical-1 ③ 决策纯函数：金牌 tests/_golden/entity-destructive-continuity-guard.round2.golden.mjs（纯内存 + 真 bin/verdict.mjs 子进程 + 静态接线断言，零 SUT）。A：admitDestructiveTargetContinuity 破坏性原子无已认证 ref → 拒/有 ref → 放/无破坏性原子 → 放/缺 intent → 拒/非破坏性原子不误拦（退化 always-放行·always-拒逐条逮红）。B（High-2）：selectObservationForDestructiveTarget 同名多条弃（绝不取 first）、唯一命中取、无 platformId 弃。C（High-1）：installOutboundMutationGuard 返回 ready（await page.route 的 Promise，堵 handler 未注册即出站）+ unroute（生命周期解除器）。D（High-4）：守卫主动中止落 guardAborts 诊断通道、绝不进 axes.forensics.lifecycle.pageerror——真 verdict 子进程证无 pageerror 背书=NEEDS_HUMAN/SUT_DEFECT_OR_STALE 非 SUT_DEFECT（工装中止不误报被测缺陷）。E：静态咬 replay 浏览器前调准入且拒即 exit 65、compile-atoms 按 params.under + 唯一观察（非 name find-first）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-destructive-continuity-guard.round2.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-23T17:37:07.277Z 全部 acceptance exit 0"
     }
   ]
 }

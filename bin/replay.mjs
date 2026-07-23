@@ -38,6 +38,7 @@ import {
   requiresTargetContinuityRef,
 } from '../lib/entity-semantic-lock-preflight.mjs';
 import { installOutboundMutationGuard, evaluateDestructiveTargetAbsence } from '../lib/entity-destructive-continuity-wiring.mjs';
+import { admitDestructiveTargetContinuity } from '../lib/entity-destructive-continuity.mjs';
 import { createHash } from 'node:crypto';
 import { PROJECT_ROOT } from '../lib/paths.mjs';
 
@@ -306,6 +307,22 @@ async function main() {
       identityExpectedByStep.set(row.evidenceStepId, { signedName: row.name, signedCode: row.code, signedPlatformId: row.platformId });
     }
   }
+  // C3 破坏性目标连续性准入（fail-closed，浏览器前；codex Critical-1 ③ 收口）：身份锁在力（v2 冻结锁携身份观察
+  // = frozenIdentityRows 非空，已认证）时，events 里每个 targeting/破坏性原子（workflow.deleteByName/agent.delete/
+  // picker.selectFirstTool）必须能解析到已【认证】的目标连续性 ref；解析不出即【拒执行该破坏动作】——不启浏览器、
+  // 绝不 performAction 破坏步。这把原「查不到 ref 就跳过守卫、随后照常删除」的 fail-open，换成真 fail-CLOSED。
+  // resolvedRefIntents = 破坏链身份采集补齐后由已认证持久化件填充的意图集；其真机采集形态走 route:human，
+  // 当前 hermetic 无采集件即恒空 → 破坏性原子在身份锁下恒被拒（fail-closed 默认，绝不臆断放行）。
+  // 只据【认证来源】判 proceed，绝不据锁自报的未认证字段放行（防伪造绕闸）。
+  const destructiveContinuityRefIntents = new Set(); // route:human 采集补齐前恒空
+  if (frozenIdentityRows && frozenIdentityRows.length) {
+    const destructiveAdmission = admitDestructiveTargetContinuity({ events, resolvedRefIntents: destructiveContinuityRefIntents });
+    if (!destructiveAdmission.ok) {
+      const atomPart = destructiveAdmission.atom ? `, atom=${destructiveAdmission.atom}` : '';
+      console.error(`replay: 破坏性目标连续性 ref 缺失（${destructiveAdmission.reason}${atomPart}），身份锁在力却无法证同一目标，未启动浏览器（fail-closed，护栏 #14）`);
+      process.exit(65);
+    }
+  }
   // 身份账本激活判据（codex R1-M3）：只由已验证 v2 冻结权威激活——真 v1 件即使换上声明了
   // listApi 的新剖面也固定走旧 DOM-only 路径（剖面只是适配器，不得反向改变签署件版本语义）。
   const identityLedger = identityExpectedByStep
@@ -324,6 +341,10 @@ async function main() {
     // 身份双证（agent-id-readback plan §5）：账本+已签期望三元组带给动作门；fill 时 arm、click 时 settle/consume。
     ...(identityLedger ? { identityLedger, identityTokens: new Map() } : {}),
     ...(identityExpectedByStep ? { identityExpectedByStep } : {}),
+    // C3 破坏性目标连续性 ref（按破坏步 stepId 关联，非按 searchOpen 的 evidenceStepId——codex Critical-1 ②）：
+    // 破坏链身份采集补齐后由已认证持久化件填充，供出站拦截安装器/归零按破坏步真解析 ref；route:human 采集前恒空
+    // （空即上方 admission 已在浏览器前拒，出站拦截路径对破坏步不可达）。
+    destructiveContinuityByStep: new Map(),
   };
 
   // 登录预备动作前置（GRILL 人签取 A）：凭据/站点配置在开浏览器前加载，任一失败 exit 65（fail-closed）。
@@ -481,6 +502,9 @@ async function main() {
   const state = { currentStepId: null };
   const pageErrors = []; // { attributedStepId, message } —— 按发生时活动步归因（finding 4）
   page.on('pageerror', (e) => { pageErrors.push({ attributedStepId: state.currentStepId, message: String((e && e.message) || e).slice(0, 200) }); });
+  // C3 出站守卫主动中止的 HARNESS 侧诊断通道（High-4）：绝不并入 pageErrors/axes 取证——工装主动中止不是 SUT 缺陷，
+  // 不得走 pageerror→SUT_DEFECT 通道；仅供诊断，裁定对被拦步据后置断言 fail-safe（NEEDS_HUMAN）。
+  const guardAborts = [];
   const forensics = watchNetworkForensics(cdp, {
     denylist: profile.background || [],
     successField: profile.successField,
@@ -616,21 +640,29 @@ async function main() {
           ctx.identityTokens.set(ev.intentId, ctx.identityLedger.arm({ intentId: ev.intentId, expectedQuery }));
         }
         // C3 出站破坏性 mutation 拦截（entity-destructive-continuity）：破坏性/targeting 原子（deleteByName/
-        // agent.delete/picker.selectFirstTool）的 click 落笔前，若本步有已签目标连续性 platformId，则装 page.route
+        // agent.delete/picker.selectFirstTool）的 click 落笔前，若【本破坏步】有已解析的目标连续性 ref，则装 page.route
         // 拦截器——出站 mutation 请求发出前暂停、核对请求 url/body 的 platformId 与 ref 一致才放行、不一致/无可验 ID
         // 即中止且证 SUT 未改（委派纯守卫 runGuardedMutation）。与既有 CDP Network 域观察者分属不同层，共存不打架。
-        // gated：无已签目标连续性 ref 不装（当前用例零行为差；真机 page.route 正确性走 route:human）。
-        if (ev.action === 'click' && requiresTargetContinuityRef(ev.atom) && ctx.identityExpectedByStep) {
-          const signed = ctx.identityExpectedByStep.get(ev.stepId);
-          if (signed && typeof signed.signedPlatformId === 'string' && signed.signedPlatformId) {
-            installOutboundMutationGuard(page, {
+        // codex Critical-1 ②：ref 按【破坏步自身 stepId】从 destructiveContinuityByStep 取（非 identityExpectedByStep
+        // 按 searchOpen 的 evidenceStepId——那把 delete 步查空）。当前 route:human 采集前该 Map 恒空，破坏步已在
+        // 浏览器前被 admission 拒（fail-closed），故此安装路径对破坏步不可达；ref 存在（真机采集补齐）才装。
+        // High-1：安装器返回 ready（page.route 的 Promise），caller 在放行破坏动作前 await，堵「handler 未注册即出站」。
+        let guardReady = null;
+        if (ev.action === 'click' && requiresTargetContinuityRef(ev.atom) && ctx.destructiveContinuityByStep) {
+          const resolved = ctx.destructiveContinuityByStep.get(ev.stepId);
+          if (resolved && typeof resolved.platformId === 'string' && resolved.platformId) {
+            const installed = installOutboundMutationGuard(page, {
               atom: ev.atom,
-              ref: { platformId: signed.signedPlatformId },
+              ref: { platformId: resolved.platformId },
               urlPattern: profile.mutationUrlPattern,
               onDecision: (decision) => {
-                if (!decision.ok) pageErrors.push({ attributedStepId: ev.stepId, message: `outbound-mutation-guard aborted: ${decision.reason}` });
+                // High-4：工装主动中止是 HARNESS 侧信号，绝不进 pageErrors（那会被 verdict 当 SUT 背书误报 SUT_DEFECT）；
+                // 落独立诊断通道 guardAborts（不进 axes 取证、不进裁定），中止后置断言证不出走 fail-safe（NEEDS_HUMAN）。
+                if (!decision.ok) guardAborts.push({ attributedStepId: ev.stepId, atom: ev.atom, reason: decision.reason });
               },
             });
+            guardReady = installed && installed.ready ? installed.ready : null;
+            if (guardReady) await guardReady; // 放行破坏动作前确保拦截器已注册（真机时序正确性仍 route:human）
           }
         }
         const respWait = ev.action === 'click'
@@ -692,15 +724,17 @@ async function main() {
         intentInputReadback.set(ev.intentId, inputReadbackFromAction(actionByStep.get(ev.stepId)));
         const c = intentCount.get(ev.intentId);
         if (c) c.after = await rowCount(page, countSel);
-        // C3 归零收尾（entity-destructive-continuity）：破坏性代表步收尾时，若有已签目标 platformId，按 target-ID
-        // 稳定窗口 absence-proof 归零（消费 evaluateDestructiveTargetAbsence，present platformIds 来自身份列表投影
-        // 的 rows.id），非 name count===0。加法式记账、不改既有 count 判据；缺 present platformIds 投影时按
-        // name-count-only 语义（proven:false，非空过），真机归零列表投影走 route:human。
-        if (requiresTargetContinuityRef(ev.atom) && ctx.identityExpectedByStep) {
-          const signed = ctx.identityExpectedByStep.get(ev.stepId);
-          if (signed && typeof signed.signedPlatformId === 'string' && signed.signedPlatformId) {
+        // C3 归零收尾（entity-destructive-continuity）：破坏性代表步收尾时，若【本破坏步】有已解析目标 platformId，按
+        // target-ID 稳定窗口 absence-proof 归零（消费 evaluateDestructiveTargetAbsence，present platformIds 来自身份
+        // 列表投影的 rows.id），非 name count===0。加法式记账、不改既有 count 判据；缺 present platformIds 投影时按
+        // name-count-only 语义（proven:false，非空过）。ref 按破坏步 stepId 取（同拦截安装，非 searchOpen 的
+        // evidenceStepId）；真机归零列表投影 ctx.identityPresentRows/Stable + 让此判据授权裁定走 route:human（Critical-2：
+        // present platformIds 需真身份列表投影，本轮结构上关不掉，intentTargetAbsence 仅诊断记账、不进 axes/裁定）。
+        if (requiresTargetContinuityRef(ev.atom) && ctx.destructiveContinuityByStep) {
+          const resolved = ctx.destructiveContinuityByStep.get(ev.stepId);
+          if (resolved && typeof resolved.platformId === 'string' && resolved.platformId) {
             const absence = evaluateDestructiveTargetAbsence({
-              ref: { platformId: signed.signedPlatformId },
+              ref: { platformId: resolved.platformId },
               identityRows: ctx.identityPresentRows,
               stable: ctx.identityPresentStable === true,
             });
