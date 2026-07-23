@@ -18,9 +18,13 @@ PASS**，契约六阶段全 done、audit 终账（rounds 4、pass）。关键修
    未扫全量网络账）入 learn.md+持久记忆。
 3. 完整性金牌 V1-V6 实核化（checksum 核值/人签核件/真机产物深核/axes 网络账对刺/视觉复核全部
    交付面锁死）；gate 多轮 GREEN。
-4. 下一步：A drafter --patch intentId 校验修单（工装缝，prd-real-uat-attestation observability）；
-   B 503 缺陷上报（Steven 渠道，取证件=run-1 report1+run-2 复核）；C 密钥签名威胁面/SKILL.md
-   措辞统一。
+4. **drafter-patch-intent-guard 亦已六阶段收口（同夜）**：bin/draft.mjs --patch 存在性闸——错位
+   intentId 不再静默孤儿断言（闸位置词表硬闸后零涟漪 output-seal、遮值报序号）；D10 红先行+遮值
+   入冻+D11 正控；codex 两轮 R2 PASS（R1 三 Medium 全采信）；owner prd-draft-cli 两笔
+   checksumAmendments；real-uat prd 工装缝挂账核销。受影响面 draft-cli/output-seal/
+   caseid-echo-mask/p4-drafter/tier1 全绿。
+5. 下一步：A 503 缺陷上报（Steven 渠道，取证件=run-1 report1+run-2 复核）；B 密钥签名威胁面/
+   SKILL.md 措辞统一；C 排期线（P8 多通道等）。
 
 ## 2026-07-23 凌晨 real-uat-attestation 真机四步见证跑通（已被顶部续节取代，只溯源）
 

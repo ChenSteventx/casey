@@ -18,7 +18,7 @@
       "route": "human"
     },
     {
-      "dimension": "drafter --patch intentId 不经 observed intents 存在性校验，错位断言静默成孤儿——另立修单收口。",
+      "dimension": "drafter --patch intentId 不经 observed intents 存在性校验，错位断言静默成孤儿——已修单收口（契约 drafter-patch-intent-guard 六阶段 done、codex R2 PASS：存在性闸+遮值 D10/D11 入冻，2026-07-23）。",
       "route": "human"
     },
     {
@@ -35,7 +35,7 @@
         "node tests/_golden/real-uat-attestation.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T17:20:19.178Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T00:00:53.526Z 全部 acceptance exit 0"
     }
   ]
 }

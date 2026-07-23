@@ -118,16 +118,14 @@ loop-kit 已按 ADR-0008 提取为兄弟目录独立包，Casey 与 autotester �
   atom-readiness、regress-strategy、usability-audit），不碰不提交。提交只走显式路径、绝不 -A。
 
 【下一步】
-A 工装修单：drafter --patch intentId 不经 observed intents 存在性校验（错位断言静默孤儿，
-  见 prd-real-uat-attestation observability 第 2 项）。
-B SUT 503 缺陷上报（Steven 渠道）：骨架智能体详情页 agentPlus/queryPlus+getAgentDetail 确定性
+A SUT 503 缺陷上报（Steven 渠道）：骨架智能体详情页 agentPlus/queryPlus+getAgentDetail 确定性
   503、两实例均复现（取证件=run-1 report1+run-2 视觉复核 INCONSISTENT；账见
   docs/plans/real-uat-attestation/evidence/uat-run.md「503 缺陷账」节）。
-C route:human 其余面：密钥签名威胁面 / SKILL.md 措辞统一（见各 prd observability）。
-D P8 多通道 / P10 可信闭环自进化等排期线（见【排期】）。
+B route:human 其余面：密钥签名威胁面 / SKILL.md 措辞统一（见各 prd observability）。
+C P8 多通道 / P10 可信闭环自进化等排期线（见【排期】）。
 
-（real-uat-attestation 已六阶段全收口：uatDefinition 四步全过+Steven 人签+codex 四轮 R4 PASS；
-主树活契约槽空闲。）
+（real-uat-attestation 与 drafter-patch-intent-guard 均已六阶段全收口：前者 uatDefinition 四步
+全过+Steven 人签+codex R4 PASS；后者 codex R2 PASS、工装缝挂账核销。主树活契约槽空闲。）
 
 改冻结金牌一律走 checksumAmendments 修单路径。
 
