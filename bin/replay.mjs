@@ -19,7 +19,7 @@
 import { readFileSync, writeFileSync, writeSync, renameSync, readdirSync, rmSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import pw from '@playwright/test';
-import { performAction } from '../lib/replay-actions.mjs';
+import { dispatchReplayAction } from '../lib/replay-actions.mjs';
 import { instantiate } from '../lib/instantiate.mjs';
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { normalizeLoadingProfile, settleBeforeCapture } from '../lib/replay-settle.mjs';
@@ -703,7 +703,7 @@ async function main() {
             const respWait = ev.action === 'click'
               ? page.waitForResponse((r) => /saveOrModifyProcessData|streamReply/.test(r.url()), { timeout: 600 }).catch(() => null)
               : Promise.resolve(null);
-            axis = await performAction(page, ev, ctx);
+            axis = await dispatchReplayAction(page, ev, ctx);
             actionByStep.set(ev.stepId, axis || { resolution: 'none' });
             const settleT = Date.now();
             await respWait;

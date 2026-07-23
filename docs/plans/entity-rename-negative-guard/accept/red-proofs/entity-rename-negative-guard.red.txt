@@ -1,0 +1,10 @@
+ok   ①A rename 不在编译知识允许集（isCompilableAtom=false，具名拒绝口径源头）
+ok   ①A 编译面：rename 步在进入任何 emit/浏览器副作用之前被拒（暂无编译知识），零 event 产出、page 零触碰
+FAIL ①B/③ 回放面：dispatchReplayAction 对 rename 事件在触碰 page 之前具名拒绝，绝不执行任何浏览器动作: 回放面在浏览器副作用之前未拒——page 被触碰（replayPage.getByText）；rename 落到了通用动作通路
+ok   边界A unknownAtomRejection 对全体合法原子恒返 null（零 false positive、零生产行为差）
+ok   边界B 分发口对合法原子确委派 performAction（不短路、会正常触碰 page）——证 guard 只短路未知原子
+FAIL ② rename 拒绝轴喂 bin/verdict.mjs：终判非 PASS（fail-safe），即便携满足的硬断言: POISON_TOUCHED:replayPage2.getByText
+ok   ②对照 若 rename 竟以 unique 落轴则 verdict 会 PASS（护栏正堵此窗，证②非空洞）
+RED  entity-rename-negative-guard: ①B/③ 回放面：dispatchReplayAction 对 rename 事件在触碰 page 之前具名拒绝，绝不执行任何浏览器动作: 回放面在浏览器副作用之前未拒——page 被触碰（replayPage.getByText）；rename 落到了通用动作通路
+RED  entity-rename-negative-guard: ② rename 拒绝轴喂 bin/verdict.mjs：终判非 PASS（fail-safe），即便携满足的硬断言: POISON_TOUCHED:replayPage2.getByText
+RED  entity-rename-negative-guard: 5 过 / 2 红（负护栏未闭合）

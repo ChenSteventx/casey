@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "task": "entity-rename-negative-guard（C4，light 车道，独立并行）：改名负护栏。母规格 docs/plans/entity-identity-lastmile/plan.md、GRILL D1-D4。需求要「改名不能静默更新旧身份，必须签 successor」，但签 successor 端到端要唤醒被有意封死的形式收据链子系统 A（entity-semantic-lock-v2.mjs，sha b7b5a47e），本轮做不到（D1）→ 只做负护栏（fail-safe：能力没到位就前置拒，绝不半路执行、绝不误判 PASS）。不加真/假 rename 编译器（D2）、不碰 A、不改裁定四态、不让 0/26 转绿。探当前行为：编译面 compileAtomStep 对未知原子（如虚构前瞻原子 workflow.rename）在进入任何编译器/emit 之前早抛「暂无编译知识」——前置拒绝已存在（特征化锁）；回放面 performAction 按 ev.action 派发、无 ev.atom 白名单，手造/被篡改 artifact 携 rename 事件会落到通用 resolveCandidate+gateAndAct 执行 loc.click()（第一次浏览器副作用之后），唯一命中还会吐 resolution:unique（PASS 合格）——回放面无前置拒 → 金牌红先行。最小 guard（避免破邻接面的 seam 设计）：不改 performAction（既有金牌 agent-id-regression-diff R19 逐字节钉其对全谱事件动作轴），而在生产回放唯一分发口新增前置闸——lib/replay-actions.mjs 新增纯判据 unknownAtomRejection（复用 isCompilableAtom 单一事实源）+ dispatchReplayAction seam（命中即在触碰 page 之前具名拒 UNKNOWN_ATOM、绝不委派 performAction）；bin/replay.mjs 事件环由 performAction 改经 dispatchReplayAction。判据只针对 string 原子、对全体合法原子恒放行（零 false positive、零生产行为差、R19 保持绿）。0/26 诚实红基线（prd-teachin-semantic-lock-runtime-discrimination-successor）复跑仍 RED（0 过/26 红）、拒绝原因仍 ENTITY_LOCK_RUNTIME_UNAUTHORIZED 一族不漂——本契约不使其转绿、不改其判据。完成语义：hermetic 绿=负护栏逻辑已证，非需求完成；rename→successor 端到端挂账（唤醒 A，kernel 设计门+Steven 人签）；实机为准（ADR-0009）。",
+  "specPath": "docs/plans/entity-rename-negative-guard/plan.md",
+  "testChecksums": {
+    "tests/_golden/entity-rename-negative-guard.zero-sut.golden.mjs": "1db7b98000ea5a40bd75a481bf6ac53fe32b1cef0b00bae3f58ffe1c2ebe5c70",
+    "docs/plans/entity-rename-negative-guard/plan.md": "79599bf7afdb04ee241a06874fb1bf21336618c096dc409f26ad40afd9309f43",
+    "docs/plans/entity-rename-negative-guard/GRILL.md": "071ebc8ed4af0294bef7917e23996490ae5b31245f422ca8b97a7f637da60d4f",
+    "docs/plans/entity-rename-negative-guard/accept/red-proofs/entity-rename-negative-guard.red.txt": "36427de8233bfff13883911453654882a04b7896b1f8e76811640568506316fd"
+  },
+  "observability": [
+    {
+      "dimension": "0/26 诚实红基线保红不漂（特征化，不入本契约 acceptance——它本应 RED、由 prd-teachin-semantic-lock-runtime-discrimination-successor 拥有）：node tests/_golden/teachin-semantic-lock-runtime-discrimination-successor.zero-sut.golden.mjs 复跑 exit 1、末行『0 过 / 26 红』、DIAG 硬门 evaluate=ENTITY_LOCK_RUNTIME_UNAUTHORIZED/successor=ENTITY_LOCK_RUNTIME_UNAUTHORIZED/adapter=ENTITY_RUNTIME_ADAPTER_INVALID——C4 改动前后逐行一致，拒绝原因未被 C4 换走。绝不使其转绿。",
+      "route": "human"
+    },
+    {
+      "dimension": "rename→successor 端到端=挂账：签 successor 端到端要唤醒形式收据链子系统 A（entity-semantic-lock-v2.mjs，819015f 有意封死、sha b7b5a47e 冻结），须过 kernel 设计门+Steven 人签。本轮只做负护栏。完成闸仍=真机（ADR-0009）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-rename-negative-guard",
+      "desc": "改名负护栏（zero-SUT）：①编译面对未知/rename 原子在第一次浏览器副作用之前前置拒（暂无编译知识，特征化锁，poison page 零触碰、零 event 产出）；②回放面新增最小前置闸——dispatchReplayAction seam 先过纯判据 unknownAtomRejection（isCompilableAtom 单一事实源），rename 在触碰 page 之前具名拒 UNKNOWN_ATOM、绝不吐 unique（红先行→转绿）；③该拒绝轴喂真实 verdict 引擎（bin/verdict.mjs 零 LLM）终判非 PASS（fail-safe NEEDS_HUMAN），即便携满足的硬断言（反向对照：unique+满足断言会 PASS，证②非空洞）；边界：判据对全体合法原子恒放行（零 false positive）、分发口对合法原子确委派 performAction（只短路未知原子）。红先行证据 red-proofs/entity-rename-negative-guard.red.txt（seam guard 关闭时 ①B/③ 与 ② 红：rename 触碰 page）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-rename-negative-guard.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-23T03:52:48.730Z 全部 acceptance exit 0"
+    }
+  ]
+}
