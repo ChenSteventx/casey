@@ -53,6 +53,17 @@
 //   c11 行 bindingMode=created-in-run 但注入注册表 allowedBindingModes 不含它（provenanceByBindingMode 仍登记该 mode，两字段不一致）
 //        → OBSERVATION_BINDING_MODE_NOT_ALLOWED（Medium：不靠 provenance 表恰好缺项间接拒，显式读 allowedBindingModes）
 //
+// ── codex R3 加固（双射全键重构 + 零义务闸 + C2 信封扩展；c12-c16 各注入夹具、e6 端到端；断言只增不减 21→27）──
+//   c12 跨 intent 同 stepId 碰撞、只给 A 行 → B 终端义务未满足 → OBSERVATION_ROLE_COUNT_MISMATCH
+//        （Critical①：旧键去 intentId 时一行会同时满足 A、B 两终端 → 误接受；全键经 binding.intentId 对齐后封死）
+//   c13 跨 intent 同 stepId 碰撞、A/B 各一合法行各锚各自终端 → ok:true
+//        （Critical①：旧键去 intentId 时每终端把两行都计数 2≠1 → 误拒；全键计数后过）
+//   c14 零义务携带观察（events 无登记终端 click + observation 带行）→ OBSERVATION_UNEXPECTED_WITHOUT_OBLIGATION
+//        （Critical②：旧实现 terminals 空即 return OK 跳过逐行+双射，令无义务事件流任意观察行冻结进签署件）
+//   c15 多原子可扩展：增广注册表 agent+workflow 两观察原子 + 各自独立信封（信封列表）各锚各自终端 → ok:true
+//        （High：C2 仅靠加注册表数据 + 追加独立信封即工作；单信封=单元素列表、agent 单原子路径字节等价）
+//   c16 多原子可扩展：agent issuer 信封夹带 workflow 行（跨原子混装）→ OBSERVATION_ISSUER_ATOM_MISMATCH（单信封单原子）
+//
 // 拒绝码归类（本金牌授权、loop 实现须循，令每条 poison 只坏一维、拒绝码与实现精度顺序无关）：
 //   · 基数维（每终端 click 观察行数 ≠ requiredRoles 数，含重复锚同一终端 click；同 sign.mjs:278/285「join 基数」口径）→ OBSERVATION_ROLE_COUNT_MISMATCH
 //   · 关联维（五元 join stepId/sourceIntentId/candidateId/role/atom 与 binding/事件流不对应，单行且基数正确）→ OBSERVATION_CORRELATION_MISMATCH
@@ -72,7 +83,7 @@ import { buildEntityBindingsDraft, hashIdentityAdmissionBytes } from '../../lib/
 import { createEntityLockReceipt } from '../../lib/entity-semantic-lock.mjs';
 
 const SECTION = process.argv[2] ?? 'all';
-const SECTIONS = new Set(['all', 'r0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'e1', 'e2', 'e3', 'e4', 'e5']);
+const SECTIONS = new Set(['all', 'r0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16', 'e1', 'e2', 'e3', 'e4', 'e5', 'e6']);
 if (!SECTIONS.has(SECTION)) process.exit(2);
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -104,6 +115,8 @@ const REJECT_CODES = new Set([
   'OBSERVATION_ROW_NOT_ANCHORED',       // 全局双射：额外非终端行未被任何终端 click 消费（Critical）
   'OBSERVATION_ISSUER_ATOM_MISMATCH',   // 单信封单原子：信封夹带非自身 issuer 原子的行（High）
   'OBSERVATION_BINDING_MODE_NOT_ALLOWED', // 显式允许集：bindingMode 越 allowedBindingModes（Medium）
+  // codex R3 加固新增（双射全键重构 + 零义务闸）：
+  'OBSERVATION_UNEXPECTED_WITHOUT_OBLIGATION', // 零义务闸：零登记终端却携带观察行（Critical）
 ]);
 
 const failures = [];
@@ -318,6 +331,113 @@ test('c11', 'c11 bindingMode=created-in-run 但注入注册表 allowedBindingMod
   expectReject(input, 'OBSERVATION_BINDING_MODE_NOT_ALLOWED', 'c11 bindingMode 越允许集');
 });
 
+// ── codex R3 加固（双射全键重构 + 零义务闸 + C2 信封扩展；c12-c16 各注入夹具、e6 端到端；断言只增不减）──
+// R3 前两轮双射修复不完整：终端锚/角色计数只用 {stepId,atom} 丢 intentId，跨 intent 复用同 stepId 时双射失真；
+// 零登记终端却携观察行时提前 return OK 跳过全部校验。本节逐字复现两 Critical 反例 + C2 多原子可扩展正/反例。
+
+// ── c12/c13 跨 intent 同 stepId 碰撞（codex R3-Critical① 双射全键）───────────────────────────────
+// 两 intent（intent_A / intent_B）复用同一 stepId 'shared_click' 各 click agent.searchOpen；各自 binding 用不同
+// sourceIntentId/candidateId 区分。全键双射经 binding.intentId 对齐：一行只满足它 binding 所属 intent 的终端。
+const COLLIDE_EVENTS = [
+  { stepId: 'shared_click', intentId: 'intent_A', atom: 'agent.searchOpen', action: 'click', text: 'A' },
+  { stepId: 'shared_click', intentId: 'intent_B', atom: 'agent.searchOpen', action: 'click', text: 'B' },
+];
+const COLLIDE_BINDINGS = [
+  { stepId: 'shared_click', intentId: 'intent_A', atom: 'agent.searchOpen', sourceIntentId: 'source_A', candidateId: 'candidate-A', role: 'subject' },
+  { stepId: 'shared_click', intentId: 'intent_B', atom: 'agent.searchOpen', sourceIntentId: 'source_B', candidateId: 'candidate-B', role: 'subject' },
+];
+const collideRow = (over) => validRow({ evidenceStepId: 'shared_click', ...over });
+const rowForA = collideRow({ sourceIntentId: 'source_A', candidateId: 'candidate-A' });
+const rowForB = collideRow({ sourceIntentId: 'source_B', candidateId: 'candidate-B' });
+
+// c12 误接受封死：只给 A 行 → B 终端义务未满足 → 拒（旧键去 intentId 时一行会同时满足 A、B 两终端 → 误接受）。
+test('c12', 'c12 跨 intent 同 stepId：只给 A 行、B 终端义务未满足 → OBSERVATION_ROLE_COUNT_MISMATCH（去 intentId 则一行误满足两终端）', () => {
+  const input = {
+    events: COLLIDE_EVENTS.map((e) => ({ ...e })),
+    observation: observationWith([rowForA]),
+    bindings: COLLIDE_BINDINGS.map((b) => ({ ...b })),
+  };
+  expectReject(input, 'OBSERVATION_ROLE_COUNT_MISMATCH', 'c12 一行不满足另一 intent 终端');
+});
+
+// c13 误拒封死：A、B 各一行（各锚各自 intent 的终端）→ 过（旧键去 intentId 时每终端把两行都数进 → 基数 2≠1 误拒）。
+test('c13', 'c13 跨 intent 同 stepId：A、B 各一合法行、各锚各自 intent 终端 → ok:true（去 intentId 则每终端重复计数 2≠1 误拒）', () => {
+  const input = {
+    events: COLLIDE_EVENTS.map((e) => ({ ...e })),
+    observation: observationWith([rowForA, rowForB]),
+    bindings: COLLIDE_BINDINGS.map((b) => ({ ...b })),
+  };
+  expectPass(input, 'c13 两合法行不被误拒');
+});
+
+// ── c14 零义务携带观察（codex R3-Critical②）：events 无登记终端 click + observation 带行 → 拒 ─────────────
+// 事件仅含未登记原子 nav.agentManagement 的 click（不产观察义务）；observation 却带 1 合法形态行。旧实现
+// terminals 空即 return OK、跳过逐行+双射，令无义务事件流的任意观察行冻结进签署件——本闸 fail-closed 拒。
+test('c14', 'c14 零义务携带观察（events 无登记终端 click + observation 带 1 行）→ OBSERVATION_UNEXPECTED_WITHOUT_OBLIGATION', () => {
+  const noTerminalEvents = [
+    { stepId: 'nz_1', intentId: 'intent_nz', atom: 'nav.agentManagement', action: 'click', text: 'agent 管理' },
+  ];
+  const input = {
+    events: noTerminalEvents,
+    observation: observationWith([validRow()]),
+    bindings: BINDINGS.map((b) => ({ ...b })),
+  };
+  expectReject(input, 'OBSERVATION_UNEXPECTED_WITHOUT_OBLIGATION', 'c14 零义务携带观察');
+});
+
+// ── c15/c16 多原子可扩展（codex R3-High C2）：增广注册表登记 agent + workflow 两观察原子 + 各自独立信封 ────
+// 验证器接受「单原子信封列表」；C2 加 workflow 仅需在注册表加数据 + 追加一个 workflow 独立信封。
+const W_ATOM = 'workflow.bindAgent';
+function augmentedTwoAtomRegistry() {
+  const augmented = new Map(ENTITY_OBSERVATION_REGISTRY);
+  augmented.set(W_ATOM, {
+    boundKind: 'workflow', requiredRoles: ['subject'],
+    issuer: { sourceKind: 'compile-envelope', atom: W_ATOM },
+    allowedBindingModes: ['existing', 'created-in-run'],
+    provenanceByBindingMode: { existing: 'user-confirmed', 'created-in-run': 'platform-readback' },
+  });
+  return augmented;
+}
+const TWO_ATOM_EVENTS = [
+  ...EVENTS.map((e) => ({ ...e })),
+  { stepId: 'wfstep_1', intentId: 'intent_2', atom: W_ATOM, action: 'fill', value: 'wf' },
+  { stepId: 'wfstep_3', intentId: 'intent_2', atom: W_ATOM, action: 'click', text: 'wf' },
+];
+const TWO_ATOM_BINDINGS = [
+  ...BINDINGS.map((b) => ({ ...b })),
+  { stepId: 'wfstep_3', intentId: 'intent_2', atom: W_ATOM, sourceIntentId: 'source_2', candidateId: 'candidate-wf', role: 'subject' },
+];
+const wfRow = () => ({
+  kind: 'workflow', name: 'wf-main', code: 'znt_atl_wf', platformId: '9876543210987654321',
+  sourceIntentId: 'source_2', candidateId: 'candidate-wf', role: 'subject',
+  atom: W_ATOM, evidenceStepId: 'wfstep_3', sourcePath: '/ai-manager/process/setup/queryProcessPageList',
+  bindingMode: 'existing', provenance: 'user-confirmed',
+});
+const agentEnvelope = (rows) => ({ source: { kind: 'compile-envelope', atom: 'agent.searchOpen' }, observations: rows });
+const wfEnvelope = (rows) => ({ source: { kind: 'compile-envelope', atom: W_ATOM }, observations: rows });
+
+// c15 合法双原子：agent 独立信封 + workflow 独立信封（信封列表）→ 过（C2 仅靠加数据+加信封即工作）。
+test('c15', 'c15 多原子可扩展：增广注册表 agent+workflow、两独立信封列表各锚各自终端 → ok:true（C2 仅加数据+加信封）', () => {
+  const input = {
+    events: TWO_ATOM_EVENTS.map((e) => ({ ...e })),
+    observation: [agentEnvelope([validRow()]), wfEnvelope([wfRow()])],
+    bindings: TWO_ATOM_BINDINGS.map((b) => ({ ...b })),
+    registry: augmentedTwoAtomRegistry(),
+  };
+  expectPass(input, 'c15 合法双原子独立信封');
+});
+
+// c16 A 信封夹 B 行：agent issuer 信封同载 agent 行 + workflow 行（跨原子混装）→ 拒（单信封单原子）。
+test('c16', 'c16 多原子可扩展：agent 信封夹带 workflow 行（跨原子混装）→ OBSERVATION_ISSUER_ATOM_MISMATCH', () => {
+  const input = {
+    events: TWO_ATOM_EVENTS.map((e) => ({ ...e })),
+    observation: [agentEnvelope([validRow(), wfRow()])],
+    bindings: TWO_ATOM_BINDINGS.map((b) => ({ ...b })),
+    registry: augmentedTwoAtomRegistry(),
+  };
+  expectReject(input, 'OBSERVATION_ISSUER_ATOM_MISMATCH', 'c16 agent 信封夹 workflow 行');
+});
+
 // ── 端到端接线断言（e1-e5）：spawn 真 bin/sign.mjs 证生产路径实调验证器 ─────────────────────
 // 上面 16 条只验孤立纯函数；codex R1 逮住「验证器未接线=假绿」——生产 sign 路径若不调它、金牌绿也无意义。
 // 这几条构造真 v2 签署夹具（本地文件、零 SUT）喂真 sign CLI：合法 agent 实过、fail-open 实拒。
@@ -345,22 +465,26 @@ function e2eRow(over = {}) {
     atom: 'agent.searchOpen', evidenceStepId: 'atstep_3', sourcePath: SOURCE_PATH, ...over,
   };
 }
-function prepareE2ECase(caseId, { observations, sourceOverride = null, receiptOverride = {} } = {}) {
+// eventsSpec 可选覆盖事件流 + provenance 步集（默认 fill/press/click atstep_1..3 三步、终端 click=atstep_3）。
+// e6 零义务用之构造「仅 fill/press、无终端 click」的事件流（buildEntityBindingsDraft 要求 provenance 与事件三元组集恰一致）。
+const DEFAULT_E2E_EVENTS = [
+  { stepId: 'atstep_1', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'fill', value: AGENT_NAME },
+  { stepId: 'atstep_2', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'press', key: 'Enter' },
+  { stepId: 'atstep_3', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'click', text: AGENT_NAME },
+];
+const DEFAULT_E2E_STEPS = ['atstep_1', 'atstep_2', 'atstep_3'];
+function prepareE2ECase(caseId, { observations, sourceOverride = null, receiptOverride = {}, eventsSpec = null } = {}) {
   const dir = resolve(E2E_SCRATCH, caseId);
   rmSync(dir, { recursive: true, force: true });
   mkdirSync(dir, { recursive: true });
   const eventsDoc = {
     schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/agent/list',
     recordedAt: E2E_SIGNED_AT, compiledBy: 'eis-e2e', authored: false,
-    events: [
-      { stepId: 'atstep_1', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'fill', value: AGENT_NAME },
-      { stepId: 'atstep_2', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'press', key: 'Enter' },
-      { stepId: 'atstep_3', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'click', text: AGENT_NAME },
-    ],
+    events: (eventsSpec?.events || DEFAULT_E2E_EVENTS).map((e) => ({ ...e })),
   };
   const eventsText = jt(eventsDoc);
   const eventsSha256 = hashIdentityAdmissionBytes(Buffer.from(eventsText));
-  const provenance = ['atstep_1', 'atstep_2', 'atstep_3'].map((stepId) => ({
+  const provenance = (eventsSpec?.provenanceSteps || DEFAULT_E2E_STEPS).map((stepId) => ({
     stepId, intentId: 'intent_1', atom: 'agent.searchOpen',
     sourceIntentId: 'source_1', candidateId: 'candidate-agent-main', role: 'subject',
   }));
@@ -471,6 +595,26 @@ test('e5', 'e5 端到端 fail-open：合法终端观察 + 一条锚 fill 步(ats
     const r = runE2ESign(fx);
     assert(r.status === 65, `额外非终端行应 sign exit 65；实得 ${r.status}（验证器未接全局双射时 fail-open 过签）；stderr=${String(r.stderr || '').trim().slice(0, 200)}`);
     assert(!existsSync(fx.locks), 'fail-open 拒签后不得留 entity-locks 冻结件');
+  } finally { cleanupE2E(caseId); }
+});
+
+test('e6', 'e6 端到端零义务：events 仅 fill/press 无终端 click + v2 观察带行 → 真 sign 实拒 exit 65（sign 终端锚存在性守卫 fail-closed，零义务不得夹带观察冻结；验证器 OBSERVATION_UNEXPECTED_WITHOUT_OBLIGATION 为直接调用者的纵深防御）', () => {
+  const caseId = 'tc_eis_e2e_noobligation';
+  try {
+    cleanupE2E(caseId);
+    const fx = prepareE2ECase(caseId, {
+      observations: [e2eRow()],
+      eventsSpec: {
+        events: [
+          { stepId: 'atstep_1', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'fill', value: AGENT_NAME },
+          { stepId: 'atstep_2', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'press', key: 'Enter' },
+        ],
+        provenanceSteps: ['atstep_1', 'atstep_2'],
+      },
+    });
+    const r = runE2ESign(fx);
+    assert(r.status === 65, `零义务携观察应 sign exit 65；实得 ${r.status}；stderr=${String(r.stderr || '').trim().slice(0, 200)}`);
+    assert(!existsSync(fx.locks), 'fail-closed 拒签后不得留 entity-locks 冻结件');
   } finally { cleanupE2E(caseId); }
 });
 
