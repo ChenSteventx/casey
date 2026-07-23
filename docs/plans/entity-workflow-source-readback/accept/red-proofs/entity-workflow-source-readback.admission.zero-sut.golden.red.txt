@@ -1,3 +1,5 @@
+# 红先行(订正夹具后重采,2026-07-23):observation 行携 bindingMode 对齐 R7 5b 契约,binding 补 bindingMode;
+# 无 registry workflow 条目时 workflow 行因 OBSERVATION_ISSUER_NOT_ALLOWED 红(未注册,非 bindingMode),agent g1 保绿——红先行真咬 C2 注册表 impl。
 FAIL r0 ENTITY_OBSERVATION_REGISTRY 加 workflow.create/workflow.open→workflow/[source]、issuer/provenance 锚收据内核: workflow.create 必须在观察注册表内（C2 注册 workflow source 读回原子）
 FAIL p1 观察行 kind='agent'（词表内、非 workflow.create 所绑）→ OBSERVATION_KIND_NOT_BOUND_TO_ATOM: p1 kind='agent': 期望 rejectCode=OBSERVATION_KIND_NOT_BOUND_TO_ATOM；实得 OBSERVATION_ISSUER_NOT_ALLOWED
 FAIL p2 数量恰好但 kind='chatflow'（不在 SUPPORTED_ENTITY_KINDS 词表）→ OBSERVATION_KIND_UNSUPPORTED: p2 kind 词表外: 期望 rejectCode=OBSERVATION_KIND_UNSUPPORTED；实得 OBSERVATION_ISSUER_NOT_ALLOWED
@@ -12,7 +14,7 @@ FAIL p6b provenance 与 bindingMode 不符（created-in-run 配 user-confirmed�
 FAIL v1 合法 workflow.create 观察行（created-in-run/platform-readback、终端 click 锚定、issuer 合法）→ ok:true: v1 合法 workflow created-in-run: 期望过签（ok:true）；实得 ok=false rejectCode=OBSERVATION_ISSUER_NOT_ALLOWED
 FAIL v2 合法 workflow.create 观察行（existing/user-confirmed，GRILL D5「existing 走 user-approval」）→ ok:true: v2 合法 workflow existing: 期望过签（ok:true）；实得 ok=false rejectCode=OBSERVATION_ISSUER_NOT_ALLOWED
 FAIL v3 合法 workflow.open 观察行（第二注册原子、created-in-run/platform-readback）→ ok:true: v3 合法 workflow.open: 期望过签（ok:true）；实得 ok=false rejectCode=OBSERVATION_ISSUER_NOT_ALLOWED
-FAIL g1 合法 agent.searchOpen 观察行（C0 语义）→ ok:true（agent 保序回归守卫）: g1 agent 保序: 期望过签（ok:true）；实得 ok=false rejectCode=OBSERVATION_BINDING_MODE_MISMATCH
+ok   g1 合法 agent.searchOpen 观察行（C0 语义）→ ok:true（agent 保序回归守卫）
 RED  entity-workflow-source-readback.admission: r0 ENTITY_OBSERVATION_REGISTRY 加 workflow.create/workflow.open→workflow/[source]、issuer/provenance 锚收据内核: workflow.create 必须在观察注册表内（C2 注册 workflow source 读回原子）
 RED  entity-workflow-source-readback.admission: p1 观察行 kind='agent'（词表内、非 workflow.create 所绑）→ OBSERVATION_KIND_NOT_BOUND_TO_ATOM: p1 kind='agent': 期望 rejectCode=OBSERVATION_KIND_NOT_BOUND_TO_ATOM；实得 OBSERVATION_ISSUER_NOT_ALLOWED
 RED  entity-workflow-source-readback.admission: p2 数量恰好但 kind='chatflow'（不在 SUPPORTED_ENTITY_KINDS 词表）→ OBSERVATION_KIND_UNSUPPORTED: p2 kind 词表外: 期望 rejectCode=OBSERVATION_KIND_UNSUPPORTED；实得 OBSERVATION_ISSUER_NOT_ALLOWED
@@ -25,5 +27,4 @@ RED  entity-workflow-source-readback.admission: p6b provenance 与 bindingMode �
 RED  entity-workflow-source-readback.admission: v1 合法 workflow.create 观察行（created-in-run/platform-readback、终端 click 锚定、issuer 合法）→ ok:true: v1 合法 workflow created-in-run: 期望过签（ok:true）；实得 ok=false rejectCode=OBSERVATION_ISSUER_NOT_ALLOWED
 RED  entity-workflow-source-readback.admission: v2 合法 workflow.create 观察行（existing/user-confirmed，GRILL D5「existing 走 user-approval」）→ ok:true: v2 合法 workflow existing: 期望过签（ok:true）；实得 ok=false rejectCode=OBSERVATION_ISSUER_NOT_ALLOWED
 RED  entity-workflow-source-readback.admission: v3 合法 workflow.open 观察行（第二注册原子、created-in-run/platform-readback）→ ok:true: v3 合法 workflow.open: 期望过签（ok:true）；实得 ok=false rejectCode=OBSERVATION_ISSUER_NOT_ALLOWED
-RED  entity-workflow-source-readback.admission: g1 合法 agent.searchOpen 观察行（C0 语义）→ ok:true（agent 保序回归守卫）: g1 agent 保序: 期望过签（ok:true）；实得 ok=false rejectCode=OBSERVATION_BINDING_MODE_MISMATCH
-RED  entity-workflow-source-readback.admission/all: 2 过 / 13 红
+RED  entity-workflow-source-readback.admission/all: 3 过 / 12 红

@@ -11,7 +11,7 @@
 2. **workflows.listApi 注入**：`bin/compile.mjs` 按注册表遍历时，workflow 通道从 `profile.workflows.listApi` 注入 ledger（镜像 agents.listApi）；声明不全 fail-closed exit 65。
 3. **compileWorkflowCreate/Open 武装 source 读回**：创建/打开工作流后武装 `pendingIdentityObservation`（source 侧，created-in-run→platform-readback）；join 到 source binding。
 4. **sign 白名单泛化落地（闭集）**：workflow source 观察行经注册表校验通过；伪造 `kind:'workflow'` 但角色/来源/关联/provenance 不匹配 → fail-closed 拒（红先行：C0 注册表已拒 workflow，因未注册；C2 注册后合法过、伪造仍拒）。
-5. **workflow-list hermetic fixture**：仿 chat-sut 的 workflow listApi 信封 fixture（回 19 位纯数字 workflow ID、DOM 卡）。
+5. **工作流列表夹具**：`workflow-list hermetic fixture`——仿 chat-sut 的 workflow listApi 信封 fixture（回 19 位纯数字 workflow ID、DOM 卡）。
 6. **workflow 毒化 + 完备性金牌**：重复同名工作流不得取 first；`total>records.length`/cursor 未尽/错 scope 不得证 SAME/absent。
 7. **双锁邻接保绿/amend**：`entity-ui-wiring.bindagent-lockchain`/`bindagent-replay` 复跑；C2 武装 source 读回后若行为变 → checksumAmendments 重签（既有 codex 四轮 PASS 冻结，改动须复评审）。v2 sha `b7b5a47e` 未动。
 

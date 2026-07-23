@@ -4,7 +4,7 @@
   "task": "entity-workflow-source-readback（C2，full，worktree）：工作流对象「名称+编号联合定位」的 source 侧对称落地——注册 workflow 观察 kind（workflow.create/open→workflow/[source]）+ ENTITY_KIND_COMPILE_CHANNELS 加 workflow→workflows 通道注入 + compileWorkflowCreate/Open 武装 source 读回（created-in-run→platform-readback）+ sign 白名单泛化落地（闭集）。红先行 accept：4 金牌红先行冻结 + workflow-sut hermetic fixture。⚠ C0 邻接：C2 注册 workflow.create 后 C0 spine 金牌 entity-identity-spine.admission-registry 的 r0 反断言翻假，loop/收口须复跑并 amend prd-entity-identity-spine（护栏 #19，见 observability）。真字段名/抽屉类名/双锁真机 UAT = route:human（先采不猜，ADR-0009）；不碰 v2 字节 b7b5a47e。",
   "specPath": "docs/plans/entity-workflow-source-readback/plan.md",
   "testChecksums": {
-    "tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs": "07af7a6c430c39de7d78f2b275421b7ee1c5ceead50801d31f4d8412c8e6e59e",
+    "tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs": "d25f3721a7f81c497480150565f2ec5fe2ba77e12089feeb665a39edabf70478",
     "tests/_golden/entity-workflow-source-readback.compile-channel.zero-sut.golden.mjs": "c73cce8c184f853ee408d4d8e7242af7888245f68fcd170e2ec7608026105968",
     "tests/_golden/entity-workflow-source-readback.arming.static.golden.mjs": "2f9fc7ce448bbc0cf2217ad81307bdc2f476676ab4676f42a81a1500659e7871",
     "tests/_golden/entity-workflow-source-readback.completeness.zero-sut.golden.mjs": "f8af0c69c1336b2a5977baece400d04d7e955b2f12ce65256ccba3f72fc190a2"
@@ -39,8 +39,8 @@
       "acceptance": [
         "node tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs"
       ],
-      "passes": false,
-      "evidence": "accept 红先行：11 红（r0 + 10 poison）/ 4 真空绿（v1/v2/v3 合法 + g1 agent 保序），exit 1"
+      "passes": true,
+      "evidence": "gate@2026-07-23T15:09:58.714Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-compile-channel-injection",
@@ -49,8 +49,8 @@
       "acceptance": [
         "node tests/_golden/entity-workflow-source-readback.compile-channel.zero-sut.golden.mjs"
       ],
-      "passes": false,
-      "evidence": "accept 红先行：s1 结构 + s2 声明不全两红、s3 完整通道正控 exit 66 绿（3 过 / 2 红），exit 1"
+      "passes": true,
+      "evidence": "gate@2026-07-23T15:10:17.438Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-source-readback-arming",
@@ -59,8 +59,8 @@
       "acceptance": [
         "node tests/_golden/entity-workflow-source-readback.arming.static.golden.mjs"
       ],
-      "passes": false,
-      "evidence": "accept 红先行：4 红（create/open 各 pendingIdentityObservation+identityLedger 缺席）/ 3 绿（agent 基线范式守卫 + 两函数在场），exit 1"
+      "passes": true,
+      "evidence": "gate@2026-07-23T15:10:17.606Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-completeness-poison-regression",
@@ -69,9 +69,17 @@
       "acceptance": [
         "node tests/_golden/entity-workflow-source-readback.completeness.zero-sut.golden.mjs"
       ],
-      "passes": false,
-      "evidence": "accept：回归锁 9/9 绿（通道无关继承，exit 0）——非红驱动；红先行由 s1/s2/s3 承载、端到端由 loop 浏览器金牌承载"
+      "passes": true,
+      "evidence": "gate@2026-07-23T15:10:17.897Z 全部 acceptance exit 0"
     }
   ],
-  "checksumAmendments": []
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-23",
+      "files": [
+        "tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs"
+      ],
+      "reason": "accept 夹具订正（C2 loop，Steven 2026-07-23 授权，codex 复审）：admission 金牌 binding 字面量（BINDINGS_CREATE/OPEN/AGENT_BINDINGS）缺 bindingMode 字段，而 FF 进的 C0-final R7 5b 换轨闸要求锚定 binding 携 bindingMode（缺则 fail-closed → OBSERVATION_BINDING_MODE_MISMATCH，连 agent 回归行 g1 都误红）。根因：accept 金牌对着 R7 前校验器写并冻，随后 FF C0-final 引入 5b 要求。amend：三 binding 补 bindingMode 对齐各自 row（create/open→created-in-run、agent→existing、v2 案 binding→existing），纯输入订正、断言不动。红先行仍保（无 registry workflow 条目时 workflow 行 OBSERVATION_ISSUER_NOT_ALLOWED 红、agent g1 绿，red-proof 重采入档）。金牌 15/15 exit 0，新 sha d25f3721。旧 sha 07af7a6c430c39de7d78f2b275421b7ee1c5ceead50801d31f4d8412c8e6e59e"
+    }
+  ]
 }

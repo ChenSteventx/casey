@@ -103,6 +103,7 @@ const EVENTS_CREATE = [
 const BINDINGS_CREATE = [{
   stepId: 'atstep_2', intentId: 'intent_1', atom: 'workflow.create',
   sourceIntentId: 'source_wf_1', candidateId: 'candidate-wf-main', role: 'source',
+  bindingMode: 'created-in-run',
 }];
 function wfRow(overrides = {}) {
   return {
@@ -132,6 +133,7 @@ const EVENTS_OPEN = [
 const BINDINGS_OPEN = [{
   stepId: 'opstep_1', intentId: 'intent_2', atom: 'workflow.open',
   sourceIntentId: 'source_wf_2', candidateId: 'candidate-wf-open', role: 'source',
+  bindingMode: 'created-in-run',
 }];
 function wfOpenInput(over = {}) {
   return {
@@ -154,6 +156,7 @@ const AGENT_EVENTS = [
 const AGENT_BINDINGS = [{
   stepId: 'agstep_3', intentId: 'intent_a', atom: 'agent.searchOpen',
   sourceIntentId: 'source_a', candidateId: 'candidate-a', role: 'subject',
+  bindingMode: 'existing',
 }];
 function agentInput() {
   return {
@@ -259,8 +262,10 @@ test('v1', 'v1 合法 workflow.create 观察行（created-in-run/platform-readba
   expectPass(wfInput(), 'v1 合法 workflow created-in-run');
 });
 test('v2', "v2 合法 workflow.create 观察行（existing/user-confirmed，GRILL D5「existing 走 user-approval」）→ ok:true", () => {
-  expectPass(wfInput({ observation: wfObservationWith([wfRow({ bindingMode: 'existing', provenance: 'user-confirmed' })]) }),
-    'v2 合法 workflow existing');
+  expectPass(wfInput({
+    observation: wfObservationWith([wfRow({ bindingMode: 'existing', provenance: 'user-confirmed' })]),
+    bindings: BINDINGS_CREATE.map((b) => ({ ...b, bindingMode: 'existing' })),
+  }), 'v2 合法 workflow existing');
 });
 test('v3', 'v3 合法 workflow.open 观察行（第二注册原子、created-in-run/platform-readback）→ ok:true', () => {
   expectPass(wfOpenInput(), 'v3 合法 workflow.open');
