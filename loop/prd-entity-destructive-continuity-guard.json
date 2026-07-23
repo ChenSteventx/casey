@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "slug": "entity-destructive-continuity-guard",
+  "task": "entity-destructive-continuity-guard（C3，full）：给破坏性动作（删除、更新、加工具）加一道【运行时目标连续性守卫】。今天 delete/add-tool 只靠「按名/计数 + 因果弹层」定位、不绑身份——同名在场就可能删错对象。C3 让动作携带创建/首读时那条不可覆盖的连续性观察（identityObservationRef，绑完整五元 + platformId + profile 指纹 + scope + 请求关联 + 步序），破坏性出站 mutation 请求【真正发出前】核对请求 url/body 里的 platformId 与 ref 一致才放行、不一致或无可验 ID 即中止且证 SUT 未改，收尾按同一 target-ID 稳定窗口 absence-proof 归零。语义边界（报告不得冒充）：C3 用 identityObservationRef 做「同一目标」核对，【非】「消费同一份形式收据」(receiptHash)——那要唤醒被封死的子系统 A（kernel 设计门 + Steven 人签），本轮结构性关不掉（GRILL D1）；只证 C 束目标连续性，绝不冒充 A 束的签发根/授权/provenance/联合五元/TOCTOU 五层。范围限 targeting/破坏性原子（workflow.deleteByName / agent.delete / picker.selectFirstTool），不全量翻 create/addNode/setNodeField（血溅面过大，GRILL D2）；孤儿策略项 agent.removeToolByName（有 side-effect policy、无编译器）不被误索要（GRILL D4）。本 accept 阶段交付红先行 zero-SUT 金牌 + 冻结；实现落新模块 lib/entity-destructive-continuity.mjs（8 纯函数）并接进 compile-atoms（delete/add-tool 武装 ref）、bin/replay.mjs（page.route 出站拦截委派 runGuardedMutation + 归零按 target-ID）、entity-semantic-lock-preflight side-effect policy（限 targeting 强制 ref）。v2 形式收据链字节仍冻 b7b5a47e（本轮不碰）、裁定四态不改。设计三方共识（fable 起草 → codex 压测 → opus 4.8 xhigh 仲裁），见 GRILL D1-D6、母规格 docs/plans/entity-identity-lastmile/plan.md §3/§5。红先行基线：目标模块 lib/entity-destructive-continuity.mjs 尚不存在，金牌 import 即 RED（exit 1，Cannot find module）。",
+  "specPath": "docs/plans/entity-destructive-continuity-guard/plan.md",
+  "testChecksums": {
+    "tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs": "66d80917c5c21d09f57785fe7b54d2fca6367a7437d3e4a8398a215d1f1924ab"
+  },
+  "observability": [
+    {
+      "dimension": "C3 完成语义（ADR-0009）：本金牌 hermetic 绿只证目标连续性守卫的纯判定逻辑与咬合，非需求完成。真删/改请求是否真携可验 platformId、真机破坏性 UAT（delete/update/add-tool 每条用例过完成闸）为准；实机为准。",
+      "route": "human"
+    },
+    {
+      "dimension": "A 束边界（消费同一份形式收据 / receiptHash 形式义务）：结构性关不掉，需唤醒被封死的子系统 A（kernel 设计门 + Steven 人签）。本轮只交付 C 束目标连续性；报告拆开写两种能力，绝不用 C 冒充 A 强度。此维度的开闸决定走人。",
+      "route": "human"
+    },
+    {
+      "dimension": "收口不破邻接冻结面：entity-semantic-lock-v2.mjs 字节仍 b7b5a47e（本轮不碰 v2）；既有 delete 相关金牌（delete-confirm-causal-binding 因果弹层绑定、workflow-delete-by-name-hardening、fix-agent-delete-zero-window 等）复跑不破；side-effect policy 限 targeting 落地后 create/addNode/setNodeField 等既有 mutation 面字节零漂移。收口须人工编排复跑邻接破坏性金牌全套（护栏 #19：别信分层绿）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-runtime-target-continuity-guard",
+      "desc": "运行时目标连续性守卫纯函数族（lib/entity-destructive-continuity.mjs，8 目标纯函数）钉住 plan 验收点 1-8，逐条红先行 + 忠实 ref 正控 + 退化实现反控（always-放行/always-取first/always-索要/count===0 逐条逮红）：r0 导出面（8 纯函数）；v1 不可覆盖 observation（mintTargetContinuityObservation 深冻结、绑完整五元+platformId/name/code+profile 指纹+scope+请求关联+步序，缺任一即拒）+ 破坏性动作携 ref（resolveDestructiveTarget 取 ref.platformId、绝不按 name 再生成、ref 缺 platformId fail-closed 不回落 name）；v2 出站请求前置核对（runGuardedMutation 放行前核 url/body 的 platformId 与 ref 一致才调注入的 send 出站通道，不同/无可验 ID 即中止且 send 零调用、mutated:false——poison send 代理证 SUT 零副作用、请求发出前拦，非只看 response）；v3 删前完整可证明扫描（classifyPreDeleteScan 坏候选/分页不全/相关响应不可关联 → NEEDS_HUMAN）；v4 无可验出站 ID 且 DOM 无 ID → route:human failClosed（routeOutboundIdentifiability，结构上不能安全自动化）；v5 按 target-ID 稳定窗口 absence-proof（evaluateTargetAbsence，presentPlatformIds 不含 ref.platformId 且 stable 才 proven，name-count-only 窗口永远 proven:false，非 name count===0）；v6 孤儿策略项不误拒（requiresTargetContinuityRef('agent.removeToolByName')===false，正控 agent.delete===true 证非 always-false）；v7 限 targeting/破坏性原子（delete×2+picker.selectFirstTool 索要 ref；create/addNode/setNodeField/setSwitch/addNodeInputVar/bindAgent/nav/assert/searchOpen/未知原子不被误索要，不全量翻）；v8 delete/add-tool 同名毒化（selectDestructiveCandidateByRef 按 ref.platformId 唯一命中、绝不取 first(nth:0)，0 或 >1 命中即中止）。红先行基线：目标模块缺席，金牌 import 即 RED（exit 1，Cannot find module lib/entity-destructive-continuity.mjs）。语义边界：C 束目标连续性、非 A 束收据消费。夹具纯内存（零外部文件、零浏览器、零子进程）、形态锚真机 uat-run.md（19 位纯数字 platformId string、同名不同 platformId 两候选做毒化面）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-23T04:39:21.000Z 全部 acceptance exit 0"
+    }
+  ]
+}
