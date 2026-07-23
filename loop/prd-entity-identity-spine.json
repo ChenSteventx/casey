@@ -4,7 +4,7 @@
   "task": "entity-identity-spine（C0，full）：把 bin/sign.mjs 写死 agent-only 的身份观察准入（:247 常量 IDENTITY_OBSERVATION_ATOM='agent.searchOpen'、:275-276 硬校验 row.kind==='agent'）泛化成一张闭集注册表——action policy 声明的原子 → required role → bound kind/provenance → 允许的 observation issuer/atom；签署时校验观察行的角色、数量、来源、关联 ID 恰好匹配，不匹配 fail-closed 拒（exit 65）。agent 既有条目在注册表里等价今日硬钉语义、agent 行为逐字不变（agent-id-readback 全套金牌复跑字节零漂移是机器验收证据）。C0 只做地基泛化：不注册 workflow（C2）、不碰 v2 形式收据链（entity-semantic-lock-v2.mjs 字节仍 b7b5a47e）、不加编译器、不改裁定四态。本 accept 阶段交付红先行 zero-SUT 金牌 + 冻结；实现落 lib/entity-observation-registry.mjs（新 ENTITY_OBSERVATION_REGISTRY Map + SUPPORTED_ENTITY_KINDS + validateObservationAdmission 纯函数）并接进 sign.mjs 观察对账块（bin/sign.mjs:235-291），供 C1-C3 复用。设计三方共识（fable 起草→codex gpt-5.6-sol max 压测→opus 4.8 xhigh 仲裁），见 GRILL D1-D5、母规格 docs/plans/entity-identity-lastmile/plan.md §3/§5。provenance 维度锚既有收据内核 lib/entity-semantic-lock.mjs:5-6,74-79（bindingMode existing→user-confirmed、created-in-run→platform-readback），非新造字段。",
   "specPath": "docs/plans/entity-identity-spine/plan.md",
   "testChecksums": {
-    "tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs": "57513de45e86dc22b601a996c04ac6c2d07ae14767ac038a8e336ebbb9d3db8f"
+    "tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs": "df1547405d28cc60b4a762050bd430c927d76c16a3f37de9efa8335e6eba898e"
   },
   "observability": [
     {
@@ -25,7 +25,16 @@
         "node tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T03:42:29.907Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T05:11:20.483Z 全部 acceptance exit 0"
+    }
+  ],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-23",
+      "files": [
+        "tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs"
+      ],
+      "reason": "codex R1 逮 validator 未接线假绿——金牌只验孤立纯函数 validateObservationAdmission、生产 sign 路径绕过它。金牌加端到端断言（e1-e4）spawn 真 bin/sign.mjs 证生产路径实调验证器：e1 合法 agent 实过、e2 角色基数越界/e3 跨原子 issuer/e4 successor bindingMode 越注册表允许集 三条 fail-open 实拒 die(65)。断言只增不减（13→17）；注释 sign 里验证器调用则 e2/e3/e4 转绿→本金牌红=咬合自证。老 sha 57513de45e86dc22b601a996c04ac6c2d07ae14767ac038a8e336ebbb9d3db8f → 新 sha df1547405d28cc60b4a762050bd430c927d76c16a3f37de9efa8335e6eba898e。"
     }
   ]
 }

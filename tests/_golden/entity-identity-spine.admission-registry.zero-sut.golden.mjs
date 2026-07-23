@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 // entity-identity-spine（C0）验收金牌：闭集准入注册表（红先行、zero-SUT）。
-// 纯 node：纯内存夹具 + 一个目标纯函数（零浏览器、零网络、零 server、零 fake SUT、零子进程）。
+// 两节：① r0/c1-c8 纯内存夹具 + 目标纯函数 validateObservationAdmission（零浏览器/网络/server/fake-SUT/子进程）；
+//       ② e1-e4 端到端接线（codex R1 Critical 修复的机器证据）——spawn 真 bin/sign.mjs 子进程，证【生产 sign
+//          路径实际调该验证器】：合法 agent 观察实过、fail-open 观察实拒 die(65)。仍零浏览器/网络/server/fake-SUT；
+//          子进程仅为跨进程真实执行 sign CLI（本地文件夹具）。若验证器未接线（注释掉 sign 里的调用），e2/e3/e4
+//          会转绿（fail-open 过签）→ 本节转红=咬合证据。
 // 断言纪律：退出码 + deepEqual/具名 rejectCode 钉死；禁标记串 grep（判绿只信退出码，MEMORY 铁律）。
 //
 // ── C0 目标（母规格 docs/plans/entity-identity-lastmile/plan.md §3/§5、spine plan §验收点、GRILL D2）──
@@ -51,13 +55,19 @@
 // 19 位纯数字 platformId string、code=znt_atl_*、sourcePath=/ai-manager/agent/setup/queryAgentPageList。
 
 import { deepStrictEqual } from 'node:assert';
-import { dirname, resolve } from 'node:path';
+import { createHash } from 'node:crypto';
+import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { dirname, join, resolve } from 'node:path';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+import { buildEntityBindingsDraft, hashIdentityAdmissionBytes } from '../../lib/entity-semantic-lock-preflight.mjs';
+import { createEntityLockReceipt } from '../../lib/entity-semantic-lock.mjs';
 
 const SECTION = process.argv[2] ?? 'all';
-const SECTIONS = new Set(['all', 'r0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8']);
+const SECTIONS = new Set(['all', 'r0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'e1', 'e2', 'e3', 'e4']);
 if (!SECTIONS.has(SECTION)) process.exit(2);
 const HERE = dirname(fileURLToPath(import.meta.url));
+const ROOT = resolve(HERE, '..', '..');
 const MODULE_PATH = resolve(HERE, '..', '..', 'lib', 'entity-observation-registry.mjs');
 
 // ── 红先行：目标模块尚不存在则 import 抛错，打印 RED 行并 exit 1（红的机制=API 未实现）──
@@ -240,6 +250,153 @@ test('c8', 'c8 事件仅含孤儿原子 agent.removeToolByName（观察注册表
   ];
   expectPass({ events: orphanEvents, observation: null, bindings: orphanBindings }, 'c8 孤儿原子不索要观察');
 });
+
+// ── 端到端接线断言（e1-e4）：spawn 真 bin/sign.mjs 证生产路径实调验证器 ─────────────────────
+// 上面 13 条只验孤立纯函数；codex R1 逮住「验证器未接线=假绿」——生产 sign 路径若不调它、金牌绿也无意义。
+// 这几条构造真 v2 签署夹具（本地文件、零 SUT）喂真 sign CLI：合法 agent 实过、fail-open 实拒。
+const SIGN = resolve(ROOT, 'bin', 'sign.mjs');
+const E2E_SCRATCH = resolve(ROOT, '.golden-scratch-entity-identity-spine-e2e');
+const E2E_SIGNED_AT = '2026-07-23T08:00:00.000Z';
+const E2E_BUILD = 'eis-e2e-build';
+const jt = (v) => JSON.stringify(v, null, 2) + '\n';
+// identityProfileDigest 规范化（同 sign-observation 金牌口径：递归按键排序 sha256）。
+const E2E_LIST_API = {
+  pathname: '/api/agents/query', method: 'GET',
+  recordsPath: 'data.records', totalPath: 'data.total', hasNextPath: null,
+  fields: { id: 'agentId', code: 'agentCode', name: 'agentName' },
+};
+const e2eCanonical = (v) => (Array.isArray(v) ? v.map(e2eCanonical)
+  : (v !== null && typeof v === 'object'
+    ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, e2eCanonical(v[k])])) : v));
+const E2E_PROFILE_DIGEST = 'sha256:' + createHash('sha256').update(JSON.stringify(e2eCanonical(E2E_LIST_API))).digest('hex');
+
+// 观察行（真机形态；不带 bindingMode/provenance——那是绑定属性、sign 侧按五元组从确认收据富化）。
+function e2eRow(over = {}) {
+  return {
+    kind: 'agent', name: AGENT_NAME, code: AGENT_CODE, platformId: AGENT_PLATFORM_ID,
+    sourceIntentId: 'source_1', candidateId: 'candidate-agent-main', role: 'subject',
+    atom: 'agent.searchOpen', evidenceStepId: 'atstep_3', sourcePath: SOURCE_PATH, ...over,
+  };
+}
+function prepareE2ECase(caseId, { observations, sourceOverride = null, receiptOverride = {} } = {}) {
+  const dir = resolve(E2E_SCRATCH, caseId);
+  rmSync(dir, { recursive: true, force: true });
+  mkdirSync(dir, { recursive: true });
+  const eventsDoc = {
+    schemaVersion: 2, channel: 'web', caseId, url: '{{baseUrl}}/agent/list',
+    recordedAt: E2E_SIGNED_AT, compiledBy: 'eis-e2e', authored: false,
+    events: [
+      { stepId: 'atstep_1', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'fill', value: AGENT_NAME },
+      { stepId: 'atstep_2', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'press', key: 'Enter' },
+      { stepId: 'atstep_3', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'click', text: AGENT_NAME },
+    ],
+  };
+  const eventsText = jt(eventsDoc);
+  const eventsSha256 = hashIdentityAdmissionBytes(Buffer.from(eventsText));
+  const provenance = ['atstep_1', 'atstep_2', 'atstep_3'].map((stepId) => ({
+    stepId, intentId: 'intent_1', atom: 'agent.searchOpen',
+    sourceIntentId: 'source_1', candidateId: 'candidate-agent-main', role: 'subject',
+  }));
+  const draftResult = buildEntityBindingsDraft({ eventsBytes: Buffer.from(eventsText), eventsDocument: eventsDoc, provenance });
+  assert(draftResult.ok === true, `e2e 夹具自身红：buildEntityBindingsDraft ${draftResult.reason}`);
+  const receipt = createEntityLockReceipt({
+    lockId: 'lock-agent-main', kind: 'agent', bindingMode: 'existing', scopeFingerprint: 'sha256:scope-agent',
+    expected: { name: AGENT_NAME, code: AGENT_CODE },
+    observed: { name: AGENT_NAME, code: AGENT_CODE, platformId: AGENT_PLATFORM_ID },
+    source: 'user-confirmed', ...receiptOverride,
+  });
+  const observation = {
+    schemaVersion: 1, artifactKind: 'compile-identity-observation', caseId,
+    capturedAgainstBuild: E2E_BUILD, identityProfileDigest: E2E_PROFILE_DIGEST, eventsSha256,
+    source: sourceOverride || { kind: 'compile-envelope', atom: 'agent.searchOpen', signed: false, replayReady: false },
+    observations,
+  };
+  const observationText = jt(observation);
+  const draft = {
+    ...draftResult.draft, schemaVersion: 2, identityProfileDigest: E2E_PROFILE_DIGEST,
+    identityObservationsSha256: hashIdentityAdmissionBytes(Buffer.from(observationText)),
+  };
+  const p = (n) => resolve(dir, n);
+  writeFileSync(p('expected.draft.json'), jt({ caseId, intents: [{ intentId: 'intent_1', expected: [{ kind: 'textVisible', op: 'appears', value: 'ready' }] }], pending: [] }));
+  writeFileSync(p('events.json'), eventsText);
+  writeFileSync(p('entity-bindings.draft.json'), jt(draft));
+  writeFileSync(p('entity-confirmations.json'), jt({ caseId, confirmations: provenance.map((r) => ({ ...r, receipt })) }));
+  writeFileSync(p('identity-observations.compile.json'), observationText);
+  const prdPath = resolve(ROOT, 'loop', `prd-${caseId}.json`);
+  rmSync(prdPath, { force: true });
+  writeFileSync(prdPath, jt({ schemaVersion: 1, caseId, task: 'eis e2e wiring golden（金牌自清理）', testChecksums: {}, stories: [] }), { flag: 'wx' });
+  return {
+    caseId, dir, prdPath, draft: p('expected.draft.json'), events: p('events.json'),
+    bindings: p('entity-bindings.draft.json'), confirmations: p('entity-confirmations.json'),
+    observations: p('identity-observations.compile.json'), frozen: p('expected.frozen.json'), locks: p('entity-locks.frozen.json'),
+  };
+}
+function runE2ESign(fx) {
+  return spawnSync(process.execPath, [SIGN, fx.caseId,
+    '--draft', fx.draft, '--prd', fx.prdPath, '--frozen-out', fx.frozen,
+    '--signer', 'golden-human', '--against-build', E2E_BUILD, '--signed-at', E2E_SIGNED_AT,
+    '--events', fx.events, '--entity-bindings-draft', fx.bindings, '--entity-confirmations', fx.confirmations,
+    '--entity-locks-out', fx.locks, '--audience', 'test', '--entity-observations', fx.observations],
+  { cwd: ROOT, encoding: 'utf8', timeout: 300000 });
+}
+function cleanupE2E(caseId) {
+  rmSync(resolve(E2E_SCRATCH, caseId), { recursive: true, force: true });
+  rmSync(resolve(ROOT, 'loop', `prd-${caseId}.json`), { force: true });
+}
+
+test('e1', 'e1 端到端：合法 agent v2 观察 → 真 sign 实过 exit 0 且产 v2 冻结锁（接线后合法 agent 逐语义等价）', () => {
+  const caseId = 'tc_eis_e2e_happy';
+  try {
+    cleanupE2E(caseId);
+    const fx = prepareE2ECase(caseId, { observations: [e2eRow()] });
+    const r = runE2ESign(fx);
+    assert(r.status === 0, `合法 agent v2 应 sign exit 0；实得 ${r.status}；stderr=${String(r.stderr || '').trim().slice(0, 200)}`);
+    const frozen = JSON.parse(readFileSync(fx.locks, 'utf8'));
+    assert(frozen.schemaVersion === 2 && Array.isArray(frozen.identityObservations) && frozen.identityObservations.length === 1,
+      `合法 agent 应产 v2 冻结锁含 1 观察行；实得 ${brief(frozen.identityObservations)}`);
+  } finally { cleanupE2E(caseId); }
+});
+
+test('e2', 'e2 端到端 fail-open：同终端 click 双观察行（角色基数越界）→ 真 sign 实拒 exit 65（验证器专属：注释验证器则转绿→本节红）', () => {
+  const caseId = 'tc_eis_e2e_rolecount';
+  try {
+    cleanupE2E(caseId);
+    const fx = prepareE2ECase(caseId, { observations: [e2eRow(), e2eRow()] });
+    const r = runE2ESign(fx);
+    assert(r.status === 65, `双观察行应 sign exit 65；实得 ${r.status}（验证器未接线时 fail-open 过签）；stderr=${String(r.stderr || '').trim().slice(0, 200)}`);
+    assert(!existsSync(fx.locks), 'fail-open 拒签后不得留 entity-locks 冻结件');
+  } finally { cleanupE2E(caseId); }
+});
+
+test('e3', 'e3 端到端 fail-open：观察件 source.atom 跨原子（nav.agentManagement，非治域 issuer）→ 真 sign 实拒 exit 65（验证器专属）', () => {
+  const caseId = 'tc_eis_e2e_issuer';
+  try {
+    cleanupE2E(caseId);
+    const fx = prepareE2ECase(caseId, {
+      observations: [e2eRow()],
+      sourceOverride: { kind: 'compile-envelope', atom: 'nav.agentManagement', signed: false, replayReady: false },
+    });
+    const r = runE2ESign(fx);
+    assert(r.status === 65, `跨原子 issuer 应 sign exit 65；实得 ${r.status}；stderr=${String(r.stderr || '').trim().slice(0, 200)}`);
+    assert(!existsSync(fx.locks), 'fail-open 拒签后不得留 entity-locks 冻结件');
+  } finally { cleanupE2E(caseId); }
+});
+
+test('e4', 'e4 端到端 fail-open：收据 bindingMode=successor（收据自洽但越注册表 agent.searchOpen 允许集）→ 真 sign 实拒 exit 65（验证器专属：freeze 收下 successor，唯验证器凭 provenanceByBindingMode 拒）', () => {
+  const caseId = 'tc_eis_e2e_successor';
+  try {
+    cleanupE2E(caseId);
+    const fx = prepareE2ECase(caseId, {
+      observations: [e2eRow()],
+      receiptOverride: { bindingMode: 'successor', source: 'platform-readback' },
+    });
+    const r = runE2ESign(fx);
+    assert(r.status === 65, `successor bindingMode 应 sign exit 65；实得 ${r.status}；stderr=${String(r.stderr || '').trim().slice(0, 200)}`);
+    assert(!existsSync(fx.locks), 'fail-open 拒签后不得留 entity-locks 冻结件');
+  } finally { cleanupE2E(caseId); }
+});
+
+if (existsSync(E2E_SCRATCH)) { try { rmSync(E2E_SCRATCH, { recursive: true, force: true }); } catch { /* 尽力 */ } }
 
 // ── 收口 ──────────────────────────────────────────────────────────────────────────
 if (failures.length) {
