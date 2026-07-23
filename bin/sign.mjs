@@ -307,7 +307,15 @@ let identityObservationRows = null;
           return { ...row, bindingMode: prov.bindingMode, provenance: prov.provenance };
         }),
       },
-      bindings: Array.isArray(entityBindingsDraft.bindings) ? entityBindingsDraft.bindings : [],
+      // bindingMode 富化进 binding（codex R5-Critical② 换轨闸权威源）：bindingMode 是绑定事实、活在确认收据里——
+      // 按 binding 五元 join 键从收据取其 mode，令验证器可校验 row.bindingMode 与 binding 事实一致（换轨闸）。row 与
+      // binding 富化自【同一收据】、五元键相等 → 生产路径恒一致（逐语义等价、零字节漂移：本富化只喂验证器、不落任何
+      // 冻结件）；纯函数金牌侧由夹具直接携 binding.bindingMode 供对抗反例。缺对应收据的 binding 保持无 mode（下游
+      // 五元关联本就要求 row 命中 binding，缺 mode 的 binding 令 row 换轨闸 fail-closed）。
+      bindings: (Array.isArray(entityBindingsDraft.bindings) ? entityBindingsDraft.bindings : []).map((b) => {
+        const prov = provenanceByTuple.get(JSON.stringify([b.stepId, b.sourceIntentId, b.candidateId, b.role, b.atom]));
+        return prov ? { ...b, bindingMode: prov.bindingMode } : { ...b };
+      }),
     });
     if (!admission.ok) die(65, `身份观察准入闭集拒（${admission.rejectCode}）`);
     identityObservationRows = obs.observations.map((row) => ({

@@ -84,6 +84,19 @@
 //   e7  端到端[Critical]：双 intent 同 stepId + 两 binding 仅 intentId 异 + 单观察行 → 真 sign 实拒 exit 65
 //        （行锚多终端非函数反例经生产 sign 路径复现；退 >1 拒则一行误满足两终端 fail-open 过签）
 //
+// ── codex R5 加固（身份字段闭集校验 + bindingMode 换轨闸 + 整体输入 fail-closed + 前瞻不变量 + 反向覆盖；c27-c34；断言只增不减 38→46）──
+//   c27 共同缺字段绕过[Critical①]：binding+row 同缺 sourceIntentId（undefined===undefined 令五元关联/终端锚定成立）→ OBSERVATION_BINDING_FIELD_INVALID
+//   c28 观察 row 缺身份字段[Critical①]：binding 合法、row 缺 candidateId → OBSERVATION_ROW_FIELD_INVALID
+//   c29 终端 event 缺身份字段[Critical①]：终端 click event 缺 intentId（键构造前闭集校验）→ OBSERVATION_TERMINAL_FIELD_INVALID
+//   c30 bindingMode 换轨[Critical②]：binding 权威 existing、row 自报 created-in-run+platform-readback（行内自洽）→ OBSERVATION_BINDING_MODE_MISMATCH
+//   c31 非数组 events[High③]：events:'not-array'（不再静默归一 []）→ OBSERVATION_INPUT_MALFORMED
+//   c32 非数组 bindings[High③]：bindings:'not-array'（不再静默归一 []）→ OBSERVATION_INPUT_MALFORMED
+//   c33 前瞻不变量[Medium④]：注册表条目 requiredRoles=['subject','subject']（重复 role）→ OBSERVATION_REGISTRY_ENTRY_INVALID
+//   c34 反向覆盖[Medium⑤]：增广双原子双终端、义务原子无对应信封 → OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION
+//   身份字段闭集校验只覆盖身份 ID（binding 五元键+intentId / row 五元键+kind / 终端 intentId/stepId/atom）——bindingMode/provenance 留其
+//   专属语义闸（已对缺/空/非 string fail-closed），保 c5 具名码不被通用闸抢先。信任边界：输入是 JSON 解析产物，字段按 JSON 值域校验
+//   （身份 ID 须非空 string，顺带拒 BigInt/number 型 ID）；进程内注入型对抗对象（Proxy/getter-throw/BigInt）超出本纯函数信任模型。
+//
 // 拒绝码归类（本金牌授权、loop 实现须循，令每条 poison 只坏一维、拒绝码与实现精度顺序无关）：
 //   · 基数维（每终端 click 观察行数 ≠ requiredRoles 数，含重复锚同一终端 click；同 sign.mjs:278/285「join 基数」口径）→ OBSERVATION_ROLE_COUNT_MISMATCH
 //   · 关联维（五元 join stepId/sourceIntentId/candidateId/role/atom 与 binding/事件流不对应，单行且基数正确）→ OBSERVATION_CORRELATION_MISMATCH
@@ -104,7 +117,8 @@ import { createEntityLockReceipt } from '../../lib/entity-semantic-lock.mjs';
 
 const SECTION = process.argv[2] ?? 'all';
 const SECTIONS = new Set(['all', 'r0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'c12', 'c13', 'c14', 'c15', 'c16',
-  'c17', 'c18', 'c19', 'c20', 'c21', 'c22', 'c23', 'c24', 'c25', 'c26', 'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7']);
+  'c17', 'c18', 'c19', 'c20', 'c21', 'c22', 'c23', 'c24', 'c25', 'c26', 'c27', 'c28', 'c29', 'c30', 'c31', 'c32', 'c33', 'c34',
+  'e1', 'e2', 'e3', 'e4', 'e5', 'e6', 'e7']);
 if (!SECTIONS.has(SECTION)) process.exit(2);
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -143,6 +157,14 @@ const REJECT_CODES = new Set([
   'OBSERVATION_ENVELOPE_MALFORMED',             // 整体输入 fail-closed：畸形信封/非数组 observations/非对象 observation（High）
   'OBSERVATION_DUPLICATE_ATOM_ENVELOPE',        // 规范信封：同原子二次信封（把多角色拆到多同原子信封蒙混）（High）
   'OBSERVATION_DUPLICATE_TERMINAL',             // 拒重复终端：完全相同 click 三元组重复（不去重）（High）
+  // codex R5 加固新增（身份字段闭集校验 + bindingMode 换轨闸 + 整体输入 fail-closed + 前瞻不变量 + 反向覆盖）：
+  'OBSERVATION_BINDING_FIELD_INVALID',          // 身份字段闭集：binding 五元键+intentId 缺/非 string/空串（Critical①）
+  'OBSERVATION_ROW_FIELD_INVALID',              // 身份字段闭集：观察 row 五元键+kind 缺/非 string/空串（Critical①）
+  'OBSERVATION_TERMINAL_FIELD_INVALID',         // 身份字段闭集：终端 event intentId/stepId/atom 缺/非 string/空串（Critical①）
+  'OBSERVATION_BINDING_MODE_MISMATCH',          // bindingMode 换轨：row.bindingMode≠命中 binding 权威 mode（Critical②）
+  'OBSERVATION_INPUT_MALFORMED',                // 整体输入 fail-closed：非数组 events/bindings 不再静默归一 []（High③）
+  'OBSERVATION_REGISTRY_ENTRY_INVALID',         // 前瞻不变量：注册表条目 requiredRoles 空/重复 role（Medium④）
+  'OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION', // 反向覆盖：义务原子无对应信封（obligationAtoms⊆seenEnvelopeAtom）（Medium⑤）
 ]);
 
 const failures = [];
@@ -181,9 +203,11 @@ const EVENTS = [
   { stepId: 'atstep_2', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'press', key: 'Enter' },
   { stepId: 'atstep_3', intentId: 'intent_1', atom: 'agent.searchOpen', action: 'click', text: AGENT_NAME },
 ];
+// binding 携 bindingMode（codex R5-Critical②）：bindingMode 是绑定事实、由确认收据富化写进 binding（生产由 sign 侧
+// 富化、纯函数由夹具携）；换轨闸校验 row.bindingMode 与命中 binding 的此权威 mode 一致。默认全 existing（同 validRow）。
 const BINDINGS = ['atstep_1', 'atstep_2', 'atstep_3'].map((stepId) => ({
   stepId, intentId: 'intent_1', atom: 'agent.searchOpen',
-  sourceIntentId: 'source_1', candidateId: 'candidate-agent-main', role: 'subject',
+  sourceIntentId: 'source_1', candidateId: 'candidate-agent-main', role: 'subject', bindingMode: 'existing',
 }));
 
 function validRow(overrides = {}) {
@@ -369,8 +393,8 @@ const COLLIDE_EVENTS = [
   { stepId: 'shared_click', intentId: 'intent_B', atom: 'agent.searchOpen', action: 'click', text: 'B' },
 ];
 const COLLIDE_BINDINGS = [
-  { stepId: 'shared_click', intentId: 'intent_A', atom: 'agent.searchOpen', sourceIntentId: 'source_A', candidateId: 'candidate-A', role: 'subject' },
-  { stepId: 'shared_click', intentId: 'intent_B', atom: 'agent.searchOpen', sourceIntentId: 'source_B', candidateId: 'candidate-B', role: 'subject' },
+  { stepId: 'shared_click', intentId: 'intent_A', atom: 'agent.searchOpen', sourceIntentId: 'source_A', candidateId: 'candidate-A', role: 'subject', bindingMode: 'existing' },
+  { stepId: 'shared_click', intentId: 'intent_B', atom: 'agent.searchOpen', sourceIntentId: 'source_B', candidateId: 'candidate-B', role: 'subject', bindingMode: 'existing' },
 ];
 const collideRow = (over) => validRow({ evidenceStepId: 'shared_click', ...over });
 const rowForA = collideRow({ sourceIntentId: 'source_A', candidateId: 'candidate-A' });
@@ -431,7 +455,7 @@ const TWO_ATOM_EVENTS = [
 ];
 const TWO_ATOM_BINDINGS = [
   ...BINDINGS.map((b) => ({ ...b })),
-  { stepId: 'wfstep_3', intentId: 'intent_2', atom: W_ATOM, sourceIntentId: 'source_2', candidateId: 'candidate-wf', role: 'subject' },
+  { stepId: 'wfstep_3', intentId: 'intent_2', atom: W_ATOM, sourceIntentId: 'source_2', candidateId: 'candidate-wf', role: 'subject', bindingMode: 'existing' },
 ];
 const wfRow = () => ({
   kind: 'workflow', name: 'wf-main', code: 'znt_atl_wf', platformId: '9876543210987654321',
@@ -480,7 +504,7 @@ const DUP_BINDING_EVENTS = [
 // 两 binding 除 intentId 外全同（sourceIntentId/candidateId/role 一致）——这正是行锚多终端的攻击面。
 const DUP_BINDINGS = ['intent_X', 'intent_Y'].map((intentId) => ({
   stepId: 'dup_click', intentId, atom: 'agent.searchOpen',
-  sourceIntentId: 'source_shared', candidateId: 'candidate-shared', role: 'subject',
+  sourceIntentId: 'source_shared', candidateId: 'candidate-shared', role: 'subject', bindingMode: 'existing',
 }));
 test('c17', 'c17 双向函数：两 binding 仅 intentId 异、单行同锚 X/Y 两终端 → OBSERVATION_ROW_ANCHORS_MULTIPLE_TERMINALS（旧只查存在=非函数误 OK）', () => {
   const input = {
@@ -566,6 +590,93 @@ test('c26', 'c26 规范信封：双终端、agent 信封满足、workflow 合法
     registry: augmentedTwoAtomRegistry(),
   };
   expectReject(input, 'OBSERVATION_ROLE_COUNT_MISMATCH', 'c26 workflow 空信封欠义务');
+});
+
+// ── codex R5 加固（身份字段闭集校验 + bindingMode 换轨闸 + 整体输入 fail-closed + 前瞻不变量 + 反向覆盖；c27-c34）──
+// R5 逮两真 Critical：① 共同缺字段绕过——验证器未强制身份字段存在且合法非空 string，两侧同缺时 undefined===undefined
+// 令五元关联/终端锚定成立，缺全部身份 ID 的 event/binding/row 能返 OK；② bindingMode 换轨——关联/锚定谓词未比对
+// binding 的权威 bindingMode，binding 实为 existing 时 row 可自报 created-in-run+platform-readback 蒙混。另三条便宜加固。
+// 对抗自证（scratchpad selfproof）：退身份字段闭集校验→c27 缺字段绕过返 OK 转红；退 bindingMode 换轨闸→c30 换轨返 OK 转红。
+
+// ── c27 共同缺字段绕过（codex R5-Critical①）：binding 与 row 同缺 sourceIntentId → 拒 ──────────────────
+// 两侧同缺 sourceIntentId（皆 undefined），旧实现 correlated 的 b.sourceIntentId===row.sourceIntentId 即 undefined===undefined
+// 成立、rowAnchorsTerminal 同理，缺全部身份 ID 仍锚定 → fail-open 返 OK。身份字段闭集校验：binding 缺字段先拒
+// OBSERVATION_BINDING_FIELD_INVALID（binding 是桥、先于 row 校验）。退闭集校验则 undefined 关联成立 → 反例返 OK 转红。
+test('c27', 'c27 共同缺字段绕过：binding+row 同缺 sourceIntentId（undefined===undefined 令关联成立）→ OBSERVATION_BINDING_FIELD_INVALID（退闭集校验则返 OK）', () => {
+  const input = {
+    events: EVENTS.map((e) => ({ ...e })),
+    observation: observationWith([validRow({ sourceIntentId: undefined })]),
+    bindings: BINDINGS.map((b) => { const c = { ...b }; delete c.sourceIntentId; return c; }),
+  };
+  expectReject(input, 'OBSERVATION_BINDING_FIELD_INVALID', 'c27 共同缺字段绕过');
+});
+
+// ── c28 观察 row 缺身份字段（codex R5-Critical①）：binding 合法、row 缺 candidateId → 拒 ─────────────────
+// binding 全合法（携 candidateId），仅 row 缺 candidateId。行身份字段闭集校验先于五元关联/kind 语义 → 具名拒
+// OBSERVATION_ROW_FIELD_INVALID（非 CORRELATION_MISMATCH——闭集校验抢先，令「缺字段」与「字段对不上」两症状分诊）。
+test('c28', 'c28 观察 row 缺身份字段（binding 合法、row 缺 candidateId）→ OBSERVATION_ROW_FIELD_INVALID', () => {
+  const input = validInput({ observation: observationWith([validRow({ candidateId: undefined })]) });
+  expectReject(input, 'OBSERVATION_ROW_FIELD_INVALID', 'c28 row 缺 candidateId');
+});
+
+// ── c29 终端 event 缺身份字段（codex R5-Critical①）：binding+row 合法、终端 click event 缺 intentId → 拒 ───────
+// 终端 click event 缺 intentId（键构造前）。旧实现 JSON.stringify([undefined,stepId,atom]) 序列化成 null 令键歧义、
+// 且终端 intentId=undefined 令 rowAnchorsTerminal 的 binding.intentId 对齐失真。闭集校验：终端字段须非空 string → 拒
+// OBSERVATION_TERMINAL_FIELD_INVALID（键构造前）。
+test('c29', 'c29 终端 event 缺 intentId（binding+row 合法）→ OBSERVATION_TERMINAL_FIELD_INVALID（键构造前闭集校验）', () => {
+  const brokenEvents = EVENTS.map((e) => ({ ...e }));
+  delete brokenEvents[2].intentId; // atstep_3 终端 click 缺 intentId
+  const input = { events: brokenEvents, observation: observationWith([validRow()]), bindings: BINDINGS.map((b) => ({ ...b })) };
+  expectReject(input, 'OBSERVATION_TERMINAL_FIELD_INVALID', 'c29 终端缺 intentId');
+});
+
+// ── c30 bindingMode 换轨（codex R5-Critical②）：binding 权威 existing、row 自报 created-in-run+platform-readback → 拒 ──
+// binding.bindingMode=existing（权威绑定事实），row 自报 created-in-run + provenance=platform-readback（行内自洽：越注册表
+// 允许集含 created-in-run、provenance 与该 mode 相符）。旧实现关联/锚定不比 binding.bindingMode → row 换轨蒙混 fail-open。
+// 换轨闸：row.bindingMode 须与命中 binding 的权威 mode 一致 → OBSERVATION_BINDING_MODE_MISMATCH。退换轨闸则 provenance
+// 行内自洽、五元关联成立 → 反例返 OK 转红（对抗自证②）。
+test('c30', 'c30 bindingMode 换轨：binding 权威 existing、row 自报 created-in-run+platform-readback（行内自洽）→ OBSERVATION_BINDING_MODE_MISMATCH（退换轨闸则返 OK）', () => {
+  const input = validInput({ observation: observationWith([validRow({ bindingMode: 'created-in-run', provenance: 'platform-readback' })]) });
+  expectReject(input, 'OBSERVATION_BINDING_MODE_MISMATCH', 'c30 bindingMode 换轨');
+});
+
+// ── c31/c32 整体输入 fail-closed（codex R5-High③）：非数组 events/bindings 不再静默归一 [] → 拒 ─────────────
+test('c31', "c31 整体 fail-closed：非数组 events（events:'not-array'）→ OBSERVATION_INPUT_MALFORMED（旧实现静默归一 [] 令义务空过）", () => {
+  const input = { events: 'not-array', observation: observationWith([validRow()]), bindings: BINDINGS.map((b) => ({ ...b })) };
+  expectReject(input, 'OBSERVATION_INPUT_MALFORMED', 'c31 非数组 events');
+});
+test('c32', "c32 整体 fail-closed：非数组 bindings（bindings:'not-array'）→ OBSERVATION_INPUT_MALFORMED（旧实现静默归一 [] 令桥空断）", () => {
+  const input = { events: EVENTS.map((e) => ({ ...e })), observation: observationWith([validRow()]), bindings: 'not-array' };
+  expectReject(input, 'OBSERVATION_INPUT_MALFORMED', 'c32 非数组 bindings');
+});
+
+// ── c33 前瞻不变量（codex R5-Medium④）：注册表条目 requiredRoles 有重复 role → 拒 ─────────────────────────
+// 注入 requiredRoles=['subject','subject'] 的畸形注册表条目（重复 role 令角色多重集恒失真）。前瞻不变量闸：
+// requiredRoles 须非空且无重复 → OBSERVATION_REGISTRY_ENTRY_INVALID（C2 数据驱动加原子时的配置护栏）。
+test('c33', "c33 前瞻不变量：注册表条目 requiredRoles=['subject','subject']（重复 role）→ OBSERVATION_REGISTRY_ENTRY_INVALID", () => {
+  const dupRoleRegistry = new Map([
+    ['agent.searchOpen', {
+      boundKind: 'agent', requiredRoles: ['subject', 'subject'],
+      issuer: { sourceKind: 'compile-envelope', atom: 'agent.searchOpen' },
+      allowedBindingModes: ['existing', 'created-in-run'],
+      provenanceByBindingMode: { existing: 'user-confirmed', 'created-in-run': 'platform-readback' },
+    }],
+  ]);
+  const input = { events: EVENTS.map((e) => ({ ...e })), observation: observationWith([validRow()]), bindings: BINDINGS.map((b) => ({ ...b })), registry: dupRoleRegistry };
+  expectReject(input, 'OBSERVATION_REGISTRY_ENTRY_INVALID', 'c33 重复 role 注册表条目');
+});
+
+// ── c34 反向覆盖（codex R5-Medium⑤）：义务原子无对应信封 → 拒 ─────────────────────────────────────────
+// 增广双原子（agent+workflow）、events 含双终端义务，却只给 agent 信封（workflow 义务原子整缺信封）。反向覆盖闸：
+// obligationAtoms ⊆ seenEnvelopeAtom → OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION（与 c26「空信封在场」互补：此为整缺）。
+test('c34', 'c34 反向覆盖：增广双原子双终端、只给 agent 信封（workflow 义务原子缺信封）→ OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION', () => {
+  const input = {
+    events: TWO_ATOM_EVENTS.map((e) => ({ ...e })),
+    observation: [agentEnvelope([validRow()])],
+    bindings: TWO_ATOM_BINDINGS.map((b) => ({ ...b })),
+    registry: augmentedTwoAtomRegistry(),
+  };
+  expectReject(input, 'OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION', 'c34 义务原子缺信封');
 });
 
 // ── 端到端接线断言（e1-e7）：spawn 真 bin/sign.mjs 证生产路径实调验证器 ─────────────────────
