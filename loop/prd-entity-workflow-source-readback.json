@@ -7,7 +7,8 @@
     "tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs": "d25f3721a7f81c497480150565f2ec5fe2ba77e12089feeb665a39edabf70478",
     "tests/_golden/entity-workflow-source-readback.compile-channel.zero-sut.golden.mjs": "c73cce8c184f853ee408d4d8e7242af7888245f68fcd170e2ec7608026105968",
     "tests/_golden/entity-workflow-source-readback.arming.static.golden.mjs": "2f9fc7ce448bbc0cf2217ad81307bdc2f476676ab4676f42a81a1500659e7871",
-    "tests/_golden/entity-workflow-source-readback.completeness.zero-sut.golden.mjs": "f8af0c69c1336b2a5977baece400d04d7e955b2f12ce65256ccba3f72fc190a2"
+    "tests/_golden/entity-workflow-source-readback.completeness.zero-sut.golden.mjs": "f8af0c69c1336b2a5977baece400d04d7e955b2f12ce65256ccba3f72fc190a2",
+    "tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs": "005cfe8225f632e587e65d2458325d2a97dfff79c6d1b02f42ccdc3a57f32432"
   },
   "observability": [
     {
@@ -29,6 +30,10 @@
     {
       "dimension": "双锁邻接 bindagent-lockchain/bindagent-replay 复跑/amend（母规格 §6）：C2 武装 source 读回后若 workflow.bindAgent 编译/回放行为变（如 source 侧多一步读回）→ prd-entity-ui-wiring 的 bindagent 两键 checksumAmendments 重签（codex 四轮 PASS 既有冻结，改动须复异构评审）。v2 sha b7b5a47e 未动、收口须验字节仍冻。",
       "route": "human"
+    },
+    {
+      "dimension": "角色契约调和 = ADR-0004 人签冻结件再签（codex round-2 Critical，route:human）：观察注册表 ENTITY_OBSERVATION_REGISTRY 要 workflow.create/open→requiredRoles:[source]（本契约冻结 admission 金牌 r0 锁死），但生产准入策略 SIDE_EFFECT_POLICY（lib/entity-semantic-lock-preflight.mjs:45，其人签冻结权威源 = tests/_golden/fixtures/teachin-admission-side-effect-policy/entity-admission-policy.frozen.json，冻结于 prd-teachin-admission-side-effect-policy.testChecksums，ADR-0004 断言冻结人签面）要 workflow.create→[subject]、workflow.open→默认 [subject]。同一 binding role 无法同时过两门（source 过观察门被生产门拒 ENTITY_BINDING_REQUIRED_ROLES_INVALID、subject 过生产门被观察门拒 OBSERVATION_ROLE_COUNT_MISMATCH，wiring 金牌 C-fc1/2/3 hermetic 复现）→ workflow mutation happy path 不存在。按 plan「source 侧读回」调和方向 = 把冻结策略 + 其镜像 SIDE_EFFECT_POLICY 的 workflow.create/open 改到 [source]——但此为【另一契约】的 ADR-0004 已签冻结件，本实现者只读、绝不擅改/伪造人签；须 Steven 再签 + prd-teachin-admission-side-effect-policy 走 checksumAmendments。当前 fail-CLOSED（无 workflow mutation 成功产物、无 fail-open），wiring 金牌 Critical 节为再签触发线。冻结金牌覆盖不足：admission 金牌 15/15 为纯函数真空绿、不蕴含端到端 happy path 存在（openIssue）。",
+      "route": "human"
     }
   ],
   "stories": [
@@ -40,7 +45,7 @@
         "node tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T15:09:58.714Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T17:37:23.695Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-compile-channel-injection",
@@ -50,7 +55,7 @@
         "node tests/_golden/entity-workflow-source-readback.compile-channel.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T15:10:17.438Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T17:37:39.026Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-source-readback-arming",
@@ -60,7 +65,7 @@
         "node tests/_golden/entity-workflow-source-readback.arming.static.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T15:10:17.606Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T17:37:39.192Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-completeness-poison-regression",
@@ -70,7 +75,17 @@
         "node tests/_golden/entity-workflow-source-readback.completeness.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T15:10:17.897Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T17:37:39.442Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s5-round2-wiring-failclosed",
+      "desc": "codex round-2 收口（可执行接线金牌，取代 arming.static 的源码 grep 弱证）：直驱真实 lib/compile-atoms.mjs compileFlow + lib/entity-observation-registry.mjs 泛化纯函数。钉三件——(H1 compile 下游 kind 泛化) checkIdentityObservationCardinality/deriveObservationIssuerAtom 由观察行驱动、非硬编码 agent.searchOpen：agent 逐字等价（issuer=agent.searchOpen，chat-sut 浏览器金牌复跑 byte-identity 复核）、workflow-only 单观察可达（旧 0≠1 误杀已解）、多身份原子/未登记 fail-closed；(H2 open 读回失败 fail-CLOSED) compileFlow 任一步硬阻断后立即中止整个 flow，后续破坏动作绝不执行（负控证 step2 零 event、正控证无阻断双步全跑不误杀）；(Critical fail-closed 触发线) 角色契约不可满足当前 fail-CLOSED：role=source 被生产准入门拒、role=subject 被观察准入门拒，两错向皆不 fail-open——调和方向触 ADR-0004 人签冻结件 entity-admission-policy.frozen.json = route:human（见 observability 项6）。",
+      "lane": "guard",
+      "acceptance": [
+        "node tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-23T17:37:40.625Z 全部 acceptance exit 0"
     }
   ],
   "checksumAmendments": [

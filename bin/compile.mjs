@@ -24,7 +24,7 @@ import { credentialGate } from '../lib/cred-gate.mjs';
 import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { createCompileRun, compileFlow, projectObserved, ROUTE_LIST } from '../lib/compile-atoms.mjs';
-import { ENTITY_KIND_COMPILE_CHANNELS } from '../lib/entity-observation-registry.mjs';
+import { ENTITY_KIND_COMPILE_CHANNELS, checkIdentityObservationCardinality, deriveObservationIssuerAtom } from '../lib/entity-observation-registry.mjs';
 import {
   buildEntityBindingsDraft,
   checkCompileIdentityAdmission as checkExecuteIdentityAdmission,
@@ -365,16 +365,28 @@ async function executeMode(caseId, args) {
         events: run.events,
       };
       const eventsText = JSON.stringify(eventsDoc, null, 2) + '\n';
-      // 身份观察基数强校验（codex R1-C1 封缝）：声明身份通道时，events 内每个 agent.searchOpen 终端
-      // click 必须恰有一条观察行——多/少/错位都不产成功产物，绝不静默降级出可按 v1 签署的编译件。
+      // 身份观察基数强校验（codex R1-C1 封缝 + C2 High-1 kind-无关泛化）：声明身份通道时，每条已归档观察行须
+      // 锚定唯一真实终端 click（evidenceStepId ∈ 已发 click stepId 集、互不重复）——多/少/错位/重复都不产成功产物，
+      // 绝不静默降级出可按 v1 签署的编译件。旧实现只数 agent.searchOpen click（workflow-only 流 0≠1 误 exit 65）；
+      // 改锚 evidenceStepId 后 agent 结论逐字不变、workflow 单观察不再误杀（纯函数 checkIdentityObservationCardinality）。
       let entityBindingsDraft = null;
       let entityBindingsDraftText = null;
+      let observationIssuer = null; // C2 High-1：观察成品 issuer 原子（据观察行泛化，非硬编码 agent.searchOpen）
       if (identityLedger) {
-        const terminalClicks = run.events.filter((e) => e.atom === 'agent.searchOpen' && e.action === 'click');
-        if (terminalClicks.length !== run.identityObservations.length) {
+        const card = checkIdentityObservationCardinality({ events: run.events, observations: run.identityObservations });
+        if (!card.ok) {
           gatedWrite({ [join(outDir, 'compile-report.json')]: JSON.stringify(reportDoc, null, 2) + '\n' });
-          console.error(`compile: 身份观察基数不齐（终端 click ${terminalClicks.length} ≠ 观察 ${run.identityObservations.length}），不产 events/draft/observed`);
+          console.error(`compile: 身份观察基数门 fail-closed（${card.reason}；观察 ${run.identityObservations.length} 条），不产 events/draft/observed`);
           exitCode = 65;
+        }
+        // issuer 原子泛化（codex High-1）：据已归档观察行推导单一 issuer 原子，多原子/未登记 fail-closed（浏览器后成品前）。
+        if (exitCode === 0 && run.identityObservations.length) {
+          observationIssuer = deriveObservationIssuerAtom(run.identityObservations);
+          if (!observationIssuer.ok) {
+            gatedWrite({ [join(outDir, 'compile-report.json')]: JSON.stringify(reportDoc, null, 2) + '\n' });
+            console.error(`compile: 身份观察 issuer 门 fail-closed（${observationIssuer.reason}），不产 events/draft/observed`);
+            exitCode = 65;
+          }
         }
       }
       if (exitCode === 0 && containsEntityMutation) {
@@ -420,7 +432,8 @@ async function executeMode(caseId, args) {
           capturedAgainstBuild: capturedBuild,
           identityProfileDigest: digest,
           eventsSha256: `sha256:${createHash('sha256').update(Buffer.from(eventsText)).digest('hex')}`,
-          source: { kind: 'compile-envelope', atom: 'agent.searchOpen', signed: false, replayReady: false },
+          // issuer 泛化（codex High-1）：源信封原子据观察行推导（agent→agent.searchOpen 逐字等价、workflow→workflow.create/open）。
+          source: { kind: observationIssuer.sourceKind, atom: observationIssuer.atom, signed: false, replayReady: false },
           observations: run.identityObservations,
         };
         identityObservationsText = JSON.stringify(observationArtifact, null, 2) + '\n';
