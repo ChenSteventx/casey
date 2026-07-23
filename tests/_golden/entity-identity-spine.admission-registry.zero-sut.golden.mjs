@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 // entity-identity-spine（C0）验收金牌：闭集准入注册表（红先行、zero-SUT）。
-// 两节：① r0/c1-c8 纯内存夹具 + 目标纯函数 validateObservationAdmission（零浏览器/网络/server/fake-SUT/子进程）；
-//       ② e1-e4 端到端接线（codex R1 Critical 修复的机器证据）——spawn 真 bin/sign.mjs 子进程，证【生产 sign
-//          路径实际调该验证器】：合法 agent 观察实过、fail-open 观察实拒 die(65)。仍零浏览器/网络/server/fake-SUT；
-//          子进程仅为跨进程真实执行 sign CLI（本地文件夹具）。若验证器未接线（注释掉 sign 里的调用），e2/e3/e4
-//          会转绿（fail-open 过签）→ 本节转红=咬合证据。
+// 两节：① r0/c1-c11 纯内存夹具 + 目标纯函数 validateObservationAdmission（零浏览器/网络/server/fake-SUT/子进程）；
+//       ② e1-e5 端到端接线（codex R1 Critical + R2 Critical 修复的机器证据）——spawn 真 bin/sign.mjs 子进程，证
+//          【生产 sign 路径实际调该验证器】：合法 agent 观察实过、fail-open 观察实拒 die(65)。仍零浏览器/网络/server/
+//          fake-SUT；子进程仅为跨进程真实执行 sign CLI（本地文件夹具）。若验证器未接线（注释掉 sign 里的调用），
+//          e2/e3/e4/e5 会转绿（fail-open 过签）→ 本节转红=咬合证据。
 // 断言纪律：退出码 + deepEqual/具名 rejectCode 钉死；禁标记串 grep（判绿只信退出码，MEMORY 铁律）。
 //
 // ── C0 目标（母规格 docs/plans/entity-identity-lastmile/plan.md §3/§5、spine plan §验收点、GRILL D2）──
@@ -45,6 +45,14 @@
 //   c7 合法 agent 观察行（今天 sign.mjs 能过的那种，含 existing/user-confirmed provenance）→ ok:true（回归保护——agent 保序）
 //   c8 无编译器的孤儿策略原子 agent.removeToolByName（事件有、观察注册表无）→ 不索要 observation → ok:true（D4 不误拒）
 //
+// ── codex R2 加固（闭集更深缺陷收口；c9/c10/c11 各注入夹具、e5 端到端；断言只增不减）──────────────────
+//   c9  额外非终端行（合法 atstep_3 终端观察 + 锚 fill 步 atstep_1 的额外身份行，两行各逐行合法）
+//        → OBSERVATION_ROW_NOT_ANCHORED（Critical：逐行 correlation 过 + 终端角色多重集只数 atstep_3 行 → 额外行 fail-open 混入冻结件）
+//   c10 A(agent.searchOpen) issuer 信封夹带增广注册表第二观察原子 B 行（跨原子混装）
+//        → OBSERVATION_ISSUER_ATOM_MISMATCH（High：issuer 旧 some 命中 A 即过、单信封承载了非自身 issuer 原子的行）
+//   c11 行 bindingMode=created-in-run 但注入注册表 allowedBindingModes 不含它（provenanceByBindingMode 仍登记该 mode，两字段不一致）
+//        → OBSERVATION_BINDING_MODE_NOT_ALLOWED（Medium：不靠 provenance 表恰好缺项间接拒，显式读 allowedBindingModes）
+//
 // 拒绝码归类（本金牌授权、loop 实现须循，令每条 poison 只坏一维、拒绝码与实现精度顺序无关）：
 //   · 基数维（每终端 click 观察行数 ≠ requiredRoles 数，含重复锚同一终端 click；同 sign.mjs:278/285「join 基数」口径）→ OBSERVATION_ROLE_COUNT_MISMATCH
 //   · 关联维（五元 join stepId/sourceIntentId/candidateId/role/atom 与 binding/事件流不对应，单行且基数正确）→ OBSERVATION_CORRELATION_MISMATCH
@@ -64,7 +72,7 @@ import { buildEntityBindingsDraft, hashIdentityAdmissionBytes } from '../../lib/
 import { createEntityLockReceipt } from '../../lib/entity-semantic-lock.mjs';
 
 const SECTION = process.argv[2] ?? 'all';
-const SECTIONS = new Set(['all', 'r0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'e1', 'e2', 'e3', 'e4']);
+const SECTIONS = new Set(['all', 'r0', 'c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9', 'c10', 'c11', 'e1', 'e2', 'e3', 'e4', 'e5']);
 if (!SECTIONS.has(SECTION)) process.exit(2);
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
@@ -92,6 +100,10 @@ const REJECT_CODES = new Set([
   'OBSERVATION_ISSUER_NOT_ALLOWED',
   'OBSERVATION_CORRELATION_MISMATCH',
   'OBSERVATION_PROVENANCE_INVALID',
+  // codex R2 加固新增（闭集更深缺陷收口）：
+  'OBSERVATION_ROW_NOT_ANCHORED',       // 全局双射：额外非终端行未被任何终端 click 消费（Critical）
+  'OBSERVATION_ISSUER_ATOM_MISMATCH',   // 单信封单原子：信封夹带非自身 issuer 原子的行（High）
+  'OBSERVATION_BINDING_MODE_NOT_ALLOWED', // 显式允许集：bindingMode 越 allowedBindingModes（Medium）
 ]);
 
 const failures = [];
@@ -251,8 +263,63 @@ test('c8', 'c8 事件仅含孤儿原子 agent.removeToolByName（观察注册表
   expectPass({ events: orphanEvents, observation: null, bindings: orphanBindings }, 'c8 孤儿原子不索要观察');
 });
 
-// ── 端到端接线断言（e1-e4）：spawn 真 bin/sign.mjs 证生产路径实调验证器 ─────────────────────
-// 上面 13 条只验孤立纯函数；codex R1 逮住「验证器未接线=假绿」——生产 sign 路径若不调它、金牌绿也无意义。
+// ── c9 全局双射（codex R2-Critical 反例逐字复现）：合法终端观察 + 一条锚 fill 步的额外身份行 → 拒 ──────
+// 两行各自逐行合法（kind=agent、五元 join 各命中同一 subject binding、issuer/provenance 合法）；额外行唯一越界=
+// 锚非终端步 atstep_1（fill）。旧实现逐行 correlation 只证「行能 join 到任一 binding」、终端角色多重集又只统计锚到
+// atstep_3 的行 → 额外身份行两关都过、fail-open 混进冻结件。全局双射闸：每行必锚某终端 click 的 {stepId, atom}。
+test('c9', 'c9 额外非终端行（合法 atstep_3 终端观察 + 锚 fill 步 atstep_1 的额外身份行）→ OBSERVATION_ROW_NOT_ANCHORED', () => {
+  const input = validInput({ observation: observationWith([validRow(), validRow({ evidenceStepId: 'atstep_1' })]) });
+  expectReject(input, 'OBSERVATION_ROW_NOT_ANCHORED', 'c9 额外非终端行');
+});
+
+// ── c10 单信封单原子（codex R2-High）：A issuer 信封夹带增广注册表第二观察原子 B 行（跨原子混装）→ 拒 ────
+// 增广注册表注册第二观察原子 B；A(agent.searchOpen) issuer 信封同载 A 行 + B 行。旧 issuer 用 some——命中 A 即过，
+// B 行再逐行合法 → 跨原子混装混入。单信封单原子闸凭 row.atom!==issuerAtom(A) 拒 B 行；C2 多原子须各自独立信封。
+test('c10', 'c10 A issuer 信封夹带第二观察原子 B 行（增广注册表跨原子混装）→ OBSERVATION_ISSUER_ATOM_MISMATCH', () => {
+  const B_ATOM = 'agent.searchOpen2';
+  const augmented = new Map(ENTITY_OBSERVATION_REGISTRY);
+  augmented.set(B_ATOM, {
+    boundKind: 'agent', requiredRoles: ['subject'],
+    issuer: { sourceKind: 'compile-envelope', atom: B_ATOM },
+    allowedBindingModes: ['existing', 'created-in-run'],
+    provenanceByBindingMode: { existing: 'user-confirmed', 'created-in-run': 'platform-readback' },
+  });
+  const input = {
+    events: EVENTS.map((e) => ({ ...e })),
+    observation: {
+      source: { kind: 'compile-envelope', atom: 'agent.searchOpen' },
+      observations: [validRow(), validRow({ atom: B_ATOM })],
+    },
+    bindings: BINDINGS.map((b) => ({ ...b })),
+    registry: augmented,
+  };
+  expectReject(input, 'OBSERVATION_ISSUER_ATOM_MISMATCH', 'c10 跨原子混装');
+});
+
+// ── c11 显式允许集（codex R2-Medium）：bindingMode 越注入注册表 allowedBindingModes（provenance 表仍登记）→ 拒 ─
+// 注入 allowedBindingModes=['existing']（不含 created-in-run）但 provenanceByBindingMode 仍登记 created-in-run 的
+// 不一致注册表；行 bindingMode=created-in-run 且 provenance=platform-readback（与 provenance 表相符）。旧实现只因
+// provenanceByBindingMode 恰好含该 mode 就放行——本行会 fail-open 过。显式读 allowedBindingModes 后 fail-closed 拒。
+test('c11', 'c11 bindingMode=created-in-run 但注入注册表 allowedBindingModes 不含它（provenance 表仍登记）→ OBSERVATION_BINDING_MODE_NOT_ALLOWED', () => {
+  const restricted = new Map([
+    ['agent.searchOpen', {
+      boundKind: 'agent', requiredRoles: ['subject'],
+      issuer: { sourceKind: 'compile-envelope', atom: 'agent.searchOpen' },
+      allowedBindingModes: ['existing'],
+      provenanceByBindingMode: { existing: 'user-confirmed', 'created-in-run': 'platform-readback' },
+    }],
+  ]);
+  const input = {
+    events: EVENTS.map((e) => ({ ...e })),
+    observation: observationWith([validRow({ bindingMode: 'created-in-run', provenance: 'platform-readback' })]),
+    bindings: BINDINGS.map((b) => ({ ...b })),
+    registry: restricted,
+  };
+  expectReject(input, 'OBSERVATION_BINDING_MODE_NOT_ALLOWED', 'c11 bindingMode 越允许集');
+});
+
+// ── 端到端接线断言（e1-e5）：spawn 真 bin/sign.mjs 证生产路径实调验证器 ─────────────────────
+// 上面 16 条只验孤立纯函数；codex R1 逮住「验证器未接线=假绿」——生产 sign 路径若不调它、金牌绿也无意义。
 // 这几条构造真 v2 签署夹具（本地文件、零 SUT）喂真 sign CLI：合法 agent 实过、fail-open 实拒。
 const SIGN = resolve(ROOT, 'bin', 'sign.mjs');
 const E2E_SCRATCH = resolve(ROOT, '.golden-scratch-entity-identity-spine-e2e');
@@ -392,6 +459,17 @@ test('e4', 'e4 端到端 fail-open：收据 bindingMode=successor（收据自洽
     });
     const r = runE2ESign(fx);
     assert(r.status === 65, `successor bindingMode 应 sign exit 65；实得 ${r.status}；stderr=${String(r.stderr || '').trim().slice(0, 200)}`);
+    assert(!existsSync(fx.locks), 'fail-open 拒签后不得留 entity-locks 冻结件');
+  } finally { cleanupE2E(caseId); }
+});
+
+test('e5', 'e5 端到端 fail-open：合法终端观察 + 一条锚 fill 步(atstep_1)的额外身份行 → 真 sign 实拒 exit 65（codex R2-Critical 全局双射反例端到端复现：额外非终端行不得混进冻结件）', () => {
+  const caseId = 'tc_eis_e2e_extrarow';
+  try {
+    cleanupE2E(caseId);
+    const fx = prepareE2ECase(caseId, { observations: [e2eRow(), e2eRow({ evidenceStepId: 'atstep_1' })] });
+    const r = runE2ESign(fx);
+    assert(r.status === 65, `额外非终端行应 sign exit 65；实得 ${r.status}（验证器未接全局双射时 fail-open 过签）；stderr=${String(r.stderr || '').trim().slice(0, 200)}`);
     assert(!existsSync(fx.locks), 'fail-open 拒签后不得留 entity-locks 冻结件');
   } finally { cleanupE2E(caseId); }
 });
