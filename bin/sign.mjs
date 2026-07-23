@@ -18,6 +18,7 @@ import { fileURLToPath } from 'node:url';
 import { credentialGate } from '../lib/cred-gate.mjs';
 import { assertSignedContract } from '../lib/sign-gate.mjs';
 import { freezeEntityBindingsDraft, hashIdentityAdmissionBytes } from '../lib/entity-semantic-lock-preflight.mjs';
+import { ENTITY_OBSERVATION_REGISTRY } from '../lib/entity-observation-registry.mjs';
 import { publishSignPublication } from '../lib/sign-publication.mjs';
 import { parseSignArgs } from '../lib/sign-cli-args.mjs';
 import {
@@ -244,11 +245,17 @@ let identityObservationRows = null;
     const obs = readJson(observationsPath, '身份观察件');
     // 身份原子字面量钉死（codex R1-H5）：观察义务集合从 events 的 atom+action 独立推导，绝不由
     // 观察件自报 source.atom 驱动——自报可把观察矛头错开到别的 atom，让真 agent.searchOpen 无观察过签。
-    const IDENTITY_OBSERVATION_ATOM = 'agent.searchOpen';
+    // C0：哪个原子产观察行、绑什么 kind、来源信封是什么，改从闭集注册表 ENTITY_OBSERVATION_REGISTRY 取
+    //（agent.searchOpen→agent；C1-C3 扩表）。义务原子集 = events 里【已登记身份原子】的终端 click（∩注册表）。
+    const identityObservationAtoms = new Set(
+      (entityEventsDocument.events || [])
+        .filter((ev) => ev && ev.action === 'click' && ENTITY_OBSERVATION_REGISTRY.has(ev.atom))
+        .map((ev) => ev.atom),
+    );
     const obsShapeOk = obs && typeof obs === 'object' && !Array.isArray(obs)
       && obs.schemaVersion === 1 && obs.artifactKind === 'compile-identity-observation' && obs.caseId === caseId
       && obs.source && typeof obs.source === 'object' && !Array.isArray(obs.source)
-      && obs.source.kind === 'compile-envelope' && obs.source.atom === IDENTITY_OBSERVATION_ATOM
+      && obs.source.kind === 'compile-envelope' && identityObservationAtoms.has(obs.source.atom)
       && obs.source.signed === false && obs.source.replayReady === false
       && Array.isArray(obs.observations) && obs.observations.length > 0;
     if (!obsShapeOk) die(65, '身份观察件闭合形状不符（compile-identity-observation schema v1，source.atom 必须 agent.searchOpen）');
@@ -262,17 +269,18 @@ let identityObservationRows = null;
     // 集合从 events 按字面量原子独立推导（codex R1-H5）——不消费 obs.source.atom。
     const clickTerminals = new Map(); // intentId -> 最末 click stepId
     for (const ev of entityEventsDocument.events || []) {
-      if (ev && ev.atom === IDENTITY_OBSERVATION_ATOM && ev.action === 'click') clickTerminals.set(ev.intentId, ev.stepId);
+      if (ev && identityObservationAtoms.has(ev.atom) && ev.action === 'click') clickTerminals.set(ev.intentId, ev.stepId);
     }
     const terminalStepIds = new Set(clickTerminals.values());
     if (terminalStepIds.size === 0) die(65, 'v2 签署缺终端 click 事件（观察无锚点，拒签）');
     const bindingRows = Array.isArray(entityBindingsDraft.bindings) ? entityBindingsDraft.bindings : [];
     const seenEvidence = new Set();
     for (const row of obs.observations) {
+      const rowEntry = ENTITY_OBSERVATION_REGISTRY.get(row?.atom);
       const rowOk = row && typeof row === 'object' && !Array.isArray(row)
         && ['kind', 'name', 'code', 'platformId', 'sourceIntentId', 'candidateId', 'role', 'atom', 'evidenceStepId', 'sourcePath']
           .every((f) => typeof row[f] === 'string' && row[f].trim() !== '')
-        && row.kind === 'agent' && row.atom === IDENTITY_OBSERVATION_ATOM;
+        && identityObservationAtoms.has(row.atom) && rowEntry != null && row.kind === rowEntry.boundKind;
       if (!rowOk) die(65, '身份观察行闭合形状不符（kind 必须 agent、atom 必须 agent.searchOpen，拒签）');
       if (!terminalStepIds.has(row.evidenceStepId)) die(65, `身份观察 evidenceStepId 未锚终端 click（join 错位拒签）`);
       if (seenEvidence.has(row.evidenceStepId)) die(65, '身份观察对同一终端 click 重复（join 基数拒签）');

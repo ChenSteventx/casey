@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "slug": "entity-identity-spine",
+  "task": "entity-identity-spine（C0，full）：把 bin/sign.mjs 写死 agent-only 的身份观察准入（:247 常量 IDENTITY_OBSERVATION_ATOM='agent.searchOpen'、:275-276 硬校验 row.kind==='agent'）泛化成一张闭集注册表——action policy 声明的原子 → required role → bound kind/provenance → 允许的 observation issuer/atom；签署时校验观察行的角色、数量、来源、关联 ID 恰好匹配，不匹配 fail-closed 拒（exit 65）。agent 既有条目在注册表里等价今日硬钉语义、agent 行为逐字不变（agent-id-readback 全套金牌复跑字节零漂移是机器验收证据）。C0 只做地基泛化：不注册 workflow（C2）、不碰 v2 形式收据链（entity-semantic-lock-v2.mjs 字节仍 b7b5a47e）、不加编译器、不改裁定四态。本 accept 阶段交付红先行 zero-SUT 金牌 + 冻结；实现落 lib/entity-observation-registry.mjs（新 ENTITY_OBSERVATION_REGISTRY Map + SUPPORTED_ENTITY_KINDS + validateObservationAdmission 纯函数）并接进 sign.mjs 观察对账块（bin/sign.mjs:235-291），供 C1-C3 复用。设计三方共识（fable 起草→codex gpt-5.6-sol max 压测→opus 4.8 xhigh 仲裁），见 GRILL D1-D5、母规格 docs/plans/entity-identity-lastmile/plan.md §3/§5。provenance 维度锚既有收据内核 lib/entity-semantic-lock.mjs:5-6,74-79（bindingMode existing→user-confirmed、created-in-run→platform-readback），非新造字段。",
+  "specPath": "docs/plans/entity-identity-spine/plan.md",
+  "testChecksums": {
+    "tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs": "57513de45e86dc22b601a996c04ac6c2d07ae14767ac038a8e336ebbb9d3db8f"
+  },
+  "observability": [
+    {
+      "dimension": "C0 完成语义（ADR-0009）：本金牌 hermetic 绿只证闭集准入逻辑与 agent 保序，非需求完成；agent 行为逐字不变的字节零漂移证据在收口时复跑 agent-id-readback 全套金牌（chat-sut C1-C10 + observation/gate/sign-observation/regression-diff 四 zero-sut + entity-ui-wiring.searchopen）；真机为准。",
+      "route": "human"
+    },
+    {
+      "dimension": "收口不破邻接冻结面：entity-semantic-lock-v2.mjs 字节仍 b7b5a47e（本轮不碰 v2）；prd-teachin-semantic-lock-runtime-discrimination-successor 的 0/26 红且拒绝原因不漂（C0 泛化可能改到 runtime-authority 检查之前的路径，须验拒绝原因不漂而非只验仍红，GRILL D5）。",
+      "route": "machine"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-admission-registry-closed-set",
+      "desc": "闭集准入注册表纯函数（lib/entity-observation-registry.mjs：ENTITY_OBSERVATION_REGISTRY Map + SUPPORTED_ENTITY_KINDS Set + validateObservationAdmission({events, observation, bindings})→{ok, rejectCode}）钉住 8 条准入反例并逐条 fail-closed 具名 rejectCode：c1 kind 与 bound kind 不符→OBSERVATION_KIND_NOT_BOUND_TO_ATOM；c2 角色数量不匹配（多于/少于 requiredRoles）→OBSERVATION_ROLE_COUNT_MISMATCH；c3 observation 来源 issuer/atom 越界→OBSERVATION_ISSUER_NOT_ALLOWED；c4 关联 ID（sourceIntentId/candidateId 与 binding/事件流）不对应→OBSERVATION_CORRELATION_MISMATCH；c5 provenance 缺失或与 bindingMode 不符→OBSERVATION_PROVENANCE_INVALID；c6 数量恰好但 kind 越界（词表外）→OBSERVATION_KIND_UNSUPPORTED；c7 合法 agent 观察行仍过（回归保护，agent 保序）；c8 孤儿策略原子 agent.removeToolByName 不被索要 observation（D4 不误拒）。红先行基线：目标模块缺席，金牌 import 即 RED（exit 1，Cannot find module lib/entity-observation-registry.mjs）。夹具形态锚真机 uat-run.md（kind=agent、19 位纯数字 platformId string、code znt_atl_*、sourcePath /ai-manager/agent/setup/queryAgentPageList）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-23T03:42:29.907Z 全部 acceptance exit 0"
+    }
+  ]
+}
