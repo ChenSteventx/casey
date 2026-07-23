@@ -4,7 +4,8 @@
   "task": "entity-destructive-continuity-guard（C3，full）：给破坏性动作（删除、更新、加工具）加一道【运行时目标连续性守卫】。今天 delete/add-tool 只靠「按名/计数 + 因果弹层」定位、不绑身份——同名在场就可能删错对象。C3 让动作携带创建/首读时那条不可覆盖的连续性观察（identityObservationRef，绑完整五元 + platformId + profile 指纹 + scope + 请求关联 + 步序），破坏性出站 mutation 请求【真正发出前】核对请求 url/body 里的 platformId 与 ref 一致才放行、不一致或无可验 ID 即中止且证 SUT 未改，收尾按同一 target-ID 稳定窗口 absence-proof 归零。语义边界（报告不得冒充）：C3 用 identityObservationRef 做「同一目标」核对，【非】「消费同一份形式收据」(receiptHash)——那要唤醒被封死的子系统 A（kernel 设计门 + Steven 人签），本轮结构性关不掉（GRILL D1）；只证 C 束目标连续性，绝不冒充 A 束的签发根/授权/provenance/联合五元/TOCTOU 五层。范围限 targeting/破坏性原子（workflow.deleteByName / agent.delete / picker.selectFirstTool），不全量翻 create/addNode/setNodeField（血溅面过大，GRILL D2）；孤儿策略项 agent.removeToolByName（有 side-effect policy、无编译器）不被误索要（GRILL D4）。本 accept 阶段交付红先行 zero-SUT 金牌 + 冻结；实现落新模块 lib/entity-destructive-continuity.mjs（8 纯函数）并接进 compile-atoms（delete/add-tool 武装 ref）、bin/replay.mjs（page.route 出站拦截委派 runGuardedMutation + 归零按 target-ID）、entity-semantic-lock-preflight side-effect policy（限 targeting 强制 ref）。v2 形式收据链字节仍冻 b7b5a47e（本轮不碰）、裁定四态不改。设计三方共识（fable 起草 → codex 压测 → opus 4.8 xhigh 仲裁），见 GRILL D1-D6、母规格 docs/plans/entity-identity-lastmile/plan.md §3/§5。红先行基线：目标模块 lib/entity-destructive-continuity.mjs 尚不存在，金牌 import 即 RED（exit 1，Cannot find module）。",
   "specPath": "docs/plans/entity-destructive-continuity-guard/plan.md",
   "testChecksums": {
-    "tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs": "66d80917c5c21d09f57785fe7b54d2fca6367a7437d3e4a8398a215d1f1924ab"
+    "tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs": "66d80917c5c21d09f57785fe7b54d2fca6367a7437d3e4a8398a215d1f1924ab",
+    "tests/_golden/entity-destructive-continuity-guard.wiring.golden.mjs": "1fdbd19803bc4fe05383062a08cdde759741cb6c18aa44f9f9e05ef4b9e5ab2c"
   },
   "observability": [
     {
@@ -29,7 +30,17 @@
         "node tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T04:39:21.000Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T13:39:59.367Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-destructive-continuity-wiring",
+      "desc": "接线级金牌（tests/_golden/entity-destructive-continuity-guard.wiring.golden.mjs）闭假绿：冻结金牌只测 8 纯函数、replay page.route 出站拦截零 hermetic 覆盖=纯函数绿≠生产路径接线绿（MEMORY golden-pure-fn-false-green）。本 story 咬三处生产接线本身（合成 mock page/route，不起真浏览器/零 SUT/零子进程 + 静态/行为式接线断言）：w1-w5 出站拦截安装器 installOutboundMutationGuard——targeting 原子装 page.route 拦截器、出站 platformId 与 ref 一致才委派 runGuardedMutation 放行（route.continue 恰一次）、不符/无可验 ID 即 route.continue 零调用（证 SUT 未改，poison 探针）+ route.abort 中止（请求发出前拦，非只看 response）、限 targeting（create/addNode/孤儿 removeToolByName 不装）、ref 缺 platformId fail-closed 不装；w6 compile 铸 ref 适配器 mintDestructiveTargetContinuity——由观察铸深冻结 ref、platformId 恒取自观察（非按名再生成）、补 profile 指纹/scope/请求关联/步序、缺观察或缺必填 fail-closed；w7 归零适配器 evaluateDestructiveTargetAbsence——present platformIds 取 projectIdentityEnvelope 的 rows.id、按 target-ID 稳定窗口 absence-proof（缺席+稳定 proven、在场/无 rows(name-count-only)/不稳定 proven:false，非 name count===0）；static 段行为式/静态咬 bin/replay.mjs（import 自 wiring 模块 + installOutboundMutationGuard/evaluateDestructiveTargetAbsence/requiresTargetContinuityRef 调用面）、lib/compile-atoms.mjs（两处破坏性编译武装调用面）、lib/entity-semantic-lock-preflight.mjs（行为式 import 连续性判据、导出断链即红）、lib/entity-destructive-continuity-wiring.mjs（委派纯守卫四函数）。红先行：接线适配层 lib/entity-destructive-continuity-wiring.mjs 缺席则金牌 import 即 RED（exit 1，ERR_MODULE_NOT_FOUND）；对抗自证逐处拆接线转红、复原转绿（accept/red-proofs/entity-destructive-continuity-guard.wiring.golden.red.txt）。语义边界：C 束目标连续性接线咬合、非 A 束收据消费；真机 page.route 正确性/真机破坏性 UAT/present platformIds 归零列表投影走 route:human。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-destructive-continuity-guard.wiring.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-23T13:39:59.913Z 全部 acceptance exit 0"
     }
   ]
 }

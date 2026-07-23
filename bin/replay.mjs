@@ -35,7 +35,9 @@ import {
   readIdentityAdmissionAuthorityFromPrd,
   checkCredentialAudienceGate,
   readFrozenIdentityObservations,
+  requiresTargetContinuityRef,
 } from '../lib/entity-semantic-lock-preflight.mjs';
+import { installOutboundMutationGuard, evaluateDestructiveTargetAbsence } from '../lib/entity-destructive-continuity-wiring.mjs';
 import { createHash } from 'node:crypto';
 import { PROJECT_ROOT } from '../lib/paths.mjs';
 
@@ -543,6 +545,7 @@ async function main() {
   const intentButtonSeen = new Map(); // wf-publish-states：代表步全通道可见按钮总数（absent 活性反证，codex R1-F1）
   const intentButtonDisabledHits = new Map(); // btn-enable-ops：代表步命中且判禁用计数（enabled/disabled 判据采集）
   const intentInputReadback = new Map(); // regress-wf-node-script：代表事件同一物理字段的精确动作回读
+  const intentTargetAbsence = new Map(); // C3：破坏性代表步 target-ID 稳定窗口 absence-proof 结果（加法式记账，不改 count 判据）
 
   // 回放历史 opt-in（run-history）：纯观察者收集，不加任何等待、不改任何时序。
   const rhOn = !!(args.runHistory || args.runMetrics);
@@ -612,6 +615,24 @@ async function main() {
           const expectedQuery = ev.value == null ? null : instantiate(ev.value, ctx);
           ctx.identityTokens.set(ev.intentId, ctx.identityLedger.arm({ intentId: ev.intentId, expectedQuery }));
         }
+        // C3 出站破坏性 mutation 拦截（entity-destructive-continuity）：破坏性/targeting 原子（deleteByName/
+        // agent.delete/picker.selectFirstTool）的 click 落笔前，若本步有已签目标连续性 platformId，则装 page.route
+        // 拦截器——出站 mutation 请求发出前暂停、核对请求 url/body 的 platformId 与 ref 一致才放行、不一致/无可验 ID
+        // 即中止且证 SUT 未改（委派纯守卫 runGuardedMutation）。与既有 CDP Network 域观察者分属不同层，共存不打架。
+        // gated：无已签目标连续性 ref 不装（当前用例零行为差；真机 page.route 正确性走 route:human）。
+        if (ev.action === 'click' && requiresTargetContinuityRef(ev.atom) && ctx.identityExpectedByStep) {
+          const signed = ctx.identityExpectedByStep.get(ev.stepId);
+          if (signed && typeof signed.signedPlatformId === 'string' && signed.signedPlatformId) {
+            installOutboundMutationGuard(page, {
+              atom: ev.atom,
+              ref: { platformId: signed.signedPlatformId },
+              urlPattern: profile.mutationUrlPattern,
+              onDecision: (decision) => {
+                if (!decision.ok) pageErrors.push({ attributedStepId: ev.stepId, message: `outbound-mutation-guard aborted: ${decision.reason}` });
+              },
+            });
+          }
+        }
         const respWait = ev.action === 'click'
           ? page.waitForResponse((r) => /saveOrModifyProcessData|streamReply/.test(r.url()), { timeout: 600 }).catch(() => null)
           : Promise.resolve(null);
@@ -671,6 +692,21 @@ async function main() {
         intentInputReadback.set(ev.intentId, inputReadbackFromAction(actionByStep.get(ev.stepId)));
         const c = intentCount.get(ev.intentId);
         if (c) c.after = await rowCount(page, countSel);
+        // C3 归零收尾（entity-destructive-continuity）：破坏性代表步收尾时，若有已签目标 platformId，按 target-ID
+        // 稳定窗口 absence-proof 归零（消费 evaluateDestructiveTargetAbsence，present platformIds 来自身份列表投影
+        // 的 rows.id），非 name count===0。加法式记账、不改既有 count 判据；缺 present platformIds 投影时按
+        // name-count-only 语义（proven:false，非空过），真机归零列表投影走 route:human。
+        if (requiresTargetContinuityRef(ev.atom) && ctx.identityExpectedByStep) {
+          const signed = ctx.identityExpectedByStep.get(ev.stepId);
+          if (signed && typeof signed.signedPlatformId === 'string' && signed.signedPlatformId) {
+            const absence = evaluateDestructiveTargetAbsence({
+              ref: { platformId: signed.signedPlatformId },
+              identityRows: ctx.identityPresentRows,
+              stable: ctx.identityPresentStable === true,
+            });
+            intentTargetAbsence.set(ev.intentId, absence);
+          }
+        }
         // kinds-harden（G3）：代表步静默点现场采——事后卷回评估只吃此刻事实（同 intentUrl/intentCount 范式）。
         // toast 快照选择器逐字复刻 lib/compile-atoms.mjs 观测采集（编译期作者与回放期消费者同构）。
         const toasts = await page.evaluate(() => {

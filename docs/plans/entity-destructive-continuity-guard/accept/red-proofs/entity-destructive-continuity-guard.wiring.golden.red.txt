@@ -1,0 +1,8 @@
+RED  entity-destructive-continuity-guard-wiring: 接线适配层 lib/entity-destructive-continuity-wiring.mjs 缺席（红先行，loop 阶段接线）—— ERR_MODULE_NOT_FOUND: Cannot find module '.../lib/entity-destructive-continuity-wiring.mjs' imported from '.../tests/_golden/entity-destructive-continuity-guard.wiring.golden.mjs'
+
+对抗自证（拆接线即转红，逐处复原转绿；本 loop 实证，exit 1 为红据）：
+- 接线1 replay 出站拦截安装调用被拆 → static bin/replay.mjs 断言红（replay 未调用出站拦截安装器）
+- 接线2 replay 归零 absence 适配器调用被拆 → static bin/replay.mjs 断言红（replay 未调用归零 absence 适配器）
+- 接线3 compile-atoms workflow.deleteByName 武装调用被拆 → static lib/compile-atoms.mjs 断言红
+- 接线4 preflight 连续性判据导出改名 → static（行为式 import）断言红（named import 断链）
+- 委派门 wiring 安装器绕过 runGuardedMutation 恒放行 → 行为式 w1/w2/w3 红（不符时 route.continue 非零、SUT 被改）
