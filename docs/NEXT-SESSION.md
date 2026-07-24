@@ -11,32 +11,32 @@
 工作目录 /mnt/d/ctx/heren/casey，分支 dev（master 稳定 / test 提测）。
 你是接手者，零上下文起步——先读文档对齐，再按下一步动手。
 
-【2026-07-24 最新覆盖层（entity-lastmile 五契约收口：三收口 + 两未过，在飞未合并）】
-dev@b1d5053（领先 origin/dev，push 仍等 Steven 令）。本 session 主线=「实体身份与双定位」五契约
-C0–C4 在各自 worktree 多轮落地 + 收口，尚未合并 dev。诚实现状（先前「五契约全收敛」是过度声称，
-本 session 逐个核实后订正）：三个干净收口、两个未过。收敛法值得记：round-1 五契约自跑 gate 全绿，
-但 codex 暴露真仓评审逐个逆出假绿（fail-open / 死接线 / seam-mock 假闭合）；后续逐轮翻真 fail-closed。
-收口纪律：codex 终判非 PASS 绝不标 review done，诚实停 4/6，别把「机器可闭部分已闭」说成契约完成。
-教训沉记忆 golden-pure-fn-false-green。
-- C0 entity-identity-spine @78f9094 —— baton 6/6 收口，codex R7 PASS。
-- C2 entity-workflow-source-readback @32bf0c8 —— baton 6/6 收口，codex 四轮 R4 PASS；残留 route:human=
-  角色契约调和（注册表要 source、生产准入策略要 subject，改人签冻结件 entity-admission-policy.frozen.json
-  需再签；happy path 当前 fail-CLOSED 非 fail-open）。
-- C3 entity-destructive-continuity-guard @9efc383 —— baton 6/6 收口，codex 六轮 R6 PASS；编译期破坏
-  fail-open 两半（channel-less + 跨 kind）已 fail-closed 关死；残留 route:human=ref 消费/出站 platformId
-  核验半边（需真机 page.route）、真机破坏 UAT。
-- C1 entity-agent-identity-default @af12837 —— baton 4/6 未收口。codex round-2 re-review 终判不通过：
-  两 High 已闭，但生产 Critical(oi1) 仍存续——verdict/replay 未消费 gradeEntityConclusion（grep 实证空），
-  历史 v1 agent.searchOpen 经真 replay→verdict 仍产权威 PASS 的活 fail-open。收口=loop 相深消费接线 +
-  ADR-0004 再签棘轮 agent-id-regression-diff（route:human）。
-- C4 entity-rename-negative-guard @683d3c6 —— baton 4/6 未收口。本 session 补 codex 评审但收尾被内容
-  过滤器掐断、无干净终判；核心 fail-safe 成立（未知原子回放不产 PASS/不执行破坏，多层 fail-closed），
-  但两条金牌保真缺口属实（非字符串靠未断言的上游 preflight；「触 page 前拒」对生产过度声称，pre.path
-  良性导航先于守卫、非 fail-open）。收口=补两端到端金牌 + 干净 codex 复审（记账见 review/codex-verdict.md）。
-另：b1d5053 陈旧绿收口（护栏 #19，intent-event-fold R17 + regress-wf-node-script C7 定位器刷新到
-lib/replay-axes.mjs）已独立入 dev。活契约槽仍 sut-503-diagnosis（direct 0/6 未动手），本 session 未推进。
-工具坑：loop-kit contract.mjs review 门用 /pass/i 子串匹配 audit verdict，not-pass/bypass 之类会误过
-（本 session 踩到已回滚）；改冻结 kit 须起契约、暂记账。
+【2026-07-24 最新覆盖层（C0/C2/C3 已落 dev；C1/C4 候选分树在飞）】
+主树 `dev@cea3a9b`。C0/C2/C3 的 P3 C5 跨契约调和已在
+`integration-entity-c0c2c3@94f6da9` 闭合，并由 merge commit `cea3a9b` 落入 dev。
+
+C1 正确组合树=`/tmp/casey-c1-c3-integration-v2`，
+分支 `integration-entity-c1-c3-v2@dfc2ecc`（基于 `dev@cea3a9b`）。生产候选已接通
+`replay→axes→verdict→report-model` 深消费；Grok R1 发现错 kind 身份通道可洗绿的 High，
+现已改为逐 `registry.boundKind` 检查同 kind 良构通道，浏览器启动前 fail-closed exit 65。
+安全组合影响面 26/26、C1 owner gate 8/8、组合 gate 1/1 全绿；Grok TUI `/code-review`
+R2 终判 APPROVE（会话 `019f9369-86d1-71b2-ac92-13e003dfe899`）。评审通过只背书组合修复，
+不等于 C1 完成或可合 dev。
+
+真实环境已亲跑，不是假 SUT：Steven 带外确认 `.auth=autotest`；doctor exit 0；
+Windows 真链路与 WSL 回环隧道均 HTTP 200；真实 Playwright+Chromium 登录并看到智能体列表控件。
+完整 `casey run tc_agent_id_readback_real_uat_v1` 已产 verdict、三形态报告、录像与视觉复核，
+留存 `runs/tc_agent_id_readback_real_uat_v1/run_c1_candidate_live_20260724_r1/`。
+确定性裁定=导航 PASS，agent.searchOpen NEEDS_HUMAN/INDETERMINATE，
+身份 `v2/absent/complete`、候选数 0、未误点；只证明目标缺席时不假 PASS。
+
+C1 仍缺正式 baseline/schema 晋升、浏览器 C7、新 `atl_` 实体新 platformId 的正向真实 UAT、
+ADR-0004/0009 Steven 人签；`oi1` 保持 open，禁止合 dev。C4 分支
+`work/c4-golden-closure@a8b2581` 已有两枚候选金牌 4/4 与原金牌 7/7，
+但 Grok 仍判 CHANGES_REQUIRED、baton 4/6，未改生产、未合 dev。
+
+禁止运行假 SUT 金牌 `tests/_golden/p3-compile.golden.mjs`。旧错误组合树
+`/tmp/casey-c1-c3-integration` 不得续用。主树用户未提交文件全程未碰；提交只走显式路径。
 
 【一句话定位 + 血缘】
 Casey 是 autotester（人录·机回放·零 LLM）的「翻面」：输入端改为 LLM 读懂文本用例，
@@ -116,13 +116,12 @@ loop-kit 已按 ADR-0008 提取为兄弟目录独立包，Casey 与 autotester �
   同名敌意真机用例仍 route:human。
 
 【当前契约 / 工作树】
-- 主树：dev@b1d5053（=dev tip）；活契约槽 sut-503-diagnosis（direct 0/6 未动手，见下一步 B）。
-- 五 entity-lastmile 契约 worktree（工作区干净、已提交，未合并 dev）：
-  casey-entity-identity-lastmile（C0 entity-identity-spine @78f9094，baton 6/6 收口）、
-  casey-entity-workflow-readback（C2 @32bf0c8，6/6 收口）、casey-entity-destructive-guard
-  （C3 @9efc383，6/6 收口）、casey-entity-agent-default（C1 @af12837，4/6 未收口·Critical route:human）、
-  casey-entity-rename-guard（C4 @683d3c6，4/6 未收口·评审掐断+两金牌缺口）。C1–C4 均 FF C0 为基座；
-  注意目录名与分支/slug 不完全一致（identity-lastmile 目录的 slug 实为 entity-identity-spine）。
+- 主树：`dev@cea3a9b`；C0/C2/C3 与 P3 C5 调和已合入。
+- C1 正确组合树：`/tmp/casey-c1-c3-integration-v2`，
+  `integration-entity-c1-c3-v2@dfc2ecc`；仅剩未跟踪 `node_modules`，禁止合 dev。
+- C4 树：`/tmp/casey-c4-golden-closure`，`work/c4-golden-closure@a8b2581`；
+  评审 `CHANGES_REQUIRED`，禁止合 dev。
+- 旧 `/tmp/casey-c1-c3-integration` 基线错误，不得续用。
 - 主树未提交现场：全部为用户/并行现场（.gitignore、prd-cli-authority-wiring-fill/selftest/
   semantic-unit-discrimination、casey-agent-loop-local-first-total.zip、follow.mjs、
   atom-readiness-assessment、regress-strategy/SCOPE-OPTIONS、usability-audit），不碰不提交。
@@ -131,24 +130,18 @@ loop-kit 已按 ADR-0008 提取为兄弟目录独立包，Casey 与 autotester �
   忽略、rev-list 可达链完好），gc 被陈旧 gc.log 阻断；功能无碍，集成合并前值得清。
 
 【下一步】
-A（在飞·推荐）收 entity-lastmile 两个未过契约（本 session 主线，详见 HANDOFF 顶节）：
-  ① C1 收口：loop 相深消费接线（replay.mjs 发射 track/completeness 轴 + verdict.mjs 下游接
-    gradeEntityConclusion 降级闸，适配器只读、不反向升 v1 语义）+ 机器再录 agent-id-regression-diff
-    proposed baseline + 备再签包 → route:human 交 Steven ADR-0004 再签 → 干净 codex 复审。
-  ② C4 收口：补两端到端金牌（生产 replay 对非字符串 atom 经 preflight REPLAY_EVENT_SHAPE_INVALID 前置拒
-    的端到端断言 + 生产事件环覆盖/「零触碰」措辞订正）→ 干净 codex 复审（避开触发内容过滤的措辞）。
-  ③ 集成合并 dev —— C0/C2/C3 已建集成分支 integration-entity-c0c2c3@72d6540（从 dev 7065b31 起，机械
-    合并干净、护栏 #19 复跑 14/15 过），唯一待调和=p3-compile C5（C2 workflow.create source 读回门
-    fail-closed 了 C3 重表达的冻结金牌，详见 HANDOFF 顶节下一步 3）。Steven 定另开聚焦轮调和，dev 未动。
-    恢复：git worktree add <路径> integration-entity-c0c2c3 + 软链 node_modules + 调和 p3-compile C5 +
-    复跑 + 落 dev（合并前清 .git 畸形对象）。C1/C4 待各自收口后再并。
-  ⑤ route:human 残留另开真机轮：C1 深消费棘轮再签、C2 角色契约再签、C3 真机破坏 UAT + 冻结金牌再签、
-    各契约真机 name+ID 双定位 UAT（ADR-0009 完成闸）。
-B（活契约槽）sut-503-diagnosis（direct 0/6，未动手）：Steven 令三 subagent 解 503 缺陷（骨架智能体详情页
+A（在飞·推荐）先收 C1 正式完成边界：
+  ① Steven 复核并晋升正式 `agent-id-regression-diff` baseline/schema，完成浏览器 C7 改判。
+  ② 只用 autotest 新建 `atl_` 实体，取得新 platformId 后重编译冻结件，跑正向真实
+    Playwright UAT，按 ADR-0004/0009 人签；不得复用旧 platformId，不得机器代签。
+  ③ 再做干净异构复审；只有正式门、正向 UAT 与人签都闭合后才考虑合 dev。
+B（并行）C4 按 Grok `CHANGES_REQUIRED` 补生产事件环端到端保真证据并复审；仍独立 worktree。
+C（后续）C2 角色契约再签、C3 真机破坏 UAT 与冻结件再签等 `route:human` 面另开真机轮。
+D（活契约槽）sut-503-diagnosis（direct 0/6，未动手）：Steven 令三 subagent 解 503 缺陷（骨架智能体详情页
   agentPlus/queryPlus+getAgentDetail 确定性 503、两实例复现；取证账见 docs/plans/real-uat-attestation/
   evidence/uat-run.md「503 缺陷账」节）。分工=真机差分定位/上报包铸造/对抗性反证；铁律只一个 subagent
   碰真机（同账户并发 UI 互踩），②③吃①产物；真机前置=doctor 就绪+隧道回环+.auth=autotest 带外核。
-C route:human 其余面：密钥签名威胁面 / SKILL.md 措辞统一 / P8 多通道 / P10 可信闭环等排期线。
+E route:human 其余面：密钥签名威胁面 / SKILL.md 措辞统一 / P8 多通道 / P10 可信闭环等排期线。
 
 改冻结金牌一律走 checksumAmendments 修单路径。
 

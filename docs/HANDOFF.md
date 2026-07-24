@@ -3,7 +3,67 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 2026-07-24 entity-lastmile 五契约收口（在飞·worktree 未合并，本节最新现状）
+## 2026-07-24 C0/C2/C3 已落 dev；C1 组合候选完成真机负向回放与异构复审（最新覆盖层）
+
+主树 `dev@cea3a9b`。C0/C2/C3 的跨契约 P3 C5 调和已由
+`integration-entity-c0c2c3@94f6da9` 完成并合入主树；原 14/15 的唯一红已闭合。
+本节以下较早的「C0/C2/C3 尚未落 dev」「C1 生产深消费未接」只作历史溯源。
+
+C1 与 C3 的正确组合树为
+`/tmp/casey-c1-c3-integration-v2`、分支 `integration-entity-c1-c3-v2@dfc2ecc`
+（基于 `dev@cea3a9b`；`f20522c` 合 C1 全量，`134db6b` 合深消费候选，
+`dfc2ecc` 闭合逐 `boundKind` 身份通道准入与 C3 组合门）。旧
+`/tmp/casey-c1-c3-integration` 不是正确基线，不得续用。
+
+本轮实际完成：
+
+1. C1 深消费候选已接通 `replay → axes → verdict → report-model`，不再是“只有纯函数、生产未接线”。
+2. Grok `/code-review` R1 在完整组合工作树发现一条 High：旧编译准入只看“任意身份通道在场”，
+   C2 多种类注册后，错误种类的通道可替正确种类洗绿。生产现逐原子读取
+   `registry.boundKind` 并要求 `identityChannelsByKind` 中同种类良构通道；缺失、错种类、畸形均在
+   浏览器启动前 exit 65。红证、修单与两枚增强金牌已入 `dfc2ecc`。
+3. 安全组合影响面 26/26 通过；C1 owner gate 8/8 GREEN；组合调和 gate 1/1 GREEN；
+   三份 PRD 的冻结件 sha256 全量对账通过。禁止运行的假 SUT 金牌
+   `tests/_golden/p3-compile.golden.mjs` 未运行。
+4. Grok TUI 在完整仓内复审 R2，终判 `APPROVE`，会话
+   `019f9369-86d1-71b2-ac92-13e003dfe899`。项目 hook 拦了 Grok 内 shell，所以 Grok 只读源码与
+   文档；sha256、26/26 与 gate 均是 Codex 独立实跑，未冒充 Grok 亲跑。评审归档见
+   `docs/plans/entity-c1-c3-reconcile/review/`。
+
+真实环境与 Playwright 事实（不是夹具）：
+
+- Steven 带外确认当前 `.auth` 为 autotest；`casey doctor` exit 0，Node、Playwright、Chromium、
+  中文字体、`site.json`、凭据形态与单实例回环隧道均就绪。
+- Windows 网络栈与 WSL 回环隧道访问真实 SUT 均为 HTTP 200。
+- 只读 smoke 用真实 Chromium 完成登录并进入智能体列表，目标控件可见，5190ms，exit 0。
+- 完整 `casey run` 真实回放 `tc_agent_id_readback_real_uat_v1`，产出
+  `axes.json`、`verdict.json`、三形态报告、`video.webm`、三张同次抽帧与
+  `visual-review.json`。本地留存：
+  `runs/tc_agent_id_readback_real_uat_v1/run_c1_candidate_live_20260724_r1/`。
+- 确定性裁定：导航 PASS；`agent.searchOpen` 为 NEEDS_HUMAN/INDETERMINATE；
+  身份轴 `v2/absent/complete`，动作 `action_failed/candidateCount:0`。视觉复核 CONSISTENT。
+  这只证明目标缺席时不假 PASS、不误点；不背书 `v2 complete+unique → PASS` 正向完成。
+
+C1 仍未完成、不得合入 `dev`：正式 `agent-id-regression-diff` baseline/schema 晋升、浏览器 C7
+改判、新建 `atl_` 实体取得新 platformId 后的正向真实 UAT，以及 ADR-0004/0009 Steven 人签仍为
+`route:human`；`oi1` 保持 open。另有既有能力边界：多种类身份通道表仍 fail-closed exit 65，
+是待扩能力，不是本轮 fail-open。
+
+C4 独立树 `/tmp/casey-c4-golden-closure` 已提交候选
+`work/c4-golden-closure@a8b2581`：两枚候选金牌 4/4、原金牌 7/7，但 Grok 评审仍为
+`CHANGES_REQUIRED`，baton 4/6；未改生产、未合主树、不得标完成。
+
+主树未提交现场仍全部属于用户/并行工作：`.gitignore`、三个既有 PRD、zip、`follow.mjs` 与
+三组文档目录；本轮未碰。组合树仅剩预存未跟踪 `node_modules`。
+
+下一步：
+
+1. 由 Steven 完成 C1 正式 baseline/schema、C7、新实体新 platformId 正向 Playwright UAT 与
+   ADR-0004/0009 人签；随后再做干净异构复审，才可考虑合入 `dev`。
+2. C4 按 `CHANGES_REQUIRED` 继续补生产事件环端到端保真证据并复审；仍与 C1 分树并行。
+3. C1/C4 都只用 git 原生合并，不复制实现文件；合并后在主树复跑全部受影响面。
+
+## 2026-07-24 entity-lastmile 五契约收口（历史层）
 
 主树 dev@b1d5053（领先 origin/dev，push 待 Steven 令）。活契约槽仍 sut-503-diagnosis
 （direct 0/6，未动手，见下节）——本 session 实际工作是「实体身份与双定位」五契约 C0–C4 在各自
