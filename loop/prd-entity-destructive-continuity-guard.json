@@ -10,10 +10,17 @@
     "tests/_golden/entity-destructive-continuity-guard.round2.golden.mjs": "f08fee45aa22df8d284901f881728b1ae1c8194c1cd13792e262e5f5efdea17c",
     "tests/_golden/entity-destructive-continuity-guard.round3.golden.mjs": "2d166161b6a75eb6ba4f9207889ac5368dc6ed578f3520cd9029adc569537823",
     "tests/_golden/entity-destructive-continuity-guard.round4.golden.mjs": "a4b0b386d3e87df1e9146e94677ffe3d6481639aa298016f932c3c11cf8d989b",
-    "tests/_golden/entity-destructive-continuity-guard.compile-admission.golden.mjs": "01d83b6aa3aaf4fce1c9e96408a74363b5641745a0afcb5f9d04a0f84c68dc26",
+    "tests/_golden/entity-destructive-continuity-guard.compile-admission.golden.mjs": "e28e48d41f88898925e2d91ec8c4d4d3477886f8637451dcc2f83e908c1cf9ca",
     "tests/_golden/entity-destructive-continuity-guard.crosskind.golden.mjs": "b0cf4ad7bbbb4e87e892f3cf7829f910a957d7713b04125c3decd658e21752c4"
   },
   "checksumAmendments": [
+    {
+      "file": "tests/_golden/entity-destructive-continuity-guard.compile-admission.golden.mjs",
+      "from": "01d83b6aa3aaf4fce1c9e96408a74363b5641745a0afcb5f9d04a0f84c68dc26",
+      "to": "e28e48d41f88898925e2d91ec8c4d4d3477886f8637451dcc2f83e908c1cf9ca",
+      "at": "2026-07-24",
+      "reason": "entity-c0c2c3-p3-reconcile 组合树真实复跑暴露金牌驱动捕获缺口：P1 行为半边始终为 exit 65 + launch sentinel 缺席，但经 pipe 捕获时 stderr/stdout 为空，导致具名 reason 断言稳定红。修正测试驱动为直驱真 bin/compile.mjs，并让子进程 stdout/stderr 直写临时文件描述符后读取，避开 process.exit(65) 前 pipe 刷新时序；P1 的 COMPILE_DESTRUCTIVE_NO_IDENTITY_CHANNEL + workflow.deleteByName 断言原样保留且现为 3/3，P2/P3 正控原样。只改金牌驱动，不改生产门、不删/放宽断言；owner 无 signedAt，按既有规则 checksumAmendment + 异构复审，无需人签。"
+    },
     {
       "file": "tests/_golden/entity-destructive-continuity-guard.compile-admission.golden.mjs",
       "from": "c34fa1c8511798cceccd114f9685511d3717953f55328ebb417d22b48efde45a",

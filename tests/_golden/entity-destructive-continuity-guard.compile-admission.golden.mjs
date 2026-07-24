@@ -15,7 +15,16 @@
 // 先红（本文件不 stash 生产码，红先行证据入 accept/red-baselines）：OLD 码无守卫时 P1 会变 exit 66 + 哨兵在场
 //   （证 channel-less 破坏流会越 launch 点真启浏览器 → 编译期同名误删 fail-open）。
 // 改本文件 = Test Ratchet 判红。
-import { readFileSync, writeFileSync, existsSync, mkdirSync, mkdtempSync, rmSync } from 'node:fs';
+import {
+  readFileSync,
+  writeFileSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  rmSync,
+  openSync,
+  closeSync,
+} from 'node:fs';
 import { spawnSync } from 'node:child_process';
 import { resolve, dirname, join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -25,7 +34,7 @@ import { requiredFlowEntityBindings, hashIdentityAdmissionBytes, calculateIdenti
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(HERE, '..', '..');
-const CASEY = join(ROOT, 'bin', 'casey.mjs');
+const COMPILE = join(ROOT, 'bin', 'compile.mjs');
 const CASE_ID = 'tc_compile_destadmit';
 const DUMMY_SUT = 'http://127.0.0.1:9/'; // 从不真连——哨兵在 chromium.launch 之前 exit 66/65
 const tmp = mkdtempSync(join(tmpdir(), 'casey-destadmit-'));
@@ -33,7 +42,30 @@ const tmp = mkdtempSync(join(tmpdir(), 'casey-destadmit-'));
 const fails = [];
 let pass = 0;
 function check(name, fn) { try { fn(); pass++; } catch (e) { fails.push(`${name}: ${String(e && (e.stderr || e.message)).slice(-400)}`); } }
-function run(args, opts = {}) { return spawnSync(process.execPath, args, { encoding: 'utf8', timeout: 60000, ...opts }); }
+let captureSeq = 0;
+function run(args, opts = {}) {
+  captureSeq += 1;
+  const stdoutFile = join(tmp, `spawn-${captureSeq}.stdout`);
+  const stderrFile = join(tmp, `spawn-${captureSeq}.stderr`);
+  const stdoutFd = openSync(stdoutFile, 'w');
+  const stderrFd = openSync(stderrFile, 'w');
+  let result;
+  try {
+    result = spawnSync(process.execPath, args, {
+      timeout: 60000,
+      ...opts,
+      stdio: ['ignore', stdoutFd, stderrFd],
+    });
+  } finally {
+    closeSync(stdoutFd);
+    closeSync(stderrFd);
+  }
+  return {
+    ...result,
+    stdout: readFileSync(stdoutFile, 'utf8'),
+    stderr: readFileSync(stderrFile, 'utf8'),
+  };
+}
 
 // ---------- 合成输入 ----------
 const TESTCASE = {
@@ -129,7 +161,7 @@ function mintExecuteAuthority(flowFile) {
 function prepareExecuteDir(flowObj, label) {
   const dir = join(tmp, label);
   mkdirSync(dir, { recursive: true });
-  const g = run([CASEY, 'compile', CASE_ID, '--testcase', tcFile, '--flow', writeFlow(flowObj, `${label}.flow.json`), '--out-dir', dir]);
+  const g = run([COMPILE, CASE_ID, '--testcase', tcFile, '--flow', writeFlow(flowObj, `${label}.flow.json`), '--out-dir', dir]);
   if (g.status !== 0) throw new Error(`过闸应 exit 0，实际 ${g.status}：${(g.stderr || '').slice(-200)}`);
   const flowFile = join(dir, `flow-${CASE_ID}.json`);
   const flow = JSON.parse(readFileSync(flowFile, 'utf8'));
@@ -143,7 +175,7 @@ function execWithSentinel(dir, authRel, profFile, unique) {
   const sentinel = join(dir, 'launch.sentinel');
   rmSync(sentinel, { force: true });
   const e = run(
-    [CASEY, 'compile', CASE_ID, '--execute', '--testcase', tcFile, '--sut', DUMMY_SUT, '--out-dir', dir, '--profile', profFile, '--skip-login', '--unique-name', unique, '--entity-authority', authRel],
+    [COMPILE, CASE_ID, '--execute', '--testcase', tcFile, '--sut', DUMMY_SUT, '--out-dir', dir, '--profile', profFile, '--skip-login', '--unique-name', unique, '--entity-authority', authRel],
     { env: { ...process.env, CASEY_LAUNCH_SENTINEL: sentinel } },
   );
   return { status: e.status, sentinelWritten: existsSync(sentinel), stderr: e.stderr || '', stdout: e.stdout || '' };

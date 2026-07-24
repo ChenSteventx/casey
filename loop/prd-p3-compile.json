@@ -3,7 +3,8 @@
   "task": "P3 相1 编译（★关键路径头）：把文本用例翻成确定性可回放 spec（events.json，url 走 {{baseUrl}} 占位符）+ 观测现状（observed-<caseId>.json）+ 编译期核验记录（compile-report.json）。决策依 docs/plans/p3-compile/proposed/GRILL.md（G1–G7 人签 2026-07-02）：G1 取 B 采集+立即回放核验；G2 取 A 拷快照 autotester 登录件（登录预备动作，不产 event、凭据只进内存）；G3 flow 草稿落盘+人 confirm 门、注册表整表原子快照带 snapshotOf（初版 60，2026-07-22 修单后 61：+workflow.bindAgent）；G4 不预草 expected、交接面四件套；G5 凭据门抽共享 lib/cred-gate.mjs、requestLog url 剥 query；G6 WSL+反向隧道（loop 内 spike）、CLI 吃 --sut；G7 前置清理砍除、遮罩记已知限制、断言原子折进 intent expected 留痕。本契约 hermetic 只冻命令化层（假 SUT、零 LLM 零真机零真凭据）：flow 草稿由 LLM 在 CLI 外产出、CLI 是 L0 复核器（compile-gate 双闸 fail-closed）；入口可证缺席产 CASE_DEFECT 候选（不落该步+记候选、编译继续）；回放核验器判据 = 动作轴全 unique+performed（非 verdict 终判）。真机编译 tc_catalog_wf_crud 与隧道 spike 为 route:human tier-2。",
   "specPath": "docs/plans/p3-compile/plan.md",
   "testChecksums": {
-    "tests/_golden/p3-compile.golden.mjs": "e9207e467e91579caffd51125cf7eafa3b4ea63c20d192d22fe5fdff53327c20"
+    "tests/_golden/p3-compile.golden.mjs": "b955b67ae5d81e3bf8878e4dca5a8273ba614b6e0874f5add1ba0ae4b46bdcda",
+    "tests/_golden/support/p3-compile-c5-flow.mjs": "b7d75e82a2936f67242a88261b88bf1d81340db3634b1f209e339895dbb2280e"
   },
   "observability": [
     {
@@ -55,6 +56,14 @@
     }
   ],
   "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-24",
+      "files": [
+        "tests/_golden/p3-compile.golden.mjs",
+        "tests/_golden/support/p3-compile-c5-flow.mjs"
+      ],
+      "reason": "entity-c0c2c3-p3-reconcile 调和 C2/C3 组合树：C5 入口缺席只消费契约默认的 workflow.deleteByName 单步夹具，不再复用 FLOW_GOOD 夹带无关 workflow.create，避免 C2 source 读回门在删除候选义务之前先 fail-closed。没有伪造 source 观察、没有放宽 C2/C3 生产门或退出码；C5 仍经 workflows.listApi 结构准入，并仍钉 exit 0、不落 delete event、CASE_DEFECT count===0。support 纳入 owner checksum，防止夹具单改绕过棘轮；full p3-compile 15/15 本轮未启动 fake-SUT，继续 route:human，不改任何 passes。"
+    },
     {
       "amendedAt": "2026-07-24",
       "files": [

@@ -1,0 +1,11 @@
+命令：
+node tests/_golden/p3-compile-c5-fixture-isolation.zero-sut.golden.mjs
+
+实现前退出码：
+1
+
+实现前输出：
+RED  p3-compile-c5-fixture-isolation: R0 C5 独立构造件必须存在: Cannot find module '/tmp/casey-c0c2c3-reconcile/tests/_golden/support/p3-compile-c5-flow.mjs' imported from /tmp/casey-c0c2c3-reconcile/tests/_golden/p3-compile-c5-fixture-isolation.zero-sut.golden.mjs
+
+归因：
+新构造件尚不存在；验收测试确实依赖本轮新增行为，没有在旧组合树上假绿。
