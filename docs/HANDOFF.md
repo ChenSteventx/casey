@@ -10,9 +10,9 @@
 本节以下较早的「C0/C2/C3 尚未落 dev」「C1 生产深消费未接」只作历史溯源。
 
 C1 与 C3 的正确组合树为
-`/tmp/casey-c1-c3-integration-v2`、分支 `integration-entity-c1-c3-v2@dfc2ecc`
+`/tmp/casey-c1-c3-integration-v2`、分支 `integration-entity-c1-c3-v2@e55c2df`
 （基于 `dev@cea3a9b`；`f20522c` 合 C1 全量，`134db6b` 合深消费候选，
-`dfc2ecc` 闭合逐 `boundKind` 身份通道准入与 C3 组合门）。旧
+`dfc2ecc` 闭合逐 `boundKind` 身份通道准入与 C3 组合门，`e55c2df` 脱敏真机账户证据）。旧
 `/tmp/casey-c1-c3-integration` 不是正确基线，不得续用。
 
 本轮实际完成：

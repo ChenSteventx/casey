@@ -16,7 +16,8 @@
 `integration-entity-c0c2c3@94f6da9` 闭合，并由 merge commit `cea3a9b` 落入 dev。
 
 C1 正确组合树=`/tmp/casey-c1-c3-integration-v2`，
-分支 `integration-entity-c1-c3-v2@dfc2ecc`（基于 `dev@cea3a9b`）。生产候选已接通
+分支 `integration-entity-c1-c3-v2@e55c2df`（功能提交 `dfc2ecc`，其后仅脱敏证据；基于
+`dev@cea3a9b`）。生产候选已接通
 `replay→axes→verdict→report-model` 深消费；Grok R1 发现错 kind 身份通道可洗绿的 High，
 现已改为逐 `registry.boundKind` 检查同 kind 良构通道，浏览器启动前 fail-closed exit 65。
 安全组合影响面 26/26、C1 owner gate 8/8、组合 gate 1/1 全绿；Grok TUI `/code-review`
@@ -118,7 +119,7 @@ loop-kit 已按 ADR-0008 提取为兄弟目录独立包，Casey 与 autotester �
 【当前契约 / 工作树】
 - 主树：`dev@cea3a9b`；C0/C2/C3 与 P3 C5 调和已合入。
 - C1 正确组合树：`/tmp/casey-c1-c3-integration-v2`，
-  `integration-entity-c1-c3-v2@dfc2ecc`；仅剩未跟踪 `node_modules`，禁止合 dev。
+  `integration-entity-c1-c3-v2@e55c2df`；仅剩未跟踪 `node_modules`，禁止合 dev。
 - C4 树：`/tmp/casey-c4-golden-closure`，`work/c4-golden-closure@a8b2581`；
   评审 `CHANGES_REQUIRED`，禁止合 dev。
 - 旧 `/tmp/casey-c1-c3-integration` 基线错误，不得续用。
