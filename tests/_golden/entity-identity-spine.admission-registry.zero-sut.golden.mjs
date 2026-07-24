@@ -244,8 +244,8 @@ function validInput(over = {}) {
   };
 }
 
-// ── r0 结构：注册表是闭集（agent 注册、workflow 观察原子未注册）───────────────────
-test('r0', 'r0 ENTITY_OBSERVATION_REGISTRY 是闭集 Map：agent.searchOpen→agent/subject 注册；workflow 观察原子未注册（C0 边界）', () => {
+// ── r0 结构：注册表是闭集（agent + workflow.create/open 注册；workflow.bindAgent 等仍未注册）──
+test('r0', 'r0 ENTITY_OBSERVATION_REGISTRY 是闭集 Map：agent.searchOpen→agent/subject 注册；workflow.create/open 由 C2 注册为 source 读回；workflow.bindAgent 等仍未注册（闭集边界）', () => {
   assert(ENTITY_OBSERVATION_REGISTRY instanceof Map, 'ENTITY_OBSERVATION_REGISTRY 须为 Map（同 SIDE_EFFECT_POLICY 形态）');
   const entry = ENTITY_OBSERVATION_REGISTRY.get('agent.searchOpen');
   assert(entry && typeof entry === 'object', 'agent.searchOpen 必须在观察注册表内');
@@ -256,9 +256,10 @@ test('r0', 'r0 ENTITY_OBSERVATION_REGISTRY 是闭集 Map：agent.searchOpen→ag
   assert(entry.provenanceByBindingMode && entry.provenanceByBindingMode.existing === 'user-confirmed'
     && entry.provenanceByBindingMode['created-in-run'] === 'platform-readback',
     `provenanceByBindingMode 须锚收据内核（existing→user-confirmed、created-in-run→platform-readback）；实得 ${brief(entry.provenanceByBindingMode)}`);
-  // C0 不得注册 workflow 观察原子（观察通道泛化=C2）。
-  assert(!ENTITY_OBSERVATION_REGISTRY.has('workflow.bindAgent') && !ENTITY_OBSERVATION_REGISTRY.has('workflow.create'),
-    'C0 不得在观察注册表注册 workflow 原子（workflow 读回=C2）');
+  // 护栏 #19 边界下移：workflow.create/open 由 C2 注册为 source 读回观察原子（见 C2 admission 金牌）；
+  // 闭集守卫改锚仍未注册的 workflow 关系原子 workflow.bindAgent，证注册表不越注册。
+  assert(!ENTITY_OBSERVATION_REGISTRY.has('workflow.bindAgent'),
+    '观察注册表不得注册 workflow.bindAgent（关系原子非 source 读回；闭集不越注册）');
   // kind 词表须含 agent 与 workflow，供区分 c1（词表内但非绑定 kind）与 c6（词表外 kind）。
   assert(SUPPORTED_ENTITY_KINDS instanceof Set && SUPPORTED_ENTITY_KINDS.has('agent') && SUPPORTED_ENTITY_KINDS.has('workflow'),
     'SUPPORTED_ENTITY_KINDS 须为含 agent 与 workflow 的 Set（workflow 入词表但观察通道未开）');

@@ -1,0 +1,5 @@
+FAIL s1 ENTITY_KIND_COMPILE_CHANNELS 须登记 workflow→{profileKey:'workflows'}（镜像 agents.listApi）；实得 undefined
+FAIL s2 声明不全（workflows.listApi 缺 totalPath）须在浏览器前 fail-closed exit 65 且不写 sentinel；实得 exit=66 sentinel=true（现无 workflow 通道 → 被整体忽略 → 越门到 launch → RED）：
+RED  entity-workflow-source-readback.compile-channel: s1 ENTITY_KIND_COMPILE_CHANNELS 须登记 workflow→{profileKey:'workflows'}（镜像 agents.listApi）；实得 undefined
+RED  entity-workflow-source-readback.compile-channel: s2 声明不全（workflows.listApi 缺 totalPath）须在浏览器前 fail-closed exit 65 且不写 sentinel；实得 exit=66 sentinel=true（现无 workflow 通道 → 被整体忽略 → 越门到 launch → RED）：
+RED  entity-workflow-source-readback.compile-channel: 3 过 / 2 红
