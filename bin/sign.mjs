@@ -18,6 +18,7 @@ import { fileURLToPath } from 'node:url';
 import { credentialGate } from '../lib/cred-gate.mjs';
 import { assertSignedContract } from '../lib/sign-gate.mjs';
 import { freezeEntityBindingsDraft, hashIdentityAdmissionBytes } from '../lib/entity-semantic-lock-preflight.mjs';
+import { ENTITY_OBSERVATION_REGISTRY, validateObservationAdmission } from '../lib/entity-observation-registry.mjs';
 import { publishSignPublication } from '../lib/sign-publication.mjs';
 import { parseSignArgs } from '../lib/sign-cli-args.mjs';
 import {
@@ -230,7 +231,13 @@ if (entityLocksOut) {
 }
 
 // ── 身份观察对账（agent-id-readback plan §4；v1/v2 只按 draft schemaVersion 判别）────────────────
-// v2 强制观察件、五元 join 只锚终端 click、三错配（build/digest/eventsSha）任一拒签；v1 路径逐字不变。
+// v2 强制观察件、三错配（build/digest/eventsSha）任一拒签；v1 路径逐字不变。
+// C0 接线（codex R1 Critical——「验证器未接线=假绿」修复）：观察准入语义——issuer 精确双锚 /
+// 观察行 kind 绑定 / 五元关联 / 角色多重集恰等 / bindingMode→provenance 注册表不变量——全权委托闭集验证器
+// validateObservationAdmission（lib/entity-observation-registry.mjs 唯一事实源，同金牌所验纯函数）；本块只保留
+// 【非验证器职责】的三面：v2 信封形状 + 四哈希闭环 + 终端 click 锚存在性；及冻结三元组投影字段在场。
+// 删去原漂移弱内联检查（kind===boundKind、issuer atom 集合 membership、五元 join 手写、基数手数）——
+// 收敛为单一验证器裁定，令金牌对纯函数的健全性证明真实传导到生产 sign 路径。
 let identityObservationRows = null;
 {
   const observationsPath = typeof args['entity-observations'] === 'string' ? String(args['entity-observations']) : null;
@@ -242,47 +249,81 @@ let identityObservationRows = null;
     let obsBytes = null;
     try { obsBytes = readFileSync(observationsPath); } catch { die(65, '读身份观察件原始字节失败（内容不回显）'); }
     const obs = readJson(observationsPath, '身份观察件');
-    // 身份原子字面量钉死（codex R1-H5）：观察义务集合从 events 的 atom+action 独立推导，绝不由
-    // 观察件自报 source.atom 驱动——自报可把观察矛头错开到别的 atom，让真 agent.searchOpen 无观察过签。
-    const IDENTITY_OBSERVATION_ATOM = 'agent.searchOpen';
+    // 义务原子集 = events 里【已登记身份原子】的终端 click（∩注册表；codex R1-H5：从 events 独立推导，
+    // 绝不由观察件自报 source.atom 驱动）。仅用于 v2 专属的「终端锚存在性」守卫。
+    const identityObservationAtoms = new Set(
+      (entityEventsDocument.events || [])
+        .filter((ev) => ev && ev.action === 'click' && ENTITY_OBSERVATION_REGISTRY.has(ev.atom))
+        .map((ev) => ev.atom),
+    );
+    // v2 信封形状 + 四哈希闭环（件级 digest 闭环非验证器职责）。source.atom 是否落在允许 issuer 由验证器
+    // 精确双锚裁定——此处不再以集合 membership 弱判（收敛到单一事实源，codex R1）。
     const obsShapeOk = obs && typeof obs === 'object' && !Array.isArray(obs)
       && obs.schemaVersion === 1 && obs.artifactKind === 'compile-identity-observation' && obs.caseId === caseId
       && obs.source && typeof obs.source === 'object' && !Array.isArray(obs.source)
-      && obs.source.kind === 'compile-envelope' && obs.source.atom === IDENTITY_OBSERVATION_ATOM
+      && obs.source.kind === 'compile-envelope'
       && obs.source.signed === false && obs.source.replayReady === false
       && Array.isArray(obs.observations) && obs.observations.length > 0;
-    if (!obsShapeOk) die(65, '身份观察件闭合形状不符（compile-identity-observation schema v1，source.atom 必须 agent.searchOpen）');
+    if (!obsShapeOk) die(65, '身份观察件闭合形状不符（compile-identity-observation schema v1）');
     if (obs.capturedAgainstBuild !== build) die(65, '身份观察件 capturedAgainstBuild 与 --against-build 不符（错配拒签）');
     if (obs.identityProfileDigest !== entityBindingsDraft.identityProfileDigest) die(65, '身份观察件 identityProfileDigest 与 v2 草稿不符（错配拒签）');
     if (obs.eventsSha256 !== hashIdentityAdmissionBytes(entityEventsBytes)) die(65, '身份观察件 eventsSha256 与签署 events 原始字节不符（陈旧/错配拒签）');
     if (entityBindingsDraft.identityObservationsSha256 !== hashIdentityAdmissionBytes(obsBytes)) {
       die(65, 'v2 草稿 identityObservationsSha256 与观察件原始字节不符（换件拒签）');
     }
-    // 终端 click join：每 intent 的身份原子终端 click 事件 stepId 集合，与观察行 1:1 精确对应。
-    // 集合从 events 按字面量原子独立推导（codex R1-H5）——不消费 obs.source.atom。
-    const clickTerminals = new Map(); // intentId -> 最末 click stepId
+    // v2 专属：终端 click 锚点必须存在（验证器对「无观察义务」返回 ok，故 v2「必携观察」在此另守）。
+    const terminalStepIds = new Set();
     for (const ev of entityEventsDocument.events || []) {
-      if (ev && ev.atom === IDENTITY_OBSERVATION_ATOM && ev.action === 'click') clickTerminals.set(ev.intentId, ev.stepId);
+      if (ev && identityObservationAtoms.has(ev.atom) && ev.action === 'click') terminalStepIds.add(ev.stepId);
     }
-    const terminalStepIds = new Set(clickTerminals.values());
     if (terminalStepIds.size === 0) die(65, 'v2 签署缺终端 click 事件（观察无锚点，拒签）');
-    const bindingRows = Array.isArray(entityBindingsDraft.bindings) ? entityBindingsDraft.bindings : [];
-    const seenEvidence = new Set();
+    // 冻结三元组投影字段在场（name/code/platformId/sourcePath 是冻结锁投影字段、非验证器职责）。
     for (const row of obs.observations) {
-      const rowOk = row && typeof row === 'object' && !Array.isArray(row)
+      const fieldsOk = row && typeof row === 'object' && !Array.isArray(row)
         && ['kind', 'name', 'code', 'platformId', 'sourceIntentId', 'candidateId', 'role', 'atom', 'evidenceStepId', 'sourcePath']
-          .every((f) => typeof row[f] === 'string' && row[f].trim() !== '')
-        && row.kind === 'agent' && row.atom === IDENTITY_OBSERVATION_ATOM;
-      if (!rowOk) die(65, '身份观察行闭合形状不符（kind 必须 agent、atom 必须 agent.searchOpen，拒签）');
-      if (!terminalStepIds.has(row.evidenceStepId)) die(65, `身份观察 evidenceStepId 未锚终端 click（join 错位拒签）`);
-      if (seenEvidence.has(row.evidenceStepId)) die(65, '身份观察对同一终端 click 重复（join 基数拒签）');
-      seenEvidence.add(row.evidenceStepId);
-      const joined = bindingRows.some((b) => b && b.stepId === row.evidenceStepId
-        && b.sourceIntentId === row.sourceIntentId && b.candidateId === row.candidateId
-        && b.role === row.role && b.atom === row.atom);
-      if (!joined) die(65, '身份观察五元 join 无对应绑定行（拒签）');
+          .every((f) => typeof row[f] === 'string' && row[f].trim() !== '');
+      if (!fieldsOk) die(65, '身份观察行缺必填字段（冻结三元组投影字段须在场，拒签）');
     }
-    if (seenEvidence.size !== terminalStepIds.size) die(65, '终端 click 绑定存在无观察覆盖（join 基数拒签）');
+    // ── 观察准入闭集裁定（codex R1 Critical 接线：验证器接进生产 sign 路径）──────────────────
+    // bindingMode/provenance 是绑定属性、活在确认收据里（观察件本身不带）——按五元组 join 确认取，
+    // 富化进观察行后传验证器，供其强制注册表 provenanceByBindingMode 不变量（收据自洽的 successor 等
+    // 越注册表允许集的 mode 由此拒）。events/bindings 传原件，validateObservationAdmission 出唯一裁定。
+    // 收据按【binding 全键（含 intentId）】与【观察行 5 元键】分别索引（codex R6b-High）：binding 携 intentId，须用
+    // 全键索引——旧实现只用 5 元键（stepId/sourceIntentId/candidateId/role/atom），不同 intent 的同五元 binding 会互相
+    // 覆盖，令终端的真 successor 收据被同五元非终端 existing 收据掩盖、验证器凭「任一匹配」的错误 mode fail-open 过签。
+    // 全键索引后每 binding 富化自其【自身 intent】的收据、互不覆盖。观察行不携 intentId、按 5 元键索引其自报 mode（其
+    // 权威由验证器凭唯一 anchoring binding 裁定，行自报 mode 仅供换轨闸比对——行自报若与终端真 binding 的权威 mode 不符
+    // 即 fail-closed，故行侧 5 元键的同五元折叠无害）。
+    const provenanceByBindingKey = new Map(); // [intentId, stepId, sourceIntentId, candidateId, role, atom] → {bindingMode, provenance}
+    const provenanceByRowKey = new Map();     // [stepId, sourceIntentId, candidateId, role, atom] → {bindingMode, provenance}
+    for (const c of entityConfirmations.confirmations) {
+      if (!c || typeof c !== 'object' || Array.isArray(c) || !c.receipt || typeof c.receipt !== 'object') continue;
+      const prov = { bindingMode: c.receipt.bindingMode, provenance: c.receipt.source };
+      provenanceByBindingKey.set(JSON.stringify([c.intentId, c.stepId, c.sourceIntentId, c.candidateId, c.role, c.atom]), prov);
+      provenanceByRowKey.set(JSON.stringify([c.stepId, c.sourceIntentId, c.candidateId, c.role, c.atom]), prov);
+    }
+    const admission = validateObservationAdmission({
+      events: entityEventsDocument.events || [],
+      observation: {
+        source: obs.source,
+        observations: obs.observations.map((row) => {
+          const prov = provenanceByRowKey.get(
+            JSON.stringify([row.evidenceStepId, row.sourceIntentId, row.candidateId, row.role, row.atom]),
+          ) || {};
+          return { ...row, bindingMode: prov.bindingMode, provenance: prov.provenance };
+        }),
+      },
+      // bindingMode 富化进 binding（codex R5-Critical② 换轨闸权威源 / R6b-High 全键唯一化）：bindingMode 是绑定事实、活在
+      // 确认收据里——按 binding【全键（含 intentId）】从收据取其 mode，令验证器可凭唯一 anchoring binding 校验 row.bindingMode
+      // 与终端真实绑定事实一致（换轨闸）。row 与其 anchoring binding 富化自【同一收据】、全键相等 → 生产路径恒一致（逐语义
+      // 等价、零字节漂移：本富化只喂验证器、不落任何冻结件）；纯函数金牌侧由夹具直接携 binding.bindingMode 供对抗反例。缺
+      // 对应收据的 binding 保持无 mode（下游 anchoring 本就要求 row 命中唯一 binding，缺 mode 的 binding 令换轨闸 fail-closed）。
+      bindings: (Array.isArray(entityBindingsDraft.bindings) ? entityBindingsDraft.bindings : []).map((b) => {
+        const prov = provenanceByBindingKey.get(JSON.stringify([b.intentId, b.stepId, b.sourceIntentId, b.candidateId, b.role, b.atom]));
+        return prov ? { ...b, bindingMode: prov.bindingMode } : { ...b };
+      }),
+    });
+    if (!admission.ok) die(65, `身份观察准入闭集拒（${admission.rejectCode}）`);
     identityObservationRows = obs.observations.map((row) => ({
       name: row.name, code: row.code, platformId: row.platformId,
       sourceIntentId: row.sourceIntentId, candidateId: row.candidateId, role: row.role,

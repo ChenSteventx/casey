@@ -1,0 +1,20 @@
+命令：
+node tests/_golden/entity-destructive-continuity-guard.compile-admission.golden.mjs
+
+修前结果：
+exit 1；2 过 / 1 红。
+
+P1 行为半边已成立：status=65，launch sentinel 缺席，证浏览器前 fail-closed。
+P1 文案半边为红：经 bin/casey.mjs → bin/compile.mjs 双跳且内层 stdio=inherit，
+非 PTY spawnSync 捕获到的 stderr/stdout 均为空，无法机械钉住
+COMPILE_DESTRUCTIVE_NO_IDENTITY_CHANNEL 与 workflow.deleteByName。
+
+第一次修正：
+改为直驱真 bin/compile.mjs 后仍为 exit 1、2 过 / 1 红，stderr 仍为空；
+据此排除 dispatcher 是唯一根因。实际脆弱点是 process.exit(65) 前 console.error
+写向 pipe 时，在当前非 PTY 子进程链上没有形成可读捕获。
+
+约束与最终修法：
+不得删除或放宽错误原因断言；保持直驱真 bin/compile.mjs，并让子进程 stdout/stderr
+直接写入临时文件描述符，进程结束后读取文本。这样仍机械钉住真实生产诊断，
+且不依赖 pipe 在立即退出时的刷新时序。

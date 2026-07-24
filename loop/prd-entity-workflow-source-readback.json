@@ -1,0 +1,118 @@
+{
+  "schemaVersion": 1,
+  "caseId": "entity-workflow-source-readback",
+  "task": "entity-workflow-source-readback（C2，full，worktree）：工作流对象「名称+编号联合定位」的 source 侧对称落地——注册 workflow 观察 kind（workflow.create/open→workflow/[source]）+ ENTITY_KIND_COMPILE_CHANNELS 加 workflow→workflows 通道注入 + compileWorkflowCreate/Open 武装 source 读回（created-in-run→platform-readback）+ sign 白名单泛化落地（闭集）。红先行 accept：4 金牌红先行冻结 + workflow-sut hermetic fixture。⚠ C0 邻接：C2 注册 workflow.create 后 C0 spine 金牌 entity-identity-spine.admission-registry 的 r0 反断言翻假，loop/收口须复跑并 amend prd-entity-identity-spine（护栏 #19，见 observability）。真字段名/抽屉类名/双锁真机 UAT = route:human（先采不猜，ADR-0009）；不碰 v2 字节 b7b5a47e。",
+  "specPath": "docs/plans/entity-workflow-source-readback/plan.md",
+  "testChecksums": {
+    "tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs": "d25f3721a7f81c497480150565f2ec5fe2ba77e12089feeb665a39edabf70478",
+    "tests/_golden/entity-workflow-source-readback.compile-channel.zero-sut.golden.mjs": "c73cce8c184f853ee408d4d8e7242af7888245f68fcd170e2ec7608026105968",
+    "tests/_golden/entity-workflow-source-readback.arming.static.golden.mjs": "2f9fc7ce448bbc0cf2217ad81307bdc2f476676ab4676f42a81a1500659e7871",
+    "tests/_golden/entity-workflow-source-readback.completeness.zero-sut.golden.mjs": "f8af0c69c1336b2a5977baece400d04d7e955b2f12ce65256ccba3f72fc190a2",
+    "tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs": "005cfe8225f632e587e65d2458325d2a97dfff79c6d1b02f42ccdc3a57f32432",
+    "tests/_golden/entity-workflow-source-readback.cardinality-reverse.zero-sut.golden.mjs": "0c8ea9fe79a81ab0153ad38630dd436fc66aef25e1103321bb6dfd007c16ea2f"
+  },
+  "observability": [
+    {
+      "dimension": "workflow source 读回 + 完备性毒化的端到端浏览器真证：用 tests/fixtures/workflow-sut/server.mjs（wfhappy/wftwins-hidden/wfpaged/wfmissing/wfcode-mismatch/wftwins-dupdom 场景，19 位纯数字 workflowId + .workflow-card DOM）经 compile→ledger→gate 真流验「重复同名 → AMBIGUOUS、total>records → 不证 SAME」；须 C2 通道注入（s2）+ 武装（s3）落地后 loop 浏览器金牌承担。workflow.create/open 为 mutation 原子，浏览器金牌须 mintExecuteAuthority + entity-bindings（含 source 角色），镜像 agent-id-readback.chat-sut.golden.mjs。",
+      "route": "human"
+    },
+    {
+      "dimension": "C0 邻接冲突（护栏 #19 复跑受影响金牌）：C2 注册 workflow.create/workflow.open 后，C0 spine 金牌 tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs 的 r0 反断言 !has('workflow.create')/!has('workflow.bindAgent') 翻假——loop/收口须复跑该金牌，采信后 amend prd-entity-identity-spine 的 checksum（老→新 sha + 理由：C2 注册 workflow 观察原子，C0 边界断言下移）。C2 只注册 workflow.create/open，不注册 workflow.bindAgent（bindAgent 是 relation 原子、非 source 读回武装点）。",
+      "route": "human"
+    },
+    {
+      "dimension": "真字段名待真机采、先采不猜（GRILL D4）：fixture 与消费剖面的 recordsPath='data.records'/totalPath='data.total'/queryParam='nameLike'/fields{workflowId,workflowCode,workflowName}/itemContainer='.workflow-card'/cardFields 全为仿造 hermetic 占位，非 Heren 真机真实字段/接口路径/抽屉类名（agent 侧第一轮猜 data.records 曾被真机纠正）。真 recordsPath/totalPath + 抽屉真实类名 = route:human，须真机 UAT 采回后另填。",
+      "route": "human"
+    },
+    {
+      "dimension": "source/target 双锁真机 UAT 与同名工作流敌意真机用例：工作流绑智能体时 source（工作流）与 target（智能体）两边各自独立锁定的真机形态；hermetic 绿不冒充真机完成（ADR-0009）。读侧点击窗 TOCTOU（DOM 卡片无 ID、点击仅 name+code）为结构性极限，name+code 不足唯一 → AMBIGUOUS/route:human。",
+      "route": "human"
+    },
+    {
+      "dimension": "双锁邻接 bindagent-lockchain/bindagent-replay 复跑/amend（母规格 §6）：C2 武装 source 读回后若 workflow.bindAgent 编译/回放行为变（如 source 侧多一步读回）→ prd-entity-ui-wiring 的 bindagent 两键 checksumAmendments 重签（codex 四轮 PASS 既有冻结，改动须复异构评审）。v2 sha b7b5a47e 未动、收口须验字节仍冻。",
+      "route": "human"
+    },
+    {
+      "dimension": "角色契约调和 = ADR-0004 人签冻结件再签（codex round-2 Critical，route:human）：观察注册表 ENTITY_OBSERVATION_REGISTRY 要 workflow.create/open→requiredRoles:[source]（本契约冻结 admission 金牌 r0 锁死），但生产准入策略 SIDE_EFFECT_POLICY（lib/entity-semantic-lock-preflight.mjs:45，其人签冻结权威源 = tests/_golden/fixtures/teachin-admission-side-effect-policy/entity-admission-policy.frozen.json，冻结于 prd-teachin-admission-side-effect-policy.testChecksums，ADR-0004 断言冻结人签面）要 workflow.create→[subject]、workflow.open→默认 [subject]。同一 binding role 无法同时过两门（source 过观察门被生产门拒 ENTITY_BINDING_REQUIRED_ROLES_INVALID、subject 过生产门被观察门拒 OBSERVATION_ROLE_COUNT_MISMATCH，wiring 金牌 C-fc1/2/3 hermetic 复现）→ workflow mutation happy path 不存在。按 plan「source 侧读回」调和方向 = 把冻结策略 + 其镜像 SIDE_EFFECT_POLICY 的 workflow.create/open 改到 [source]——但此为【另一契约】的 ADR-0004 已签冻结件，本实现者只读、绝不擅改/伪造人签；须 Steven 再签 + prd-teachin-admission-side-effect-policy 走 checksumAmendments。当前 fail-CLOSED（无 workflow mutation 成功产物、无 fail-open），wiring 金牌 Critical 节为再签触发线。冻结金牌覆盖不足：admission 金牌 15/15 为纯函数真空绿、不蕴含端到端 happy path 存在（openIssue）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-admission-closed-set",
+      "desc": "workflow 观察准入闭集（sign 白名单泛化落地）：ENTITY_OBSERVATION_REGISTRY 加 workflow.create/workflow.open→boundKind:workflow、requiredRoles:[source]、issuer:{compile-envelope,<原子>}、provenanceByBindingMode{existing:user-confirmed,created-in-run:platform-readback}（锚收据内核，GRILL D5）。合法 workflow source 观察行经 validateObservationAdmission 过；伪造 kind:'workflow' 但角色/来源/关联/provenance 其一不匹配 → 具名 rejectCode fail-closed 拒（codex Q3 闭集铁律）。红先行：现注册表无 workflow 条目 → 义务推不出 → 10 条 poison 期望拒实得 ok:true + r0 结构断言缺席 → RED。accept 期忠实-ref 已验（注入增广注册表 13 案全翻绿）：admission 引擎 C0 已数据驱动、实现=纯数据加条目。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-24T01:58:24.083Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-compile-channel-injection",
+      "desc": "workflows.listApi 通道注入 + 声明不全 fail-closed：ENTITY_KIND_COMPILE_CHANNELS 加 workflow→{profileKey:'workflows'}（镜像 agents.listApi）；bin/compile.mjs 泛化通道循环从 profile.workflows.listApi 注入身份 ledger，声明不全（缺 totalPath 等）在浏览器前 fail-closed exit 65。红先行：现无 workflow 通道条目 → profile.workflows 被整体忽略 → 声明不全越通道门到 launch 前哨 exit 66 → RED；完整通道正控 exit 66（夹具有效性守卫）。忠实-机制探针：既有 agent 通道缺 totalPath 今日即 exit 65，workflow 加条目继承同一 fail-closed。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-workflow-source-readback.compile-channel.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-24T01:58:39.554Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-source-readback-arming",
+      "desc": "compileWorkflowCreate/Open 武装 source 读回（静态面）：两函数在剖面声明 workflows.listApi（run.identityLedger 在）时武装 run.pendingIdentityObservation（source 侧，created-in-run→platform-readback），join 到 source binding（母规格 point 3）；existing 工作流走 user-approval（GRILL D5）。compileFlow 归档泛化 kind（不再硬钉 agent）+ sourcePath 取 workflows 通道。红先行：现两函数零触碰 pendingIdentityObservation/identityLedger（只 agentSearchOpen 武装）→ 4 断言红。武装行为端到端真证 = loop 浏览器金牌（observability 项1）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-workflow-source-readback.arming.static.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-24T01:58:39.697Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4-completeness-poison-regression",
+      "desc": "workflow 毒化 + 完备性回归锁（诚实标注：非红先行驱动）：完备性/毒化逻辑（createIdentityObservationLedger/resolveDualIdentity）通道无关、workflow 免费继承——用 workflow 通道配置直调现即绿。锁住「workflow 通道继承完备性」：total>records/cursor 未尽/failed 终态/坏行/错 scope → 账本非 ok（不证 SAME）；重复同名 → ambiguous（绝不取 first）；信封非 ok → action_failed（不证 SAME/absent）。将来若账本/门被 kind-耦合，workflow 完备性在此可见断裂。端到端红先行毒化真证 = loop 浏览器金牌用 workflow-sut fixture（observability 项1）。",
+      "lane": "guard",
+      "acceptance": [
+        "node tests/_golden/entity-workflow-source-readback.completeness.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-24T01:58:39.870Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s5-round2-wiring-failclosed",
+      "desc": "codex round-2 收口（可执行接线金牌，取代 arming.static 的源码 grep 弱证）：直驱真实 lib/compile-atoms.mjs compileFlow + lib/entity-observation-registry.mjs 泛化纯函数。钉三件——(H1 compile 下游 kind 泛化) checkIdentityObservationCardinality/deriveObservationIssuerAtom 由观察行驱动、非硬编码 agent.searchOpen：agent 逐字等价（issuer=agent.searchOpen，chat-sut 浏览器金牌复跑 byte-identity 复核）、workflow-only 单观察可达（旧 0≠1 误杀已解）、多身份原子/未登记 fail-closed；(H2 open 读回失败 fail-CLOSED) compileFlow 任一步硬阻断后立即中止整个 flow，后续破坏动作绝不执行（负控证 step2 零 event、正控证无阻断双步全跑不误杀）；(Critical fail-closed 触发线) 角色契约不可满足当前 fail-CLOSED：role=source 被生产准入门拒、role=subject 被观察准入门拒，两错向皆不 fail-open——调和方向触 ADR-0004 人签冻结件 entity-admission-policy.frozen.json = route:human（见 observability 项6）。",
+      "lane": "guard",
+      "acceptance": [
+        "node tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-24T01:58:41.108Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s6-round3-reverse-cardinality",
+      "desc": "codex round-2 High-1 收口（反向基数 fail-open 封缝，真咬生产路径金牌）：round-2 泛化把观察基数门从旧「agent.searchOpen click 数 == 观察数」改成单向「观察→某 click」，丢了反向与 atom 对应——codex 亲验三案错返 ok:true：①有身份定向 click 却 0 观察（静默产无观察件）；②两身份 click 只一观察（漏一读回）；③观察锚到别原子 click（atom 张冠李戴）。round-3 把 checkIdentityObservationCardinality 改成【双向双射 + atom 对应】：正向每观察 evidenceStepId 锚定的 click 其 atom 逐字等于观察自报 atom 且为登记观察原子、evidenceStepId 互不重复；反向按 intent 分组——每身份定向终端 intent（存在 ≥1 个登记观察原子 click 的 intentId）恰被 requiredRoles 数量观察覆盖（少=漏读回、多=越供皆拒）。intent 分组统一「agent 单 click 单终端」与「workflow.create 单步多 click 收敛单终端」，反向基数严等原 agent 门（不松不紧）、workflow 多 click 不误杀。bin/compile.mjs:376 零观察但有身份定向 click 经此门 fail-closed → exit 65（不静默降级出可按 v1 签署的无观察件）。金牌直驱真实 lib/entity-observation-registry.mjs 基数门（非 seam-mock/源码 grep），红先行：old code 反向三案 + 越供/未登记/畸形共 9 断言全红（返 ok:true），fix 后 13/13 绿。agent chat-sut 浏览器 byte-identity 复跑 = route:human（本环境只读 FS/禁浏览器，纯函数面已复证 agent happy path ok:true 零漂移；codex 亦因只读 FS 未能跑 agent-id-regression-diff）。",
+      "lane": "guard",
+      "acceptance": [
+        "node tests/_golden/entity-workflow-source-readback.cardinality-reverse.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-24T01:58:41.262Z 全部 acceptance exit 0"
+    }
+  ],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-23",
+      "files": [
+        "tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs"
+      ],
+      "reason": "accept 夹具订正（C2 loop，Steven 2026-07-23 授权，codex 复审）：admission 金牌 binding 字面量（BINDINGS_CREATE/OPEN/AGENT_BINDINGS）缺 bindingMode 字段，而 FF 进的 C0-final R7 5b 换轨闸要求锚定 binding 携 bindingMode（缺则 fail-closed → OBSERVATION_BINDING_MODE_MISMATCH，连 agent 回归行 g1 都误红）。根因：accept 金牌对着 R7 前校验器写并冻，随后 FF C0-final 引入 5b 要求。amend：三 binding 补 bindingMode 对齐各自 row（create/open→created-in-run、agent→existing、v2 案 binding→existing），纯输入订正、断言不动。红先行仍保（无 registry workflow 条目时 workflow 行 OBSERVATION_ISSUER_NOT_ALLOWED 红、agent g1 绿，red-proof 重采入档）。金牌 15/15 exit 0，新 sha d25f3721。旧 sha 07af7a6c430c39de7d78f2b275421b7ee1c5ceead50801d31f4d8412c8e6e59e"
+    },
+    {
+      "amendedAt": "2026-07-24",
+      "files": [
+        "tests/_golden/entity-workflow-source-readback.cardinality-reverse.zero-sut.golden.mjs"
+      ],
+      "reason": "round-4 收口 codex round-3 High「终端锚定 fail-open」（须 Steven 复核 + codex 异构复审，route:human）：round-3 的基数门按 intent 折叠（只数「(intentId,atom) 组有几条观察」），从不认定哪个 click 是终端——codex round-3 亲验 workflow.create 新增/分类/确认 三 click 观察锚任意一个均 ok:true、两同 intent agent click 仅一观察（锚首个非终端）亦 ok:true。修法：checkIdentityObservationCardinality 显式认定每 (intentId,atom) 组的终端 = 组内 events 顺序最后一个 click（严等 compile 武装 run.events[len-1] 口径，见 lib/compile-atoms.mjs compileWorkflowCreate/compileAgentSearchOpen/compileWorkflowOpen），观察 evidenceStepId 必须锚终端、锚非终端脚手架步 → 拒 OBSERVATION_EVIDENCE_ANCHORS_NON_TERMINAL_CLICK（新增具名码）。金牌相应更新：新增终端锚定红先后绿两案（TA-1 workflow.create 锚新增/分类拒、锚确认 ok；TA-2 两同 intent agent 锚首个拒、锚末个 ok）、RC-5 改测真·越供（两观察锚同一终端 stepId → OBSERVATION_EVIDENCE_STEP_DUPLICATE）、RC-4 软化过强证据表述（坐实基数门函数 fail-closed，进程级 exit 65 端到端真证仍 route:human/observability 项1）。红先行实证：old code 对 TA-1a/1b/2a 三案返 ok:true（本轮亲验），修法后 fail-closed。冻结 wiring 金牌 H1b（观察锚 w_confirm 终端 click）零回归 18/18、admission 15/15 不受影响（只改 checkIdentityObservationCardinality，validateObservationAdmission 未动）。金牌 18/18 exit 0，新 sha 0c8ea9fe79a81ab0153ad38630dd436fc66aef25e1103321bb6dfd007c16ea2f。旧 sha 659819cd642d0bd7478d3c422670a9d998b48294b6b1cbd29ed995c469d87d27"
+    }
+  ]
+}

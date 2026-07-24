@@ -24,6 +24,8 @@ import { credentialGate } from '../lib/cred-gate.mjs';
 import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { createCompileRun, compileFlow, projectObserved, ROUTE_LIST } from '../lib/compile-atoms.mjs';
+import { ENTITY_KIND_COMPILE_CHANNELS, checkIdentityObservationCardinality, deriveObservationIssuerAtom } from '../lib/entity-observation-registry.mjs';
+import { admitCompileDestructiveContinuity } from '../lib/entity-destructive-continuity.mjs';
 import {
   buildEntityBindingsDraft,
   checkCompileIdentityAdmission as checkExecuteIdentityAdmission,
@@ -231,12 +233,20 @@ async function executeMode(caseId, args) {
     listRoute = r.workflowList || null;
     agentListRoute = r.agentList || null; // chief-bringup G1：智能体列表路由（nav.agentManagement 路由导航优先）
   }
-  // 身份通道剖面（agent-id-readback；剖面声明制——未声明零行为差，声明则形状非法 fail-closed）。
-  let identityChannelCfg = null;
-  if (profile.agents !== undefined && profile.agents !== null) {
-    const a = profile.agents;
+  // 身份通道剖面（剖面声明制——未声明零行为差，声明则形状非法 fail-closed）。
+  // C0：注入不再硬认 profile.agents，改按闭集注册表登记的实体 kind 数据驱动遍历（ENTITY_KIND_COMPILE_CHANNELS）：
+  //   各 kind 从其对应 profile 通道注入身份 ledger，好让 C1 加闸、C2 加 workflow 各碰不同缝。
+  //   C0 只登记 agent（→ profile.agents）；未登记观察通道的 kind（如 workflow）不遍历 = 行为逐字等价今日 agent-only。
+  // per-kind 身份观察通道（codex R1 High：原单变量 identityChannelCfg 逐次覆盖——C2 加 workflow 后
+  // 第二 kind 会覆盖第一——改真 per-kind Map，键=已登记 kind、值=该 kind 的 channelCfg，
+  // 让 C2 只需往 Map 加条目、不覆盖 agent）。C0 注册表恰含 agent 一个观察通道 kind。
+  const identityChannelsByKind = new Map();
+  for (const [kind, channelSpec] of ENTITY_KIND_COMPILE_CHANNELS) {
+    const channelProfile = profile[channelSpec.profileKey];
+    if (channelProfile === undefined || channelProfile === null) continue;
+    const a = channelProfile;
     const aOk = a && typeof a === 'object' && !Array.isArray(a);
-    if (!aOk) { console.error('compile: 通道剖面 agents 形状非法，拒跑（fail-closed）'); process.exit(65); }
+    if (!aOk) { console.error(`compile: 通道剖面 ${channelSpec.profileKey} 形状非法，拒跑（fail-closed）`); process.exit(65); }
     if (a.listApi !== undefined && a.listApi !== null) {
       const l = a.listApi;
       const s = (v) => typeof v === 'string' && v.trim() !== '';
@@ -246,21 +256,35 @@ async function executeMode(caseId, args) {
         && (l.hasNextPath === null || l.hasNextPath === undefined || s(l.hasNextPath))
         && l.fields && typeof l.fields === 'object' && !Array.isArray(l.fields)
         && s(l.fields.id) && s(l.fields.code) && s(l.fields.name);
-      if (!shapeOk) { console.error('compile: 通道剖面 agents.listApi 形状非法（身份通道声明不完整，含 queryParam），拒跑（fail-closed）'); process.exit(65); }
+      if (!shapeOk) { console.error(`compile: 通道剖面 ${channelSpec.profileKey}.listApi 形状非法（身份通道声明不完整，含 queryParam），拒跑（fail-closed）`); process.exit(65); }
       // 物理卡片双锚（codex R1-H1）：声明身份通道即须声明卡片容器与 name/code 子选择器——
       // DOM 证据必须从同一物理卡片读出，缺声明 fail-closed。
       const cardOk = s(a.itemContainer)
         && a.cardFields && typeof a.cardFields === 'object' && !Array.isArray(a.cardFields)
         && s(a.cardFields.name) && s(a.cardFields.code);
-      if (!cardOk) { console.error('compile: 身份通道声明缺物理卡片面（agents.itemContainer + agents.cardFields.name/code），拒跑（fail-closed）'); process.exit(65); }
-      identityChannelCfg = {
+      if (!cardOk) { console.error(`compile: 身份通道声明缺物理卡片面（${channelSpec.profileKey}.itemContainer + ${channelSpec.profileKey}.cardFields.name/code），拒跑（fail-closed）`); process.exit(65); }
+      identityChannelsByKind.set(kind, {
         pathname: l.pathname, method: l.method, recordsPath: l.recordsPath, totalPath: l.totalPath,
         queryParam: l.queryParam,
         hasNextPath: l.hasNextPath ?? null,
         fields: { id: l.fields.id, code: l.fields.code, name: l.fields.name },
-      };
+      });
     }
   }
+  // 下游 ledger/forensics 目前单通道消费：C0 取唯一已登记 kind 的 channelCfg。多 kind（C2 加 workflow 后
+  // 剖面同时声明多观察通道）尚无 per-kind 下游注入——fail-closed 拒，绝不静默择一（正是本 finding 覆盖 bug）。
+  if (identityChannelsByKind.size > 1) {
+    console.error('compile: 剖面声明多身份观察通道 kind，per-kind 下游注入尚未支持（C2），拒跑（fail-closed）'); process.exit(65);
+  }
+  let identityChannelCfg = null;
+  for (const cfg of identityChannelsByKind.values()) identityChannelCfg = cfg;
+  // 身份通道指纹（identityProfileDigest = sha256(规范化 listApi)）：启动前算好，供破坏性 ref 武装取真指纹
+  // （C3 修复 Critical-1 ①：原 run.identityProfileDigest 从不赋值 → mint 恒收 null）。观察件落盘处复用同值保字节一致。
+  const canonicalSortKeys = (v) => (Array.isArray(v) ? v.map(canonicalSortKeys)
+    : (v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, canonicalSortKeys(v[k])])) : v));
+  const identityProfileDigest = identityChannelCfg
+    ? `sha256:${createHash('sha256').update(JSON.stringify(canonicalSortKeys(identityChannelCfg))).digest('hex')}`
+    : null;
   const identityLedger = identityChannelCfg
     ? (await import('../lib/agent-identity-observation.mjs')).createIdentityObservationLedger({ channel: identityChannelCfg })
     : null;
@@ -268,6 +292,36 @@ async function executeMode(caseId, args) {
   const uniqueName = String(args['unique-name'] || Date.now().toString(36));
   const site = loadSiteConfig();
   const watchdog = setTimeout(() => { console.error('compile 看门狗：超时强制退出'); process.exit(1); }, 120000);
+
+  // C3 编译期破坏性目标连续性【浏览器前】结构准入（fail-closed；codex round-3 Critical + Steven 2026-07-24 (A) 裁定）：
+  // flow 里每个 targeting/破坏性原子（workflow.deleteByName/agent.delete/agent.confirmToolPicker/picker.selectFirstTool）
+  // 的目标实体 kind，剖面必须声明良构身份通道（结构上可核实「同一目标」）；channel-less/v1（无身份通道）恒拒——
+  // 不启浏览器、绝不 performAction 破坏步，与 replay 浏览器前 admitDestructiveTargetContinuity 一脉。
+  // certifiableKinds = 已声明良构身份通道的 kind 集：agent 由 identityChannelsByKind 覆盖（已含形状校验+ledger 激活）；
+  // workflow 身份通道尚未接 ledger（不在 ENTITY_KIND_COMPILE_CHANNELS），但破坏性连续性准入只需其【结构声明】良构即放行编译，
+  // 真实观察/ref 铸造由运行期逐步守卫（armDestructiveTargetContinuity 铸不出即硬阻断）把关——二者叠成完整 fail-closed。
+  const wellFormedListChannel = (cp) => {
+    if (!cp || typeof cp !== 'object' || Array.isArray(cp)) return false;
+    const l = cp.listApi;
+    const s = (v) => typeof v === 'string' && v.trim() !== '';
+    if (!l || typeof l !== 'object' || Array.isArray(l)) return false;
+    if (!(s(l.pathname) && l.pathname.startsWith('/') && s(l.method) && s(l.recordsPath) && s(l.totalPath) && s(l.queryParam))) return false;
+    if (!(l.fields && typeof l.fields === 'object' && !Array.isArray(l.fields) && s(l.fields.id) && s(l.fields.code) && s(l.fields.name))) return false;
+    return s(cp.itemContainer) && cp.cardFields && typeof cp.cardFields === 'object' && !Array.isArray(cp.cardFields) && s(cp.cardFields.name) && s(cp.cardFields.code);
+  };
+  const certifiableDestructiveKinds = new Set(identityChannelsByKind.keys()); // agent（若良构）已在内
+  if (wellFormedListChannel(profile.workflows)) certifiableDestructiveKinds.add('workflow');
+  {
+    const compileDestructiveAdmission = admitCompileDestructiveContinuity({
+      flowSteps: flowDoc.flow.steps, certifiableKinds: certifiableDestructiveKinds,
+    });
+    if (!compileDestructiveAdmission.ok) {
+      const a = compileDestructiveAdmission.atom ? `，atom=${compileDestructiveAdmission.atom}` : '';
+      console.error(`compile --execute: 破坏性目标连续性无身份通道核实（${compileDestructiveAdmission.reason}${a}），编译期结构上无从证同一目标 → 拒执行破坏动作，未启动浏览器（fail-closed，护栏 #14）`);
+      clearTimeout(watchdog);
+      process.exit(65);
+    }
+  }
 
   // 浏览器启动哨兵（仅测试注入，生产 env 未设即 no-op）：到达本行=控制流已越过一切浏览器前 fail-closed 门（准入/受众/
   // 凭据）。设 env 时写哨兵并 exit 66 短路——【不真启浏览器】即可让验收金牌机械证「门是否在浏览器前拦」：门先 fire→
@@ -294,7 +348,7 @@ async function executeMode(caseId, args) {
     } : {}),
   });
 
-  const run = createCompileRun({ page, forensics, state, sut, uniqueName, site, listRoute, agentListRoute, profile, identityLedger });
+  const run = createCompileRun({ page, forensics, state, sut, uniqueName, site, listRoute, agentListRoute, profile, identityLedger, identityProfileDigest });
   let exitCode = 0;
   try {
     if (!args['skip-login']) {
@@ -349,16 +403,28 @@ async function executeMode(caseId, args) {
         events: run.events,
       };
       const eventsText = JSON.stringify(eventsDoc, null, 2) + '\n';
-      // 身份观察基数强校验（codex R1-C1 封缝）：声明身份通道时，events 内每个 agent.searchOpen 终端
-      // click 必须恰有一条观察行——多/少/错位都不产成功产物，绝不静默降级出可按 v1 签署的编译件。
+      // 身份观察基数强校验（codex R1-C1 封缝 + C2 High-1 kind-无关泛化）：声明身份通道时，每条已归档观察行须
+      // 锚定唯一真实终端 click（evidenceStepId ∈ 已发 click stepId 集、互不重复）——多/少/错位/重复都不产成功产物，
+      // 绝不静默降级出可按 v1 签署的编译件。旧实现只数 agent.searchOpen click（workflow-only 流 0≠1 误 exit 65）；
+      // 改锚 evidenceStepId 后 agent 结论逐字不变、workflow 单观察不再误杀（纯函数 checkIdentityObservationCardinality）。
       let entityBindingsDraft = null;
       let entityBindingsDraftText = null;
+      let observationIssuer = null; // C2 High-1：观察成品 issuer 原子（据观察行泛化，非硬编码 agent.searchOpen）
       if (identityLedger) {
-        const terminalClicks = run.events.filter((e) => e.atom === 'agent.searchOpen' && e.action === 'click');
-        if (terminalClicks.length !== run.identityObservations.length) {
+        const card = checkIdentityObservationCardinality({ events: run.events, observations: run.identityObservations });
+        if (!card.ok) {
           gatedWrite({ [join(outDir, 'compile-report.json')]: JSON.stringify(reportDoc, null, 2) + '\n' });
-          console.error(`compile: 身份观察基数不齐（终端 click ${terminalClicks.length} ≠ 观察 ${run.identityObservations.length}），不产 events/draft/observed`);
+          console.error(`compile: 身份观察基数门 fail-closed（${card.reason}；观察 ${run.identityObservations.length} 条），不产 events/draft/observed`);
           exitCode = 65;
+        }
+        // issuer 原子泛化（codex High-1）：据已归档观察行推导单一 issuer 原子，多原子/未登记 fail-closed（浏览器后成品前）。
+        if (exitCode === 0 && run.identityObservations.length) {
+          observationIssuer = deriveObservationIssuerAtom(run.identityObservations);
+          if (!observationIssuer.ok) {
+            gatedWrite({ [join(outDir, 'compile-report.json')]: JSON.stringify(reportDoc, null, 2) + '\n' });
+            console.error(`compile: 身份观察 issuer 门 fail-closed（${observationIssuer.reason}），不产 events/draft/observed`);
+            exitCode = 65;
+          }
         }
       }
       if (exitCode === 0 && containsEntityMutation) {
@@ -394,9 +460,7 @@ async function executeMode(caseId, args) {
       // eventsSha256 绑最终 events 字节；compile-report 只记状态与观察件 sha（不复制三元组，sol P1）。
       let identityObservationsText = null;
       if (identityLedger && run.identityObservations.length) {
-        const sortKeys = (v) => (Array.isArray(v) ? v.map(sortKeys)
-          : (v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, sortKeys(v[k])])) : v));
-        const digest = `sha256:${createHash('sha256').update(JSON.stringify(sortKeys(identityChannelCfg))).digest('hex')}`;
+        const digest = identityProfileDigest; // 启动前已算（同一规范化 sha），复用保字节一致
         const observationArtifact = {
           schemaVersion: 1,
           artifactKind: 'compile-identity-observation',
@@ -404,7 +468,8 @@ async function executeMode(caseId, args) {
           capturedAgainstBuild: capturedBuild,
           identityProfileDigest: digest,
           eventsSha256: `sha256:${createHash('sha256').update(Buffer.from(eventsText)).digest('hex')}`,
-          source: { kind: 'compile-envelope', atom: 'agent.searchOpen', signed: false, replayReady: false },
+          // issuer 泛化（codex High-1）：源信封原子据观察行推导（agent→agent.searchOpen 逐字等价、workflow→workflow.create/open）。
+          source: { kind: observationIssuer.sourceKind, atom: observationIssuer.atom, signed: false, replayReady: false },
           observations: run.identityObservations,
         };
         identityObservationsText = JSON.stringify(observationArtifact, null, 2) + '\n';

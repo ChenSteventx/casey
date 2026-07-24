@@ -1,0 +1,9 @@
+ok   K1 destructiveTargetKind 口径：workflow.deleteByName→workflow、agent.*/picker.*→agent
+ok   X1a 真洞复现：无 boundKind（kind-agnostic 旧路径）→ 同名 agent 观察被选中（ok:true）＝codex 逮的 fail-open
+FAIL X1b 修复关死：boundKind=workflow + 仅同名 agent 观察 → 拒（NO_MATCHING_KIND，跨 kind 绝不铸 ref）: boundKind=workflow 时同名 agent 观察绝不入选（跨 kind 硬闸）；实得 {"ok":true,"observation":{"kind":"agent","name":"atl_shared","platformId":"1234567890123456789","code":"AG-1"}}
+FAIL X1c 混入场景：boundKind=workflow + [agent 同名, workflow 同名] → 只选 workflow 观察（剔 agent、绝不取 first）: 应剔 agent、唯一取 workflow 观察；实得 {"ok":false,"reason":"OBSERVATION_SELECT_AMBIGUOUS_SAME_NAME"}
+ok   X2a 同 kind 正控：boundKind=workflow + 唯一 workflow 观察 → 正常选中（不误破合法同 kind 选取）
+ok   X2b 同 kind 正控：boundKind=agent + 唯一 agent 观察 → 正常选中（合法 agent.delete 流不破）
+ok   X2c 同 kind 毒化仍拒：boundKind=agent + 两同名 agent 观察 → AMBIGUOUS（同名不取 first 语义未被 kind 闸吞掉）
+FAIL X3 静态：lib/compile-atoms.mjs 的 armDestructiveTargetContinuity 按 destructiveTargetKind(atom) 传 boundKind 给选取: compile-atoms 未从 entity-destructive-continuity 导入 destructiveTargetKind（跨 kind 闸接线断链）
+RED  crosskind: 5 过 / 3 红

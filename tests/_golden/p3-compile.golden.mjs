@@ -18,6 +18,7 @@ import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 import { createHash, randomUUID } from 'node:crypto';
 import { startFakeSut, FAKE_SITE_DENYLIST } from '../fixtures/fake-sut/server.mjs';
+import { buildDeleteByNameOnlyFlow } from './support/p3-compile-c5-flow.mjs';
 // 实体准入脚手架（stale-red-admission-refit 修单）：走生产接缝铸测试受众准入件，不弱化准入。
 import { requiredFlowEntityBindings, hashIdentityAdmissionBytes, calculateIdentityAdmissionSignature, buildEntityBindingsDraft } from '../../lib/entity-semantic-lock-preflight.mjs';
 import { createEntityLockReceipt } from '../../lib/entity-semantic-lock.mjs';
@@ -157,12 +158,27 @@ const FLOW_GOOD = {
   ],
 };
 const FLOW_BAD_PREFIX = { ...FLOW_GOOD, steps: [{ atom: 'workflow.create', params: { name: '目录CRUD无前缀', category: '测试分类' }, ...SUBJECT('intent_create') }] };
-const FLOW_WITH_DELETE = { ...FLOW_GOOD, steps: [...FLOW_GOOD.steps, { atom: 'workflow.deleteByName', params: { name: 'atl_{{uniqueName}}' }, ...SUBJECT('intent_cleanup') }] };
+// C5 只证 deleteByName 入口缺席：不得复用 FLOW_GOOD 夹带 workflow.create，否则声明 workflows.listApi
+// 会先武装 C2 source 读回，把无关创建义务耦合进删除候选检查。
+const FLOW_DELETE_ONLY = buildDeleteByNameOnlyFlow({ caseId: CASE_ID });
 
 const tcFile = join(tmp, 'testcase.json');
 writeFileSync(tcFile, JSON.stringify(TESTCASE));
 const profFile = join(tmp, 'profile.json');
 writeFileSync(profFile, JSON.stringify({ background: FAKE_SITE_DENYLIST, successField: 'status', successValue: 200 }));
+// C3 编译期破坏性目标连续性准入（Steven 2026-07-24 (A) 裁定）：workflow.deleteByName 属破坏性/targeting 原子——
+// compile --execute 在浏览器前要求剖面声明 workflows 身份通道（结构上可核实「同一目标」），channel-less 恒拒（exit 65）。
+// FLOW_DELETE_ONLY 的执行段（C5）故用本剖面声明 workflows.listApi + 物理卡片面，过结构准入；C5 场景删除入口可证缺席
+// （无搜索框 count===0 → CASE_DEFECT 候选、不落该步），运行期不触及真删——故 workflows.listApi 是结构声明、本场景不实取。
+// 真机「入口在场 + 读回 platformId 铸已认证 ref → 合法编译真删 exit 0」的 proceed 路径属 C2 workflow 身份采集，route:human。
+const profDelFile = join(tmp, 'profile.del.json');
+writeFileSync(profDelFile, JSON.stringify({
+  background: FAKE_SITE_DENYLIST, successField: 'status', successValue: 200,
+  workflows: {
+    listApi: { pathname: '/api/process/list', method: 'POST', recordsPath: 'data.records', totalPath: 'data.total', queryParam: 'name', fields: { id: 'id', code: 'code', name: 'name' } },
+    itemContainer: '.wf-list tr', cardFields: { name: '.wf-name', code: '.wf-code' },
+  },
+}));
 function writeFlow(obj, name) { const f = join(tmp, name); writeFileSync(f, JSON.stringify(obj)); return f; }
 const emptyExpected = join(tmp, 'expected.empty.json');
 writeFileSync(emptyExpected, JSON.stringify({ caseId: CASE_ID, channel: 'web', intents: [], globalAssertions: [] }));
@@ -358,7 +374,7 @@ check('C4c 编译期核验记录', () => {
 // ---------- C5 入口可证缺席 → CASE_DEFECT 候选（G1 附属：不落该步+记候选，编译继续） ----------
 const dirB = join(tmp, 'out-b'); mkdirSync(dirB, { recursive: true });
 await checkAsync('C5 CASE_DEFECT 候选', async () => {
-  const g = run([CASEY, 'compile', CASE_ID, '--testcase', tcFile, '--flow', writeFlow(FLOW_WITH_DELETE, 'flow.del.json'), '--out-dir', dirB]);
+  const g = run([CASEY, 'compile', CASE_ID, '--testcase', tcFile, '--flow', writeFlow(FLOW_DELETE_ONLY, 'flow.del.json'), '--out-dir', dirB]);
   if (g.status !== 0) throw new Error(`含 deleteByName 的 flow 过闸应 0，实际 ${g.status}`);
   const flowFile = join(dirB, `flow-${CASE_ID}.json`);
   const flow = JSON.parse(readFileSync(flowFile, 'utf8'));
@@ -366,7 +382,9 @@ await checkAsync('C5 CASE_DEFECT 候选', async () => {
   writeFileSync(flowFile, JSON.stringify(flow, null, 2));
   // 修单：deleteByName 即使最终因入口缺席不落 event，也必须先进入权威闭合绑定集（sol 判定）。
   const authB = mintExecuteAuthority(flowFile);
-  const e = run([CASEY, 'compile', CASE_ID, '--execute', '--testcase', tcFile, '--sut', sutHappy.url, '--out-dir', dirB, '--profile', profFile, '--skip-login', '--unique-name', 'g2', '--entity-authority', authB]);
+  // Steven 2026-07-24 (A/B)：破坏性 deleteByName 用声明 workflows 身份通道的剖面过编译期连续性结构准入（channel-less 恒 exit 65）；
+  // 入口可证缺席 → 运行期不触真删、仍落 CASE_DEFECT 候选、exit 0（结构准入过 + 破坏步不可达，二者叠成 fail-closed）。
+  const e = run([CASEY, 'compile', CASE_ID, '--execute', '--testcase', tcFile, '--sut', sutHappy.url, '--out-dir', dirB, '--profile', profDelFile, '--skip-login', '--unique-name', 'g2', '--entity-authority', authB]);
   if (e.status !== 0) throw new Error(`入口缺席不 fail 全盘、应 exit 0，实际 ${e.status}：${(e.stderr || '').slice(-300)}`);
   const ev = JSON.parse(readFileSync(join(dirB, 'events.json'), 'utf8'));
   if (ev.events.some((x) => x.atom === 'workflow.deleteByName')) throw new Error('入口缺席的原子不得落 event');

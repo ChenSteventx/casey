@@ -1,0 +1,62 @@
+{
+  "schemaVersion": 1,
+  "task": "entity-c0c2c3-p3-reconcile：隔离 P3 C5 的 workflow.deleteByName 入口缺席夹具，保留 C2 source 读回 fail-closed 与 C3 破坏性目标连续性浏览器前结构准入；不伪造观察、不改生产门。",
+  "specPath": "docs/plans/entity-c0c2c3-p3-reconcile/plan.md",
+  "testChecksums": {
+    "tests/_golden/p3-compile-c5-fixture-isolation.zero-sut.golden.mjs": "b9be2353c7dc53be30fbd649e1eb4807e3a700cfe938adc4525436a77be4cfce",
+    "tests/_golden/support/p3-compile-c5-flow.mjs": "b7d75e82a2936f67242a88261b88bf1d81340db3634b1f209e339895dbb2280e"
+  },
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-24",
+      "files": [
+        "tests/_golden/p3-compile-c5-fixture-isolation.zero-sut.golden.mjs",
+        "tests/_golden/support/p3-compile-c5-flow.mjs"
+      ],
+      "reason": "Grok TUI code-review 收口结构债：构造件由多参数回声式 API 收紧为契约默认值，只允许调用方覆盖 caseId；零 SUT 金牌改静态 import，原子断言改为 atoms 闭集，不再用 JSON 字符串搜索或逐字复述调用入参。被证义务不变：唯一 deleteByName、cleanup/subject 闭合、无通道具名 fail-closed、有通道只过结构准入。support 是两枚金牌共同消费的唯一夹具源，纳入 testChecksums，防止只改构造件绕过棘轮。"
+    },
+    {
+      "amendedAt": "2026-07-24",
+      "files": [
+        "tests/_golden/p3-compile-c5-fixture-isolation.zero-sut.golden.mjs"
+      ],
+      "reason": "accept 冻结时 R0 先因独立构造件缺席而短路，未触达 C2 的 requiredFlowEntityBindings 输出形状断言；实现后首次触达发现该纯函数按既有契约只投影 sourceIntentId/candidateId/role，不投影 atom。修正无效的 atom 顶层假设，改为闭合键集逐字钉三键并逐值核 cleanup/candidate-wf-main/subject；workflow.deleteByName 原子仍由同一检查前半段独立逐字钉住，被证义务零弱化。"
+    }
+  ],
+  "observability": [
+    {
+      "dimension": "p3-compile.golden.mjs 的 15/15 组合树复跑会启动 fake-SUT；本 session 禁止启动、连接或回放假被测系统，不以静态证据冒充该行为复跑。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实机器 UAT 须相位 0 三关全绿，并取得 Windows→真实目标与 WSL 回环→真实目标两段成功证据；只用不存在的 atl_ 唯一名，不得以真实已有名称触发破坏动作。",
+      "route": "human"
+    },
+    {
+      "dimension": "C2 workflow.create 的 source 读回与现行 subject 准入角色冲突须 ADR-0004 人签重表达；本调和不闭合该独立义务。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-c5-fixture-isolation",
+      "desc": "C5 flow 恰含 workflow.deleteByName 一步，保留 cleanup 来源意图、subject 绑定与唯一名；无 workflow 身份通道具名拒绝，有声明只通过结构准入。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p3-compile-c5-fixture-isolation.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-24T07:38:33.646Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-c3-structural-regression",
+      "desc": "C5 夹具隔离不得回退 C3 浏览器前破坏性目标连续性结构门；用 launch 哨兵证明无通道在浏览器前拒绝、有通道只到达 launch 点。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-destructive-continuity-guard.compile-admission.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-24T07:39:02.518Z 全部 acceptance exit 0"
+    }
+  ]
+}

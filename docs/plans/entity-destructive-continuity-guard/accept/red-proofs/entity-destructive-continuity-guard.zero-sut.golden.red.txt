@@ -1,0 +1,1 @@
+RED  entity-destructive-continuity-guard: 目标连续性守卫模块缺席（红先行，loop 阶段实现）—— Cannot find module '/mnt/d/ctx/heren/casey-entity-destructive-guard/lib/entity-destructive-continuity.mjs' imported from /mnt/d/ctx/heren/casey-entity-destructive-guard/tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs

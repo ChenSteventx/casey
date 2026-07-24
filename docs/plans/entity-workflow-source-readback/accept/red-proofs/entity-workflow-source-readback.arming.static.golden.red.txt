@@ -1,0 +1,12 @@
+ok   基线：compileAgentSearchOpen 保有 run.pendingIdentityObservation 武装 + run.identityLedger 门（对称断言基准，防字段名漂移致假红）
+ok   s1a compileWorkflowCreate 函数须存在
+FAIL s1b compileWorkflowCreate 须武装 run.pendingIdentityObservation（source 读回武装点；现只 agentSearchOpen 武装 → RED）
+FAIL s1c compileWorkflowCreate 武装须经 run.identityLedger 门（剖面声明 workflows.listApi 才武装、未声明零行为差；现零触碰 → RED）
+ok   s2a compileWorkflowOpen 函数须存在
+FAIL s2b compileWorkflowOpen 须武装 run.pendingIdentityObservation（source 读回武装点；现只 agentSearchOpen 武装 → RED）
+FAIL s2c compileWorkflowOpen 武装须经 run.identityLedger 门（剖面声明 workflows.listApi 才武装；现零触碰 → RED）
+RED  entity-workflow-source-readback.arming: s1b compileWorkflowCreate 须武装 run.pendingIdentityObservation（source 读回武装点；现只 agentSearchOpen 武装 → RED）
+RED  entity-workflow-source-readback.arming: s1c compileWorkflowCreate 武装须经 run.identityLedger 门（剖面声明 workflows.listApi 才武装、未声明零行为差；现零触碰 → RED）
+RED  entity-workflow-source-readback.arming: s2b compileWorkflowOpen 须武装 run.pendingIdentityObservation（source 读回武装点；现只 agentSearchOpen 武装 → RED）
+RED  entity-workflow-source-readback.arming: s2c compileWorkflowOpen 武装须经 run.identityLedger 门（剖面声明 workflows.listApi 才武装；现零触碰 → RED）
+RED  entity-workflow-source-readback.arming: 3 过 / 4 红
