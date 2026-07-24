@@ -137,9 +137,11 @@ A（在飞·推荐）收 entity-lastmile 两个未过契约（本 session 主线
     proposed baseline + 备再签包 → route:human 交 Steven ADR-0004 再签 → 干净 codex 复审。
   ② C4 收口：补两端到端金牌（生产 replay 对非字符串 atom 经 preflight REPLAY_EVENT_SHAPE_INVALID 前置拒
     的端到端断言 + 生产事件环覆盖/「零触碰」措辞订正）→ 干净 codex 复审（避开触发内容过滤的措辞）。
-  ③ 集成合并 dev（待 Steven 点头）：可先合已收口的 C0/C2/C3，按依赖序 C0→其余；调和共改面（replay.mjs
-    C1+C3、compile-atoms.mjs C2+C3、registry C0+C1+C2）、复跑受影响金牌（护栏 #19）、合并前清 .git
-    畸形对象、刷主树 HANDOFF。C1/C4 待各自收口后再并。
+  ③ 集成合并 dev —— C0/C2/C3 已建集成分支 integration-entity-c0c2c3@72d6540（从 dev 7065b31 起，机械
+    合并干净、护栏 #19 复跑 14/15 过），唯一待调和=p3-compile C5（C2 workflow.create source 读回门
+    fail-closed 了 C3 重表达的冻结金牌，详见 HANDOFF 顶节下一步 3）。Steven 定另开聚焦轮调和，dev 未动。
+    恢复：git worktree add <路径> integration-entity-c0c2c3 + 软链 node_modules + 调和 p3-compile C5 +
+    复跑 + 落 dev（合并前清 .git 畸形对象）。C1/C4 待各自收口后再并。
   ⑤ route:human 残留另开真机轮：C1 深消费棘轮再签、C2 角色契约再签、C3 真机破坏 UAT + 冻结金牌再签、
     各契约真机 name+ID 双定位 UAT（ADR-0009 完成闸）。
 B（活契约槽）sut-503-diagnosis（direct 0/6，未动手）：Steven 令三 subagent 解 503 缺陷（骨架智能体详情页

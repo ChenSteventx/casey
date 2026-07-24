@@ -56,9 +56,17 @@ R17 + regress-wf-node-script C7 定位器刷新到 `lib/replay-axes.mjs`）。
    gradeEntityConclusion 降级闸）+ 机器再录 `agent-id-regression-diff` proposed baseline + 备再签包 →
    route:human 交 Steven ADR-0004 再签 → 干净 codex 复审。
 2. C4 收口：补两端到端金牌（preflight 非字符串封口 + 生产事件环覆盖/「零触碰」措辞订正）→ 干净 codex 复审。
-3. 集成合并 dev（待 Steven 点头）：按依赖序 C0→C1/C2/C3/C4 合并、调和共改面（`replay.mjs` C1+C3、
-   `compile-atoms.mjs` C2+C3、registry C0+C1+C2）、复跑受影响金牌（护栏 #19）、合并前清 `.git` 畸形对象、
-   刷主树 HANDOFF。可先合已收口的 C0/C2/C3，C1/C4 待各自收口后再并。
+3. 集成合并 dev —— C0/C2/C3 三契约合并【已建好、待调和一处后落地】：集成分支 `integration-entity-c0c2c3`
+   @72d6540（从 dev 7065b31 起，依赖序 C0 863439a→C2 456749d→C3 72d6540）。机械合并干净：唯一冲突
+   `bin/compile.mjs` import 块已 union 解（registry 三函数 + `admitCompileDestructiveContinuity` 并存）、
+   `compile-atoms.mjs` 自动合、C2/C3 两门在 executeMode 都在、四核心文件语法 OK。护栏 #19 复跑受影响
+   金牌：14/15 过（软链主树 node_modules 后跑）。【唯一未过·待调和】p3-compile C5：C3 重表达 p3-compile
+   为过自身破坏结构准入声明了 workflows.listApi，这同一声明触发 C2 的 workflow.create source 读回双证门，
+   hermetic 冒烟无真读回 envelope→C2 正确 fail-closed exit 65，但 C5 期望 exit 0。两契约各自都对，是 C3
+   的 p3-compile 冻结金牌相对 C2 强制面陈旧。调和=改 C5 夹具供 source 读回 envelope 保 exit 0（或改判
+   exit 65），属 checksumAmendment + 跨契约、宜再评审。Steven 2026-07-24 定：另开聚焦轮调和，dev 未动
+   （仍 7065b31）、不落地带病合并。恢复：`git worktree add <路径> integration-entity-c0c2c3` + 软链
+   node_modules + 调和 p3-compile C5 + 复跑 + 落 dev（合并前清 `.git` 畸形对象）。C1/C4 待各自收口后再并。
 4. 全轮 route:human 残留另开真机轮：C1 深消费棘轮再签、C2 角色契约再签、C3 真机破坏 UAT、各契约真机
    name+ID 双定位 UAT（ADR-0009 完成闸）。
 
