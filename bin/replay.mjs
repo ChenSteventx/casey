@@ -657,6 +657,8 @@ async function main() {
         // High-1：安装器返回 ready（page.route 的 Promise），caller 在放行破坏动作前 await，堵「handler 未注册即出站」。
         let guardReady = null;
         let guardTeardown = null; // High（round-2）生命周期：破坏步收尾解除本拦截器，避免 **/* 持久拦后续确认/刷新/归零
+        let guardInstallFailed = false; // High-4：精确 pattern 缺失等 fail-closed 不装 → 破坏动作不得裸执行
+        let lastGuardAbortUrl = null; // High-3：被中止请求 url（onAbort 外露），供 pageerror 逐请求因果归因
         if (ev.action === 'click' && requiresTargetContinuityRef(ev.atom) && ctx.destructiveContinuityByStep) {
           const resolved = ctx.destructiveContinuityByStep.get(ev.stepId);
           if (resolved && typeof resolved.platformId === 'string' && resolved.platformId) {
@@ -664,53 +666,75 @@ async function main() {
               atom: ev.atom,
               ref: { platformId: resolved.platformId },
               urlPattern: profile.mutationUrlPattern,
+              // High-4（codex round-3「精确 mutation pattern 未成立」收口）：生产 replay 要求精确 pattern——缺
+              // profile.mutationUrlPattern 时安装器 fail-CLOSED 不装（不兜 **/*），caller 据 installed:false 拒执行破坏动作。
+              requirePattern: true,
+              onAbort: (url) => { lastGuardAbortUrl = url; },
+              // 工装主动中止是 HARNESS 侧信号，绝不进 pageErrors（会被 verdict 当 SUT 背书误报 SUT_DEFECT）；落独立诊断通道
+              // guardAborts（不进 axes/裁定）+ 连带记被中止请求 url，供 partitionGuardAbortPageErrors 逐请求因果排除（High-3）。
               onDecision: (decision) => {
-                // High-4：工装主动中止是 HARNESS 侧信号，绝不进 pageErrors（那会被 verdict 当 SUT 背书误报 SUT_DEFECT）；
-                // 落独立诊断通道 guardAborts（不进 axes 取证、不进裁定），中止后置断言证不出走 fail-safe（NEEDS_HUMAN）。
-                if (!decision.ok) guardAborts.push({ attributedStepId: ev.stepId, atom: ev.atom, reason: decision.reason });
+                if (!decision.ok) guardAborts.push({ attributedStepId: ev.stepId, atom: ev.atom, reason: decision.reason, abortedRequestUrl: lastGuardAbortUrl });
               },
             });
-            guardReady = installed && installed.ready ? installed.ready : null;
-            if (guardReady) await guardReady; // 放行破坏动作前确保拦截器已注册（真机时序正确性仍 route:human）
-            // High（codex round-2「unroute 生命周期」收口）：留存解除器，破坏步因果窗（performAction→respWait→流稳定）
-            // 收尾后精确解除本拦截器（urlPattern 由 profile.mutationUrlPattern 供）——否则默认 **/* 会持久拦本步之后的
-            // 确认/列表刷新/归零查询。生产 replay 真调 unroute（此前只由适配器返回、从不被调用=真 High）。真机拦截时序
-            // 正确性仍 route:human；hermetic 下守卫从不安装（此路不可达），故为真机生命周期接线。
-            guardTeardown = installed && typeof installed.unroute === 'function' ? installed.unroute : null;
+            if (installed && installed.installed === false) {
+              // 有已解析 ref（真机采集补齐）却装不上守卫（如缺精确 mutationUrlPattern）→ fail-CLOSED：绝不裸执行破坏动作。
+              guardInstallFailed = true;
+              log(`C3 出站守卫安装失败（${installed.reason || '未知'}）→ fail-closed，不执行破坏动作 ${ev.stepId}`);
+            } else {
+              guardReady = installed && installed.ready ? installed.ready : null;
+              if (guardReady) await guardReady; // 放行破坏动作前确保拦截器已注册（真机时序正确性仍 route:human）
+              // High（codex round-2「unroute 生命周期」收口）：留存解除器，破坏步因果窗（performAction→respWait→流稳定）
+              // 收尾后精确解除本拦截器（urlPattern 由 profile.mutationUrlPattern 供）——否则默认 **/* 会持久拦本步之后的
+              // 确认/列表刷新/归零查询。生产 replay 真调 unroute（此前只由适配器返回、从不被调用=真 High）。真机拦截时序
+              // 正确性仍 route:human；hermetic 下守卫从不安装（此路不可达），故为真机生命周期接线。
+              guardTeardown = installed && typeof installed.unroute === 'function' ? installed.unroute : null;
+            }
           }
         }
-        const respWait = ev.action === 'click'
-          ? page.waitForResponse((r) => /saveOrModifyProcessData|streamReply/.test(r.url()), { timeout: 600 }).catch(() => null)
-          : Promise.resolve(null);
-        const axis = await performAction(page, ev, ctx);
-        actionByStep.set(ev.stepId, axis || { resolution: 'none' });
-        const settleT = Date.now();
-        await respWait;
-        // 给动作的直接异步后果（如 save 响应后随即开的 SSE 流）一点点出现窗，仍归本步——
-        // 这是动作的因果作用域（save→stream），非任意时间窗；背景轮询仍由 denylist 归 null。
-        if (ev.action === 'click') { await new Promise((r) => setTimeout(r, 150)); }
-        // 动态流等待（chiefcomplaint-smoke D2，Steven 拍板；codex R1-F2 + R2 两轮收紧）：
-        // 只等「本步 firingStepId 发起 且 命中 chat 流 URL 域」的 EventSource 走到 finished（或 30s 上界）
-        // ——流是本步动作的直接后果，归因窗随延（因果作用域，非任意时间窗）；背景/他步长流、本步开的
-        // 非对话长流（如面板附带 SSE）都绝不拖本步。配置了 streamUrlPattern 才有域可判；未配置时按
-        // 本步发起判（与 compile 侧对称）。无本步流零行为差（p5/catalog 回归锁背书）。
-        const streamInScope = (u) => !(chatCfg && chatCfg.streamUrlPattern) || String(u).includes(chatCfg.streamUrlPattern);
-        const myStreams = () => forensics.records().filter((r) => r.type === 'EventSource' && r.firingStepId === ev.stepId && streamInScope(r.url));
-        if (myStreams().length > 0) {
-          log('  step stream open, waiting finished ' + ev.stepId);
-          const swT = Date.now();
-          while (Date.now() - swT < 30000 && !myStreams().every((r) => r.streamFinished === true)) {
-            await new Promise((r) => setTimeout(r, 200));
+        // Medium（codex round-3「guardTeardown 不在 finally」收口）：安装到收尾之间任何异常都会跳过 unroute、让
+        // **/* 或精确 pattern 拦截器持久残留后续步。把破坏动作执行段包进 try、guardTeardown 移进 finally，异常路径也解除。
+        let axis = null;
+        try {
+          if (guardInstallFailed) {
+            // fail-closed：守卫装不上时破坏动作不裸执行，动作轴记 action_failed（后置断言证不出走 fail-safe NEEDS_HUMAN）。
+            axis = { resolution: 'action_failed', identityReadback: { ok: false } };
+            actionByStep.set(ev.stepId, axis);
+          } else {
+            const respWait = ev.action === 'click'
+              ? page.waitForResponse((r) => /saveOrModifyProcessData|streamReply/.test(r.url()), { timeout: 600 }).catch(() => null)
+              : Promise.resolve(null);
+            axis = await performAction(page, ev, ctx);
+            actionByStep.set(ev.stepId, axis || { resolution: 'none' });
+            const settleT = Date.now();
+            await respWait;
+            // 给动作的直接异步后果（如 save 响应后随即开的 SSE 流）一点点出现窗，仍归本步——
+            // 这是动作的因果作用域（save→stream），非任意时间窗；背景轮询仍由 denylist 归 null。
+            if (ev.action === 'click') { await new Promise((r) => setTimeout(r, 150)); }
+            // 动态流等待（chiefcomplaint-smoke D2，Steven 拍板；codex R1-F2 + R2 两轮收紧）：
+            // 只等「本步 firingStepId 发起 且 命中 chat 流 URL 域」的 EventSource 走到 finished（或 30s 上界）
+            // ——流是本步动作的直接后果，归因窗随延（因果作用域，非任意时间窗）；背景/他步长流、本步开的
+            // 非对话长流（如面板附带 SSE）都绝不拖本步。配置了 streamUrlPattern 才有域可判；未配置时按
+            // 本步发起判（与 compile 侧对称）。无本步流零行为差（p5/catalog 回归锁背书）。
+            const streamInScope = (u) => !(chatCfg && chatCfg.streamUrlPattern) || String(u).includes(chatCfg.streamUrlPattern);
+            const myStreams = () => forensics.records().filter((r) => r.type === 'EventSource' && r.firingStepId === ev.stepId && streamInScope(r.url));
+            if (myStreams().length > 0) {
+              log('  step stream open, waiting finished ' + ev.stepId);
+              const swT = Date.now();
+              while (Date.now() - swT < 30000 && !myStreams().every((r) => r.streamFinished === true)) {
+                await new Promise((r) => setTimeout(r, 200));
+              }
+              // 网络流结束 ≠ UI 渲染完成（regress 实测）：配置了 chat 通道再等气泡文本 2s 稳定（上界 10s）。
+              if (chatCfg) await waitReplyStable(page, replySelector);
+            }
+            rhQuietWait += Date.now() - settleT;
           }
-          // 网络流结束 ≠ UI 渲染完成（regress 实测）：配置了 chat 通道再等气泡文本 2s 稳定（上界 10s）。
-          if (chatCfg) await waitReplyStable(page, replySelector);
+          log('  acted ' + ev.stepId + ' resolution=' + (axis && axis.resolution));
+          state.currentStepId = null; // 动作作用域结束，关闭归因
+        } finally {
+          // High（round-2 unroute 生命周期）：破坏步因果窗收尾后解除本步出站拦截器（精确 pattern+handler），
+          // 避免持久拦后续步的确认/刷新/归零请求。移进 finally 保证异常路径也解除（Medium）。best-effort 不吞步。
+          if (guardTeardown) { try { await guardTeardown(); } catch (e) { log('guard unroute best-effort: ' + String((e && e.message) || e)); } }
         }
-        rhQuietWait += Date.now() - settleT;
-        log('  acted ' + ev.stepId + ' resolution=' + (axis && axis.resolution));
-        state.currentStepId = null; // 动作作用域结束，关闭归因
-        // High（round-2 unroute 生命周期）：破坏步因果窗收尾后解除本步出站拦截器（精确 pattern+handler），
-        // 避免持久拦后续步的确认/刷新/归零请求。解除失败 fail-safe（best-effort，不因收尾抖动吞步）。
-        if (guardTeardown) { try { await guardTeardown(); } catch (e) { log('guard unroute best-effort: ' + String((e && e.message) || e)); } }
       }
 
       if (isLast) {

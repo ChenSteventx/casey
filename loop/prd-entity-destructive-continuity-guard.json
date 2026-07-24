@@ -8,7 +8,8 @@
     "tests/_golden/entity-destructive-continuity-guard.wiring.golden.mjs": "1fdbd19803bc4fe05383062a08cdde759741cb6c18aa44f9f9e05ef4b9e5ab2c",
     "tests/_golden/entity-destructive-continuity-guard.failclosed-replay.golden.mjs": "03c38f7f740d656741f19cbb05960be40b08cdd91a17313ed6b35954bd4b7bc0",
     "tests/_golden/entity-destructive-continuity-guard.round2.golden.mjs": "f08fee45aa22df8d284901f881728b1ae1c8194c1cd13792e262e5f5efdea17c",
-    "tests/_golden/entity-destructive-continuity-guard.round3.golden.mjs": "2d166161b6a75eb6ba4f9207889ac5368dc6ed578f3520cd9029adc569537823"
+    "tests/_golden/entity-destructive-continuity-guard.round3.golden.mjs": "2d166161b6a75eb6ba4f9207889ac5368dc6ed578f3520cd9029adc569537823",
+    "tests/_golden/entity-destructive-continuity-guard.round4.golden.mjs": "a4b0b386d3e87df1e9146e94677ffe3d6481639aa298016f932c3c11cf8d989b"
   },
   "observability": [
     {
@@ -33,7 +34,7 @@
         "node tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-24T00:45:26.583Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T01:58:42.749Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-destructive-continuity-wiring",
@@ -43,7 +44,7 @@
         "node tests/_golden/entity-destructive-continuity-guard.wiring.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-24T00:45:26.992Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T01:58:43.267Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-failclosed-replay-real-path",
@@ -53,7 +54,7 @@
         "node tests/_golden/entity-destructive-continuity-guard.failclosed-replay.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-24T00:45:41.076Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T01:58:56.554Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-round2-findings-closure",
@@ -63,7 +64,7 @@
         "node tests/_golden/entity-destructive-continuity-guard.round2.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-24T00:45:41.723Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T01:58:57.541Z 全部 acceptance exit 0"
     },
     {
       "id": "s5-round3-reReview-residuals-closure",
@@ -73,7 +74,17 @@
         "node tests/_golden/entity-destructive-continuity-guard.round3.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-24T00:46:02.427Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T01:59:18.696Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s6-round4-reReview-residuals-closure",
+      "desc": "round-4 收口 codex round-3 re-review 残留 finding（真生产码路径 + 纯函数 + 真 verdict，零浏览器/零 SUT/零 fake-SUT）：金牌 tests/_golden/entity-destructive-continuity-guard.round4.golden.mjs。H3[High abort 按 step 全吞非因果]：partitionGuardAbortPageErrors 改【逐 pageerror 因果】——一条 pageerror 只在其 message 携中止请求 url（route:human 采集补齐的精确锚）或携 route.abort('blockedbyclient') 的 net 层签名（ERR_BLOCKED_BY_CLIENT/ERR_ABORTED，守卫独有、真 SUT 应用异常不产生）时才 excluded；同一步里独立真 SUT pageerror（如 TypeError）→ KEPT 仍背书 SUT_DEFECT（旧按 step 全吞此处 kept=0=吞真缺陷，先红后绿判据）+ 真 bin/verdict.mjs 证 KEPT 真 pageerror → SUT_DEFECT、仅 guard abort（kept 空）→ NEEDS_HUMAN。H4[High mutation pattern **/*]：installOutboundMutationGuard 加 requirePattern——生产 replay 传 requirePattern:true，缺精确 urlPattern 即 fail-CLOSED 不装（reason MUTATION_URL_PATTERN_REQUIRED、page.route 零注册、不兜 **/*），replay 据 installed:false 拒裸执行破坏动作（guardInstallFailed→action_failed）；未传 requirePattern 的既有适配器契约保留 **/* 兜底默认（不破人签冻结 wiring 金牌 w1-w5）。M[Medium guardTeardown 不在 finally]：破坏步 unroute（await guardTeardown()）移进 finally——安装到收尾间异常也解除拦截器（静态咬 finally 结构）。对抗自证：git-stash 三处生产改动亲验先红（H3a kept=[]、H3d 真缺陷洗成 NEEDS_HUMAN、H4a 兜 **/*、H4d 缺 requirePattern、M 不在 finally），后绿 9/9。route:human（本轮 hermetic 关不掉，见 observability 与 domainJudgments）：Critical 编译期破坏面（compile 出站连续性守卫本质需真浏览器 + live 观察，pre-launch 硬门会误破既有合法 channel-less 自建唯一名删除编译 p3-compile）；High-2 真破坏原子集调整（confirmToolPicker 真机 agent platformId 取目标 / removeToolByName 入集 / selectFirstTool 移除均 ADR-0004 重签事件）；abort 应用包成无 net 标记自定义错误的逐请求 pageerror↔request 精确归因需真浏览器 request handle。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-destructive-continuity-guard.round4.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-24T01:59:19.203Z 全部 acceptance exit 0"
     }
   ]
 }
