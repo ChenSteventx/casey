@@ -7,7 +7,8 @@
     "tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs": "66d80917c5c21d09f57785fe7b54d2fca6367a7437d3e4a8398a215d1f1924ab",
     "tests/_golden/entity-destructive-continuity-guard.wiring.golden.mjs": "1fdbd19803bc4fe05383062a08cdde759741cb6c18aa44f9f9e05ef4b9e5ab2c",
     "tests/_golden/entity-destructive-continuity-guard.failclosed-replay.golden.mjs": "03c38f7f740d656741f19cbb05960be40b08cdd91a17313ed6b35954bd4b7bc0",
-    "tests/_golden/entity-destructive-continuity-guard.round2.golden.mjs": "f08fee45aa22df8d284901f881728b1ae1c8194c1cd13792e262e5f5efdea17c"
+    "tests/_golden/entity-destructive-continuity-guard.round2.golden.mjs": "f08fee45aa22df8d284901f881728b1ae1c8194c1cd13792e262e5f5efdea17c",
+    "tests/_golden/entity-destructive-continuity-guard.round3.golden.mjs": "2d166161b6a75eb6ba4f9207889ac5368dc6ed578f3520cd9029adc569537823"
   },
   "observability": [
     {
@@ -32,7 +33,7 @@
         "node tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T17:36:51.665Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T00:45:26.583Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-destructive-continuity-wiring",
@@ -42,7 +43,7 @@
         "node tests/_golden/entity-destructive-continuity-guard.wiring.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T17:36:52.491Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T00:45:26.992Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-failclosed-replay-real-path",
@@ -52,7 +53,7 @@
         "node tests/_golden/entity-destructive-continuity-guard.failclosed-replay.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T17:37:06.575Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T00:45:41.076Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-round2-findings-closure",
@@ -62,7 +63,17 @@
         "node tests/_golden/entity-destructive-continuity-guard.round2.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T17:37:07.277Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T00:45:41.723Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s5-round3-reReview-residuals-closure",
+      "desc": "round-3 收口 codex round-2 re-review 残留 finding（真生产码路径 + 纯函数，零浏览器/零 SUT/零 fake-SUT）：金牌 tests/_golden/entity-destructive-continuity-guard.round3.golden.mjs。R1[Critical v1 旁路]：合法 v1 破坏锁（无身份通道）+ agent.delete 无 ref → 真 bin/replay.mjs 浏览器前 exit 65 拒 + 具名 reason + 哨兵缺席（原门只在 v2 frozenIdentityRows 非空时调、放行 v1 破坏锁=真 fail-open，此处改判据 frozenLockAuthority 堵死）；正控 v1 只读 searchOpen → exit 66 抵达哨兵（v1 只读不被过度拒）。R2[High 真破坏原子错位]：agent.confirmToolPicker（真持久化加工具面）入 requiresTargetContinuityRef 集——v2 身份锁 + confirmToolPicker 无 ref → 真 replay exit 65 拒 + 点名 confirmToolPicker（旧集只护 picker.selectFirstTool 勾选面、放行真持久化 confirmToolPicker=fail-open）。R3[High per-intent 非 per-step]：admitDestructiveTargetContinuity 迁 resolvedRefByStep 主路——同 intent 两破坏步只有 A 有 ref → B 仍被拒（一 intent 一 ref 绝不放行全部破坏步）；两步各自有 ref → 放。R4[High unroute 生命周期]：生产 replay 破坏步收尾真调 installed.unroute（精确 profile.mutationUrlPattern；此前 unroute 只由适配器返回、生产从不调用=真 High）。R5[High abort 漏成 pageerror]：守卫 abort 的 pageerror 按归因步因果排除（纯函数 partitionGuardAbortPageErrors，投影前减法过滤、guardAborts 绝不进 projectReplayAxes）+ 真 bin/verdict.mjs 证守卫 abort 步排除后 NEEDS_HUMAN 非 SUT_DEFECT、非 abort 步真 pageerror 仍 SUT_DEFECT（排除不吞真缺陷）。对抗自证：finding-1/finding-2 已 git-stash/去 confirmToolPicker 亲验先红（old code v1+delete/confirmToolPicker 抵达哨兵 exit 66=fail-open）后绿（exit 65 拒、哨兵缺席）。route:human（本轮 hermetic 关不掉）：真机破坏链身份采集补齐 proceed 路径 / 真机 page.route 拦截时序正确性 / 真 abort 链逐请求因果确认 / removeToolByName 入集与 selectFirstTool 移除的 round-2 冻结金牌重签。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-destructive-continuity-guard.round3.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-24T00:46:02.427Z 全部 acceptance exit 0"
     }
   ]
 }
