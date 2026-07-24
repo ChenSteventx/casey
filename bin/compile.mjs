@@ -24,6 +24,7 @@ import { credentialGate } from '../lib/cred-gate.mjs';
 import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { createCompileRun, compileFlow, projectObserved, ROUTE_LIST } from '../lib/compile-atoms.mjs';
+import { ENTITY_KIND_COMPILE_CHANNELS } from '../lib/entity-observation-registry.mjs';
 import {
   buildEntityBindingsDraft,
   checkCompileIdentityAdmission as checkExecuteIdentityAdmission,
@@ -231,12 +232,20 @@ async function executeMode(caseId, args) {
     listRoute = r.workflowList || null;
     agentListRoute = r.agentList || null; // chief-bringup G1：智能体列表路由（nav.agentManagement 路由导航优先）
   }
-  // 身份通道剖面（agent-id-readback；剖面声明制——未声明零行为差，声明则形状非法 fail-closed）。
-  let identityChannelCfg = null;
-  if (profile.agents !== undefined && profile.agents !== null) {
-    const a = profile.agents;
+  // 身份通道剖面（剖面声明制——未声明零行为差，声明则形状非法 fail-closed）。
+  // C0：注入不再硬认 profile.agents，改按闭集注册表登记的实体 kind 数据驱动遍历（ENTITY_KIND_COMPILE_CHANNELS）：
+  //   各 kind 从其对应 profile 通道注入身份 ledger，好让 C1 加闸、C2 加 workflow 各碰不同缝。
+  //   C0 只登记 agent（→ profile.agents）；未登记观察通道的 kind（如 workflow）不遍历 = 行为逐字等价今日 agent-only。
+  // per-kind 身份观察通道（codex R1 High：原单变量 identityChannelCfg 逐次覆盖——C2 加 workflow 后
+  // 第二 kind 会覆盖第一——改真 per-kind Map，键=已登记 kind、值=该 kind 的 channelCfg，
+  // 让 C2 只需往 Map 加条目、不覆盖 agent）。C0 注册表恰含 agent 一个观察通道 kind。
+  const identityChannelsByKind = new Map();
+  for (const [kind, channelSpec] of ENTITY_KIND_COMPILE_CHANNELS) {
+    const channelProfile = profile[channelSpec.profileKey];
+    if (channelProfile === undefined || channelProfile === null) continue;
+    const a = channelProfile;
     const aOk = a && typeof a === 'object' && !Array.isArray(a);
-    if (!aOk) { console.error('compile: 通道剖面 agents 形状非法，拒跑（fail-closed）'); process.exit(65); }
+    if (!aOk) { console.error(`compile: 通道剖面 ${channelSpec.profileKey} 形状非法，拒跑（fail-closed）`); process.exit(65); }
     if (a.listApi !== undefined && a.listApi !== null) {
       const l = a.listApi;
       const s = (v) => typeof v === 'string' && v.trim() !== '';
@@ -246,21 +255,28 @@ async function executeMode(caseId, args) {
         && (l.hasNextPath === null || l.hasNextPath === undefined || s(l.hasNextPath))
         && l.fields && typeof l.fields === 'object' && !Array.isArray(l.fields)
         && s(l.fields.id) && s(l.fields.code) && s(l.fields.name);
-      if (!shapeOk) { console.error('compile: 通道剖面 agents.listApi 形状非法（身份通道声明不完整，含 queryParam），拒跑（fail-closed）'); process.exit(65); }
+      if (!shapeOk) { console.error(`compile: 通道剖面 ${channelSpec.profileKey}.listApi 形状非法（身份通道声明不完整，含 queryParam），拒跑（fail-closed）`); process.exit(65); }
       // 物理卡片双锚（codex R1-H1）：声明身份通道即须声明卡片容器与 name/code 子选择器——
       // DOM 证据必须从同一物理卡片读出，缺声明 fail-closed。
       const cardOk = s(a.itemContainer)
         && a.cardFields && typeof a.cardFields === 'object' && !Array.isArray(a.cardFields)
         && s(a.cardFields.name) && s(a.cardFields.code);
-      if (!cardOk) { console.error('compile: 身份通道声明缺物理卡片面（agents.itemContainer + agents.cardFields.name/code），拒跑（fail-closed）'); process.exit(65); }
-      identityChannelCfg = {
+      if (!cardOk) { console.error(`compile: 身份通道声明缺物理卡片面（${channelSpec.profileKey}.itemContainer + ${channelSpec.profileKey}.cardFields.name/code），拒跑（fail-closed）`); process.exit(65); }
+      identityChannelsByKind.set(kind, {
         pathname: l.pathname, method: l.method, recordsPath: l.recordsPath, totalPath: l.totalPath,
         queryParam: l.queryParam,
         hasNextPath: l.hasNextPath ?? null,
         fields: { id: l.fields.id, code: l.fields.code, name: l.fields.name },
-      };
+      });
     }
   }
+  // 下游 ledger/forensics 目前单通道消费：C0 取唯一已登记 kind 的 channelCfg。多 kind（C2 加 workflow 后
+  // 剖面同时声明多观察通道）尚无 per-kind 下游注入——fail-closed 拒，绝不静默择一（正是本 finding 覆盖 bug）。
+  if (identityChannelsByKind.size > 1) {
+    console.error('compile: 剖面声明多身份观察通道 kind，per-kind 下游注入尚未支持（C2），拒跑（fail-closed）'); process.exit(65);
+  }
+  let identityChannelCfg = null;
+  for (const cfg of identityChannelsByKind.values()) identityChannelCfg = cfg;
   const identityLedger = identityChannelCfg
     ? (await import('../lib/agent-identity-observation.mjs')).createIdentityObservationLedger({ channel: identityChannelCfg })
     : null;

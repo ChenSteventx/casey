@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "slug": "entity-identity-spine",
+  "task": "entity-identity-spine（C0，full）：把 bin/sign.mjs 写死 agent-only 的身份观察准入（:247 常量 IDENTITY_OBSERVATION_ATOM='agent.searchOpen'、:275-276 硬校验 row.kind==='agent'）泛化成一张闭集注册表——action policy 声明的原子 → required role → bound kind/provenance → 允许的 observation issuer/atom；签署时校验观察行的角色、数量、来源、关联 ID 恰好匹配，不匹配 fail-closed 拒（exit 65）。agent 既有条目在注册表里等价今日硬钉语义、agent 行为逐字不变（agent-id-readback 全套金牌复跑字节零漂移是机器验收证据）。C0 只做地基泛化：不注册 workflow（C2）、不碰 v2 形式收据链（entity-semantic-lock-v2.mjs 字节仍 b7b5a47e）、不加编译器、不改裁定四态。本 accept 阶段交付红先行 zero-SUT 金牌 + 冻结；实现落 lib/entity-observation-registry.mjs（新 ENTITY_OBSERVATION_REGISTRY Map + SUPPORTED_ENTITY_KINDS + validateObservationAdmission 纯函数）并接进 sign.mjs 观察对账块（bin/sign.mjs:235-291），供 C1-C3 复用。设计三方共识（fable 起草→codex gpt-5.6-sol max 压测→opus 4.8 xhigh 仲裁），见 GRILL D1-D5、母规格 docs/plans/entity-identity-lastmile/plan.md §3/§5。provenance 维度锚既有收据内核 lib/entity-semantic-lock.mjs:5-6,74-79（bindingMode existing→user-confirmed、created-in-run→platform-readback），非新造字段。",
+  "specPath": "docs/plans/entity-identity-spine/plan.md",
+  "testChecksums": {
+    "tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs": "763bc772bc6a4636d67e20b2b8357250d11147aebb30dce8b40259e2434fd4c4"
+  },
+  "observability": [
+    {
+      "dimension": "C0 完成语义（ADR-0009）：本金牌 hermetic 绿只证闭集准入逻辑与 agent 保序，非需求完成；agent 行为逐字不变的字节零漂移证据在收口时复跑 agent-id-readback 全套金牌（chat-sut C1-C10 + observation/gate/sign-observation/regression-diff 四 zero-sut + entity-ui-wiring.searchopen）；真机为准。",
+      "route": "human"
+    },
+    {
+      "dimension": "收口不破邻接冻结面：entity-semantic-lock-v2.mjs 字节仍 b7b5a47e（本轮不碰 v2）；prd-teachin-semantic-lock-runtime-discrimination-successor 的 0/26 红且拒绝原因不漂（C0 泛化可能改到 runtime-authority 检查之前的路径，须验拒绝原因不漂而非只验仍红，GRILL D5）。",
+      "route": "machine"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-admission-registry-closed-set",
+      "desc": "闭集准入注册表纯函数（lib/entity-observation-registry.mjs：ENTITY_OBSERVATION_REGISTRY Map + SUPPORTED_ENTITY_KINDS Set + validateObservationAdmission({events, observation, bindings})→{ok, rejectCode}）钉住 8 条准入反例并逐条 fail-closed 具名 rejectCode：c1 kind 与 bound kind 不符→OBSERVATION_KIND_NOT_BOUND_TO_ATOM；c2 角色数量不匹配（多于/少于 requiredRoles）→OBSERVATION_ROLE_COUNT_MISMATCH；c3 observation 来源 issuer/atom 越界→OBSERVATION_ISSUER_NOT_ALLOWED；c4 关联 ID（sourceIntentId/candidateId 与 binding/事件流）不对应→OBSERVATION_CORRELATION_MISMATCH；c5 provenance 缺失或与 bindingMode 不符→OBSERVATION_PROVENANCE_INVALID；c6 数量恰好但 kind 越界（词表外）→OBSERVATION_KIND_UNSUPPORTED；c7 合法 agent 观察行仍过（回归保护，agent 保序）；c8 孤儿策略原子 agent.removeToolByName 不被索要 observation（D4 不误拒）。红先行基线：目标模块缺席，金牌 import 即 RED（exit 1，Cannot find module lib/entity-observation-registry.mjs）。夹具形态锚真机 uat-run.md（kind=agent、19 位纯数字 platformId string、code znt_atl_*、sourcePath /ai-manager/agent/setup/queryAgentPageList）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-23T10:54:15.655Z 全部 acceptance exit 0"
+    }
+  ],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-23",
+      "files": [
+        "tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs"
+      ],
+      "reason": "codex R1 逮 validator 未接线假绿——金牌只验孤立纯函数 validateObservationAdmission、生产 sign 路径绕过它。金牌加端到端断言（e1-e4）spawn 真 bin/sign.mjs 证生产路径实调验证器：e1 合法 agent 实过、e2 角色基数越界/e3 跨原子 issuer/e4 successor bindingMode 越注册表允许集 三条 fail-open 实拒 die(65)。断言只增不减（13→17）；注释 sign 里验证器调用则 e2/e3/e4 转绿→本金牌红=咬合自证。老 sha 57513de45e86dc22b601a996c04ac6c2d07ae14767ac038a8e336ebbb9d3db8f → 新 sha df1547405d28cc60b4a762050bd430c927d76c16a3f37de9efa8335e6eba898e。"
+    },
+    {
+      "amendedAt": "2026-07-23",
+      "files": [
+        "tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs"
+      ],
+      "reason": "codex R2 逮 validateObservationAdmission 闭集三处更深缺陷——验证器强化+金牌加反例（断言只增不减 17→21）。① Critical 全局双射洞：逐行 correlation 只证行能 join 到任一 binding、终端角色多重集只统计锚到终端的行，额外锚非终端步（fill）的身份行两关都过、fail-open 混进冻结件——验证器加全局双射闸（每行必锚某终端 click 的 stepId+atom，否则 OBSERVATION_ROW_NOT_ANCHORED）；金牌 c9（纯函数逐字复现）+ e5（spawn 真 sign 实拒 die(65)）；注释双射闸则 c9/e5 转绿（e5 真 sign 实得 exit 0 过签）→本金牌红=咬合自证。② High 跨原子 issuer 洞：issuer 用 some 匹配任一 governing 原子、注册第二观察原子后 A 信封可夹带 B 行——改精确双锚（obs.source 须等于 obs.source.atom 登记的 issuer kind+atom）+ 单信封单原子（每行 row.atom===issuerAtom，否则 OBSERVATION_ISSUER_ATOM_MISMATCH）；金牌 c10 增广注册表跨原子混装反例。③ Medium allowedBindingModes 从未被读、仅靠 provenanceByBindingMode 恰好缺项间接拒——加显式 allowedBindingModes.includes(row.bindingMode) 闸（否则 OBSERVATION_BINDING_MODE_NOT_ALLOWED）；金牌 c11 注入两字段不一致注册表反例。agent 保序：四条 agent zero-SUT 全 exit 0（regression-diff 21/21 字节零漂移）、e1 合法 agent 逐语义等价。老 sha df1547405d28cc60b4a762050bd430c927d76c16a3f37de9efa8335e6eba898e → 新 sha 78a5ed7abc40de68212594bbceb7b73ad9161ab9e29c2573360f70f4e0f74077。"
+    },
+    {
+      "amendedAt": "2026-07-23",
+      "files": [
+        "tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs"
+      ],
+      "reason": "codex R3 逮双射键不完整/零义务洞/C2 可扩展——双射全键重构+零义务拒+信封扩展+金牌穷举反例（断言只增不减 21→27）。① Critical 双射键不完整：终端锚/角色计数只用 {stepId,atom} 丢 intentId，跨 intent 复用同 stepId 时一行误满足两终端义务、或两合法行被每终端重复计数误拒——验证器把双射全键重构为 {intentId,stepId,atom}，经 binding 桥接（binding 是唯一同持事件 intentId 与观察行 sourceIntentId 者，用「行→binding→binding.intentId→终端」定位）；金牌 c12（只给 A 行 → B 义务未满足 → OBSERVATION_ROLE_COUNT_MISMATCH，去 intentId 则误接受转绿）+ c13（A/B 各一行各锚各自终端 → ok，去 intentId 则误拒转红）。② Critical 零义务洞：terminals 空即 return OK 跳过逐行+双射，令无义务事件流任意观察行冻结进签署件——加零义务闸（terminals 空但携行 → OBSERVATION_UNEXPECTED_WITHOUT_OBLIGATION，零义务且零行才过）；金牌 c14（去零义务拒则转绿）+ e6（端到端 spawn 真 sign，仅 fill/press 无终端 click 携 v2 观察 → sign 终端锚存在性守卫 die(65)）。③ High C2 可扩展：单信封 + 索要全 events 全原子义务令注册 A、B 后无法各原子独立信封同次提交——验证器改「单原子信封列表」（C0 单信封=单元素列表、agent 单原子路径字节等价，不改观察件文件格式故 sign-observation 未破、sign.mjs 零改）；金牌 c15（增广注册表 agent+workflow 两独立信封各锚各自终端 → ok）+ c16（agent 信封夹 workflow 行 → OBSERVATION_ISSUER_ATOM_MISMATCH）。对抗自证：把双射全键退回 {stepId,atom} → c12/c13 转红；去零义务拒 → c14 转红，各恢复绿。agent 保序：regression-diff 21/21 + sign-observation 11/11 + observation 30/30 + gate 18/18 全 exit 0 字节零漂移、e1-e5 逐语义等价、v2 sha b7b5a47e 未动。老 sha 78a5ed7abc40de68212594bbceb7b73ad9161ab9e29c2573360f70f4e0f74077 → 新 sha ee65fce2215648eda7238fc35ccfb5fee7f8bcfd611bfd382c09802758a6e1ab。"
+    },
+    {
+      "amendedAt": "2026-07-23",
+      "files": [
+        "tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs"
+      ],
+      "reason": "codex R4 逮双射非函数/整体输入非fail-closed/规范信封/重复终端——双射证双向函数+整体fail-closed+规范信封+拒重复终端+金牌穷举（断言只增不减 27→38）。① Critical 双射非函数：rowAnchorsTerminal 只查『存在』匹配 binding，两 binding 除 intentId 外全同时一行同锚 A/B 两终端、step6 各得 [subject] 误 OK——验证器把双射建成可证双向函数：每行恰锚 1 终端（0 拒 OBSERVATION_ROW_NOT_ANCHORED、>1 拒 OBSERVATION_ROW_ANCHORS_MULTIPLE_TERMINALS），terminalOfRow 记唯一归属令终端→行反向计数每行恰计一次（多/少/重复 ROLE_COUNT_MISMATCH）；金牌 c17（纯函数）+ e7（spawn 真 sign 双 intent 同 stepId 单行 die(65)）。② High 整体输入非 fail-closed：零义务早退只查 allRows.length，邪恶 source 空信封/非数组 observations/畸形信封绕过——加整体结构+issuer fail-closed 闸（不论义务多少先跑）：非 null/数组/对象 observation、畸形信封、非数组 observations 拒 OBSERVATION_ENVELOPE_MALFORMED，邪恶/越界 source 拒 OBSERVATION_ISSUER_NOT_ALLOWED；金牌 c18（邪恶空信封）c19（合法空信封）c20（非数组 observations）c21（非对象 observation）c22（列表畸形元素）。③ High 规范信封未强制：未查信封原子唯一性/对应终端，多角色可拆多同原子信封经并集蒙混——加每原子恰一信封（重复拒 OBSERVATION_DUPLICATE_ATOM_ENVELOPE）、每信封原子须有对应终端义务（孤儿拒 OBSERVATION_UNEXPECTED_WITHOUT_OBLIGATION）、合法 issuer 空信封须与义务一一对应（空信封令终端 0 行→ROLE_COUNT_MISMATCH）；金牌 c23/c24/c26。④ High 重复终端静默去重：seenTerminal 折叠两相同 click 三元组成一义务、一行满足多事件——改重复即拒 OBSERVATION_DUPLICATE_TERMINAL（不去重；agent 正常 stepId 唯一、preflight 亦拒重复三元组，对 agent 安全）；金牌 c25。对抗自证（scratchpad selfproof，退任一硬化→反例翻 false-OK）：退 >1 拒+计数改存在→c17/e7 false-OK；退回旧零义务早退→c18/c19 false-OK；退 dup-atom 闸+2 角色→角色拆分 false-OK；退成 continue 去重+单行→重复终端 false-OK；各恢复绿。agent 保序：regression-diff 21/21 + sign-observation 11/11 + observation 30/30 + gate 18/18 全 exit 0 字节零漂移、e1-e6 逐语义等价、v2 sha b7b5a47e 未动、注册表 NUL=0 纯文本可 diff、sign.mjs 零改。老 sha ee65fce2215648eda7238fc35ccfb5fee7f8bcfd611bfd382c09802758a6e1ab → 新 sha c234720bd881bc1ecaa446daf439e0f0459fd868b96d6bd5f402ae63750fdb64。"
+    },
+    {
+      "file": "tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs",
+      "oldSha": "c234720bd881bc1ecaa446daf439e0f0459fd868b96d6bd5f402ae63750fdb64",
+      "newSha": "119421e132cfeabb68d3ce550dd104aa5f1499f2db150d86eed598d2abb6fa55",
+      "amendedAt": "2026-07-23",
+      "reason": "codex R5 逮共同缺字段绕过/bindingMode 换轨——验证器加身份字段非空 string 闭集校验(消 JSON.stringify 键歧义)+ bindingMode 绑定 binding 事实(拒换轨)+ 非数组输入 fail-closed + 前瞻不变量 + JSON 输入信任边界注释;金牌 38→46 加反例。断言只增不减。"
+    },
+    {
+      "file": "tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs",
+      "oldSha": "119421e132cfeabb68d3ce550dd104aa5f1499f2db150d86eed598d2abb6fa55",
+      "newSha": "763bc772bc6a4636d67e20b2b8357250d11147aebb30dce8b40259e2434fd4c4",
+      "amendedAt": "2026-07-23",
+      "reason": "codex R6b 逮五元键冲突绕 bindingMode/终端 atom 未 fail-closed——join 键含 intentId+要求唯一+终端字段前置校验。① High 五元键冲突绕过 bindingMode 权威:旧 modeConsistent/收据映射用五元键 some()「任一匹配」,同五元键不同 intent 的非终端 binding(existing) 掩盖终端真实 binding(successor 不允许)、validateObservationAdmission fail-open 过、冻结件仍保留 successor——验证器 row→binding join 改「唯一 anchoring binding」(全键含 intentId 消歧、某终端 >1 anchoring binding 拒 OBSERVATION_BINDING_JOIN_AMBIGUOUS),bindingMode 权威取自唯一 anchoring binding(非任一匹配);bin/sign.mjs 收据映射按 binding 全键(含 intentId)索引、不再让不同 intent 同五元互相覆盖(观察行仍 5 元键、权威由验证器裁)。金牌 c35(纯函数五元键冲突→OBSERVATION_BINDING_MODE_MISMATCH)+ c36(anchoring binding 多义→OBSERVATION_BINDING_JOIN_AMBIGUOUS)+ e8(spawn 真 sign 终端 successor 收据+同五元非终端 existing 收据→实拒 exit 65、冻结件不留 successor)。② Medium 终端 atom 未前置 fail-closed:registry.has(ev.atom) 先执行,缺 atom 的畸形 click 被当未登记原子静默跳过返 ok——改 atom 非空 string 前置校验(registry.has 前),区分字段畸形(拒 OBSERVATION_TERMINAL_FIELD_INVALID)与字段齐全但原子未登记(孤儿 policy、无义务)。金牌 c37(畸形终端缺 atom→拒)+ c38(合法孤儿字段齐→仍 ok:true 不误拒)。对抗自证:退唯一 anchoring/换轨闸→c35 返 OK 转红;退终端 atom 前置→c37 返 OK 转红,各恢复绿。agent 保序:regression-diff 21/21 + sign-observation 11/11 + observation 30/30 全 exit 0 字节零漂移;v2 sha b7b5a47e 未动;registry/sign.mjs NUL=0。金牌 46→51 加反例(c35-c38 四纯函数 + e8 端到端)。断言只增不减。老 sha 119421e132cfeabb68d3ce550dd104aa5f1499f2db150d86eed598d2abb6fa55 → 新 sha 763bc772bc6a4636d67e20b2b8357250d11147aebb30dce8b40259e2434fd4c4。"
+    }
+  ]
+}
