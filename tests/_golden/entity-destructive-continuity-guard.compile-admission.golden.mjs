@@ -7,6 +7,11 @@
 // P1 channel-less 破坏 flow（剖面无 workflows 身份通道）→ exit 65 + 哨兵缺席（channel-less 恒拒、浏览器前拦真删）。
 // P2 声明良构 workflows 身份通道的同一破坏 flow → exit 66 + 哨兵在场（准入放行、到达 launch 点，不误拒合法声明）。
 // P3 non-destructive flow（无破坏原子）→ exit 66 + 哨兵在场（守卫只拦破坏原子，不误破普通编译流）。
+// 归因口径（codex round-5 High 过度归因收口，本金牌绝不 over-claim）：本金牌只证【编译期 Critical 的 fail-open
+//   半边——channel-less 破坏放行——已 fail-closed 关死】。P2 只证形状良构的 workflows 声明能过【结构】准入到达 launch
+//   点，【不】证身份通道真可用、观察 kind 相符、或 ref 被出站请求消费；故【绝不背书「合法真删 proceed」】。ref 消费 /
+//   出站 platformId 核验半边（合法真删的目标核对）本质需真机 page.route，route:human 未闭（见 PRD observability 与
+//   checksumAmendments）。
 // 先红（本文件不 stash 生产码，红先行证据入 accept/red-baselines）：OLD 码无守卫时 P1 会变 exit 66 + 哨兵在场
 //   （证 channel-less 破坏流会越 launch 点真启浏览器 → 编译期同名误删 fail-open）。
 // 改本文件 = Test Ratchet 判红。

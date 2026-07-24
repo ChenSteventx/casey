@@ -10,8 +10,18 @@
     "tests/_golden/entity-destructive-continuity-guard.round2.golden.mjs": "f08fee45aa22df8d284901f881728b1ae1c8194c1cd13792e262e5f5efdea17c",
     "tests/_golden/entity-destructive-continuity-guard.round3.golden.mjs": "2d166161b6a75eb6ba4f9207889ac5368dc6ed578f3520cd9029adc569537823",
     "tests/_golden/entity-destructive-continuity-guard.round4.golden.mjs": "a4b0b386d3e87df1e9146e94677ffe3d6481639aa298016f932c3c11cf8d989b",
-    "tests/_golden/entity-destructive-continuity-guard.compile-admission.golden.mjs": "c34fa1c8511798cceccd114f9685511d3717953f55328ebb417d22b48efde45a"
+    "tests/_golden/entity-destructive-continuity-guard.compile-admission.golden.mjs": "01d83b6aa3aaf4fce1c9e96408a74363b5641745a0afcb5f9d04a0f84c68dc26",
+    "tests/_golden/entity-destructive-continuity-guard.crosskind.golden.mjs": "b0cf4ad7bbbb4e87e892f3cf7829f910a957d7713b04125c3decd658e21752c4"
   },
+  "checksumAmendments": [
+    {
+      "file": "tests/_golden/entity-destructive-continuity-guard.compile-admission.golden.mjs",
+      "from": "c34fa1c8511798cceccd114f9685511d3717953f55328ebb417d22b48efde45a",
+      "to": "01d83b6aa3aaf4fce1c9e96408a74363b5641745a0afcb5f9d04a0f84c68dc26",
+      "at": "2026-07-24",
+      "reason": "round-6 收口 codex round-5 High【过度归因】：只改金牌头注、被证行为零弱化（P1/P2/P3 断言与退出码原样，仅注释增诚实边界）。头注订正为不 over-claim 的诚实口径——本金牌只证【编译期 Critical 的 fail-open 半边（channel-less 破坏放行）已 fail-closed 关死】；P2 只证形状良构 workflows 声明能过结构准入到达 launch 点，不证身份通道真可用 / 观察 kind 相符 / ref 被出站请求消费，故绝不背书『合法真删 proceed』；ref 消费 / 出站 platformId 核验半边（合法真删的目标核对）本质需真机 page.route，route:human 未闭。金牌 owner=本 prd（testChecksums 冻结、无 signedAt=非 ADR-0004 人签件，故 checksumAmendment 记账 + codex 复审即可、无需人签）。"
+    }
+  ],
   "observability": [
     {
       "dimension": "C3 完成语义（ADR-0009）：本金牌 hermetic 绿只证目标连续性守卫的纯判定逻辑与咬合，非需求完成。真删/改请求是否真携可验 platformId、真机破坏性 UAT（delete/update/add-tool 每条用例过完成闸）为准；实机为准。",
@@ -24,6 +34,10 @@
     {
       "dimension": "收口不破邻接冻结面：entity-semantic-lock-v2.mjs 字节仍 b7b5a47e（本轮不碰 v2）；既有 delete 相关金牌（delete-confirm-causal-binding 因果弹层绑定、workflow-delete-by-name-hardening、fix-agent-delete-zero-window 等）复跑不破；side-effect policy 限 targeting 落地后 create/addNode/setNodeField 等既有 mutation 面字节零漂移。收口须人工编排复跑邻接破坏性金牌全套（护栏 #19：别信分层绿）。",
       "route": "human"
+    },
+    {
+      "dimension": "编译期 Critical 半闭诚实口径（round-6 收 codex round-5 High 过度归因）：已 fail-closed 关死的只是【channel-less 破坏放行的 fail-open 半边】（浏览器前结构准入拒无身份通道声明的破坏流）+【跨 kind 铸 ref 半边】（同名 agent 观察绝不给 workflow.deleteByName 铸 ref，selectObservationForDestructiveTarget 跨 kind 硬闸）。【ref 消费 / 出站 platformId 核验半边——armDestructiveTargetContinuity 铸的 ref 只写 run.targetContinuityRefs、编译 proceed 路径无出站 mutation 拦截器读它核对 platformId——本质需真机 page.route（page.route 出站拦截 + live 观察读回 platformId），route:human 未闭】。故编译期 Critical 是【半闭】非『Critical 已闭』；compile-admission P2 只证结构准入到达 launch 点，绝不背书『合法真删 proceed』。真删 proceed 的目标核对闭合属 C2 workflow 身份采集通道 + 真机 UAT（每条破坏用例过完成闸），实机为准。",
+      "route": "human"
     }
   ],
   "stories": [
@@ -35,7 +49,7 @@
         "node tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-24T03:21:31.129Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T04:31:08.685Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-destructive-continuity-wiring",
@@ -45,7 +59,7 @@
         "node tests/_golden/entity-destructive-continuity-guard.wiring.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-24T03:21:31.967Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T04:31:09.101Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-failclosed-replay-real-path",
@@ -55,7 +69,7 @@
         "node tests/_golden/entity-destructive-continuity-guard.failclosed-replay.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-24T03:21:45.257Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T04:31:20.153Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-round2-findings-closure",
@@ -65,7 +79,7 @@
         "node tests/_golden/entity-destructive-continuity-guard.round2.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-24T03:21:45.953Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T04:31:20.662Z 全部 acceptance exit 0"
     },
     {
       "id": "s5-round3-reReview-residuals-closure",
@@ -75,7 +89,7 @@
         "node tests/_golden/entity-destructive-continuity-guard.round3.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-24T03:22:04.583Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T04:31:37.225Z 全部 acceptance exit 0"
     },
     {
       "id": "s6-round4-reReview-residuals-closure",
@@ -85,18 +99,28 @@
         "node tests/_golden/entity-destructive-continuity-guard.round4.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-24T03:22:05.241Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T04:31:37.783Z 全部 acceptance exit 0"
     },
     {
       "id": "s7-round5-compile-admission-closure",
-      "desc": "round-5 收口 codex round-3 re-review 最后一个 Critical（编译执行段仍可在无连续性守卫下真破坏 SUT——agent.delete/agent.confirmToolPicker 先逐事件真 performAction 破坏、循环结束才铸 ref；workflow.deleteByName 触发/确认删除之后才铸 ref，且 compile 无出站拦截器→编译期同名误删 fail-open）+ Steven 2026-07-24 裁定 (A)/(B)。(A) compile 期破坏动作也全 fail-closed：真执行破坏/定向原子（requiresTargetContinuityRef 集：workflow.deleteByName/agent.delete/agent.confirmToolPicker/picker.selectFirstTool）之前加连续性守卫准入，与 replay 一脉——① 浏览器前结构准入 admitCompileDestructiveContinuity（纯函数、channel-agnostic）：破坏原子的目标实体 kind（workflow.*→workflow、agent.*/picker.*→agent）缺剖面良构身份通道声明→fail-closed exit 65（channel-less/v1 恒拒、不豁免），placed 于 bin/compile.mjs 浏览器启动哨兵之前故 hermetic 可证；② 运行期逐破坏步守卫：compileWorkflowDelete 破坏步前 + compileAgentToolRecipe 破坏 recipe 前把 armDestructiveTargetContinuity 前移，铸不出目标连续性 ref（无唯一 platformId 身份观察）→硬阻断 exit 65、绝不裸删/裸执行、绝不删后补铸（旧循环结束才铸=零保护 fail-open）。(B) 重表达 p3-compile：FLOW_WITH_DELETE 执行段（C5）改用声明 workflows.listApi + 物理卡片面的 profDelFile 过结构准入，入口可证缺席场景运行期不触真删、CASE_DEFECT+exit 0 语义一字不变；p3-compile testChecksums 冻结（无 signedAt=非人签件）→ checksumAmendment 记账（prd-p3-compile.json 2026-07-24）+ codex 复审，无需人签。对抗自证金牌 entity-destructive-continuity-guard.compile-admission.golden.mjs（hermetic spawn 真 bin/compile.mjs + CASEY_LAUNCH_SENTINEL，零真机/零浏览器/零 fake-SUT）：P1 channel-less 破坏 flow→exit 65+哨兵缺席（点名 COMPILE_DESTRUCTIVE_NO_IDENTITY_CHANNEL + workflow.deleteByName）、P2 声明 workflows 通道→exit 66+哨兵在场（不误拒合法声明、非 always-refuse）、P3 无破坏原子→exit 66+哨兵在场（不误破普通编译流）；红先行=git 内禁用守卫后 P1 变 exit 66+哨兵在场（证 OLD 越 launch 点真启浏览器 fail-open）。涟漪核：无金牌经 compile 编译 agent.delete/confirmToolPicker（regress-agent-tool-* 走纯 recipe builder buildAgentToolAtomEvents 非 compileAgentToolRecipe），p3-compile C5 deleteByName 入口缺席早返回不达破坏步，故运行期守卫零金牌回归；v2 锁字节仍 b7b5a47e。route:human（本轮 hermetic 关不掉）：② 运行期守卫 proceed 路径（真机入口在场 + 读回 platformId 铸已认证 ref → 合法真删 exit 0）需 C2 workflow 身份采集通道（workflow kind 未入 ENTITY_KIND_COMPILE_CHANNELS）；真机 page.route 出站拦截时序正确性；agent.confirmToolPicker 真机 agent platformId 取目标（其 params 空、编译侧目标名恒 null→当前运行期守卫下恒拒，属 round-4 已挂 route:human 的真破坏原子集调整）。",
+      "desc": "round-5 收口 codex round-3 re-review 一个 Critical【的 channel-less fail-open 半边】（编译执行段仍可在无连续性守卫下真破坏 SUT——agent.delete/agent.confirmToolPicker 先逐事件真 performAction 破坏、循环结束才铸 ref；workflow.deleteByName 触发/确认删除之后才铸 ref，且 compile 无出站拦截器→编译期同名误删 fail-open）+ Steven 2026-07-24 裁定 (A)/(B)。归因口径订正（round-6 收 codex round-5 High 过度归因）：本 story 只关死【channel-less 破坏放行的 fail-open 半边】（浏览器前结构准入拒 channel-less 破坏流）；【ref 消费 / 出站 platformId 核验半边——合法真删 proceed 的目标核对——本质需真机 page.route，route:human 未闭】。compile-admission 金牌 P2 只证形状良构 workflows 声明能过结构准入到达 launch 点，绝不背书『合法真删 proceed』（金牌头注已同步订正，见 checksumAmendments）。(A) compile 期破坏动作也全 fail-closed：真执行破坏/定向原子（requiresTargetContinuityRef 集：workflow.deleteByName/agent.delete/agent.confirmToolPicker/picker.selectFirstTool）之前加连续性守卫准入，与 replay 一脉——① 浏览器前结构准入 admitCompileDestructiveContinuity（纯函数、channel-agnostic）：破坏原子的目标实体 kind（workflow.*→workflow、agent.*/picker.*→agent）缺剖面良构身份通道声明→fail-closed exit 65（channel-less/v1 恒拒、不豁免），placed 于 bin/compile.mjs 浏览器启动哨兵之前故 hermetic 可证；② 运行期逐破坏步守卫：compileWorkflowDelete 破坏步前 + compileAgentToolRecipe 破坏 recipe 前把 armDestructiveTargetContinuity 前移，铸不出目标连续性 ref（无唯一 platformId 身份观察）→硬阻断 exit 65、绝不裸删/裸执行、绝不删后补铸（旧循环结束才铸=零保护 fail-open）。(B) 重表达 p3-compile：FLOW_WITH_DELETE 执行段（C5）改用声明 workflows.listApi + 物理卡片面的 profDelFile 过结构准入，入口可证缺席场景运行期不触真删、CASE_DEFECT+exit 0 语义一字不变；p3-compile testChecksums 冻结（无 signedAt=非人签件）→ checksumAmendment 记账（prd-p3-compile.json 2026-07-24）+ codex 复审，无需人签。对抗自证金牌 entity-destructive-continuity-guard.compile-admission.golden.mjs（hermetic spawn 真 bin/compile.mjs + CASEY_LAUNCH_SENTINEL，零真机/零浏览器/零 fake-SUT）：P1 channel-less 破坏 flow→exit 65+哨兵缺席（点名 COMPILE_DESTRUCTIVE_NO_IDENTITY_CHANNEL + workflow.deleteByName）、P2 声明 workflows 通道→exit 66+哨兵在场（不误拒合法声明、非 always-refuse）、P3 无破坏原子→exit 66+哨兵在场（不误破普通编译流）；红先行=git 内禁用守卫后 P1 变 exit 66+哨兵在场（证 OLD 越 launch 点真启浏览器 fail-open）。涟漪核：无金牌经 compile 编译 agent.delete/confirmToolPicker（regress-agent-tool-* 走纯 recipe builder buildAgentToolAtomEvents 非 compileAgentToolRecipe），p3-compile C5 deleteByName 入口缺席早返回不达破坏步，故运行期守卫零金牌回归；v2 锁字节仍 b7b5a47e。route:human（本轮 hermetic 关不掉）：② 运行期守卫 proceed 路径（真机入口在场 + 读回 platformId 铸已认证 ref → 合法真删 exit 0）需 C2 workflow 身份采集通道（workflow kind 未入 ENTITY_KIND_COMPILE_CHANNELS）；真机 page.route 出站拦截时序正确性；agent.confirmToolPicker 真机 agent platformId 取目标（其 params 空、编译侧目标名恒 null→当前运行期守卫下恒拒，属 round-4 已挂 route:human 的真破坏原子集调整）。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/entity-destructive-continuity-guard.compile-admission.golden.mjs",
         "node tests/_golden/p3-compile.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-24T03:24:35.979Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T04:33:59.378Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s8-round6-crosskind-and-overclaim-closure",
+      "desc": "round-6 收口 codex round-5 复审两条残留：Critical【跨 kind 绕过】+ High【过度归因口径】。跨 kind 洞：selectObservationForDestructiveTarget 旧实现只按 name+platformId 唯一命中、不校验 observation.kind——同时声明 agent+workflow 双通道时，同名 agent 观察（kind='agent'）能给 workflow.deleteByName（boundKind=workflow）铸目标连续性 ref → 触发错目标真删，且 compile proceed 路径无出站门抓不到（真 fail-open）。修：selectObservationForDestructiveTarget 加可选 boundKind 参数——提供即【跨 kind 硬闸】：同名但 kind 不符的观察绝不入选、更不得铸 ref；有同名带 platformId 命中却 kind 全不符 → fail-closed 具名 NO_MATCHING_KIND（区别于纯无名命中）。生产 armDestructiveTargetContinuity（lib/compile-atoms.mjs）恒按 destructiveTargetKind(atom)（workflow.deleteByName→workflow、agent.*/picker.*→agent）传 boundKind，跨 kind 铸 ref 路径在生产铸 ref 处关死；boundKind 省略只保 round-2 冻结金牌 B 段的无 kind 直驱旧语义（round-2 金牌零改、零破）。对抗自证金牌 tests/_golden/entity-destructive-continuity-guard.crosskind.golden.mjs（直驱真生产纯函数 + 静态咬 compile-atoms 接线，零浏览器/零 SUT/零 fake-SUT/零子进程）：X1a 无 kind 闸复现洞（同名 agent 观察被选中=fail-open 真实存在）、X1b boundKind=workflow + 仅同名 agent 观察 → 拒 NO_MATCHING_KIND（跨 kind 关死）、X1c 混入 [agent,workflow] 同名 → 只选 workflow（剔 agent、绝不取 first）；X2a/X2b 同 kind 正控（workflow/agent 唯一观察正常选中，合法流不误破）、X2c 同 kind 同名多条仍 AMBIGUOUS（同名不取 first 语义未被 kind 闸吞掉）；X3 静态咬 armDestructiveTargetContinuity 按 destructiveTargetKind(atom) 传 boundKind。先红后绿：git-stash 生产 lib 改动亲验 X1b/X1c/X3 转红（OLD 对 boundKind=workflow 返回同名 agent 观察 ok:true=codex 逮的 fail-open），复原转绿 8/8（红基线 accept/red-baselines/entity-destructive-continuity-guard.crosskind.golden.red.txt）。过度归因口径：compile-admission 金牌头注 + s7 story + observability 订正为诚实半闭口径（channel-less fail-open 半边 + 跨 kind 半边已 fail-closed 关死；ref 消费 / 出站 platformId 核验半边——armDestructiveTargetContinuity 铸的 ref 只写 run.targetContinuityRefs、编译 proceed 无出站拦截器读它核对 platformId——本质需真机 page.route，route:human 未闭），金牌头注改动记 checksumAmendments（非人签件、codex 复审即可）。涟漪核：selectObservationForDestructiveTarget 无 boundKind 路径旧语义零漂移（round-2 B1/B2/B3 冻结金牌零改）；生产仅 armDestructiveTargetContinuity 一处调用面传 boundKind，无金牌经 compile 用 agent 观察编译 workflow.deleteByName（compile-admission/p3-compile 均在破坏步前哨兵短路或入口缺席早返回，零回归）；v2 锁字节仍 b7b5a47e。route:human（本轮 hermetic 关不掉）：真机破坏链身份采集补齐后合法真删 proceed 的目标核对（page.route 出站拦截读回 platformId 与 ref 一致才放行）；workflow 身份采集通道（C2）。codex round-6 复审待跑。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-destructive-continuity-guard.crosskind.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-24T04:33:59.643Z 全部 acceptance exit 0"
     }
   ]
 }
