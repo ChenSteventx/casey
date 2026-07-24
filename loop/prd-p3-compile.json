@@ -3,7 +3,7 @@
   "task": "P3 相1 编译（★关键路径头）：把文本用例翻成确定性可回放 spec（events.json，url 走 {{baseUrl}} 占位符）+ 观测现状（observed-<caseId>.json）+ 编译期核验记录（compile-report.json）。决策依 docs/plans/p3-compile/proposed/GRILL.md（G1–G7 人签 2026-07-02）：G1 取 B 采集+立即回放核验；G2 取 A 拷快照 autotester 登录件（登录预备动作，不产 event、凭据只进内存）；G3 flow 草稿落盘+人 confirm 门、注册表整表原子快照带 snapshotOf（初版 60，2026-07-22 修单后 61：+workflow.bindAgent）；G4 不预草 expected、交接面四件套；G5 凭据门抽共享 lib/cred-gate.mjs、requestLog url 剥 query；G6 WSL+反向隧道（loop 内 spike）、CLI 吃 --sut；G7 前置清理砍除、遮罩记已知限制、断言原子折进 intent expected 留痕。本契约 hermetic 只冻命令化层（假 SUT、零 LLM 零真机零真凭据）：flow 草稿由 LLM 在 CLI 外产出、CLI 是 L0 复核器（compile-gate 双闸 fail-closed）；入口可证缺席产 CASE_DEFECT 候选（不落该步+记候选、编译继续）；回放核验器判据 = 动作轴全 unique+performed（非 verdict 终判）。真机编译 tc_catalog_wf_crud 与隧道 spike 为 route:human tier-2。",
   "specPath": "docs/plans/p3-compile/plan.md",
   "testChecksums": {
-    "tests/_golden/p3-compile.golden.mjs": "01384c20b9a5bde16a3e975c034936799e2923ef91e1e869bcd5aa927334478f"
+    "tests/_golden/p3-compile.golden.mjs": "e9207e467e91579caffd51125cf7eafa3b4ea63c20d192d22fe5fdff53327c20"
   },
   "observability": [
     {
@@ -40,7 +40,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T02:57:44.231Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T03:25:13.453Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-regression-locks",
@@ -51,10 +51,17 @@
         "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T02:57:46.843Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-24T03:25:16.148Z 全部 acceptance exit 0"
     }
   ],
   "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-24",
+      "files": [
+        "tests/_golden/p3-compile.golden.mjs"
+      ],
+      "reason": "C3 编译期破坏性目标连续性守卫涟漪重表达（契约 entity-destructive-continuity-guard round-5、Steven 2026-07-24 裁定 (A)/(B)、codex round-3 Critical 收口）：compile --execute 真执行破坏/定向原子前新增浏览器前结构准入——破坏原子的目标实体 kind 缺剖面身份通道声明即 fail-closed exit 65（channel-less/v1 恒拒，与 replay 浏览器前 admitDestructiveTargetContinuity 一脉）。FLOW_WITH_DELETE（workflow.deleteByName）的执行段（C5）故改用声明 workflows.listApi + 物理卡片面的剖面 profDelFile 过结构准入；C5 场景删除入口可证缺席（无搜索框 count===0）→ 运行期不触真删、CASE_DEFECT 候选与 exit 0 语义一字不变（结构准入过 + 破坏步不可达，叠成 fail-closed）。被证义务零弱化：C5 仍断言 deleteByName 不落 event + CASE_DEFECT 候选 count===0；闸段(C4)/重验闸(C4d)/多匹配(C8)/confirm 门/verify 正反皆原样。p3-compile owner=本 prd（testChecksums 冻结、无 signedAt=非 ADR-0004 人签件，故 checksumAmendment 记账 + codex 复审即可、无需人签）。真机「入口在场 + 读回 platformId 铸已认证 ref → 合法真删 exit 0」的 proceed 路径属 C2 workflow 身份采集，route:human。对抗自证 tests/_golden/entity-destructive-continuity-guard.compile-admission.golden.mjs（hermetic spawn 真 compile.mjs + CASEY_LAUNCH_SENTINEL）：P1 channel-less 破坏 flow→exit 65+哨兵缺席、P2 声明通道→exit 66+哨兵在场、P3 无破坏原子→exit 66+哨兵在场；红先行=禁用守卫后 P1 变 exit 66+哨兵在场（证 OLD 越 launch 点真删 fail-open）。"
+    },
     {
       "amendedAt": "2026-07-22",
       "files": [

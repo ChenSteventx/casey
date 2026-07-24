@@ -25,6 +25,7 @@ import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstra
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { createCompileRun, compileFlow, projectObserved, ROUTE_LIST } from '../lib/compile-atoms.mjs';
 import { ENTITY_KIND_COMPILE_CHANNELS } from '../lib/entity-observation-registry.mjs';
+import { admitCompileDestructiveContinuity } from '../lib/entity-destructive-continuity.mjs';
 import {
   buildEntityBindingsDraft,
   checkCompileIdentityAdmission as checkExecuteIdentityAdmission,
@@ -291,6 +292,36 @@ async function executeMode(caseId, args) {
   const uniqueName = String(args['unique-name'] || Date.now().toString(36));
   const site = loadSiteConfig();
   const watchdog = setTimeout(() => { console.error('compile 看门狗：超时强制退出'); process.exit(1); }, 120000);
+
+  // C3 编译期破坏性目标连续性【浏览器前】结构准入（fail-closed；codex round-3 Critical + Steven 2026-07-24 (A) 裁定）：
+  // flow 里每个 targeting/破坏性原子（workflow.deleteByName/agent.delete/agent.confirmToolPicker/picker.selectFirstTool）
+  // 的目标实体 kind，剖面必须声明良构身份通道（结构上可核实「同一目标」）；channel-less/v1（无身份通道）恒拒——
+  // 不启浏览器、绝不 performAction 破坏步，与 replay 浏览器前 admitDestructiveTargetContinuity 一脉。
+  // certifiableKinds = 已声明良构身份通道的 kind 集：agent 由 identityChannelsByKind 覆盖（已含形状校验+ledger 激活）；
+  // workflow 身份通道尚未接 ledger（不在 ENTITY_KIND_COMPILE_CHANNELS），但破坏性连续性准入只需其【结构声明】良构即放行编译，
+  // 真实观察/ref 铸造由运行期逐步守卫（armDestructiveTargetContinuity 铸不出即硬阻断）把关——二者叠成完整 fail-closed。
+  const wellFormedListChannel = (cp) => {
+    if (!cp || typeof cp !== 'object' || Array.isArray(cp)) return false;
+    const l = cp.listApi;
+    const s = (v) => typeof v === 'string' && v.trim() !== '';
+    if (!l || typeof l !== 'object' || Array.isArray(l)) return false;
+    if (!(s(l.pathname) && l.pathname.startsWith('/') && s(l.method) && s(l.recordsPath) && s(l.totalPath) && s(l.queryParam))) return false;
+    if (!(l.fields && typeof l.fields === 'object' && !Array.isArray(l.fields) && s(l.fields.id) && s(l.fields.code) && s(l.fields.name))) return false;
+    return s(cp.itemContainer) && cp.cardFields && typeof cp.cardFields === 'object' && !Array.isArray(cp.cardFields) && s(cp.cardFields.name) && s(cp.cardFields.code);
+  };
+  const certifiableDestructiveKinds = new Set(identityChannelsByKind.keys()); // agent（若良构）已在内
+  if (wellFormedListChannel(profile.workflows)) certifiableDestructiveKinds.add('workflow');
+  {
+    const compileDestructiveAdmission = admitCompileDestructiveContinuity({
+      flowSteps: flowDoc.flow.steps, certifiableKinds: certifiableDestructiveKinds,
+    });
+    if (!compileDestructiveAdmission.ok) {
+      const a = compileDestructiveAdmission.atom ? `，atom=${compileDestructiveAdmission.atom}` : '';
+      console.error(`compile --execute: 破坏性目标连续性无身份通道核实（${compileDestructiveAdmission.reason}${a}），编译期结构上无从证同一目标 → 拒执行破坏动作，未启动浏览器（fail-closed，护栏 #14）`);
+      clearTimeout(watchdog);
+      process.exit(65);
+    }
+  }
 
   // 浏览器启动哨兵（仅测试注入，生产 env 未设即 no-op）：到达本行=控制流已越过一切浏览器前 fail-closed 门（准入/受众/
   // 凭据）。设 env 时写哨兵并 exit 66 短路——【不真启浏览器】即可让验收金牌机械证「门是否在浏览器前拦」：门先 fire→
