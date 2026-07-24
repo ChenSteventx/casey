@@ -8,7 +8,8 @@
     "tests/_golden/entity-workflow-source-readback.compile-channel.zero-sut.golden.mjs": "c73cce8c184f853ee408d4d8e7242af7888245f68fcd170e2ec7608026105968",
     "tests/_golden/entity-workflow-source-readback.arming.static.golden.mjs": "2f9fc7ce448bbc0cf2217ad81307bdc2f476676ab4676f42a81a1500659e7871",
     "tests/_golden/entity-workflow-source-readback.completeness.zero-sut.golden.mjs": "f8af0c69c1336b2a5977baece400d04d7e955b2f12ce65256ccba3f72fc190a2",
-    "tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs": "005cfe8225f632e587e65d2458325d2a97dfff79c6d1b02f42ccdc3a57f32432"
+    "tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs": "005cfe8225f632e587e65d2458325d2a97dfff79c6d1b02f42ccdc3a57f32432",
+    "tests/_golden/entity-workflow-source-readback.cardinality-reverse.zero-sut.golden.mjs": "659819cd642d0bd7478d3c422670a9d998b48294b6b1cbd29ed995c469d87d27"
   },
   "observability": [
     {
@@ -45,7 +46,7 @@
         "node tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T17:37:23.695Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T23:56:45.232Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-compile-channel-injection",
@@ -55,7 +56,7 @@
         "node tests/_golden/entity-workflow-source-readback.compile-channel.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T17:37:39.026Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T23:57:03.915Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-source-readback-arming",
@@ -65,7 +66,7 @@
         "node tests/_golden/entity-workflow-source-readback.arming.static.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T17:37:39.192Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T23:57:04.081Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-completeness-poison-regression",
@@ -75,7 +76,7 @@
         "node tests/_golden/entity-workflow-source-readback.completeness.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T17:37:39.442Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T23:57:04.339Z 全部 acceptance exit 0"
     },
     {
       "id": "s5-round2-wiring-failclosed",
@@ -85,7 +86,17 @@
         "node tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-23T17:37:40.625Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-23T23:57:05.580Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s6-round3-reverse-cardinality",
+      "desc": "codex round-2 High-1 收口（反向基数 fail-open 封缝，真咬生产路径金牌）：round-2 泛化把观察基数门从旧「agent.searchOpen click 数 == 观察数」改成单向「观察→某 click」，丢了反向与 atom 对应——codex 亲验三案错返 ok:true：①有身份定向 click 却 0 观察（静默产无观察件）；②两身份 click 只一观察（漏一读回）；③观察锚到别原子 click（atom 张冠李戴）。round-3 把 checkIdentityObservationCardinality 改成【双向双射 + atom 对应】：正向每观察 evidenceStepId 锚定的 click 其 atom 逐字等于观察自报 atom 且为登记观察原子、evidenceStepId 互不重复；反向按 intent 分组——每身份定向终端 intent（存在 ≥1 个登记观察原子 click 的 intentId）恰被 requiredRoles 数量观察覆盖（少=漏读回、多=越供皆拒）。intent 分组统一「agent 单 click 单终端」与「workflow.create 单步多 click 收敛单终端」，反向基数严等原 agent 门（不松不紧）、workflow 多 click 不误杀。bin/compile.mjs:376 零观察但有身份定向 click 经此门 fail-closed → exit 65（不静默降级出可按 v1 签署的无观察件）。金牌直驱真实 lib/entity-observation-registry.mjs 基数门（非 seam-mock/源码 grep），红先行：old code 反向三案 + 越供/未登记/畸形共 9 断言全红（返 ok:true），fix 后 13/13 绿。agent chat-sut 浏览器 byte-identity 复跑 = route:human（本环境只读 FS/禁浏览器，纯函数面已复证 agent happy path ok:true 零漂移；codex 亦因只读 FS 未能跑 agent-id-regression-diff）。",
+      "lane": "guard",
+      "acceptance": [
+        "node tests/_golden/entity-workflow-source-readback.cardinality-reverse.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-23T23:57:05.759Z 全部 acceptance exit 0"
     }
   ],
   "checksumAmendments": [
