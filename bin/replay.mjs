@@ -35,7 +35,11 @@ import {
   readIdentityAdmissionAuthorityFromPrd,
   checkCredentialAudienceGate,
   readFrozenIdentityObservations,
+  requiresTargetContinuityRef,
 } from '../lib/entity-semantic-lock-preflight.mjs';
+import { installOutboundMutationGuard, evaluateDestructiveTargetAbsence } from '../lib/entity-destructive-continuity-wiring.mjs';
+import { admitDestructiveTargetContinuity } from '../lib/entity-destructive-continuity.mjs';
+import { partitionGuardAbortPageErrors } from '../lib/entity-destructive-continuity.mjs';
 import { createHash } from 'node:crypto';
 import { PROJECT_ROOT } from '../lib/paths.mjs';
 
@@ -304,6 +308,27 @@ async function main() {
       identityExpectedByStep.set(row.evidenceStepId, { signedName: row.name, signedCode: row.code, signedPlatformId: row.platformId });
     }
   }
+  // C3 破坏性目标连续性准入（fail-closed，浏览器前；codex Critical-1 ③ + round-2 Critical/High 收口）：
+  // 【任一冻结锁在力】（frozenLockAuthority 非空，v1 或 v2）时，events 里每个 targeting/破坏性原子（workflow.deleteByName/
+  // agent.delete/picker.selectFirstTool/agent.confirmToolPicker）必须能按【本破坏步自身 stepId】解析到已【认证】的目标
+  // 连续性 ref；解析不出即【拒执行该破坏动作】——不启浏览器、绝不 performAction 破坏步。
+  //   · round-2 Critical「v1 旁路」：原门只在 v2 frozenIdentityRows 非空时调，放行了合法【v1】破坏锁（无身份通道、
+  //     结构上无法核实目标连续性）→ 真 fail-open。此处改判据为 frozenLockAuthority（覆盖 v1/v2）：v1 锁下破坏性原子
+  //     一律 fail-CLOSED 拒（与 C1「v1 实体裁定降级」一脉；v1 永不填 ref 表，故恒拒）。
+  //   · round-2 High「per-intent 非 per-step」：授权按【逐破坏步 stepId】而非 per-intent——同 intent 里一步有 ref
+  //     绝不放行其它破坏步（委派纯守卫 admitDestructiveTargetContinuity 的 resolvedRefByStep 主路）。
+  // destructiveContinuityByStep = Map<破坏步 stepId, 已认证 ref>；真机破坏链身份采集补齐才非空（route:human），
+  // 当前 hermetic 无采集件即恒空 → 破坏性原子在锁下恒被拒（fail-closed 默认，绝不臆断放行、绝不据锁自报字段放行）。
+  const destructiveContinuityByStep = new Map(); // per-step 已认证 ref；route:human 采集补齐前恒空（v1 锁永空）
+  const lockKindLabel = (frozenIdentityRows && frozenIdentityRows.length) ? 'v2 身份锁' : 'v1 锁（无身份通道、结构上不可核实目标连续性）';
+  if (frozenLockAuthority) {
+    const destructiveAdmission = admitDestructiveTargetContinuity({ events, resolvedRefByStep: destructiveContinuityByStep });
+    if (!destructiveAdmission.ok) {
+      const a = destructiveAdmission.atom ? `, atom=${destructiveAdmission.atom}` : '';
+      console.error(`replay: 破坏性目标连续性 ref 缺失（${destructiveAdmission.reason}${a}），${lockKindLabel}在力却无法证同一目标，未启动浏览器（fail-closed，护栏 #14）`);
+      process.exit(65);
+    }
+  }
   // 身份账本激活判据（codex R1-M3）：只由已验证 v2 冻结权威激活——真 v1 件即使换上声明了
   // listApi 的新剖面也固定走旧 DOM-only 路径（剖面只是适配器，不得反向改变签署件版本语义）。
   const identityLedger = identityExpectedByStep
@@ -322,6 +347,12 @@ async function main() {
     // 身份双证（agent-id-readback plan §5）：账本+已签期望三元组带给动作门；fill 时 arm、click 时 settle/consume。
     ...(identityLedger ? { identityLedger, identityTokens: new Map() } : {}),
     ...(identityExpectedByStep ? { identityExpectedByStep } : {}),
+    // C3 破坏性目标连续性 ref（按破坏步 stepId 关联，非按 searchOpen 的 evidenceStepId——codex Critical-1 ②）：
+    // 与上方准入门同一 per-step Map（codex round-2 High per-step）；破坏链身份采集补齐后由已认证持久化件填充，
+    // 供出站拦截安装器/归零按破坏步真解析 ref。route:human 采集前恒空——空即上方 admission 已在浏览器前拒破坏步，
+    // 出站拦截路径对破坏步不可达；proceed（有合法 ref 放行破坏动作）路径待真机破坏链采集激活（route:human），
+    // 当前生产不可达（诚实挂账，非「非 always-refuse」宣称——codex round-2 Medium 收口）。
+    destructiveContinuityByStep,
   };
 
   // 登录预备动作前置（GRILL 人签取 A）：凭据/站点配置在开浏览器前加载，任一失败 exit 65（fail-closed）。
@@ -479,6 +510,9 @@ async function main() {
   const state = { currentStepId: null };
   const pageErrors = []; // { attributedStepId, message } —— 按发生时活动步归因（finding 4）
   page.on('pageerror', (e) => { pageErrors.push({ attributedStepId: state.currentStepId, message: String((e && e.message) || e).slice(0, 200) }); });
+  // C3 出站守卫主动中止的 HARNESS 侧诊断通道（High-4）：绝不并入 pageErrors/axes 取证——工装主动中止不是 SUT 缺陷，
+  // 不得走 pageerror→SUT_DEFECT 通道；仅供诊断，裁定对被拦步据后置断言 fail-safe（NEEDS_HUMAN）。
+  const guardAborts = [];
   const forensics = watchNetworkForensics(cdp, {
     denylist: profile.background || [],
     successField: profile.successField,
@@ -543,6 +577,7 @@ async function main() {
   const intentButtonSeen = new Map(); // wf-publish-states：代表步全通道可见按钮总数（absent 活性反证，codex R1-F1）
   const intentButtonDisabledHits = new Map(); // btn-enable-ops：代表步命中且判禁用计数（enabled/disabled 判据采集）
   const intentInputReadback = new Map(); // regress-wf-node-script：代表事件同一物理字段的精确动作回读
+  const intentTargetAbsence = new Map(); // C3：破坏性代表步 target-ID 稳定窗口 absence-proof 结果（加法式记账，不改 count 判据）
 
   // 回放历史 opt-in（run-history）：纯观察者收集，不加任何等待、不改任何时序。
   const rhOn = !!(args.runHistory || args.runMetrics);
@@ -612,35 +647,94 @@ async function main() {
           const expectedQuery = ev.value == null ? null : instantiate(ev.value, ctx);
           ctx.identityTokens.set(ev.intentId, ctx.identityLedger.arm({ intentId: ev.intentId, expectedQuery }));
         }
-        const respWait = ev.action === 'click'
-          ? page.waitForResponse((r) => /saveOrModifyProcessData|streamReply/.test(r.url()), { timeout: 600 }).catch(() => null)
-          : Promise.resolve(null);
-        const axis = await performAction(page, ev, ctx);
-        actionByStep.set(ev.stepId, axis || { resolution: 'none' });
-        const settleT = Date.now();
-        await respWait;
-        // 给动作的直接异步后果（如 save 响应后随即开的 SSE 流）一点点出现窗，仍归本步——
-        // 这是动作的因果作用域（save→stream），非任意时间窗；背景轮询仍由 denylist 归 null。
-        if (ev.action === 'click') { await new Promise((r) => setTimeout(r, 150)); }
-        // 动态流等待（chiefcomplaint-smoke D2，Steven 拍板；codex R1-F2 + R2 两轮收紧）：
-        // 只等「本步 firingStepId 发起 且 命中 chat 流 URL 域」的 EventSource 走到 finished（或 30s 上界）
-        // ——流是本步动作的直接后果，归因窗随延（因果作用域，非任意时间窗）；背景/他步长流、本步开的
-        // 非对话长流（如面板附带 SSE）都绝不拖本步。配置了 streamUrlPattern 才有域可判；未配置时按
-        // 本步发起判（与 compile 侧对称）。无本步流零行为差（p5/catalog 回归锁背书）。
-        const streamInScope = (u) => !(chatCfg && chatCfg.streamUrlPattern) || String(u).includes(chatCfg.streamUrlPattern);
-        const myStreams = () => forensics.records().filter((r) => r.type === 'EventSource' && r.firingStepId === ev.stepId && streamInScope(r.url));
-        if (myStreams().length > 0) {
-          log('  step stream open, waiting finished ' + ev.stepId);
-          const swT = Date.now();
-          while (Date.now() - swT < 30000 && !myStreams().every((r) => r.streamFinished === true)) {
-            await new Promise((r) => setTimeout(r, 200));
+        // C3 出站破坏性 mutation 拦截（entity-destructive-continuity）：破坏性/targeting 原子（deleteByName/
+        // agent.delete/picker.selectFirstTool）的 click 落笔前，若【本破坏步】有已解析的目标连续性 ref，则装 page.route
+        // 拦截器——出站 mutation 请求发出前暂停、核对请求 url/body 的 platformId 与 ref 一致才放行、不一致/无可验 ID
+        // 即中止且证 SUT 未改（委派纯守卫 runGuardedMutation）。与既有 CDP Network 域观察者分属不同层，共存不打架。
+        // codex Critical-1 ②：ref 按【破坏步自身 stepId】从 destructiveContinuityByStep 取（非 identityExpectedByStep
+        // 按 searchOpen 的 evidenceStepId——那把 delete 步查空）。当前 route:human 采集前该 Map 恒空，破坏步已在
+        // 浏览器前被 admission 拒（fail-closed），故此安装路径对破坏步不可达；ref 存在（真机采集补齐）才装。
+        // High-1：安装器返回 ready（page.route 的 Promise），caller 在放行破坏动作前 await，堵「handler 未注册即出站」。
+        let guardReady = null;
+        let guardTeardown = null; // High（round-2）生命周期：破坏步收尾解除本拦截器，避免 **/* 持久拦后续确认/刷新/归零
+        let guardInstallFailed = false; // High-4：精确 pattern 缺失等 fail-closed 不装 → 破坏动作不得裸执行
+        let lastGuardAbortUrl = null; // High-3：被中止请求 url（onAbort 外露），供 pageerror 逐请求因果归因
+        if (ev.action === 'click' && requiresTargetContinuityRef(ev.atom) && ctx.destructiveContinuityByStep) {
+          const resolved = ctx.destructiveContinuityByStep.get(ev.stepId);
+          if (resolved && typeof resolved.platformId === 'string' && resolved.platformId) {
+            const installed = installOutboundMutationGuard(page, {
+              atom: ev.atom,
+              ref: { platformId: resolved.platformId },
+              urlPattern: profile.mutationUrlPattern,
+              // High-4（codex round-3「精确 mutation pattern 未成立」收口）：生产 replay 要求精确 pattern——缺
+              // profile.mutationUrlPattern 时安装器 fail-CLOSED 不装（不兜 **/*），caller 据 installed:false 拒执行破坏动作。
+              requirePattern: true,
+              onAbort: (url) => { lastGuardAbortUrl = url; },
+              // 工装主动中止是 HARNESS 侧信号，绝不进 pageErrors（会被 verdict 当 SUT 背书误报 SUT_DEFECT）；落独立诊断通道
+              // guardAborts（不进 axes/裁定）+ 连带记被中止请求 url，供 partitionGuardAbortPageErrors 逐请求因果排除（High-3）。
+              onDecision: (decision) => {
+                if (!decision.ok) guardAborts.push({ attributedStepId: ev.stepId, atom: ev.atom, reason: decision.reason, abortedRequestUrl: lastGuardAbortUrl });
+              },
+            });
+            if (installed && installed.installed === false) {
+              // 有已解析 ref（真机采集补齐）却装不上守卫（如缺精确 mutationUrlPattern）→ fail-CLOSED：绝不裸执行破坏动作。
+              guardInstallFailed = true;
+              log(`C3 出站守卫安装失败（${installed.reason || '未知'}）→ fail-closed，不执行破坏动作 ${ev.stepId}`);
+            } else {
+              guardReady = installed && installed.ready ? installed.ready : null;
+              if (guardReady) await guardReady; // 放行破坏动作前确保拦截器已注册（真机时序正确性仍 route:human）
+              // High（codex round-2「unroute 生命周期」收口）：留存解除器，破坏步因果窗（performAction→respWait→流稳定）
+              // 收尾后精确解除本拦截器（urlPattern 由 profile.mutationUrlPattern 供）——否则默认 **/* 会持久拦本步之后的
+              // 确认/列表刷新/归零查询。生产 replay 真调 unroute（此前只由适配器返回、从不被调用=真 High）。真机拦截时序
+              // 正确性仍 route:human；hermetic 下守卫从不安装（此路不可达），故为真机生命周期接线。
+              guardTeardown = installed && typeof installed.unroute === 'function' ? installed.unroute : null;
+            }
           }
-          // 网络流结束 ≠ UI 渲染完成（regress 实测）：配置了 chat 通道再等气泡文本 2s 稳定（上界 10s）。
-          if (chatCfg) await waitReplyStable(page, replySelector);
         }
-        rhQuietWait += Date.now() - settleT;
-        log('  acted ' + ev.stepId + ' resolution=' + (axis && axis.resolution));
-        state.currentStepId = null; // 动作作用域结束，关闭归因
+        // Medium（codex round-3「guardTeardown 不在 finally」收口）：安装到收尾之间任何异常都会跳过 unroute、让
+        // **/* 或精确 pattern 拦截器持久残留后续步。把破坏动作执行段包进 try、guardTeardown 移进 finally，异常路径也解除。
+        let axis = null;
+        try {
+          if (guardInstallFailed) {
+            // fail-closed：守卫装不上时破坏动作不裸执行，动作轴记 action_failed（后置断言证不出走 fail-safe NEEDS_HUMAN）。
+            axis = { resolution: 'action_failed', identityReadback: { ok: false } };
+            actionByStep.set(ev.stepId, axis);
+          } else {
+            const respWait = ev.action === 'click'
+              ? page.waitForResponse((r) => /saveOrModifyProcessData|streamReply/.test(r.url()), { timeout: 600 }).catch(() => null)
+              : Promise.resolve(null);
+            axis = await performAction(page, ev, ctx);
+            actionByStep.set(ev.stepId, axis || { resolution: 'none' });
+            const settleT = Date.now();
+            await respWait;
+            // 给动作的直接异步后果（如 save 响应后随即开的 SSE 流）一点点出现窗，仍归本步——
+            // 这是动作的因果作用域（save→stream），非任意时间窗；背景轮询仍由 denylist 归 null。
+            if (ev.action === 'click') { await new Promise((r) => setTimeout(r, 150)); }
+            // 动态流等待（chiefcomplaint-smoke D2，Steven 拍板；codex R1-F2 + R2 两轮收紧）：
+            // 只等「本步 firingStepId 发起 且 命中 chat 流 URL 域」的 EventSource 走到 finished（或 30s 上界）
+            // ——流是本步动作的直接后果，归因窗随延（因果作用域，非任意时间窗）；背景/他步长流、本步开的
+            // 非对话长流（如面板附带 SSE）都绝不拖本步。配置了 streamUrlPattern 才有域可判；未配置时按
+            // 本步发起判（与 compile 侧对称）。无本步流零行为差（p5/catalog 回归锁背书）。
+            const streamInScope = (u) => !(chatCfg && chatCfg.streamUrlPattern) || String(u).includes(chatCfg.streamUrlPattern);
+            const myStreams = () => forensics.records().filter((r) => r.type === 'EventSource' && r.firingStepId === ev.stepId && streamInScope(r.url));
+            if (myStreams().length > 0) {
+              log('  step stream open, waiting finished ' + ev.stepId);
+              const swT = Date.now();
+              while (Date.now() - swT < 30000 && !myStreams().every((r) => r.streamFinished === true)) {
+                await new Promise((r) => setTimeout(r, 200));
+              }
+              // 网络流结束 ≠ UI 渲染完成（regress 实测）：配置了 chat 通道再等气泡文本 2s 稳定（上界 10s）。
+              if (chatCfg) await waitReplyStable(page, replySelector);
+            }
+            rhQuietWait += Date.now() - settleT;
+          }
+          log('  acted ' + ev.stepId + ' resolution=' + (axis && axis.resolution));
+          state.currentStepId = null; // 动作作用域结束，关闭归因
+        } finally {
+          // High（round-2 unroute 生命周期）：破坏步因果窗收尾后解除本步出站拦截器（精确 pattern+handler），
+          // 避免持久拦后续步的确认/刷新/归零请求。移进 finally 保证异常路径也解除（Medium）。best-effort 不吞步。
+          if (guardTeardown) { try { await guardTeardown(); } catch (e) { log('guard unroute best-effort: ' + String((e && e.message) || e)); } }
+        }
       }
 
       if (isLast) {
@@ -671,6 +765,23 @@ async function main() {
         intentInputReadback.set(ev.intentId, inputReadbackFromAction(actionByStep.get(ev.stepId)));
         const c = intentCount.get(ev.intentId);
         if (c) c.after = await rowCount(page, countSel);
+        // C3 归零收尾（entity-destructive-continuity）：破坏性代表步收尾时，若【本破坏步】有已解析目标 platformId，按
+        // target-ID 稳定窗口 absence-proof 归零（消费 evaluateDestructiveTargetAbsence，present platformIds 来自身份
+        // 列表投影的 rows.id），非 name count===0。加法式记账、不改既有 count 判据；缺 present platformIds 投影时按
+        // name-count-only 语义（proven:false，非空过）。ref 按破坏步 stepId 取（同拦截安装，非 searchOpen 的
+        // evidenceStepId）；真机归零列表投影 ctx.identityPresentRows/Stable + 让此判据授权裁定走 route:human（Critical-2：
+        // present platformIds 需真身份列表投影，本轮结构上关不掉，intentTargetAbsence 仅诊断记账、不进 axes/裁定）。
+        if (requiresTargetContinuityRef(ev.atom) && ctx.destructiveContinuityByStep) {
+          const resolved = ctx.destructiveContinuityByStep.get(ev.stepId);
+          if (resolved && typeof resolved.platformId === 'string' && resolved.platformId) {
+            const absence = evaluateDestructiveTargetAbsence({
+              ref: { platformId: resolved.platformId },
+              identityRows: ctx.identityPresentRows,
+              stable: ctx.identityPresentStable === true,
+            });
+            intentTargetAbsence.set(ev.intentId, absence);
+          }
+        }
         // kinds-harden（G3）：代表步静默点现场采——事后卷回评估只吃此刻事实（同 intentUrl/intentCount 范式）。
         // toast 快照选择器逐字复刻 lib/compile-atoms.mjs 观测采集（编译期作者与回放期消费者同构）。
         const toasts = await page.evaluate(() => {
@@ -800,10 +911,22 @@ async function main() {
   // 真机实证凭据可走 query（doLogin），归因 null 不够——记录本体切断（步过滤本按 firingStepId，
   // 唯一入径是孤儿并入）。无登录旗标 loginMark=0 零行为差。
   const allRecords = forensics.records().slice(loginMark);
+  // High-4 纵深（codex round-2「abort 漏成 pageerror」收口）：守卫 abort 的因果排除【在投影前】完成——
+  // route.abort() 致页面侧未处理请求异常触发的全局 pageerror 是【工装主动中止】的因果后果、非 SUT 缺陷，
+  // 绝不得进 axes.lifecycle.pageerror 背书 SUT_DEFECT。用纯函数 partitionGuardAbortPageErrors 按「归因步是否
+  // 发生过守卫 abort」把 pageErrors 一分为二：keptPageErrors（可进 axes/裁定）/ excluded（守卫 abort 步的
+  // pageerror，只落诊断、绝不背书）。guardAborts 只用于此处【减法排除】、绝不进 projectReplayAxes（round-2 D2：
+  // guardAborts 不进 axes/裁定）；投影只收已过滤的 keptPageErrors。hermetic 下守卫从不安装（guardAborts 恒空）
+  // → excluded 恒空 → 对既有回放零行为差。真 abort 链逐请求因果确认需真浏览器 = route:human；按步排除逻辑 hermetic 可证。
+  const { kept: keptPageErrors, excluded: guardAbortExcludedPageErrors } = partitionGuardAbortPageErrors({ pageErrors, guardAborts });
+  if (guardAbortExcludedPageErrors.length) {
+    // 只落诊断日志、绝不进 axes/裁定（护栏 #15）：证「别只留未输出的局部数组」——排除项有出口、可人工复核。
+    log(`guard-abort causal exclusion: ${guardAbortExcludedPageErrors.length} pageerror(s) withheld from SUT_DEFECT backing (steps under active guard abort → fail-safe NEEDS_HUMAN)`);
+  }
   // 三轴投影抽生产共用纯函数 lib/replay-axes.mjs（agent-id-readback R2-H6 / sol 构造 ③）：
   // 投影语义逐字搬移、本壳只留证据收集与落盘编排；零 SUT 差分棘轮金牌驱动同一实现冻 axes 字节。
   const axesText = projectReplayAxes({
-    caseId, records: allRecords, intentOrder, intentEvents, reprStepOf, actionByStep, pageErrors,
+    caseId, records: allRecords, intentOrder, intentEvents, reprStepOf, actionByStep, pageErrors: keptPageErrors,
     intentCount, expectedByIntent, globalAssertions, intentUrl, intentToasts, intentTextHits,
     intentButtonHits, intentButtonSeen, intentButtonDisabledHits, intentReply,
     intentInputReadback, chatCfg, allStepIds,
