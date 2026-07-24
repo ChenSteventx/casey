@@ -23,7 +23,7 @@ C1 正确组合树=`/tmp/casey-c1-c3-integration-v2`，
 R2 终判 APPROVE（会话 `019f9369-86d1-71b2-ac92-13e003dfe899`）。评审通过只背书组合修复，
 不等于 C1 完成或可合 dev。
 
-真实环境已亲跑，不是假 SUT：Steven 带外确认 `.auth=autotest`；doctor exit 0；
+真实环境已亲跑，不是假 SUT：Steven 已带外确认 `.auth` 为批准的测试账户；doctor exit 0；
 Windows 真链路与 WSL 回环隧道均 HTTP 200；真实 Playwright+Chromium 登录并看到智能体列表控件。
 完整 `casey run tc_agent_id_readback_real_uat_v1` 已产 verdict、三形态报告、录像与视觉复核，
 留存 `runs/tc_agent_id_readback_real_uat_v1/run_c1_candidate_live_20260724_r1/`。
@@ -132,7 +132,7 @@ loop-kit 已按 ADR-0008 提取为兄弟目录独立包，Casey 与 autotester �
 【下一步】
 A（在飞·推荐）先收 C1 正式完成边界：
   ① Steven 复核并晋升正式 `agent-id-regression-diff` baseline/schema，完成浏览器 C7 改判。
-  ② 只用 autotest 新建 `atl_` 实体，取得新 platformId 后重编译冻结件，跑正向真实
+  ② 只用批准的测试账户新建 `atl_` 实体，取得新 platformId 后重编译冻结件，跑正向真实
     Playwright UAT，按 ADR-0004/0009 人签；不得复用旧 platformId，不得机器代签。
   ③ 再做干净异构复审；只有正式门、正向 UAT 与人签都闭合后才考虑合 dev。
 B（并行）C4 按 Grok `CHANGES_REQUIRED` 补生产事件环端到端保真证据并复审；仍独立 worktree。
@@ -140,7 +140,7 @@ C（后续）C2 角色契约再签、C3 真机破坏 UAT 与冻结件再签等 `
 D（活契约槽）sut-503-diagnosis（direct 0/6，未动手）：Steven 令三 subagent 解 503 缺陷（骨架智能体详情页
   agentPlus/queryPlus+getAgentDetail 确定性 503、两实例复现；取证账见 docs/plans/real-uat-attestation/
   evidence/uat-run.md「503 缺陷账」节）。分工=真机差分定位/上报包铸造/对抗性反证；铁律只一个 subagent
-  碰真机（同账户并发 UI 互踩），②③吃①产物；真机前置=doctor 就绪+隧道回环+.auth=autotest 带外核。
+  碰真机（同账户并发 UI 互踩），②③吃①产物；真机前置=doctor 就绪+隧道回环+`.auth` 测试账户带外核。
 E route:human 其余面：密钥签名威胁面 / SKILL.md 措辞统一 / P8 多通道 / P10 可信闭环等排期线。
 
 改冻结金牌一律走 checksumAmendments 修单路径。

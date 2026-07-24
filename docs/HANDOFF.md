@@ -32,7 +32,7 @@ C1 与 C3 的正确组合树为
 
 真实环境与 Playwright 事实（不是夹具）：
 
-- Steven 带外确认当前 `.auth` 为 autotest；`casey doctor` exit 0，Node、Playwright、Chromium、
+- Steven 已带外确认当前 `.auth` 为批准的测试账户；`casey doctor` exit 0，Node、Playwright、Chromium、
   中文字体、`site.json`、凭据形态与单实例回环隧道均就绪。
 - Windows 网络栈与 WSL 回环隧道访问真实 SUT 均为 HTTP 200。
 - 只读 smoke 用真实 Chromium 完成登录并进入智能体列表，目标控件可见，5190ms，exit 0。
@@ -136,17 +136,17 @@ R17 + regress-wf-node-script C7 定位器刷新到 `lib/replay-axes.mjs`）。
 解决 real-uat 逮到的 503 缺陷。已建空工作目录 `runs/sut-503-diagnosis` 与
 `docs/plans/sut-503-diagnosis`；GRILL/plan/取证/上报包/反证均未产出。
 
-缺陷事实（取证已在 real-uat 契约留档）：autotest 经标准「新增智能体」表单建的骨架智能体，详情页
+缺陷事实（取证已在 real-uat 契约留档）：测试账户经标准「新增智能体」表单建的骨架智能体，详情页
 `agentPlus/queryPlus` 与 `agent/setup/getAgentDetail` 确定性 503、两实例均复现；取证件=
 `runs/real-uat-attestation/tc_agent_id_readback_real_uat_v1/run2-replay1/`（report 三形态+
 视觉复核 INCONSISTENT，终帧两条「操作失败!」）；账见
 `docs/plans/real-uat-attestation/evidence/uat-run.md`「503 缺陷账」节。
 
 三 subagent 分工（新 session 执行）：①真机差分定位（复现+响应体/头脱敏取证+变量隔离矩阵找触发
-条件，autotest 自建自删 `atl_` 件）；②上报包铸造（用①取证件铸自包含缺陷报告）；③对抗性反证
+条件，测试账户自建自删 `atl_` 件）；②上报包铸造（用①取证件铸自包含缺陷报告）；③对抗性反证
 （穷举替代解释逐一证伪/证实防误报）。真机纪律铁律：只允许一个 subagent 碰真机——同账户并发
 UI 会互踩；②③吃①产物、不并发连真站。真机前置=`casey doctor` 就绪+隧道回环单实例+`.auth`=
-`autotest` 带外核。direct 车道跳 grill/plan 门，但产物仍须落契约计划目录+证据脱敏。
+测试账户带外核。direct 车道跳 grill/plan 门，但产物仍须落契约计划目录+证据脱敏。
 
 其余挂账：密钥签名威胁面 / SKILL.md 措辞统一（route:human，各 prd observability）；P8 多通道 /
 P10 排期线。
@@ -550,7 +550,7 @@ P0-3（`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §14 排期）在本次
 
 活契约槽（主树）= `resign-drift-closure`（六阶段全 done、baton 空闲，下一契约直接 `contract init`）。未提交现场：`M .gitignore`（Steven 的）+ `M loop/prd-selftest.json`（无关 gate 时间戳）+ `?? docs/codex/`（并行 codex 会话的 handoff 功能产物、别碰）+ 两草稿目录。codex 升级到 0.144.1（走 GitHub release 手动装，chatgpt.com 在 WSL 抖动），异构评审可用 `gpt-5.6-sol/terra/luna`@xhigh/max。
 
-**下一步**（详见 `docs/NEXT-SESSION.md` 下一步节）：A 真机 UAT（route:human，最高优先，需 Steven 在场 + 隧道 + `.auth`=autotest）/ B 画布三原子域锁硬化契约（MED#2 挂账）/ C regress gen-prompts（scope C LLM 合成，刻意延后）/ D 归档分支清理。
+**下一步**（详见 `docs/NEXT-SESSION.md` 下一步节）：A 真机 UAT（route:human，最高优先，需 Steven 在场 + 隧道 + `.auth` 测试账户带外确认）/ B 画布三原子域锁硬化契约（MED#2 挂账）/ C regress gen-prompts（scope C LLM 合成，刻意延后）/ D 归档分支清理。
 
 ---
 以下为 2026-07-09 晚快照，只溯源、勿据其判现状：
@@ -617,7 +617,7 @@ P0-3（`docs/plans/loop-dual-profile-reform/PROPOSAL.md` §14 排期）在本次
 2. `wf-add-node`（full，`dbc0d0d`）：画布维度首原子 `workflow.addNode` 建成（`COMPILE_KNOWN_ATOMS` 13→14）+ `dragTo` 动作类入双冻结。真机二号探针定案乙案（面板项单击/双击死刑、`mouse` 三段式拖落 `.lf-node` 实证；`window.lf` 缺席 → `connectNodes` 拓扑取证挂账 SUT）；回放 `dragTo` 专用同刻门（源锁 `.node-item` 域 = 编译门、落点 `ox`/`oy` 必填不缺省）+ profile `countSelector` 计数通道；fake-sut 画布通路纯加法（双守卫拖落，预研 9/9）；例翻 `agent.openToolPicker`（flow-bridge C5/C14/C15 + wf-open-smoke C1）+ 六 prd 十四键重签；设计条款 :135 修订 + CONTEXT 词条同步。codex 两轮 R2 PASS（R1 四发现两 High：落点缺省假绿 / 编译门≠回放门，全采信）。真机四停站挂 prd observability（21 面板项文本漂移 / `lf-node` 族类名 / 拖拽时序 / `window.lf` 图对象口）。
 3. `report-exit64`（light，`407b511`）：`report` 用法错历史码 `exit 2→64` 收敛（cli-mcp-face 挂账兑现、消熔断器语义撞车）——单行本体 + cli-mcp-face 金牌四钉位翻 64 + prd 重签 + SKILL.md 真面文字漂移同轮捕获。codex 一轮 R1 PASS。
 4. `output-seal`（full，`cc7a3c2`）：全仓输出通道系统封缝（prd-caseid-echo-mask observability 挂账兑现）——审计全筛约 200 处、封 A1-A13/B1-B8/C 类 23 口 + `report.mjs` 穿越面字符集闸 + inbox/candidates 落盘过凭据门 + 3 追加缝（`replay` 裸 `JSON.parse` 收进消毒助手 / `term-guard` 候选门放写前 / 凭据门产物名键改固定标签）；核心手法「定位字段一律改结构性数组下标」（`SAFE_ID` 挡不住字母数字种子——codex 连三条同型实证）；碰裁判内核 `verdict.mjs` 一行输入消毒零动裁定逻辑。27 哨兵金牌每轮 stash 旧面红证；codex 三轮 R1(3)→R2(2)→R3 PASS。顺修 report-exit64 遗漏尾巴（p7-credgate-coverage 也钉 report exit 2→64）+ prd-p7-report 重签。
-5. 真机账户禁令（Steven 明令）：真机唯一许用账户 = `autotest`，此前账户停用——任何真机动作（登录探针 / `compile --execute` / `casey run --login-bootstrap` / 示教录制）前须 Steven 带外确认 `.auth/credentials.json` 已是 `autotest`；未确认只做 hermetic。凭据内容照例不进任何输出/提交/报告（本文档不点名账户）。
+5. 真机账户禁令（Steven 明令）：真机只许使用带外确认的测试账户，此前账户停用——任何真机动作（登录探针 / `compile --execute` / `casey run --login-bootstrap` / 示教录制）前须 Steven 带外确认 `.auth/credentials.json` 已切到批准账户；未确认只做 hermetic。凭据内容照例不进任何输出/提交/报告。
 6. 真机观测现状（只读探针核实）：平台侧栏菜单重组——工作流管理/智能体管理/`AI服务管理` 收进「智能应用」大菜单组（侧栏全景另见 组织权限/知识库管理/能力资产/HiClaw/运营监控/模型中心/平台配置/医疗业务管理）。影响面零杀伤：两条列表路由 `/heren/aimanagement/process/list`、`/agent/list` 直达未变、锚点全活（新增工作流钮/智能体搜索框/「互联网问诊-主诉」均在场），已建原子全走路由导航一击即中（chief-bringup G1 弃菜单点击的决策被反向验证）；唯 `nav.agentManagement` 无路由点击兜底（`.hr-menu :text-is("智能体管理")` 现嵌「智能应用」组内、折叠态或需先展开父级）本就标脆、真机优先配 `routes`，状态不变。「AI服务管理」可作未来维度候选。
 
 以下为本日早前时段快照（2026-07-07 凌晨，Steven 三问审计 + 点单四契约收口——移交包 / 断言提硬 / 欠账清洗 / 飞轮第五条），只溯源：
