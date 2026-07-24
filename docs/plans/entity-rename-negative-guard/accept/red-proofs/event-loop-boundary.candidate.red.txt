@@ -1,0 +1,10 @@
+ok   L1 真实生产事件环顺序：恢复导航/只读采样/响应监听均早于 UNKNOWN_ATOM 分发闸
+ok   L2 分发闸内部 UNKNOWN_ATOM 判据先于 performAction 委派
+ok   L3 从分发闸边界起，未知字符串原子不触碰 page 且不委派业务动作
+FAIL L4 候选说明明确“可有良性 page 触碰，但无业务动作/破坏动作”边界: 缺 boundary-correction.md 候选边界说明
+RED  C4 event-loop-boundary candidate: L4 候选说明明确“可有良性 page 触碰，但无业务动作/破坏动作”边界: 缺 boundary-correction.md 候选边界说明
+RED  C4 event-loop-boundary candidate: 3 过 / 1 红
+
+exit 1
+修前状态：两枚候选验证已落，boundary-correction.md 尚不存在。
+执行边界：纯 Node；零 SUT、零浏览器、零网络。

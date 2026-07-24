@@ -1,0 +1,10 @@
+ok   P1 非字符串/缺失 atom 全由真实 replay preflight 具名拒绝
+ok   P2 bin/replay 生产入口把原始 events 字节与文档送入同一 preflight
+ok   P3 生产 preflight 拒绝以 exit 65 终止，静态顺序早于 chromium.launch
+FAIL P4 候选边界说明明确非字符串安全归属与待人签状态: 缺 boundary-correction.md 候选边界说明
+RED  C4 non-string-preflight candidate: P4 候选边界说明明确非字符串安全归属与待人签状态: 缺 boundary-correction.md 候选边界说明
+RED  C4 non-string-preflight candidate: 3 过 / 1 红
+
+exit 1
+修前状态：两枚候选验证已落，boundary-correction.md 尚不存在。
+执行边界：纯 Node；零 SUT、零浏览器、零网络。
