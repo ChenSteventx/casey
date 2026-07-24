@@ -11,25 +11,32 @@
 工作目录 /mnt/d/ctx/heren/casey，分支 dev（master 稳定 / test 提测）。
 你是接手者，零上下文起步——先读文档对齐，再按下一步动手。
 
-【2026-07-23 最新覆盖层（多契约收口 + 在飞 503 诊断）】
-dev@98c4977（领先 origin/dev 24 提交，push 仍等 Steven 令）。本 session 顺序收口五契约、
-全部 codex 异构评审终判 PASS，另起一个在飞契约待新 session 接手。
-① agent-id-readback（full，已并入 dev@648e09e）：智能体平台 ID 信封读回+双证门，codex 四轮 R4
-  PASS，含 sol 五面构造字节棘轮 R18-R21（bin/replay.mjs 三轴投影抽生产纯函数 lib/replay-axes.mjs、
-  mock 替身驱真实 compile/action/report 链）。
-② 三线增量入 dev（五笔显式路径）：stale-red-admission-refit 收口两陈旧红金牌、真机三链重签、
-  报告固定模板 lib/report.mjs（renderJson 加 overview，同笔重签棘轮 R21）、五 prd 复验时间戳。
-③ real-uat-attestation（light，六阶段 done）：agent-id-readback 冻结 uatDefinition 四步真机见证，
-  一件两放（唯一时身份判据全过、同名对必 AMBIGUOUS 不点击），Steven 终局人签过闸，codex 四轮
-  R4 PASS。**真机逮住确定性 SUT 缺陷**（见下一步 A）。
-④ real-run-trust 陈旧红已修（98b8d1b，direct）；drafter-patch-intent-guard（light，六阶段 done、
-  codex R2 PASS）封 bin/draft.mjs --patch 错位 intentId 静默孤儿断言缝。
-⑤ loop 改革全线冻结（Steven 令 d690619，见底部铁律）。
-⑥ 【在飞·新 session 接这个】sut-503-diagnosis（direct，0/6，刚 contract init 未动手）：Steven 令
-  开三 subagent 解决 real-uat 逮到的 503 缺陷（骨架智能体详情页 agentPlus/queryPlus+getAgentDetail
-  确定性 503、两实例均复现）。设计=①真机差分定位（复现+响应体/头取证+变量隔离矩阵，自建自删
-  atl_ 件）②上报包铸造（自包含缺陷报告）③对抗性反证（穷举替代解释证伪/证实）。真机纪律：
-  只允许一个 subagent 碰真机——同账户并发 UI 会互踩；②③吃①的取证件、不并发连真站。详见下一步 A。
+【2026-07-24 最新覆盖层（entity-lastmile 五契约收口：三收口 + 两未过，在飞未合并）】
+dev@b1d5053（领先 origin/dev，push 仍等 Steven 令）。本 session 主线=「实体身份与双定位」五契约
+C0–C4 在各自 worktree 多轮落地 + 收口，尚未合并 dev。诚实现状（先前「五契约全收敛」是过度声称，
+本 session 逐个核实后订正）：三个干净收口、两个未过。收敛法值得记：round-1 五契约自跑 gate 全绿，
+但 codex 暴露真仓评审逐个逆出假绿（fail-open / 死接线 / seam-mock 假闭合）；后续逐轮翻真 fail-closed。
+收口纪律：codex 终判非 PASS 绝不标 review done，诚实停 4/6，别把「机器可闭部分已闭」说成契约完成。
+教训沉记忆 golden-pure-fn-false-green。
+- C0 entity-identity-spine @78f9094 —— baton 6/6 收口，codex R7 PASS。
+- C2 entity-workflow-source-readback @32bf0c8 —— baton 6/6 收口，codex 四轮 R4 PASS；残留 route:human=
+  角色契约调和（注册表要 source、生产准入策略要 subject，改人签冻结件 entity-admission-policy.frozen.json
+  需再签；happy path 当前 fail-CLOSED 非 fail-open）。
+- C3 entity-destructive-continuity-guard @9efc383 —— baton 6/6 收口，codex 六轮 R6 PASS；编译期破坏
+  fail-open 两半（channel-less + 跨 kind）已 fail-closed 关死；残留 route:human=ref 消费/出站 platformId
+  核验半边（需真机 page.route）、真机破坏 UAT。
+- C1 entity-agent-identity-default @af12837 —— baton 4/6 未收口。codex round-2 re-review 终判不通过：
+  两 High 已闭，但生产 Critical(oi1) 仍存续——verdict/replay 未消费 gradeEntityConclusion（grep 实证空），
+  历史 v1 agent.searchOpen 经真 replay→verdict 仍产权威 PASS 的活 fail-open。收口=loop 相深消费接线 +
+  ADR-0004 再签棘轮 agent-id-regression-diff（route:human）。
+- C4 entity-rename-negative-guard @683d3c6 —— baton 4/6 未收口。本 session 补 codex 评审但收尾被内容
+  过滤器掐断、无干净终判；核心 fail-safe 成立（未知原子回放不产 PASS/不执行破坏，多层 fail-closed），
+  但两条金牌保真缺口属实（非字符串靠未断言的上游 preflight；「触 page 前拒」对生产过度声称，pre.path
+  良性导航先于守卫、非 fail-open）。收口=补两端到端金牌 + 干净 codex 复审（记账见 review/codex-verdict.md）。
+另：b1d5053 陈旧绿收口（护栏 #19，intent-event-fold R17 + regress-wf-node-script C7 定位器刷新到
+lib/replay-axes.mjs）已独立入 dev。活契约槽仍 sut-503-diagnosis（direct 0/6 未动手），本 session 未推进。
+工具坑：loop-kit contract.mjs review 门用 /pass/i 子串匹配 audit verdict，not-pass/bypass 之类会误过
+（本 session 踩到已回滚）；改冻结 kit 须起契约、暂记账。
 
 【一句话定位 + 血缘】
 Casey 是 autotester（人录·机回放·零 LLM）的「翻面」：输入端改为 LLM 读懂文本用例，
@@ -109,28 +116,37 @@ loop-kit 已按 ADR-0008 提取为兄弟目录独立包，Casey 与 autotester �
   同名敌意真机用例仍 route:human。
 
 【当前契约 / 工作树】
-- 主树：dev@98c4977；活契约 sut-503-diagnosis（direct，六阶段 0/6，刚 contract init 未动手）——
-  这是新 session 要接的在飞活（见下一步 A）。
-- worktree ../casey-agent-id-readback 已退役；mountdelay 6/6 残留树。
-- 本 session 已收口并入 dev：agent-id-readback（merge 648e09e）/ stale-red-admission-refit /
-  real-uat-attestation / real-run-trust / drafter-patch-intent-guard。
+- 主树：dev@b1d5053（=dev tip）；活契约槽 sut-503-diagnosis（direct 0/6 未动手，见下一步 B）。
+- 五 entity-lastmile 契约 worktree（工作区干净、已提交，未合并 dev）：
+  casey-entity-identity-lastmile（C0 entity-identity-spine @78f9094，baton 6/6 收口）、
+  casey-entity-workflow-readback（C2 @32bf0c8，6/6 收口）、casey-entity-destructive-guard
+  （C3 @9efc383，6/6 收口）、casey-entity-agent-default（C1 @af12837，4/6 未收口·Critical route:human）、
+  casey-entity-rename-guard（C4 @683d3c6，4/6 未收口·评审掐断+两金牌缺口）。C1–C4 均 FF C0 为基座；
+  注意目录名与分支/slug 不完全一致（identity-lastmile 目录的 slug 实为 entity-identity-spine）。
 - 主树未提交现场：全部为用户/并行现场（.gitignore、prd-cli-authority-wiring-fill/selftest/
   semantic-unit-discrimination、casey-agent-loop-local-first-total.zip、follow.mjs、
   atom-readiness-assessment、regress-strategy/SCOPE-OPTIONS、usability-audit），不碰不提交。
   提交只走显式路径、绝不 -A。
+- 运维坑：共享 .git/objects 有 339 个 {uuid} 畸形垃圾对象（DrvFs/并发 agent 写产物，git 正常操作
+  忽略、rev-list 可达链完好），gc 被陈旧 gc.log 阻断；功能无碍，集成合并前值得清。
 
 【下一步】
-A（在飞·推荐）执行 sut-503-diagnosis：Steven 令三 subagent 解决 503 缺陷。契约已 init（direct、
-  0/6），工作目录 runs/sut-503-diagnosis 与 docs/plans/sut-503-diagnosis 已建（空）。缺陷事实：
-  骨架智能体详情页 agentPlus/queryPlus+getAgentDetail 确定性 503、两实例均复现（取证件=
-  runs/real-uat-attestation/.../run2-replay1/report+视觉复核 INCONSISTENT；账见
-  docs/plans/real-uat-attestation/evidence/uat-run.md「503 缺陷账」节）。三 subagent 分工：
-  ①真机差分定位（复现+响应体/头脱敏取证+变量隔离矩阵找触发条件，autotest 自建自删 atl_ 件）；
-  ②上报包铸造（用①取证件铸自包含缺陷报告）；③对抗性反证（穷举替代解释逐一证伪/证实防误报）。
-  真机纪律铁律：只一个 subagent 碰真机（同账户并发 UI 互踩），②③吃①产物、不并发连真站；
-  真机前置=doctor 就绪+隧道回环+.auth=autotest 带外核。
-B route:human 其余面：密钥签名威胁面 / SKILL.md 措辞统一（见各 prd observability）。
-C P8 多通道 / P10 可信闭环自进化等排期线（见【排期】）。
+A（在飞·推荐）收 entity-lastmile 两个未过契约（本 session 主线，详见 HANDOFF 顶节）：
+  ① C1 收口：loop 相深消费接线（replay.mjs 发射 track/completeness 轴 + verdict.mjs 下游接
+    gradeEntityConclusion 降级闸，适配器只读、不反向升 v1 语义）+ 机器再录 agent-id-regression-diff
+    proposed baseline + 备再签包 → route:human 交 Steven ADR-0004 再签 → 干净 codex 复审。
+  ② C4 收口：补两端到端金牌（生产 replay 对非字符串 atom 经 preflight REPLAY_EVENT_SHAPE_INVALID 前置拒
+    的端到端断言 + 生产事件环覆盖/「零触碰」措辞订正）→ 干净 codex 复审（避开触发内容过滤的措辞）。
+  ③ 集成合并 dev（待 Steven 点头）：可先合已收口的 C0/C2/C3，按依赖序 C0→其余；调和共改面（replay.mjs
+    C1+C3、compile-atoms.mjs C2+C3、registry C0+C1+C2）、复跑受影响金牌（护栏 #19）、合并前清 .git
+    畸形对象、刷主树 HANDOFF。C1/C4 待各自收口后再并。
+  ⑤ route:human 残留另开真机轮：C1 深消费棘轮再签、C2 角色契约再签、C3 真机破坏 UAT + 冻结金牌再签、
+    各契约真机 name+ID 双定位 UAT（ADR-0009 完成闸）。
+B（活契约槽）sut-503-diagnosis（direct 0/6，未动手）：Steven 令三 subagent 解 503 缺陷（骨架智能体详情页
+  agentPlus/queryPlus+getAgentDetail 确定性 503、两实例复现；取证账见 docs/plans/real-uat-attestation/
+  evidence/uat-run.md「503 缺陷账」节）。分工=真机差分定位/上报包铸造/对抗性反证；铁律只一个 subagent
+  碰真机（同账户并发 UI 互踩），②③吃①产物；真机前置=doctor 就绪+隧道回环+.auth=autotest 带外核。
+C route:human 其余面：密钥签名威胁面 / SKILL.md 措辞统一 / P8 多通道 / P10 可信闭环等排期线。
 
 改冻结金牌一律走 checksumAmendments 修单路径。
 

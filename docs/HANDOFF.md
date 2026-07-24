@@ -3,10 +3,68 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 下方「当前状态」是权威现状；「历史层」仅供溯源。
 
-## 2026-07-23 sut-503-diagnosis 起（在飞·新 session 接手，本节为最新现状）
+## 2026-07-24 entity-lastmile 五契约收口（在飞·worktree 未合并，本节最新现状）
 
-主树 dev@98c4977（领先 origin/dev 24 提交，push 未做、等 Steven 令）。活契约切至
-sut-503-diagnosis（direct，六阶段 0/6，刚 `contract init` 未动手）——Steven 令开三 subagent
+主树 dev@b1d5053（领先 origin/dev，push 待 Steven 令）。活契约槽仍 sut-503-diagnosis
+（direct 0/6，未动手，见下节）——本 session 实际工作是「实体身份与双定位」五契约 C0–C4 在各自
+worktree 的多轮落地 + 收口，与 503 baton 并行、尚未合并 dev。
+
+诚实现状（先前「五契约全收敛」是过度声称；实测=三个干净收口、两个未过）：
+
+- C0 `entity-identity-spine`（casey-entity-identity-lastmile）@78f9094 —— **已收口**（baton 6/6）。per-kind
+  观察准入闭集注册表地基，codex R7 终判 PASS（27 组反例矩阵 + atom 边界 + 六元组唯一锚定成立），
+  C1–C4 均 FF 此为基座。learn 三教训入档、audit 权威账记 R7 PASS。
+- C2 `entity-workflow-source-readback` @32bf0c8 —— **已收口**（baton 6/6）。workflow source 读回，codex 四轮
+  R4 终判 PASS（反向基数双向双射 + 锚定终端 click、关死「锚非终端 ok:true」）。gate 6/6。残留 route:human：
+  角色契约调和（注册表要 source、生产准入策略 preflight 要 subject，改人签冻结件
+  `entity-admission-policy.frozen.json` 须 Steven 再签；happy path 当前 fail-CLOSED 非 fail-open）。
+- C3 `entity-destructive-continuity-guard` @9efc383 —— **已收口**（baton 6/6）。破坏性目标连续性守卫（最深），
+  codex 六轮 R6 终判 PASS。编译期破坏 fail-open 两半（channel-less + 跨 kind 误铸 ref）均 fail-closed 关死
+  （selectObservationForDestructiveTarget 加 boundKind 硬闸、kind 不符 OBSERVATION_SELECT_NO_MATCHING_KIND；
+  p3-compile 重表达 checksumAmendment，非 ADR-0004 签冻件、无需再签）。replay 期缺 ref fail-CLOSED、按 ref
+  唯一命中不取 first、abort 因果排除、v1 破坏也拒。gate 8/8。残留 route:human：ref 消费/出站 platformId
+  核验半边（需真机 page.route）、真机破坏 UAT。
+- C1 `entity-agent-identity-default` @af12837 —— **未收口**（baton 4/6，诚实）。codex round-2 re-review
+  终判**不通过**：两 High 已闭（gradeEntityConclusion v2 完整性面 + registry 畸形面 fail-open 均修、
+  grade-failclosed 金牌 9/9），但生产 `Critical`（oi1）**仍存续**——`bin/verdict.mjs`/`bin/replay.mjs` 未消费
+  `gradeEntityConclusion`（grep 实证空），历史 v1 `agent.searchOpen` 经真 replay→verdict 仍产权威 PASS 的
+  活 fail-open。深消费接线须翻 ADR-0004 已签棘轮 `agent-id-regression-diff`→route:human 再签，机器闭不了。
+- C4 `entity-rename-negative-guard` @683d3c6 —— **未收口**（baton 4/6，诚实）。本 session 补跑 codex 评审，
+  但收尾合成消息被 codex 侧内容过滤器连掐两次（误报 cybersecurity）、**无干净终判**。核心 fail-safe 成立
+  （亲验：未知原子回放不产 PASS/不执行破坏，多层 fail-closed——非字符串被 preflight `REPLAY_EVENT_SHAPE_INVALID`
+  前置拒、未知 string 被 C4 `UNKNOWN_ATOM` 闸拒、reject 轴→verdict NEEDS_HUMAN），但 codex 逆出两条属实的
+  金牌保真缺口：① 非字符串靠未断言的上游 preflight（隐性耦合）② 「触 page 前拒」对生产过度声称（生产事件环
+  `pre.path` 良性导航先于守卫、非 fail-open）。收口前置=补两端到端金牌 + 干净 codex 复审（记账见
+  `docs/plans/entity-rename-negative-guard/review/codex-verdict.md`）。
+
+本 session 收敛法（值得记）：round-1 五契约自跑 gate 全绿但 codex 暴露真仓评审逐个逆出假绿（fail-open/
+死接线/seam-mock 假闭合）；后续逐轮翻真 fail-closed。教训沉 memory golden-pure-fn-false-green。异构评审
+铁律 = 每轮改都送 codex 复审、已签面绝不伪造人签（机器再录 baseline + 备再签包 + 挂 route:human）。收口
+纪律：codex 终判非 PASS（C1 不通过 / C4 掐断）绝不标 review done——诚实停 4/6，别把「机器可闭部分已闭」
+说成契约完成。
+
+本 session 已入 dev（独立于契约）：b1d5053 陈旧绿收口（护栏 #19，两枚 e1f5201 遗留：intent-event-fold
+R17 + regress-wf-node-script C7 定位器刷新到 `lib/replay-axes.mjs`）。
+
+运维坑：① 共享 `.git/objects` 有约 339 个 `{uuid}` 畸形垃圾对象（DrvFs/并发 agent 写产物，git 正常操作
+忽略、`rev-list --objects --all` 可达链完好）；gc 被陈旧 gc.log 阻断。功能无碍，集成合并前值得清。
+② loop-kit `contract.mjs` review 门用 `/pass/i` 子串匹配 audit verdict——`not-pass`/`bypass` 之类含 pass
+子串会误过（本 session 实测踩到、已回滚）；改冻结 kit 须起契约、暂记账。
+
+下一步接续顺序：
+1. C1 收口：loop 相深消费接线（`replay.mjs` 发射 track/completeness 轴 + `verdict.mjs` 下游接
+   gradeEntityConclusion 降级闸）+ 机器再录 `agent-id-regression-diff` proposed baseline + 备再签包 →
+   route:human 交 Steven ADR-0004 再签 → 干净 codex 复审。
+2. C4 收口：补两端到端金牌（preflight 非字符串封口 + 生产事件环覆盖/「零触碰」措辞订正）→ 干净 codex 复审。
+3. 集成合并 dev（待 Steven 点头）：按依赖序 C0→C1/C2/C3/C4 合并、调和共改面（`replay.mjs` C1+C3、
+   `compile-atoms.mjs` C2+C3、registry C0+C1+C2）、复跑受影响金牌（护栏 #19）、合并前清 `.git` 畸形对象、
+   刷主树 HANDOFF。可先合已收口的 C0/C2/C3，C1/C4 待各自收口后再并。
+4. 全轮 route:human 残留另开真机轮：C1 深消费棘轮再签、C2 角色契约再签、C3 真机破坏 UAT、各契约真机
+   name+ID 双定位 UAT（ADR-0009 完成闸）。
+
+## 2026-07-23 sut-503-diagnosis 起（活契约槽，本 session 未推进——本 session 工作在顶节 entity-lastmile）
+
+活契约 sut-503-diagnosis（direct，六阶段 0/6，`contract init` 未动手）——Steven 令开三 subagent
 解决 real-uat 逮到的 503 缺陷。已建空工作目录 `runs/sut-503-diagnosis` 与
 `docs/plans/sut-503-diagnosis`；GRILL/plan/取证/上报包/反证均未产出。
 
