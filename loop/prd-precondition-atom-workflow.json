@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "task": "precondition-atom-workflow（full，Wave 2 / S1）：新增 setup candidate/plan/receipt 旁车，把业务前置条件按 atom registry 真值稳定拓扑排序；setup 执行与 post-readback 全部闭合后才允许主体 main flow。登录继续走 Login Bootstrap；receipt 只引用同一调用内的 compile identity observation，不内联或另铸平台 ID；主体 mapping 继续使用 candidateId + role。任何 provider 歧义、状态证据不足、身份观察多义或 adapter 失败均 fail-closed，主体执行函数零调用。本契约只闭合 zero-SUT 纯函数与 adapter，不宣称真实 AI 中台/医生站/Hi 小助 UAT，不改 replay/verdict/正式身份收据。",
+  "specPath": "docs/plans/precondition-atom-workflow/plan.md",
+  "testChecksums": {
+    "tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs": "1c1e9ecad5cfede597d8fdc1df1b5d0f0cdfd9edaded5c7676392a23ccea0015",
+    "tests/_golden/setup-receipt-identity.zero-sut.golden.mjs": "871b906b3971c7ae7e9424a10a72cce093723bcf1d3a32570733c0f9ec8c0dee",
+    "tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs": "bf70e71e56b51bf317a2d25e4e10264d9a802ac3b384f0b7d39cc4bb0b4735d9",
+    "tests/_golden/intent-state-trace.zero-sut.golden.mjs": "84f4a2010c52d2a0c32593da805ba69dc9224d6008639095325a49fee544378b",
+    "tests/_golden/flow-bridge.golden.mjs": "28da2a24405b75e9c3105f2bc4a070cbe736d81b767fe8c702c9f7bcee2c2b20",
+    "tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs": "acbe4b6a7707df845e976bb2071bf30c9957849eb4831061338d81b7e8055655",
+    "docs/plans/precondition-atom-workflow/GRILL.md": "d0dba77d6045d9a95ee1ccb3444c4ea404c33f17a9d21f177388b2386a648af5",
+    "docs/plans/precondition-atom-workflow/plan.md": "200554dc6efc5493925780578b486d8e464b5601bbd558746093ebb94dbccfe6",
+    "docs/plans/precondition-atom-workflow/accept/red-proofs/precondition-atom-workflow.red.txt": "31a650fcf0521816d9509efdf42a34f3f33018d84f7771419acf5cf85ce54ba3"
+  },
+  "observability": [
+    {
+      "dimension": "真实 AI 中台 current build 执行 setup atom，并以运行证据证明 setup 失败时主体 atom 未启动；本契约的内存 adapter 只能证明控制流，不冒充真机结果。",
+      "route": "human"
+    },
+    {
+      "dimension": "AI 中台频繁更新后的 setup probe/post-readback 稳定性与 version-held-out 页面；进入后继浏览器/UAT 契约。",
+      "route": "human"
+    },
+    {
+      "dimension": "医生站 site-held-out 与 Hi 小助 CEF 通道；分别验收，不能从 AI 中台 web 单场景外推。",
+      "route": "human"
+    },
+    {
+      "dimension": "workflow.create 的 subject/source 角色冲突、多身份通道与跨 compile run receipt；保持 fail-closed，另立契约解决。",
+      "route": "human"
+    },
+    {
+      "dimension": "人工录制前置条件 → fresh raw reproduction → 蒸馏 atom → source/distilled 双回放；归 S3/S4，不用本契约旁车冒充。",
+      "route": "human"
+    },
+    {
+      "dimension": "destructive/relation setup 真实动作、平台 ID 真机读回与正式 Entity Identity Receipt 晋升；沿现有签署/UAT 路由，不由 candidate receipt 代签。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-setup-plan",
+      "desc": "实现 registry 真值驱动的 setup plan：稳定拓扑、唯一 provider、目标状态、可编译性、登录排除和实体角色全部 fail-closed；排序后委托现有状态机与 flow 形状。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s2-setup-receipt-identity",
+      "desc": "实现 setup execution candidate receipt 与主体准入：全步 unique/readback、plan digest、状态闭集、身份观察原始字节/完整关联键/名称编号唯一匹配；平台 ID 只从观察行投影。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/setup-receipt-identity.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s3-setup-runtime-barrier",
+      "desc": "实现 setup → receipt → admission → main 固定屏障；setup、receipt 或 admission 任一失败时 main adapter 零调用，输出不含 PASS/verdict。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s4-adjacent-regressions-hold",
+      "desc": "保持 state trace、flow bridge、entity binding operability 三组邻接 zero-SUT 行为不漂移。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/intent-state-trace.zero-sut.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    }
+  ],
+  "notes": "acceptance-gate 于 2026-07-27 冻结。三条新功能金牌在实现前均因 lib/adaptive-execution/setup-*.mjs 不存在真实 RED；三条邻接回归同轮真实 GREEN。实现者不得修改任何 testChecksums 覆盖文件；契约语义需变更时必须返回主 agent 重开 acceptance-gate。"
+}

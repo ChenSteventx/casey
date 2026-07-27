@@ -1,0 +1,45 @@
+precondition-atom-workflow · acceptance-gate 红/绿基线
+capturedAt: 2026-07-27
+environment: zero-SUT；未启动浏览器；未访问任何 SUT
+
+NEW 1
+command: node tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs
+exit: 1
+failure:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+'lib/adaptive-execution/setup-flow.mjs'
+
+NEW 2
+command: node tests/_golden/setup-receipt-identity.zero-sut.golden.mjs
+exit: 1
+failure:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+'lib/adaptive-execution/setup-flow.mjs'
+
+NEW 3
+command: node tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs
+exit: 1
+failure:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+'lib/adaptive-execution/setup-flow.mjs'
+
+以上三个测试均先通过 node --check，红因是目标实现模块尚不存在，不是测试语法错误。
+
+REGRESSION 1
+command: node tests/_golden/intent-state-trace.zero-sut.golden.mjs
+exit: 0
+output:
+ok   intent-state-trace: 5/5（单一状态机 + trace + 旧 problems 字节兼容）
+
+REGRESSION 2
+command: node tests/_golden/flow-bridge.golden.mjs
+exit: 0
+output:
+flow-bridge golden: 17 过 / 0 败
+
+REGRESSION 3
+command: node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs
+exit: 0
+output:
+ok   entity-binding-operability-successor/all: 7/7 全过（本地文件/纯函数/静态，零 SUT）
+
