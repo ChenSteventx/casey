@@ -1,0 +1,31 @@
+intent-plan-known-atom-foundation acceptance-gate red/green baseline
+captured: 2026-07-27
+workspace: /mnt/d/ctx/heren/casey
+
+$ node tests/_golden/intent-plan-known-atom.zero-sut.golden.mjs
+exit=1
+RED  intent-plan-known-atom: 导入验收 API 失败（实现前预期红）：Cannot find module '/mnt/d/ctx/heren/casey/lib/intent-plan.mjs' imported from /mnt/d/ctx/heren/casey/tests/_golden/intent-plan-known-atom.zero-sut.golden.mjs
+
+$ node tests/_golden/intent-state-trace.zero-sut.golden.mjs
+exit=1
+RED  intent-state-trace: lib/compile-gate.mjs 未导出 traceStateMachine（实现前预期红）
+
+$ node tests/_golden/testcase-expected-draft.zero-sut.golden.mjs
+exit=1
+RED  testcase-expected-draft: 缺 projectTestCaseAssertions/mergeAssertionSources 导出（实现前预期红）
+
+$ node tests/_golden/flow-bridge.golden.mjs
+exit=0
+flow-bridge golden: 17 过 / 0 败
+
+$ node tests/_golden/p2-compile-gate.golden.mjs
+exit=0
+ok   p2-compile-gate: 7/7 双闸 case 全中
+
+$ node tests/_golden/p4-drafter.golden.mjs
+exit=0
+ok   p4-drafter: 20/20 全过（接缝对齐+骨架映射全量+剥ID+pending不发明+校验闸正反+soft 承载）
+
+$ node tests/_golden/draft-cli.golden.mjs
+exit=0
+ok   draft-cli: 11/11 全过（骨架落盘+补缝合并+违规整份拒+一致性闸+缺参）

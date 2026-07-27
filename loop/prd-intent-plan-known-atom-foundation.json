@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "task": "intent-plan-known-atom-foundation（full，Wave 1）：在现有 flow-bridge / compile-gate / entity semantic lock / assertion draft 主链上做加法，先闭合确定性 known-atom dominance（已知原子优先）和 TestCase authored assertion（用户写明的预期）冻结。新增可审计 intent plan：唯一 exact recipe 命中才作为 known；模型只允许补零命中的 intent，覆盖 known、多 recipe 歧义、required param 缺失、册内但不可编译 atom 全部 fail-closed。状态机新增逐步 trace，但旧 checkStateMachine problems 字节语义不漂。draft 新增 --testcase 内部入口，authored → compiler → model patch 单调合并，authored 字节不能消失，不完整 authored 进入 pending，不由模型猜成 hard。复用现有名称/编号参数、candidateId binding、platformId semantic lock、validateBridge、validateDraft、sign/frozen 形状；不接真实 SUT、不实现陌生页面浏览器 agent、不宣称人工录制正式链已闭合。",
+  "specPath": "docs/plans/intent-plan-known-atom-foundation/plan.md",
+  "testChecksums": {
+    "tests/_golden/intent-plan-known-atom.zero-sut.golden.mjs": "cebd2e02a5525b8610e7f17cc61564b74eadfbba8852eb65ff2ddcab084fbc12",
+    "tests/_golden/intent-state-trace.zero-sut.golden.mjs": "84f4a2010c52d2a0c32593da805ba69dc9224d6008639095325a49fee544378b",
+    "tests/_golden/testcase-expected-draft.zero-sut.golden.mjs": "15a5bdc32d281e24ae0a28c9c477a31096f54c30bdfdebb085fdfe1e3dbc38f8",
+    "tests/_golden/schemas/intent-plan.schema.json": "b8ddf7049b423dcc32b58d56d11067ee2a8498cde4180041be97ed20036783f1",
+    "tests/_golden/flow-bridge.golden.mjs": "28da2a24405b75e9c3105f2bc4a070cbe736d81b767fe8c702c9f7bcee2c2b20",
+    "tests/_golden/p2-compile-gate.golden.mjs": "43c947b3f08b54517a4977473bf473026632bd12f868ca323209ea1c9a58e83e",
+    "tests/_golden/p4-drafter.golden.mjs": "0ab960ead32dec06347977a7dbb053d03c11d34c3472bb6f2ff9fb9bdc39af36",
+    "tests/_golden/draft-cli.golden.mjs": "3ce92b181be49f2b92e3b03d6a4c25121c2a0281c61df75509863151fcfd1ddd",
+    "docs/plans/intent-plan-known-atom-foundation/GRILL.md": "85103830d2522f5b8dc8abdaa42c7808c969c15cffe3b09afee0f750de230810",
+    "docs/plans/intent-plan-known-atom-foundation/plan.md": "846346cb5877c6ebf74d0edfff08392c19b90dbf173f23a1cace6ab481fcaa5c",
+    "docs/plans/intent-plan-known-atom-foundation/accept/red-proofs/intent-plan-known-atom-foundation.red.txt": "4e6784b12ccee166c8ae5aa7cb83768175ebc422433a04bb10d94641e6a97e7b"
+  },
+  "observability": [
+    {
+      "dimension": "真实 AI 中台高频版本更新下的浏览器 UAT 与 held-out 页面 zero-shot：本契约只有 zero-SUT 纯函数和 draft 内部接线，不能据此声明任意陌生页面已可执行。后继契约须在回环 SUT 护栏内取证，真实目标地址不入报告。",
+      "route": "human"
+    },
+    {
+      "dimension": "医生站 held-out 泛化与 Hi 小助 CEF 通道：作为后继场景矩阵分别验收；本契约不以 AI 中台单场景外推跨产品泛化能力。",
+      "route": "human"
+    },
+    {
+      "dimension": "名称/编号/platformId 身份晋升真机读回：本契约只复用现有 semantic lock 负向保障；C1 仍需真实 UAT/runtime publication/人签，不能以 zero-SUT 反例冒充正式晋升完成。",
+      "route": "human"
+    },
+    {
+      "dimension": "人工示教录制 → 正式 intake → source replay → distilled atom replay：当前 production record 与 formal intake 之间仍有 sidecar/package/signed driver receipt 真缝，本契约不把桩或开发夹具当闭环。",
+      "route": "human"
+    },
+    {
+      "dimension": "Grok 异构复审与 recipe 覆盖率：实现合拢后执行；本轮只承诺冻结 recipe 的 exact/anchored-template 行为，不报告开放自然语言泛化率。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-known-atom-intent-plan",
+      "desc": "新增 lib/intent-plan.mjs 与冻结 recipe 快照：唯一 deterministic recipe 优先，模型只补未知 intent；覆盖拒绝、歧义、缺参、不可编译 atom 均留结构化 unresolved；mapping 保留 name/code 参数与 candidateId，投影前必须 ready，并复用真实 validateBridge 与 platformId semantic lock。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/intent-plan-known-atom.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s2-single-state-machine-trace",
+      "desc": "在 lib/compile-gate.mjs 做加法导出 traceStateMachine；逐步记录 before/requires/missing/provides/removes/after 与 finalStates，数组稳定排序；旧 checkStateMachine 委托同一实现并保持 problems 字节语义。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/intent-state-trace.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s3-authored-assertion-freeze",
+      "desc": "在 assertion draft/CLI 接入 TestCase expected/globalAssertions：authored 优先，compiler 精确重复去重且可单调加法，模型 patch 后 authored 仍逐字存在；不完整 authored 进 pending；--testcase 四方 caseId 一致，缺席时旧行为不变。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/testcase-expected-draft.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s4-adjacent-regressions-hold",
+      "desc": "邻接金牌保持绿：flow bridge、compile gate、assertion drafter、draft CLI 既有行为和输出边界不漂。",
+      "lane": "regression",
+      "acceptance": [
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/p2-compile-gate.golden.mjs",
+        "node tests/_golden/p4-drafter.golden.mjs",
+        "node tests/_golden/draft-cli.golden.mjs"
+      ],
+      "passes": false
+    }
+  ],
+  "notes": "acceptance-gate 于 2026-07-27 冻结。三条新功能金牌均在实现前因目标 API 缺失真实 RED；四条邻接回归同轮真实 GREEN。红/绿输出存档于 docs/plans/intent-plan-known-atom-foundation/accept/red-proofs/intent-plan-known-atom-foundation.red.txt。实现 agent 不得修改任何 testChecksums 覆盖文件；若契约判断需变更，须回主 agent 明示重开 acceptance-gate。"
+}

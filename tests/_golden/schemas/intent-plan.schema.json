@@ -1,0 +1,243 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://casey.local/schemas/intent-plan.schema.json",
+  "title": "Casey deterministic intent plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "caseId",
+    "decisions",
+    "mapping",
+    "unresolved",
+    "stateTrace",
+    "ready"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "caseId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "decisions": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/decision"
+      }
+    },
+    "mapping": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/mapping"
+      }
+    },
+    "unresolved": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/unresolved"
+      }
+    },
+    "stateTrace": {
+      "$ref": "#/$defs/stateTrace"
+    },
+    "ready": {
+      "type": "boolean"
+    }
+  },
+  "$defs": {
+    "entityBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "candidateId",
+        "role"
+      ],
+      "properties": {
+        "candidateId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "role": {
+          "enum": [
+            "subject",
+            "source",
+            "target"
+          ]
+        }
+      }
+    },
+    "mapping": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "intentId",
+        "atom",
+        "params"
+      ],
+      "properties": {
+        "intentId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "object"
+        },
+        "entityBindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/entityBinding"
+          }
+        }
+      }
+    },
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "intentId",
+        "resolution"
+      ],
+      "properties": {
+        "intentId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "resolution": {
+          "enum": [
+            "known",
+            "model",
+            "human"
+          ]
+        },
+        "ruleId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "atom": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "object"
+        },
+        "entityBindings": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/entityBinding"
+          }
+        }
+      }
+    },
+    "unresolved": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "intentId",
+        "reason"
+      ],
+      "properties": {
+        "intentId": {
+          "type": "string",
+          "minLength": 1
+        },
+        "reason": {
+          "enum": [
+            "MISSING_REQUIRED_PARAM",
+            "NO_KNOWN_RECIPE",
+            "KNOWN_RECIPE_AMBIGUOUS",
+            "MODEL_PROPOSAL_MISSING",
+            "KNOWN_ATOM_OVERRIDE",
+            "ATOM_NOT_COMPILABLE",
+            "BRIDGE_REJECTED"
+          ]
+        },
+        "ruleIds": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "traceStep": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "index",
+        "atom",
+        "before",
+        "requires",
+        "missing",
+        "provides",
+        "removes",
+        "after"
+      ],
+      "properties": {
+        "index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "atom": {
+          "type": "string",
+          "minLength": 1
+        },
+        "before": {
+          "$ref": "#/$defs/stateList"
+        },
+        "requires": {
+          "$ref": "#/$defs/stateList"
+        },
+        "missing": {
+          "$ref": "#/$defs/stateList"
+        },
+        "provides": {
+          "$ref": "#/$defs/stateList"
+        },
+        "removes": {
+          "$ref": "#/$defs/stateList"
+        },
+        "after": {
+          "$ref": "#/$defs/stateList"
+        }
+      }
+    },
+    "stateList": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "stateTrace": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "steps",
+        "finalStates",
+        "problems"
+      ],
+      "properties": {
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/traceStep"
+          }
+        },
+        "finalStates": {
+          "$ref": "#/$defs/stateList"
+        },
+        "problems": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}
