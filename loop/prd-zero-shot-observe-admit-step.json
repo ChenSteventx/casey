@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 1,
+  "task": "zero-shot-observe-admit-step（full，Wave 2 / S2）：为真正零 recipe 的只读 click 步骤新增 grill-confirmed typed step contract；主 frame PageObservation 与 bounded affordance catalog 只公开脱敏稳定事实，并以进程内 authority 绑定当前 DOM handle。已有 known/model atom mapping 绝对优先；确定性 exact role/label/text 全页唯一后直行，零命中时 LLM 只能在当前 catalog 中提一个 targetAffordanceId。admission 重验同一物理节点并签发一次性 candidate action；action success 不能替代 fresh typed pathname progress。trace 恒 signed:false/replayReady:false、零 verdict。S1/S2 生产核心逐文件 <=600 行；真实 AI 中台/医生站/Hi 小助 UAT 不由 zero-SUT 冒充。",
+  "specPath": "docs/plans/zero-shot-observe-admit-step/plan.md",
+  "testChecksums": {
+    "tests/_golden/page-observer-main-frame.zero-sut.golden.mjs": "32684575d706dd3bd2c584f176c16a89111d80567a8e129be8e553d963b322d7",
+    "tests/_golden/deterministic-resolver-step-contract.zero-sut.golden.mjs": "fa2c564e50d7e28cb9e7318521cfb136900f9b23b5bbe90dd3d9f686b5083e36",
+    "tests/_golden/zero-shot-action-progress.zero-sut.golden.mjs": "748502c6c71c942f1906f999f8ffc0a7b6d3cbe4d294754b6620a41d96a07457",
+    "tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs": "a3c9a83ec8a6c4334c0da127c170594a283939e8df3e43f2078a67ab1895a044",
+    "tests/_golden/adaptive-module-boundaries.static.golden.mjs": "176824c194e971afb216ab725062dfc64a0f98456574510ed5302c749be46222",
+    "tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs": "547eb20354147ae7b4f7aa58efd26ede868565470ecb59c71be12e4dfde9e6e2",
+    "tests/_golden/intent-plan-known-atom.zero-sut.golden.mjs": "cebd2e02a5525b8610e7f17cc61564b74eadfbba8852eb65ff2ddcab084fbc12",
+    "tests/_golden/intent-state-trace.zero-sut.golden.mjs": "84f4a2010c52d2a0c32593da805ba69dc9224d6008639095325a49fee544378b",
+    "tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs": "2a5b0fce7fa5b09fd4ef6ab15a95728169b8115b6dcabba1b3a37da11dbaba45",
+    "tests/_golden/flow-bridge.golden.mjs": "28da2a24405b75e9c3105f2bc4a070cbe736d81b767fe8c702c9f7bcee2c2b20",
+    "tests/_golden/p2-compile-gate.golden.mjs": "43c947b3f08b54517a4977473bf473026632bd12f868ca323209ea1c9a58e83e",
+    "tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs": "bed6bb6d6c0f614b00231e3570e05df4d83a65a288d3f2ec6607641c6634d75a",
+    "tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs": "acbe4b6a7707df845e976bb2071bf30c9957849eb4831061338d81b7e8055655",
+    "tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs": "2e0fa7b308202d699574b5759e4ab114c39fbbd376aa6990f04fc0a8e6c14361",
+    "tests/_golden/setup-receipt-identity.zero-sut.golden.mjs": "0989ba0d2f2fd836a94ab04bf085917271758447eac29bc8d83b95e85609203e",
+    "docs/plans/zero-shot-observe-admit-step/GRILL.md": "0b4079f312843a25f338a494606887a7fb788f9b4d3b0be4c50a7477b6e0f6dd",
+    "docs/plans/zero-shot-observe-admit-step/plan.md": "7b990c73d520253c549e192c54aad019fe4ae703f9cac3681b6adf87dd177d51",
+    "docs/plans/zero-shot-observe-admit-step/accept/red-proofs/zero-shot-observe-admit-step.red.txt": "fa20e1e5722200fab41bb669f475f6b57eb92d8d1c29a0a91ecb738291b1c54c"
+  },
+  "observability": [
+    {
+      "dimension": "AI 中台 current build 上以真实 Playwright main frame 完成 fresh observe → one read click → fresh post-readback；zero-SUT adapter double 只证明控制流。",
+      "route": "human"
+    },
+    {
+      "dimension": "AI 中台频繁更新后的 version-held-out 页面：hidden duplicate、DOM replacement、SSE/背景轮询 settle 与 ElementHandle 物理连续性。",
+      "route": "human"
+    },
+    {
+      "dimension": "进入智能体管理等真实跳转产生 popup/new tab 时：同一 BrowserContext、正确活动页选择、登录态连续和脱敏 page topology 证据；掉登录或页面归属不确定不得冒充 SUT_DEFECT。",
+      "route": "human"
+    },
+    {
+      "dimension": "医生站 site-held-out 同通道只读页面的陌生页解析和 progress；不能从 AI 中台单站外推。",
+      "route": "human"
+    },
+    {
+      "dimension": "S1 setup execution request 下沉到实际 browser observer/readback 的 freshness；无签 adapter envelope 不足以证明取证时刻。",
+      "route": "human"
+    },
+    {
+      "dimension": "Hi 小助 CEF、iframe、shadow DOM、container-only locator、视觉 grounding、坐标、多 tab 和 scroll/goBack。",
+      "route": "human"
+    },
+    {
+      "dimension": "fill/select/press、提交、mutation、relation、destructive 与正式 entity platformId admission；MVP 全部 route:human。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实 LLM bounded proposal 的质量、prompt injection 对抗、false action/false progress 与 version/site-held-out 规模化成功率。",
+      "route": "human"
+    },
+    {
+      "dimension": "zero-shot candidate → formal events → sign → fresh replay/verdict，以及人工示教 raw/distilled 双回放；归后继 S3/S4。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-page-observation-catalog",
+      "desc": "实现主 frame PageObservation、bounded affordance catalog 与 opaque authority：URL 脱敏、public 最小化、稳定 digest、hidden-aware 歧义、stale/clone/DOM replacement/dispose 全部 fail-closed。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/page-observer-main-frame.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s2-step-contract-resolver-proposal",
+      "desc": "实现 grill-confirmed typed step contract、known/model atom dominance、exact deterministic resolver 和闭集 bounded proposal；affordanceId 与 entity candidateId/platformId 严格分离。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/deterministic-resolver-step-contract.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s3-admission-execute-progress-trace",
+      "desc": "实现 current observation admission、物理句柄重验、一次性单动作、fresh after typed progress 与降权 trace；任何拒绝 action 零调用，异常不重试，action success 不冒充 progress。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/zero-shot-action-progress.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s4-authority-runner",
+      "desc": "卡死 runner 的真正 zero-hit proposal 全闭环、deterministic dominance、全链递归冻结/原位篡改、observation clone 与 typed pathname progress 闭集。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s5-module-boundaries",
+      "desc": "保持 S1 receipt 拆分和 S2 新模块解耦：计划文件完整、生产核心逐文件 <=600 行、纯模块无 Playwright/IO/网络/旧 replay 依赖、内部依赖无环。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/adaptive-module-boundaries.static.golden.mjs",
+        "node tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs",
+        "node tests/_golden/setup-receipt-identity.zero-sut.golden.mjs",
+        "node tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s6-adjacent-regressions-hold",
+      "desc": "保持 known atom、state trace、setup barrier、flow bridge、compile gate、settle 与 entity binding 现役确定性行为不漂移。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/intent-plan-known-atom.zero-sut.golden.mjs",
+        "node tests/_golden/intent-state-trace.zero-sut.golden.mjs",
+        "node tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/p2-compile-gate.golden.mjs",
+        "node tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs",
+        "node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    }
+  ],
+  "notes": "acceptance-gate 于 2026-07-27 冻结。五条新门在实现前均真实 RED：四条行为金牌分别因 page-observer/step-contract 模块不存在，静态门因计划内 12 个 S2 核心文件缺失而 0/5；所有新文件先过 node --check。七条邻接回归和 S1 三金牌同轮真实 GREEN。adapter double 不启 browser/server，不模拟 SUT API，不能替代真实 Playwright/UAT；popup/new tab 登录连续性也必须实机 route:human。实现者不得修改 testChecksums 覆盖文件；接口或验收语义需变更时必须返回主 agent 重开 acceptance-gate。"
+}

@@ -1,0 +1,147 @@
+zero-shot-observe-admit-step · acceptance-gate 红/绿基线
+capturedAt: 2026-07-27
+environment: zero-SUT；未启动浏览器/server；未访问任何 SUT
+
+NEW 1
+command: node tests/_golden/page-observer-main-frame.zero-sut.golden.mjs
+exit: 1
+failure:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+'lib/zero-shot/page-observer.mjs'
+
+NEW 2
+command: node tests/_golden/deterministic-resolver-step-contract.zero-sut.golden.mjs
+exit: 1
+failure:
+RED deterministic-resolver-step-contract: 导入验收 API 失败（实现前预期红）：
+Cannot find module 'lib/zero-shot/step-contract.mjs'
+
+NEW 3
+command: node tests/_golden/zero-shot-action-progress.zero-sut.golden.mjs
+exit: 1
+failure:
+RED zero-shot-action-progress: 导入验收 API 失败（实现前预期红）：
+Cannot find module 'lib/zero-shot/step-contract.mjs'
+
+NEW 4
+command: node tests/_golden/adaptive-module-boundaries.static.golden.mjs
+exit: 1
+failure:
+adaptive-module-boundaries: 0 passed, 5 failed
+计划内 12 个 lib/zero-shot 核心文件均缺失；S1 拆分后的五个 setup 核心已在场且均 <=600 行。
+
+NEW 5
+command: node tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs
+exit: 1
+failure:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+'lib/zero-shot/step-contract.mjs'
+
+以上五个测试均先逐文件通过 node --check。红因是各自目标实现模块尚不存在，不是测试语法错误；
+adapter double 本身可被导入，不启动 browser/server，也不模拟 SUT API。
+
+REGRESSION 1
+command: node tests/_golden/intent-plan-known-atom.zero-sut.golden.mjs
+exit: 0
+output:
+ok intent-plan-known-atom: 10/10
+
+REGRESSION 2
+command: node tests/_golden/intent-state-trace.zero-sut.golden.mjs
+exit: 0
+output:
+ok intent-state-trace: 5/5
+
+REGRESSION 3
+command: node tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs
+exit: 0
+output:
+ok setup-runtime-barrier: 5/5
+
+REGRESSION 4
+command: node tests/_golden/flow-bridge.golden.mjs
+exit: 0
+output:
+flow-bridge golden: 17 过 / 0 败
+
+REGRESSION 5
+command: node tests/_golden/p2-compile-gate.golden.mjs
+exit: 0
+output:
+ok p2-compile-gate: 7/7
+
+REGRESSION 6
+command: node tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs
+exit: 0
+output:
+replay-settle-mount unit: 9/9 passed
+
+REGRESSION 7
+command: node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs
+exit: 0
+output:
+ok entity-binding-operability-successor/all: 7/7
+
+S1 MODULE SPLIT BASELINE
+commands:
+node tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs
+node tests/_golden/setup-receipt-identity.zero-sut.golden.mjs
+node tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs
+
+exits:
+0
+0
+0
+
+outputs:
+precondition-atom-workflow 10/10
+setup-receipt-identity 8/8
+setup-runtime-barrier 5/5
+
+line counts after behavior-preserving split:
+lib/adaptive-execution/setup-receipt.mjs 489
+lib/adaptive-execution/setup-main-admission.mjs 166
+lib/adaptive-execution/setup-receipt-shape.mjs 105
+
+ACCEPTANCE AMENDMENT R1
+reason:
+独立 acceptance 审计发现，只有 closed JSON shape 还不足以授权动作。手造/clone 的 intent plan、
+step contract、resolution/proposal、admission、action receipt 和 after observation 可能分别绕开
+known atom、换点当前 catalog 内另一合法 affordance、重复执行或伪造 progress；runner 与 bounded
+proposal 也可能只留空壳而不贯通。
+
+corrected expectations:
+- intent plan 必须由现役 buildIntentPlan 铸造、字节未改写；step contract 还要重算默认 known recipes，
+  custom empty recipe 不能把已知用例洗成 zero-shot；
+- contract/resolution/proposal/admission/action receipt/after observation 均消费原对象 authority，
+  clone/spread/手造对象全拒；
+- 伪造 resolution/proposal 即使指向同一 catalog 内另一个合法 af_* 也不得执行；
+- action 前已满足 progress 不得把 after 仍满足冒充因果进展；
+- actual observer → role/label/text resolver、bounded proposal 全链和 single-step runner 必须可达；
+- settle/revalidate 异常结构化拒绝且 action 零调用。
+
+red verification:
+四条新门修正版均先通过 node --check；随后运行仍分别因
+lib/zero-shot/page-observer.mjs、lib/zero-shot/step-contract.mjs 和计划内 S2 模块不存在真实 exit 1。
+authority/runner/异常加固没有依赖 marker 或伪造 flag 制造红。
+
+ACCEPTANCE AMENDMENT R2
+reason:
+第二轮独立复核发现旧 B11 在 deterministic exact 唯一命中仍允许 createActionProposal 成功，与
+deterministic-first 梯子冲突；同时 runner 的真实 zero-hit proposal 路径、全链原位篡改和 typed
+pathname progress 闭集仍需独立卡死。
+
+corrected expectations:
+- B11/B12 改用 observePage 铸造的真正 zero-hit 当前 observation，不再拿手造 observation 或
+  deterministic-hit 页面给 proposal 扩权；
+- deterministic 唯一命中时 createActionProposal 必须
+  DETERMINISTIC_RESOLUTION_DOMINATES，不能另选 catalog 中另一个合法 af_*；
+- runner 的 propose callback 只在 zero-hit 调一次，并完成 proposal → admission → execute once →
+  fresh observation → typed progress → unsigned trace；
+- contract/observation/resolution/proposal/admission/action receipt 均递归冻结，原对象不能保权换点；
+- progress 拒绝 unknown op、空值、host/query/hash 和 extra key；equals 另有因果 happy path；
+- public observation clone 搭配真实 authority 仍须 OBSERVATION_AUTHORITY_MISMATCH。
+
+red verification:
+第五条新门与 B 修正版先通过 node --check；2026-07-27 同轮实跑均因计划内生产模块尚不存在真实
+exit 1。五条新门的红均发生在 production import/静态文件存在性，不依赖假 SUT。
