@@ -10,7 +10,12 @@
 // 退出码：0 成功；64 缺参；65 输入坏/闸拒。所有落盘过 lib/cred-gate.mjs（护栏 #7）。
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, resolve } from 'node:path';
-import { mergeAssertionSources, synthesizeSkeleton, validateDraft } from '../lib/assertion-draft.mjs';
+import {
+  mergeAssertionPatches,
+  mergeAssertionSources,
+  synthesizeSkeleton,
+  validateDraft,
+} from '../lib/assertion-draft.mjs';
 import { credentialGate } from '../lib/cred-gate.mjs';
 import { parseTestCase } from '../lib/parse-testcase.mjs';
 
@@ -72,13 +77,11 @@ const draft = testcase
 if (typeof args.patch === 'string') {
   const patches = readJson(args.patch, 'LLM 补缝草稿');
   if (!Array.isArray(patches)) { console.error('draft: --patch 须为断言数组'); process.exit(65); }
-  for (const p of patches) {
-    if (!p || typeof p.intentId !== 'string' || !p.intentId) { console.error('draft: 补缝条目缺 intentId'); process.exit(65); }
-    let it = draft.intents.find((x) => x.intentId === p.intentId);
-    if (!it) { it = { intentId: p.intentId, expected: [] }; draft.intents.push(it); }
-    it.expected.push({ kind: p.kind, op: p.op, ...(p.value !== undefined ? { value: p.value } : {}), ...(p.soft === true ? { soft: true } : {}) });
+  try { mergeAssertionPatches(draft, patches); }
+  catch (error) {
+    console.error(`draft: ${error instanceof Error ? error.message : '补缝合并失败'}`);
+    process.exit(65);
   }
-  draft.intents.sort((a, b) => a.intentId.localeCompare(b.intentId));
 }
 
 const gate = validateDraft(draft);
