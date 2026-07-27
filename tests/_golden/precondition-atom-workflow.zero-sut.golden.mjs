@@ -228,16 +228,29 @@ check('A9 workflow.open 角色真值冲突须 route:human；relation 仍按显�
 });
 
 check('A10 TestCase 业务前置声明不直通初态，只有 Login Bootstrap 状态可信', () => {
-  const plan = planSetupFlow({
+  const missing = planSetupFlow({
     testcase: testcase({ preconditions: ['已登录', '测试面板已开', '智能体详情已开'] }),
+    candidate: baseCandidate,
+    registry: REGISTRY,
+  });
+  assert(missing.ready === false, '业务前置没有对应 goal/setup 证据时不得 ready');
+  assert(missing.problems.some((p) => p.code === 'SETUP_PRECONDITION_GOAL_MISSING'
+    && p.state === '测试面板已开'), JSON.stringify(missing.problems));
+  assert(missing.problems.some((p) => p.code === 'SETUP_PRECONDITION_UNVERIFIED'
+    && p.state === '测试面板已开'), JSON.stringify(missing.problems));
+
+  const plan = planSetupFlow({
+    testcase: testcase({ preconditions: ['已登录', '智能体详情已开'] }),
     candidate: baseCandidate,
     registry: REGISTRY,
   });
   assert(plan.ready === true, JSON.stringify(plan.problems));
   assert(JSON.stringify(plan.initialStates) === JSON.stringify(['已登录']),
     `业务前置文本不得进入 initialStates：${JSON.stringify(plan.initialStates)}`);
-  assert(!plan.initialStates.includes('测试面板已开') && !plan.initialStates.includes('智能体详情已开'),
+  assert(!plan.initialStates.includes('智能体详情已开'),
     '未 probe/readback 的业务状态不得视为已满足');
+  assert(plan.providedStates.includes('智能体详情已开'),
+    '每个非 bootstrap 前置必须由 setup readback 闭合');
 });
 
 if (failed) {

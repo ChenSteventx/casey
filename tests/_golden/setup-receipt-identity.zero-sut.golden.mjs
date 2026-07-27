@@ -86,6 +86,10 @@ function workflowFixture() {
 
 check('B1 全步 unique + post-readback 才产生非正式 candidate receipt', () => {
   const { plan, execution, admissionSession } = workflowFixture();
+  let duplicateRequestRejected = false;
+  try { createSetupExecutionRequest({ plan, admissionSession }); }
+  catch { duplicateRequestRejected = true; }
+  assert(duplicateRequestRejected, '同一 session 只能签发一次 execution request');
   const result = finalizeSetupReceipt({ plan, execution, admissionSession });
   assert(result.ok === true, JSON.stringify(result.problems));
   assert(result.receipt.signed === false && result.receipt.replayReady === false, 'receipt 不得签署或 replayReady');
@@ -95,6 +99,16 @@ check('B1 全步 unique + post-readback 才产生非正式 candidate receipt', (
     JSON.stringify(result.receipt.providedStates));
   assert(!result.receipt.providedStates.includes('在工作流管理页'),
     'exclusive group 已移除的中间页面状态不得进入 receipt 供主体复用');
+  const other = workflowFixture();
+  const otherReceipt = finalizeSetupReceipt({
+    plan: other.plan,
+    execution: other.execution,
+    admissionSession: other.admissionSession,
+  }).receipt;
+  assert(result.receipt.executionRequestSha256 !== otherReceipt.executionRequestSha256,
+    '不同 run/session 的 receipt 必须绑定不同 execution request digest');
+  assert(JSON.stringify(result.receipt) !== JSON.stringify(otherReceipt),
+    '不同 run/session 不得产生字节完全相同的 receipt');
 });
 
 check('B2 ambiguous/absent/action_failed 任一出现都不能成 receipt', () => {
@@ -176,6 +190,26 @@ check('B5 无 receipt 主体仍缺状态；合法 receipt 合并后 main bridge 
   assert(replayedEvidence.ok === false
     && replayedEvidence.problems.some((p) => p.code === 'SETUP_EXECUTION_SHAPE_PLAN_OR_CHALLENGE_MISMATCH'),
   '旧 execution evidence 不得由 fresh session 重新 finalize');
+
+  const late = workflowFixture();
+  late.testcase.preconditions.push('测试面板已开');
+  const lateReceipt = finalizeSetupReceipt({
+    plan: late.plan,
+    execution: late.execution,
+    admissionSession: late.admissionSession,
+  }).receipt;
+  const omittedPrecondition = admitMainFlowWithSetup({
+    testcase: late.testcase,
+    mainMapping: late.mainMapping,
+    setupPlan: late.plan,
+    setupReceipt: lateReceipt,
+    identityObservationBytes: null,
+    registry: REGISTRY,
+    admissionSession: late.admissionSession,
+  });
+  assert(omittedPrecondition.ok === false
+    && omittedPrecondition.problems.some((p) => p.code === 'SETUP_PRECONDITION_UNVERIFIED'),
+  '复用旧 plan/receipt 时不得漏掉 TestCase 新增业务前置');
 });
 
 function agentIdentityFixture() {

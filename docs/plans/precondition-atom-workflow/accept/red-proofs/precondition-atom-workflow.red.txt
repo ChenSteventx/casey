@@ -129,3 +129,59 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module
 
 说明：三条 R3 当前测试字节均通过 node --check；随后把 import 重定向到 57e4130 独立 worktree
 逐条执行，三者均因目标 setup-flow 模块尚不存在真实 RED，不是语法错误或伪造标记红。
+
+ACCEPTANCE AMENDMENT R4
+reason:
+R2 独立复审发现，仅把业务 precondition 从 initialStates 排除仍不够：candidate 可以完全不把某项业务
+前置列入 goal/setup，receipt 也不证明该项，主体却仍启动。这样“未信任”被错误降成了“直接忽略”。
+
+corrected expectations:
+- 每个非 Login Bootstrap 的 TestCase precondition 都必须由 candidate goalStates 精确覆盖，并在 setup
+  最终 providedStates 中有 post-readback 或 already-satisfied probe；
+- 缺 goal 具名 SETUP_PRECONDITION_GOAL_MISSING，缺最终证据具名 SETUP_PRECONDITION_UNVERIFIED；
+- 同 case TestCase 后续新增业务前置时，旧 plan/receipt 不能授权主体。
+
+red verification base:
+57e4130（S1 实现前冻结提交）
+
+commands:
+node tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs
+node tests/_golden/setup-receipt-identity.zero-sut.golden.mjs
+
+exits:
+1
+1
+
+failure for each:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+'lib/adaptive-execution/setup-flow.mjs'
+
+说明：两条 R4 当前测试字节均先通过 node --check，再以 import 重定向方式在 57e4130 独立
+worktree 执行；红因仍为实现前目标模块不存在。
+
+ACCEPTANCE AMENDMENT R5
+reason:
+challenge 定点审计发现“一次性”只约束成功路径：同一 session 可重复取得 request，失败 finalize 不消费；
+不同 run 还会生成字节相同 receipt，文档容易把相关性检查夸成 readback freshness 证明。
+
+corrected expectations:
+- 同一 session 只签发一次 execution request，首次 finalize 尝试即消费；
+- receipt 必须绑定 execution request digest，不同 session/run 的 receipt 字节不同；
+- 明确信任边界：executeSetup 是受信 evidence adapter。S1 防未改写 envelope/receipt 重放，但无签 JSON
+  不能证明旧 readback 没被错误 adapter 重包 fresh challenge；该 freshness 接缝 route:human/后继浏览器 UAT。
+
+red verification base:
+57e4130（S1 实现前冻结提交）
+
+command:
+node tests/_golden/setup-receipt-identity.zero-sut.golden.mjs
+
+exit:
+1
+
+failure:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+'lib/adaptive-execution/setup-flow.mjs'
+
+说明：R5 当前测试字节先通过 node --check，再在 57e4130 独立 worktree 真实执行；红因是实现前
+目标模块不存在。

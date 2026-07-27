@@ -19,12 +19,17 @@
 - setup 与主体之间有硬 barrier（阶段屏障）：setup 执行、状态 readback 和 receipt 任一失败，主体执行函数
   零调用。
 - setup receipt 不内联、不复制、不另铸平台 ID；只引用同一 compile run 的 identity observation。
-- “同一 run”由 barrier 在 setup 执行前签发一次性 execution challenge 并要求 evidence 回绑；只靠可重建
-  receipt digest 不算同 run 证明。
+- barrier 在 setup 执行前签发一次性 execution request，并要求 evidence/receipt 回绑；同一 session
+  只签发一次，首次 finalize 尝试即消费，未改写旧 envelope/receipt 不能重放。
+- `executeSetup` 是受信 evidence adapter：纯函数层不可能从未签 JSON 证明 readback 发生时刻。adapter
+  把 fresh challenge 重包到缓存旧事实属于后继浏览器接缝/UAT 必须封闭的 freshness 缺口；S1 不把相关性
+  检查夸称为 observation freshness 证明。
 - 主体 mapping 仍只携 `candidateId + role`。运行期可以从唯一观察行投影平台 ID，但该投影不是第二份
   Entity Identity Receipt（实体身份收据），不能独立签署或授权。
 - 已满足状态只有在确定性 probe/readback 有证据时才允许跳过 mutation；TestCase 的自然语言前置声明
   本身不算运行时满足证据。
+- 每个非 Login Bootstrap 前置声明都必须在 grill 后成为 candidate goal，并由 setup 的最终
+  providedStates 闭合；不能只把文本从 initialStates 排除后就忽略。
 
 ## 本契约不做
 

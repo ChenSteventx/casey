@@ -73,12 +73,14 @@ Candidate 形状：
 1. requires/provides/removes 从 registry 读取；candidate 若携审计投影，必须与 registry 完全一致；
 2. 对每个未满足 requires，只有 candidate 内唯一 provider 才连边；
 3. 缺 provider、多 provider、依赖环、目标状态未达成全部结构化拒绝；
-4. 稳定 Kahn 拓扑排序，tie-break 使用 `intentId`，相同输入输出字节稳定；
-5. 排序后委托 `traceStateMachine`，不能把 trace 为防连锁误报临时补入的 missing 状态算作真实提供；
-6. `login`、未知 atom、册内不可编译 atom拒绝；
-7. 复用现有实体角色策略：mutation 恰 `subject`，relation 恰 `source + target`，不得按数组顺序猜角色；
-8. setup flow 使用现有 `buildFlow` 形状，能交给后继 compile 执行接线。
-9. 已登记身份观察义务的 atom，动作角色与观察角色必须一致；现役 `workflow.open`
+4. TestCase 每个非 Login Bootstrap 前置都必须被 candidate `goalStates` 精确覆盖，并在 setup 最终
+   `providedStates` 中有 probe/post-readback；漏一项就不 ready；
+5. 稳定 Kahn 拓扑排序，tie-break 使用 `intentId`，相同输入输出字节稳定；
+6. 排序后委托 `traceStateMachine`，不能把 trace 为防连锁误报临时补入的 missing 状态算作真实提供；
+7. `login`、未知 atom、册内不可编译 atom拒绝；
+8. 复用现有实体角色策略：mutation 恰 `subject`，relation 恰 `source + target`，不得按数组顺序猜角色；
+9. setup flow 使用现有 `buildFlow` 形状，能交给后继 compile 执行接线。
+10. 已登记身份观察义务的 atom，动作角色与观察角色必须一致；现役 `workflow.open`
    `action=subject / observation=source` 尚未统一，因此规划期直接 `SETUP_IDENTITY_ROLE_CONFLICT`
    且 `route:human`，不得先执行后在 receipt 阶段才发现冲突。
 
@@ -122,8 +124,8 @@ Receipt 必须：
 
 - `signed:false/replayReady:false`，且没有 PASS/verdict 字段；
 - 绑定 setup plan 原始确定性 digest；
-- 绑定 barrier 在执行前签发的一次性 `executionChallenge`；旧 execution evidence 不能放进 fresh session
-  重新 finalize；
+- 绑定 barrier 在执行前签发的一次性 `executionRequest` digest；同一 session 只签发一次，首次
+  finalize 尝试即消费，未改写的旧 execution evidence 不能放进 fresh session 重新 finalize；
 - 每个 setup intent 恰一条、顺序相同；
 - `executed` 必须动作 unique 且提供状态有 post-readback；
 - `already-satisfied` 必须 `acted:false` 且有确定性 probe proof；
@@ -133,6 +135,8 @@ Receipt 必须：
 
 - 只有合法 receipt 的 `providedStates` 才能与已证 Login Bootstrap 状态合并；TestCase 中其他业务前置文本不直通；
 - 合并后重跑真实 `validateBridge`/状态机；
+- 主体准入再次核对 TestCase 当前全部非 bootstrap 前置都在 plan/receipt `providedStates`；不能把旧
+  plan/receipt 用在新增了业务前置的同 case 上；
 - 无 receipt、receipt 被改、主体仍缺状态时 `allowMainStart:false`；
 - receipt 只存 identity observation 引用。消费时按原始字节 sha、caseId、
   `sourceIntentId/candidateId/role/atom/evidenceStepId` 唯一解析观察行；
@@ -174,6 +178,12 @@ admitSetupPlan
 setup plan 未就绪时 `executeSetup` 本身必须零调用；后续任一阶段失败或抛错，`executeMain` 必须零调用。
 第一版同一调用内传递 identity observation 原始字节和一次性 challenge；跨 run 复用后置。
 
+信任边界：`executeSetup` 是受信 evidence adapter，必须在收到本次 execution request 后执行当前
+probe/action/readback，禁止复用缓存事实。S1 的纯函数只能证明 request/evidence/receipt 的相关性、防止
+未改写 envelope/receipt 重放，不能从无签名 JSON 证明 readback 的发生时刻；恶意或错误 adapter 把 fresh
+challenge 重包到旧 readback/identity observation 的防护，必须在后继浏览器 adapter 中把 request digest
+下沉到受信观察器并做 fresh-run UAT。在该接缝落地前不宣称“机制已证明 observation freshness”。
+
 ## 3. touchesFiles
 
 实现：
@@ -214,6 +224,7 @@ setup plan 未就绪时 `executeSetup` 本身必须零调用；后续任一阶�
 6. mutation/relation 角色不完整或未知时拒绝，relation 不按数组顺序猜；
 7. 输入对象不被变异，输出数组稳定。
 8. 动作/观察角色策略冲突时规划期 `route:human`，不得执行 setup adapter。
+9. 每个非 bootstrap TestCase 前置都必须被 goal/setup readback 闭合，不能只从 initialStates 排除后忽略。
 
 ### B. receipt 与身份
 
@@ -224,7 +235,9 @@ setup plan 未就绪时 `executeSetup` 本身必须零调用；后续任一阶�
 5. receipt 内联 platform ID 或 identity observation hash/关联键错误时拒绝；
 6. 同 candidate 多观察行拒绝；唯一观察行精确匹配名称/编号后才投影平台 ID；
 7. 主体 mapping 仍只有 `candidateId + role`，不写入平台 ID。
-8. 同一 receipt 不可重复准入；旧 execution evidence 不能在 fresh session 重新 finalize/准入。
+8. 同一 receipt 不可重复准入；未改写的旧 execution evidence 不能在 fresh session 重新 finalize/准入；
+   不同 session receipt 必须带不同 execution request digest。
+9. 同 case 的 TestCase 若新增业务前置，旧 plan/receipt 不得继续授权主体。
 
 ### C. runtime barrier
 
@@ -245,6 +258,8 @@ setup plan 未就绪时 `executeSetup` 本身必须零调用；后续任一阶�
 
 - 真实 AI 中台执行一个 setup atom 后主体 atom 才启动；
 - AI 中台版本变化后的 setup readback 稳定性；
+- 浏览器 adapter 把 execution request digest 下沉到实际 readback/identity observer，防止缓存旧事实后
+  只重包 fresh challenge；S1 只定义受信 adapter 接缝，不冒充 freshness 已取证；
 - 医生站 held-out setup workflow；
 - Hi 小助 CEF 通道；
 - `workflow.create` 与 `workflow.open` 的 `subject/source` 角色冲突；S1 明确 fail-closed
