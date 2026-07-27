@@ -67,6 +67,11 @@ MVP 主通道为 web + Playwright：
 每一切片单独立 `full` Loop Contract，走 acceptance-gate、红先行、异构实现评审。前一切片达到退出条件
 后再进入下一切片；不要把所有 schema 和浏览器能力揉进一个契约。
 
+> 2026-07-27 顺序修订：S2 单步内核完成后，优先实施 S3 人工示教双回放；只有真实 SUT fresh
+> source/distilled 回放、至少三份正式 Casey 报告和用户明确验收全部通过，才允许发布 GitHub
+> technical preview。随后进入 S4 zero-shot trace 正式化，并再次验证人工双回放能作为 zero-shot
+> 最终兜底。以下章节按依赖保留物理位置，但执行号以此修订为准。
+
 ### S0：确定性 intent plan 与断言冻结
 
 建议契约：`intent-plan-known-atom-foundation`
@@ -243,7 +248,7 @@ MVP 不实现 container-only/iframe 候选的 canonical replay；页面全域不
 
 退出条件：受控陌生 web 页完成一次只读 `observe → resolve/propose → admit → execute → progress`。
 
-### S3：探索轨迹到签后回放
+### S4：探索轨迹到签后回放（S3 发布门后执行）
 
 建议契约：`zero-shot-trace-replay-closure`
 
@@ -281,13 +286,13 @@ candidate events
 
 退出条件：AI 中台一个只读任务在 current build 产候选，签后 fresh replay 得到确定性结果。
 
-### S4：示教可回放闭环
+### S3：示教可回放闭环（优先发布路径）
 
 建议契约：`teachin-replayability-closure`
 
 目标：先证明「关窗后真的能在 fresh browser 复现」，再把它接到正式签署/回放。文件存在不等于录制成功。
 
-#### S4a：development-only 原始复现与 atom roundtrip
+#### S3a：development-only 原始复现与 atom roundtrip
 
 当前真实缺口不能忽略：
 
@@ -357,9 +362,9 @@ candidate、现有 flow-bridge、compile execute 和 compile verify。输出：
 }
 ```
 
-这里的 `REPLAYABLE` 只证明技术复现，不是测试 PASS；正式报告仍须进入 S4b 的 draft/sign/run。
+这里的 `REPLAYABLE` 只证明技术复现，不是测试 PASS；正式报告仍须进入 S3b 的 draft/sign/run。
 
-S4a 验收：
+S3a 验收：
 
 - seq gap/duplicate、换包、ambiguous、none、action_failed、path mismatch、masked value 全失败；
 - nav 仅 checkpoint，不可偷偷 goto；
@@ -369,10 +374,10 @@ S4a 验收：
 - 任一步失败不进入 atom roundtrip；
 - 真机只选只读/幂等链，mutation 不进 development-only M0。
 
-S4a 退出条件：用户示教一次后，系统自动完成 fresh raw reproduction，再完成一个已有 atom 的
+S3a 退出条件：用户示教一次后，系统自动完成 fresh raw reproduction，再完成一个已有 atom 的
 compile execute + compile verify；全程不把它冒充正式 verdict。
 
-#### S4b：正式示教来源与 atom 化双回放
+#### S3b：正式示教来源与 atom 化双回放
 
 后继修复正式链：
 
@@ -393,7 +398,7 @@ checksum；使用两套独立测试数据或两次 reset。
 - effect receipts；
 - cleanup/absence proof。
 
-S4b 验收：
+S3b 验收：
 
 - capture、空包、坏包、未 intake、未签全部不能正式回放；
 - source candidate fresh replay 通过后才标局部 `REPLAYABLE`；
@@ -403,8 +408,23 @@ S4b 验收：
 - 人工操作来源不等于 expected 真值；
 - CLI exit 与用户可见状态严格对应。
 
-S4b 退出条件：自动探索故意失败后，用户示教一次，正式 source candidate 干净回放成功；atom 化候选
+S3b 退出条件：自动探索故意失败后，用户示教一次，正式 source candidate 干净回放成功；atom 化候选
 完成第二次独立回放和等价证明。
+
+#### S3c：真实验收与 GitHub 发布门
+
+发布前必须同时满足：
+
+- 真实 AI 中台经回环入口完成 fresh source replay 与 fresh distilled replay；
+- 至少再完成一个独立场景，优先覆盖 setup 前置条件 → 主体操作；医生站可用时增加
+  site-held-out 报告；
+- 交付至少三份由真实 replay → verdict → report 生成的自包含 Casey 测试报告；
+- development-only proof、fake SUT、adapter double、文件存在或 agent 声明均不能计入通过；
+- 用户查看报告并明确验收通过。
+
+用户未明确验收时，即使所有自动门绿色，状态仍是“待用户验收”，禁止 GitHub push/tag/release。
+用户验收通过后才发布 technical preview；发布说明必须明确 zero-shot trace 正式化仍在 S4，不能把
+人工双回放版本宣传为完整 zero-shot 产品。
 
 ### S5：atom 变体与前置/主体全链蒸馏
 

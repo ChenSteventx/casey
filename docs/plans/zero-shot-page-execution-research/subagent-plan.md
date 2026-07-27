@@ -219,6 +219,11 @@ Agent A setup pure core
 
 ## 6. Wave 3：单步 admission、候选回放、development-only teach-in cycle
 
+> 2026-07-27 排序修订：本节保留历史文件分工，但实际 Wave 3 优先完成 teach-in raw/source replay、
+> atom distillation、distilled replay 与正式报告；真实 SUT 至少三份报告经用户明确验收后，才允许
+> GitHub technical preview。zero-shot trace canonicalizer/sign/replay 移到 Wave 4，并在完成后重新
+> 验证 teach-in 双回放兜底。
+
 ### Agent A：action admission 与 progress
 
 任务名：`zero_shot_admission`
@@ -287,14 +292,19 @@ Agent A admission/progress
 → 根 agent 串第一条 AI 中台只读纵向链
 ```
 
-Wave 3 是第一技术闭环发布点：
+Wave 3 的发布点改为人工示教双回放：
 
-- 已有 atom 路径可以直接执行；
-- 页面漂移可以产生 zero-shot candidate；
-- 自动失败可以人工示教并完成 raw + atom 技术复现；
-- 正式机器结论仍只来自签后 replay/verdict。
+- 人工录制 source 能在 fresh browser 独立正式回放；
+- 蒸馏 atom 能在另一 fresh browser 独立正式回放；
+- 至少三份真实 replay → verdict → report 的 Casey 报告已交付；
+- 用户明确验收通过；
+- GitHub 发布只称 technical preview，不宣称 zero-shot trace 已正式化。
 
 ## 7. Wave 4：正式示教双回放与能力沉淀
+
+> 顺序修订后，Wave 4 的主任务先完成 zero-shot candidate → canonical events → sign → fresh replay，
+> 再把 Wave 3 人工双回放接成最终兜底并复验。下列正式 intake、等价和 held-out 任务继续有效，但
+> 不再早于 Wave 3 用户验收发布门。
 
 ### Agent A：正式 record/intake authority
 
