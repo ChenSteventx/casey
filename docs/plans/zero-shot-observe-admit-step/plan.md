@@ -58,6 +58,7 @@ freezeZeroShotStepContract({
 - `lib/zero-shot/playwright-page-driver.mjs`
 - `lib/zero-shot/affordance-authority.mjs`
 - `lib/zero-shot/affordance-catalog.mjs`
+- `lib/zero-shot/public-observation-redaction.mjs`
 - `lib/zero-shot/page-observer.mjs`
 
 依赖方向：
@@ -79,6 +80,9 @@ unsupportedScopes / truncated / signed:false / replayReady:false
 ```
 
 禁止 raw HTML、origin/host、query/hash、href/src、输入框 value、整页正文、凭据和业务 platformId。
+公开 title、pathname 分段与 semantic name 还必须先过纯确定性脱敏：邮箱、认证/会话提示词和长不透明
+标识符不得出观察件；敏感 title 清空，敏感 pathname 分段替换为稳定占位，敏感 affordance 从 catalog
+删除并立即释放其物理 handle。脱敏只按公开事实形状工作，不读取 `.auth/`、`site.json` 或环境凭据。
 
 driver port：
 
@@ -109,6 +113,7 @@ entity binding。候选排序和 digest 对相同事实稳定，超上限明确 
 
 - `lib/zero-shot/deterministic-resolver.mjs`
 - `lib/zero-shot/action-proposal.mjs`
+- `lib/zero-shot/read-safe-target.mjs`
 
 resolver 只消费 public JSON + step contract：
 
@@ -138,6 +143,13 @@ LLM proposal 闭集：
 candidateId/platformId/verdict 均拒绝。页面提示注入文本只能作为惰性候选数据，不能改变 schema 或 policy。
 proposal 只能由 builder-issued PageObservation 在确定性零命中时铸造；一旦 exact resolver 已唯一命中，
 `DETERMINISTIC_RESOLUTION_DOMINATES`，模型不能另选同一 catalog 中另一个合法 `af_*`。
+
+`effect:"read"` 与 `userConfirmed:true` 不能单独证明物理目标无副作用。S2 在目标级人工 authority
+尚未接入前采用确定性窄白名单：自动执行目标必须是 `role:"link"`，accessible name 命中继续、打开、
+查看、详情、帮助、进入、返回、更多等只读导航语义，中英文已知副作用词再作额外否决；非 link、风险
+link 与未知 link 在 proposal 和 admission 两层都必须 fail-closed。该策略只是 MVP 的已知风险过滤，
+不是目标安全性的完整证明；未命中副作用词也不能自行获权，页面实际行为仍可能与文案不一致。它不让
+LLM 自判安全，也不把调用方普通布尔值提升为授权收据。
 
 ### 2.4 admission、执行、progress 与 trace
 
@@ -180,9 +192,11 @@ trace 每步保留 observation/catalog/admission/action/progress 的降权引用
 - `lib/zero-shot/playwright-page-driver.mjs`
 - `lib/zero-shot/affordance-authority.mjs`
 - `lib/zero-shot/affordance-catalog.mjs`
+- `lib/zero-shot/public-observation-redaction.mjs`
 - `lib/zero-shot/page-observer.mjs`
 - `lib/zero-shot/deterministic-resolver.mjs`
 - `lib/zero-shot/action-proposal.mjs`
+- `lib/zero-shot/read-safe-target.mjs`
 - `lib/zero-shot/action-admission.mjs`
 - `lib/zero-shot/step-executor.mjs`
 - `lib/zero-shot/progress-verifier.mjs`
@@ -200,6 +214,8 @@ S1 纯重构：
 - `tests/_golden/deterministic-resolver-step-contract.zero-sut.golden.mjs`
 - `tests/_golden/zero-shot-action-progress.zero-sut.golden.mjs`
 - `tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs`
+- `tests/_golden/playwright-page-driver-hardening.zero-sut.golden.mjs`
+- `tests/_golden/public-observation-redaction.zero-sut.golden.mjs`
 - `tests/_golden/adaptive-module-boundaries.static.golden.mjs`
 - `tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs`
 
@@ -224,6 +240,8 @@ S1 纯重构：
 5. hidden/disabled duplicate 进入 page-wide 歧义计数；
 6. 新 observation 撤销旧 authority，JSON clone、DOM replacement 和 dispose 后全部拒绝；
 7. 输入不变异，异常收敛为结构化 reason。
+8. 敏感 title、pathname 分段和 semantic name 不得进入 public observation；被删候选 handle 立即释放，
+   安全 title/name/path 保真，编码后的敏感分段仍使用稳定占位。
 
 ### B. step contract/resolver/proposal
 
@@ -235,6 +253,8 @@ S1 纯重构：
 6. 合规 proposal 只在真正零命中的 builder-issued 当前 catalog 中指一个 affordance；
 7. deterministic 唯一命中时 proposal 不能绕路另选合法 `af_*`；
 8. selector/code/effect/impact/finish/progress/expected/verdict/多动作 proposal 全拒。
+9. 自动执行只收窄白名单只读 link；已知风险词与未知 link 都返回 NOT_READ_SAFE，不能用 denylist 未命中
+   冒充安全证明；正向只读导航名称不被误拒。
 
 ### C. admission/execute/progress/trace
 
@@ -256,6 +276,9 @@ S1 纯重构：
 2. 纯 resolver/proposal/progress/trace 不直接 import Playwright、fs、network、bin/replay；
 3. S1 三金牌、intent plan/state trace、flow bridge、compile gate、replay settle、entity binding 回归不漂移；
 4. `term-lint`、`git diff --check` 通过。
+5. 未进入 catalog、超预算或 bind 失败的 ElementHandle 全部释放；真实 Playwright exact locator
+   最终重验覆盖 hidden-aware page count 与物理同节点；ARIA hidden、submit value、button image alt、
+   multi-token role 不产生手算假事实；popup/new page、原页关闭或 context topology 改变时 fail-closed。
 
 ## 5. 不可由 zero-SUT 自动证明的 observability
 

@@ -145,3 +145,183 @@ corrected expectations:
 red verification:
 第五条新门与 B 修正版先通过 node --check；2026-07-27 同轮实跑均因计划内生产模块尚不存在真实
 exit 1。五条新门的红均发生在 production import/静态文件存在性，不依赖假 SUT。
+
+ACCEPTANCE AMENDMENT R3
+reason:
+实现联调首次转绿时发现 C 门的 async check 调用缺少顶层 await，脚本会在各异步断言完成前先执行
+末尾汇总，曾打印误导性的 0/0。虽然实现前 RED 发生在 production import 阶段，原始红证据仍真实，
+但实现后的退出码不能可靠承载 Test Ratchet。
+
+corrected expectations:
+- C1-C10（含 C3a/C5a）共 12 个 async check 全部改为顶层 await；
+- 不改变任何业务断言、reason 或 production API，只修验收 harness 的等待顺序；
+- 进程必须在 12 条异步检查全部完成后才汇总并决定 exit。
+
+green verification:
+修正后实跑 `node tests/_golden/zero-shot-action-progress.zero-sut.golden.mjs`，按 C1 → C10 顺序完成，
+最终输出 12/12 且 exit 0；不再出现提前 0/0。该机械门禁修复由主 agent 重新计算 checksum 并在开 loop
+前追加冻结。
+
+ACCEPTANCE AMENDMENT R4
+reason:
+独立 adversarial review 发现，admission 后若先取得同 driver 的新 observation，再执行旧 admission，
+旧实现仍可 perform 并让动作前捕获的 expected pathname 参与 progress。其根因是 admission 只在铸造时重验
+页面 authority，执行时未检查它仍是该 driver 最新观察件。另发现 caller plain identity flag 的
+`status:"admitted"|"verified"` 会被误作授权，而 S2 尚无 builder-issued identity authority。
+
+real red:
+新增 C3b 后、修 production 前实跑 action-progress，exit 1：
+`C3b admission 后动作前预取 fresh observation 必须使旧 admission 失效` 得到
+`{"ok":true,...,"performed":true}`，最终 12 过 / 1 红。该红由真实 authority 时序缺口触发，不是 marker。
+
+corrected expectations:
+- admission 内部状态必须绑定 original observationAuthority；
+- execute consume 后、perform 前必须确认该 observation/authority 仍是 driver 最新；已有更新观察时返回
+  STALE_OBSERVATION，action adapter 零调用；
+- actionReceipt 只能在上述时序检查和真实 perform 成功后铸造；
+- `identityAdmission.required:true` 的 caller plain object 无论自报 pending/admitted/verified 都只能加严
+  为 ENTITY_IDENTITY_PENDING，不能自行授权；正式 identity 许可留给后继 builder authority 接线。
+
+green verification:
+时序用例后来移入 authority-runner E6 以保持单文件低于 600 行。最终 action-progress 12/12、
+authority-runner 11/11、static boundaries 5/5，均 exit 0。E6 证实旧 admission 在动作前预取 fresh
+observation 后失效且 perform=0；C5 证实 plain identity status 不能扩权。
+
+ACCEPTANCE AMENDMENT R5
+reason:
+第三轮 authority 复核发现 mappingFromIntentPlan 只投影 plan 的公开字段，手造或 spread 后的
+`ready:true` plan 仍可能产出 mapping，绕开 builder-issued intent plan authority。
+
+real red:
+在 deterministic-resolver-step-contract B3 加入 mapping projection 对抗后、修 production 前实跑，
+15 条既有检查通过、1 条新增检查失败；手造/spread plan 均错误产出 mapping。
+
+corrected expectations:
+- mapping projection 必须先验证 buildIntentPlan 原对象 authority 和未改写 digest；
+- clone/spread/手造 plan 即使字段逐字相同也不得产出 mapping；
+- 既有 builder-issued ready plan 的 mapping 字节保持不变。
+
+green verification:
+修正 intent-plan authority 接线后 resolver/contract 16/16，exit 0。
+
+ACCEPTANCE AMENDMENT R6
+reason:
+admission 铸造后到真实 perform 之间仍有 TOCTOU 窗口。首次 revalidate 通过后若 DOM 节点物理身份或
+语义发生漂移，旧实现仍会点击；perform 完成前若新 observation 被铸造，旧实现仍可能签 action receipt。
+
+real red:
+加入 execute 前二次重验和 perform pending 并发观察对抗后、修 production 前：
+- action-progress 为 11 过 / 3 红；
+- authority-runner 为 4 过 / 1 红。
+红项分别证明二次重验缺席、旧 observation 在动作边界后仍保权，以及 pending perform 可提前形成后证据。
+
+corrected expectations:
+- execute consume 后、perform 前必须对同一 observation authority 与物理节点再做一次全量重验；
+- perform 返回后、铸 action receipt 前必须再次确认 original observation 仍是最新 authority；
+- 任一时点发现漂移或更新 observation 都 fail-closed，不签 receipt、不重试第二候选；
+- 动作事实可能已经发生但证据链失效时只能返回结构化拒绝，不能假绿。
+
+green verification:
+修正后 action-progress 12/12；authority-runner 的 E7、E9 转绿，且执行次数分别为 0 和 1，未发生重试。
+
+ACCEPTANCE AMENDMENT R7
+reason:
+两个并发调用可在同一 observation authority 上同时通过 revalidate 并各铸一枚 admission，违反一次一动作。
+
+real red:
+加入并发双铸与 pending perform 两条对抗后、修 production 前，authority-runner 为 7 过 / 2 红；
+双铸请求均成功，无法保证动作最多一次。
+
+corrected expectations:
+- 同一 observation authority 的 admission 必须先做进程内 reservation；
+- 并发请求最多一条成功，另一条返回 OBSERVATION_ALREADY_ADMITTED；
+- 成功 admission 仍只能 consume 一次，最终 perform 恰一次。
+
+green verification:
+加入 reservation authority 后 authority-runner E8、E9 转绿；完整 authority-runner 11/11，exit 0。
+
+ACCEPTANCE AMENDMENT R8
+reason:
+`effect:"read"` 与 `userConfirmed:true` 仍是调用方普通字段。若只按 exact 命中或
+`role:"link"` 放行，破坏性 button 和“退出登录”一类风险 link 都可被冒充为只读动作。
+
+real red:
+扩充 authority-runner E10/E11 后、修 production 前，最终输出 9 passed, 2 failed，exit 1：
+- E10 的风险 link 被 proposal 错误接纳；
+- E11 的 deterministic exact 破坏性 button 和风险 link 被 admission 错误接纳。
+
+corrected expectations:
+- 无额外目标级人工 authority 时，zero-shot 自动执行只接受 role=link 的窄闭集；
+- 中英文已知副作用语义由纯确定性策略拒绝，不交给模型自判；
+- proposal 返回 PROPOSAL_TARGET_NOT_READ_SAFE；
+- deterministic/proposal 共用的 admission 复核返回 ACTION_TARGET_NOT_READ_SAFE；
+- 安全 link 的既有 happy path 不回退。
+
+green verification:
+修正后 page observer 8/8、resolver/contract 16/16、action/progress 12/12、
+authority-runner 11/11、static boundaries 5/5，全部 exit 0。
+
+ACCEPTANCE AMENDMENT R9
+reason:
+生产 Playwright 接缝的独立审查发现 adapter double 没覆盖五类真实边界：未保留 handle 释放、
+ARIA hidden 与 accessible name、multi-token role、exact locator 的物理同节点终检，以及
+popup/new page 或原页关闭后的 page topology 变化。
+
+real red:
+新增 `playwright-page-driver-hardening.zero-sut.golden.mjs` 后、修 production 前实跑为 0/4，exit 1。
+四条复合检查分别揭示：无语义/超预算/bind 拒绝 handle 未 dispose；手算语义与 Playwright locator
+不一致；同 accessible name 的 replacement 可混入；popup 或原页关闭后仍可能返回 performed。
+
+corrected expectations:
+- catalog 对无语义、超预算、bind 失败和 snapshot 异常的物理 handle 全路径释放；
+- submit value、button descendant image alt、aria-hidden ancestor 和多 token role 进入候选事实；
+- admission 终检以 Playwright exact locator 做 hidden-aware 全页计数，并以 ElementHandle 比对同一物理节点；
+- perform 观察 BrowserContext page 集合与 page 事件，拓扑变化必须抛结构化失败，不能铸 action receipt。
+
+green verification:
+新增门 4/4；page observer 8/8、resolver/contract 16/16、action/progress 12/12、
+authority-runner 11/11、static boundaries 5/5，全部 exit 0；三个改动文件分别 376、258、429 行。
+
+ACCEPTANCE AMENDMENT R10
+reason:
+public PageObservation 虽不公开 raw HTML、origin 或输入值，但 title、pathname 分段和 semantic name
+仍可能携带邮箱、认证/会话提示词或长不透明标识符，并被传给 bounded proposer；删除敏感候选时还必须
+证明其物理 handle 已释放。
+
+real red:
+新增 `public-observation-redaction.zero-sut.golden.mjs` 后、修 production 前实跑为 0/2，exit 1：
+第一条复合检查观察到敏感 title/path/name 仍进入 public JSON，第二条观察到 percent-encoded 敏感
+pathname 分段未替换为稳定占位。该门使用纯内存 driver 和合成 marker，不读取任何凭据或目标配置。
+
+corrected expectations:
+- title、semantic name、pathname 分段共享纯确定性敏感文本判据；
+- 敏感 title 清空，敏感路径分段写固定占位，敏感 semantic 候选从 catalog 删除；
+- 被删候选 handle 立即 dispose，保留候选仍由 observation authority 生命周期释放；
+- 安全 title/name/path 保真；编码敏感分段在判定前有界解码，且 public JSON 不含原 marker；
+- 脱敏模块不得读取 `.auth`、`site.json`、环境或网络。
+
+green verification:
+修正后 public-observation-redaction 2/2、playwright driver hardening 4/4、page observer 8/8，
+均 exit 0；脱敏模块 58 行，脱敏金牌 166 行。
+
+ACCEPTANCE AMENDMENT R11
+reason:
+R8 的已知副作用 denylist 只能证明命中词表的目标危险，不能证明未命中的 link 安全。
+`sign out`、登出、销户、永久抹除、archive、approve 和普通未知链接都可能未命中旧词表后自动获权。
+
+real red:
+E10/E11 加入窄白名单边界后、修 production 前实跑 authority-runner 为 9 passed, 2 failed，exit 1：
+- E10 的 `sign out` 被 proposal 错误铸权；
+- E11 的 `sign out` 被 deterministic admission 错误接纳。
+检查循环还冻结登出、销户、永久抹除、archive、approve 与未知链接反例，以及中英文只读导航正控。
+
+corrected expectations:
+- 自动执行目标必须同时为 `role:"link"` 且名称命中窄白名单只读导航语义；
+- 已知副作用词作为白名单后的额外否决，不再以 denylist 未命中推导安全；
+- 非 link、风险 link、未知 link 在 proposal/admission 两层分别返回既有 NOT_READ_SAFE reason；
+- 继续、打开、查看、详情、帮助、进入、返回、更多及对应英文导航语义保持正向可达；
+- 两处仅用于 authority 伪造对抗的旧“取消”候选改为明确白名单名称，不改变原 authority 断言。
+
+green verification:
+生产策略改为窄白名单后，authority-runner 11/11、action-progress 12/12、static boundaries 5/5，
+均 exit 0；两条行为金牌分别 572、590 行，生产策略模块 67 行，全部不超过 600 行。

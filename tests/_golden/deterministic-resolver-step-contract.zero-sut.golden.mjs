@@ -68,9 +68,9 @@ const { createPageDriverDouble } = await loadApi(
   './fixtures/zero-shot-observe-admit-step/adapter-double.mjs',
   ['createPageDriverDouble'],
 );
-const { buildIntentPlan, validateIntentPlanAuthority } = await loadApi(
+const { buildIntentPlan, validateIntentPlanAuthority, mappingFromIntentPlan } = await loadApi(
   '../../lib/intent-plan.mjs',
-  ['buildIntentPlan', 'validateIntentPlanAuthority'],
+  ['buildIntentPlan', 'validateIntentPlanAuthority', 'mappingFromIntentPlan'],
 );
 
 const CASE_ID = 'tc_zero_shot_step';
@@ -193,7 +193,7 @@ async function observeZeroHitProposalSurface() {
     affordances: [
       {
         handleId: 'continue-button',
-        role: 'button',
+        role: 'link',
         accessibleName: '继续',
         text: '继续',
         visible: true,
@@ -202,7 +202,7 @@ async function observeZeroHitProposalSurface() {
       },
       {
         handleId: 'cancel-button',
-        role: 'button',
+        role: 'link',
         accessibleName: '取消',
         text: '取消',
         visible: true,
@@ -254,6 +254,36 @@ check('B3 intent plan 必须是 builder-issued authority，clone/spread/handcraf
   assert(validateIntentPlanAuthority(tampered)?.reason === 'INTENT_PLAN_AUTHORITY_INVALID',
     'builder-issued plan 原对象被改写后也必须失权');
   mustRejectFreeze('INTENT_PLAN_AUTHORITY_INVALID', { intentPlan: tampered });
+
+  for (const forged of [
+    {
+      schemaVersion: 1,
+      caseId: CASE_ID,
+      decisions: [],
+      mapping: [{ intentId: INTENT_ID, atom: 'nav.workflowManagement', params: {} }],
+      unresolved: [],
+      stateTrace: { schemaVersion: 1, caseId: CASE_ID, intents: [], problems: [] },
+      ready: true,
+    },
+    {
+      ...buildIntentPlan({
+        testcase: {
+          ...testcase,
+          source: { kind: 'freetext', raw: '进入工作流管理' },
+          steps: [{ intentId: INTENT_ID, intent: '进入工作流管理', actionHint: 'navigate', expected: [] }],
+        },
+        registry: REGISTRY,
+      }),
+    },
+  ]) {
+    let rejected = false;
+    try {
+      mappingFromIntentPlan(forged);
+    } catch {
+      rejected = true;
+    }
+    assert(rejected, 'mapping 投影出口不得接受 handcrafted/spread plan');
+  }
 });
 
 check('B3a known/model mapping 都优先，含 ready:false 的 known override 也不能偷退 primitive', () => {

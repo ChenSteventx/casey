@@ -4,10 +4,12 @@
   "specPath": "docs/plans/zero-shot-observe-admit-step/plan.md",
   "testChecksums": {
     "tests/_golden/page-observer-main-frame.zero-sut.golden.mjs": "32684575d706dd3bd2c584f176c16a89111d80567a8e129be8e553d963b322d7",
-    "tests/_golden/deterministic-resolver-step-contract.zero-sut.golden.mjs": "fa2c564e50d7e28cb9e7318521cfb136900f9b23b5bbe90dd3d9f686b5083e36",
-    "tests/_golden/zero-shot-action-progress.zero-sut.golden.mjs": "748502c6c71c942f1906f999f8ffc0a7b6d3cbe4d294754b6620a41d96a07457",
-    "tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs": "a3c9a83ec8a6c4334c0da127c170594a283939e8df3e43f2078a67ab1895a044",
-    "tests/_golden/adaptive-module-boundaries.static.golden.mjs": "176824c194e971afb216ab725062dfc64a0f98456574510ed5302c749be46222",
+    "tests/_golden/deterministic-resolver-step-contract.zero-sut.golden.mjs": "27d8658f56f21cd76770d889c6674bfa208439d05a06c50ddced861ba041fb0f",
+    "tests/_golden/zero-shot-action-progress.zero-sut.golden.mjs": "18d081dd30b5e8f7ecad731204fb5d13977ddda4c54db2cf3aedf77d03afcd83",
+    "tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs": "d764641542c3bd5a8d339d8abba501d808982db4e6a63de32528e487bb7329eb",
+    "tests/_golden/playwright-page-driver-hardening.zero-sut.golden.mjs": "8c0d86547d0e1ae5568c0a1509b7a509fecfda1474496920ea68984e74322ee9",
+    "tests/_golden/public-observation-redaction.zero-sut.golden.mjs": "45adf83cb4ad80a63e98df2fc9e3949201b0bb798da18cdf62f2f72027230a8f",
+    "tests/_golden/adaptive-module-boundaries.static.golden.mjs": "46e01f67209033fde93b82ca93a874239235951226b4c9814c860f5db5cf59de",
     "tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs": "547eb20354147ae7b4f7aa58efd26ede868565470ecb59c71be12e4dfde9e6e2",
     "tests/_golden/intent-plan-known-atom.zero-sut.golden.mjs": "cebd2e02a5525b8610e7f17cc61564b74eadfbba8852eb65ff2ddcab084fbc12",
     "tests/_golden/intent-state-trace.zero-sut.golden.mjs": "84f4a2010c52d2a0c32593da805ba69dc9224d6008639095325a49fee544378b",
@@ -19,9 +21,108 @@
     "tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs": "2e0fa7b308202d699574b5759e4ab114c39fbbd376aa6990f04fc0a8e6c14361",
     "tests/_golden/setup-receipt-identity.zero-sut.golden.mjs": "0989ba0d2f2fd836a94ab04bf085917271758447eac29bc8d83b95e85609203e",
     "docs/plans/zero-shot-observe-admit-step/GRILL.md": "0b4079f312843a25f338a494606887a7fb788f9b4d3b0be4c50a7477b6e0f6dd",
-    "docs/plans/zero-shot-observe-admit-step/plan.md": "7b990c73d520253c549e192c54aad019fe4ae703f9cac3681b6adf87dd177d51",
-    "docs/plans/zero-shot-observe-admit-step/accept/red-proofs/zero-shot-observe-admit-step.red.txt": "fa20e1e5722200fab41bb669f475f6b57eb92d8d1c29a0a91ecb738291b1c54c"
+    "docs/plans/zero-shot-observe-admit-step/plan.md": "17ad5e9209820f2484538936368ae5a065811b6a66bbd90f435f9d4d2d59c20f",
+    "docs/plans/zero-shot-observe-admit-step/accept/red-proofs/zero-shot-observe-admit-step.red.txt": "fa5b4306e36cd301893e85bca0491b19628134387570eacfb2b5e52be96d0ceb"
   },
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-27",
+      "round": "R1 authority 加严",
+      "files": [
+        "tests/_golden/page-observer-main-frame.zero-sut.golden.mjs",
+        "tests/_golden/deterministic-resolver-step-contract.zero-sut.golden.mjs",
+        "tests/_golden/zero-shot-action-progress.zero-sut.golden.mjs"
+      ],
+      "reason": "补 builder-issued authority、伪造换点、因果 progress 和异常 fail-closed；修正版门在 production 模块不存在时均真实 exit 1，红因仍是目标实现缺席。"
+    },
+    {
+      "amendedAt": "2026-07-27",
+      "round": "R2 runner/dominance 加严",
+      "files": [
+        "tests/_golden/deterministic-resolver-step-contract.zero-sut.golden.mjs",
+        "tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs"
+      ],
+      "reason": "补 deterministic dominance、真正 zero-hit proposal runner、递归冻结和 typed progress 闭集；实现前两门均因计划内 production 模块缺席真实 exit 1。"
+    },
+    {
+      "amendedAt": "2026-07-27",
+      "round": "R3 async harness 修正",
+      "files": [
+        "tests/_golden/zero-shot-action-progress.zero-sut.golden.mjs"
+      ],
+      "reason": "C1-C10 改为顶层 await，修复异步断言结束前先汇总 0/0 的退出码缺陷；业务断言零弱化，原实现前 production import RED 保持，修正后完整 12/12 决定 exit。"
+    },
+    {
+      "amendedAt": "2026-07-27",
+      "round": "R4 stale observation/identity 加严",
+      "files": [
+        "tests/_golden/zero-shot-action-progress.zero-sut.golden.mjs",
+        "tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs"
+      ],
+      "reason": "新增动作前 fresh observation 与 plain identity 自报授权对抗；修 production 前旧 admission 实际 perform，新增时序检查真实 12 过/1 红，后移 E6 保持单文件低于 600 行。"
+    },
+    {
+      "amendedAt": "2026-07-27",
+      "round": "R5 intent plan projection 加严",
+      "files": [
+        "tests/_golden/deterministic-resolver-step-contract.zero-sut.golden.mjs"
+      ],
+      "reason": "mapping projection 加入手造/spread plan 对抗；修 production 前真实 15 过/1 红，伪 plan 错误产出 mapping；修后 16/16。"
+    },
+    {
+      "amendedAt": "2026-07-27",
+      "round": "R6 execute TOCTOU 加严",
+      "files": [
+        "tests/_golden/zero-shot-action-progress.zero-sut.golden.mjs",
+        "tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs"
+      ],
+      "reason": "新增 execute 前二次物理重验与 pending perform 并发 observation；修 production 前 action-progress 11 过/3 红、authority-runner 4 过/1 红。"
+    },
+    {
+      "amendedAt": "2026-07-27",
+      "round": "R7 concurrent admission 加严",
+      "files": [
+        "tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs"
+      ],
+      "reason": "新增同一 observation authority 并发双铸和 pending perform 对抗；修 production 前真实 7 过/2 红，两个 admission 均错误成功。"
+    },
+    {
+      "amendedAt": "2026-07-27",
+      "round": "R8 known-risk 目标过滤",
+      "files": [
+        "tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs"
+      ],
+      "reason": "新增风险 button/link 的 proposal 与 admission 对抗；修 production 前真实 9 passed/2 failed，退出链接和破坏按钮错误获权。"
+    },
+    {
+      "amendedAt": "2026-07-27",
+      "round": "R9 Playwright driver 接缝加严",
+      "files": [
+        "tests/_golden/playwright-page-driver-hardening.zero-sut.golden.mjs",
+        "tests/_golden/adaptive-module-boundaries.static.golden.mjs"
+      ],
+      "reason": "新增 handle 释放、ARIA/name/role、exact 物理同节点和 page topology 四条复合检查；修 production 前真实 0/4、exit 1。"
+    },
+    {
+      "amendedAt": "2026-07-27",
+      "round": "R10 public observation 脱敏",
+      "files": [
+        "tests/_golden/public-observation-redaction.zero-sut.golden.mjs",
+        "tests/_golden/adaptive-module-boundaries.static.golden.mjs"
+      ],
+      "reason": "新增 title/path/semantic 敏感 marker 与 handle 释放检查；修 production 前真实 0/2、exit 1，修后 2/2。"
+    },
+    {
+      "amendedAt": "2026-07-27",
+      "round": "R11 窄白名单安全边界",
+      "files": [
+        "tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs",
+        "tests/_golden/zero-shot-action-progress.zero-sut.golden.mjs",
+        "docs/plans/zero-shot-observe-admit-step/plan.md"
+      ],
+      "reason": "denylist 未命中不再作为 read-safe 证明；新增 sign out/登出/销户/永久抹除/archive/approve、未知 link 和只读导航正控。修 production 前 authority-runner 真实 9 passed/2 failed；窄白名单修后 11/11，authority 夹具两处仅换成明确只读候选、断言零弱化。"
+    }
+  ],
   "observability": [
     {
       "dimension": "AI 中台 current build 上以真实 Playwright main frame 完成 fresh observe → one read click → fresh post-readback；zero-SUT adapter double 只证明控制流。",
@@ -63,12 +164,15 @@
   "stories": [
     {
       "id": "s1-page-observation-catalog",
-      "desc": "实现主 frame PageObservation、bounded affordance catalog 与 opaque authority：URL 脱敏、public 最小化、稳定 digest、hidden-aware 歧义、stale/clone/DOM replacement/dispose 全部 fail-closed。",
+      "desc": "实现主 frame PageObservation、bounded affordance catalog 与 opaque authority：URL/title/semantic 脱敏、public 最小化、稳定 digest、handle 生命周期、真实 Playwright exact locator 与 page topology 变化全部 fail-closed。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/page-observer-main-frame.zero-sut.golden.mjs"
+        "node tests/_golden/page-observer-main-frame.zero-sut.golden.mjs",
+        "node tests/_golden/public-observation-redaction.zero-sut.golden.mjs",
+        "node tests/_golden/playwright-page-driver-hardening.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-27T07:56:18.727Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-step-contract-resolver-proposal",
@@ -77,7 +181,8 @@
       "acceptance": [
         "node tests/_golden/deterministic-resolver-step-contract.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-27T07:56:20.014Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-admission-execute-progress-trace",
@@ -86,16 +191,18 @@
       "acceptance": [
         "node tests/_golden/zero-shot-action-progress.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-27T07:56:21.635Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-authority-runner",
-      "desc": "卡死 runner 的真正 zero-hit proposal 全闭环、deterministic dominance、全链递归冻结/原位篡改、observation clone 与 typed pathname progress 闭集。",
+      "desc": "卡死 runner 的真正 zero-hit proposal 全闭环、deterministic dominance、窄白名单 read 目标、全链递归冻结/原位篡改、observation clone 与 typed pathname progress 闭集。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-27T07:56:23.171Z 全部 acceptance exit 0"
     },
     {
       "id": "s5-module-boundaries",
@@ -107,7 +214,8 @@
         "node tests/_golden/setup-receipt-identity.zero-sut.golden.mjs",
         "node tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-27T07:56:27.500Z 全部 acceptance exit 0"
     },
     {
       "id": "s6-adjacent-regressions-hold",
@@ -122,8 +230,9 @@
         "node tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs",
         "node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-27T07:57:03.192Z 全部 acceptance exit 0"
     }
   ],
-  "notes": "acceptance-gate 于 2026-07-27 冻结。五条新门在实现前均真实 RED：四条行为金牌分别因 page-observer/step-contract 模块不存在，静态门因计划内 12 个 S2 核心文件缺失而 0/5；所有新文件先过 node --check。七条邻接回归和 S1 三金牌同轮真实 GREEN。adapter double 不启 browser/server，不模拟 SUT API，不能替代真实 Playwright/UAT；popup/new tab 登录连续性也必须实机 route:human。实现者不得修改 testChecksums 覆盖文件；接口或验收语义需变更时必须返回主 agent 重开 acceptance-gate。"
+  "notes": "acceptance-gate 于 2026-07-27 初冻并经 R1-R11 对抗式加严重冻；每轮改动文件、真实 RED 数量与断言边界见 checksumAmendments 和 red-proof。新增 Playwright driver 门实现前 0/4，public observation 脱敏门实现前 0/2，窄白名单修正前 authority-runner 9/11；均非 marker 假红。adapter double 不启 browser/server、不模拟 SUT API，zero-SUT 绿不能替代真实 Playwright/UAT；popup/new tab 登录连续性仍必须实机 route:human。read-safe 只表示 MVP 窄白名单的已知风险过滤，不是完整安全证明；未知 link 直接 NOT_READ_SAFE。passes 只由 gate 写入，冻结件后续变化必须继续走 acceptance-gate 与 checksumAmendments。"
 }

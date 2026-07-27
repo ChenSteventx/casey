@@ -249,12 +249,13 @@ function noVerdictClaims(value) {
   return walk(value);
 }
 
-check('C1 happy：action 恰一次，fresh after pathname 满足冻结 progress 才 progressed', async () => {
+await check('C1 happy：action 恰一次，fresh after pathname 满足冻结 progress 才 progressed', async () => {
   const run = await closedHappy();
   assert(run.progress?.status === 'progressed' && run.progress.reason == null && run.progress.progressReceipt,
     `progress 应 proved：${JSON.stringify(run.progress)}`);
   assert(run.page.control.calls.perform === 1, `perform 应恰 1，实际 ${run.page.control.calls.perform}`);
-  assert(run.page.control.calls.revalidate === 1, `revalidate 应恰 1，实际 ${run.page.control.calls.revalidate}`);
+  assert(run.page.control.calls.revalidate === 2,
+    `admission 与 execute 前应各重验一次，实际 ${run.page.control.calls.revalidate}`);
   assert(run.page.control.calls.snapshot === 2 && run.page.control.calls.settle === 2,
     `before/after 必须各 fresh observe：${JSON.stringify(run.page.control.calls)}`);
   for (const forgedReceipt of [
@@ -283,7 +284,7 @@ check('C1 happy：action 恰一次，fresh after pathname 满足冻结 progress 
     `真 authority 不得给篡改 observation 背书：${JSON.stringify(tampered)}`);
 });
 
-check('C2 admission 失败 action 零调用：旧 observation、JSON clone、错误 affordance namespace', async () => {
+await check('C2 admission 失败 action 零调用：旧 observation、JSON clone、错误 affordance namespace', async () => {
   const page = makeDouble();
   const stepContract = mustContract();
   const old = await mustObserve(page.driver);
@@ -333,7 +334,7 @@ check('C2 admission 失败 action 零调用：旧 observation、JSON clone、错
   assert(page.control.calls.perform === 0, '所有 admission 拒绝路径 action 必须零调用');
 });
 
-check('C3 DOM replacement 在 admission 重验关闭 TOCTOU 窗，action 零调用', async () => {
+await check('C3 DOM replacement 在 admission 重验关闭 TOCTOU 窗，action 零调用', async () => {
   const page = makeDouble({ revalidate: { sameNode: false } });
   const stepContract = mustContract();
   const before = await mustObserve(page.driver);
@@ -350,7 +351,7 @@ check('C3 DOM replacement 在 admission 重验关闭 TOCTOU 窗，action 零调�
     `只准重验一次、不得执行：${JSON.stringify(page.control.calls)}`);
 });
 
-check('C3a resolution 是 opaque authority：换指 catalog 内另一合法 af_* 的 clone/spread/手造件全拒', async () => {
+await check('C3a resolution 是 opaque authority：换指 catalog 内另一合法 af_* 的 clone/spread/手造件全拒', async () => {
   const page = makeDouble({
     beforeAffordances: [
       rawAffordance(),
@@ -383,7 +384,7 @@ check('C3a resolution 是 opaque authority：换指 catalog 内另一合法 af_*
   assert(authentic && page.control.calls.perform === 0, '真 resolution 只可铸 admission，尚不得执行');
 });
 
-check('C4 connected/pageCount/visible/enabled 任一不满足都拒且 action 零调用', async () => {
+await check('C4 connected/pageCount/visible/enabled 任一不满足都拒且 action 零调用', async () => {
   const cases = [
     [{ connected: false }, 'AFFORDANCE_DRIFTED'],
     [{ pageCount: 2 }, 'AFFORDANCE_AMBIGUOUS'],
@@ -406,28 +407,30 @@ check('C4 connected/pageCount/visible/enabled 任一不满足都拒且 action �
   }
 });
 
-check('C5 identity pending 只能加严拒绝，不能因 read/名称唯一放行', async () => {
-  const page = makeDouble();
-  const stepContract = mustContract();
-  const before = await mustObserve(page.driver);
-  const resolution = mustResolution(stepContract, before.observation);
-  const result = await admitZeroShotAction({
-    stepContract,
-    observation: before.observation,
-    observationAuthority: before.authority,
-    resolution,
-    identityAdmission: { required: true, status: 'pending' },
-  });
-  assert(result?.ok === false && result.reason === 'ENTITY_IDENTITY_PENDING',
-    `identity pending 应硬停：${JSON.stringify(result)}`);
-  assert(page.control.calls.perform === 0, 'identity pending 不得动作');
+await check('C5 identity pending 只能加严拒绝，不能因 read/名称唯一放行', async () => {
+  for (const status of ['pending', 'admitted', 'verified']) {
+    const page = makeDouble();
+    const stepContract = mustContract();
+    const before = await mustObserve(page.driver);
+    const resolution = mustResolution(stepContract, before.observation);
+    const result = await admitZeroShotAction({
+      stepContract,
+      observation: before.observation,
+      observationAuthority: before.authority,
+      resolution,
+      identityAdmission: { required: true, status },
+    });
+    assert(result?.ok === false && result.reason === 'ENTITY_IDENTITY_PENDING',
+      `caller plain identity flag 只能加严，不能凭 ${status} 自行授权：${JSON.stringify(result)}`);
+    assert(page.control.calls.perform === 0, '无 builder authority 的 identity flag 不得动作');
+  }
 });
 
-check('C5a zero-hit bounded proposal 的真 authority 可闭环，换指另一合法 af_* 的伪造 proposal 全拒', async () => {
+await check('C5a zero-hit bounded proposal 的真 authority 可闭环，换指另一合法 af_* 的伪造 proposal 全拒', async () => {
   const page = makeDouble({
     beforeAffordances: [
-      rawAffordance({ handleId: 'continue', role: 'button', accessibleName: '继续', text: '继续' }),
-      rawAffordance({ handleId: 'cancel', role: 'button', accessibleName: '取消', text: '取消' }),
+      rawAffordance({ handleId: 'continue', role: 'link', accessibleName: '继续', text: '继续' }),
+      rawAffordance({ handleId: 'back-help', role: 'link', accessibleName: '返回帮助', text: '返回帮助' }),
     ],
   });
   const stepContract = mustContract();
@@ -481,7 +484,7 @@ check('C5a zero-hit bounded proposal 的真 authority 可闭环，换指另一�
     `proposal 闭环应恰一次 progressed：${JSON.stringify(progress)}`);
 });
 
-check('C6 action adapter 抛错只调用一次，admission 已消费，不换目标、不重试', async () => {
+await check('C6 action adapter 抛错只调用一次，admission 已消费，不换目标、不重试', async () => {
   const page = makeDouble({ performError: new Error('synthetic action failure') });
   const stepContract = mustContract();
   const before = await mustObserve(page.driver);
@@ -506,7 +509,7 @@ check('C6 action adapter 抛错只调用一次，admission 已消费，不换目
   assert(page.control.calls.perform === 1, `perform 异常也只能 1 次，实际 ${page.control.calls.perform}`);
 });
 
-check('C7 action success 但 after unsettled 或 pathname 无进展，intent 仍 pending', async () => {
+await check('C7 action success 但 after unsettled 或 pathname 无进展，intent 仍 pending', async () => {
   const unsettled = await closedHappy({ afterSettled: false });
   assert(unsettled.progress?.status === 'pending' && unsettled.progress.reason === 'OBSERVATION_UNSETTLED',
     `after unsettled 不得 progressed：${JSON.stringify(unsettled.progress)}`);
@@ -522,7 +525,7 @@ check('C7 action success 但 after unsettled 或 pathname 无进展，intent 仍
   `before 已满足 startsWith 时不得把 after 仍满足冒充本动作因果：${JSON.stringify(alreadySatisfied.progress)}`);
 });
 
-check('C8 fresh after 必须与 action lineage 同 driver，跨 driver observation 拒', async () => {
+await check('C8 fresh after 必须与 action lineage 同 driver，跨 driver observation 拒', async () => {
   const left = makeDouble();
   const right = makeDouble();
   const stepContract = mustContract();
@@ -542,7 +545,7 @@ check('C8 fresh after 必须与 action lineage 同 driver，跨 driver observati
     `跨 driver after 不得证明进展：${JSON.stringify(result)}`);
 });
 
-check('C9 exploration trace 稳定、单步、恒未签不可回放且无机器裁定字段', async () => {
+await check('C9 exploration trace 稳定、单步、恒未签不可回放且无机器裁定字段', async () => {
   const run = await closedHappy();
   assert(run.progress.status === 'progressed', 'trace happy 前置须 progressed');
   const input = {
@@ -564,7 +567,7 @@ check('C9 exploration trace 稳定、单步、恒未签不可回放且无机器�
     && !JSON.stringify(first).includes('entity_candidate'), 'trace 不得混入伪造业务 identity');
 });
 
-check('C10 runSingleZeroShotStep 真实跑通 deterministic happy，不得只靠 static 空壳', async () => {
+await check('C10 runSingleZeroShotStep 真实跑通 deterministic happy，不得只靠 static 空壳', async () => {
   const page = makeDouble();
   const result = await runSingleZeroShotStep({
     driver: page.driver,
@@ -575,7 +578,7 @@ check('C10 runSingleZeroShotStep 真实跑通 deterministic happy，不得只靠
     `runner deterministic happy 应完成：${JSON.stringify(result)}`);
   assert(result.trace?.artifactKind === 'zero-shot-exploration-trace'
     && result.trace.signed === false && result.trace.replayReady === false, 'runner 须返回降权 trace');
-  assert(page.control.calls.perform === 1 && page.control.calls.revalidate === 1
+  assert(page.control.calls.perform === 1 && page.control.calls.revalidate === 2
     && page.control.calls.snapshot === 2 && page.control.calls.settle === 2,
   `runner 必须真实走完整固定顺序：${JSON.stringify(page.control.calls)}`);
 });

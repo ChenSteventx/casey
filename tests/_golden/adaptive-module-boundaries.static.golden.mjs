@@ -32,6 +32,8 @@ const S2_CORE = [
   'lib/zero-shot/page-observer.mjs',
   'lib/zero-shot/deterministic-resolver.mjs',
   'lib/zero-shot/action-proposal.mjs',
+  'lib/zero-shot/read-safe-target.mjs',
+  'lib/zero-shot/public-observation-redaction.mjs',
   'lib/zero-shot/action-admission.mjs',
   'lib/zero-shot/step-executor.mjs',
   'lib/zero-shot/progress-verifier.mjs',
@@ -153,6 +155,8 @@ check('adaptive-module-boundaries-d3', '纯模块不直接依赖 Playwright、IO
     'lib/zero-shot/step-contract.mjs',
     'lib/zero-shot/deterministic-resolver.mjs',
     'lib/zero-shot/action-proposal.mjs',
+    'lib/zero-shot/read-safe-target.mjs',
+    'lib/zero-shot/public-observation-redaction.mjs',
     'lib/zero-shot/progress-verifier.mjs',
     'lib/zero-shot/exploration-trace.mjs',
   ];
