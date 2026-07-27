@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "task": "entity-rename-unknown-action-guard（C4 后继，light）：把未知字符串原子闭集检查前移到生产事件环的 nav / 非 nav 分叉之前，关闭 unknown+nav 可 goto→unique→PASS 的旁路。复用 unknownAtomRejection 与 isCompilableAtom 单一事实源；命中后落 action_failed/UNKNOWN_ATOM，不执行该事件的导航或业务动作。不新增 rename 编译器，不改 verdict，不触碰形式收据链、原 C4 冻结件或人签内容。",
+  "specPath": "docs/plans/entity-rename-unknown-action-guard/plan.md",
+  "testChecksums": {
+    "tests/_golden/entity-rename-unknown-action-guard.zero-sut.golden.mjs": "701334e45c5b6146beed8f52c3561a9d9b41f4094685aa8312f50a5947a71cba",
+    "docs/plans/entity-rename-unknown-action-guard/plan.md": "5e3d92e9aa7bd1e17a1b6c8b827939ed34e2fcf6d337ab88fd4d7401e7e030ef",
+    "docs/plans/entity-rename-unknown-action-guard/GRILL.md": "0a604e45fba27954b7cd024cfdc96dd4fca0d91293bf1bed4af5bb93d0030c72",
+    "docs/plans/entity-rename-unknown-action-guard/accept/red-proofs/before-implementation.red.txt": "51543ef9cec5f5ba89935c0686cc8d86a237adf93a9a08150dc8ce6c27465117"
+  },
+  "observability": [
+    {
+      "dimension": "原 C4 冻结措辞订正与两枚候选晋升仍须 Steven 按 ADR-0004 人签；本后继不得替代该签署。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实 SUT 上的 rename 负向回放、录屏、视觉复核和独立 HTML 仍须真实环境完成闸。",
+      "route": "human"
+    },
+    {
+      "dimension": "rename → successor 正向能力仍依赖形式收据链恢复与人签；本后继只关闭未知原子回放旁路。",
+      "route": "human"
+    },
+    {
+      "dimension": "0/26 runtime-discrimination-successor 必须继续诚实红且拒绝原因不漂；不得由本后继转绿。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-unknown-action-pre-dispatch-guard",
+      "desc": "生产事件环在 nav 与非 nav 分叉前调用 unknownAtomRejection；workflow.rename 的 nav/click 共用 action_failed/UNKNOWN_ATOM 拒绝轴，合法 nav 不误拒，真实零 LLM verdict 绝不产 PASS。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-rename-unknown-action-guard.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-27T02:35:08.947Z 全部 acceptance exit 0"
+    }
+  ]
+}

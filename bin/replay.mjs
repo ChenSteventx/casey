@@ -19,7 +19,7 @@
 import { readFileSync, writeFileSync, writeSync, renameSync, readdirSync, rmSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import pw from '@playwright/test';
-import { dispatchReplayAction } from '../lib/replay-actions.mjs';
+import { dispatchReplayAction, unknownAtomRejection } from '../lib/replay-actions.mjs';
 import { instantiate } from '../lib/instantiate.mjs';
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { normalizeLoadingProfile, settleBeforeCapture } from '../lib/replay-settle.mjs';
@@ -603,23 +603,28 @@ async function main() {
       const evT0 = Date.now();
       let reprSettled = false; // 代表步静默点结果（replay-settle-mount）：喂 historyLine 的 quietPointReached
       if (args.videoDir) vSteps.push({ stepId: ev.stepId, videoAt: Math.max(0, evT0 - videoT0) });
+      // C4 后继：未知字符串原子须在 nav / 非 nav 分叉及任何页面动作之前统一拒绝。
+      // 复用编译知识闭集的单一事实源；命中后只落拒绝动作轴，不执行该事件的导航或业务动作。
+      const atomRejection = unknownAtomRejection(ev);
       let navOk = true;
       let navErr = null;
-      try {
-        if (ev.action === 'nav') {
-          state.currentStepId = ev.stepId; // nav 本身就是动作，开放归因
-          // 旧只读信封可缺 url 以通过无锁迁移门，但缺目标绝不能拼成 `/undefined`
-          // 触碰 SUT；按动作失败收口。带 url 的无锁 read 已在 identity admission 钉住固定路径。
-          if (typeof ev.url !== 'string' || !ev.url) throw new TypeError('nav event 缺 compiler-authored url');
-          await page.goto(sut + pathOf(instantiate(ev.url, ctx)), { waitUntil: 'load' });
-        } else {
-          const want = ev.pre && ev.pre.path;
-          if (want && pathOf(page.url()) !== want) {
-            const restoreT = Date.now();
-            try { await page.goto(sut + want, { waitUntil: 'load' }); } finally { rhQuietWait += Date.now() - restoreT; }
+      if (!atomRejection) {
+        try {
+          if (ev.action === 'nav') {
+            state.currentStepId = ev.stepId; // nav 本身就是动作，开放归因
+            // 旧只读信封可缺 url 以通过无锁迁移门，但缺目标绝不能拼成 `/undefined`
+            // 触碰 SUT；按动作失败收口。带 url 的无锁 read 已在 identity admission 钉住固定路径。
+            if (typeof ev.url !== 'string' || !ev.url) throw new TypeError('nav event 缺 compiler-authored url');
+            await page.goto(sut + pathOf(instantiate(ev.url, ctx)), { waitUntil: 'load' });
+          } else {
+            const want = ev.pre && ev.pre.path;
+            if (want && pathOf(page.url()) !== want) {
+              const restoreT = Date.now();
+              try { await page.goto(sut + want, { waitUntil: 'load' }); } finally { rhQuietWait += Date.now() - restoreT; }
+            }
           }
-        }
-      } catch (e) { navOk = false; navErr = e; }
+        } catch (e) { navOk = false; navErr = e; }
+      }
 
       if (isFirst) intentCount.set(ev.intentId, { before: await rowCount(page, countSel), after: null });
 
@@ -634,7 +639,10 @@ async function main() {
         intentReplyBase.set(ev.intentId, base);
       }
 
-      if (ev.action === 'nav') {
+      if (atomRejection) {
+        actionByStep.set(ev.stepId, atomRejection);
+        state.currentStepId = null;
+      } else if (ev.action === 'nav') {
         // nav 动作轴按 goto 实际成败（不再恒 unique，finding 3）。
         actionByStep.set(ev.stepId, navOk ? { resolution: 'unique', identityReadback: { ok: true } } : { resolution: 'action_failed', identityReadback: { ok: false } });
         state.currentStepId = null;
