@@ -1,17 +1,17 @@
 {
   "schemaVersion": 1,
-  "task": "precondition-atom-workflow（full，Wave 2 / S1）：新增 setup candidate/plan/receipt 旁车，把业务前置条件按 atom registry 真值稳定拓扑排序；setup 执行与 post-readback 全部闭合后才允许主体 main flow。登录继续走 Login Bootstrap；receipt 只引用同一调用内的 compile identity observation，不内联或另铸平台 ID；主体 mapping 继续使用 candidateId + role。任何 provider 歧义、状态证据不足、身份观察多义或 adapter 失败均 fail-closed，主体执行函数零调用。本契约只闭合 zero-SUT 纯函数与 adapter，不宣称真实 AI 中台/医生站/Hi 小助 UAT，不改 replay/verdict/正式身份收据。",
+  "task": "precondition-atom-workflow（full，Wave 2 / S1）：新增 setup candidate/plan/receipt 旁车，把业务前置条件按 atom registry 真值稳定拓扑排序；只有 Login Bootstrap 已证状态与 setup post-readback 可进入主体初态。barrier 先准入 plan，再签发一次性 execution challenge，旧 evidence/receipt 不可跨调用重放；setup 执行与身份观察义务全部闭合后才允许主体 main flow。动作/观察角色真值冲突在执行前具名 route:human，不擅改人签策略。receipt 不内联或另铸平台 ID；主体 mapping 继续使用 candidateId + role。本契约只闭合 zero-SUT 纯函数与 adapter，不宣称真实 AI 中台/医生站/Hi 小助 UAT，不改 replay/verdict/正式身份收据。",
   "specPath": "docs/plans/precondition-atom-workflow/plan.md",
   "testChecksums": {
-    "tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs": "1c1e9ecad5cfede597d8fdc1df1b5d0f0cdfd9edaded5c7676392a23ccea0015",
-    "tests/_golden/setup-receipt-identity.zero-sut.golden.mjs": "6e510e2c5bc5d8d48c4e092d1329e57e85ce5f34ba8874e70c898958478497e8",
-    "tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs": "bf70e71e56b51bf317a2d25e4e10264d9a802ac3b384f0b7d39cc4bb0b4735d9",
+    "tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs": "02f61a7677241afd4e02c0bae0721c0cf69325e77df2005066ab4b7ca104a3ba",
+    "tests/_golden/setup-receipt-identity.zero-sut.golden.mjs": "ff7ff4e65b0379f396b81947e34efc12df0856691dffba635dbf81ad6c5ee42f",
+    "tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs": "2a5b0fce7fa5b09fd4ef6ab15a95728169b8115b6dcabba1b3a37da11dbaba45",
     "tests/_golden/intent-state-trace.zero-sut.golden.mjs": "84f4a2010c52d2a0c32593da805ba69dc9224d6008639095325a49fee544378b",
     "tests/_golden/flow-bridge.golden.mjs": "28da2a24405b75e9c3105f2bc4a070cbe736d81b767fe8c702c9f7bcee2c2b20",
     "tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs": "acbe4b6a7707df845e976bb2071bf30c9957849eb4831061338d81b7e8055655",
-    "docs/plans/precondition-atom-workflow/GRILL.md": "d0dba77d6045d9a95ee1ccb3444c4ea404c33f17a9d21f177388b2386a648af5",
-    "docs/plans/precondition-atom-workflow/plan.md": "200554dc6efc5493925780578b486d8e464b5601bbd558746093ebb94dbccfe6",
-    "docs/plans/precondition-atom-workflow/accept/red-proofs/precondition-atom-workflow.red.txt": "e452fc3c155f5b625e37b5d201a20daf44ccf230828664c78fdc5a73c211ddae"
+    "docs/plans/precondition-atom-workflow/GRILL.md": "e87a1f52edd9d3997a97d1083c29f032c7e46fed2ad6923c1ba7678d0462364b",
+    "docs/plans/precondition-atom-workflow/plan.md": "f362fe4640cf5495546497050771dad044fda7eb125272b6f85d4626e8d14dd9",
+    "docs/plans/precondition-atom-workflow/accept/red-proofs/precondition-atom-workflow.red.txt": "1b811c2ce1d66a6882db7d5e1c7d10c24b10d5d75e0070ff27cfabb997b3aadc"
   },
   "observability": [
     {
@@ -27,7 +27,7 @@
       "route": "human"
     },
     {
-      "dimension": "workflow.create 的 subject/source 角色冲突、多身份通道与跨 compile run receipt；保持 fail-closed，另立契约解决。",
+      "dimension": "workflow.create/workflow.open 的 subject/source 角色冲突、多身份通道与跨 compile run receipt；规划期具名 route:human，另立契约重签/解决。",
       "route": "human"
     },
     {
@@ -42,33 +42,33 @@
   "stories": [
     {
       "id": "s1-setup-plan",
-      "desc": "实现 registry 真值驱动的 setup plan：稳定拓扑、唯一 provider、目标状态、可编译性、登录排除和实体角色全部 fail-closed；排序后委托现有状态机与 flow 形状。",
+      "desc": "实现 registry 真值驱动的 setup plan：稳定拓扑、唯一 provider、目标状态、可编译性、登录排除、业务前置不直通和实体/观察角色冲突全部 fail-closed；排序后委托现有状态机与 flow 形状。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-27T04:43:36.532Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-27T05:12:36.499Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-setup-receipt-identity",
-      "desc": "实现 setup execution candidate receipt 与主体准入：全步 unique/readback、plan digest、状态闭集、身份观察原始字节/完整关联键/名称编号唯一匹配；平台 ID 只从观察行投影。",
+      "desc": "实现 setup execution candidate receipt 与主体准入：一次性 execution challenge、全步 unique/readback、plan digest、状态闭集、身份观察原始字节/完整关联键/名称编号唯一匹配；平台 ID 只从观察行投影。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/setup-receipt-identity.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-27T04:43:37.346Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-27T05:12:37.243Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-setup-runtime-barrier",
-      "desc": "实现 setup → receipt → admission → main 固定屏障；setup、receipt 或 admission 任一失败时 main adapter 零调用，输出不含 PASS/verdict。",
+      "desc": "实现 plan admission → one-time execution request → setup → receipt → admission → main 固定屏障；坏 plan 时 setup 零调用，其余失败时 main adapter 零调用，输出不含 PASS/verdict。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-27T04:43:38.156Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-27T05:12:37.913Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-adjacent-regressions-hold",
@@ -80,8 +80,8 @@
         "node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-27T04:44:01.586Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-27T05:13:00.667Z 全部 acceptance exit 0"
     }
   ],
-  "notes": "acceptance-gate 于 2026-07-27 冻结。三条新功能金牌在实现前均因 lib/adaptive-execution/setup-*.mjs 不存在真实 RED；三条邻接回归同轮真实 GREEN。实现主审发现 B1 错把 exclusive group 已移除的中间页面状态当成 receipt 可用状态，遂重开 acceptance：修正为只接受 setup 结束时仍成立的状态，并在实现前基线 57e4130 独立 worktree 再证真实 RED；两项新 checksum 已重冻。实现者不得修改任何 testChecksums 覆盖文件；契约语义需变更时必须返回主 agent 重开 acceptance-gate。"
+  "notes": "acceptance-gate 于 2026-07-27 冻结。三条新功能金牌在实现前均因 lib/adaptive-execution/setup-*.mjs 不存在真实 RED；三条邻接回归同轮真实 GREEN。R1 修正 exclusive group 中间状态泄漏；R2 把 identity fixture 对齐现役 compile-envelope/kind/sourcePath；R3 根据独立评审补业务前置不直通、plan 执行前准入、身份义务/kind、一次性 execution challenge，并保留 workflow.open 角色冲突场景为规划期 route:human。R1-R3 修正版均在实现前基线 57e4130 独立 worktree 再证真实 RED；当前三条测试均语法 GREEN，checksum 已重冻。实现者不得修改任何 testChecksums 覆盖文件；契约语义需变更时必须返回主 agent 重开 acceptance-gate。"
 }

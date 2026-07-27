@@ -66,3 +66,66 @@ Error [ERR_MODULE_NOT_FOUND]: Cannot find module
 'lib/adaptive-execution/setup-flow.mjs'
 
 说明：修正版测试已在实现前基线独立 worktree 运行；红因仍为目标模块不存在，不是语法错误。
+
+ACCEPTANCE AMENDMENT R2
+reason:
+独立实现评审发现 B6 使用了裁剪后的非生产 identity observation：观察行缺现役 compile 必产的
+kind/sourcePath，source.kind 也误写成 agent，而生产 issuer 为 compile-envelope。
+
+corrected expectation:
+B6 使用现役 identity-observations.compile.json 的完整观察行与 compile-envelope source；
+setup admission 必须直接兼容生产观察件，不能只通过自造裁剪夹具。
+
+red verification base:
+57e4130（S1 实现前冻结提交）
+
+command:
+node tests/_golden/setup-receipt-identity.zero-sut.golden.mjs
+
+exit:
+1
+
+failure:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+'lib/adaptive-execution/setup-flow.mjs'
+
+说明：R2 修正版同样在实现前基线独立 worktree 运行；先通过 node --check，红因是目标模块不存在。
+
+ACCEPTANCE AMENDMENT R3
+reason:
+独立实现评审发现四类可达性/真实性缺口：
+1. TestCase 业务前置文本被当成运行时已满足，未 probe/readback 也能启动主体；
+2. setup plan 未先准入，坏 plan 可能先调用 adapter 再拒绝；
+3. 已登记 identity observation 的 setup atom 可省略引用或接受错 kind；
+4. session 只绑定 receipt，不绑定本次 adapter 执行；旧 execution evidence 可在 fresh session
+   重新 finalize 并再次启动主体。
+同轮复核还确认现役 workflow.open 动作角色 subject 与观察角色 source 冲突；不得改夹具掩盖，
+也不得擅改人签策略。
+
+corrected expectations:
+- 只有 Login Bootstrap 的「已登录」可直接进入 setup initialStates，其他业务前置必须由 atom workflow 取证；
+- barrier 在 executeSetup 前完成 plan admission，未就绪 plan 的 setup/main adapter 均零调用；
+- observation registry 已登记的 setup atom 必须完整提供对应角色的 ref，issuer/kind/关联键逐项匹配；
+- barrier 在执行前签发一次性 execution challenge，evidence 必须回绑；旧 evidence 在 fresh session 拒绝；
+- workflow.open 原场景保留，并在角色权威未统一前于规划期具名 SETUP_IDENTITY_ROLE_CONFLICT、
+  route:human。
+
+red verification base:
+57e4130（S1 实现前冻结提交）
+
+commands:
+node tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs
+node tests/_golden/setup-receipt-identity.zero-sut.golden.mjs
+node tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs
+
+exits:
+1
+1
+1
+
+failure for each:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+'lib/adaptive-execution/setup-flow.mjs'
+
+说明：三条 R3 当前测试字节均通过 node --check；随后把 import 重定向到 57e4130 独立 worktree
+逐条执行，三者均因目标 setup-flow 模块尚不存在真实 RED，不是语法错误或伪造标记红。

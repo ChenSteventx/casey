@@ -5,9 +5,10 @@
 
 ## 1. 现状与真缝
 
-现有 `TestCase.preconditions` 只是 compile-gate 的初始状态种子，不代表运行时已经完成前置操作。
-现有 compile flow 也没有 setup/subject 阶段屏障：如果上游只把前置条件写成文字，系统无法证明它做过，
-更无法证明失败后主体没有继续。
+现有 `TestCase.preconditions` 在旧 compile-gate 中是初始状态种子，但自然语言业务前置不代表运行时已经完成。
+S1 只信 Login Bootstrap 已证的 `已登录`；其余业务状态必须由 setup probe/post-readback 取得。现有 compile
+flow 也没有 setup/subject 阶段屏障：如果上游只把前置条件写成文字，系统无法证明它做过，更无法证明失败后
+主体没有继续。
 
 可复用的确定性能力：
 
@@ -77,13 +78,26 @@ Candidate 形状：
 6. `login`、未知 atom、册内不可编译 atom拒绝；
 7. 复用现有实体角色策略：mutation 恰 `subject`，relation 恰 `source + target`，不得按数组顺序猜角色；
 8. setup flow 使用现有 `buildFlow` 形状，能交给后继 compile 执行接线。
+9. 已登记身份观察义务的 atom，动作角色与观察角色必须一致；现役 `workflow.open`
+   `action=subject / observation=source` 尚未统一，因此规划期直接 `SETUP_IDENTITY_ROLE_CONFLICT`
+   且 `route:human`，不得先执行后在 receipt 阶段才发现冲突。
 
 ### 2.2 setup receipt 与主体准入
 
 新增 `lib/adaptive-execution/setup-receipt.mjs`：
 
 ```text
-finalizeSetupReceipt({ plan, execution }) → { ok, receipt, problems }
+createSetupAdmissionSession({ caseId }) → opaque session
+
+createSetupExecutionRequest({ plan, admissionSession }) → {
+  schemaVersion,
+  artifactKind: "setup-execution-request",
+  caseId,
+  setupPlanSha256,
+  executionChallenge
+}
+
+finalizeSetupReceipt({ plan, execution, admissionSession }) → { ok, receipt, problems }
 
 admitMainFlowWithSetup({
   testcase,
@@ -91,7 +105,8 @@ admitMainFlowWithSetup({
   setupPlan,
   setupReceipt,
   identityObservationBytes,
-  registry
+  registry,
+  admissionSession
 }) → {
   ok,
   allowMainStart,
@@ -107,6 +122,8 @@ Receipt 必须：
 
 - `signed:false/replayReady:false`，且没有 PASS/verdict 字段；
 - 绑定 setup plan 原始确定性 digest；
+- 绑定 barrier 在执行前签发的一次性 `executionChallenge`；旧 execution evidence 不能放进 fresh session
+  重新 finalize；
 - 每个 setup intent 恰一条、顺序相同；
 - `executed` 必须动作 unique 且提供状态有 post-readback；
 - `already-satisfied` 必须 `acted:false` 且有确定性 probe proof；
@@ -114,7 +131,7 @@ Receipt 必须：
 
 主体准入：
 
-- 只有合法 receipt 的 `providedStates` 才能与 TestCase preconditions 合并；
+- 只有合法 receipt 的 `providedStates` 才能与已证 Login Bootstrap 状态合并；TestCase 中其他业务前置文本不直通；
 - 合并后重跑真实 `validateBridge`/状态机；
 - 无 receipt、receipt 被改、主体仍缺状态时 `allowMainStart:false`；
 - receipt 只存 identity observation 引用。消费时按原始字节 sha、caseId、
@@ -141,17 +158,21 @@ executeWithSetupBarrier({
 }
 ```
 
-`executeSetup` 与 `executeMain` 是后继 compile/browser adapter（适配器）注入点。屏障自身固定顺序：
+`executeSetup` 与 `executeMain` 是后继 compile/browser adapter（适配器）注入点。`executeSetup`
+接收 `(setupPlan, executionRequest)`，返回的 evidence 必须回绑 request challenge。屏障自身固定顺序：
 
 ```text
-executeSetup
+admitSetupPlan
+→ createSetupAdmissionSession
+→ createSetupExecutionRequest
+→ executeSetup
 → finalizeSetupReceipt
 → admitMainFlowWithSetup
 → executeMain
 ```
 
-前三段任一失败或抛错，`executeMain` 必须零调用。第一版同一调用内传递 identity observation 原始字节；
-跨 run 复用后置。
+setup plan 未就绪时 `executeSetup` 本身必须零调用；后续任一阶段失败或抛错，`executeMain` 必须零调用。
+第一版同一调用内传递 identity observation 原始字节和一次性 challenge；跨 run 复用后置。
 
 ## 3. touchesFiles
 
@@ -192,6 +213,7 @@ executeSetup
 5. 目标状态未达成时不 ready；
 6. mutation/relation 角色不完整或未知时拒绝，relation 不按数组顺序猜；
 7. 输入对象不被变异，输出数组稳定。
+8. 动作/观察角色策略冲突时规划期 `route:human`，不得执行 setup adapter。
 
 ### B. receipt 与身份
 
@@ -202,11 +224,12 @@ executeSetup
 5. receipt 内联 platform ID 或 identity observation hash/关联键错误时拒绝；
 6. 同 candidate 多观察行拒绝；唯一观察行精确匹配名称/编号后才投影平台 ID；
 7. 主体 mapping 仍只有 `candidateId + role`，不写入平台 ID。
+8. 同一 receipt 不可重复准入；旧 execution evidence 不能在 fresh session 重新 finalize/准入。
 
 ### C. runtime barrier
 
-1. happy path 调用顺序固定为 setup → receipt → admission → main；
-2. setup adapter 抛错、非 unique 或 readback 不足时 main 零调用；
+1. happy path 调用顺序固定为 plan admission → execution request → setup → receipt → admission → main；
+2. plan 未就绪时 setup/main 均零调用；setup adapter 抛错、非 unique 或 readback 不足时 main 零调用；
 3. receipt/admission 被篡改时 main 零调用；
 4. barrier 输出不含 PASS/verdict，不调用 LLM。
 
@@ -224,7 +247,8 @@ executeSetup
 - AI 中台版本变化后的 setup readback 稳定性；
 - 医生站 held-out setup workflow；
 - Hi 小助 CEF 通道；
-- `workflow.create` 的 `subject/source` 角色冲突；
+- `workflow.create` 与 `workflow.open` 的 `subject/source` 角色冲突；S1 明确 fail-closed
+  `route:human`，不得伪装为可执行 setup；
 - 多身份通道和跨 run receipt；
 - destructive/relation setup 真机 UAT；
 - 人工录制前置条件并蒸馏为 atom 的闭环，归 S3/S4。
@@ -240,4 +264,3 @@ executeSetup
 - 陌生页面 zero-shot 已实现；
 - 人工录制已可正式 intake/replay；
 - 新平台 ID 已由 setup receipt 自行签署。
-

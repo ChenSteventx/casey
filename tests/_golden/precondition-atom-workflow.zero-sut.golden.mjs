@@ -183,25 +183,42 @@ check('A8 mutation 必须恰 subject；缺失与未知角色都拒绝', () => {
   }
 });
 
-check('A9 relation 只按显式 role 验证，不按数组位置猜 source/target', () => {
+check('A9 workflow.open 角色真值冲突须 route:human；relation 仍按显式 source/target 拒错配', () => {
   const good = {
     schemaVersion: 1, artifactKind: 'setup-flow-candidate', caseId: 'tc_relation',
     goalStates: ['节点智能体已绑定'],
-    steps: [{
-      intentId: 'setup_bind',
-      atom: 'workflow.bindAgent',
-      params: { nodeLabel: '智能体/工作流', agentName: '示例智能体', agentCode: 'AG-001' },
-      entityBindings: [
-        { candidateId: 'agent_1', role: 'target' },
-        { candidateId: 'workflow_1', role: 'source' },
-      ],
-    }],
+    steps: [
+      { intentId: 'setup_nav', atom: 'nav.workflowManagement', params: {} },
+      {
+        intentId: 'setup_open',
+        atom: 'workflow.open',
+        params: { openName: 'atl_relation' },
+        entityBindings: subject('workflow_1'),
+      },
+      {
+        intentId: 'setup_drawer',
+        atom: 'workflow.openNode',
+        params: { label: '智能体/工作流' },
+        entityBindings: subject('workflow_1'),
+      },
+      {
+        intentId: 'setup_bind',
+        atom: 'workflow.bindAgent',
+        params: { nodeLabel: '智能体/工作流', agentName: '示例智能体', agentCode: 'AG-001' },
+        entityBindings: [
+          { candidateId: 'agent_1', role: 'target' },
+          { candidateId: 'workflow_1', role: 'source' },
+        ],
+      },
+    ],
   };
-  const tc = testcase({ caseId: 'tc_relation', preconditions: ['已登录', '节点抽屉已开'] });
+  const tc = testcase({ caseId: 'tc_relation', preconditions: ['已登录'] });
   const plan = planSetupFlow({ testcase: tc, candidate: good, registry: REGISTRY });
-  assert(plan.ready === true, JSON.stringify(plan.problems));
+  assert(plan.ready === false, 'action=subject / observation=source 未统一前不得执行 setup');
+  assert(plan.problems.some((p) => p.code === 'SETUP_IDENTITY_ROLE_CONFLICT' && p.route === 'human'
+    && p.atom === 'workflow.open'), JSON.stringify(plan.problems));
   const bad = structuredClone(good);
-  bad.steps[0].entityBindings = [
+  bad.steps[3].entityBindings = [
     { candidateId: 'workflow_1', role: 'source' },
     { candidateId: 'agent_1', role: 'source' },
   ];
@@ -210,9 +227,21 @@ check('A9 relation 只按显式 role 验证，不按数组位置猜 source/targe
     JSON.stringify(denied.problems));
 });
 
+check('A10 TestCase 业务前置声明不直通初态，只有 Login Bootstrap 状态可信', () => {
+  const plan = planSetupFlow({
+    testcase: testcase({ preconditions: ['已登录', '测试面板已开', '智能体详情已开'] }),
+    candidate: baseCandidate,
+    registry: REGISTRY,
+  });
+  assert(plan.ready === true, JSON.stringify(plan.problems));
+  assert(JSON.stringify(plan.initialStates) === JSON.stringify(['已登录']),
+    `业务前置文本不得进入 initialStates：${JSON.stringify(plan.initialStates)}`);
+  assert(!plan.initialStates.includes('测试面板已开') && !plan.initialStates.includes('智能体详情已开'),
+    '未 probe/readback 的业务状态不得视为已满足');
+});
+
 if (failed) {
   console.error(`precondition-atom-workflow: ${passed} 过 / ${failed} 败`);
   process.exit(1);
 }
-console.log(`ok   precondition-atom-workflow: ${passed}/9（registry 真值 + 稳定拓扑 + 角色硬闸）`);
-
+console.log(`ok   precondition-atom-workflow: ${passed}/10（registry 真值 + 稳定拓扑 + 业务前置不直通）`);
