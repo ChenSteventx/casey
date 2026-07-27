@@ -1,0 +1,67 @@
+{
+  "schemaVersion": 1,
+  "recipes": [
+    {
+      "ruleId": "known-nav-workflow-management",
+      "match": {
+        "intentEquals": "进入工作流管理",
+        "actionHint": "navigate"
+      },
+      "emit": {
+        "atom": "nav.workflowManagement",
+        "params": {}
+      }
+    },
+    {
+      "ruleId": "known-create-workflow",
+      "match": {
+        "intentEquals": "新增工作流",
+        "actionHint": "fill"
+      },
+      "emit": {
+        "atom": "workflow.create",
+        "paramsFrom": {
+          "name": "inputValue"
+        }
+      }
+    },
+    {
+      "ruleId": "known-save-workflow",
+      "match": {
+        "intentEquals": "保存工作流",
+        "actionHint": "click"
+      },
+      "emit": {
+        "atom": "workflow.save",
+        "params": {}
+      }
+    },
+    {
+      "ruleId": "known-open-workflow",
+      "match": {
+        "intentEquals": "打开指定工作流",
+        "actionHint": "click"
+      },
+      "emit": {
+        "atom": "workflow.open",
+        "paramsFrom": {
+          "openName": "inputValue"
+        }
+      }
+    },
+    {
+      "ruleId": "known-search-open-agent",
+      "match": {
+        "intentEquals": "按名称与编号打开智能体",
+        "actionHint": "click"
+      },
+      "emit": {
+        "atom": "agent.searchOpen",
+        "paramsFrom": {
+          "searchKeyword": "inputValue",
+          "openName": "inputValue"
+        }
+      }
+    }
+  ]
+}
