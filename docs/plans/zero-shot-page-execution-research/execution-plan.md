@@ -1,7 +1,7 @@
 # 自适应页面执行落地计划
 
-> 状态：实施中。Wave 1（确定性 intent plan、known-atom dominance、authored assertion 冻结）已完成；
-> Wave 2 从业务前置条件 atom workflow 开始。本文把研究结论与
+> 状态：实施中。Wave 1 已完成；Wave 2 的 S1 业务前置条件 zero-SUT 纯函数与 adapter barrier 已完成，
+> 受控浏览器 readback/freshness 集成取证并入 S2 接缝，下一步进入 PageObserver 与确定性 resolver。本文把研究结论与
 > `docs/runbooks/adaptive-page-execution-sop.md` 转成可独立验收的开发切片。
 >
 > 优先级：先闭合可运行的 web 技术链，再扩安全纵深、跨通道和规模化评测。任何百分比和通过数都是
@@ -149,6 +149,9 @@ TestCase authored expected
 任意陌生页面能力。
 
 ### S1：业务前置条件 setup flow
+
+状态：`precondition-atom-workflow` 合约与 zero-SUT core 已完成；受控 web adapter/UAT 未冒充完成，
+随 S2 browser observer 接缝补齐。
 
 建议契约：`precondition-atom-workflow`
 
