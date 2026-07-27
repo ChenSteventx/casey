@@ -4,14 +4,14 @@
   "specPath": "docs/plans/precondition-atom-workflow/plan.md",
   "testChecksums": {
     "tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs": "1c1e9ecad5cfede597d8fdc1df1b5d0f0cdfd9edaded5c7676392a23ccea0015",
-    "tests/_golden/setup-receipt-identity.zero-sut.golden.mjs": "871b906b3971c7ae7e9424a10a72cce093723bcf1d3a32570733c0f9ec8c0dee",
+    "tests/_golden/setup-receipt-identity.zero-sut.golden.mjs": "6e510e2c5bc5d8d48c4e092d1329e57e85ce5f34ba8874e70c898958478497e8",
     "tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs": "bf70e71e56b51bf317a2d25e4e10264d9a802ac3b384f0b7d39cc4bb0b4735d9",
     "tests/_golden/intent-state-trace.zero-sut.golden.mjs": "84f4a2010c52d2a0c32593da805ba69dc9224d6008639095325a49fee544378b",
     "tests/_golden/flow-bridge.golden.mjs": "28da2a24405b75e9c3105f2bc4a070cbe736d81b767fe8c702c9f7bcee2c2b20",
     "tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs": "acbe4b6a7707df845e976bb2071bf30c9957849eb4831061338d81b7e8055655",
     "docs/plans/precondition-atom-workflow/GRILL.md": "d0dba77d6045d9a95ee1ccb3444c4ea404c33f17a9d21f177388b2386a648af5",
     "docs/plans/precondition-atom-workflow/plan.md": "200554dc6efc5493925780578b486d8e464b5601bbd558746093ebb94dbccfe6",
-    "docs/plans/precondition-atom-workflow/accept/red-proofs/precondition-atom-workflow.red.txt": "31a650fcf0521816d9509efdf42a34f3f33018d84f7771419acf5cf85ce54ba3"
+    "docs/plans/precondition-atom-workflow/accept/red-proofs/precondition-atom-workflow.red.txt": "e452fc3c155f5b625e37b5d201a20daf44ccf230828664c78fdc5a73c211ddae"
   },
   "observability": [
     {
@@ -47,7 +47,8 @@
       "acceptance": [
         "node tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-27T04:43:36.532Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-setup-receipt-identity",
@@ -56,7 +57,8 @@
       "acceptance": [
         "node tests/_golden/setup-receipt-identity.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-27T04:43:37.346Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-setup-runtime-barrier",
@@ -65,7 +67,8 @@
       "acceptance": [
         "node tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-27T04:43:38.156Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-adjacent-regressions-hold",
@@ -76,8 +79,9 @@
         "node tests/_golden/flow-bridge.golden.mjs",
         "node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-27T04:44:01.586Z 全部 acceptance exit 0"
     }
   ],
-  "notes": "acceptance-gate 于 2026-07-27 冻结。三条新功能金牌在实现前均因 lib/adaptive-execution/setup-*.mjs 不存在真实 RED；三条邻接回归同轮真实 GREEN。实现者不得修改任何 testChecksums 覆盖文件；契约语义需变更时必须返回主 agent 重开 acceptance-gate。"
+  "notes": "acceptance-gate 于 2026-07-27 冻结。三条新功能金牌在实现前均因 lib/adaptive-execution/setup-*.mjs 不存在真实 RED；三条邻接回归同轮真实 GREEN。实现主审发现 B1 错把 exclusive group 已移除的中间页面状态当成 receipt 可用状态，遂重开 acceptance：修正为只接受 setup 结束时仍成立的状态，并在实现前基线 57e4130 独立 worktree 再证真实 RED；两项新 checksum 已重冻。实现者不得修改任何 testChecksums 覆盖文件；契约语义需变更时必须返回主 agent 重开 acceptance-gate。"
 }

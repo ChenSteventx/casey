@@ -43,3 +43,26 @@ exit: 0
 output:
 ok   entity-binding-operability-successor/all: 7/7 全过（本地文件/纯函数/静态，零 SUT）
 
+ACCEPTANCE AMENDMENT R1
+reason:
+实现主审发现 registry exclusive group 会在 workflow.open 提供「画布已开」时移除
+「在工作流管理页」。旧 B1 同时要求两状态进入 receipt，会把已移除的中间态伪装成主体可用初态。
+
+corrected expectation:
+setup receipt 只保留 setup 结束时仍在 stateTrace.finalStates、且确由 setup 提供的状态；
+中途 provide 后又被移除的状态不得进入 receipt。
+
+red verification base:
+57e4130（S1 实现前冻结提交）
+
+command:
+node tests/_golden/setup-receipt-identity.zero-sut.golden.mjs
+
+exit:
+1
+
+failure:
+Error [ERR_MODULE_NOT_FOUND]: Cannot find module
+'lib/adaptive-execution/setup-flow.mjs'
+
+说明：修正版测试已在实现前基线独立 worktree 运行；红因仍为目标模块不存在，不是语法错误。

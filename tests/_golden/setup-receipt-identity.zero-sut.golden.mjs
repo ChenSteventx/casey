@@ -81,8 +81,10 @@ check('B1 全步 unique + post-readback 才产生非正式 candidate receipt', (
   assert(result.receipt.signed === false && result.receipt.replayReady === false, 'receipt 不得签署或 replayReady');
   assert(result.receipt.status === 'verified', 'receipt 状态应为 verified');
   assert(!Object.hasOwn(result.receipt, 'verdict') && !Object.hasOwn(result.receipt, 'passes'), 'receipt 不得携 verdict/passes');
-  assert(JSON.stringify(result.receipt.providedStates) === JSON.stringify(['在工作流管理页', '画布已开']),
+  assert(JSON.stringify(result.receipt.providedStates) === JSON.stringify(['画布已开']),
     JSON.stringify(result.receipt.providedStates));
+  assert(!result.receipt.providedStates.includes('在工作流管理页'),
+    'exclusive group 已移除的中间页面状态不得进入 receipt 供主体复用');
 });
 
 check('B2 ambiguous/absent/action_failed 任一出现都不能成 receipt', () => {
@@ -297,4 +299,3 @@ if (failed) {
   process.exit(1);
 }
 console.log(`ok   setup-receipt-identity: ${passed}/8（候选收据 + 名称/编号发现 + 平台 ID 观察确认）`);
-
