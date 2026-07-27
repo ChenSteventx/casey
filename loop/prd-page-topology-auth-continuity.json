@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 1,
+  "task": "page-topology-auth-continuity（full）：在同一 BrowserContext 建立 context 级 page 监听/binding/init、opaque pageId/opener 与唯一 active page authority。click 后新增 page 数 0 保持、1 同源切换、>1 fail-closed；popup close 回仍存活 opener；所有页激活前挂 forensics；进程内 session seed 以 entries 数组覆盖所有同源新页但 key/value/origin 零落盘，cross-origin handoff 路由 NEEDS_HUMAN；旧 page authority 不得执行缺席断言假绿。复用现役 frozen events.schema 的 newpage+url，不持久化 pageId/opener；manual record、source replay、distill structural projection、distilled replay 共用 topology event/bridge，source/distilled topology 不等价不得 promotion。五个新增模块逐文件 <=600 行，既有超大执行文件只薄接线。",
+  "specPath": "docs/plans/page-topology-auth-continuity/plan.md",
+  "testChecksums": {
+    "docs/plans/page-topology-auth-continuity/GRILL.md": "7fff72cf4184077f8f8311c6e9a8cfbce488b3a97f94a2aea91ee7d4c4b95c36",
+    "docs/plans/page-topology-auth-continuity/plan.md": "84683c4b3ed204e4650b485ee5e97bc8c852e52480bcc03af7e430c36d54170c",
+    "docs/plans/page-topology-auth-continuity/accept/red-proofs/page-topology-auth-continuity.red.txt": "708ebd0c218b0803a103d917f13e7fe7233783edbd54845b827c8accdb0c81a4",
+    "tests/_golden/page-topology-auth-continuity-controller.zero-sut.golden.mjs": "9a10c6aae958bc671309c8a7ee7771f10fa5797560cb598baeb3279055a2d7f3",
+    "tests/_golden/page-topology-auth-continuity-delayed-popup.zero-sut.golden.mjs": "a467c9cfff7869249c5bf595d33fd0cc2bca4235666417c1381c5c016cbc4ea2",
+    "tests/_golden/page-topology-auth-continuity-session.zero-sut.golden.mjs": "76d4dec821d7e3490122a4c002d562eb485e49f7f2e7d9a84e03f02b456eaeb4",
+    "tests/_golden/page-topology-auth-continuity-pipeline.zero-sut.golden.mjs": "f8d5b75cf01fba3c629196648828047489be55dffc15b1037f24eb41ba062c7b",
+    "tests/_golden/page-topology-auth-continuity-replay-action.zero-sut.golden.mjs": "8a0e1bf06cf030f48f25daac8f991b14e03270e1796e37ab91397c81f86e049b",
+    "tests/_golden/page-topology-auth-continuity-boundaries.static.golden.mjs": "eb3f73a9716ad6d9fb0bae9b5331401f90daaea03b51d61a73ee11c9ab00766b",
+    "tests/_golden/page-topology-auth-continuity-adjacent-regression.zero-sut.golden.mjs": "8825909e3a478df050788a782637b638d8f05f9488d3cac62c031053d4594271",
+    "tests/_golden/fixtures/page-topology-auth-continuity/context-double.mjs": "8d2bed6d9b6022d5e978de2978d2268f73a04d36493cd3621197320b26492b47",
+    "tests/_golden/schemas/events.schema.json": "097fd45c9e8d43776c03fa1a0be4bf0e329acdae50aef87ca308c720948858d8",
+    "tests/_golden/output-seal-b5-prelaunch.zero-sut.golden.mjs": "f054406747be7bc482c80c55a8c3be8786076f280ea4f2f9aacdae137acbc4be"
+  },
+  "observability": [
+    {
+      "dimension": "AI 中台 current build 进入智能体管理时真实产生 popup/new tab，并在正确活动页保持登录。",
+      "route": "human",
+      "note": "纯 context/page double 只证明控制流；不能替代 Playwright 与真实身份系统。"
+    },
+    {
+      "dimension": "AI 中台频繁更新后的 version-held-out 页面：同步/异步 popup、重定向、SPA、页面快速关闭和多个广告/辅助页并发。",
+      "route": "human",
+      "note": "真实页 generation window、quiet point 与 opener 行为必须实机验证。"
+    },
+    {
+      "dimension": "Cookie/localStorage/sessionStorage 三类认证状态在真实 BrowserContext 的连续性。",
+      "route": "human",
+      "note": "自动门只钉 same-origin session seed；真实 cookie 属性和应用读取时序不能模拟外推。"
+    },
+    {
+      "dimension": "跨 origin SSO/联邦登录。",
+      "route": "human",
+      "note": "首版明确 AUTH_CONTINUITY_UNAVAILABLE，禁止自动复制 storage 或继续断言。"
+    },
+    {
+      "dimension": "popup 主动关闭、用户关闭、opener 同时关闭时的活动页恢复。",
+      "route": "human",
+      "note": "无合法 opener 必须 NEEDS_HUMAN，不能 context.pages().first/last 猜页。"
+    },
+    {
+      "dimension": "每页 CDP/network/pageerror/dialog 取证的真实挂载、归因和跨页 drain。",
+      "route": "human",
+      "note": "adapter double 只核每页 attach 恰一次，不能证明 DevTools session 与浏览器生命周期。"
+    },
+    {
+      "dimension": "人工示教 source replay 与 atom distilled replay 在独立 fresh state 下的页面拓扑等价。",
+      "route": "human",
+      "note": "须由真实 replay→verdict→report 和用户验收核销，zero-SUT parity 不能宣称业务通过。"
+    },
+    {
+      "dimension": "医生站与 Hi 小助 CEF 多页/容器能力。",
+      "route": "human",
+      "note": "web BrowserContext 能力不能外推 CEF；医生站也需独立 site-held-out 报告。"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-page-topology-controller",
+      "desc": "实现 context page registry、opaque page/opener authority、唯一 active page、click 0/1/>1 handoff、popup close 回 opener、forge/stale/predecessor fail-closed；旧 opener assertion callback 零调用。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/page-topology-auth-continuity-controller.zero-sut.golden.mjs",
+        "node tests/_golden/page-topology-auth-continuity-delayed-popup.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-27T09:43:14.065Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-session-seed-forensics",
+      "desc": "实现 memory-only session seed authority：entries 数组同源 guarded init 覆盖初始/未来页、cross-origin 不种值且拒 handoff；每页激活前恰挂一次 forensics，公开面零 origin/key/value。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/page-topology-auth-continuity-session.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-27T09:43:14.391Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-record-source-distill-topology",
+      "desc": "manual capture 忠实保留 newpage；distill 将其折入前一业务 intent 的 structural projection；source/formal normalization 与 parity fail-closed；source replay、distilled replay 共用 replay bridge 消费。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/page-topology-auth-continuity-pipeline.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-27T09:43:14.908Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4-formal-newpage-dispatch",
+      "desc": "补齐 schema/runtime 落差：dispatchReplayAction 对 formal newpage 在任何 locator 前委派 active topology controller；bridge 缺席或 authority 拒绝均具名 action_failed，固定旧 page 零触碰。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/page-topology-auth-continuity-replay-action.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-27T09:43:16.475Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s5-module-and-integration-boundaries",
+      "desc": "复用现役 newpage+url schema 且不持久化 runtime pageId/opener；五新模块 <=600 且零 Playwright/IO/网络/凭据/verdict；record/capture/distill/replay/replay-actions/forensics 全部薄接共享 topology 接缝，移除固定初始 page 的 binding/init/forensics。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/page-topology-auth-continuity-boundaries.static.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-27T09:43:16.986Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s6-adjacent-auth-output-regressions",
+      "desc": "保持现役 login bootstrap URL、record credential/URL 脱敏、entries-array same-origin session carry 与 output-seal browser-prelaunch 拒绝，不启动 SUT/browser。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/page-topology-auth-continuity-adjacent-regression.zero-sut.golden.mjs",
+        "node tests/_golden/output-seal-b5-prelaunch.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-27T09:43:24.433Z 全部 acceptance exit 0"
+    }
+  ],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-27",
+      "files": [
+        "tests/_golden/page-topology-auth-continuity-adjacent-regression.zero-sut.golden.mjs"
+      ],
+      "reason": "replay 固定页逻辑按本计划 S5/B7 拆入 lib/page-topology/replay-session.mjs 后，旧 G4 仍只扫描 bin/replay.mjs 内联 sessionStorage 循环，与 B7「bin 不再单页 addInitScript」结构门机械冲突。定位器改为同时核 replay-session 的 same-origin guard+entries 数组，以及 bin/replay 对 installReplaySessionSeedBeforeNavigation/openReplayTopology 的真实调用；断言未删除，并新增 helper 日志禁入检查。重跑 4/4 GREEN。"
+    },
+    {
+      "amendedAt": "2026-07-27",
+      "files": [
+        "tests/_golden/page-topology-auth-continuity-controller.zero-sut.golden.mjs",
+        "tests/_golden/page-topology-auth-continuity-delayed-popup.zero-sut.golden.mjs"
+      ],
+      "reason": "record binding-arrival race 硬化回归：纯 context/page double 实证 handleBinding(click) 返回后、queued processEvent/performClick boundary 前 context page 注册会被旧调用时 ordinal 静默漏记。controller 门新增 opaque handoff boundary authority 的 clone/forge/replay 动作前拒绝；delayed-popup 门新增 binding-arrival 前冻结、相邻 click generation 封口、>1 与 cross-origin 继续 fail-closed 且收容。无删减既有断言，controller 6→7、delayed-popup 1→5；旧 sha bacd32f2.../c2938d7f... → 新 sha 9a10c6aa.../a467c9cf...。"
+    },
+    {
+      "amendedAt": "2026-07-27",
+      "files": [
+        "docs/plans/page-topology-auth-continuity/GRILL.md"
+      ],
+      "reason": "提交前 staged diff-check 发现日期行仅含 Markdown 行尾空格。删除纯格式尾空格，决策、验收语义与测试命令零变化；旧 sha 9a1159ba... → 新 sha 7fff72cf...。以显式 amendment 重冻，禁止静默改 frozen 文档。"
+    }
+  ],
+  "notes": "acceptance-gate 于 2026-07-27 制造。五条新增能力门真实 RED：controller/session 模块缺失；pipeline 0/8（newpage 被 capture 降 click、distill 错建独立 step、topology/replay bridge 缺失）；formal replay action 0/3（当前不委派 controller，普通 locator none）；static 1/7（schema newpage+url 正控绿，其余模块/三管线/forensics 接线红）。邻接合成回归 4/4 GREEN，output-seal prelaunch GREEN。events.schema 作为既有真值字节冻结，实施不得修改。实现复核期追加 delayed-popup timing regression：context page 事件时 about:blank、随后同源导航，要求 listener-first session/forensics、动态 origin handoff 与 session seed；该回归在修复后冻结为 GREEN 保护，不冒充实现前红证。未运行会启动 fixture SUT/browser 的 video-login-carry 或 replay-login-bootstrap；未读真实 site.json/.auth。全部新增文件 <=600 行。"
+}

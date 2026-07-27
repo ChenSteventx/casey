@@ -1,0 +1,20 @@
+2026-07-27 independent-review hardening amendment
+
+command:
+node tests/_golden/cross-platform-execution-target-hardening.zero-sut.golden.mjs
+
+exit:
+1
+
+observed red baseline:
+RED H1 replay 同 pathname 跨 origin 漂移时 action dispatch 必须为 0：未中止。
+RED H2 compile 非 nav 动作前必须核对 origin：customAct 实际执行 1 次。
+RED H3 登录等待表单期间漂移 origin 必须复核：误返回 loggedIn=true/viaForm=false。
+RED H4 WSL 未显式选择 transport 时必须 direct：实际自动推断 legacy-loopback/degraded。
+RED H5 pageerror message 投影不得把规范 URL 带进 axes/报告：合成规范 host 哨兵泄漏。
+
+summary:
+cross-platform-execution-target-hardening: 0 过 / 5 败
+
+scope:
+纯 Node、合成 URL/page double；未读取真实 site.json/.auth，未启动 SUT/browser/network。

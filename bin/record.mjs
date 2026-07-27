@@ -5,6 +5,16 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { writeTeachInCapture } from '../lib/record-capture.mjs';
 import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
+import {
+  playwrightLaunchOptions,
+  resolveCliExecutionTarget,
+} from '../lib/execution-target/wiring.mjs';
+import { navigateExecutionTargetPage } from '../lib/execution-target/runtime.mjs';
+import { emitExecutionTargetCliFailure } from '../lib/execution-target/cli-boundary.mjs';
+import {
+  capturePageSessionSeed,
+  createRecordBridgeSession,
+} from '../lib/page-topology/record-bridge.mjs';
 
 function parseArgs(argv) {
   const o = { pos: [] };
@@ -55,7 +65,7 @@ function writePackage({ caseId, outDir, startUrl, events }) {
     process.exit(0);
   } catch (e) {
     if (e?.code === 'CREDENTIAL_GATE') {
-      console.error(`record: 凭据兜底门拦截（护栏 #7）：${e.message}；拒绝落盘`);
+      console.error('record: 凭据兜底门拦截（护栏 #7；详情不回显），拒绝落盘');
       process.exit(1);
     }
     // 写盘失败信息含用户 out-dir 绝对路径——不回显路径/内容，只留 errno（output-seal 成功侧占位符同口径，异构评审 A3）。
@@ -68,7 +78,10 @@ function recorderInitScript() {
   if (window.__caseyRecordInstalled) return;
   window.__caseyRecordInstalled = true;
   const clean = (s) => String(s || '').replace(/\s+/g, ' ').trim();
-  const send = (ev) => { try { window.__caseyRecord(ev); } catch (_) { /* binding not ready */ } };
+  const send = (ev) => {
+    if (window.__caseyRecordActive !== true) return;
+    try { window.__caseyRecord(ev); } catch (_) { /* binding not ready */ }
+  };
   const path = () => location.pathname + location.search;
   const css = (el) => {
     if (!el || el.nodeType !== 1) return '';
@@ -130,29 +143,101 @@ function recorderInitScript() {
   window.addEventListener('popstate', () => send({ action: 'nav', path: path() }));
 }
 
+function activateRecorderInitScript() {
+  window.__caseyRecordActive = true;
+}
+
 async function browserMode({ caseId, args }) {
   const pw = await import('@playwright/test');
   const { chromium } = pw.default || pw;
   const events = [];
   const site = loadSiteConfig(undefined, { strict: true });
-  const sut = String(args.sut).replace(/\/$/, '');
-  let entryPath = '/';
-  try { entryPath = new URL(site.target?.startUrl || sut).pathname; } catch { entryPath = '/'; }
-  const startUrl = sut + entryPath;
-  const browser = await chromium.launch({ headless: !!args.headless });
+  const execution = resolveCliExecutionTarget({
+    site,
+    cliSut: String(args.sut),
+    requiresOriginContinuity: Boolean(args['login-bootstrap']),
+  });
+  if (!execution.ok) {
+    const error = new Error(execution.reason);
+    error.code = execution.reason;
+    throw error;
+  }
+  const startUrl = execution.runtime.browserVisibleStartUrl;
+  let browser;
+  try {
+    browser = await chromium.launch(playwrightLaunchOptions(
+      execution.runtime,
+      { headless: !!args.headless },
+    ));
+  } catch {
+    const error = new Error('BROWSER_LAUNCH_FAILED');
+    error.code = 'BROWSER_LAUNCH_FAILED';
+    throw error;
+  }
   const context = await browser.newContext();
+  const bridgeCreated = createRecordBridgeSession({
+    context,
+    emitEvent: (event) => events.push(event),
+  });
+  if (!bridgeCreated.ok) {
+    const error = new Error(bridgeCreated.reason);
+    error.code = bridgeCreated.reason;
+    throw error;
+  }
+  const recordBridge = bridgeCreated.bridge;
+  await context.exposeBinding(
+    '__caseyRecord',
+    (source, event) => recordBridge.handleBinding(source, event),
+  );
+  await context.addInitScript(recorderInitScript);
+  context.on('page', (nextPage) => recordBridge.observePage(nextPage));
   const page = await context.newPage();
-  await page.exposeBinding('__caseyRecord', (_source, ev) => events.push(ev));
   let timer = null;
   try {
     if (args['login-bootstrap']) {
       const creds = loadCreds();
-      await loginBootstrap(page, { site, creds, startUrl });
+      const login = await loginBootstrap(page, {
+        site,
+        creds,
+        startUrl,
+        executionTargetAuthority: execution.authority,
+      });
+      if (login?.ok === false) {
+        const error = new Error(login.reason);
+        error.code = login.reason;
+        throw error;
+      }
     } else {
-      await page.goto(startUrl, { waitUntil: 'load' });
+      const navigation = await navigateExecutionTargetPage({
+        page,
+        authority: execution.authority,
+        targetUrl: startUrl,
+        gotoOptions: { waitUntil: 'load' },
+      });
+      if (!navigation.ok) {
+        const error = new Error(navigation.reason);
+        error.code = navigation.reason;
+        throw error;
+      }
     }
-    await page.addInitScript(recorderInitScript);
+    const seed = await capturePageSessionSeed({ page });
+    if (!seed.ok) {
+      const error = new Error(seed.reason);
+      error.code = seed.reason;
+      throw error;
+    }
+    const activated = await recordBridge.activate({
+      initialPage: page,
+      sessionSeedAuthority: seed.authority,
+    });
+    if (!activated.ok) {
+      const error = new Error(activated.reason);
+      error.code = activated.reason;
+      throw error;
+    }
+    await context.addInitScript(activateRecorderInitScript);
     await page.evaluate(recorderInitScript);
+    await page.evaluate(activateRecorderInitScript);
     console.error('record: 浏览器已打开。完成人工操作后关闭浏览器，或等待 --max-ms 到时收口。');
     const maxMs = Number(args['max-ms'] || 0);
     await new Promise((resolveDone) => {
@@ -161,7 +246,14 @@ async function browserMode({ caseId, args }) {
     });
   } finally {
     if (timer) clearTimeout(timer);
+    await recordBridge.drain();
     await browser.close().catch(() => {});
+  }
+  const bridgeFailure = recordBridge.failure();
+  if (bridgeFailure) {
+    const error = new Error(bridgeFailure);
+    error.code = bridgeFailure;
+    throw error;
   }
   writePackage({ caseId, outDir: args['out-dir'], startUrl, events });
 }
@@ -189,6 +281,8 @@ async function main() {
 }
 
 main().catch((e) => {
-  console.error(`record: 执行失败：${String(e?.message || e).slice(0, 300)}`);
-  process.exit(1);
+  process.exit(emitExecutionTargetCliFailure({
+    command: 'record',
+    failure: e,
+  }));
 });

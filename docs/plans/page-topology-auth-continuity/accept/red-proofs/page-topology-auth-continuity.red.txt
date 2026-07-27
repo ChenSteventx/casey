@@ -1,0 +1,68 @@
+page-topology-auth-continuity acceptance-gate evidence
+date: 2026-07-27
+workspace: Casey dev working tree
+mode: zero-SUT / zero-browser / zero-network; synthetic context/page doubles only
+
+NEW CAPABILITY RED
+
+1. node tests/_golden/page-topology-auth-continuity-controller.zero-sut.golden.mjs
+   exit: 1
+   proof: lib/page-topology/controller.mjs does not exist; controller API import failed.
+
+2. node tests/_golden/page-topology-auth-continuity-session.zero-sut.golden.mjs
+   exit: 1
+   proof: lib/page-topology/session-seed.mjs does not exist; seed API import failed.
+
+3. node tests/_golden/page-topology-auth-continuity-pipeline.zero-sut.golden.mjs
+   exit: 1
+   summary: 0 passed / 8 failed.
+   proof:
+   - manual capture rewrites action:newpage to action:click;
+   - distill creates three user steps instead of folding newpage into the preceding intent;
+   - topology-events and replay-bridge modules do not exist;
+   - source/distilled topology normalization, parity and shared consumption are absent.
+
+4. node tests/_golden/page-topology-auth-continuity-replay-action.zero-sut.golden.mjs
+   exit: 1
+   summary: 0 passed / 3 failed.
+   proof:
+   - dispatchReplayAction never delegates newpage to the topology controller;
+   - when no topology bridge exists it returns ordinary locator resolution:none rather than a named fail-closed rejection;
+   - controller rejection cannot propagate because the controller is never called.
+
+5. node tests/_golden/page-topology-auth-continuity-boundaries.static.golden.mjs
+   exit: 1
+   summary: 1 passed / 6 failed.
+   green control:
+   - the frozen formal events schema already contains newpage and requires url;
+   - it does not persist runtime pageId/openerPageId.
+   red proof:
+   - five planned modules are absent;
+   - record has no context-level topology bridge;
+   - capture/distill do not share topology-events;
+   - replay/replay-actions have no topology bridge;
+   - replay-forensics has no per-page attachPageForensics adapter.
+
+ADJACENT REGRESSION GREEN
+
+6. node tests/_golden/page-topology-auth-continuity-adjacent-regression.zero-sut.golden.mjs
+   exit: 0
+   proof: 4 passed / 0 failed.
+   scope: login page double keeps the full start URL; record masks a synthetic password and strips host/fragment; URL projection rejects host smuggling; existing replay source retains entries-array session carry and the same-origin guard.
+
+7. node tests/_golden/output-seal-b5-prelaunch.zero-sut.golden.mjs
+   exit: 0
+   proof: legal read-only envelope reaches login preflight rejection, echoes no seed, and does not cross the browser launch sentinel.
+
+STATIC VALIDATION
+
+8. node --check on all six page-topology-auth-continuity*.golden.mjs and the context-double fixture
+   exit: 0
+9. git diff --check on this contract's plan/golden/fixture scope
+   exit: 0
+
+NON-EVIDENCE / EXCLUDED
+
+- tests/_golden/video-login-carry.golden.mjs was read for the current same-origin sessionStorage contract but not run because it starts fixture SUTs and a real browser.
+- tests/_golden/replay-login-bootstrap.golden.mjs was not run because it starts a fixture SUT and a real browser.
+- no real site.json, .auth path, credential source or target URL was read.

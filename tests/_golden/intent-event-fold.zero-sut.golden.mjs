@@ -296,10 +296,35 @@ check('R16 nested evidence remains immutable during sanitization', () => {
 });
 
 check('R17 replay wiring uses the fold output and preserves eventActions', () => {
-  // e1f5201 把三轴投影抽成生产共用纯函数 lib/replay-axes.mjs（fold 接线随之整体搬去），
-  // bin/replay.mjs 改为委托 projectReplayAxes 调用。断言随接线的真实所在刷新定位、强度不减：
-  // 仍验 import + fold 赋值 + 逐 event 证据保留（此三项现落在 replay-axes），
-  // 并加验生产入口 bin/replay.mjs 确有委托调用（保住原「回放路径可达」的本意）。
+  // replay 拆分后的真实可达链：
+  // bin/replay → replay/artifact-finalizer → replay-axes → foldIntentAction。
+  // 每一跳同时钉 import 与调用，且钉 intentEvents/actionByStep 证据穿过 finalizer，
+  // 防止仅保留一个不可达 helper 或空壳委派把前序失败洗白。
+  const replaySource = readFileSync(join(ROOT, 'bin', 'replay.mjs'), 'utf8');
+  if (!replaySource.includes(
+    "import { finalizeReplayArtifacts } from '../lib/replay/artifact-finalizer.mjs';",
+  )) {
+    throw new Error('replay does not import finalizeReplayArtifacts');
+  }
+  if (!/await\s+finalizeReplayArtifacts\(\{[\s\S]{0,2200}\bintentEvents,[\s\S]{0,2200}\bevidence,/u
+    .test(replaySource)) {
+    throw new Error('replay does not call finalizer with intentEvents and evidence');
+  }
+
+  const finalizerSource = readFileSync(
+    join(ROOT, 'lib', 'replay', 'artifact-finalizer.mjs'),
+    'utf8',
+  );
+  if (!finalizerSource.includes(
+    "import { projectReplayAxes } from '../replay-axes.mjs';",
+  )) {
+    throw new Error('artifact-finalizer does not import projectReplayAxes');
+  }
+  if (!/const\s+axesText\s*=\s*projectReplayAxes\(\{[\s\S]{0,1800}\bintentEvents,[\s\S]{0,1800}actionByStep:\s*evidence\.actionByStep,/u
+    .test(finalizerSource)) {
+    throw new Error('artifact-finalizer does not project intentEvents/actionByStep into axes');
+  }
+
   const axesSource = readFileSync(join(ROOT, 'lib', 'replay-axes.mjs'), 'utf8');
   if (!axesSource.includes("import { foldIntentAction } from './intent-action-fold.mjs';")) {
     throw new Error('replay-axes does not import foldIntentAction');
@@ -309,10 +334,6 @@ check('R17 replay wiring uses the fold output and preserves eventActions', () =>
   }
   if (!/eventActions,\s*\n/u.test(axesSource)) {
     throw new Error('replay-axes does not retain eventActions evidence');
-  }
-  const replaySource = readFileSync(join(ROOT, 'bin', 'replay.mjs'), 'utf8');
-  if (!/projectReplayAxes\(/u.test(replaySource)) {
-    throw new Error('replay does not delegate to projectReplayAxes');
   }
 });
 

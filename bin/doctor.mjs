@@ -2,7 +2,7 @@
 // bin/doctor.mjs —— casey doctor 跨平台就绪自检【采集壳】（casey-doctor，GRILL D7）。
 // 唯一碰真环境处：探 platform+isWSL、读 process.version 与 package.json.engines、hasPlaywright() +
 //   真 import('@playwright/test') + chromium.executablePath()→existsSync、OS 分支字体探测、
-//   existsSync 凭据/site.json 浅键名（绝不读值）、devProxyUrl 回环端口 TCP 连（绝不碰 target.startUrl）。
+//   existsSync 凭据/site.json；目标值只在内存验 URL 形状，绝不输出；devProxyUrl 仅取回环端口。
 //   把结果装成 env 喂纯层 lib/doctor.mjs → 渲染逐项行 + process.exit(runDoctor(env).exitCode)。
 // 渲染沿 selftestTier1 的 ok/RED 配色，另加 warn(黄)/route-human(灰)。
 //
@@ -14,6 +14,10 @@ import net from 'node:net';
 import { join } from 'node:path';
 import { PROJECT_ROOT, CREDS_FILE, hasPlaywright } from '../lib/paths.mjs';
 import { runDoctor } from '../lib/doctor.mjs';
+import {
+  classifyLogicalTargetShape,
+  classifyExecutionTargetShape,
+} from '../lib/execution-target/wiring.mjs';
 
 const C = { reset: '\x1b[0m', green: '\x1b[32m', red: '\x1b[31m', yellow: '\x1b[33m', gray: '\x1b[90m', cyan: '\x1b[36m', bold: '\x1b[1m' };
 const col = (c, s) => `${c}${s}${C.reset}`;
@@ -72,20 +76,34 @@ function probeFonts(platform) {
   } catch { return false; }
 }
 
-// ── site.json：existsSync + 顶层键名（绝不读值）；顺带取回环端口 ─────
+// ── site.json：目标只在内存验形状，绝不输出；顺带取回环端口 ─────
 function probeSite() {
   const sitePath = process.env.AT_SITE_JSON || join(PROJECT_ROOT, 'site.json');
   let present = false, shapeOk = false, proxyPort = null;
+  let hasLogicalTarget = false, hasLoopbackTransport = false, configuredMode;
   if (existsSync(sitePath)) {
     present = true;
     try {
       const j = JSON.parse(readFileSync(sitePath, 'utf8'));
       const t = j && typeof j.target === 'object' && j.target ? j.target : null;
-      shapeOk = !!t && ('startUrl' in t || 'devProxyUrl' in t); // 只看键名，值不取
       proxyPort = loopbackPort(t); // 只从 devProxyUrl 取回环端口号，绝不碰 startUrl
+      const logicalShape = classifyLogicalTargetShape(t?.startUrl);
+      hasLogicalTarget = logicalShape.hasLogicalTarget;
+      shapeOk = logicalShape.shapeOk;
+      hasLoopbackTransport = proxyPort != null;
+      configuredMode = typeof t?.transportMode === 'string'
+        ? t.transportMode
+        : (typeof t?.transport?.mode === 'string' ? t.transport.mode : undefined);
     } catch { shapeOk = false; }
   }
-  return { present, shapeOk, proxyPort };
+  return {
+    present,
+    shapeOk,
+    proxyPort,
+    hasLogicalTarget,
+    hasLoopbackTransport,
+    configuredMode,
+  };
 }
 
 // 只从 devProxyUrl 取【回环】端口号（非回环一律不取、不探——防连真目标，GRILL D6）。
@@ -130,6 +148,31 @@ function probeTunnel(proxyPort) {
   });
 }
 
+function executionTargetItem(shape, sitePresent) {
+  if (!sitePresent) {
+    return {
+      id: 'execution-target',
+      status: 'warn',
+      detail: '执行目标未配置（hermetic 用户可无）',
+      hint: '真机运行前补齐规范逻辑目标',
+    };
+  }
+  if (!shape.ready) {
+    return {
+      id: 'execution-target',
+      status: 'fail',
+      detail: `执行目标分类不可准入：${shape.runtimeClass} / ${shape.transportMode}`,
+      hint: '使用与运行平台匹配的传输方式，并保持逻辑目标独立',
+    };
+  }
+  return {
+    id: 'execution-target',
+    status: 'ok',
+    detail: `执行目标分类：${shape.runtimeClass} / ${shape.transportMode} / origin ${shape.originContinuity}`,
+    hint: '',
+  };
+}
+
 async function main() {
   const platform = process.platform;
   const isWSL = detectWSL();
@@ -143,9 +186,19 @@ async function main() {
     siteJson: { present: site.present, shapeOk: site.shapeOk },
     creds: probeCreds(),
     tunnel: await probeTunnel(site.proxyPort),
+    executionTarget: classifyExecutionTargetShape({
+      platform,
+      isWSL,
+      hasLogicalTarget: site.hasLogicalTarget,
+      hasLoopbackTransport: site.hasLoopbackTransport,
+      configuredMode: site.configuredMode,
+    }),
   };
 
-  const { items, exitCode } = runDoctor(env);
+  const base = runDoctor(env);
+  const targetItem = executionTargetItem(env.executionTarget, site.present);
+  const items = [...base.items, targetItem];
+  const exitCode = base.exitCode || (targetItem.status === 'fail' ? 1 : 0);
   console.log(col(C.bold, '\ncasey doctor —— 跨平台就绪自检') + col(C.gray, '（node / playwright / 中文字体 / 凭据·site.json / 隧道）') + '\n');
   for (const it of items) {
     const line = `${LABEL[it.status]} ${col(C.cyan, `[${it.id}]`)} ${it.detail}${it.hint ? col(C.gray, '  → ' + it.hint) : ''}`;

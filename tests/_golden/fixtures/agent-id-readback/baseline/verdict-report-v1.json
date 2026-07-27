@@ -16,9 +16,9 @@
   },
   "verdictJson": "{\n  \"caseId\": \"tc_air_axes_proj\",\n  \"steps\": [\n    {\n      \"stepId\": \"s2\",\n      \"intentId\": \"i1\",\n      \"atom\": \"agent.searchOpen\",\n      \"verdict\": \"PASS\",\n      \"reason\": null\n    },\n    {\n      \"stepId\": \"s4\",\n      \"intentId\": \"i2\",\n      \"atom\": \"agent.searchOpen\",\n      \"verdict\": \"SUT_DEFECT\",\n      \"reason\": null\n    },\n    {\n      \"stepId\": \"s5\",\n      \"intentId\": \"i3\",\n      \"atom\": \"agent.openTestPanel\",\n      \"verdict\": \"NEEDS_HUMAN\",\n      \"reason\": \"INDETERMINATE\"\n    },\n    {\n      \"stepId\": \"s6\",\n      \"intentId\": \"i4\",\n      \"atom\": \"workflow.bindAgent\",\n      \"verdict\": \"NEEDS_HUMAN\",\n      \"reason\": \"AMBIGUOUS_ACTION\"\n    }\n  ]\n}\n",
   "outputs": {
-    "axes.json": "a0917229013b49255651a90d86998e43f8ce8dcb8111c69f81ea994419828b9b",
+    "axes.json": "5185854d2c5ad498c9bbc50da7a63be50600186da1433ed176d850ffdf36368f",
     "verdict.json": "ed0340f27788d0d9dbbe45058dbf3275e4ec8d76dec808529fb47deaa4fabfe3",
-    "report-model.json": "5708c629ca6dceaaaff05692fb126d884a5c31e0642aa7b2ec45628687fe6bfd",
+    "report-model.json": "69dc43beb3161af1d4e358649387fb3075e6c75bf7c9df7e71dd13cfd25912e0",
     "report/tc_air_axes_proj.report.json": "d28bb754e0c950443d141beda381e8a5409d63d0694a1a2d4a99a5848cd83aed"
   },
   "reportFiles": [

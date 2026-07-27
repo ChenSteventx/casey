@@ -3,7 +3,7 @@
   "task": "entity-rename-unknown-action-guard（C4 后继，light）：把未知字符串原子闭集检查前移到生产事件环的 nav / 非 nav 分叉之前，关闭 unknown+nav 可 goto→unique→PASS 的旁路。复用 unknownAtomRejection 与 isCompilableAtom 单一事实源；命中后落 action_failed/UNKNOWN_ATOM，不执行该事件的导航或业务动作。不新增 rename 编译器，不改 verdict，不触碰形式收据链、原 C4 冻结件或人签内容。",
   "specPath": "docs/plans/entity-rename-unknown-action-guard/plan.md",
   "testChecksums": {
-    "tests/_golden/entity-rename-unknown-action-guard.zero-sut.golden.mjs": "701334e45c5b6146beed8f52c3561a9d9b41f4094685aa8312f50a5947a71cba",
+    "tests/_golden/entity-rename-unknown-action-guard.zero-sut.golden.mjs": "69188fa5f644d152fda8a150b76279baec78a1dd773ef468f0f69a912a5948d8",
     "docs/plans/entity-rename-unknown-action-guard/plan.md": "5e3d92e9aa7bd1e17a1b6c8b827939ed34e2fcf6d337ab88fd4d7401e7e030ef",
     "docs/plans/entity-rename-unknown-action-guard/GRILL.md": "0a604e45fba27954b7cd024cfdc96dd4fca0d91293bf1bed4af5bb93d0030c72",
     "docs/plans/entity-rename-unknown-action-guard/accept/red-proofs/before-implementation.red.txt": "51543ef9cec5f5ba89935c0686cc8d86a237adf93a9a08150dc8ce6c27465117"
@@ -36,6 +36,15 @@
       ],
       "passes": true,
       "evidence": "gate@2026-07-27T02:35:08.947Z 全部 acceptance exit 0"
+    }
+  ],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-27",
+      "files": [
+        "tests/_golden/entity-rename-unknown-action-guard.zero-sut.golden.mjs"
+      ],
+      "reason": "cross-platform execution-target 将生产事件环拆至 lib/replay/event-runner.mjs，并以 requireReplayNavigation 取代 raw page.goto；旧 G1-G3 只扫描 bin/replay 与 raw goto，既找不到真实 unknownAtomRejection 接线，又与共享 origin guard 机械冲突。定位器改为核 bin/replay→runReplayEvents 可达委派、event-runner 对 unknownAtomRejection 的真实导入/调用、判据早于 nav/restore 共享 guard，以及拒绝轴早于 dispatch。动态 G4/G5 不变，重跑 5/5。"
     }
   ]
 }

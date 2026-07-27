@@ -12,7 +12,7 @@
     "docs/plans/agent-id-readback/accept/interface-spec.md": "da2273aa8d7bf0d053b1eeb6abdcbcf1f0da4d7e263a335641c0e5aad9e32cbf",
     "tests/_golden/fixtures/agent-id-readback/baseline/api-surface.json": "0e9a6d8d18e0ddd60adda54d7f0c647baf3d4ebaf7e892f336f8fa444a805fd8",
     "tests/_golden/fixtures/agent-id-readback/baseline/cdp-calls.json": "f5a1c0db1bb27fa7158666ebcf7f451c1123b96329077e588c881bd1e1b9dfe5",
-    "tests/_golden/fixtures/agent-id-readback/baseline/manifest.json": "2f8d73c6cd96504762a8572d40ce7b463a1cb737686bd4fe5dff3e0a0ba73e71",
+    "tests/_golden/fixtures/agent-id-readback/baseline/manifest.json": "5a08c35a7878d59e5991cc86128974e7392fd40251a261923395a6635f0395c8",
     "tests/_golden/fixtures/agent-id-readback/baseline/records.post-drain.json": "57db565f10704c0f182abfee5278fc468fdc213e8c3facd44f311242a8516bd1",
     "tests/_golden/fixtures/agent-id-readback/baseline/records.pre-drain.json": "0f36dcd464ea6a3b6374362e527db3a17b2e0104a94aec2315b31105a69e45b4",
     "docs/plans/agent-id-readback/accept/red-proofs/agent-id-gate.red.txt": "d698208d5aaec703e397c3f4153398e4e9d5202d11560cf511ba37ada44abae0",
@@ -31,8 +31,8 @@
     "tests/_golden/fixtures/agent-id-readback/baseline/cli-early-reject.json": "6362f01a66fb0248f2b8d8b393820f01d5727dc6dbb47eb25829c252c90a2af4",
     "tests/_golden/fixtures/agent-id-readback/baseline/compile-run-v1.json": "ea7ab4d05fb09a187c280db4c84d46b9b326838b1f65d3b6f8cbb20e9311a612",
     "tests/_golden/fixtures/agent-id-readback/baseline/action-axes-v1.json": "b9f7b15c8cae51f8d2139d7b29f477aa60b14591516d19e650e761a00ad46293",
-    "tests/_golden/fixtures/agent-id-readback/baseline/axes-projection-v1.json": "a0917229013b49255651a90d86998e43f8ce8dcb8111c69f81ea994419828b9b",
-    "tests/_golden/fixtures/agent-id-readback/baseline/verdict-report-v1.json": "382f047c35950df3a5a8d359dbf2772d0284f42fe5cb765b952c3f59093765d3",
+    "tests/_golden/fixtures/agent-id-readback/baseline/axes-projection-v1.json": "5185854d2c5ad498c9bbc50da7a63be50600186da1433ed176d850ffdf36368f",
+    "tests/_golden/fixtures/agent-id-readback/baseline/verdict-report-v1.json": "d0a94f9553df37c3d3a4bd93357c1aa32cde57cefdf4c9db53871e34d584fbb7",
     "tests/_golden/fixtures/agent-id-readback/mock-page.mjs": "119cb04ade4c40b4278ed2c2ef4da2e71f024f521c761c2ee84f4db49378d087",
     "docs/plans/agent-id-readback/accept/red-proofs/refit-r3-agent-id-regression-diff.zero-sut.red.txt": "ad4e7f50fc36e98de7301c7502d7847ce7b459aaf7b5cc24a940ac82bd194cca"
   },
@@ -192,6 +192,15 @@
         "tests/_golden/fixtures/agent-id-readback/baseline/manifest.json"
       ],
       "reason": "面⑩报告模板演进重签（声明面演进、非回归、断言零弱化）：报告固定模板落地（lib/report.mjs 开篇自然语言概述——renderJson 输出新增 overview 字段，四态计数与 fail-safe 措辞的确定性投影）使 report/tc_air_axes_proj.report.json 字节演进，R21 棘轮如设计翻红（合并 648e09e 后主树复验对提交态 21/21 绿、红仅来自模板层——82484ab 窗口语义对本笔不适用，这是与模板同笔落地的声明面演进）。基线在模板在场态重录，恰两文件各一行（report JSON sha+manifest 行）、双跑复验 21/21 绿证跨运行确定；与 lib/report.mjs 同一提交落库，dev 无红窗口。"
+    },
+    {
+      "amendedAt": "2026-07-27",
+      "files": [
+        "tests/_golden/fixtures/agent-id-readback/baseline/axes-projection-v1.json",
+        "tests/_golden/fixtures/agent-id-readback/baseline/verdict-report-v1.json",
+        "tests/_golden/fixtures/agent-id-readback/baseline/manifest.json"
+      ],
+      "reason": "R20/R21 pageerror free-text 脱敏受控重签（生产脱敏不回退、断言零弱化）：旧基线实跑 R1-R19 全绿、仅 R20/R21 红；axes 唯一语义差分为 pageerror.message 从 `TypeError: 演示页错误` 收敛为 class-only `TypeError: <redacted:pageerror>`，verdict 四态与 verdict.json/report JSON 哈希均不变，仅 axes.json 及其下游 report-model.json 哈希随安全投影变化。使用既有 AGENT_ID_BASELINE_RECORD=1 录制后，工作树严格只有 axes-projection-v1.json、verdict-report-v1.json 与 manifest.json 三件漂移；其它八面字节零漂移。旧→新 sha：axes a0917229…→5185854d…，verdict-report 382f047c…→d0a94f95…，manifest 2f8d73c6…→5a08c35a…。"
     }
   ]
 }

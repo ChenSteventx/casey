@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "task": "cross-platform-execution-target（R7-R11 hardening）：逻辑目标与 transport 分权；native 缺 canonical 且只有 shared loopback 时 launch 前 LOGICAL_TARGET_REQUIRED；所有导航经共享 guard，并在 goto 后核对实际 browser-visible origin。跨 origin 固定 NAVIGATION_ORIGIN_MISMATCH、无 receipt、close 恰一次；login 首跳拒绝须 fill/click=0。record/replay/compile/loginBootstrap/compile-atoms 禁止 raw goto/旧 rebase，三 CLI 失败输出统一脱敏。所有新增或修改生产/golden 文件 <=600 行，不豁免 replay/compile-atoms。公开输出零 URL 片段；纯 double 不读取真实 site.json/.auth。",
+  "specPath": "docs/plans/cross-platform-execution-target/plan.md",
+  "testChecksums": {
+    "docs/plans/cross-platform-execution-target/GRILL.md": "071b82e79e7b2cbcb76c2b386a0cbf74d180e490263004e1da9766b55243e319",
+    "docs/plans/cross-platform-execution-target/plan.md": "34288afad6107fcd76bdfe748526eec2d41fd47abc4a4a004d6278fabd0aa1bd",
+    "docs/plans/cross-platform-execution-target/accept/red-proofs/cross-platform-execution-target.red.txt": "d0f2608ac28a3d1ede2027262ef4651f4d309096e3b2a923128a3df8a36df501",
+    "docs/plans/cross-platform-execution-target/accept/red-proofs/cross-platform-execution-target-hardening.red.txt": "fabbda9a7bae55bbcf4fa215e4418a2272763a7825a47bf9bb7520b5a886d774",
+    "tests/_golden/cross-platform-execution-target-core.zero-sut.golden.mjs": "24ad9938d9309547723c9311945dec12aceb7468d837441e0c6c593531947377",
+    "tests/_golden/cross-platform-execution-target-runtime.zero-sut.golden.mjs": "bf7fca1fcf7c34ed93dfaccfb7c96573ba716d4e7b4ea61678836432465aca91",
+    "tests/_golden/cross-platform-execution-target-boundaries.static.golden.mjs": "98d5d2a96d3a75dcedf5db01811b2e1031167c8a2cac40189c18ad5f6c73bcda",
+    "tests/_golden/cross-platform-execution-target-login-origin.zero-sut.golden.mjs": "3a95ffb2730497be6e8cc24b501c20a65dc79599babad13aa6e4dab57dc05bdf",
+    "tests/_golden/cross-platform-execution-target-cli-output-seal.zero-sut.golden.mjs": "714c8b55f01ea402e08b04ad81b2fab3e8997af64f657cceaaed1fab9a7b9423",
+    "tests/_golden/cross-platform-execution-target-adjacent-regression.zero-sut.golden.mjs": "ab1950b73776dca3fea7da79ec352ca2135cce7daddc5797e464cf51f991b579",
+    "tests/_golden/cross-platform-execution-target-hardening.zero-sut.golden.mjs": "f54fd68890dc47b6d04fdf84c23e9a80537c5a9908b8fb08f038addd0fb13429",
+    "tests/_golden/output-seal-b5-prelaunch.zero-sut.golden.mjs": "f054406747be7bc482c80c55a8c3be8786076f280ea4f2f9aacdae137acbc4be"
+  },
+  "observability": [
+    {
+      "dimension": "Windows、原生 Linux、macOS、WSL direct 的真实 browser-visible origin 与登录连续性。",
+      "route": "human",
+      "note": "zero-SUT adapter double 只证明策略和调用顺序，不能替代四平台真机。"
+    },
+    {
+      "dimension": "AI 中台当前版本及频繁更新后的 path/query/hash、跨页面认证与真实网络可达性。",
+      "route": "human",
+      "note": "真实目标值不进入门禁产物；由人在场 UAT 只记录脱敏结论。"
+    },
+    {
+      "dimension": "进入智能体管理等操作产生 popup/new tab 时的同一 BrowserContext、活动页选择、tab 级 sessionStorage 与登录连续性。",
+      "route": "human",
+      "note": "这是已确认的独立 page-topology 根因，归后继契约；本契约只能消除 origin/transport 混用。"
+    },
+    {
+      "dimension": "医生站与 Hi 小助 CEF 的站点/容器差异。",
+      "route": "human",
+      "note": "不能从 AI 中台或纯 Node 门禁外推。"
+    },
+    {
+      "dimension": "future origin-preserving proxy 的真实 DNS、TLS、Host、证书和代理故障行为。",
+      "route": "human",
+      "note": "代理实现落地前只冻结调用协议，不宣称网络能力已具备。"
+    },
+    {
+      "dimension": "现有 site.json 配置迁移与旧 WSL 操作手册兼容性。",
+      "route": "human",
+      "note": "门禁禁止读取真实配置，只能用合成注入证明核心边界。"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-execution-target-policy-authority",
+      "desc": "实现跨平台 pure policy 与进程内 authority：runtime/transport 闭集、direct/legacy/proxy origin continuity、脱敏闭合 receipt、URL/endpoint 输入 fail-closed，真实值不公开。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/cross-platform-execution-target-core.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-27T09:42:59.367Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-execution-target-runtime",
+      "desc": "实现 runtime origin hardening：goto 后读取 page.url 并按 authority 精确核对 origin；不同 origin 固定 NAVIGATION_ORIGIN_MISMATCH、无 receipt、close 恰一次；native shared loopback 缺 canonical 时 LOGICAL_TARGET_REQUIRED 且 launch=0。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/cross-platform-execution-target-runtime.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-27T09:42:59.712Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-execution-target-boundaries-wiring",
+      "desc": "runtime 导出唯一 navigateExecutionTargetPage；record/replay/compile/loginBootstrap/compile-atoms 全部使用它并移除 raw goto/旧 rebase；所有本契约新增或修改生产/golden 文件 <=600 行，包括拆分当前超限 replay 与 compile-atoms。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/cross-platform-execution-target-boundaries.static.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-27T09:43:00.630Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4-login-first-navigation-origin-gate",
+      "desc": "loginBootstrap 接收 executionTargetAuthority，首跳在取得 locator/填凭据/点击前完成实际 origin 核验；跨 origin 返回稳定拒绝、close=1、user/pass fill=0、submit click=0，公开结果零地址与凭据片段。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/cross-platform-execution-target-login-origin.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-27T09:43:01.022Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s5-cli-url-bearing-error-output-seal",
+      "desc": "新增共享 CLI failure emitter，record/replay/compile 的 URL-bearing 异常、最终 catch 与子进程 stderr 只输出闭集稳定 reason，stdout/stderr 零协议、host、port、path、query、fragment。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/cross-platform-execution-target-cli-output-seal.zero-sut.golden.mjs",
+        "node tests/_golden/cross-platform-execution-target-boundaries.static.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-27T09:43:02.098Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s6-adjacent-regressions-hold",
+      "desc": "保持显式合成 site 注入、login bootstrap 完整 URL、坏配置输出脱敏、doctor 纯层分类与现役 output-seal prelaunch 拒绝；不启动 SUT/browser。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/cross-platform-execution-target-adjacent-regression.zero-sut.golden.mjs",
+        "node tests/_golden/output-seal-b5-prelaunch.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-27T09:43:10.107Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s7-independent-review-hardening",
+      "desc": "独立复核补强：replay 与 compile 每个非导航动作前按 authority 核对实际 origin；登录等待表单窗后再核对；WSL 只允许显式选择非 direct transport；pageerror 投影必须封口，规范地址不得进入 axes/报告。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/cross-platform-execution-target-hardening.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-27T09:43:12.152Z 全部 acceptance exit 0"
+    }
+  ],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-27",
+      "files": [
+        "tests/_golden/cross-platform-execution-target-cli-output-seal.zero-sut.golden.mjs"
+      ],
+      "reason": "output-seal B7 邻接复跑暴露 compile main/execute catch 把任意普通异常都送入 execution-target emitter，未知 ENOTDIR 被误归因成 EXECUTION_TARGET_AUTHORITY_INVALID/exit 65。新增纯 isExecutionTargetCliFailure 闭集分类：已知 execution-target reason 仍走共享脱敏边界；普通 main/execute 异常只输出固定文案并保持 exit 1，绝不回显异常 message/栈。R12 加锁两类分流、退出码与零 URL 片段；旧 sha cd5e661e... → 新 sha 714c8b55...。output-seal B7 测试本体及其 checksum 未改，现 27/27 GREEN。"
+    },
+    {
+      "amendedAt": "2026-07-27",
+      "files": [
+        "docs/plans/cross-platform-execution-target/GRILL.md"
+      ],
+      "reason": "提交前 staged diff-check 发现日期行仅含 Markdown 行尾空格。删除纯格式尾空格，决策、验收语义与测试命令零变化；旧 sha 1b33db2c... → 新 sha 071b82e7...。以显式 amendment 重冻，禁止静默改 frozen 文档。"
+    }
+  ],
+  "notes": "acceptance-gate hardening amendment 于 2026-07-27 制造。首轮 R7-R11 已实现并由 gate 推进；独立复核随后发现 5 个原冻结门未覆盖的执行缝，追加 s7 与独立 golden，真实红基线 0/5：replay 同 path 跨 origin 仍 dispatch、compile 非 nav 动作仍执行、登录等待窗漂移误判已登录、WSL 隐式推断 legacy、pageerror 规范 URL 泄漏 axes。新增测试与红证已 sha256 冻结；未读取/展示真实 site.json/.auth，未用 SUT/browser/network。"
+}

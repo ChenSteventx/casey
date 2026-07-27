@@ -3,12 +3,8 @@
 //
 //   node bin/compile.mjs <caseId> --testcase <f> --flow <f> --out-dir <d>
 //       闸段：flow 草稿过 compile-gate 双闸（前缀自 TestCase.uniquePrefix，fail-closed）→ 落 flow-<caseId>.json 等人 confirm。
-//   node bin/compile.mjs <caseId> --execute --testcase <f> --sut <url> --out-dir <d> --profile <f> [--entity-authority <f>] [--skip-login] [--unique-name <tok>]
-//       执行段：以 TestCase 为不可变锚重验三闸 → 登录预备动作（凭据只进内存）→ 骑 atom 知识真机逐步执行
-//       → events.json + observed-<caseId>.json + compile-report.json（任一步证不出 → 只落诊断报告 exit 65）。
-//   node bin/compile.mjs <caseId> --verify --sut <url> --out-dir <d> --profile <f> [--entity-locks <f>] [--events <events.json>] [--login-bootstrap]
-//       核验段（G1 取 B）：调 bin/replay.mjs 产 axes → 动作轴全 unique 才 0；否则列雷点清单非零退出。
-//       --login-bootstrap 透传给子 replay（真机核验过登录墙；hermetic 不带旗标零行为差）。
+//   --execute：以 TestCase 为锚重验三闸 → 登录预备动作 → 真机逐步执行 → events/observed/report。
+//   --verify：调 replay 产 axes，动作轴全 unique 才成功；--login-bootstrap 可透传。
 //
 // 退出码：0 成功；1 运行时失败/凭据门拦；64 缺参；65 输入坏/闸拒（fail-closed）；66 flow 未 confirm。
 // 所有落盘口过 lib/cred-gate.mjs（G5 取 B，护栏 #7）。本进程零 LLM、零裁定（护栏 #15）。
@@ -36,11 +32,13 @@ import {
   requiredFlowEntityBindings,
 } from '../lib/entity-semantic-lock-preflight.mjs';
 import { PROJECT_ROOT } from '../lib/paths.mjs';
+import { playwrightLaunchOptions, resolveCliExecutionTarget } from '../lib/execution-target/wiring.mjs';
+import { navigateExecutionTargetPage } from '../lib/execution-target/runtime.mjs';
+import { emitCompileCliFailure, emitExecutionTargetCliFailure } from '../lib/execution-target/cli-boundary.mjs';
 
 const { chromium } = pw;
 const SNAPSHOT_FILE = join(PROJECT_ROOT, 'lib', 'atoms-registry.snapshot.json');
 
-// 统一三段式调用名：execute 使用预执行 authority；verify 使用 successor 的 replay 内部 policy。
 function checkCompileIdentityAdmission(options) {
   if (options?.mode === 'execute') return checkExecuteIdentityAdmission(options);
   const { mode: _mode, ...replayOptions } = options || {};
@@ -67,7 +65,6 @@ function readJson(f, label) {
   catch { console.error(`compile: 读/解析 ${label} 失败（${f}；不是合法 JSON 或不可读，内容不回显）`); process.exit(65); }
 }
 
-// CLI 文件参数只负责指向已发布 artifact；真正授权来源仍是规范 PRD 中该 project-relative key 的 checksum。
 function projectArtifactKey(input) {
   if (typeof input !== 'string' || !input.trim()) return null;
   const rel = relative(PROJECT_ROOT, resolve(input));
@@ -104,7 +101,6 @@ function gatedWrite(files) {
   }
 }
 
-// ── 闸段：flow 草稿 → compile-gate → 落盘等 confirm ─────────────────────────
 function gateMode(caseId, args) {
   const tc = readJson(args.testcase, 'TestCase');
   if (tc.caseId !== caseId) { console.error(`compile: TestCase.caseId 与命令行 caseId（${caseId}）不一致（文件侧值原值不回显——output-seal A8）`); process.exit(65); }
@@ -134,7 +130,6 @@ function gateMode(caseId, args) {
   process.exit(0);
 }
 
-// ── 执行段：登录预备动作 → 骑 atom 知识逐步执行 → 三产物 ─────────────────────
 async function executeMode(caseId, args) {
   const outDir = resolve(String(args['out-dir']));
   const flowFile = join(outDir, `flow-${caseId}.json`);
@@ -165,8 +160,7 @@ async function executeMode(caseId, args) {
       process.exit(65);
     }
   }
-  // 预执行身份授权门：mutation 由已过闸 flow + registry 机械判定，不接受调用者自称只读。
-  // 授权同时绑定 flow/TestCase 原始字节和全部显式对象角色；未过时尚未启动浏览器。
+  // 预执行身份授权绑定 flow/TestCase 原始字节与显式对象角色。
   const containsEntityMutation = flowContainsEntityMutation(flowDoc.flow, registry);
   const executeArtifactKey = projectArtifactKey(args['entity-authority']);
   const executeAuthorityRead = executeArtifactKey
@@ -177,10 +171,7 @@ async function executeMode(caseId, args) {
     })
     : null;
   const executeAuthority = executeAuthorityRead?.ok === true ? executeAuthorityRead.authority : null;
-  // 凭据上下文门（ADR-0010，codex High-2 修）：铸权后、启动浏览器前、且【早于】bindings 准入——按实际凭据加载派生
-  // 上下文（非 --skip-login 旗标自报）：非 skip-login=生产意图，此处即把站点配置/凭据加载掉，成功=production 上下文、
-  // 失败=浏览器前 exit 65 fail-closed（绝不启动浏览器后才发现无凭据）；--skip-login=test 上下文、无凭据。受众与上下文
-  // 严格匹配，不符 exit 65。与 replay.mjs 同律；受众与 bindings 正交、故置于 admission 之前更早 fail-closed。防测试锁误指真 SUT。
+  // 凭据上下文门在浏览器前按实际加载结果判 production/test，受众不符即拒。
   let preloadedCreds = null;
   let credentialContext = 'test';
   if (!args['skip-login']) {
@@ -214,15 +205,13 @@ async function executeMode(caseId, args) {
     console.error(`compile --execute: 预执行身份授权未过（${identityAdmission.reason}），未启动浏览器；下一步 ${identityAdmission.nextAction}`);
     process.exit(65);
   }
-  // 旧成功产物清场（R2-F3）：本目录语义 = 本次运行结果；先清旧 events/observed，
-  // 失败路径绝不让上一轮成功产物残留假冒本轮（可进 P4 的只能是本轮全 unique 产物）。
+  // 先清旧成功产物，失败路径不得让上一轮结果冒充本轮。
   rmSync(join(outDir, 'events.json'), { force: true });
   rmSync(join(outDir, 'entity-bindings.draft.json'), { force: true });
   rmSync(join(outDir, 'identity-observations.compile.json'), { force: true });
   rmSync(join(outDir, `observed-${caseId}.json`), { force: true });
   const profile = readJson(args.profile, '通道剖面');
-  // 剖面可选 routes.workflowList（非凭据通道配置）：present 则须以 / 开头的路径段（R1-F5 形状校验同律），
-  // 缺省 null → compile-atoms 走 ROUTE_LIST（hermetic 行为不变）。
+  // 剖面路由在启动前做路径形状校验。
   let listRoute = null;
   let agentListRoute = null;
   if (profile.routes !== undefined) {
@@ -233,13 +222,7 @@ async function executeMode(caseId, args) {
     listRoute = r.workflowList || null;
     agentListRoute = r.agentList || null; // chief-bringup G1：智能体列表路由（nav.agentManagement 路由导航优先）
   }
-  // 身份通道剖面（剖面声明制——未声明零行为差，声明则形状非法 fail-closed）。
-  // C0：注入不再硬认 profile.agents，改按闭集注册表登记的实体 kind 数据驱动遍历（ENTITY_KIND_COMPILE_CHANNELS）：
-  //   各 kind 从其对应 profile 通道注入身份 ledger，好让 C1 加闸、C2 加 workflow 各碰不同缝。
-  //   C0 只登记 agent（→ profile.agents）；未登记观察通道的 kind（如 workflow）不遍历 = 行为逐字等价今日 agent-only。
-  // per-kind 身份观察通道（codex R1 High：原单变量 identityChannelCfg 逐次覆盖——C2 加 workflow 后
-  // 第二 kind 会覆盖第一——改真 per-kind Map，键=已登记 kind、值=该 kind 的 channelCfg，
-  // 让 C2 只需往 Map 加条目、不覆盖 agent）。C0 注册表恰含 agent 一个观察通道 kind。
+  // 已登记实体 kind 各自校验通道；声明畸形即 fail-closed。
   const identityChannelsByKind = new Map();
   for (const [kind, channelSpec] of ENTITY_KIND_COMPILE_CHANNELS) {
     const channelProfile = profile[channelSpec.profileKey];
@@ -257,8 +240,7 @@ async function executeMode(caseId, args) {
         && l.fields && typeof l.fields === 'object' && !Array.isArray(l.fields)
         && s(l.fields.id) && s(l.fields.code) && s(l.fields.name);
       if (!shapeOk) { console.error(`compile: 通道剖面 ${channelSpec.profileKey}.listApi 形状非法（身份通道声明不完整，含 queryParam），拒跑（fail-closed）`); process.exit(65); }
-      // 物理卡片双锚（codex R1-H1）：声明身份通道即须声明卡片容器与 name/code 子选择器——
-      // DOM 证据必须从同一物理卡片读出，缺声明 fail-closed。
+      // DOM 身份证据必须从声明的同一物理卡片读取。
       const cardOk = s(a.itemContainer)
         && a.cardFields && typeof a.cardFields === 'object' && !Array.isArray(a.cardFields)
         && s(a.cardFields.name) && s(a.cardFields.code);
@@ -271,15 +253,13 @@ async function executeMode(caseId, args) {
       });
     }
   }
-  // 下游 ledger/forensics 目前单通道消费：C0 取唯一已登记 kind 的 channelCfg。多 kind（C2 加 workflow 后
-  // 剖面同时声明多观察通道）尚无 per-kind 下游注入——fail-closed 拒，绝不静默择一（正是本 finding 覆盖 bug）。
+  // 下游仍是单通道；多 kind 不得静默择一。
   if (identityChannelsByKind.size > 1) {
     console.error('compile: 剖面声明多身份观察通道 kind，per-kind 下游注入尚未支持（C2），拒跑（fail-closed）'); process.exit(65);
   }
   let identityChannelCfg = null;
   for (const cfg of identityChannelsByKind.values()) identityChannelCfg = cfg;
-  // 身份通道指纹（identityProfileDigest = sha256(规范化 listApi)）：启动前算好，供破坏性 ref 武装取真指纹
-  // （C3 修复 Critical-1 ①：原 run.identityProfileDigest 从不赋值 → mint 恒收 null）。观察件落盘处复用同值保字节一致。
+  // 身份通道指纹启动前计算，观察件与破坏性 ref 复用同值。
   const canonicalSortKeys = (v) => (Array.isArray(v) ? v.map(canonicalSortKeys)
     : (v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, canonicalSortKeys(v[k])])) : v));
   const identityProfileDigest = identityChannelCfg
@@ -288,18 +268,17 @@ async function executeMode(caseId, args) {
   const identityLedger = identityChannelCfg
     ? (await import('../lib/agent-identity-observation.mjs')).createIdentityObservationLedger({ channel: identityChannelCfg })
     : null;
-  const sut = String(args.sut).replace(/\/$/, '');
   const uniqueName = String(args['unique-name'] || Date.now().toString(36));
   const site = loadSiteConfig();
+  const execution = resolveCliExecutionTarget({ site, cliSut: String(args.sut), requiresOriginContinuity: !args['skip-login'] });
+  if (!execution.ok) {
+    console.error(`compile --execute: 执行目标准入失败（${execution.reason}），未启动浏览器`);
+    process.exit(65);
+  }
+  const sut = execution.runtime.browserVisibleBaseUrl;
   const watchdog = setTimeout(() => { console.error('compile 看门狗：超时强制退出'); process.exit(1); }, 120000);
 
-  // C3 编译期破坏性目标连续性【浏览器前】结构准入（fail-closed；codex round-3 Critical + Steven 2026-07-24 (A) 裁定）：
-  // flow 里每个 targeting/破坏性原子（workflow.deleteByName/agent.delete/agent.confirmToolPicker/picker.selectFirstTool）
-  // 的目标实体 kind，剖面必须声明良构身份通道（结构上可核实「同一目标」）；channel-less/v1（无身份通道）恒拒——
-  // 不启浏览器、绝不 performAction 破坏步，与 replay 浏览器前 admitDestructiveTargetContinuity 一脉。
-  // certifiableKinds = 已声明良构身份通道的 kind 集：agent 由 identityChannelsByKind 覆盖（已含形状校验+ledger 激活）；
-  // workflow 身份通道尚未接 ledger（不在 ENTITY_KIND_COMPILE_CHANNELS），但破坏性连续性准入只需其【结构声明】良构即放行编译，
-  // 真实观察/ref 铸造由运行期逐步守卫（armDestructiveTargetContinuity 铸不出即硬阻断）把关——二者叠成完整 fail-closed。
+  // 破坏性原子必须在浏览器前证明目标 kind 有良构身份通道。
   const wellFormedListChannel = (cp) => {
     if (!cp || typeof cp !== 'object' || Array.isArray(cp)) return false;
     const l = cp.listApi;
@@ -323,11 +302,17 @@ async function executeMode(caseId, args) {
     }
   }
 
-  // 浏览器启动哨兵（仅测试注入，生产 env 未设即 no-op）：到达本行=控制流已越过一切浏览器前 fail-closed 门（准入/受众/
-  // 凭据）。设 env 时写哨兵并 exit 66 短路——【不真启浏览器】即可让验收金牌机械证「门是否在浏览器前拦」：门先 fire→
-  // exit 65 哨兵缺席；控制流到达此点→哨兵在 + exit 66（正控证哨兵非空、非产物缺席那种可被先启动后退门绕过的弱证）。codex round-4。
+  // 测试哨兵证明所有 fail-closed 门均早于浏览器启动。
   if (process.env.CASEY_LAUNCH_SENTINEL) { writeFileSync(process.env.CASEY_LAUNCH_SENTINEL, 'launched'); process.exit(66); }
-  const browser = await chromium.launch({ headless: true });
+  let browser;
+  try {
+    browser = await chromium.launch(playwrightLaunchOptions(execution.runtime, { headless: true }));
+  } catch {
+    process.exit(emitExecutionTargetCliFailure({
+      command: 'compile',
+      failure: { reason: 'BROWSER_LAUNCH_FAILED' },
+    }));
+  }
   const context = await browser.newContext();
   const page = await context.newPage();
   const cdp = await context.newCDPSession(page);
@@ -348,24 +333,36 @@ async function executeMode(caseId, args) {
     } : {}),
   });
 
-  const run = createCompileRun({ page, forensics, state, sut, uniqueName, site, listRoute, agentListRoute, profile, identityLedger, identityProfileDigest });
+  const run = createCompileRun({ page, forensics, state, sut, uniqueName, site, listRoute, agentListRoute, profile, identityLedger, identityProfileDigest, executionTargetAuthority: execution.authority, executionTargetRuntime: execution.runtime });
   let exitCode = 0;
   try {
     if (!args['skip-login']) {
-      // 登录预备动作：不产 event，凭据只进内存（护栏 #7）。登录入口 = --sut 基址 + site.json startUrl 的路径段——
-      // devProxyUrl/根 '/' 只是基址不渲染登录表单（真机实采 2026-07-02：裸基址上 SPA 判据「表单不在场」
-      // 会被误读为已登录态 fail-open，后续全步 absent）；基址恒由 --sut 注入、绝不写死。
+      // execution-target authority 保持规范 origin；传输端点不参与页面 URL 拼接。
       const creds = preloadedCreds; // 已在浏览器启动前加载（codex High-2 凭据上下文门），此处复用不重载
       run.notes.push('凭据于浏览器启动前加载（凭据上下文门 fail-closed）');
-      let entryPath = ROUTE_LIST;
-      try { entryPath = new URL(site.target.startUrl).pathname; } catch { /* 无 startUrl：退列表路由 */ }
-      await loginBootstrap(page, { site, creds, startUrl: sut + entryPath });
+      const login = await loginBootstrap(page, { site, creds, startUrl: execution.runtime.browserVisibleStartUrl, executionTargetAuthority: execution.authority });
+      if (login?.ok === false) {
+        const error = new Error(login.reason);
+        error.code = login.reason;
+        throw error;
+      }
       run.notes.push('登录预备动作完成（不产 event）');
+    } else {
+      const navigation = await navigateExecutionTargetPage({
+        page,
+        authority: execution.authority,
+        targetUrl: execution.runtime.browserVisibleStartUrl,
+        gotoOptions: { waitUntil: 'load' },
+      });
+      if (!navigation.ok) {
+        const error = new Error(navigation.reason);
+        error.code = navigation.reason;
+        throw error;
+      }
     }
     await compileFlow(run, flowDoc.flow);
   } catch (e) {
-    console.error(`compile: 执行失败：${String((e && e.message) || e).slice(0, 300)}`); // 剥栈只留消息（output-seal B7）
-    exitCode = 1;
+    exitCode = emitCompileCliFailure({ failure: e, phase: 'execute' });
   } finally {
     await forensics.awaitStreamsSettled(1500);
     await forensics.drain();
@@ -516,7 +513,6 @@ function verifyMode(caseId, args) {
   if (!existsSync(eventsFile)) { console.error(`compile: 缺 ${eventsFile}——先 --execute 产 events`); process.exit(65); }
   // verify 的写链只认绑定最终 events 字节的 frozen locks，不得拿 execute authority 冒充；
   // 固定 atom+action 的纯只读链由 replay 内部 policy 证明，可不带 locks。
-  // 本门位于临时文件和 replay spawn 之前，拒绝路径零回放副作用。
   const eventsBytes = readFileSync(eventsFile);
   const eventsDoc = readJson(eventsFile, 'events.json');
   const entityLocksSupplied = typeof args['entity-locks'] === 'string' && Boolean(args['entity-locks']);
@@ -551,7 +547,7 @@ function verifyMode(caseId, args) {
     ...(args['login-bootstrap'] ? ['--login-bootstrap'] : []),
   ], { encoding: 'utf8', timeout: 120000 });
   if (r.status !== 0) {
-    console.error(`compile --verify: 回放器非零退出（${r.status}）：${(r.stderr || '').slice(-400)}`);
+    console.error(`compile --verify: 回放器非零退出（${r.status}；子进程详情不回显）`);
     process.exit(1);
   }
   const axes = readJson(axesFile, 'axes');
@@ -599,4 +595,4 @@ async function main() {
 }
 
 const isMain = process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url);
-if (isMain) main().catch((e) => { console.error('compile 失败：' + String((e && e.message) || e).slice(0, 300)); process.exit(1); }); // 剥栈（output-seal B7）
+if (isMain) main().catch((e) => process.exit(emitCompileCliFailure({ failure: e })));

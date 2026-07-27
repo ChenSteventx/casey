@@ -1,0 +1,89 @@
+cross-platform-execution-target acceptance-gate hardening evidence
+date: 2026-07-27
+workspace: Casey dev working tree
+mode: zero-SUT / zero-browser / zero-network; synthetic values and injected doubles only
+scope: R7-R11 amendment; no production edits, no advance, no commit
+
+SYNTAX GREEN
+
+1. node --check tests/_golden/cross-platform-execution-target-runtime.zero-sut.golden.mjs
+   exit: 0
+2. node --check tests/_golden/cross-platform-execution-target-login-origin.zero-sut.golden.mjs
+   exit: 0
+3. node --check tests/_golden/cross-platform-execution-target-cli-output-seal.zero-sut.golden.mjs
+   exit: 0
+4. node --check tests/_golden/cross-platform-execution-target-boundaries.static.golden.mjs
+   exit: 0
+5. node --check tests/_golden/cross-platform-execution-target-adjacent-regression.zero-sut.golden.mjs
+   exit: 0
+
+BASELINE GREEN
+
+6. node tests/_golden/cross-platform-execution-target-core.zero-sut.golden.mjs
+   exit: 0
+   proof: 8 passed / 0 failed; existing policy and opaque authority baseline remains green.
+
+NEW CAPABILITY RED
+
+7. node tests/_golden/cross-platform-execution-target-runtime.zero-sut.golden.mjs
+   exit: 1
+   proof:
+   - R1-R6 remain green;
+   - R7 is red because goto returns success on a synthetic different-origin page.url(), returns a success receipt, and does not perform the required origin mismatch rejection;
+   - R8 is red because native win32 with shared loopback and no canonical target is accepted as direct and launches instead of returning LOGICAL_TARGET_REQUIRED with launch=0.
+   summary: 6 passed / 2 failed.
+
+8. node tests/_golden/cross-platform-execution-target-login-origin.zero-sut.golden.mjs
+   exit: 1
+   proof: a different-origin login first goto returns {loggedIn:true,viaForm:true}; the existing flow reaches credential fill and submit instead of NAVIGATION_ORIGIN_MISMATCH with fill=0/click=0.
+   summary: 0 passed / 1 failed.
+
+9. node tests/_golden/cross-platform-execution-target-cli-output-seal.zero-sut.golden.mjs
+   exit: 1
+   proof: lib/execution-target/cli-boundary.mjs is absent (ERR_MODULE_NOT_FOUND), so record/replay/compile have no common deterministic URL-redacting failure emitter.
+
+10. node tests/_golden/cross-platform-execution-target-boundaries.static.golden.mjs
+    exit: 1
+    proof:
+    - cli-boundary.mjs is absent;
+    - structural ratchet is real red: bin/replay.mjs=1062 and lib/compile-atoms.mjs=1894, both over 600;
+    - runtime does not export navigateExecutionTargetPage;
+    - loginBootstrap has no shared origin guard before credential operations;
+    - record/replay/compile do not use the shared CLI output boundary and still contain direct e.message/stderr output paths.
+    summary: 4 passed / 5 failed.
+
+ADJACENT REGRESSION GREEN
+
+11. node tests/_golden/cross-platform-execution-target-adjacent-regression.zero-sut.golden.mjs
+    exit: 0
+    proof: 4 passed / 0 failed; explicit synthetic site injection, authority-bearing login page double, malformed config output sealing, and doctor pure classification remain green.
+
+12. node tests/_golden/output-seal-b5-prelaunch.zero-sut.golden.mjs
+    exit: 0
+    proof: legal read-only envelope reaches login preflight rejection, echoes no seed, and never crosses the browser launch sentinel.
+
+STRUCTURAL SCOPE
+
+- All cross-platform-execution-target golden files are <=600 lines.
+- The gate intentionally includes every execution-target module plus record/replay/compile/doctor/login-bootstrap/compile-atoms because R7-R11 require those files to be added or modified.
+- Current production violations are evidence, not waived debt: replay=1062 and compile-atoms=1894.
+
+FREEZE / DRY GATE GREEN
+
+13. node loop-kit/bin/term-lint.mjs --file <amended plan/GRILL/red-proof/PRD>
+    exit: 0
+    proof: term-lint passed with 0 warnings.
+
+14. independent SHA-256 verification of every testChecksums entry
+    exit: 0
+    proof: all 10 frozen files match the PRD.
+
+15. node loop-kit/bin/gate.mjs --prd loop/prd-cross-platform-execution-target.json --dry
+    exit: 0
+    proof: all ratchet entries and term-lint are green; six stories are listed dry and remain passes=false (story 0/6), so no contract state was advanced.
+
+NON-EVIDENCE / EXCLUDED
+
+- No real site.json or .auth path/content was read or displayed.
+- No real SUT, browser, credential store, or network was used.
+- No production implementation was changed by this amendment.

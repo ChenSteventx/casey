@@ -1,33 +1,18 @@
 #!/usr/bin/env node
 // bin/replay.mjs —— 确定性回放器（相3）。真回放 SUT（被测系统）→ 产三轴 axes.json → 喂已冻 verdict.mjs。
 // 冻结 CLI：node bin/replay.mjs --events <f> --sut <baseUrl> --expected <f> --profile <f> --out <axes.json> [--entity-locks <f>] [--login-bootstrap]
-// --entity-locks 仅固定 atom+action 的纯只读 events 可省；任一 mutation/未知项仍在浏览器前 fail-closed。
-//   [--run-history <f>] [--run-metrics <f>] [--run-id <id>]（opt-in 回放历史/回放指标真产出，缺省行为一字不变）：
-//   纯观察者逐 event 收集（零新增等待、零改动作时序——动了取证归因窗即污染护栏 #15），与 axes 同刻经
-//   凭据兜底门一次写出；仅诊断证据，绝不进 verdict.mjs、绝不写 passes（口径见 docs/plans/run-history/proposed/GRILL.md）。
-//   --profile = 通道剖面（非凭据）：{ background:[denylist], successField, successValue,
-//     loading?:{selectors?:string[],text?:string} }。
-//   --login-bootstrap（opt-in，缺省行为一字不变）：回放前执行登录预备动作（CONTEXT.md 术语）——
-//     不产 event、不进 axes、凭据只进内存（护栏 #7）；前置加载/登录失败 exit 65 不落 axes（护栏 #14）。
-//   --video-dir <dir>（opt-in，缺省行为一字不变，replay-video GRILL M3）：context 级录屏——正常收敛后
-//     恰余一份 <dir>/video.webm + 元数据旁件 <dir>/video.json（{schemaVersion:1,file,startedAt,steps:[{stepId,videoAt}]}）；
-//     与 --login-bootstrap 同开时登录跑独立 page、其镜头收敛必删（登录期不入镜，护栏 #7）；
-//     收敛失败按缺席容忍（fail-safe：视频永远只是诊断附件，绝不进 verdict，M5/M7）。
+// 可选登录、历史与视频均不进入 verdict；凭据只进内存，失败不落 axes。
 // 裁判零 LLM（护栏 #15）：本进程只产三轴事实，绝不裁定、绝不问 LLM、绝不写 verdict/passes。
 // 取证按【动作作用域 + 发起方】归因（护栏 #15，非时间窗）：currentStepId 仅在该步动作执行+静默期开放，
 //   预导航/上下文恢复期一律 null；证不出归 null（fail-safe，护栏 #14）。
-import { readFileSync, writeFileSync, writeSync, renameSync, readdirSync, rmSync } from 'node:fs';
-import { join, relative, resolve, sep } from 'node:path';
+import { readFileSync, writeFileSync, writeSync, rmSync } from 'node:fs';
+import { join, resolve } from 'node:path';
 import pw from '@playwright/test';
-import { dispatchReplayAction, unknownAtomRejection } from '../lib/replay-actions.mjs';
 import { instantiate } from '../lib/instantiate.mjs';
-import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
-import { normalizeLoadingProfile, settleBeforeCapture } from '../lib/replay-settle.mjs';
-import { inputReadbackFromAction } from '../lib/replay-assert.mjs';
+import { createPageForensicsHub } from '../lib/replay-forensics.mjs';
+import { normalizeLoadingProfile } from '../lib/replay-settle.mjs';
 import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
-import { credentialGate } from '../lib/cred-gate.mjs';
 import { assertSignedContract } from '../lib/sign-gate.mjs';
-import { projectReplayAxes } from '../lib/replay-axes.mjs';
 import { validateWorkflowDeleteBindings } from '../lib/workflow-delete-spec.mjs';
 import { projectReplayAssertion, validateReplayEntityAnchors } from '../lib/replay-entity-anchor.mjs';
 import {
@@ -35,141 +20,35 @@ import {
   readIdentityAdmissionAuthorityFromPrd,
   checkCredentialAudienceGate,
   readFrozenIdentityObservations,
-  requiresTargetContinuityRef,
 } from '../lib/entity-semantic-lock-preflight.mjs';
-import { installOutboundMutationGuard, evaluateDestructiveTargetAbsence } from '../lib/entity-destructive-continuity-wiring.mjs';
 import { admitDestructiveTargetContinuity } from '../lib/entity-destructive-continuity.mjs';
-import { partitionGuardAbortPageErrors } from '../lib/entity-destructive-continuity.mjs';
 import { createHash } from 'node:crypto';
 import { PROJECT_ROOT } from '../lib/paths.mjs';
+import { playwrightLaunchOptions, resolveCliExecutionTarget } from '../lib/execution-target/wiring.mjs';
+import { emitExecutionTargetCliFailure } from '../lib/execution-target/cli-boundary.mjs';
+import { runReplayEvents } from '../lib/replay/event-runner.mjs';
+import { finalizeReplayArtifacts } from '../lib/replay/artifact-finalizer.mjs';
+import { ReplayNavigationAbort, requireLoginBootstrapResult } from '../lib/replay/navigation.mjs';
+import { createReplayOriginAdmission } from '../lib/replay/origin-admission.mjs';
+import { createReplayVideoLifecycle } from '../lib/replay/video-lifecycle.mjs';
+import { navigateExecutionTargetPage } from '../lib/execution-target/runtime.mjs';
+import {
+  parseReplayArgs,
+  projectReplayArtifactKey,
+} from '../lib/replay/cli-input.mjs';
+import { classifyReplayFatal } from '../lib/replay/cli-failure.mjs';
+import {
+  captureReplaySessionSeed,
+  installReplaySessionSeedBeforeNavigation,
+  openReplayTopology,
+} from '../lib/page-topology/replay-session.mjs';
 
 const { chromium } = pw;
 
-function parseArgs(argv) {
-  const o = {};
-  for (let i = 0; i < argv.length; i++) {
-    const a = argv[i];
-    if (a === '--events') o.events = argv[++i];
-    else if (a === '--sut') o.sut = argv[++i];
-    else if (a === '--expected') o.expected = argv[++i];
-    else if (a === '--profile') o.profile = argv[++i];
-    else if (a === '--out') o.out = argv[++i];
-    else if (a === '--entity-locks') o.entityLocks = argv[++i];
-    else if (a === '--login-bootstrap') o.loginBootstrap = true;
-    else if (a === '--run-history') o.runHistory = argv[++i];
-    else if (a === '--run-metrics') o.runMetrics = argv[++i];
-    else if (a === '--run-id') o.runId = argv[++i];
-    else if (a === '--video-dir') o.videoDir = argv[++i];
-    else if (a === '--unique-name') o.uniqueName = argv[++i];
-    // regress-promptset：--prompt-text 注入 ctx.promptText（回填冻结 flow 的 {{promptText}} 提示槽）；
-    // --soft-expect 非签署软期望通道（强制 soft:true 并入按 intent 断言表，绝不进裁定、不过 sign-gate）。
-    else if (a === '--prompt-text') o.promptText = argv[++i];
-    else if (a === '--soft-expect') o.softExpect = argv[++i];
-  }
-  return o;
-}
-
-// 文件参数只选择 PRD 已冻结的 artifact key；文件内容本身不携带回放权限。
-function projectArtifactKey(input) {
-  if (typeof input !== 'string' || !input.trim()) return null;
-  const rel = relative(PROJECT_ROOT, resolve(input));
-  if (!rel || rel === '..' || rel.startsWith(`..${sep}`)) return null;
-  return rel.split(sep).join('/');
-}
-
 // ── 录像基座（replay-video GRILL D1/M3–M5）─────────────────────
 // fail-closed 退出路径的录像清扫：不许把镜头残件（尤其登录期键入）留在盘上（护栏 #7）。
-// 正常成功路径收敛后 videoSweepDir 置 null，语义名 video.webm 不受清扫。
 let activeBrowser = null;
-let videoSweepDir = null;
-function sweepVideos() {
-  if (!videoSweepDir) return;
-  try {
-    for (const f of readdirSync(videoSweepDir)) if (f.endsWith('.webm')) rmSync(join(videoSweepDir, f));
-  } catch { /* 尽力而为 */ }
-}
-// 舞步失败退出前清扫（codex R1-F1 采信：清扫不依赖 close 成败）：先清扫（unlink 不需要浏览器配合，
-// Linux 下写入中的文件同样即刻离目录）、再限时关 context、关后补扫（close 期间新终结的残件）。
-async function discardVideos(context) {
-  sweepVideos();
-  try { await Promise.race([context.close(), new Promise((r) => setTimeout(r, 5000))]); } catch { /* 尽力而为 */ }
-  sweepVideos();
-}
-
-// ── 回放历史逐行构造（G2/G3/G4 口径见 docs/plans/run-history/proposed/GRILL.md）────
-// 纯翻译既有机制事实：locatorResolution 冻结枚举缝合（内部值 action_failed→unique，失败归 result=actionError）；
-// valueRef 值侧打码（全串恰为单占位符才透传，否则脱敏标记，护栏 #7）；quietPointReached=该步前置稳定程序达成。
-const RH_PLACEHOLDER = /^\{\{[A-Za-z0-9_.-]+\}\}$/;
-const RH_INTERACTIVE = new Set(['click', 'dblclick', 'fill', 'selectOption', 'dragTo']); // dragTo 源有定位 → 交互支（wf-add-node）
-const RH_ACTIONS = new Set(['click', 'dblclick', 'fill', 'selectOption', 'press', 'nav', 'newpage', 'dragTo']);
-const RH_LR_ENUM = new Set(['unique', 'none', 'ambiguous', 'fallback_first', 'coord_fallback']); // 冻结枚举透传（codex R1-F2）
-function historyLine(ev, { navOk, navErr, axis, durationMs, caseId, isLast, settled }) {
-  if (!RH_ACTIONS.has(ev.action)) return null; // 冻结枚举外（如纯断言步）不落行
-  let locatorResolution = null;
-  let result;
-  if (ev.action === 'nav') {
-    result = navOk ? 'ok' : (/timeout/i.test(String((navErr && (navErr.name || navErr.message)) || '')) ? 'timeout' : 'actionError');
-  } else {
-    const res = (axis && axis.resolution) || 'none';
-    // G2 字面提硬（codex R1-F1）：unique 且回读明确 false → actionError（现机制 unique 恒回读 ok，防御映射）。
-    const readbackFailed = !!(axis && axis.identityReadback && axis.identityReadback.ok === false);
-    result = res === 'unique' ? (readbackFailed ? 'actionError' : 'ok') : res === 'action_failed' ? 'actionError' : 'locatorError';
-    if (RH_INTERACTIVE.has(ev.action)) {
-      locatorResolution = res === 'action_failed' ? 'unique' : RH_LR_ENUM.has(res) ? res : 'none';
-    }
-  }
-  let valueRef = null;
-  if (ev.action === 'fill') valueRef = ev.value == null ? null : (RH_PLACEHOLDER.test(ev.value) ? ev.value : '<redacted:fill>');
-  else if (ev.action === 'press') valueRef = ev.key ? '<redacted:key>' : null;
-  else if (ev.action === 'selectOption') valueRef = ev.dropdownUnit && ev.dropdownUnit.optionText ? '<redacted:option>' : null;
-  const s = ev.semantic || {};
-  const role = s.role || ev.role || (ev.action === 'selectOption' ? 'combobox' : null);
-  const accessibleName = s.name || ev.accessibleName || ev.fieldLabel || (ev.dropdownUnit && ev.dropdownUnit.fieldLabel) || ev.text || null;
-  const locator = role || accessibleName ? { ...(role ? { role } : {}), ...(accessibleName ? { accessibleName } : {}), semantic: null } : null;
-  const parameters = locator || valueRef ? { ...(locator ? { locator } : {}), valueRef } : null;
-  return {
-    timestamp: new Date().toISOString(),
-    caseId,
-    stepId: ev.stepId,
-    intentId: ev.intentId,
-    atom: ev.atom ?? null,
-    action: ev.action,
-    parameters,
-    locatorResolution,
-    // 代表步（isLast）接静默点结果（replay-settle-mount）：navOk && settled——静默点超时仍记 false
-    //   （schema「false=证据可复现性存疑」口径一致）；非代表步维持既有 !!navOk 口径。值域仍 boolean。
-    quietPointReached: isLast ? (!!navOk && !!settled) : !!navOk,
-    durationMs,
-    result,
-  };
-}
-
-const pathOf = (u) => { try { return new URL(u).pathname; } catch { return u; } };
-
-// 气泡文本稳定等待（chiefcomplaint-smoke D2/D5，regress 实测「网络流结束 ≠ UI 渲染完成」）：
-// 选择器 last() 的 innerText 连续 stableMs 不变即稳；budgetMs 上界兜底，取不到回 null（证不出，不背书）。
-async function waitReplyStable(page, selector, { stableMs = 2000, budgetMs = 10000 } = {}) {
-  const t0 = Date.now();
-  let prev = null;
-  let since = Date.now();
-  while (Date.now() - t0 < budgetMs) {
-    let cur = null;
-    try {
-      const loc = page.locator(selector).last();
-      cur = (await loc.count()) ? await loc.innerText({ timeout: 500 }) : null;
-    } catch { cur = null; }
-    if (cur !== prev) { prev = cur; since = Date.now(); }
-    else if (cur != null && Date.now() - since >= stableMs) return cur;
-    await new Promise((r) => setTimeout(r, 250));
-  }
-  return prev;
-}
-
-// 行计数：失败回 null（未知），绝不回 0——避免 countChange equals 0 把「证不出」洗成假绿（finding 7）。
-// 选择器可经 profile.countSelector 换通道（wf-add-node GRILL D4 (a)：画布用例配 .lf-node），缺省零行为差。
-async function rowCount(page, selector = '.hr-table-row') {
-  try { return await page.locator(selector).count(); } catch { return null; }
-}
+const videoLifecycle = createReplayVideoLifecycle();
 
 // 读失败消毒（output-seal 追加缝：AUDIT 未列 events/expected/profile 的裸 JSON.parse，坏 JSON 原流进
 // 兜底 catch 打栈携内容片段——照 sign/draft/compile 同款消毒，只报「不是合法 JSON/不可读」，内容不回显）。
@@ -179,7 +58,7 @@ function readJsonSafe(f, label) {
 }
 
 async function main() {
-  const args = parseArgs(process.argv.slice(2));
+  const args = parseReplayArgs(process.argv.slice(2));
   for (const k of ['events', 'sut', 'expected', 'profile', 'out']) {
     if (typeof args[k] !== 'string' || !args[k]) { console.error(`replay: 缺 --${k}`); process.exit(64); }
   }
@@ -195,9 +74,9 @@ async function main() {
   const watchdog = setTimeout(async () => {
     console.error('replay 看门狗：超时强制退出');
     const bail = setTimeout(() => process.exit(1), 4000);
-    sweepVideos();
+    videoLifecycle.sweep();
     try { if (activeBrowser) await activeBrowser.close(); } catch { /* 尽力而为 */ }
-    sweepVideos();
+    videoLifecycle.sweep();
     clearTimeout(bail);
     process.exit(1);
   }, wdMs);
@@ -266,7 +145,9 @@ async function main() {
   const caseId = eventsDoc.caseId || expectedDoc.caseId || 'unknown';
   // frozen locks 必须绑定本次 events 原始字节与全部显式对象角色；该准入早于登录、浏览器启动和任何业务动作。
   const entityLocksSupplied = typeof args.entityLocks === 'string' && Boolean(args.entityLocks);
-  const frozenArtifactKey = entityLocksSupplied ? projectArtifactKey(args.entityLocks) : null;
+  const frozenArtifactKey = entityLocksSupplied
+    ? projectReplayArtifactKey(args.entityLocks)
+    : null;
   const frozenAuthorityRead = frozenArtifactKey
     ? readIdentityAdmissionAuthorityFromPrd({
       prdId: caseId,
@@ -334,7 +215,40 @@ async function main() {
   const identityLedger = identityExpectedByStep
     ? (await import('../lib/agent-identity-observation.mjs')).createIdentityObservationLedger({ channel: identityChannelCfg })
     : null;
-  const sut = String(args.sut).replace(/\/$/, '');
+  const cliSut = String(args.sut);
+  let executionSite = null;
+  try {
+    // Execution target authority is needed for every real replay. Loading this
+    // shape does not load credentials and keeps the canonical target off CLI.
+    executionSite = loadSiteConfig(undefined, { strict: true });
+  } catch {
+    writeSync(2, 'replay: 执行目标配置不可读或形状非法（内容/目标不回显）\n');
+    process.exit(65);
+  }
+  let loginCreds = null;
+  if (args.loginBootstrap) {
+    try {
+      loginCreds = loadCreds();
+    } catch {
+      // process.exit() does not wait for an asynchronous stderr pipe to flush.
+      // This pre-launch rejection is consumed by deterministic callers, so emit
+      // the fixed, credential-free line synchronously before the terminal exit.
+      writeSync(2, 'replay: 登录预备动作前置失败（fail-closed；凭据/站点配置详情不回显，护栏 #7——output-seal B5）\n');
+      process.exit(65);
+    }
+  }
+  const execution = resolveCliExecutionTarget({
+    site: executionSite,
+    cliSut,
+    requiresOriginContinuity: Boolean(args.loginBootstrap),
+  });
+  if (!execution.ok) {
+    process.exit(emitExecutionTargetCliFailure({
+      command: 'replay',
+      failure: execution,
+    }));
+  }
+  const sut = execution.runtime.browserVisibleBaseUrl;
   // 确定性令牌（可 golden）；真机由 compile-gate 注入带 Reserved Prefix 的实体名。
   // baseUrl：G6 分岔三取 C——events url 走 {{baseUrl}} 占位符，回放期回填 --sut（对完整 URL 的旧 fixture 是 no-op）。
   // promptText（regress-promptset）：被测参数经 --prompt-text 注入，回填 fill 步的 {{promptText}} 提示槽（护栏 #6
@@ -353,28 +267,19 @@ async function main() {
     // 出站拦截路径对破坏步不可达；proceed（有合法 ref 放行破坏动作）路径待真机破坏链采集激活（route:human），
     // 当前生产不可达（诚实挂账，非「非 always-refuse」宣称——codex round-2 Medium 收口）。
     destructiveContinuityByStep,
+    admitReplayActionOrigin: createReplayOriginAdmission(execution.authority),
   };
 
-  // 登录预备动作前置（GRILL 人签取 A）：凭据/站点配置在开浏览器前加载，任一失败 exit 65（fail-closed）。
-  // 登录入口 = --sut 基址 + site.target.startUrl 路径段（真机实采教训：裸基址不渲染登录表单，SPA 判据
-  // 会 fail-open 误判已登录）；无 startUrl 退 events 信封 url 路径段，再退 '/'。凭据只进内存，绝不入日志。
-  let loginPrep = null;
-  if (args.loginBootstrap) {
-    try {
-      const site = loadSiteConfig(undefined, { strict: true }); // 坏 site.json 抛错 fail-closed（codex R1-F2）
-      const creds = loadCreds();
-      let entryPath = null;
-      try { entryPath = new URL(site.target.startUrl).pathname; } catch { /* 无 startUrl：走信封 url 兜底 */ }
-      if (!entryPath && typeof eventsDoc.url === 'string' && eventsDoc.url) entryPath = pathOf(instantiate(eventsDoc.url, ctx));
-      loginPrep = { site, creds, startUrl: sut + (entryPath || '/') };
-    } catch (e) {
-      // process.exit() does not wait for an asynchronous stderr pipe to flush.
-      // This pre-launch rejection is consumed by deterministic callers, so emit
-      // the fixed, credential-free line synchronously before the terminal exit.
-      writeSync(2, 'replay: 登录预备动作前置失败（fail-closed；凭据/站点配置详情不回显，护栏 #7——output-seal B5）\n'); // e.message 可携 AT_CREDS_FILE 路径
-      process.exit(65);
+  // 登录入口由 execution-target authority 投影。原生平台保持规范 origin；
+  // transport endpoint 不再参与页面 URL 拼接。凭据只进内存，绝不入日志。
+  const loginPrep = args.loginBootstrap
+    ? {
+      site: executionSite,
+      creds: loginCreds,
+      startUrl: execution.runtime.browserVisibleStartUrl,
+      executionTargetAuthority: execution.authority,
     }
-  }
+    : null;
 
   // 凭据上下文门（ADR-0010）：铸权后、启动浏览器前，准入受众须匹配凭据上下文——真凭据 run（loginPrep 成立）↔
   // production 受众、无凭据 run ↔ test 受众，不符 fail-closed 不启动浏览器。只对有受众的 mutation 回放生效
@@ -462,16 +367,26 @@ async function main() {
   // 设 env 时写哨兵并 exit 66 短路——【不真启浏览器】即可让验收金牌机械证「门是否在浏览器前拦」：门先 fire→exit 65
   // 哨兵缺席；控制流到达此点→哨兵在 + exit 66（正控证哨兵非空、非 axes 缺席那种可被先启动后退门绕过的弱证）。codex round-4。
   if (process.env.CASEY_LAUNCH_SENTINEL) { writeFileSync(process.env.CASEY_LAUNCH_SENTINEL, 'launched'); process.exit(66); }
-  const browser = await chromium.launch({ headless: true });
+  let browser;
+  try {
+    browser = await chromium.launch(playwrightLaunchOptions(
+      execution.runtime,
+      { headless: true },
+    ));
+  } catch {
+    const failure = new Error('BROWSER_LAUNCH_FAILED');
+    failure.reason = 'BROWSER_LAUNCH_FAILED';
+    throw failure;
+  }
   activeBrowser = browser;
   // 录像 opt-in（M3）：recordVideo 是 context 级选项；缺省不带旗标时 newContext 无参、行为一字不变。
   const context = await browser.newContext(args.videoDir ? { recordVideo: { dir: args.videoDir } } : undefined);
   if (args.videoDir) {
-    videoSweepDir = args.videoDir;
+    videoLifecycle.setSweepDir(args.videoDir);
     // 陈迹清除（codex R2-N2）：目录复用时上一轮 video.json/*.webm 会被编排器误当本次产物接进报告——
     // 起录先清（本次录像文件随 newPage 才出现），拒写/收敛失败的「缺席容忍」才真缺席。
     try { rmSync(join(args.videoDir, 'video.json'), { force: true }); } catch { /* 尽力而为 */ }
-    sweepVideos();
+    videoLifecycle.sweep();
   }
   let page = await context.newPage();
   let loginPage = null;
@@ -482,544 +397,184 @@ async function main() {
   if (args.videoDir && loginPrep) {
     loginPage = page;
     try {
-      await loginBootstrap(loginPage, loginPrep);
+      requireLoginBootstrapResult(await loginBootstrap(loginPage, loginPrep));
       // 收割：登录归位后一次性取该 origin 的 sessionStorage 全键值快照——页签级登录态不随 page2 继承
       // （Heren 形态 2026-07-06 真机实证）；cookie/localStorage 是 context 级共享，无须收割。
       // 用 entries 数组而非普通对象（codex R2-F4）：键名如 __proto__ 用 obj[k]=v 会被 [[Set]] 吞掉、
       // 不成自有属性 → 「全键值快照」名不副实；[k,v] 对逐条透传，任何字符串键都不丢。
-      carrySnapshot = await loginPage.evaluate(() => {
-        const entries = [];
-        for (let i = 0; i < sessionStorage.length; i++) { const k = sessionStorage.key(i); entries.push([k, sessionStorage.getItem(k)]); }
-        return { origin: location.origin, entries };
-      });
+      const capturedCarry = await captureReplaySessionSeed(loginPage);
+      if (!capturedCarry.ok) throw new Error(capturedCarry.reason);
+      carrySnapshot = capturedCarry.snapshot;
     } catch (e) {
+      const failureExit = e instanceof ReplayNavigationAbort
+        ? emitExecutionTargetCliFailure({ command: 'replay', failure: e })
+        : 65;
       console.error('replay: 登录预备动作失败（fail-closed；错误详情不回显，Playwright 报文可携 SUT 页面片段/凭据路径，护栏 #7——output-seal B5）'); // codex R1-F1
       clearTimeout(watchdog);
-      await discardVideos(context);
+      await videoLifecycle.discard(context);
       await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
-      sweepVideos(); // 关后补扫（codex R4-N7）：context 关不上时镜头在 browser.close 期间才终结
-      process.exit(65);
+      videoLifecycle.sweep(); // 关后补扫（codex R4-N7）：context 关不上时镜头在 browser.close 期间才终结
+      process.exit(failureExit);
     }
     page = await context.newPage();
     videoT0 = Date.now();
   }
-  const cdp = await context.newCDPSession(page);
-  await cdp.send('Network.enable');
-  log('browser+cdp ready');
-
   const state = { currentStepId: null };
   const pageErrors = []; // { attributedStepId, message } —— 按发生时活动步归因（finding 4）
-  page.on('pageerror', (e) => { pageErrors.push({ attributedStepId: state.currentStepId, message: String((e && e.message) || e).slice(0, 200) }); });
-  // C3 出站守卫主动中止的 HARNESS 侧诊断通道（High-4）：绝不并入 pageErrors/axes 取证——工装主动中止不是 SUT 缺陷，
-  // 不得走 pageerror→SUT_DEFECT 通道；仅供诊断，裁定对被拦步据后置断言 fail-safe（NEEDS_HUMAN）。
   const guardAborts = [];
-  const forensics = watchNetworkForensics(cdp, {
-    denylist: profile.background || [],
-    successField: profile.successField,
-    successValue: profile.successValue,
-    currentStep: () => state.currentStepId,
-    ...(identityLedger ? {
-      identityChannel: {
-        ...identityChannelCfg,
-        sutOrigin: new URL(sut).origin, // 同源判据（codex R1-H2）：跨源同路径响应不入身份通道
-        onRequest: (x) => identityLedger.onRequestWillBeSent(x),
-        onTerminal: (x) => identityLedger.onBodyTerminal(x),
-      },
-    } : {}),
-  });
 
-  // 登录预备动作执行（无录像的单 page 路径，原样）：forensics 已接线、事件循环未开——此刻 currentStepId=null，
-  // 登录期流量一律归 null 不背书（护栏 #14/#15）；不产 event、不进 axes（axes 步只源于 events）。失败关浏览器 exit 65。
-  let loginMark = 0; // 登录期取证记录数（login-traffic-drop）：投影只取其后，登录期流量整体不进 axes
+  let loginMark = 0;
   if (loginPrep && !loginPage) {
     try {
-      await loginBootstrap(page, loginPrep);
-      loginMark = forensics.records().length;
+      requireLoginBootstrapResult(await loginBootstrap(page, loginPrep));
       log('login bootstrap done');
     } catch (e) {
+      const failureExit = e instanceof ReplayNavigationAbort
+        ? emitExecutionTargetCliFailure({ command: 'replay', failure: e })
+        : 65;
       console.error('replay: 登录预备动作失败（fail-closed；错误详情不回显，Playwright 报文可携 SUT 页面片段/凭据路径，护栏 #7——output-seal B5）'); // codex R1-F1
       clearTimeout(watchdog);
       await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
-      process.exit(65);
+      process.exit(failureExit);
     }
   } else if (loginPage) {
-    // 舞步后半：回放 page 预热到登录后入口（同 context 共享会话）再关登录 page；预热流量同属登录期、
-    // 整体切断（login-traffic-drop 与单 page 路径语义对齐）。失败清扫镜头残件 exit 65。
     try {
-      // 注入（video-login-carry D1）：首次 goto 前挂 init script，location.origin 恒等才种入——
-      // 每次导航自动重种、SPA 同 origin 覆盖；异 origin 不种，快照不外溢。空快照不挂（cookie 会话零行为差）。
       if (carrySnapshot && carrySnapshot.entries.length) {
-        await page.addInitScript(({ origin, entries }) => {
-          if (location.origin !== origin) return;
-          for (const [k, v] of entries) sessionStorage.setItem(k, v);
-        }, carrySnapshot);
+        const installedCarry = await installReplaySessionSeedBeforeNavigation(page, carrySnapshot);
+        if (!installedCarry.ok) throw new Error(installedCarry.reason);
       }
-      await page.goto(loginPrep.startUrl, { waitUntil: 'load' });
+      const warmupNavigation = await navigateExecutionTargetPage({
+        page,
+        authority: execution.authority,
+        targetUrl: loginPrep.startUrl,
+        gotoOptions: { waitUntil: 'load' },
+      });
+      if (!warmupNavigation.ok) {
+        throw new ReplayNavigationAbort(warmupNavigation.reason);
+      }
       await loginPage.close();
-      loginMark = forensics.records().length;
       log('login bootstrap done (video dance)');
     } catch (e) {
+      const failureExit = e instanceof ReplayNavigationAbort
+        ? emitExecutionTargetCliFailure({ command: 'replay', failure: e })
+        : 65;
       console.error('replay: 登录预备动作失败（fail-closed；错误详情不回显，Playwright 报文可携 SUT 页面片段/凭据路径，护栏 #7——output-seal B5）'); // codex R1-F1
       clearTimeout(watchdog);
-      await discardVideos(context);
+      await videoLifecycle.discard(context);
       await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
-      sweepVideos(); // 关后补扫（codex R4-N7）
-      process.exit(65);
+      videoLifecycle.sweep(); // 关后补扫（codex R4-N7）
+      process.exit(failureExit);
     }
   }
 
-  const actionByStep = new Map();
-  const intentUrl = new Map();
-  const intentCount = new Map();
-  const intentToasts = new Map();   // kinds-harden：代表步静默点 toast 快照
-  const intentTextHits = new Map(); // kinds-harden：代表步 textVisible 命中计数
-  const intentButtonHits = new Map(); // wf-publish-states：代表步 buttonState 命中合计（role + 可选补采，可见口径）
-  const intentButtonSeen = new Map(); // wf-publish-states：代表步全通道可见按钮总数（absent 活性反证，codex R1-F1）
-  const intentButtonDisabledHits = new Map(); // btn-enable-ops：代表步命中且判禁用计数（enabled/disabled 判据采集）
-  const intentInputReadback = new Map(); // regress-wf-node-script：代表事件同一物理字段的精确动作回读
-  const intentTargetAbsence = new Map(); // C3：破坏性代表步 target-ID 稳定窗口 absence-proof 结果（加法式记账，不改 count 判据）
-
-  // 回放历史 opt-in（run-history）：纯观察者收集，不加任何等待、不改任何时序。
-  const rhOn = !!(args.runHistory || args.runMetrics);
-  const rhLines = [];
-  let rhQuietWait = 0;
-  const vSteps = []; // 录像逐事件步偏移（M2 case 级单录屏）：video.json steps，纯观察者零时序影响
-
-  // chat 通道配置（chiefcomplaint-smoke D5，通道剖面非凭据段，可整段缺省）：
-  // replySelector 缺省跟随通道既定气泡类；streamUrlPattern 供 streamReplyReceived 谓词普化。
-  const chatCfg = profile.chat && typeof profile.chat === 'object' ? profile.chat : null;
-  const replySelector = (chatCfg && chatCfg.replySelector) || '.hr-chat__text__assistant';
-  const intentReply = new Map();     // 代表步静默点实采 reply 正文（气泡 DOM 通道）
-  const intentReplyBase = new Map(); // intent 首步气泡基线（codex R1-F3：陈迹不当新回复）
-
-  try {
-    for (const ev of events) {
-      const isFirst = intentEvents.get(ev.intentId)[0].stepId === ev.stepId;
-      const isLast = reprStepOf.get(ev.intentId) === ev.stepId;
-      log('event ' + ev.stepId + ' ' + ev.action + ' intent=' + ev.intentId);
-
-      // 预导航/上下文恢复期：归因关闭（currentStepId=null），此期请求不系任何步（护栏 #15）。
-      state.currentStepId = null;
-      const evT0 = Date.now();
-      let reprSettled = false; // 代表步静默点结果（replay-settle-mount）：喂 historyLine 的 quietPointReached
-      if (args.videoDir) vSteps.push({ stepId: ev.stepId, videoAt: Math.max(0, evT0 - videoT0) });
-      // C4 后继：未知字符串原子须在 nav / 非 nav 分叉及任何页面动作之前统一拒绝。
-      // 复用编译知识闭集的单一事实源；命中后只落拒绝动作轴，不执行该事件的导航或业务动作。
-      const atomRejection = unknownAtomRejection(ev);
-      let navOk = true;
-      let navErr = null;
-      if (!atomRejection) {
-        try {
-          if (ev.action === 'nav') {
-            state.currentStepId = ev.stepId; // nav 本身就是动作，开放归因
-            // 旧只读信封可缺 url 以通过无锁迁移门，但缺目标绝不能拼成 `/undefined`
-            // 触碰 SUT；按动作失败收口。带 url 的无锁 read 已在 identity admission 钉住固定路径。
-            if (typeof ev.url !== 'string' || !ev.url) throw new TypeError('nav event 缺 compiler-authored url');
-            await page.goto(sut + pathOf(instantiate(ev.url, ctx)), { waitUntil: 'load' });
-          } else {
-            const want = ev.pre && ev.pre.path;
-            if (want && pathOf(page.url()) !== want) {
-              const restoreT = Date.now();
-              try { await page.goto(sut + want, { waitUntil: 'load' }); } finally { rhQuietWait += Date.now() - restoreT; }
-            }
-          }
-        } catch (e) { navOk = false; navErr = e; }
-      }
-
-      if (isFirst) intentCount.set(ev.intentId, { before: await rowCount(page, countSel), after: null });
-
-      // reply 陈迹基线（codex R1-F3）：intent 首步记气泡数与末泡文本；基线证不出则本 intent 不回填（fail-safe）。
-      if (isFirst && chatCfg) {
-        let base = null;
-        try {
-          const loc = page.locator(replySelector);
-          const n = await loc.count();
-          base = { n, text: n ? await loc.last().innerText({ timeout: 500 }) : null };
-        } catch { base = null; }
-        intentReplyBase.set(ev.intentId, base);
-      }
-
-      if (atomRejection) {
-        actionByStep.set(ev.stepId, atomRejection);
-        state.currentStepId = null;
-      } else if (ev.action === 'nav') {
-        // nav 动作轴按 goto 实际成败（不再恒 unique，finding 3）。
-        actionByStep.set(ev.stepId, navOk ? { resolution: 'unique', identityReadback: { ok: true } } : { resolution: 'action_failed', identityReadback: { ok: false } });
-        state.currentStepId = null;
-      } else {
-        // 动作作用域：归因开放，覆盖动作 + 静默期（save/stream 异步在此窗回来）。
-        state.currentStepId = ev.stepId;
-        // 身份观察事务武装（agent-id-readback）：searchOpen 的 fill 步 arm——归属自此刻起冻结到本 intent 事务；
-        // expectedQuery 同刻冻结为实例化后的 fill 值（codex R1-H2：查询回声不符的请求不入事务）。
-        if (ctx.identityLedger && ev.atom === 'agent.searchOpen' && ev.action === 'fill' && !ctx.identityTokens.has(ev.intentId)) {
-          const expectedQuery = ev.value == null ? null : instantiate(ev.value, ctx);
-          ctx.identityTokens.set(ev.intentId, ctx.identityLedger.arm({ intentId: ev.intentId, expectedQuery }));
-        }
-        // C3 出站破坏性 mutation 拦截（entity-destructive-continuity）：破坏性/targeting 原子（deleteByName/
-        // agent.delete/picker.selectFirstTool）的 click 落笔前，若【本破坏步】有已解析的目标连续性 ref，则装 page.route
-        // 拦截器——出站 mutation 请求发出前暂停、核对请求 url/body 的 platformId 与 ref 一致才放行、不一致/无可验 ID
-        // 即中止且证 SUT 未改（委派纯守卫 runGuardedMutation）。与既有 CDP Network 域观察者分属不同层，共存不打架。
-        // codex Critical-1 ②：ref 按【破坏步自身 stepId】从 destructiveContinuityByStep 取（非 identityExpectedByStep
-        // 按 searchOpen 的 evidenceStepId——那把 delete 步查空）。当前 route:human 采集前该 Map 恒空，破坏步已在
-        // 浏览器前被 admission 拒（fail-closed），故此安装路径对破坏步不可达；ref 存在（真机采集补齐）才装。
-        // High-1：安装器返回 ready（page.route 的 Promise），caller 在放行破坏动作前 await，堵「handler 未注册即出站」。
-        let guardReady = null;
-        let guardTeardown = null; // High（round-2）生命周期：破坏步收尾解除本拦截器，避免 **/* 持久拦后续确认/刷新/归零
-        let guardInstallFailed = false; // High-4：精确 pattern 缺失等 fail-closed 不装 → 破坏动作不得裸执行
-        let lastGuardAbortUrl = null; // High-3：被中止请求 url（onAbort 外露），供 pageerror 逐请求因果归因
-        if (ev.action === 'click' && requiresTargetContinuityRef(ev.atom) && ctx.destructiveContinuityByStep) {
-          const resolved = ctx.destructiveContinuityByStep.get(ev.stepId);
-          if (resolved && typeof resolved.platformId === 'string' && resolved.platformId) {
-            const installed = installOutboundMutationGuard(page, {
-              atom: ev.atom,
-              ref: { platformId: resolved.platformId },
-              urlPattern: profile.mutationUrlPattern,
-              // High-4（codex round-3「精确 mutation pattern 未成立」收口）：生产 replay 要求精确 pattern——缺
-              // profile.mutationUrlPattern 时安装器 fail-CLOSED 不装（不兜 **/*），caller 据 installed:false 拒执行破坏动作。
-              requirePattern: true,
-              onAbort: (url) => { lastGuardAbortUrl = url; },
-              // 工装主动中止是 HARNESS 侧信号，绝不进 pageErrors（会被 verdict 当 SUT 背书误报 SUT_DEFECT）；落独立诊断通道
-              // guardAborts（不进 axes/裁定）+ 连带记被中止请求 url，供 partitionGuardAbortPageErrors 逐请求因果排除（High-3）。
-              onDecision: (decision) => {
-                if (!decision.ok) guardAborts.push({ attributedStepId: ev.stepId, atom: ev.atom, reason: decision.reason, abortedRequestUrl: lastGuardAbortUrl });
-              },
-            });
-            if (installed && installed.installed === false) {
-              // 有已解析 ref（真机采集补齐）却装不上守卫（如缺精确 mutationUrlPattern）→ fail-CLOSED：绝不裸执行破坏动作。
-              guardInstallFailed = true;
-              log(`C3 出站守卫安装失败（${installed.reason || '未知'}）→ fail-closed，不执行破坏动作 ${ev.stepId}`);
-            } else {
-              guardReady = installed && installed.ready ? installed.ready : null;
-              if (guardReady) await guardReady; // 放行破坏动作前确保拦截器已注册（真机时序正确性仍 route:human）
-              // High（codex round-2「unroute 生命周期」收口）：留存解除器，破坏步因果窗（performAction→respWait→流稳定）
-              // 收尾后精确解除本拦截器（urlPattern 由 profile.mutationUrlPattern 供）——否则默认 **/* 会持久拦本步之后的
-              // 确认/列表刷新/归零查询。生产 replay 真调 unroute（此前只由适配器返回、从不被调用=真 High）。真机拦截时序
-              // 正确性仍 route:human；hermetic 下守卫从不安装（此路不可达），故为真机生命周期接线。
-              guardTeardown = installed && typeof installed.unroute === 'function' ? installed.unroute : null;
-            }
-          }
-        }
-        // Medium（codex round-3「guardTeardown 不在 finally」收口）：安装到收尾之间任何异常都会跳过 unroute、让
-        // **/* 或精确 pattern 拦截器持久残留后续步。把破坏动作执行段包进 try、guardTeardown 移进 finally，异常路径也解除。
-        let axis = null;
-        try {
-          if (guardInstallFailed) {
-            // fail-closed：守卫装不上时破坏动作不裸执行，动作轴记 action_failed（后置断言证不出走 fail-safe NEEDS_HUMAN）。
-            axis = { resolution: 'action_failed', identityReadback: { ok: false } };
-            actionByStep.set(ev.stepId, axis);
-          } else {
-            const respWait = ev.action === 'click'
-              ? page.waitForResponse((r) => /saveOrModifyProcessData|streamReply/.test(r.url()), { timeout: 600 }).catch(() => null)
-              : Promise.resolve(null);
-            axis = await dispatchReplayAction(page, ev, ctx);
-            actionByStep.set(ev.stepId, axis || { resolution: 'none' });
-            const settleT = Date.now();
-            await respWait;
-            // 给动作的直接异步后果（如 save 响应后随即开的 SSE 流）一点点出现窗，仍归本步——
-            // 这是动作的因果作用域（save→stream），非任意时间窗；背景轮询仍由 denylist 归 null。
-            if (ev.action === 'click') { await new Promise((r) => setTimeout(r, 150)); }
-            // 动态流等待（chiefcomplaint-smoke D2，Steven 拍板；codex R1-F2 + R2 两轮收紧）：
-            // 只等「本步 firingStepId 发起 且 命中 chat 流 URL 域」的 EventSource 走到 finished（或 30s 上界）
-            // ——流是本步动作的直接后果，归因窗随延（因果作用域，非任意时间窗）；背景/他步长流、本步开的
-            // 非对话长流（如面板附带 SSE）都绝不拖本步。配置了 streamUrlPattern 才有域可判；未配置时按
-            // 本步发起判（与 compile 侧对称）。无本步流零行为差（p5/catalog 回归锁背书）。
-            const streamInScope = (u) => !(chatCfg && chatCfg.streamUrlPattern) || String(u).includes(chatCfg.streamUrlPattern);
-            const myStreams = () => forensics.records().filter((r) => r.type === 'EventSource' && r.firingStepId === ev.stepId && streamInScope(r.url));
-            if (myStreams().length > 0) {
-              log('  step stream open, waiting finished ' + ev.stepId);
-              const swT = Date.now();
-              while (Date.now() - swT < 30000 && !myStreams().every((r) => r.streamFinished === true)) {
-                await new Promise((r) => setTimeout(r, 200));
-              }
-              // 网络流结束 ≠ UI 渲染完成（regress 实测）：配置了 chat 通道再等气泡文本 2s 稳定（上界 10s）。
-              if (chatCfg) await waitReplyStable(page, replySelector);
-            }
-            rhQuietWait += Date.now() - settleT;
-          }
-          log('  acted ' + ev.stepId + ' resolution=' + (axis && axis.resolution));
-          state.currentStepId = null; // 动作作用域结束，关闭归因
-        } finally {
-          // High（round-2 unroute 生命周期）：破坏步因果窗收尾后解除本步出站拦截器（精确 pattern+handler），
-          // 避免持久拦后续步的确认/刷新/归零请求。移进 finally 保证异常路径也解除（Medium）。best-effort 不吞步。
-          if (guardTeardown) { try { await guardTeardown(); } catch (e) { log('guard unroute best-effort: ' + String((e && e.message) || e)); } }
-        }
-      }
-
-      if (isLast) {
-        // 代表步采集前的有界静默点（replay-settle-mount）：镜像编译侧 quietPoint，让 SPA 路由挂载 /
-        //   「页面加载中」占位消失后再采断言输入（intentUrl/intentCount/toast/textHits/buttonHits/buttonSeen/
-        //   reply 同刻性保留）。纯观察者、有界、fail-safe：helper 自身故障照现状采、不吞步；归因此刻已关
-        //   （currentStepId=null），归因语义零动。等待计入 rhQuietWait（诚实记账，不进裁定）。
-        //   下限/预算读 REPLAY_SETTLE_FLOOR_MS/REPLAY_SETTLE_BUDGET_MS（仅测试缝，REPLAY_WATCHDOG_MS 先例，缺省 250/2500）。
-        const settleFloor = Number(process.env.REPLAY_SETTLE_FLOOR_MS);
-        const settleBudget = Number(process.env.REPLAY_SETTLE_BUDGET_MS);
-        const settleT = Date.now();
-        try {
-          const sr = await settleBeforeCapture(page, {
-            inFlight: () => forensics.inFlightCount(),
-            floorMs: Number.isFinite(settleFloor) && settleFloor >= 0 ? settleFloor : undefined,
-            budgetMs: Number.isFinite(settleBudget) && settleBudget > 0 ? settleBudget : undefined,
-            profile,
-            log,
-          });
-          reprSettled = sr.settled;
-          if (DBG) log('settle intent=' + ev.intentId + ' waited=' + sr.waitedMs + ' settled=' + sr.settled);
-        } catch (e) { log('settle helper error (fail-safe, capture as-is): ' + String((e && e.message) || e)); }
-        rhQuietWait += Date.now() - settleT;
-
-        intentUrl.set(ev.intentId, pathOf(page.url()));
-        // inputReadback 不另查 DOM：只投影刚执行的代表事件动作轴。动作门未给出 unique + ok:true +
-        // string actual 时存 undefined，断言评估据此 fail-safe 证不出。
-        intentInputReadback.set(ev.intentId, inputReadbackFromAction(actionByStep.get(ev.stepId)));
-        const c = intentCount.get(ev.intentId);
-        if (c) c.after = await rowCount(page, countSel);
-        // C3 归零收尾（entity-destructive-continuity）：破坏性代表步收尾时，若【本破坏步】有已解析目标 platformId，按
-        // target-ID 稳定窗口 absence-proof 归零（消费 evaluateDestructiveTargetAbsence，present platformIds 来自身份
-        // 列表投影的 rows.id），非 name count===0。加法式记账、不改既有 count 判据；缺 present platformIds 投影时按
-        // name-count-only 语义（proven:false，非空过）。ref 按破坏步 stepId 取（同拦截安装，非 searchOpen 的
-        // evidenceStepId）；真机归零列表投影 ctx.identityPresentRows/Stable + 让此判据授权裁定走 route:human（Critical-2：
-        // present platformIds 需真身份列表投影，本轮结构上关不掉，intentTargetAbsence 仅诊断记账、不进 axes/裁定）。
-        if (requiresTargetContinuityRef(ev.atom) && ctx.destructiveContinuityByStep) {
-          const resolved = ctx.destructiveContinuityByStep.get(ev.stepId);
-          if (resolved && typeof resolved.platformId === 'string' && resolved.platformId) {
-            const absence = evaluateDestructiveTargetAbsence({
-              ref: { platformId: resolved.platformId },
-              identityRows: ctx.identityPresentRows,
-              stable: ctx.identityPresentStable === true,
-            });
-            intentTargetAbsence.set(ev.intentId, absence);
-          }
-        }
-        // kinds-harden（G3）：代表步静默点现场采——事后卷回评估只吃此刻事实（同 intentUrl/intentCount 范式）。
-        // toast 快照选择器逐字复刻 lib/compile-atoms.mjs 观测采集（编译期作者与回放期消费者同构）。
-        const toasts = await page.evaluate(() => {
-          const out = [];
-          for (const el of document.querySelectorAll('.hr-toast,.hr-message,[role="status"],[role="alert"]')) {
-            const t = (el.textContent || '').trim();
-            if (t) out.push(t);
-          }
-          return [...new Set(out)];
-        }).catch(() => []);
-        intentToasts.set(ev.intentId, toasts);
-        // 本 intent textVisible/textHidden 断言值命中计数：正文 getByText + toast 文本双通道（toast 短暂，双保）。
-        // textHidden 复用同通道（chiefcomplaint-smoke D4：缺席断言 = 命中数为 0 才过）。
-        const hits = {};
-        for (const a of [...(expectedByIntent.get(ev.intentId) || []), ...globalAssertions]) {
-          if ((a.kind !== 'textVisible' && a.kind !== 'textHidden') || typeof a.value !== 'string') continue;
-          const inPage = await page.getByText(a.value).count().catch(() => 0);
-          const inToast = toasts.filter((t) => t.includes(a.value)).length;
-          hits[a.value] = inPage + (inPage === 0 ? inToast : 0);
-        }
-        intentTextHits.set(ev.intentId, hits);
-        // 本 intent buttonState 断言值命中合计（wf-publish-states D2）：role=button exact 必采 +
-        // profile.buttons.extraSelector 可选补采。任一通道采集失败 = 该值缺采集（不落 0）→ 评估证不出。
-        // codex R1 两 High 收紧：F2 补采只数可见节点（隐藏模板不计）；F1 同刻加采通道总活性
-        // buttonSeen（全通道可见按钮总数）——absent 判真的反证前提，盲区页 seen=0 → 证不出。
-        const btnVals = [...new Set([...(expectedByIntent.get(ev.intentId) || []), ...globalAssertions]
-          .filter((a) => a.kind === 'buttonState' && typeof a.value === 'string').map((a) => a.value))];
-        if (btnVals.length) {
-          const visibleCount = (els, name) => els.filter((el) =>
-            (name == null || (el.textContent || '').trim() === name) &&
-            el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden').length;
-          let roleTotal = null;
-          try { roleTotal = await page.getByRole('button').count(); } catch { roleTotal = null; }
-          let extraTotal = 0;
-          if (buttonsCfg) {
-            try { extraTotal = await page.locator(buttonsCfg.extraSelector).evaluateAll(visibleCount, null); } catch { extraTotal = null; }
-          }
-          // 禁用态计数谓词（btn-enable-ops D1/D2）：disabled 属性 ∨ aria-disabled="true" ∨ 可选类名补判；
-          // vis=true 时叠可见性过滤（补采通道口径同 buttonHits），role 通道自身角色树已滤隐藏不再叠。
-          const disabledCount = (els, o) => els.filter((el) => {
-            if (o.name != null && (el.textContent || '').trim() !== o.name) return false;
-            if (o.vis && !(el.getClientRects().length > 0 && getComputedStyle(el).visibility !== 'hidden')) return false;
-            return el.disabled === true || el.getAttribute('aria-disabled') === 'true' || (o.cls ? el.classList.contains(o.cls) : false);
-          }).length;
-          const cls = buttonsCfg ? buttonsCfg.disabledClass : null;
-          const btnHits = {};
-          const btnDisabledHits = {};
-          for (const value of btnVals) {
-            let roleN = null;
-            let roleDisN = null;
-            try { roleN = await page.getByRole('button', { name: value, exact: true }).count(); } catch { roleN = null; }
-            try { roleDisN = await page.getByRole('button', { name: value, exact: true }).evaluateAll(disabledCount, { name: null, vis: false, cls }); } catch { roleDisN = null; }
-            let extraN = 0;
-            let extraDisN = 0;
-            if (buttonsCfg) {
-              try { extraN = await page.locator(buttonsCfg.extraSelector).evaluateAll(visibleCount, value); } catch { extraN = null; }
-              try { extraDisN = await page.locator(buttonsCfg.extraSelector).evaluateAll(disabledCount, { name: value, vis: true, cls }); } catch { extraDisN = null; }
-            }
-            if (roleN == null || extraN == null) continue;
-            btnHits[value] = roleN + extraN;
-            // 禁用态双通道任一失败 = 该值缺禁用态采集（不落 0）→ enabled/disabled 评估证不出（镜像 buttonHits 纪律）。
-            if (roleDisN != null && extraDisN != null) btnDisabledHits[value] = roleDisN + extraDisN;
-          }
-          intentButtonHits.set(ev.intentId, btnHits);
-          intentButtonDisabledHits.set(ev.intentId, btnDisabledHits);
-          if (roleTotal != null && extraTotal != null) intentButtonSeen.set(ev.intentId, roleTotal + extraTotal);
-        }
-        // reply 正文采集（chiefcomplaint-smoke D5：DOM 气泡通道，代表步静默点实采；未配置 chat 段不采。
-        // codex R1-F3：对照 intent 首步基线，仅「新气泡出现或末泡文本变化」才回填——陈迹绝不当新回复）。
-        if (chatCfg) {
-          let rt;
-          const base = intentReplyBase.get(ev.intentId);
-          try {
-            const loc = page.locator(replySelector);
-            const n = await loc.count();
-            const text = n ? await loc.last().innerText({ timeout: 1000 }) : null;
-            rt = base != null && text != null && (n > base.n || text !== base.text) ? text : undefined;
-          } catch { rt = undefined; }
-          intentReply.set(ev.intentId, rt);
-        }
-      }
-
-      if (rhOn) {
-        const line = historyLine(ev, { navOk, navErr, axis: ev.action === 'nav' ? null : actionByStep.get(ev.stepId), durationMs: Date.now() - evT0, caseId, isLast, settled: reprSettled });
-        if (line) rhLines.push(line);
-      }
+  let seedSnapshot = null;
+  if (loginPrep) {
+    const capturedSeed = await captureReplaySessionSeed(page);
+    if (!capturedSeed.ok) {
+      const failure = new Error('SESSION_SEED_CAPTURE_FAILED');
+      failure.reason = 'SESSION_SEED_CAPTURE_FAILED';
+      throw failure;
     }
-  } finally {
-    log('loop done, settling streams + draining');
-    await forensics.awaitStreamsSettled(2500);
-    await forensics.drain();
-    log('drained');
+    seedSnapshot = capturedSeed.snapshot;
   }
-
-  // 录像收敛（GRILL D1/M4/M5）：视频只在 context 关闭后保证落盘——先显式关 context；登录页镜头必删
-  // （删除失败重试一次仍败 = 凭据卫生 fail-closed 非零退出，卫生优先于回放结果）；回放页镜头收敛语义名
-  // video.webm。收敛失败按缺席容忍：videoOk=false → 不写 video.json、报告无附件，回放结果与裁定零影响。
-  let videoOk = false;
-  if (args.videoDir) {
-    const loginVideo = loginPage ? loginPage.video() : null;
-    const replayVideo = page.video();
-    try { await context.close(); } catch { /* 缺席容忍 */ }
-    if (loginVideo) {
-      let deleted = false;
-      for (let i = 0; i < 2 && !deleted; i++) {
-        try { await loginVideo.delete(); deleted = true; } catch { /* 重试一次 */ }
-      }
-      if (!deleted) {
-        console.error('replay: 登录页录像删除失败（凭据卫生 fail-closed，护栏 #7）');
-        clearTimeout(watchdog);
-        sweepVideos();
-        await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
-        sweepVideos(); // 关后补扫（codex R4-N7）：登录镜头若在 browser.close 才终结也不许留
-        process.exit(1);
-      }
-    }
-    try {
-      const raw = replayVideo ? await replayVideo.path() : null;
-      if (raw) { renameSync(raw, join(args.videoDir, 'video.webm')); videoOk = true; }
-    } catch { videoOk = false; }
-    if (!videoOk) sweepVideos(); // 收敛失败清掉残件：缺席容忍 = 干净缺席
-    // 刻意不在此解除清扫（codex R3-N6）：下游凭据门任一 fail-closed 退出都不得遗留已收敛录像——
-    // 清扫豁免只随成功 exit 0 自然到期（正常路径此后无人再调 sweep）。
-  }
-
-  // 登录期流量整体不进 axes（login-traffic-drop，CONTEXT「登录预备动作…不进 axes」字面兑现）：
-  // 真机实证凭据可走 query（doLogin），归因 null 不够——记录本体切断（步过滤本按 firingStepId，
-  // 唯一入径是孤儿并入）。无登录旗标 loginMark=0 零行为差。
-  const allRecords = forensics.records().slice(loginMark);
-  // High-4 纵深（codex round-2「abort 漏成 pageerror」收口）：守卫 abort 的因果排除【在投影前】完成——
-  // route.abort() 致页面侧未处理请求异常触发的全局 pageerror 是【工装主动中止】的因果后果、非 SUT 缺陷，
-  // 绝不得进 axes.lifecycle.pageerror 背书 SUT_DEFECT。用纯函数 partitionGuardAbortPageErrors 按「归因步是否
-  // 发生过守卫 abort」把 pageErrors 一分为二：keptPageErrors（可进 axes/裁定）/ excluded（守卫 abort 步的
-  // pageerror，只落诊断、绝不背书）。guardAborts 只用于此处【减法排除】、绝不进 projectReplayAxes（round-2 D2：
-  // guardAborts 不进 axes/裁定）；投影只收已过滤的 keptPageErrors。hermetic 下守卫从不安装（guardAborts 恒空）
-  // → excluded 恒空 → 对既有回放零行为差。真 abort 链逐请求因果确认需真浏览器 = route:human；按步排除逻辑 hermetic 可证。
-  const { kept: keptPageErrors, excluded: guardAbortExcludedPageErrors } = partitionGuardAbortPageErrors({ pageErrors, guardAborts });
-  if (guardAbortExcludedPageErrors.length) {
-    // 只落诊断日志、绝不进 axes/裁定（护栏 #15）：证「别只留未输出的局部数组」——排除项有出口、可人工复核。
-    log(`guard-abort causal exclusion: ${guardAbortExcludedPageErrors.length} pageerror(s) withheld from SUT_DEFECT backing (steps under active guard abort → fail-safe NEEDS_HUMAN)`);
-  }
-  // 三轴投影抽生产共用纯函数 lib/replay-axes.mjs（agent-id-readback R2-H6 / sol 构造 ③）：
-  // 投影语义逐字搬移、本壳只留证据收集与落盘编排；零 SUT 差分棘轮金牌驱动同一实现冻 axes 字节。
-  const axesText = projectReplayAxes({
-    caseId, records: allRecords, intentOrder, intentEvents, reprStepOf, actionByStep, pageErrors: keptPageErrors,
-    intentCount, expectedByIntent, globalAssertions, intentUrl, intentToasts, intentTextHits,
-    intentButtonHits, intentButtonSeen, intentButtonDisabledHits, intentReply,
-    intentInputReadback, chatCfg, allStepIds,
+  const {
+    forensics,
+    attachPageForensics,
+  } = createPageForensicsHub({
+    context,
+    pageErrors,
+    options: {
+      denylist: profile.background || [],
+      successField: profile.successField,
+      successValue: profile.successValue,
+      currentStep: () => state.currentStepId,
+      ...(identityLedger ? {
+        identityChannel: {
+          ...identityChannelCfg,
+          sutOrigin: new URL(sut).origin,
+          onRequest: (x) => identityLedger.onRequestWillBeSent(x),
+          onTerminal: (x) => identityLedger.onBodyTerminal(x),
+        },
+      } : {}),
+    },
   });
-
-  // axes 落盘前过凭据兜底门（cred-route-mask codex R1 High：axes 此前是漏网落盘口——路径段已打码，
-  // 但 query/hash 携凭据只能靠门拦；命中即拒写 exit 1，fail-closed，同 compile/report 先例）。
-  const axesGate = credentialGate({ 'axes.json': axesText });
-  if (!axesGate.ok) {
-    console.error(`凭据兜底门拦截（护栏 #7）：${axesGate.hit}；拒绝落盘 axes`);
-    clearTimeout(watchdog);
-    sweepVideos(); // fail-closed 退出不留已收敛录像（codex R3-N6）
-    await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
-    sweepVideos(); // 关后补扫（codex R4-N7）
-    process.exit(1);
+  const topology = await openReplayTopology({
+    context,
+    initialPage: page,
+    seedSnapshot,
+    attachForensics: attachPageForensics,
+  });
+  if (!topology.ok) {
+    const failure = new Error('PAGE_TOPOLOGY_UNAVAILABLE');
+    failure.reason = topology.reason;
+    throw failure;
   }
-  writeFileSync(args.out, axesText, 'utf8');
+  ctx.pageTopology = topology.controller;
+  const activePage = topology.activePage;
+  log('browser+per-page forensics ready');
 
-  // 回放历史/回放指标真产出（G5：与 axes 同刻、正常成功路径、过凭据兜底门、命中拒写 exit 1）。
-  // locatorHitRate 分母只数有定位需求步（locatorResolution 非 null），分母 0 → null（诚实无比率）。
-  if (rhOn) {
-    const denom = rhLines.filter((l) => l.locatorResolution !== null);
-    const metrics = {
-      schemaVersion: 1,
-      caseId,
-      runId: args.runId || null,
-      totalSteps: rhLines.length,
-      passedActions: rhLines.filter((l) => l.result === 'ok').length,
-      locatorHitRate: denom.length ? denom.filter((l) => l.locatorResolution === 'unique').length / denom.length : null,
-      quietPointWaitMs: Math.max(0, Math.round(rhQuietWait)),
-      totalDurationMs: Date.now() - T0,
-    };
-    const outputs = {};
-    // 零行集写空文件（codex R1-F3）：JSONL 不容空行。
-    if (args.runHistory) outputs['run-history.jsonl'] = rhLines.length ? rhLines.map((l) => JSON.stringify(l)).join('\n') + '\n' : '';
-    if (args.runMetrics) outputs['run-metrics.json'] = JSON.stringify(metrics, null, 2) + '\n';
-    const gate = credentialGate(outputs);
-    if (!gate.ok) {
-      console.error(`凭据兜底门拦截（护栏 #7）：${gate.hit}；拒绝落盘诊断件`);
-      clearTimeout(watchdog);
-      sweepVideos(); // fail-closed 退出不留已收敛录像（codex R3-N6）
-      await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
-      sweepVideos(); // 关后补扫（codex R4-N7）
-      process.exit(1);
-    }
-    if (args.runHistory) writeFileSync(args.runHistory, outputs['run-history.jsonl'], 'utf8');
-    if (args.runMetrics) writeFileSync(args.runMetrics, outputs['run-metrics.json'], 'utf8');
-  }
-
-  // 视频元数据旁件（M3：照 run-history 式样——正常成功路径、过凭据兜底门写出；收敛失败缺席容忍不写）。
-  // 内容只有语义文件名/时刻/毫秒偏移；stepId 源自输入事件、可走私 URL 形态——整文 :// 零容忍
-  // （codex R1-F3 采信）：命中拒写旁件（缺席容忍，视频本体与回放结果零影响）；凭据门仍是末道闸。
-  if (args.videoDir && videoOk) {
-    const vText = JSON.stringify({ schemaVersion: 1, file: 'video.webm', startedAt: videoT0, steps: vSteps }, null, 2) + '\n';
-    if (vText.includes('://')) {
-      console.error('replay: 视频元数据含 ://（零容忍），拒绝落盘 video.json（缺席容忍）');
-    } else {
-      const vGate = credentialGate({ 'video.json': vText });
-      if (!vGate.ok) {
-        console.error(`凭据兜底门拦截（护栏 #7）：${vGate.hit}；拒绝落盘视频元数据`);
-        clearTimeout(watchdog);
-        sweepVideos(); // fail-closed 退出不留已收敛录像（codex R3-N6）
-        await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
-        sweepVideos(); // 关后补扫（codex R4-N7）
-        process.exit(1);
-      }
-      writeFileSync(join(args.videoDir, 'video.json'), vText, 'utf8');
-    }
-  }
-
+  const evidence = await runReplayEvents({
+    page: activePage,
+    execution,
+    args,
+    events,
+    intentEvents,
+    reprStepOf,
+    profile,
+    ctx,
+    forensics,
+    state,
+    guardAborts,
+    expectedByIntent,
+    globalAssertions,
+    countSelector: countSel,
+    buttons: buttonsCfg,
+    caseId,
+    videoStartedAt: videoT0,
+    log,
+    debug: DBG,
+  });
+  const { videoOk } = await finalizeReplayArtifacts({
+    args,
+    context,
+    loginPage,
+    page,
+    sweepVideos: videoLifecycle.sweep,
+    caseId,
+    records: forensics.records(),
+    loginMark,
+    intentOrder,
+    intentEvents,
+    reprStepOf,
+    expectedByIntent,
+    globalAssertions,
+    allStepIds,
+    pageErrors,
+    guardAborts,
+    evidence,
+    videoStartedAt: videoT0,
+    runStartedAt: T0,
+    log,
+  });
   clearTimeout(watchdog);
   await Promise.race([browser.close(), new Promise((r) => setTimeout(r, 5000))]);
   // 关后补扫（codex R4-N7）：收敛失败（缺席容忍）时，context 关不上而 browser.close 期间才终结的
   // raw 镜头也不许留——缺席必须真缺席；videoOk 成功路径的 video.webm 不在此扫（豁免随 exit 0 到期）。
-  if (args.videoDir && !videoOk) sweepVideos();
+  if (args.videoDir && !videoOk) videoLifecycle.sweep();
   process.exit(0);
 }
 
 main().catch(async (e) => {
-  console.error('replay 失败：' + String((e && e.message) || e).slice(0, 300)); // 剥栈只留消息（output-seal B6）
+  const fatal = classifyReplayFatal(e);
+  const exitCode = fatal.executionTarget
+    ? emitExecutionTargetCliFailure({ command: 'replay', failure: fatal.failure })
+    : fatal.exitCode;
+  if (fatal.message) console.error(fatal.message);
   // M5 尽力收口（同看门狗，codex R1-F1）：清扫先行 → 尽力关 → 补扫，4s 兜底强退，退出码语义不变。
   const bail = setTimeout(() => process.exit(1), 4000);
-  sweepVideos();
+  videoLifecycle.sweep();
   try { if (activeBrowser) await activeBrowser.close(); } catch { /* 尽力而为 */ }
-  sweepVideos();
+  videoLifecycle.sweep();
   clearTimeout(bail);
-  process.exit(1);
+  process.exit(exitCode);
 });

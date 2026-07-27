@@ -12,6 +12,7 @@ import { unknownAtomRejection } from '../../lib/replay-actions.mjs';
 
 const REPO_ROOT = fileURLToPath(new URL('../../', import.meta.url));
 const REPLAY_SOURCE = readFileSync(new URL('../../bin/replay.mjs', import.meta.url), 'utf8');
+const RUNNER_SOURCE = readFileSync(new URL('../../lib/replay/event-runner.mjs', import.meta.url), 'utf8');
 const VERDICT_CLI = join(REPO_ROOT, 'bin', 'verdict.mjs');
 const UNKNOWN_ATOM = 'workflow.rename';
 
@@ -58,38 +59,48 @@ function runVerdict(action) {
 
 check('G1 生产 replay 显式导入并调用统一未知原子判据', () => {
   assert(
-    /import\s*\{[^}]*unknownAtomRejection[^}]*\}\s*from '\.\.\/lib\/replay-actions\.mjs'/.test(REPLAY_SOURCE),
-    'bin/replay.mjs 未从 replay-actions 导入 unknownAtomRejection',
+    /import\s*\{[^}]*runReplayEvents[^}]*\}\s*from '\.\.\/lib\/replay\/event-runner\.mjs'/.test(REPLAY_SOURCE)
+      && /runReplayEvents\(\{/.test(REPLAY_SOURCE),
+    'bin/replay.mjs 未真实委派 event-runner',
   );
-  const loopAt = REPLAY_SOURCE.indexOf('for (const ev of events)');
-  const gateAt = REPLAY_SOURCE.indexOf('const atomRejection = unknownAtomRejection(ev);', loopAt);
+  assert(
+    /import\s*\{[^}]*unknownAtomRejection[^}]*\}\s*from '\.\.\/replay-actions\.mjs'/.test(RUNNER_SOURCE),
+    'event-runner 未从 replay-actions 导入 unknownAtomRejection',
+  );
+  const loopAt = RUNNER_SOURCE.indexOf('for (const event of events)');
+  const gateAt = RUNNER_SOURCE.indexOf('const atomRejection = unknownAtomRejection(event);', loopAt);
   assert(loopAt >= 0 && gateAt > loopAt, '生产事件环未调用 unknownAtomRejection(ev)');
 });
 
-check('G2 未知原子判据先于 nav 分叉、pre.path 恢复导航与首个 page.goto', () => {
-  const loopAt = REPLAY_SOURCE.indexOf('for (const ev of events)');
-  const gateAt = REPLAY_SOURCE.indexOf('const atomRejection = unknownAtomRejection(ev);', loopAt);
-  const navEnvelopeAt = REPLAY_SOURCE.indexOf('if (!atomRejection) {', gateAt);
-  const navBranchAt = REPLAY_SOURCE.indexOf("if (ev.action === 'nav')", navEnvelopeAt);
-  const prePathAt = REPLAY_SOURCE.indexOf('const want = ev.pre && ev.pre.path;', navBranchAt);
-  const firstGotoAt = REPLAY_SOURCE.indexOf('page.goto(', navBranchAt);
+check('G2 未知原子判据先于 nav 分叉、pre.path 恢复与共享导航 guard', () => {
+  const loopAt = RUNNER_SOURCE.indexOf('for (const event of events)');
+  const gateAt = RUNNER_SOURCE.indexOf('const atomRejection = unknownAtomRejection(event);', loopAt);
+  const navEnvelopeAt = RUNNER_SOURCE.indexOf('if (!atomRejection) {', gateAt);
+  const navBranchAt = RUNNER_SOURCE.indexOf("if (event.action === 'nav')", navEnvelopeAt);
+  const firstGuardAt = RUNNER_SOURCE.indexOf('await requireReplayNavigation({', navBranchAt);
+  const prePathAt = RUNNER_SOURCE.indexOf('const wantedPath = event.pre && event.pre.path;', navBranchAt);
+  const restoreGuardAt = RUNNER_SOURCE.indexOf('await requireReplayNavigation({', prePathAt);
   assert(
     loopAt >= 0
       && gateAt > loopAt
       && navEnvelopeAt > gateAt
       && navBranchAt > navEnvelopeAt
+      && firstGuardAt > navBranchAt
       && prePathAt > navBranchAt
-      && firstGotoAt > navBranchAt,
-    `生产前置顺序缺失：${JSON.stringify({ loopAt, gateAt, navEnvelopeAt, navBranchAt, prePathAt, firstGotoAt })}`,
+      && restoreGuardAt > prePathAt
+      && !RUNNER_SOURCE.includes('page.goto('),
+    `生产前置/共享导航顺序缺失：${JSON.stringify({
+      loopAt, gateAt, navEnvelopeAt, navBranchAt, firstGuardAt, prePathAt, restoreGuardAt,
+    })}`,
   );
 });
 
 check('G3 命中拒绝轴后跳过 nav 与业务动作分支', () => {
-  const loopAt = REPLAY_SOURCE.indexOf('for (const ev of events)');
-  const rejectAt = REPLAY_SOURCE.indexOf('if (atomRejection) {', loopAt);
-  const axisAt = REPLAY_SOURCE.indexOf('actionByStep.set(ev.stepId, atomRejection);', rejectAt);
-  const navAt = REPLAY_SOURCE.indexOf("} else if (ev.action === 'nav') {", rejectAt);
-  const dispatchAt = REPLAY_SOURCE.indexOf('dispatchReplayAction(page, ev, ctx)', navAt);
+  const loopAt = RUNNER_SOURCE.indexOf('for (const event of events)');
+  const rejectAt = RUNNER_SOURCE.indexOf('if (atomRejection) {', loopAt);
+  const axisAt = RUNNER_SOURCE.indexOf('actionByStep.set(event.stepId, atomRejection);', rejectAt);
+  const navAt = RUNNER_SOURCE.indexOf("} else if (event.action === 'nav') {", rejectAt);
+  const dispatchAt = RUNNER_SOURCE.indexOf('dispatchAction(page, event, ctx)', navAt);
   assert(
     rejectAt > loopAt && axisAt > rejectAt && navAt > axisAt && dispatchAt > navAt,
     `生产拒绝分支未包住 nav/业务动作双路径：${JSON.stringify({ rejectAt, axisAt, navAt, dispatchAt })}`,

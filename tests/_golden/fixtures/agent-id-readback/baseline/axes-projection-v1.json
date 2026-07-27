@@ -290,7 +290,7 @@
           "pageerror": [
             {
               "attributedStepId": "s6",
-              "message": "TypeError: 演示页错误"
+              "message": "TypeError: <redacted:pageerror>"
             }
           ]
         }
