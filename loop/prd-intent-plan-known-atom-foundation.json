@@ -45,7 +45,8 @@
       "acceptance": [
         "node tests/_golden/intent-plan-known-atom.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-27T04:05:47.549Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-single-state-machine-trace",
@@ -54,7 +55,8 @@
       "acceptance": [
         "node tests/_golden/intent-state-trace.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-27T04:05:47.692Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-authored-assertion-freeze",
@@ -63,7 +65,8 @@
       "acceptance": [
         "node tests/_golden/testcase-expected-draft.zero-sut.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-27T04:05:49.922Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-adjacent-regressions-hold",
@@ -75,7 +78,8 @@
         "node tests/_golden/p4-drafter.golden.mjs",
         "node tests/_golden/draft-cli.golden.mjs"
       ],
-      "passes": false
+      "passes": true,
+      "evidence": "gate@2026-07-27T04:06:18.300Z 全部 acceptance exit 0"
     }
   ],
   "notes": "acceptance-gate 于 2026-07-27 冻结。三条新功能金牌均在实现前因目标 API 缺失真实 RED；四条邻接回归同轮真实 GREEN。红/绿输出存档于 docs/plans/intent-plan-known-atom-foundation/accept/red-proofs/intent-plan-known-atom-foundation.red.txt。实现 agent 不得修改任何 testChecksums 覆盖文件；若契约判断需变更，须回主 agent 明示重开 acceptance-gate。"

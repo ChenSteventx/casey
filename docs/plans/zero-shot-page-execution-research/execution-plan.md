@@ -1,6 +1,7 @@
 # 自适应页面执行落地计划
 
-> 状态：待实施。本文把研究结论与
+> 状态：实施中。Wave 1（确定性 intent plan、known-atom dominance、authored assertion 冻结）已完成；
+> Wave 2 从业务前置条件 atom workflow 开始。本文把研究结论与
 > `docs/runbooks/adaptive-page-execution-sop.md` 转成可独立验收的开发切片。
 >
 > 优先级：先闭合可运行的 web 技术链，再扩安全纵深、跨通道和规模化评测。任何百分比和通过数都是
