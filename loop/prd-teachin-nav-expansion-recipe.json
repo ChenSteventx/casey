@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-nav-expansion-recipe（full）：真机侧栏默认折叠，导航录制恒为「组展开+条目」两击，组展开击无配方（KNOWN_RECIPE_MISSING）致自动闭环必转人工（CYCLE_PLAN_MAPPING_REQUIRED）。方案取槽位约束（GRILL D1/D3 v2 定案，初版松匹配被 codex 计划审 r1 双 High 推翻：空断言+双回放不比动作序列，吸收无关首击可产技术等价假绿；且反向吞并破坏 resolved-projection 冻结语义）。落地三文件：①atom-resolution 增双击带槽配方 known-nav-workflow-management-grouped（槽 0 智能应用、槽 1 流程管理/工作流管理）+ matchesAt 逐位槽校验 + boundIntents 跨 authored intent 防合并守卫（GRILL D6）+ normalizeSlots 与 collectRecipes 的 ruleId 查重（fail-closed）；②cycle-plan-generator 的 semanticIntentMatches 改按配方末槽取语义标签 + 第二遍解析传绑定集；③resolved-projection 绑定投影路传交集绑定集。冻结金牌 N1-N10 十组行为钉（正钉/单击回归/不吸收/无语义文本 fail-closed/端到端/反向吞并封死/配方碰撞与影子劫持/守卫入参与容器伪装/末槽负钉/绑定投影接线）。",
+  "specPath": "docs/plans/teachin-nav-expansion-recipe/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-nav-expansion-recipe.zero-sut.golden.mjs": "fa01af9cea804f08be9bbf2da1dadd4d2909d205f99826a0f75c33322f885a0c"
+  },
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-29",
+      "round": "code-r1 联审修复换签（codex CHANGES_REQUIRED 1 High+2 Medium、grok APPROVE+1 Medium）",
+      "files": [
+        "tests/_golden/teachin-nav-expansion-recipe.zero-sut.golden.mjs"
+      ],
+      "reason": "四条 findings 全修，金牌随之增五限：①[High] ruleId 影子劫持——semanticIntentMatches 按 ruleId 反查首条配方、collectRecipes 不查重，注册表可用 builtin 的 ruleId 登记只吃「任意按钮」的单击影子配方，命中的是影子、取标签取到真配方，空断言下 generateKnownReadOnlyCyclePlan 仍 ok:true 产语义错绑假绿（codex 自造反例实锤）→ collectRecipes 收集时 ruleId 查重、后到重名者整条弃用（builtin 先收恒权威），N7 增限四（影子配方不得参与匹配、任意按钮击仍 pending）与限五（codex 反例端到端必须非 ok）；②[Medium] Set 方法覆写绕守卫——spanCrossesBoundIntents 调实例 .has，覆写 has=()=>false 即可让跨 intent 两击重新合并 → 成员改经原生 Set.prototype.values 在原始接收者上读取并复制进内部原生 Set（缺 [[SetData]] 者抛错转拒付），守卫只用内部副本，N8 增限七/八/九（覆写实例 has、Set 子类重写 has、Proxy 伪装）；③[Medium] 畸形投影行崩解析——matchesAt 直读 event.evidence，缺 evidence 行触发 TypeError 炸穿解析（grok 逮）→ 收口为 hasSemanticEvidence 安全判，缺失即按无语义证据 fail-closed 落 pending，N4 增限二（五种畸形 evidence 形态不抛异常且落 pending）；④[Medium] prd 面——s2 漏列本轮直接改动接缝 resolved-projection 金牌（手工补跑不算机器验收）、task 文案与 observability 仍写已被推翻的松匹配/零改 matchesAt/槽位约束欠账 → s2 补该金牌、task 改 v3 三文件口径、欠账行删除。三条生产件修复各做负控实测：撤 ruleId 查重 N7 红、守卫改回外部实例 N8 红、撤 evidence 安全判 N4 红（抛 TypeError），确证新限有判别力非摆设。原件字节存档 .pre-review-amendment.archive.gz（gunzip 回验 sha=da90abfb914cd4c39cd7ea036a6b9a28537523ae316946de19abaf18dc87f544）。新件实测 10/10 exit 0。 修复轮 delta 复审（F1-F4 全 FIXED、两策略认可）再收最后一条 Medium：N8 限七/限八原用「拒付也算过」的宽断言，等于没冻住「合法 Set 及其子类必须放行且防合并守卫真生效」的策略——实现若回退成一律拒绝子类金牌仍绿。现收紧为 ok===true 且守卫真生效（首击 pending/KNOWN_RECIPE_MISSING、次击 resolved 证据仅 [2] 且绑 intent_nav_wf），仅限九 Proxy 伪装保留拒付要求；负控实测：把入参校验改成拒绝一切非精确 Set 后 N8 限八当场红（原宽断言下会静默放过）。金牌 sha 53cdbe7a283ac426da19cea0d4a36a340b6cd11fb0fb47ebb1dd8b3d731c87dd → fa01af9cea804f08be9bbf2da1dadd4d2909d205f99826a0f75c33322f885a0c。",
+      "signedBy": "Steven（2026-07-29 AskUserQuestion 补签：联审修复轮+终钉两轮换签合并账，现役 sha fa01af9c）"
+    }
+  ],
+  "observability": [
+    {
+      "dimension": "新金牌冻结人签（ADR-0004）：Steven 确认 grill+plan+冻结。",
+      "route": "human"
+    },
+    {
+      "dimension": "真机闭环绿（A4）：134930 采形状包 teachin-plan 干跑出 plan；Steven 同进程重录两击 → teachin-cycle 技术等价成立（developmentOnly，不冒充正式结论）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-nav-expansion-recipe",
+      "title": "S1 双击带槽导航配方语义钉 N1-N10：真机形状折单单元、单击回归、槽外首击不吸收、无语义文本 fail-closed、端到端出 plan、反向吞并封死、配方碰撞与 ruleId 影子劫持、守卫入参与容器伪装、末槽负钉、绑定投影接线（红先行金牌翻绿）",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/teachin-nav-expansion-recipe.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-29T08:22:39.577Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacent-zero-regression",
+      "title": "S2 邻接面零回归（护栏 #19）：解析/投影/闭环计划/蒸馏面 + 上一契约金牌复跑绿",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/teachin-replayability-atom-roundtrip.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-boundaries.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-review-hardening.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-resolved-projection.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-core.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs",
+        "node tests/_golden/record-distill.golden.mjs",
+        "node tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-29T08:24:10.512Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-repo-drift-and-terms",
+      "title": "S3 全仓冻结件零漂移 + 术语表完整性",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry"
+      ],
+      "evidence": "gate@2026-07-29T08:24:34.674Z 全部 acceptance exit 0"
+    }
+  ]
+}
