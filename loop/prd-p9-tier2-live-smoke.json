@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "task": "p9-tier2-live-smoke（full）：casey selftest --tier2 从桩（exit 3）落成真机冒烟自检机器面。纯层 lib/selftest-tier2.mjs（零 fs/spawn/net/browser）：TIER2_READINESS_IDS（doctor 就绪四项+manifest 在场且 checksum 合法+带外账户回执+两段连通独立判定：Windows→真实目标段 win-probe-target 结构化结果文件 + WSL 回环→隧道段壳层自采）、judgeTier2RunEvidence 逐项证据判定（四态账 well-formed/catch-all 未旁路/网络取证发起方归因/生命周期取证/凭据零命中/流式硬断言已裁/退出码图例合法）、runTier2 聚合（readiness 红 exit 2、证据红 exit 1、全绿 exit 0 附「机器面绿≠完成」尾行）。壳层 bin/casey.mjs：--tier2 用例集只读人签 manifest（cases/tier2-suite.manifest.json，零动态发现）、变更型条目须本次 --authorize-mutation <caseId> 逐次授权、逐例 spawn 生产 runPipeline 同链、tier2-receipt 五类归类（pipeline_complete_with_verdict/stage_failed/timeout/partial_artifacts/systemic_abort，系统性故障停全集）、严格参数解析拒 64。win-probe-target.mjs 增结构化结果文件输出。D5 P9 三层口径修订（bootstrap plan/CONTEXT.md:156-157/README，徽章渲染证据=p7-report 金牌）随 A5 Steven 签。计划审 codex sol xhigh 五轮 PLAN_APPROVE（docs/plans/p9-tier2-live-smoke/），红金牌 77 钉先行（66 红 11 绿实证，T6 tier1 与 T8 judge-smoke 修前绿）。",
+  "specPath": "docs/plans/p9-tier2-live-smoke/plan.md",
+  "testChecksums": {
+    "tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs": "f6e6a5a1ee05d476f17c29b85b070248740a30fbbf98c265db221a9d21ae936c",
+    "cases/tier2-suite.manifest.json": "44f226bbb9b0206299b50d9c14ee096a6694d520223458c62c68cd2eeffce26b"
+  },
+  "observability": [
+    {
+      "dimension": "新金牌冻结人签（ADR-0004）：Steven 确认 grill+plan+冻结（tier-2 v4 文档五轮 codex 批后已签，红先行 66 红/11 绿退出码亲验在案）。",
+      "route": "human"
+    },
+    {
+      "dimension": "A4 真机 tier-2（route:human）：selftest --tier2 --sut 回环对现役已签用例集真机实跑 exit 0 + 证据落盘（流式合格件缺席则 exit 2 如实记）。",
+      "route": "human"
+    },
+    {
+      "dimension": "A5 P9 口径修订与 UAT 签认书（route:human）：D5 三层修订（bootstrap/CONTEXT/README）Steven 明签；UAT 签认书冻入 prd checksum；P9 关账清单全过或逐项 waiver。",
+      "route": "human"
+    },
+    {
+      "dimension": "遗留债如实挂账：replay-nth-visible-hardening 金牌全仓预存红（2026-07-17 准入门迁移遗留、HANDOFF 记档、与本契约改动零依赖交集），经 Steven 批准移出 s2（2026-07-30 AskUserQuestion）；迁移债清偿后应回归复跑。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-tier2-selftest-golden",
+      "title": "S1 tier-2 自检金牌 T1-T8 红先行翻绿（readiness fail-closed/证据判定翻转/receipt 归类/流式覆盖非空/fail-safe 不变量/壳层用法面/凭据扫描时序/manifest 强制/裁判通道运行时冒烟）",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-30T09:01:08.735Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacent-zero-regression",
+      "title": "S2 邻接面零回归（护栏 #19）：selftest 映射面/doctor/三 tier1 锚/模型门 + 前三契约新金牌复跑绿",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/cli-mcp-face.golden.mjs",
+        "node tests/_golden/doctor.golden.mjs",
+        "node tests/_golden/record-distill.golden.mjs",
+        "node tests/_golden/ingest-scaffold.golden.mjs",
+        "node tests/_golden/model-lane-guard.golden.mjs",
+        "node tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-nav-expansion-recipe.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-30T09:11:07.218Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-repo-drift-and-terms",
+      "title": "S3 全仓冻结件零漂移 + 术语表完整性",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry"
+      ],
+      "evidence": "gate@2026-07-30T09:12:37.685Z 全部 acceptance exit 0"
+    }
+  ],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-30",
+      "round": "code-r1..r3 联审修复换签（codex 三轮：r1 5H+3M、r2 3 残口+2M、r3 2 残口，全部逐条实测负控清完）",
+      "files": [
+        "tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs",
+        "cases/tier2-suite.manifest.json"
+      ],
+      "reason": "两个真假绿是本轮核心收获：①HARNESS_ERROR（工装红）原被 pipeline_complete_with_verdict 一视同仁，实测得 exitCode 0/machineRed false/带绿尾行——现改为 HARNESS_ERROR>0 必判机器红 exit 1，receipt 仍诚实记管线完成；②零步裁定产物（steps:[]）原被认作「合法非全过」，配齐附件+childExitCode=1 即归管线完成、聚合可达绿尾行——现由纯层单一判据 judgeVerdictStepIdentity 要求步数>0、四态计数总和等于步数、与三轴步双射。其余：manifest 准入闭合（同一份已 hash 字节解析、拒 draft、拒重复/超限/缺件/越界路径、spawn 前重核并显式传核过路径）；原始字节扫描补全（axes/verdict/report-model/expected 先扫后解析，复用 FORBIDDEN_KEYWORDS+collectSecretLiterals，回环 carve-out 按 cred-gate 池来源精确绑定单值、六种非裸形态不 carve）；run 目录排他（不可碰撞空目录+产物 mtime≥本次启动+child exit⇔verdict 一致+完整附件集含 video.webm/video.json）；用法错零回显原值（稳定码+参数序号+脱敏类别，逐行封印）；绿尾行改 process.exitCode+writeSync 防管道截断；win-probe 原子写+一次性挑战字绑定（写与删除同时失败时旧成功件由挑战字作废）。金牌 77→111 钉全绿。manifest 同批修正提签时漏删的 draft 标记。原件 gzip 存档 .pre-review-amendment.archive.gz（回验 sha=57cc8bca… 与原冻结值一致）。",
+      "signedBy": "Steven（2026-07-30 AskUserQuestion 签：tier-2 三轮联审修复两笔换签合并账）"
+    }
+  ]
+}

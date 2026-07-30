@@ -24,10 +24,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { PROJECT_ROOT, CASES_DIR, NODE_EXE, kit, casePaths, isSafeCaseId } from '../lib/paths.mjs';
 import { summarizeRunVerdict } from '../lib/run-outcome.mjs';
+// tier-2 纯层（判定与文案的单一事实源；壳层只采集、转发、按其退出码退出）。
+import { TIER2_MACHINE_GREEN_TAIL } from '../lib/selftest-tier2.mjs';
 
 const C = { reset: '\x1b[0m', cyan: '\x1b[36m', gray: '\x1b[90m', yellow: '\x1b[33m', green: '\x1b[32m', red: '\x1b[31m', bold: '\x1b[1m' };
 const col = (c, s) => `${c}${s}${C.reset}`;
-const EXIT_NOT_IMPL = 3;
 
 function parseArgs(argv) {
   const opts = {}; const pos = [];
@@ -54,14 +55,8 @@ function passThrough(kitScript, rest) {
   process.exit(r.code);
 }
 
-// ── 阶段桩：诚实声明未实现，绝不冒充已完成 ─────────────────────
-function notImplemented(phase, planRef, willDo) {
-  console.error(col(C.yellow, `\n[${phase}] 该阶段尚未实现（${planRef}）。`));
-  console.error(col(C.gray, '本命令计划行为：') + willDo);
-  console.error(col(C.gray, '当前已落地：') + 'P0 引导 loop 机制 + P1 DDD 词表/ADR（loop 纪律已生效）。');
-  console.error(col(C.gray, '推进顺序见：') + 'docs/plans/bootstrap/plan.md\n');
-  process.exit(EXIT_NOT_IMPL);
-}
+// 阶段桩已清零：门面最后一个 notImplemented 消费者是 `selftest --tier2`，本契约落地后移除；
+// 现存唯一诚实桩是 `heal` 的 --apply/--promote/--reverify 三模式（由 bin/heal.mjs 自陈 exit 3）。
 
 function blockedByRealSutOnlyPolicy(command) {
   console.error(col(C.red, `\n[${command}] 已由真实 SUT only 策略禁用。`));
@@ -234,6 +229,37 @@ function selftestTier1() {
   console.log(col(C.red, 'selftest --tier1: 有红 —— 确定性内核未就绪。')); process.exit(1);
 }
 
+// ── selftest tier2：真机冒烟自检【壳层】（p9-tier2-live-smoke，GRILL D3）────
+// 壳层只三件事：①严格解析用参（用法错先于任何环境采集与任何连接判定 → 64）②采集 + 逐例走生产
+// run 同链、落 receipt ③把结构化结果喂纯层 lib/selftest-tier2.mjs，按纯层退出码退出。
+// 判定逻辑与全部文案常量都在纯层，壳层一个判据都不自造（防两处漂移）。
+// 退出方式（联审 r1 M2）：一律写完再设 process.exitCode 自然返回——
+// stdout 是管道时 process.exit() 会截断待写数据，那样「尾行不可旁路」这条就成了空话。
+function writeOutSync(text) {
+  fs.writeSync(1, text.endsWith('\n') ? text : `${text}\n`);
+}
+async function selftestTier2(rest) {
+  const { prepareTier2, executeTier2, renderTier2Result } = await import('../lib/selftest-tier2-collect.mjs');
+  const prepared = prepareTier2(rest);
+  if (!prepared.ok) {
+    // 拒付回执零回显原始值（M1）：只出稳定码、参数序号与脱敏类别，安全形状 caseId 才列出；
+    // 且这几行已在 prepareTier2 里逐行过完凭据封印（形状安全但恰为真实敏感值的也不放行）。
+    fs.writeSync(2, `${col(C.red, '\n[selftest --tier2] 用参错误 → 拒跑(64)')}\n${prepared.refusalLines.join('\n')}\n`
+      + '用法：casey selftest --tier2 --sut <隧道回环基址> [--case <manifest 成员 id> ...] [--authorize-mutation <变更型成员 id> ...]\n');
+    process.exitCode = 64;
+    return;
+  }
+  writeOutSync(col(C.bold, '\ncasey selftest --tier2 —— 真机冒烟自检（机器面）\n'));
+  const { result, consumerProblems, judgeEvidence } = await executeTier2(prepared);
+  // 渲染在壳层模块内成文（含尾行常量透传 TIER2_MACHINE_GREEN_TAIL 的单一事实源），出口过凭据兜底密封。
+  const rendered = renderTier2Result({ result, consumerProblems, judgeEvidence });
+  writeOutSync(rendered.text);
+  if (result.exitCode === 0 && !rendered.text.includes(TIER2_MACHINE_GREEN_TAIL)) {
+    writeOutSync(TIER2_MACHINE_GREEN_TAIL); // 尾行不可旁路：渲染若丢了它，这里同步补写
+  }
+  process.exitCode = result.exitCode;
+}
+
 function help() {
   console.log(`${col(C.bold, 'casey')} —— 文本用例 → 测试报告 自动化测试（loop engineering 驱动）
 
@@ -284,7 +310,10 @@ ${col(C.cyan, 'loop 机制')}（薄壳直通 loop-kit；纪律已生效）
 ${col(C.cyan, '自检')}
   casey selftest --tier1                  hermetic 链路自检（零外部依赖）                 [可用]
   casey doctor                            跨平台就绪自检（node/playwright/中文字体/凭据·隧道在位），逐项 ok/缺失+建议  [可用]
-  casey selftest --tier2                  live smoke（需 site.json + creds，route:human） [P9]
+  casey selftest --tier2 --sut <隧道回环基址> [--case <id> ...] [--authorize-mutation <id> ...]
+                                          真机冒烟自检（机器面）：只跑人签用例集 manifest 成员（零动态发现），
+                                          变更型条目须本次调用逐次授权 --authorize-mutation；前置门任一红 exit 2 一例不跑；
+                                          机器面绿仍不等于完成，须人签真机 UAT（ADR-0009）        [可用]
   casey demo                              当前禁用：历史实现会启动夹具 SUT；只允许读取已有真实报告
 
 ${col(C.cyan, '分发/接入')}
@@ -309,8 +338,16 @@ function main() {
     case 'contract': return passThrough('contract.mjs', rest);
 
     // 自检
+    // tier-2 走专用严格解析器（现役通用解析器的 --case 后值覆盖前值不能用于多例集），
+    // 故按原始 argv 分流、不吃 opts；`--tier1 --tier2` 并出由严格解析器拒 64。
     case 'selftest':
-      if (opts.tier2) return notImplemented('selftest --tier2', 'P9 两层 selftest + 真机 UAT', 'live smoke：需 site.json + creds，覆盖 SUT_DEFECT/取证/流式分支，gated route:human。');
+      if (rest.some((a) => a === '--tier2' || a.startsWith('--tier2='))) {
+        return selftestTier2(rest).catch(() => {
+          // fail-closed：采集期意外故障不抛裸栈（可能夹带路径/环境），同步写完再置退出码。
+          fs.writeSync(2, `${col(C.red, 'selftest --tier2：采集期意外故障（详情已抑制，防泄漏），exit 1。')}\n`);
+          process.exitCode = 1;
+        });
+      }
       return selftestTier1();
 
     // 生命周期（当前为诚实桩，逐阶段实现）

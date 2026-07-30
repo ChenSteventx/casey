@@ -12,10 +12,22 @@
 //   · TIER2_EVIDENCE_IDS       单 run 证据判定逐项 id
 //   · TIER2_RECEIPT_CLASSES    run receipt 稳定失败子类枚举（plan §1.3）
 //   · TIER2_SCAN_STAGES        凭据扫描时序阶段（GRILL D2 v3：原始字节 → 投影 → 落盘前）
+//   · TIER2_JUDGE_SMOKE_IDS    覆盖矩阵第三面（裁判通道运行时冒烟）逐项 id ★r1 修订
 //   · TIER2_MACHINE_GREEN_TAIL exit 0 尾行常量（「机器面绿≠完成」）
 //   · judgeTier2RunEvidence(projection) 单 run 产物投影 → 逐项判定
 //   · judgeTier2ScanTimeline({ stages, hits }) 扫描时序 + 命中 → 是否允许证据落盘
-//   · runTier2(env) 纯层聚合 → { exitCode, readiness, caseResults, coverage, tailLine, ... }
+//   · judgeTier2JudgeChannelSmoke(smoke) 裁判通道冒烟结构化产出 → 第三面判定 ★r1 修订
+//   · runTier2(env) 纯层聚合 → { exitCode, readiness, caseResults, coverage, judgeSmoke, tailLine, ... }
+//
+// ★ codex 联审 r1 修订（REVIEW_CHANGES_REQUIRED，5 High + 3 Medium；原件存
+//   `p9-tier2-selftest.zero-sut.golden.mjs.pre-review-amendment.archive.gz`，sha256
+//   57cc8bca60c8af880e988228ae011275e70c0461d3c45790ea6ab875ab44a2f1）。增钉与改动只有三处形态：
+//   ① 全绿夹具 `tier2Env()` 补 `judgeSmoke`（第三面进覆盖矩阵后，全绿路径必须带这一面的真实证据）；
+//   ② T0 冻结面补第三面的常量与判定函数；
+//   ③ 追加 T2b-H2（HARNESS_ERROR 必判机器红）、T2d（第三面缺席/反例不符/先例未绑定 → exit 2）、
+//      T8b（生产反例集与本金牌 SMOKE 表同构）、T9（壳层级负控：manifest 准入闭合 / 原始字节扫描 /
+//      run 目录排他与一致性 / 用法错零回显 / 绿尾行经管道不截断 / 连通结果消费端严格校验）。
+//   既有 77 钉的断言语义一字未改。
 //   env/projection 形状见下方 readyProbes()/projection()/caseEntry() 三个夹具构造器——
 //   它们就是本金牌对纯层入参契约的规格（doctor 金牌同款：注入「已解析的探针结果」，不倒着裁）。
 //
@@ -27,7 +39,7 @@
 // 修前预期：T6 绿（tier1 现绿）、T8 绿（bin/verdict.mjs 现役）；T0-T5、T7 全红
 //   （`--tier2` 现为 bin/casey.mjs:313 桩 exit 3 + 纯层模块缺失 + 签署版 manifest 未落）。
 
-import { readFileSync, existsSync, writeFileSync, mkdtempSync, rmSync } from 'node:fs';
+import { readFileSync, existsSync, writeFileSync, mkdtempSync, mkdirSync, readdirSync, rmSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { spawnSync, execFileSync } from 'node:child_process';
 import { resolve, dirname, join } from 'node:path';
@@ -146,6 +158,9 @@ function projection({ caseId = READ_CASE, streaming = false } = {}) {
     verdict: {
       schemaOk: true,
       stateCounts: { PASS: 1, SUT_DEFECT: 0, HARNESS_ERROR: 0, NEEDS_HUMAN: 0 },
+      // 裁定步身份（★r3 H5a）：步数 > 0、四态计数总和 == 步数、stepIds 与三轴步双射
+      stepCount: 1,
+      stepIds: [stepId],
       unknownStates: [],
       catchAllReachable: true,
     },
@@ -191,12 +206,14 @@ function caseEntry({
   streaming = false,
   authorizedMutation = false,
   smokeAuthorized = true,
+  receiptPersisted = true,   // ★r2 H5 残口：receipt 真落盘核过才算数
   proj,
 } = {}) {
   return {
     caseId,
     effect,
     smokeAuthorized,
+    receiptPersisted,
     // 变更型条目的「本次调用逐次授权」（--authorize-mutation <caseId>）。
     authorizedMutation,
     receipt: {
@@ -209,12 +226,41 @@ function caseEntry({
   };
 }
 
-// 默认全绿环境：一条只读例（取证面）+ 一条流式例（流式面），覆盖矩阵非空。
+// 覆盖矩阵第三面（SUT_DEFECT 面）的结构化冒烟证据（★r1 H1）：壳层真调现役 verdict.mjs 的产出投影
+//   + 历史真机先例 hash 绑定核验结果。纯层只判这份结构，不自己跑二进制（零 spawn 不变）。
+function judgeSmokeEvidence(overrides = {}) {
+  const cases = [
+    { id: 'sut_defect_arrival_1', expectVerdict: 'SUT_DEFECT', expectReason: null, actualVerdict: 'SUT_DEFECT', actualReason: null, ok: true },
+    { id: 'sut_defect_arrival_2', expectVerdict: 'SUT_DEFECT', expectReason: null, actualVerdict: 'SUT_DEFECT', actualReason: null, ok: true },
+    { id: 'background_401_not_attributed', expectVerdict: 'PASS', expectReason: null, actualVerdict: 'PASS', actualReason: null, ok: true },
+    { id: 'misattributed_5xx', expectVerdict: 'NEEDS_HUMAN', expectReason: 'SUT_DEFECT_OR_STALE', actualVerdict: 'NEEDS_HUMAN', actualReason: 'SUT_DEFECT_OR_STALE', ok: true },
+    { id: 'catch_all_indeterminate', expectVerdict: 'NEEDS_HUMAN', expectReason: 'INDETERMINATE', actualVerdict: 'NEEDS_HUMAN', actualReason: 'INDETERMINATE', ok: true },
+    { id: 'ambiguous_action', expectVerdict: 'NEEDS_HUMAN', expectReason: 'AMBIGUOUS_ACTION', actualVerdict: 'NEEDS_HUMAN', actualReason: 'AMBIGUOUS_ACTION', ok: true },
+    { id: 'harness_error_drift', expectVerdict: 'HARNESS_ERROR', expectReason: null, actualVerdict: 'HARNESS_ERROR', actualReason: null, ok: true },
+    { id: 'pass', expectVerdict: 'PASS', expectReason: null, actualVerdict: 'PASS', actualReason: null, ok: true },
+  ];
+  return {
+    ran: true,
+    fixtureChecksumOk: true,
+    // 证据真落盘（★r2 H1 残口：写失败=没证据，第三面必红）
+    evidencePersisted: true,
+    cases,
+    statesProduced: [...FOUR_STATES],
+    precedents: [
+      { id: 'attestation-run1-503', hashBound: true, artifactPresent: true, hashMatch: true },
+      { id: 'attestation-run1-axes', hashBound: true, artifactPresent: false, hashMatch: null },
+    ],
+    ...overrides,
+  };
+}
+
+// 默认全绿环境：一条只读例（取证面）+ 一条流式例（流式面）+ 裁判通道冒烟（SUT_DEFECT 面），三面非空。
 function tier2Env(overrides = {}) {
   return {
     now: NOW,
     freshnessWindowMs: DAY_MS,
     probes: readyProbes(),
+    judgeSmoke: judgeSmokeEvidence(),
     cases: [
       caseEntry({ caseId: READ_CASE }),
       caseEntry({ caseId: STREAM_CASE, streaming: true }),
@@ -239,10 +285,10 @@ function isRed(item) {
 
 await check('T0 纯层 API 在场且形态正确', () => {
   const api = pure();
-  for (const name of ['judgeTier2RunEvidence', 'judgeTier2ScanTimeline', 'runTier2']) {
+  for (const name of ['judgeTier2RunEvidence', 'judgeTier2ScanTimeline', 'runTier2', 'judgeTier2JudgeChannelSmoke']) {
     assert(typeof api[name] === 'function', `缺 frozen API ${name}`);
   }
-  for (const name of ['TIER2_READINESS_IDS', 'TIER2_EVIDENCE_IDS', 'TIER2_RECEIPT_CLASSES', 'TIER2_SCAN_STAGES']) {
+  for (const name of ['TIER2_READINESS_IDS', 'TIER2_EVIDENCE_IDS', 'TIER2_RECEIPT_CLASSES', 'TIER2_SCAN_STAGES', 'TIER2_JUDGE_SMOKE_IDS']) {
     assert(Array.isArray(api[name]) && api[name].length > 0, `缺 frozen 常量 ${name}（须非空数组）`);
     assert(Object.isFrozen(api[name]), `${name} 须冻结（Object.freeze）`);
     assert(new Set(api[name]).size === api[name].length, `${name} 不得有重复项`);
@@ -334,6 +380,20 @@ await check('T2 全备投影 → 逐项绿', () => {
 const EVIDENCE_HOLES = [
   ['四态账畸形（verdict schema 不合法）', (p) => { p.verdict.schemaOk = false; }, 'verdict-quadstate-wellformed'],
   ['四态账畸形（缺态计数键）', (p) => { delete p.verdict.stateCounts.HARNESS_ERROR; }, 'verdict-quadstate-wellformed'],
+  // ★r3 H5a：零步裁定此前被当「合法非全过」，配齐附件 + exit 1 就冒充管线完成 → 假绿
+  ['零步裁定（没跑却冒充合法非全过）', (p) => {
+    p.verdict.stepCount = 0; p.verdict.stepIds = [];
+    p.verdict.stateCounts = { PASS: 0, SUT_DEFECT: 0, HARNESS_ERROR: 0, NEEDS_HUMAN: 0 };
+  }, 'verdict-quadstate-wellformed'],
+  ['四态计数总和与裁定步数不等', (p) => { p.verdict.stepCount = 2; }, 'verdict-quadstate-wellformed'],
+  ['裁定步不在三轴步内', (p) => { p.verdict.stepIds = ['atstep_99']; }, 'verdict-quadstate-wellformed'],
+  ['三轴步未被裁定（漏裁）', (p) => {
+    p.axes.steps.push({ stepId: 'atstep_1', intentId: 'intent_0', kind: 'click', hardAssertionKinds: [], judgedAssertionKinds: [] });
+  }, 'verdict-quadstate-wellformed'],
+  ['裁定 stepId 重复', (p) => {
+    p.verdict.stepCount = 2; p.verdict.stepIds = ['atstep_0', 'atstep_0'];
+    p.verdict.stateCounts = { PASS: 2, SUT_DEFECT: 0, HARNESS_ERROR: 0, NEEDS_HUMAN: 0 };
+  }, 'verdict-quadstate-wellformed'],
   ['网络取证结构缺席', (p) => { p.axes.forensics.network = { present: false, entries: [] }; }, 'network-forensics-attribution'],
   ['网络取证未按发起方归因', (p) => {
     p.axes.forensics.network.attributedByInitiator = false;
@@ -409,6 +469,43 @@ await check('T2b pipeline_complete_with_verdict（合法 NEEDS_HUMAN）不判机
     ],
   }));
   assert(r.exitCode === 0, `NEEDS_HUMAN 机器面应 exit 0，实得 ${r.exitCode}`);
+});
+
+// ★r1 H2 负控：HARNESS_ERROR 是确证工装错（护栏 #13 自愈入口），不是可容忍的业务性非 PASS。
+// 修前实测 HARNESS_ERROR=1 / machineRed=false / exit 0 带绿尾行 = 假绿。
+await check('T2b-H2 pipeline_complete_with_verdict 含 HARNESS_ERROR → 必判机器红 exit 1 且无绿尾行', () => {
+  const { runTier2 } = pure();
+  const proj = projection({ caseId: READ_CASE });
+  proj.verdict.stateCounts = { PASS: 0, SUT_DEFECT: 0, HARNESS_ERROR: 1, NEEDS_HUMAN: 0 };
+  const r = runTier2(tier2Env({
+    cases: [
+      caseEntry({ caseId: READ_CASE, proj }),
+      caseEntry({ caseId: STREAM_CASE, streaming: true }),
+    ],
+  }));
+  assert(r.exitCode === 1, `HARNESS_ERROR 属工装红，应 exit 1，实得 ${r.exitCode}`);
+  const entry = (r.caseResults || []).find((c) => c && c.caseId === READ_CASE);
+  assert(entry && entry.machineRed === true, `HARNESS_ERROR 须记机器红：${JSON.stringify(entry)}`);
+  assert(!r.tailLine, `工装红路径不得带绿尾行：${JSON.stringify(r.tailLine)}`);
+  // receipt 仍可如实记「管线跑完且有裁定」——归类不撒谎，红是聚合层的判断。
+  assert(entry.receiptClass === 'pipeline_complete_with_verdict',
+    `receipt 归类应保持管线完成（红由聚合层判）：${entry.receiptClass}`);
+});
+
+// ★r2 H5 残口：receipt 写失败（盘满/权限/扫描命中）时，这一例根本没有机器可读账 —— 绝不许算绿。
+await check('T2b-H5 receipt 未落盘 → 该例必判机器红 exit 1', () => {
+  const { runTier2 } = pure();
+  const r = runTier2(tier2Env({
+    cases: [
+      caseEntry({ caseId: READ_CASE, receiptPersisted: false }),
+      caseEntry({ caseId: STREAM_CASE, streaming: true }),
+    ],
+  }));
+  assert(r.exitCode === 1, `receipt 未落盘应 exit 1，实得 ${r.exitCode}`);
+  const entry = (r.caseResults || []).find((c) => c && c.caseId === READ_CASE);
+  assert(entry && entry.machineRed === true, `未落盘须记机器红：${JSON.stringify(entry)}`);
+  assert(entry.receiptPersisted === false, 'caseResults 须如实标 receipt 落盘状态');
+  assert(!r.tailLine, '未落盘路径不得带绿尾行');
 });
 
 for (const cls of ['stage_failed', 'timeout', 'partial_artifacts']) {
@@ -489,6 +586,54 @@ await check('T2c 合格件在场 → 必真裁（judged 按 intentId/stepId/kind
   }));
   assert(rTruthy.exitCode !== 0, `judged.ok 非布尔时不得绿，实得 ${rTruthy.exitCode}`);
 });
+
+// ══════════════════════════════════════════════════════════════════════
+// T2d 覆盖矩阵第三面（SUT_DEFECT 面）★r1 H1：现役 tier-2 命令必须真行使裁判通道冒烟，
+//     否则第三面未运行也能 exit 0（GRILL D1「覆盖矩阵必须非空」被旁路）。
+// ══════════════════════════════════════════════════════════════════════
+
+await check('T2d 第三面全备 → 覆盖矩阵记 sutDefect 成立且逐项绿', () => {
+  const { judgeTier2JudgeChannelSmoke, TIER2_JUDGE_SMOKE_IDS, runTier2 } = pure();
+  const j = judgeTier2JudgeChannelSmoke(judgeSmokeEvidence());
+  assert(j.ok === true, `全备冒烟证据应整体绿：${JSON.stringify(j.redIds)}`);
+  assert(idsOf(j.items).length === TIER2_JUDGE_SMOKE_IDS.length,
+    `第三面须逐项出全（${TIER2_JUDGE_SMOKE_IDS.length} 项），实得 ${idsOf(j.items).length}`);
+  const r = runTier2(tier2Env());
+  assert(r.coverage && r.coverage.sutDefect === true, `覆盖矩阵须记第三面成立：${JSON.stringify(r.coverage)}`);
+  assert(r.judgeSmoke && Array.isArray(r.judgeSmoke.items), '聚合结果须带第三面逐项判定（可复核）');
+  assert(r.exitCode === 0, `三面非空且全绿应 exit 0，实得 ${r.exitCode}`);
+});
+
+const JUDGE_SMOKE_HOLES = [
+  ['冒烟整体缺席（第三面从未运行）', undefined, 'judge-counterexamples-exact'],
+  ['冒烟未真跑（零反例条目）', { ran: false, cases: [] }, 'judge-counterexamples-exact'],
+  ['反例集夹具已漂移', { fixtureChecksumOk: false }, 'judge-fixture-frozen'],
+  ['某反例产出与冻结期望不符', {
+    cases: judgeSmokeEvidence().cases.map((c) => (c.id === 'misattributed_5xx'
+      ? { ...c, actualVerdict: 'SUT_DEFECT', actualReason: null, ok: false } : c)),
+  }, 'judge-counterexamples-exact'],
+  ['四态未覆盖全（缺 HARNESS_ERROR）', { statesProduced: ['PASS', 'SUT_DEFECT', 'NEEDS_HUMAN'] }, 'judge-four-states-exact'],
+  ['冒出第五态标签', { statesProduced: [...FOUR_STATES, 'FLAKY'] }, 'judge-four-states-exact'],
+  ['历史先例未记（零条目）', { precedents: [] }, 'judge-precedents-hash-bound'],
+  ['历史先例未按 hash 绑定', { precedents: [{ id: 'attestation-run1-503', hashBound: false, artifactPresent: true, hashMatch: true }] }, 'judge-precedents-hash-bound'],
+  ['历史先例产物在场但 hash 失配', { precedents: [{ id: 'attestation-run1-503', hashBound: true, artifactPresent: true, hashMatch: false }] }, 'judge-precedents-hash-bound'],
+  // ★r2 H1 残口：冒烟跑了但证据没落到盘上（盘满/权限/扫描命中）——没证据就不算成立。
+  ['冒烟证据未落盘', { evidencePersisted: false }, 'judge-evidence-persisted'],
+];
+
+for (const [label, override, expectId] of JUDGE_SMOKE_HOLES) {
+  await check(`T2d 第三面击穿：${label} → exit 2 且 sutDefect 面不成立`, () => {
+    const { runTier2, judgeTier2JudgeChannelSmoke } = pure();
+    const smoke = override === undefined ? undefined : judgeSmokeEvidence(override);
+    const j = judgeTier2JudgeChannelSmoke(smoke);
+    assert(j.ok === false, `${label} 应判第三面红：${JSON.stringify(j)}`);
+    assert(isRed(itemById(j.items, expectId)), `${label} 应把「${expectId}」判红：${JSON.stringify(j.items)}`);
+    const r = runTier2(tier2Env({ judgeSmoke: smoke }));
+    assert(r.exitCode === 2, `${label} 聚合应 exit 2（覆盖矩阵空 fail-closed），实得 ${r.exitCode}`);
+    assert(r.coverage && r.coverage.sutDefect === false, `${label} 覆盖矩阵须记第三面不成立：${JSON.stringify(r.coverage)}`);
+    assert(!r.tailLine, `${label} 不得带绿尾行`);
+  });
+}
 
 // ══════════════════════════════════════════════════════════════════════
 // T3 fail-safe 不变量（catch-all 被旁路必红）
@@ -824,15 +969,17 @@ try {
   const misattributed = frozen('sut_defect');
   misattributed.steps[0].forensics.network[0].attributedStepId = 'atstep_99';
 
+  // 第五列 id ★r1 H1：与生产采集能力 `TIER2_JUDGE_COUNTEREXAMPLES` 的 id 一一对应，由 T8b 交叉钉住，
+  //   防生产侧反例集悄悄放水（本表是独立规格，绝不改成「用实现验实现」）。
   const SMOKE = [
-    ['SUT_DEFECT 到达口①（动作做成 + 硬断言失败 + 本步归因 5xx）', frozen('sut_defect'), 'SUT_DEFECT', null],
-    ['SUT_DEFECT 到达口②（动作未做成 + 本步归因信封失败）', arrivalTwo, 'SUT_DEFECT', null],
-    ['错步归因：背景 401 归别步 → 不翻本步', frozen('background_401_not_attributed'), 'PASS', null],
-    ['错步归因：5xx 归别步 → 不冒充缺陷', misattributed, 'NEEDS_HUMAN', 'SUT_DEFECT_OR_STALE'],
-    ['catch-all：无漂移信号无取证 → fail-safe', frozen('indeterminate'), 'NEEDS_HUMAN', 'INDETERMINATE'],
-    ['多匹配 → 不记缺陷', frozen('ambiguous_action'), 'NEEDS_HUMAN', 'AMBIGUOUS_ACTION'],
-    ['正向漂移确证 → 可自愈', frozen('harness_error'), 'HARNESS_ERROR', null],
-    ['全过 → PASS', frozen('pass'), 'PASS', null],
+    ['SUT_DEFECT 到达口①（动作做成 + 硬断言失败 + 本步归因 5xx）', frozen('sut_defect'), 'SUT_DEFECT', null, 'sut_defect_arrival_1'],
+    ['SUT_DEFECT 到达口②（动作未做成 + 本步归因信封失败）', arrivalTwo, 'SUT_DEFECT', null, 'sut_defect_arrival_2'],
+    ['错步归因：背景 401 归别步 → 不翻本步', frozen('background_401_not_attributed'), 'PASS', null, 'background_401_not_attributed'],
+    ['错步归因：5xx 归别步 → 不冒充缺陷', misattributed, 'NEEDS_HUMAN', 'SUT_DEFECT_OR_STALE', 'misattributed_5xx'],
+    ['catch-all：无漂移信号无取证 → fail-safe', frozen('indeterminate'), 'NEEDS_HUMAN', 'INDETERMINATE', 'catch_all_indeterminate'],
+    ['多匹配 → 不记缺陷', frozen('ambiguous_action'), 'NEEDS_HUMAN', 'AMBIGUOUS_ACTION', 'ambiguous_action'],
+    ['正向漂移确证 → 可自愈', frozen('harness_error'), 'HARNESS_ERROR', null, 'harness_error_drift'],
+    ['全过 → PASS', frozen('pass'), 'PASS', null, 'pass'],
   ];
 
   const produced = new Set();
@@ -858,8 +1005,468 @@ try {
     }
     assert(produced.size === FOUR_STATES.length, `产出态数超四态：${[...produced].join('/')}`);
   });
+
+  // ★r1 H1：生产采集能力的反例集必须与本表同构——id 集合、期望四态、期望理由逐项等值。
+  await check('T8b 生产反例集与本金牌 SMOKE 表同构（防生产侧放水）', async () => {
+    let mod = null;
+    try { mod = await import('../../lib/selftest-tier2-judge-smoke.mjs'); }
+    catch (e) { throw new Error(`生产采集能力 lib/selftest-tier2-judge-smoke.mjs 缺席：${String(e?.message || e).slice(-160)}`); }
+    const prod = mod.TIER2_JUDGE_COUNTEREXAMPLES;
+    assert(Array.isArray(prod) && Object.isFrozen(prod), 'TIER2_JUDGE_COUNTEREXAMPLES 须为冻结数组');
+    assert(typeof mod.collectTier2JudgeSmoke === 'function', '缺生产采集入口 collectTier2JudgeSmoke');
+    const norm = (rows) => rows.map((r) => `${r.id}|${r.expectVerdict}|${r.expectReason || ''}`).sort().join('\n');
+    const mine = norm(SMOKE.map(([, , expectVerdict, expectReason, id]) => ({ id, expectVerdict, expectReason })));
+    const theirs = norm(prod.map((r) => ({ id: r.id, expectVerdict: r.expectVerdict, expectReason: r.expectReason })));
+    assert(mine === theirs, `反例集不同构：\n本金牌\n${mine}\n生产\n${theirs}`);
+    // 四态在生产反例集里也必须齐（否则冒烟跑完也覆盖不到四态）。
+    for (const state of FOUR_STATES) {
+      assert(prod.some((r) => r.expectVerdict === state), `生产反例集未覆盖「${state}」`);
+    }
+  });
+
+  // ★r2 H1 残口：期望理由为 null 的案，实际冒出任意理由都必须判不符（原来只在期望为真值时才比）。
+  await check('T8c 冻结期望比较精确到理由（空期望理由 ≠ 任意理由）', async () => {
+    const { matchesFrozenExpectation } = await import('../../lib/selftest-tier2-judge-smoke.mjs');
+    assert(typeof matchesFrozenExpectation === 'function', '缺可独立驱动的比较器 matchesFrozenExpectation');
+    const nullReasonSpec = { id: 'x', expectVerdict: 'SUT_DEFECT', expectReason: null };
+    assert(matchesFrozenExpectation(nullReasonSpec, 'SUT_DEFECT', null) === true, '四态与空理由都对应判过');
+    assert(matchesFrozenExpectation(nullReasonSpec, 'SUT_DEFECT', '') === true, '空串理由等同无理由');
+    assert(matchesFrozenExpectation(nullReasonSpec, 'SUT_DEFECT', 'ANY_REASON') === false,
+      '期望无理由却冒出理由 → 必判不符（本条就是 r2 逮住的后门）');
+    assert(matchesFrozenExpectation(nullReasonSpec, 'PASS', null) === false, '四态不符必判不符');
+    const reasonSpec = { id: 'y', expectVerdict: 'NEEDS_HUMAN', expectReason: 'INDETERMINATE' };
+    assert(matchesFrozenExpectation(reasonSpec, 'NEEDS_HUMAN', 'INDETERMINATE') === true, '理由对应判过');
+    assert(matchesFrozenExpectation(reasonSpec, 'NEEDS_HUMAN', 'AMBIGUOUS_ACTION') === false, '理由不符必判不符');
+    assert(matchesFrozenExpectation(reasonSpec, 'NEEDS_HUMAN', null) === false, '期望有理由却没理由 → 必判不符');
+    assert(matchesFrozenExpectation({ id: 'z', expectVerdict: 'FLAKY', expectReason: null }, 'FLAKY', null) === false,
+      '四态外标签一律不认');
+    // 生产表里期望空理由的案确实存在（否则本钉空转）
+    const { TIER2_JUDGE_COUNTEREXAMPLES } = await import('../../lib/selftest-tier2-judge-smoke.mjs');
+    assert(TIER2_JUDGE_COUNTEREXAMPLES.some((r) => r.expectReason == null), '生产反例集须含空期望理由的案');
+  });
 } finally {
   rmSync(tmpDir, { recursive: true, force: true });
+}
+
+// ══════════════════════════════════════════════════════════════════════
+// T9 壳层级负控（★r1 H3/H4/H5/M1/M2/M3）——全部 hermetic：合成夹具 + 只读核验，
+//     零 SUT 接触、零真实地址（win-probe 只验消费端与源形态，绝不真跑它的网络请求）。
+// ══════════════════════════════════════════════════════════════════════
+
+const shellTmp = mkdtempSync(join(tmpdir(), 'casey-p9-tier2-shell-'));
+try {
+  // ── H3 manifest 准入闭合：结构校验器逐条击穿 ──
+  await check('T9a-H3 manifest 结构校验器：真件过，逐条坏件拒', async () => {
+    let mod = null;
+    try { mod = await import('../../lib/selftest-tier2-manifest.mjs'); }
+    catch (e) { throw new Error(`manifest 准入模块缺席：${String(e?.message || e).slice(-160)}`); }
+    const { validateSuiteManifestDoc } = mod;
+    assert(typeof validateSuiteManifestDoc === 'function', '缺 validateSuiteManifestDoc');
+    assert(existsSync(MANIFEST), '缺签署版 manifest（本钉以真件为基线）');
+    const real = JSON.parse(readFileSync(MANIFEST, 'utf8'));
+    const baseline = validateSuiteManifestDoc(real);
+    assert(baseline.ok === true, `真件应过结构校验：${JSON.stringify(baseline.problems)}`);
+
+    const holes = [
+      ['draft 标记在场（提签遗漏不许当已签）', (m) => { m.draft = true; }],
+      ['未人签', (m) => { m.signed = false; }],
+      ['签认人缺', (m) => { m.signerId = null; }],
+      ['成员重复', (m) => { m.members = [m.members[0], structuredClone(m.members[0])]; }],
+      ['成员数超上限', (m) => { m.caseLimit = 1; m.members = [m.members[0], { ...structuredClone(m.members[0]), caseId: 'tc_second_member' }]; }],
+      ['缺必备执行件（events）', (m) => { delete m.members[0].artifacts[`cases/${m.members[0].caseId}/events.json`]; }],
+      ['artifact 路径越界（上跳段）', (m) => { m.members[0].artifacts['../../etc/passwd'] = 'a'.repeat(64); }],
+      ['artifact 路径跨用例目录', (m) => { m.members[0].artifacts['cases/tc_other/events.json'] = 'b'.repeat(64); }],
+      ['artifact 集含约定外文件', (m) => { m.members[0].artifacts[`cases/${m.members[0].caseId}/notes.txt`] = 'c'.repeat(64); }],
+      ['artifact hash 非 sha256', (m) => { m.members[0].artifacts[`cases/${m.members[0].caseId}/events.json`] = 'not-a-hash'; }],
+      ['成员缺超时声明', (m) => { delete m.members[0].timeoutMs; }],
+      ['成员缺清理义务', (m) => { delete m.members[0].cleanupObligation; }],
+      ['成员缺 smoke 授权标志', (m) => { m.members[0].smokeAuthorized = false; }],
+      ['成员 caseId 不安全', (m) => { m.members[0].caseId = '../etc'; }],
+      ['连通结果路径越界', (m) => { m.winProbeResultPath = '/etc/passwd'; }],
+      ['带外回执路径含上跳段', (m) => { m.outOfBandReceiptPath = 'runs/../../etc/x.json'; }],
+      ['成员集为空', (m) => { m.members = []; }],
+      ['先例缺 hash', (m) => { m.historicalPrecedents = [{ id: 'x', path: 'runs/a.json', attestedIn: 'docs/x.md' }]; }],
+    ];
+    for (const [label, mutate] of holes) {
+      const doc = structuredClone(real);
+      mutate(doc);
+      const r = validateSuiteManifestDoc(doc);
+      assert(r.ok === false, `坏件应被拒：${label}`);
+    }
+    // 变更型成员必须带逐次授权义务标志
+    const mutationDoc = structuredClone(real);
+    mutationDoc.members[0].effect = 'mutation';
+    delete mutationDoc.members[0].perRunApproval;
+    assert(validateSuiteManifestDoc(mutationDoc).ok === false, '变更型成员缺逐次授权义务标志应被拒');
+  });
+
+  await check('T9a-H3 manifest 采集：hash 与解析同一份字节 + 未在册即不放行', async () => {
+    const { readSuiteManifest } = await import('../../lib/selftest-tier2-manifest.mjs');
+    const src = readFileSync(join(ROOT, 'lib', 'selftest-tier2-manifest.mjs'), 'utf8');
+    // 单次读字节：只许出现一次 manifest 读取，且 hash 与 JSON.parse 都吃这份 buffer。
+    assert(/const digest = sha256\(bytes\)/.test(src) && /JSON\.parse\(bytes\.toString\('utf8'\)\)/.test(src),
+      'manifest 的 hash 与解析须吃同一份字节（防 hash 一份、解析另一份的 TOCTOU 缝）');
+    const got = readSuiteManifest();
+    assert(got.present === true, '真件应在场');
+    assert(typeof got.digest === 'string' && /^[0-9a-f]{64}$/.test(got.digest), 'manifest 采集须回字节 digest');
+    // 未冻入契约 testChecksums 或字节失配 → checksumOk 必 false（fail-closed），且不出可用成员。
+    if (!got.checksumOk) {
+      assert(got.memberCount === 0 && got.memberIds.length === 0,
+        `checksum 未过时不得给出可用成员：${JSON.stringify(got.memberIds)}`);
+    }
+  });
+
+  // ── H4 原始字节先扫：白名单外嵌套敏感值在【解析前】就被抓 ──
+  await check('T9b-H4 原始产物字节扫描：嵌套敏感值命中 raw_bytes 且零证据落盘', async () => {
+    let scan = null;
+    try { scan = await import('../../lib/selftest-tier2-scan.mjs'); }
+    catch (e) { throw new Error(`扫描模块缺席：${String(e?.message || e).slice(-160)}`); }
+    const { scanRawArtifactFile, createScanRecorder } = scan;
+    const dirtyDir = join(shellTmp, 'dirty');
+    mkdirSync(dirtyDir, { recursive: true });
+    // 嵌套三层的禁字段（白名单投影必然把它丢掉——只扫投影就永远看不见）
+    const dirty = join(dirtyDir, 'axes.json');
+    writeFileSync(dirty, JSON.stringify({ steps: [{ stepId: 'atstep_0', deep: { nested: { authorization: 'x-y-z' } } }] }), 'utf8');
+    const hit = scanRawArtifactFile(dirty);
+    assert(hit.hits.length > 0 && hit.hits.every((h) => h.stage === 'raw_bytes'),
+      `嵌套敏感值须在 raw_bytes 阶段命中：${JSON.stringify(hit.hits)}`);
+
+    // 畸形 JSON 单列具名规则
+    const broken = join(dirtyDir, 'verdict.json');
+    writeFileSync(broken, '{ not json', 'utf8');
+    assert(scanRawArtifactFile(broken).hits.some((h) => h.rule === 'malformed-json'), '畸形 JSON 须具名命中');
+
+    // 非回环地址形态命中
+    const addressed = join(dirtyDir, 'report-model.json');
+    writeFileSync(addressed, JSON.stringify({ schemaVersion: 1, url: 'https://real-target.invalid/x' }), 'utf8');
+    assert(scanRawArtifactFile(addressed).hits.some((h) => h.rule === 'target-address-shape'), '非回环地址形态须命中');
+
+    // 阶段记账只在真跑完才记（不许硬写三阶段常量冒充跑满）
+    const rec = createScanRecorder();
+    assert(rec.snapshot().stages.length === 0, '记账器初始不得预置任何阶段');
+    rec.complete('raw_bytes');
+    assert(rec.snapshot().stages.join(',') === 'raw_bytes', '只记真跑完的阶段');
+    const { judgeTier2ScanTimeline } = pure();
+    assert(judgeTier2ScanTimeline(rec.snapshot()).emitEvidence === false, '阶段没跑满不得放行落盘');
+    rec.add([{ stage: 'raw_bytes', rule: 'nested-sensitive-value' }]);
+    rec.complete('projection'); rec.complete('pre_write');
+    assert(judgeTier2ScanTimeline(rec.snapshot()).emitEvidence === false, '有命中即零证据落盘（fail-closed）');
+  });
+
+  await check('T9b-H4 扫描判据复用共享凭据门（禁词表 + 凭据文件敏感字面量）', async () => {
+    const src = readFileSync(join(ROOT, 'lib', 'selftest-tier2-scan.mjs'), 'utf8');
+    assert(/from '\.\/cred-gate\.mjs'/.test(src), '扫描须从共享凭据门取判据，不许自造第二套');
+    assert(/FORBIDDEN_KEYWORDS/.test(src) && /collectSecretLiterals/.test(src),
+      '须同时用禁字段关键词表与凭据文件真实敏感字面量');
+    const { scanTextForSensitive } = await import('../../lib/selftest-tier2-scan.mjs');
+    assert(scanTextForSensitive('{"a":"set-cookie"}', 'raw_bytes').length > 0, '禁字段关键词须命中');
+    assert(scanTextForSensitive('{"a":"http://127.0.0.1:15519/x"}', 'raw_bytes').length === 0,
+      '回环地址非真实目标地址（GRILL D6），地址形态规则不得误报');
+  });
+
+  // ★r2 H4 残口：carve-out 只能按【来源】精确剔除已验证的 site.target.devProxyUrl 单值，
+  //   不能按「长得像回环 URL」过滤——那会把恰为回环形态的真凭据值一起放走。
+  await check('T9b-H4 回环 carve-out 按来源精确、不按形状放行', async () => {
+    const scan = await import('../../lib/selftest-tier2-scan.mjs');
+    const src = readFileSync(join(ROOT, 'lib', 'selftest-tier2-scan.mjs'), 'utf8');
+    assert(/devProxyUrl/.test(src), 'carve-out 须按来源取站点配置的 devProxyUrl 值');
+    assert(!/filter\(\(s\) => !isLoopbackBaseUrl\(s\)\)/.test(src), '不得再按「长得像回环 URL」整片过滤（r2 驳回的收法）');
+    assert(/carve\.has\(s\)/.test(src), 'carve-out 须字符串全等剔除，不得按形状过滤');
+    // 形态收紧：带路径/query/fragment/凭据的回环 URL 一律不在剔除面内（即便回环也照扫）
+    const { bareLoopbackOrigin, carveOutLiterals } = scan;
+    assert(typeof bareLoopbackOrigin === 'function' && typeof carveOutLiterals === 'function', '缺可独立驱动的 carve-out 判据');
+    assert(bareLoopbackOrigin('http://127.0.0.1:15519') === 'http://127.0.0.1:15519', '裸回环源可剔');
+    assert(bareLoopbackOrigin('http://127.0.0.1:15519/') === 'http://127.0.0.1:15519/', '根路径仍算裸源');
+    for (const shaped of [
+      'http://127.0.0.1:15519/path', 'http://127.0.0.1:15519/?q=1', 'http://127.0.0.1:15519/#f',
+      'http://user:pass@127.0.0.1:15519', 'https://example.invalid', 'http://10.0.0.5:8080', 'not-a-url',
+    ]) {
+      assert(bareLoopbackOrigin(shaped) === null, `带路径/查询/片段/凭据/非回环的形态不得进剔除面：${shaped}`);
+    }
+    // 剔除面必须来自 site.json 的 target.devProxyUrl，且只是那个值
+    const carve = carveOutLiterals();
+    assert(carve instanceof Set, 'carve-out 面须是精确值集合');
+    for (const v of carve) assert(bareLoopbackOrigin(v) === v, `剔除面成员须是裸回环源：${v}`);
+  });
+
+  // ── H5 run 目录排他 + 产物时刻/一致性 ──
+  await check('T9c-H5 run 目录排他：连开两次不碰撞、必为新建空目录', async () => {
+    let proj = null;
+    try { proj = await import('../../lib/selftest-tier2-projection.mjs'); }
+    catch (e) { throw new Error(`投影模块缺席：${String(e?.message || e).slice(-160)}`); }
+    const { createExclusiveRunDir } = proj;
+    const a = createExclusiveRunDir('zz_golden_probe_case');
+    const b = createExclusiveRunDir('zz_golden_probe_case');
+    try {
+      assert(a && b && a.runDirRel !== b.runDirRel, `同例连开两次必须给不同目录：${JSON.stringify([a && a.runDirRel, b && b.runDirRel])}`);
+      assert(/run_tier2_\d{8}T\d{6,}Z?_[0-9a-f]{6}$/.test(a.runId) || /_[0-9a-f]{6}$/.test(a.runId),
+        `run 目录名须带不可碰撞后缀：${a.runId}`);
+      for (const d of [a, b]) {
+        assert(existsSync(join(ROOT, d.runDirRel)), '目录须真建出');
+        assert(readdirSync(join(ROOT, d.runDirRel)).length === 0, '新建 run 目录必须为空（绝不复用旧产物）');
+      }
+    } finally {
+      rmSync(join(ROOT, 'runs', 'zz_golden_probe_case'), { recursive: true, force: true });
+    }
+  });
+
+  await check('T9c-H5 receipt 归类：旧产物/退出码矛盾/附件不全 → 绝不算管线完成', async () => {
+    const { classifyTier2Receipt } = await import('../../lib/selftest-tier2-projection.mjs');
+    const legend = [0, 1, 2, 3, 64];
+    const attachments = {
+      'axes.json': true, 'verdict.json': true, 'report-model.json': true,
+      'run-history.jsonl': true, 'run-metrics.json': true,
+      // ★r2 新 M：录屏两件是真机正式交付必备（real-uat-runbook.md:92 第 3/4 条）
+      'video.webm': true, 'video.json': true,
+      'x.report.html': true, 'x.report.md': true, 'x.report.json': true,
+    };
+    const healthy = {
+      attachments, attachmentsComplete: true, staleArtifacts: [], someArtifacts: true,
+      verdictWellFormed: true, allPass: true, stateCounts: { PASS: 1, SUT_DEFECT: 0, HARNESS_ERROR: 0, NEEDS_HUMAN: 0 },
+    };
+    assert(classifyTier2Receipt({ projected: healthy, timedOut: false, systemicCode: null, childExitCode: 0, exitCodeLegend: legend })
+      .receiptClass === 'pipeline_complete_with_verdict', '健康件应算管线完成');
+
+    // ★r3 H5a：零步裁定的负控走真投影层——{steps:[]} 必须判不合法，绝不许配 exit 1 冒充管线完成。
+    const zeroStepDir = join(shellTmp, 'zero-step-run');
+    mkdirSync(zeroStepDir, { recursive: true });
+    const now = Date.now();
+    writeFileSync(join(zeroStepDir, 'verdict.json'), JSON.stringify({ steps: [] }), 'utf8');
+    writeFileSync(join(zeroStepDir, 'axes.json'), JSON.stringify({ caseId: 'x', steps: [{ stepId: 'atstep_0', intentId: 'i', postAssertions: [] }] }), 'utf8');
+    writeFileSync(join(zeroStepDir, 'report-model.json'), JSON.stringify({ schemaVersion: 1, verdictSummary: { PASS: 0, SUT_DEFECT: 0, HARNESS_ERROR: 0, NEEDS_HUMAN: 0 } }), 'utf8');
+    for (const name of ['run-history.jsonl', 'run-metrics.json', 'video.webm', 'video.json', 'x.report.html', 'x.report.md', 'x.report.json']) {
+      writeFileSync(join(zeroStepDir, name), '{}', 'utf8');
+    }
+    const { projectRunArtifacts: projectReal, createScanRecorder: mkRec } = {
+      projectRunArtifacts: (await import('../../lib/selftest-tier2-projection.mjs')).projectRunArtifacts,
+      createScanRecorder: (await import('../../lib/selftest-tier2-scan.mjs')).createScanRecorder,
+    };
+    const zeroProjected = projectReal({
+      caseId: 'x', runDirRel: 'runs/x/zero', runDirAbs: zeroStepDir, exitCodeLegend: legend,
+      expectedAbs: null, recorder: mkRec(), startedAtMs: now - 60000,
+    });
+    assert(zeroProjected.projection.verdict.stepCount === 0, '零步产物须如实投影 stepCount 0');
+    assert(zeroProjected.verdictWellFormed === false, '零步裁定不得判「合法」');
+    const zeroCls = classifyTier2Receipt({ projected: zeroProjected, timedOut: false, systemicCode: null, childExitCode: 1, exitCodeLegend: legend });
+    assert(zeroCls.receiptClass !== 'pipeline_complete_with_verdict',
+      `零步裁定配 exit 1 绝不许算管线完成，实得 ${zeroCls.receiptClass}`);
+    assert(zeroCls.problems.some((p) => p.includes('零步')), `须留「零步」具名问题：${JSON.stringify(zeroCls.problems)}`);
+    // exit 1 ⇔ 合法非全 PASS 也是管线完成态（业务性非 PASS 属人签语义面）
+    assert(classifyTier2Receipt({ projected: { ...healthy, allPass: false }, timedOut: false, systemicCode: null, childExitCode: 1, exitCodeLegend: legend })
+      .receiptClass === 'pipeline_complete_with_verdict', 'exit 1 + 合法非全 PASS 应算管线完成');
+    const holes = [
+      ['产物早于本次启动（复用旧件）', { ...healthy, staleArtifacts: ['axes', 'verdict'] }, 0],
+      ['exit 0 但裁定非全 PASS', { ...healthy, allPass: false }, 0],
+      ['exit 1 但裁定全 PASS', { ...healthy, allPass: true }, 1],
+      ['附件集不全', { ...healthy, attachments: { ...attachments, 'run-metrics.json': false }, attachmentsComplete: false }, 0],
+      // ★r2 新 M：缺录屏（video.webm/video.json）不得算管线完成
+      ['缺录屏 video.webm', { ...healthy, attachments: { ...attachments, 'video.webm': false }, attachmentsComplete: false }, 0],
+      ['缺录屏元数据 video.json', { ...healthy, attachments: { ...attachments, 'video.json': false }, attachmentsComplete: false }, 0],
+      ['裁定产物不合法', { ...healthy, verdictWellFormed: false }, 0],
+      ['退出码不在归一图例内', { ...healthy }, 65],
+      // ★r2 H5 残口：只封 0/1 不够——2/3/64 配齐全产物此前照样被当管线完成
+      ['退出码 2（熔断/互锁）配齐全产物', { ...healthy, allPass: false }, 2],
+      ['退出码 3（未实现）配齐全产物', { ...healthy, allPass: false }, 3],
+      ['退出码 64（用参错）配齐全产物', { ...healthy, allPass: false }, 64],
+      ['退出码缺失（子进程被杀）', { ...healthy, allPass: false }, null],
+    ];
+    for (const [label, projected, childExitCode] of holes) {
+      const r = classifyTier2Receipt({ projected, timedOut: false, systemicCode: null, childExitCode, exitCodeLegend: legend });
+      assert(r.receiptClass !== 'pipeline_complete_with_verdict', `${label} 不得算管线完成，实得 ${r.receiptClass}`);
+      assert(r.problems.length > 0, `${label} 须留具名问题`);
+    }
+    assert(classifyTier2Receipt({ projected: healthy, timedOut: true, systemicCode: null, childExitCode: null, exitCodeLegend: legend })
+      .receiptClass === 'timeout', '超时须归 timeout');
+    assert(classifyTier2Receipt({ projected: healthy, timedOut: false, systemicCode: 'LOGIN_PREP_FAILED', childExitCode: 1, exitCodeLegend: legend })
+      .receiptClass === 'systemic_abort', '系统性拒付码须归 systemic_abort');
+  });
+
+  // ── M1 用法错零回显原始值 ──
+  await check('T9d-M1 用法错回执：危险值与未知旗标一律不回显原值，只出稳定码', () => {
+    const danger = caseyRun(['selftest', '--tier2', '--sut', LOOPBACK, '--case', '../etc/passwd']);
+    const dangerText = (danger.stdout || '') + (danger.stderr || '');
+    assert(danger.status === 64, `危险 caseId 应 exit 64，实得 ${danger.status}`);
+    assert(!dangerText.includes('../etc/passwd'), `危险原值不得回显：${dangerText.slice(-200)}`);
+    assert(dangerText.includes('TIER2_ARG_CASE_ID_UNSAFE'), `须出稳定拒付码：${dangerText.slice(-200)}`);
+
+    const unknown = caseyRun(['selftest', '--tier2', '--sut', LOOPBACK, '--zzz-secret-flag']);
+    const unknownText = (unknown.stdout || '') + (unknown.stderr || '');
+    assert(unknown.status === 64, `未知旗标应 exit 64，实得 ${unknown.status}`);
+    assert(!unknownText.includes('zzz-secret-flag'), `未知旗标原值不得回显：${unknownText.slice(-200)}`);
+    assert(unknownText.includes('TIER2_ARG_UNKNOWN_FLAG'), '须出未知参数稳定码');
+
+    // 非回环 --sut：地址原值绝不进输出（这条最要命——真实地址会顺着日志外泄）
+    const addr = caseyRun(['selftest', '--tier2', '--sut', 'https://tier2-usage.invalid/secret-path']);
+    const addrText = (addr.stdout || '') + (addr.stderr || '');
+    assert(addr.status === 64, `非回环 --sut 应 exit 64，实得 ${addr.status}`);
+    assert(!addrText.includes('tier2-usage.invalid'), `--sut 原值不得回显：${addrText.slice(-200)}`);
+    assert(addrText.includes('TIER2_ARG_SUT_NOT_LOOPBACK'), '须出非回环稳定码');
+  });
+
+  // ── M2 绿尾行经管道不截断（真调壳层渲染器 + 合成全绿结果）──
+  await check('T9e-M2 绿路径经管道捕获：尾行完整抵达且退出码 0', () => {
+    const script = `
+import { runTier2 } from '${join(ROOT, 'lib', 'selftest-tier2.mjs').replace(/\\/g, '/')}';
+import { renderTier2Result } from '${join(ROOT, 'lib', 'selftest-tier2-collect.mjs').replace(/\\/g, '/')}';
+const env = JSON.parse(process.argv[2]);
+const result = runTier2(env);
+if (result.exitCode !== 0) { process.stderr.write('env 非全绿：' + result.exitCode + '\\n'); process.exitCode = 9; }
+const rendered = renderTier2Result({ result, consumerProblems: new Array(2000).fill('填充行（把 stdout 塞满，逼出截断）') });
+import('node:fs').then(({ writeSync }) => {
+  writeSync(1, rendered.text + '\\n');
+  process.exitCode = result.exitCode;
+});
+`;
+    const scriptFile = join(shellTmp, 'green-pipe.mjs');
+    writeFileSync(scriptFile, script, 'utf8');
+    const r = spawnSync(process.execPath, [scriptFile, JSON.stringify(tier2Env())], {
+      cwd: ROOT, encoding: 'utf8', timeout: 60000, maxBuffer: 64 * 1024 * 1024,
+    });
+    assert(r.status === 0, `绿路径应 exit 0，实得 ${r.status}；stderr 尾：${(r.stderr || '').slice(-300)}`);
+    const { TIER2_MACHINE_GREEN_TAIL } = pure();
+    const out = r.stdout || '';
+    assert(out.includes(TIER2_MACHINE_GREEN_TAIL), '尾行常量须完整抵达管道下游（不得被截断）');
+    const nonEmpty = out.split('\n').filter((l) => l.trim().length);
+    assert(nonEmpty[nonEmpty.length - 1] === TIER2_MACHINE_GREEN_TAIL,
+      `尾行须是最后一行非空输出，实得：${JSON.stringify(nonEmpty[nonEmpty.length - 1] || '').slice(-160)}`);
+  });
+
+  // ── M3 连通结果：消费端严格校验 + 写失败非零退出 ──
+  await check('T9f-M3 连通结果消费端：schema/artifactKind/segment/状态逐项严格', async () => {
+    const { readWinProbeResult } = await import('../../lib/selftest-tier2-manifest.mjs');
+    const rel = 'runs/_tier2_golden_probe/win-probe.result.json';
+    const abs = join(ROOT, rel);
+    mkdirSync(join(abs, '..'), { recursive: true });
+    const manifestOf = () => ({ json: { winProbeResultPath: rel, outOfBandReceiptPath: 'runs/_tier2_golden_probe/receipt.json' } });
+    // producedAt 取「此刻」：消费端另钉自陈时点须与落盘时刻自洽（见 T9f-M3 旧件作废钉）。
+    const good = {
+      schemaVersion: 1, artifactKind: 'tier2-connectivity-probe', segment: 'windows-to-target',
+      ok: true, httpStatus: 200, probeMs: 12, producedAt: new Date().toISOString(),
+    };
+    try {
+      writeFileSync(abs, JSON.stringify(good), 'utf8');
+      assert(readWinProbeResult(manifestOf()).ok === true, '合格件应过');
+      const bads = [
+        ['schemaVersion 不符', { ...good, schemaVersion: 2 }],
+        ['artifactKind 不符', { ...good, artifactKind: 'something-else' }],
+        ['segment 不符（不是真实目标段）', { ...good, segment: 'wsl-to-tunnel' }],
+        ['自陈不成功', { ...good, ok: false }],
+        ['HTTP 状态非法', { ...good, httpStatus: 0 }],
+        ['缺生成时点', { ...good, producedAt: undefined }],
+      ];
+      for (const [label, doc] of bads) {
+        writeFileSync(abs, JSON.stringify(doc), 'utf8');
+        const got = readWinProbeResult(manifestOf());
+        assert(got.ok === false && got.problems.length > 0, `坏件应被拒：${label}`);
+      }
+      // 路径越界：manifest 指到 runs/ 外一律拒
+      assert(readWinProbeResult({ json: { winProbeResultPath: '/etc/passwd' } }).ok === false, '越界路径应被拒');
+    } finally {
+      rmSync(join(ROOT, 'runs', '_tier2_golden_probe'), { recursive: true, force: true });
+    }
+  });
+
+  // ★r2 M1 残口：用法错这条出口也必须过逐行凭据封印（形状安全但恰为真实敏感值的 caseId 不许回显）。
+  await check('T9d-M1 用法错出口经逐行凭据封印', () => {
+    const collectSrc = readFileSync(join(ROOT, 'lib', 'selftest-tier2-collect.mjs'), 'utf8');
+    assert(/sealTier2Output\(refusalLines\.join/.test(collectSrc), '拒付回执须整体过 sealTier2Output 再出口');
+    const caseySrc = readFileSync(CASEY, 'utf8');
+    assert(/prepared\.refusalLines/.test(caseySrc), '壳层只转发已封印的回执行');
+    // 封印后仍须保留稳定拒付码（封印不能把诊断一起烧光）
+    const r = caseyRun(['selftest', '--tier2', '--sut', LOOPBACK, '--case', 'a/b']);
+    const text = (r.stdout || '') + (r.stderr || '');
+    assert(r.status === 64, `应 exit 64，实得 ${r.status}`);
+    assert(text.includes('TIER2_ARG_CASE_ID_UNSAFE'), '封印后仍须出稳定拒付码');
+    assert(!text.includes('a/b'), '原值不得回显');
+  });
+
+  // ★r2 M3 残口：新探针写失败时旧成功件必须作废；消费端另按「自陈时点 ↔ 落盘时刻」自洽绑定本次尝试。
+  await check('T9f-M3 旧成功件作废 + 自陈时点与落盘时刻自洽', async () => {
+    const src = readFileSync(join(ROOT, 'scripts', 'win-probe-target.mjs'), 'utf8');
+    assert(/rmSync\(outPath, \{ force: true \}\)/.test(src),
+      '写失败时须同时作废既有结果件（否则旧成功件仍在新鲜度窗内被消费）');
+    const { readWinProbeResult } = await import('../../lib/selftest-tier2-manifest.mjs');
+    const rel = 'runs/_tier2_golden_probe2/win-probe.result.json';
+    const abs = join(ROOT, rel);
+    mkdirSync(join(abs, '..'), { recursive: true });
+    const manifestOf = () => ({ json: { winProbeResultPath: rel, outOfBandReceiptPath: 'runs/_tier2_golden_probe2/receipt.json' } });
+    try {
+      // 自陈「刚刚产出」且确实刚落盘 → 过
+      writeFileSync(abs, JSON.stringify({
+        schemaVersion: 1, artifactKind: 'tier2-connectivity-probe', segment: 'windows-to-target',
+        ok: true, httpStatus: 200, probeMs: 9, producedAt: new Date().toISOString(),
+      }), 'utf8');
+      assert(readWinProbeResult(manifestOf()).ok === true, '刚落盘的合格件应过');
+      // 自陈很久以前产出、却是刚落盘的件（旧件被复制回来冒充）→ 拒
+      writeFileSync(abs, JSON.stringify({
+        schemaVersion: 1, artifactKind: 'tier2-connectivity-probe', segment: 'windows-to-target',
+        ok: true, httpStatus: 200, probeMs: 9, producedAt: '2026-07-01T00:00:00.000Z',
+      }), 'utf8');
+      const got = readWinProbeResult(manifestOf());
+      assert(got.ok === false && got.problems.some((p) => p.includes('不自洽')),
+        `自陈时点与落盘时刻不自洽须被拒：${JSON.stringify(got.problems)}`);
+    } finally {
+      rmSync(join(ROOT, 'runs', '_tier2_golden_probe2'), { recursive: true, force: true });
+    }
+  });
+
+  // ★r3 M3：删旧件是尽力而为，「这份结果属不属于本次尝试」只能靠一次性挑战字绑定。
+  await check('T9f-M3 本次探针尝试绑定：挑战字 nonce 不符即拒（删不掉旧件也拦得住）', async () => {
+    const mod = await import('../../lib/selftest-tier2-manifest.mjs');
+    const { ensureWinProbeChallenge, consumeWinProbeChallenge, readWinProbeResult } = mod;
+    assert(typeof ensureWinProbeChallenge === 'function' && typeof consumeWinProbeChallenge === 'function',
+      '缺挑战字发放/作废入口');
+    const base = 'runs/_tier2_golden_probe3';
+    const rel = `${base}/win-probe.result.json`;
+    const abs = join(ROOT, rel);
+    mkdirSync(join(abs, '..'), { recursive: true });
+    const manifest = { json: { winProbeResultPath: rel, outOfBandReceiptPath: `${base}/receipt.json` } };
+    const writeResult = (nonce) => writeFileSync(abs, JSON.stringify({
+      schemaVersion: 1, artifactKind: 'tier2-connectivity-probe', segment: 'windows-to-target',
+      ok: true, httpStatus: 200, probeMs: 7, challengeNonce: nonce, producedAt: new Date().toISOString(),
+    }), 'utf8');
+    try {
+      const ch = ensureWinProbeChallenge(manifest);
+      assert(ch.ok === true && /^[0-9a-f]{32}$/.test(ch.nonce), `挑战字须发出一次性 nonce：${JSON.stringify(ch)}`);
+      // 旧件（无 nonce）→ 拒
+      writeResult(undefined);
+      let got = readWinProbeResult(manifest, ch);
+      assert(got.ok === false && got.problems.some((p) => p.includes('未回填')), `无 nonce 的旧件须拒：${JSON.stringify(got.problems)}`);
+      // 上一次尝试的 nonce → 拒
+      writeResult('0'.repeat(32));
+      got = readWinProbeResult(manifest, ch);
+      assert(got.ok === false && got.problems.some((p) => p.includes('不符')), `nonce 不符须拒：${JSON.stringify(got.problems)}`);
+      // 本次 nonce → 过
+      writeResult(ch.nonce);
+      got = readWinProbeResult(manifest, ch);
+      assert(got.ok === true, `本次 nonce 的结果应过：${JSON.stringify(got.problems)}`);
+      // 用过即作废：同一份结果不得被第二次 run 复用（新 run 拿到新 nonce）
+      assert(consumeWinProbeChallenge(manifest) === true, '挑战字须可标作废');
+      const next = ensureWinProbeChallenge(manifest);
+      assert(next.ok === true && next.nonce !== ch.nonce, '作废后须轮换出新 nonce');
+      assert(readWinProbeResult(manifest, next).ok === false, '旧结果件在新 nonce 下必须失效');
+    } finally {
+      rmSync(join(ROOT, base), { recursive: true, force: true });
+    }
+  });
+
+  await check('T9f-M3 win-probe 结果文件：原子写 + 写失败必非零退出（源形态钉）', () => {
+    // 本钉不真跑该脚本的网络请求（它读 site.json 打真实目标，零 SUT 金牌绝不碰）——
+    // 只钉「原子写 + 写失败非零」的源形态；真跑负控在实现侧以回环夹具站点单独实测（见交接账）。
+    const src = readFileSync(join(ROOT, 'scripts', 'win-probe-target.mjs'), 'utf8');
+    assert(/renameSync\(/.test(src), '结果文件须原子写（临时件 + rename）');
+    assert(/function finish\(/.test(src) && /finish\(true, wrote\)/.test(src),
+      '连通成功但结果文件未落成时不得沿用连通退出码（须经 finish 判 wrote）');
+    assert(!/res\.on\('end', \(\) => process\.exit\(0\)\)/.test(src), '不得无条件 exit 0（旧成功件会被继续当证据）');
+    assert(/artifactKind: 'tier2-connectivity-probe'/.test(src) && /segment: 'windows-to-target'/.test(src),
+      '结果文件须自带 artifactKind 与 segment（消费端据此严格校验）');
+    // ★r3 M3：探针须支持 --challenge 并把 nonce 回填进结果（删旧件失败时的权威作废手段）
+    assert(/--challenge/.test(src) && /challengeNonce/.test(src),
+      '探针须支持 --challenge 并回填 challengeNonce');
+    assert(/挑战字绑定作废/.test(src), '删除旧件失败时须如实说明改由挑战字绑定作废（不许假称已作废）');
+  });
+} finally {
+  rmSync(shellTmp, { recursive: true, force: true });
 }
 
 if (failures.length) {
