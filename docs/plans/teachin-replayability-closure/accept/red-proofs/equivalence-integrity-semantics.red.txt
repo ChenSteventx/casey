@@ -1,0 +1,23 @@
+command: node tests/_golden/teachin-replayability-equivalence-integrity-semantics.zero-sut.golden.mjs
+cwd: /mnt/d/ctx/heren/casey
+executed-at: 2026-07-27
+execution boundary: pure Node semantic bytes/object doubles; zero SUT/browser/network/LLM
+syntax-check: node --check -> exit 0
+strict-lines: 333 (<600)
+golden-sha256: 4a62aca5e7b1ca0b2b1091e3c1289ad679ce6eb56141e94e9c9be83729103c2a
+exit: 1
+
+actual output:
+teachin-replayability-equivalence-integrity-semantics: 0 过 / 1 败
+  FAIL production API unavailable: ERR_MODULE_NOT_FOUND
+
+RED cause:
+production semantic receipt/comparator API is absent before implementation.
+This executable freezes dynamic-field projection, signed expected longitudinal
+obligations, six-dimensional equivalence, PASS plus hard predicates, non-PASS
+promotion exclusion, and stable first-error ordering. It also combines pair A's
+pair/source receipt/grant with pair B's genuine distilled receipt/grant. Because
+the receipt pairId no longer belongs to pairAuthority A, the exact first error
+is ROLE_PAIR_INVALID. That failure must consume neither comparison grant; both
+A/A and B/B genuine comparisons must then succeed, and both distilled runtime
+owners are closed in a finally path.

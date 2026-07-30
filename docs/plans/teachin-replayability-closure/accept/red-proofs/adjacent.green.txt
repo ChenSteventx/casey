@@ -1,0 +1,10 @@
+command: node tests/_golden/teachin-replayability-adjacent.zero-sut.golden.mjs
+baseline: before implementation
+exit: 0
+
+ok   teachin-replayability-adjacent: A1 capture 保持 signed=false/replayReady=false/distillRequired=true 且 host 安全
+ok   teachin-replayability-adjacent: A2 newpage 仍归前一业务 intent，且不创建独立业务 step
+ok   teachin-replayability-adjacent: A3 topology normalization 保持 click→newpage 顺序和安全 path
+ok   teachin-replayability-adjacent: A4 fidelity 闸继续拒绝无 capture 证据的 mapping
+ok   teachin-replayability-adjacent: A5 普通 compile 异常固定脱敏，execution-target 原因保持分类
+teachin-replayability-adjacent: 5 过 / 0 败

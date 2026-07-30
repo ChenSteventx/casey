@@ -1,0 +1,16 @@
+command: node tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs
+cwd: /mnt/d/ctx/heren/casey
+executed-at: 2026-07-27
+execution boundary: pure Node authority/map/byte doubles; zero SUT/browser/network/LLM
+exit: 1
+
+actual output:
+teachin-replayability-raw-axes-adapter: 0 过 / 1 败
+
+RED cause:
+lib/teachin/raw-axes-adapter.mjs is intentionally absent before implementation.
+The executable golden already freezes resolved-only seq-to-intent aggregation,
+multi-event before/terminal folding, structural newpage preservation, binding
+and pending fail-closed behavior, one-shot authority consumption, one actual
+projectReplayAxes call followed by one frozen verdict-adapter call, and local
+judge-copy rejection. This RED baseline is not a verdict or PASS claim.

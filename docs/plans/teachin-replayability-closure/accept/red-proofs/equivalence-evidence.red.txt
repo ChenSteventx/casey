@@ -1,0 +1,7 @@
+命令：node tests/_golden/teachin-replayability-equivalence-evidence.zero-sut.golden.mjs
+执行边界：纯 Node bytes/object doubles；零 SUT、零浏览器、零网络、零 LLM。
+退出码：1
+红因：production receipt schema/validator API 尚未实现。此 executable golden 锁定 direct schema、递归 unknown/dynamic/sensitive key 排除、四态 verdict、hard predicate、duplicate/effect-ref/relation/cleanup 完整性，且验证必须可重复、无 mutation。
+
+teachin-replayability-equivalence-evidence: 0 过 / 1 败
+  FAIL production API unavailable: ERR_MODULE_NOT_FOUND

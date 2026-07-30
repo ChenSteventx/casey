@@ -1,0 +1,22 @@
+command: node tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs
+cwd: /mnt/d/ctx/heren/casey
+executed-at: 2026-07-27
+execution boundary: pure Node authority/object doubles; zero SUT/browser/network/LLM
+syntax-check: node --check -> exit 0
+strict-lines: 222 (<600)
+golden-sha256: 231ab8f94d6f7102a52b9ddd384ec4d5a6b42e3820ef6a090829b23828652488
+exit: 1
+
+actual output:
+teachin-replayability-equivalence-resolved-completion: 0 过 / 1 败
+  FAIL production API unavailable: ERR_MODULE_NOT_FOUND
+
+RED cause:
+production resolved source completion API is absent before implementation. This
+executable freezes that semantic completion is possible only after resolved
+projection, raw replay is not repeated, opaque projection binding is exact,
+source/atom grants are independent one-shot capabilities, and
+authoringBaselineGrant is minted only by a successful second phase. A genuine
+rawExecution from pair A plus a genuine sourceSemanticGrant from pair B must
+return SOURCE_SEMANTIC_BINDING_MISMATCH before invoking the issuer, consume
+neither authority, and leave both genuine completions usable.

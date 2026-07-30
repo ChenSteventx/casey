@@ -1,0 +1,27 @@
+command: node tests/_golden/teachin-replayability-compile-runtime-adapter.zero-sut.golden.mjs
+cwd: /mnt/d/ctx/heren/casey
+executed-at: 2026-07-27
+execution boundary: pure Node runtime/authority/compiler doubles plus static source reads; zero SUT/browser/network/LLM
+exit: 1
+
+actual output:
+teachin-replayability-compile-runtime-adapter: 0 过 / 1 败
+  FAIL production API unavailable: ERR_MODULE_NOT_FOUND
+
+RED cause:
+lib/teachin/compile-runtime-adapter.mjs is absent before implementation, so the
+golden fails closed at its production import. C1-C7 did not execute past that
+import and must run after the module exists.
+
+The executable checks freeze an exact five-field compileAuthoringCandidate
+boundary. It must call canonical runAtomRoundtrip with only the genuine grant
+and a lazy compileAdapter. Invalid/replayed grants and bridge rejection therefore
+produce zero lazy callback and zero authoring open; the adapter must not copy or
+bypass the atom-roundtrip grant consumer. A genuine callback opens one independent
+authoring runtime, runs preconditions/reset, calls the current createCompileRun
+and compileFlow exactly once with exact lineage inputs, closes the exact owner,
+and only then publishes the canonical candidate plus authoring closure. Clone or
+foreign source/baseline/target authorities, compiler/lineage failures, close
+failure, caller adapter injection, and replay all fail closed without candidate
+or closure. Entity-lock binding remains the runtime-cycle post-roundtrip sealer's
+responsibility and is forbidden from this compile seam.

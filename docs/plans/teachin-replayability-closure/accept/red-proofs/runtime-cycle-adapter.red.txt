@@ -1,0 +1,20 @@
+command: node tests/_golden/teachin-replayability-runtime-cycle-adapter.zero-sut.golden.mjs
+cwd: /mnt/d/ctx/heren/casey
+executed-at: 2026-07-27
+execution boundary: pure Node runtime/authority doubles plus static source reads; zero SUT/browser/network/LLM
+exit: 1
+
+actual output:
+RED  teachin-replayability-runtime-cycle-adapter: Y5 composer 薄装配专用 seams，接口钉三 runtime ratchet: 缺 production file lib/teachin/runtime-cycle-adapter.mjs
+RED  teachin-replayability-runtime-cycle-adapter: Y6 frozen verdict 仍只经 execFile(shell:false) adapter，composer 无 judge 副本: 缺 production file lib/teachin/runtime-cycle-adapter.mjs
+RED  teachin-replayability-runtime-cycle-adapter: Y7 runtime seam 文件逐个严格小于 600 行: 缺 production file lib/replay/intent-observation.mjs
+teachin-replayability-runtime-cycle-adapter: 0 过 / 4 败
+
+RED cause:
+The split production runtime seams are intentionally absent before
+implementation. The executable golden already freezes source exact close before
+guided-compile open, genuine atom/baseline/source-closure grants, independent
+authoring fresh/reset/createCompileRun/compileFlow/exact close, distilled prepare
+from authoring closure only, three distinct runtime owners, two evidence replays
+only, thin composer wiring, frozen verdict SHA/execFile(shell:false), and the
+per-file <600 line boundary. This RED baseline is not a browser or replay claim.

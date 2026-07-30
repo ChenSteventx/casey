@@ -1,0 +1,34 @@
+command: node tests/_golden/teachin-replayability-runtime-bootstrap.zero-sut.golden.mjs
+cwd: /mnt/d/ctx/heren/casey
+executed-at: 2026-07-27
+execution boundary: real in-memory execution-target authorities plus pure Browser/Context/Page and seam doubles; zero real browser/SUT/network/config/credential reads/LLM
+exit: 1
+
+actual output:
+teachin-replayability-runtime-bootstrap: 0 过 / 1 败
+  FAIL production API unavailable: ERR_MODULE_NOT_FOUND
+
+RED cause:
+lib/teachin/runtime-bootstrap.mjs is absent before implementation, so the golden
+fails closed at its production import. B1-B5 did not execute past that import
+and must run after the module exists.
+
+The executable checks freeze createRuntimeBootstrap(...).openRuntime(...) and
+canonicalRuntimeBootstrap.openRuntime. The exact input is role
+(authoring|distilled), a genuine executionTargetAuthority, and an opaque
+sessionPolicy; caller URL/base/transport fields are rejected before projection.
+It requires the current target projection and launch wiring before in-memory
+launch/context/page creation, followed by injected site/credential load, login,
+session-seed capture/install, per-page forensics, topology, and origin admission
+in one fixed sequence.
+
+A real Windows-direct authority must preserve its synthetic logical origin even
+when the injected site double contains a loopback decoy. A real Windows
+legacy-loopback request cannot mint authority; only an explicitly approved WSL
+legacy-loopback authority may project loopback to browser/login. New pages must
+reuse the same seed, topology, per-page forensics, and authority-bound origin
+admission without another launch/login. Every injected failure must close any
+acquired Context then Browser exactly once (continuing cleanup through close
+errors) and return no runtime/owner. The successful runtime is an internal
+bootstrap-to-runtime-owner live-handle bundle only and contains no site,
+credential, target URL, or session-seed plaintext.

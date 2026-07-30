@@ -1,0 +1,16 @@
+command: node tests/_golden/teachin-replayability-raw-event-observation.zero-sut.golden.mjs
+cwd: /mnt/d/ctx/heren/casey
+executed-at: 2026-07-27
+execution boundary: pure Node capture/fresh/action/collector doubles; zero SUT/browser/network/LLM
+exit: 1
+
+actual output:
+teachin-replayability-raw-event-observation: 0 过 / 1 败
+
+RED cause:
+lib/teachin/raw-event-observation.mjs is intentionally absent before
+implementation. The executable golden already freezes session creation before
+the raw run, same-run begin -> real action-driver perform -> finish ordering,
+first-error stop, CLEAN-only seal, exact expected-byte freezing, synthetic step
+attribution, opaque authority inspection, and clone/foreign/replay rejection.
+This RED baseline is not a replay success claim.

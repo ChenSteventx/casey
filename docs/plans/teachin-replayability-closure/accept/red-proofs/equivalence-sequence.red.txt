@@ -1,0 +1,7 @@
+命令：node tests/_golden/teachin-replayability-equivalence-sequence.zero-sut.golden.mjs
+执行边界：纯 Node canonical runtime doubles；零 SUT、零浏览器、零网络、零 LLM。
+退出码：1
+红因：production dual-replay orchestration API 尚未实现。此 executable golden 锁定严格串行的 source raw replay → source semantic completion → source close → 独立 fresh guided-compile authoring → authoring close → distilled formal replay → compare → distilled close，并禁止三 runtime namespace/owner 混用。
+
+teachin-replayability-equivalence-sequence: 0 过 / 1 败
+  FAIL production API unavailable: ERR_MODULE_NOT_FOUND

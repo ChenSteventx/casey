@@ -1,0 +1,7 @@
+命令：node tests/_golden/teachin-replayability-equivalence-reset.zero-sut.golden.mjs
+执行边界：纯 Node bytes/object doubles；零 SUT、零浏览器、零网络、零 LLM。
+退出码：1
+红因：production reset authority API 尚未实现。此 executable golden 锁定 trusted reset issuer 恰调用一次、exact plan/role/namespace/baseline binding、caller 自由 facts fail-closed，以及 reset receipt one-shot。
+
+teachin-replayability-equivalence-reset: 0 过 / 1 败
+  FAIL production API unavailable: ERR_MODULE_NOT_FOUND

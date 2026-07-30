@@ -1,0 +1,29 @@
+command: node tests/_golden/teachin-replayability-boundaries.static.golden.mjs
+baseline: before implementation
+source-audit: static filesystem/source inspection only; zero SUT/browser/network/LLM
+syntax-check: node --check tests/_golden/teachin-replayability-boundaries.static.golden.mjs -> exit 0
+strict-lines: boundary golden 579 by the B1 split rule; < 600
+exit: 1
+
+RED  teachin-replayability-boundaries: B1 新增生产、CLI 与本契约 golden 在场且逐个严格小于 600 行: 缺文件 lib/teachin/fresh-runtime.mjs
+RED  teachin-replayability-boundaries: B2 纯核心不导入浏览器、文件系统、网络、LLM、verdict 或 report: 缺文件 lib/teachin/fresh-runtime.mjs
+RED  teachin-replayability-boundaries: B3 raw runner 把 nav 当 checkpoint，禁止导航修正: 缺文件 lib/teachin/raw-replay-runner.mjs
+RED  teachin-replayability-boundaries: B4 CLI 是薄接线且自然语言门面已接 teachin-cycle: 缺文件 bin/teachin-raw-replay.mjs
+ok   teachin-replayability-boundaries: B5 现役 capture 继续是未签、不可直接回放的蒸馏语料
+RED  teachin-replayability-boundaries: B6 dual 只封存 fresh；canonical replay 边界才原子消费: 缺文件 lib/teachin/dual-replay-orchestrator.mjs
+RED  teachin-replayability-boundaries: B7 createResetAuthority 只接受 trusted issuer 验证结果: 缺文件 lib/dual-replay/run-authority.mjs
+RED  teachin-replayability-boundaries: B8 dual-replay 禁止第二 fresh issuer 或 shadow fresh-runtime 模块: 缺文件 lib/dual-replay/source-plan-authority.mjs
+RED  teachin-replayability-boundaries: B9 raw runner 导出 admission 边界并拆 resolve→perform 两阶段: 缺文件 lib/teachin/raw-replay-runner.mjs
+RED  teachin-replayability-boundaries: B10 resolved projection 只用 admitted capture bytes 消费 CLEAN proof: 缺文件 lib/teachin/resolved-projection.mjs
+RED  teachin-replayability-boundaries: B11 record 只经 lifecycle adapter 关闭录制 runtime 后建立新 runtime 再 raw replay: 缺文件 lib/teachin/runtime-cycle-adapter.mjs
+RED  teachin-replayability-boundaries: B12 completion 静态验证 genuine CLEAN authority 但不提前消费: 缺文件 lib/teachin/raw-proof.mjs
+RED  teachin-replayability-boundaries: B13 frozen verdict 只经唯一 child-process adapter 接入且旧字节锚不漂: 缺文件 lib/teachin/verdict-cli-adapter.mjs
+RED  teachin-replayability-boundaries: B14 formal generic action 与 raw Playwright driver 共用 opaque action gate: 缺文件 lib/replay/action-authority.mjs
+RED  teachin-replayability-boundaries: B15 distilled candidate internal sealer 只有 runtime-cycle 一个 direct user: internal sealer direct users 漂移：
+teachin-replayability-boundaries: 1 过 / 14 败
+
+B14 now follows named call graphs from exported dispatchReplayAction and frozen
+canonicalRawPlaywrightDriver.resolve/perform to the bound shared gate methods. An unused import,
+standalone createActionAuthorityGate call, or dead unreferenced helper does not satisfy this gate.
+B15 scans the production manifest for direct sealer users, permits only runtime-cycle-adapter,
+and rejects named, aliased, declaration, or star re-export from lib/dual-replay/index.mjs.

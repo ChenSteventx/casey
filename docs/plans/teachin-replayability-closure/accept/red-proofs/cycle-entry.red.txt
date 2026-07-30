@@ -1,0 +1,8 @@
+command: node tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs
+baseline: before implementation
+execution boundary: pure Node object doubles; zero SUT/browser/network/LLM
+exit: 1
+red cause: frozen production API lib/teachin/replayability-cycle-entry.mjs is not implemented. The hardened golden already contains executable same-process record→prepare→cycle application-service checks (login-bootstrap live-handle admission, opaque capability non-reconstructability from plain JSON, admission→adapter prepare→orchestrator façade static wiring) plus production static wiring assertions; it does not use file existence as the acceptance assertion.
+
+RED  teachin-replayability-cycle-entry: E6 production entry 静态只装 admission→adapter prepare→orchestrator façade: 缺 replayability-cycle-entry production module
+teachin-replayability-cycle-entry: 0 过 / 2 败

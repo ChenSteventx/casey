@@ -1,0 +1,7 @@
+command: node tests/_golden/teachin-replayability-capture-fresh.zero-sut.golden.mjs
+baseline: before implementation
+execution boundary: pure Node object doubles; zero SUT/browser/network/LLM
+exit: 1
+red cause: frozen production APIs lib/teachin/raw-capture.mjs, lib/teachin/fresh-runtime.mjs and lib/teachin/raw-replay-runner.mjs are not implemented. The hardened golden already contains executable behavior checks for exact final bytes hashing, opaque multi-read capture authority inspection with per-call bytes/document deep copies and clone/forge rejection, seq invalid/duplicate/gap order, admission-before-orchestration zero freshFactory/readPath/resolve/perform for trailing masked/selectorless evidence, topology preflight, real close+disconnected lifecycle, fresh Browser/Context/Page ownership, replay-runtime reuse rejection, and opaque witness/authority clone/forge/replay rejection; it does not use file existence as the acceptance assertion.
+
+RED  teachin-replayability-capture-fresh: frozen API import failed（实现模块尚未落地）

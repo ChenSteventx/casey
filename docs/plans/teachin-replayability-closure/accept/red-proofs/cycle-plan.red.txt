@@ -1,0 +1,13 @@
+command: node tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs
+baseline: before one-line production fix (record value-flag list missing cycle-plan)
+execution boundary: static source reads only; zero SUT/browser/network/LLM
+exit: 1
+red cause: bin/record.mjs value-flag list (for (const k of [...]) guard) omits cycle-plan, so a bare --cycle-plan flag is recorded as boolean true and only collapses to CYCLE_PLAN_INVALID after an entire manual recording session completes. C5 pins immediate rejection; the companion one-line production fix adds cycle-plan to the list. All other checks (C1-C4, C6) already green against the hardened cycle-plan CLI face.
+
+ok   teachin-replayability-cycle-plan: C1 cycle-plan 面在场且只在 login-bootstrap 且 capture 落盘成功后开闸
+ok   teachin-replayability-cycle-plan: C2 坏计划/坏路径折叠为固定 reason，不泄异常原文
+ok   teachin-replayability-cycle-plan: C3 成功装配键集与 cycle-entry 合同一致，且不自铸 captureAuthority
+ok   teachin-replayability-cycle-plan: C4 闭环回显只含固定 reason，路径与真实值不回显
+RED  teachin-replayability-cycle-plan: C5 --cycle-plan 是须带值旗标，裸旗标必须立即拒绝: 须带值旗标名单必须含 cycle-plan：'sut', 'out-dir', 'from-events', 'max-ms'
+ok   teachin-replayability-cycle-plan: C6 闭环走唯一入口且录制归属交接先于闭环、finally 按交接与否收尾
+teachin-replayability-cycle-plan: 5 过 / 1 败

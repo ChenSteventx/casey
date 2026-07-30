@@ -1,0 +1,17 @@
+command: node tests/_golden/teachin-replayability-orchestrator-wiring.static.golden.mjs
+cwd: /mnt/d/ctx/heren/casey
+executed-at: 2026-07-27
+exit: 1
+
+actual output:
+teachin-replayability-orchestrator-wiring: 0 passed, 1 RED
+ - production facade unavailable: ENOENT
+
+RED cause:
+The production façade and core are absent before implementation. After they exist,
+the golden requires the façade to expose only runTeachinReplayabilityCycle, bind all
+canonical dependencies statically, construct one canonical core, and only delegate
+to canonicalCore.runCycle(input).
+
+golden sha256:
+2cd3be586cf220492551aa3f13b61c5508f7131ce0ebc600ffb046ce7cc6cf57

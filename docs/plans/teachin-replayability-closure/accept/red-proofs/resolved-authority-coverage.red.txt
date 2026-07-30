@@ -1,0 +1,39 @@
+teachin-replayability-closure S3 resolved authority/coverage 实现前 RED（修单 R1 后重钉）
+日期：2026-07-28（初钉 2026-07-27，修单 R1 后外科 stash 无实现态重钉）
+
+命令：
+node tests/_golden/teachin-replayability-resolved-authority-coverage.zero-sut.golden.mjs
+
+退出码：
+1
+
+真实输出：
+RED  teachin-replayability-resolved-authority-coverage: frozen API import failed（实现模块尚未落地）
+
+修单 R1（断言零弱化，一处夹具修正）：
+- C4 newpage 夹具改按 event.fallbackCss 触发 promote：S2 已冻结接缝把 capture selector 固定投影
+  为 fallbackCss，原 event.selector 键在 driver 侧永不存在，promote 永不触发导致正控在进入
+  S3 模块前即 TOPOLOGY_PATH_MISMATCH，属夹具笔误；C4 对 TOPOLOGY_COVERAGE_MISMATCH
+  的断言一字不动。
+- 重钉方式：S3 目标模块（resolved-projection/atom-roundtrip/teachin-distillation）外科挪出，
+  S1/S2 已冻结生产模块保持在位；红因仍为目标实现缺席的动态 import fail-closed。
+
+RED 解释：
+- 生产冻结入口 raw-capture inspector、raw-proof consumer 或 resolved-projection 任一尚未落地，
+  因此测试在动态 import 边界 fail-closed。
+- 模块落地后还必须继续执行 A1-A5/C1-C4（含 A1b 分门）：
+  1. clean proof plain/clone/forge 精确拒绝，且非法尝试不消耗 genuine proof；
+  2. capture authority plain/clone/forge 精确拒
+     `RAW_CAPTURE_AUTHORITY_INVALID`，且非法尝试不消耗 genuine clean proof；
+  3. capture/proof 换包精确 `CAPTURE_HASH_MISMATCH`；
+  4. projection 成功后同一 clean proof 二次消费精确拒绝；
+  5. capture capability 在 raw replay/projection 后仍可多读，inspector 每次返回相互独立的
+     exact bytes 与深拷贝 capture；
+  6. resolved projection 直接 import canonical inspector 与 clean proof consumer；
+  7. mapped/pending overlap、known event uncovered、跨 mapping multi-covered 分别精确拒为
+     `MAPPED_PENDING_OVERLAP`、`CAPTURE_EVENT_UNCOVERED`、
+     `CAPTURE_EVENT_MULTI_COVERED`；
+  8. mapping evidence 吞入 structural `newpage` 精确拒为
+     `TOPOLOGY_COVERAGE_MISMATCH`。
+- authority 正控使用 canonical topology/action driver，成功 candidate 真过现役 flow-bridge；
+  测试没有启动 browser、SUT、network 或 LLM。

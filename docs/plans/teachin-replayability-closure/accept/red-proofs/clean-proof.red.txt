@@ -1,0 +1,7 @@
+command: node tests/_golden/teachin-replayability-clean-proof.zero-sut.golden.mjs
+baseline: before implementation
+execution boundary: pure Node action/runtime doubles; zero SUT/browser/network/LLM
+exit: 1
+red cause: frozen production APIs under lib/teachin/ are not implemented. The executable golden obtains its positive cleanProofAuthority only from a genuine raw runner CLEAN result, then freezes inspectCleanRawReplayAuthority({cleanProofAuthority}) as an exact non-consuming WeakMap capability inspection. It rejects plain, clone, public proof, unknown, consumed and malformed inputs with a closed CLEAN_PROOF_AUTHORITY_INVALID result; repeated inspect remains read-only, while exact consume succeeds only once. It does not use file existence as the acceptance assertion.
+
+RED  teachin-replayability-clean-proof: frozen API import failed（实现模块尚未落地）

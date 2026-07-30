@@ -1,0 +1,8 @@
+command: node tests/_golden/teachin-replayability-orchestrator-wiring.static.golden.mjs
+baseline: mutation probe - canonical adapter runCanonicalPreflight binding surgically reverted to bare deps forward (hollow assembly form)
+execution boundary: static source reads; zero SUT/browser/network/LLM
+exit: 1
+red cause: after R7, W6 statically pins that all three canonical seams (verifyReset / inspectClaimedReplayRuntime / runCanonicalPreflight) are assembled as seam(deps.X, canonical implementation) with the canonical implementation statically imported; a bare deps forward (the hollow-assembly form grok C2 reported, which left canonical production dead at source reset / prepared replay) now turns the gate red. Production restored to the seam-bound form immediately after this probe.
+
+RED  teachin-replayability-orchestrator-wiring: W6 canonical adapter 装配非空心：reset/claim/preflight 三接缝绑定真实现: preparedRun 不得裸传 deps.runCanonicalPreflight
+ - W6 canonical adapter 装配非空心：reset/claim/preflight 三接缝绑定真实现: preparedRun 不得裸传 deps.runCanonicalPreflight

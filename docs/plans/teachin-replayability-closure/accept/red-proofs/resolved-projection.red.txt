@@ -1,0 +1,49 @@
+teachin-replayability-closure S3 resolved projection 实现前 RED（修单 R1 后重钉）
+日期：2026-07-28（初钉 2026-07-27，修单 R1 后外科 stash 无实现态重钉）
+
+命令：
+node tests/_golden/teachin-replayability-resolved-projection.zero-sut.golden.mjs
+
+退出码：
+1
+
+真实输出：
+RED  teachin-replayability-resolved-projection: frozen API import failed（实现模块尚未落地）
+
+修单 R1（断言零弱化，两处夹具修正）：
+- newpage 夹具改按 event.fallbackCss 触发 promote：S2 已冻结接缝把 capture selector 固定投影为
+  fallbackCss（raw-actions 金牌 exactKeys 断言 runner request 键闭合、raw-runner 金牌自家夹具
+  同样按 fallbackCss 触发），原 event.selector 键在 driver 侧永不存在，属夹具笔误；
+- helper 的 flow-bridge 正控强校验加前提 candidateMapping 非空：全 pending candidate 无可桥接
+  step，强制过 bridge 与冻结邻接门 compile-gate「steps 必须是非空数组」结构性冲突；P4 对
+  UNSUPPORTED_ACTION 诚实 pending 的全部断言一字不动。
+- 重钉方式：S3 目标模块（resolved-projection/atom-roundtrip/teachin-distillation）外科挪出，
+  S1/S2 已冻结生产模块保持在位；红因仍为目标实现缺席的动态 import fail-closed。
+
+RED 解释：
+- 生产冻结入口 lib/teachin/resolved-projection.mjs 尚未落地，因此测试在动态 import 边界 fail-closed。
+- 测试不是文件存在性检查。模块落地后还必须继续执行 P1-P9 行为规格：
+  1. 逐 event `${eventSeq}:${action}` compound key 与 resolved
+     evidenceEventSeqs/evidenceCompoundKeys；
+  2. 注入 registry 的 read/no-identity compound fixture 多 event 有序、唯一、恰覆盖，
+     且 candidate 真过现役 flow-bridge；
+  3. mapped/pending/structural 三分完整且两两不交；
+  4. unknown `click` 精确 `KNOWN_RECIPE_MISSING`、unsupported-but-admitted `press` 精确
+     `UNSUPPORTED_ACTION`；selectorless pure-coordinate 与 masked-sensitive fill 在
+     capture admission 具名拒绝，projection 调用数为 0；
+  5. click/newpage 共享 intentId 时仍保留两个 compound key，newpage 不建独立 step/pending；
+  6. mapping 形态、越界、单行重复 evidence 以 `MAPPING_EVENT_DUPLICATE` 拒绝，
+     跨 mapping 重复消费以 `CAPTURE_EVENT_MULTI_COVERED` 拒绝；
+  7. action、unknown atom、identity、effect 不兼容具名拒绝；
+  8. known mapped 与 unsupported admitted pending 共存时，mapped/pending 交集恒空；
+  9. authored preconditions/expected/globalAssertions/uniquePrefix 原样投影，candidate TestCase
+     不经测试侧修补直接调用现役 flow-bridge（candidateMapping 非空时）；mapping 剥除
+     distill lineage/authority 私有字段。
+- raw replay 正控严格使用 canonical `topologyAuthority`，并走
+  `readActivePath -> resolve -> opaque actionAuthority -> perform`；测试不保留
+  `pageTopology` 或旧式 `perform({event})` 兼容分支。
+- projection 成功还必须铸一次性 opaque `resolutionAuthority`，供后继 atom roundtrip 消费；
+  plain、clone、forge 与 replay 均不能替代。
+- P1/P3/P5/P8/P9 全部使用现役 read-safe `nav.workflowManagement`；所有成功 candidate
+  均真过现役 side-effect/entity/state policy，不以 agent mutation atom 伪造正控。
+- 测试使用纯内存 runtime、driver 与 topology doubles；没有启动 browser、SUT 或 network。

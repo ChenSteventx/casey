@@ -1,0 +1,14 @@
+command: node tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs
+cwd: /mnt/d/ctx/heren/casey
+executed-at: 2026-07-27
+source-audit: shared-gate unit doubles plus exported formal/raw canonical Playwright memory doubles; zero SUT/browser/network/LLM
+syntax-check: node --check tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs -> exit 0
+strict-lines: golden 556 by the B1 split rule; design 105; both < 600
+exit: 1
+
+teachin-replayability-action-authority: 0 过 / 1 败
+
+RED cause: production shared gate lib/replay/action-authority.mjs and exported canonical raw driver
+lib/teachin/raw-playwright-driver.mjs are intentionally absent before implementation. Once present, this
+golden behaviorally enters formal dispatchReplayAction and canonicalRawPlaywrightDriver, including positive
+physical actions and zero-action active-page/owner/origin attacks; file existence alone cannot turn it green.

@@ -1,0 +1,23 @@
+command: node tests/_golden/teachin-replayability-prepared-run.zero-sut.golden.mjs
+cwd: /mnt/d/ctx/heren/casey
+executed-at: 2026-07-27
+execution boundary: pure Node claimed-runtime/event/axes doubles plus static source reads; zero SUT/browser/network/LLM
+exit: 1
+
+actual output:
+teachin-replayability-prepared-run: 0 过 / 1 败
+  FAIL production API unavailable: ERR_MODULE_NOT_FOUND
+
+RED cause:
+lib/replay/prepared-run.mjs is absent before implementation, so the golden fails
+closed at its production import. P1-P7 did not execute past that import and must
+run after the module exists.
+
+The executable checks freeze an exact claimed-runtime boundary and one canonical
+inspect -> preflight -> runReplayEvents -> projectReplayAxes sequence. The
+prepared seam must preserve the exact run/owner/page binding, emit the current
+projector's exact UTF-8 bytes, and reject run/fresh/topology/owner/target rebinding,
+caller event/page/axes injection, malformed preflight, malformed runner evidence,
+and malformed axes output. It must neither launch nor log in, close the caller's
+runtime, run verdict, or publish partial axes/evidence on failure. Static checks
+also require runtime-cycle construction and a real runPreparedReplay method call.

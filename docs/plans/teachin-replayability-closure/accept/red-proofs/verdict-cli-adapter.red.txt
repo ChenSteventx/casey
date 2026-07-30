@@ -1,0 +1,9 @@
+command: node tests/_golden/teachin-replayability-verdict-cli-adapter.zero-sut.golden.mjs
+cwd: /mnt/d/ctx/heren/casey
+executed-at: 2026-07-27
+source-audit: zero SUT/browser/network/LLM; local frozen judge bytes are only read after the production adapter import succeeds
+exit: 1
+
+teachin-replayability-verdict-cli-adapter: 0 过 / 1 败
+
+RED cause: production API lib/teachin/verdict-cli-adapter.mjs is intentionally absent before implementation.

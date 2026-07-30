@@ -1,0 +1,7 @@
+命令：node tests/_golden/teachin-replayability-equivalence-core.zero-sut.golden.mjs
+执行边界：纯 Node；零 SUT、零浏览器、零网络、零 LLM。
+退出码：1
+红因：production dual-replay API 尚未实现。此 executable golden 锁定 staged façade、source plan 的 exact copied bytes/digest、opaque target/capture authority，以及首错优先且不得读取 downstream candidate。
+
+teachin-replayability-equivalence-core: 0 过 / 1 败
+  FAIL production API unavailable: ERR_MODULE_NOT_FOUND

@@ -1,0 +1,7 @@
+command: node tests/_golden/teachin-replayability-raw-runner.zero-sut.golden.mjs
+baseline: before implementation
+execution boundary: pure Node driver/topology/runtime doubles; zero SUT/browser/network/LLM
+exit: 1
+red cause: frozen production APIs lib/teachin/raw-capture.mjs, lib/teachin/fresh-runtime.mjs, lib/teachin/raw-replay-runner.mjs and lib/teachin/raw-proof.mjs are not implemented. The golden already contains executable behavior checks for genuine fresh authority entry consumption even when a run later fails, plain/clone/replay fresh rejection before page reads, resolve→opaque actionAuthority→perform gating with real zero-perform spies for none/ambiguous/malformed unique, capture authority inspection remaining valid after runRawReplay, exact CLEAN proof binding, path checkpoint with zero goto, first-error stop, newpage active-authority topology consumption, proof redaction, and clean authority clone/replay/swap rejection; it does not use file existence as the acceptance assertion.
+
+RED  teachin-replayability-raw-runner: frozen API import failed（实现模块尚未落地）

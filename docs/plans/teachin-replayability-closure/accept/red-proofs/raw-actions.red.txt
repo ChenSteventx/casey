@@ -1,0 +1,7 @@
+command: node tests/_golden/teachin-replayability-raw-actions.zero-sut.golden.mjs
+baseline: before implementation
+execution boundary: pure Node action/runtime doubles; zero SUT/browser/network/LLM
+exit: 1
+red cause: frozen production API lib/teachin/raw-action.mjs is not implemented. The executable golden freezes projectRawReplayAction(event) as a closed fail-closed projection, exact frozen actionRequest shapes for click/dblclick/fill/press, nav/newpage control classification, registered capture evidence stripping, unknown/missing field rejection, runner resolve→perform order and fill/key preservation, plus the exact constant public fresh receipt shape. It does not use file existence as the acceptance assertion.
+
+RED  teachin-replayability-raw-actions: frozen API import failed（实现模块尚未落地）

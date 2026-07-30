@@ -1,0 +1,17 @@
+teachin-replayability-closure S2 raw proof output 实现前 RED
+日期：2026-07-27
+
+命令：
+node tests/_golden/teachin-replayability-raw-output-seal.zero-sut.golden.mjs
+
+退出码：
+1
+
+真实输出：
+teachin-replayability-raw-output-seal: 0 过 / 1 败
+  FAIL production API unavailable: ERR_MODULE_NOT_FOUND
+
+RED 解释：
+- production raw-proof-output / raw CLI 尚未落地；
+- 目标态复用现役 atomic writer，凭据门先于 I/O；
+- credential/rename 失败闭合且不留半份，不启动 browser、SUT、network 或 LLM。

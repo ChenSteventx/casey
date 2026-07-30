@@ -1,0 +1,9 @@
+command: node tests/_golden/teachin-replayability-entity-verification.zero-sut.golden.mjs
+baseline: before implementation
+execution boundary: pure Node object doubles; zero SUT/browser/network/LLM
+exit: 1
+red cause: frozen production API lib/teachin/entity-lock-verifier.mjs is not implemented. The hardened golden already contains executable checks for the canonical no-entity read path (exact mode:not-required/runtimeAuthorized:false), the runtime-required path demanding genuine v2 publication authority (exact mode:runtime-required/runtimeAuthorized:true plus setSha256), admission-before-v2 production call graph, pair sealer consuming the opaque verified handle, and per-file strictly-under-600-line limits; it does not use file existence as the acceptance assertion.
+
+RED  teachin-replayability-entity-verification: E9 production call graph 先 admission，后 v2；pair sealer 真消费 opaque handle: 缺 production file lib/teachin/entity-lock-verifier.mjs
+RED  teachin-replayability-entity-verification: E10 新增实体链文件严格小于 600 行: 缺 production file lib/teachin/entity-lock-verifier.mjs
+teachin-replayability-entity-verification: 0 过 / 3 败

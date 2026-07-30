@@ -1,0 +1,37 @@
+teachin-replayability-closure S3b atom roundtrip 实现前 RED
+日期：2026-07-27
+
+命令：
+node tests/_golden/teachin-replayability-atom-roundtrip.zero-sut.golden.mjs
+
+退出码：
+1
+
+真实输出：
+RED  teachin-replayability-atom-roundtrip: frozen API import failed（实现模块尚未落地）
+
+RED 解释：
+- 生产冻结入口 lib/teachin/atom-roundtrip.mjs 尚未落地，因此测试在动态 import 边界 fail-closed。
+- 测试不是 compiler stub 的自证。模块落地后还必须继续执行 T1-T8 行为规格：
+  1. genuine 一次性 resolution authority 必须真实调用注入的现役 compile adapter 恰一次；
+     重复 atom 仍以 mappingKey/sourceIntentId/stepIds exact lineage 回链，existing
+     flow-bridge 形态、mapping、expected 均不得漂移；成功夹具固定使用现役 read-safe
+     `nav.workflowManagement`；
+  2. lineage 漏项、错 intent、重复 stepId 均精确拒为 `COMPILE_LINEAGE_MISMATCH`，
+     不 retry、不产半份 candidate；
+  3. adapter 的 mapping/expected/lineage 输入必须深冻结；compiled event 注入
+     identity/effect 时整份精确拒为 `CONTRACT_FIELD_MUTATION`；
+  4. adapter 返回失败或抛错均首错停止、只调用一次，固定 `COMPILE_REJECTED`，
+     不泄私有 reason、异常或 URL；
+  5. resolution authority 的 plain、clone、forge 与 replay 均精确拒为
+     `RESOLUTION_AUTHORITY_INVALID`，且非法 authority 零 compile；
+  6. stub 返回 `ok:true` 只可产生 `developmentOnly:true/promotionReady:false`
+     candidate，不得冒充 PASS、verdict、signed 或 replayReady；
+  7. roundtrip 直接 import 现役 `validateBridge/buildFlow`，不得复制/覆盖 bridge；
+     compiler 只走注入 adapter，不得导入、内置或复制 atom compiler；
+  8. 缺登录前置的 read-safe mapping 必须被现役 bridge/state policy 真实拒为
+     `BRIDGE_REJECTED`，compile adapter 调用数为 0。
+- authority 正控来自真实 admission -> fresh-runtime raw replay -> clean proof ->
+  resolved projection 链路，不由测试伪造。
+- 测试使用纯内存 capture、runtime、driver、topology 与 compile doubles；没有启动
+  browser、SUT、network 或 LLM，也不把此 RED 冒充实机验收。

@@ -1,0 +1,51 @@
+teachin-replayability-closure S6 full adjacent regression baseline
+date: 2026-07-27
+execution boundary: audited zero-SUT commands; no browser, fake/fixture SUT, real SUT, network, or LLM
+
+exit 0: node tests/_golden/record-capture.golden.mjs
+result: record-capture golden GREEN
+
+exit 0: node tests/_golden/record-intake.golden.mjs
+result: record-intake golden GREEN
+
+exit 0: node tests/_golden/record-distill.golden.mjs
+result: 15 passed, GREEN
+
+exit 0: node tests/_golden/page-topology-auth-continuity-controller.zero-sut.golden.mjs
+result: 7 passed / 0 failed
+
+exit 0: node tests/_golden/page-topology-auth-continuity-pipeline.zero-sut.golden.mjs
+result: 6 passed / 0 failed
+
+exit 0: node tests/_golden/page-topology-auth-continuity-replay-action.zero-sut.golden.mjs
+result: 3 passed / 0 failed
+
+exit 0: node tests/_golden/cross-platform-execution-target-core.zero-sut.golden.mjs
+result: 8 passed / 0 failed
+
+exit 0: node tests/_golden/cross-platform-execution-target-runtime.zero-sut.golden.mjs
+result: 8 passed / 0 failed
+
+exit 0: node tests/_golden/cross-platform-execution-target-cli-output-seal.zero-sut.golden.mjs
+result: 2 passed / 0 failed
+
+exit 0: node tests/_golden/cross-platform-execution-target-hardening.zero-sut.golden.mjs
+result: 5 passed / 0 failed
+
+exit 0: node tests/_golden/cross-platform-execution-target-login-origin.zero-sut.golden.mjs
+result: 1 passed / 0 failed
+
+exit 0: node tests/_golden/cross-platform-execution-target-adjacent-regression.zero-sut.golden.mjs
+result: 4 passed / 0 failed
+
+exit 0: node tests/_golden/agent-id-gate.zero-sut.golden.mjs
+result: 18 passed / 0 failed
+
+audit note:
+- record calls use --from-events and return before Playwright browser mode.
+- record-intake is local filesystem/canonical admission only.
+- record-distill uses an exclusive local case lease and removes only its identity-matched temporary case in finally.
+- topology tests use pure functions or in-memory page/context doubles.
+- execution-target tests use pure authority policy, injected in-memory adapters, or an
+  identity-scoped synthetic temp config removed in finally; they never read real config.
+- agent-id gate is the pure name + code + signed platform ID discrimination table.

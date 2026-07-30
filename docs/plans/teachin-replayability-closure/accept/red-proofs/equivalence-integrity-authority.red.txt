@@ -1,0 +1,22 @@
+command: node tests/_golden/teachin-replayability-equivalence-integrity-authority.zero-sut.golden.mjs
+cwd: /mnt/d/ctx/heren/casey
+executed-at: 2026-07-27
+execution boundary: pure Node authority/object doubles; zero SUT/browser/network/LLM
+syntax-check: node --check -> exit 0
+strict-lines: 441 (<600)
+golden-sha256: b0e2597e93da3c0f2c8e845b9081a82fdf3e7161c2344a5496fe4b40c54ef90f
+exit: 1
+
+actual output:
+teachin-replayability-equivalence-integrity-authority: 0 过 / 1 败
+  FAIL production API unavailable: ERR_MODULE_NOT_FOUND
+
+RED cause:
+production authority lifecycle API is absent before implementation. This
+executable freezes candidate/receipt/grant/owner/preparation/closure identity,
+role, target, baseline and one-shot constraints. Every clone and genuine
+cross-pair atom/baseline/source-closure attack owns a fresh pair, so a consumed
+grant cannot hide a later positive path. Genuine wrong-pair atom or baseline is
+AUTHORING_BASELINE_MISMATCH; clones retain their authority-invalid reasons.
+Cross-pair finalization must reject before consuming either source completion or
+candidate, after which both genuine pair finalizations must still succeed.

@@ -1,0 +1,7 @@
+命令：node tests/_golden/teachin-replayability-equivalence-completion.zero-sut.golden.mjs
+执行边界：纯 Node authority/object doubles；零 SUT、零浏览器、零网络、零 LLM。
+退出码：1
+红因：production two-phase source completion API 尚未实现。此 executable golden 锁定 canonical raw issuer 恰一次、raw-only exact output、CLEAN/owner/artifacts/observation exact binding、authority clone/replay 拒绝，以及 observation 内部错误在 completion 边界的稳定 reason 翻译。
+
+teachin-replayability-equivalence-completion: 0 过 / 1 败
+  FAIL production API unavailable: ERR_MODULE_NOT_FOUND

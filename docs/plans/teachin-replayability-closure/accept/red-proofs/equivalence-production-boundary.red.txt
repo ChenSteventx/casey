@@ -1,0 +1,20 @@
+命令：node tests/_golden/teachin-replayability-equivalence-production-boundary.static.golden.mjs
+执行边界：纯 Node 静态源码门禁；零 SUT、零浏览器、零网络、零 LLM。
+退出码：1
+红因：production dual-replay 与 runtime seam 模块尚未实现。此 static golden 冻结每文件 <600 行、薄 composer、专用 observation/axes/verdict/compile seams、owner/fresh exact binding、staged API、两相 source + 独立 authoring 边界，以及 core 禁 browser/fs/network/LLM。
+
+RED  teachin-replayability-equivalence-production-boundary: P1 production 双回放模块齐全且每文件严格小于 600 行: 缺文件 lib/dual-replay/source-plan-authority.mjs
+RED  teachin-replayability-equivalence-production-boundary: P2 production facade 只静态绑定 canonical adapter，不开放 issuer/provider: 缺文件 lib/teachin/dual-replay-orchestrator.mjs
+RED  teachin-replayability-equivalence-production-boundary: P3 composer 薄装配，现役 observation/axes/verdict/compile 各在专用 seam: 缺文件 lib/teachin/runtime-cycle-adapter.mjs
+RED  teachin-replayability-equivalence-production-boundary: P4 owner/fresh 三 capability exact-bind，completion 只转移不重铸: 缺文件 lib/dual-replay/run-authority.mjs
+RED  teachin-replayability-equivalence-production-boundary: P5 public staged API 禁止 caller 填 artifacts/evidence/reset/fresh facts: 缺文件 lib/dual-replay/pair-authority.mjs
+RED  teachin-replayability-equivalence-production-boundary: P6 两相 source 与独立 authoring runtime 接口不能被 caller 拼接: 缺文件 lib/dual-replay/replay-completion.mjs
+RED  teachin-replayability-equivalence-production-boundary: P7 core modules 无 browser/fs/network/LLM，failure 不泄异常或目标: 缺文件 lib/dual-replay/source-plan-authority.mjs
+teachin-replayability-equivalence-production-boundary: 0 过 / 7 败
+  FAIL P1 production 双回放模块齐全且每文件严格小于 600 行: 缺文件 lib/dual-replay/source-plan-authority.mjs
+  FAIL P2 production facade 只静态绑定 canonical adapter，不开放 issuer/provider: 缺文件 lib/teachin/dual-replay-orchestrator.mjs
+  FAIL P3 composer 薄装配，现役 observation/axes/verdict/compile 各在专用 seam: 缺文件 lib/teachin/runtime-cycle-adapter.mjs
+  FAIL P4 owner/fresh 三 capability exact-bind，completion 只转移不重铸: 缺文件 lib/dual-replay/run-authority.mjs
+  FAIL P5 public staged API 禁止 caller 填 artifacts/evidence/reset/fresh facts: 缺文件 lib/dual-replay/pair-authority.mjs
+  FAIL P6 两相 source 与独立 authoring runtime 接口不能被 caller 拼接: 缺文件 lib/dual-replay/replay-completion.mjs
+  FAIL P7 core modules 无 browser/fs/network/LLM，failure 不泄异常或目标: 缺文件 lib/dual-replay/source-plan-authority.mjs

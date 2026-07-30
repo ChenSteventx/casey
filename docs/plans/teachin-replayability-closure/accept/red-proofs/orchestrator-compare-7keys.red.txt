@@ -1,0 +1,13 @@
+command: node tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs (and orchestrator-wiring W7)
+baseline: mutation probe - production compare call with distilledReceiptAuthority key surgically removed
+execution boundary: pure doubles / static source reads; zero SUT/browser/network/LLM
+exit: 1 (both goldens)
+red cause: after R7 tightening, the orchestrator mock enforces the comparator exact 7-key contract and W7 statically pins the unique production compare call site key set; dropping any receipt key now turns both gates red, proving the amended assertions detect the hollow-compare defect grok C1 reported. Production restored to the full 7-key call immediately after this probe.
+
+orchestrator tail:
+teachin-replayability-orchestrator: 5 过 / 2 败
+ - O1 exact 23 steps: prepared claim, two-phase source, two grants, three runtimes: public success {"ok":false,"developmentOnly":true,"promotionReady":false,"reason":"ORCHESTRATOR_STAGE_FAILED"}
+ - O7 close succeeds before result; close failure suppresses equivalence receipt: distilled close: {"ok":false,"developmentOnly":true,"promotionReady":false,"reason":"ORCHESTRATOR_STAGE_FAILED"}
+wiring W7:
+RED  teachin-replayability-orchestrator-wiring: W7 compare 生产调用点唯一且闭合传满 comparator exact 7 键字面: compare 调用点键集不闭合：distilledComparisonGrant,distilledReceiptBytes,pairAuthority,sourceComparisonGrant,sourceReceiptAuthority,sourceReceiptBytes
+ - W7 compare 生产调用点唯一且闭合传满 comparator exact 7 键字面: compare 调用点键集不闭合：distilledComparisonGrant,distilledReceiptBytes,pairAuthority,sourceComparisonGrant,sourceReceiptAuthority,sourceReceiptBytes

@@ -1,0 +1,42 @@
+teachin-replayability-closure S5 orchestrator RED proof
+Date: 2026-07-27
+
+Commands:
+node --check tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs
+node tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs
+node tests/_golden/teachin-replayability-orchestrator-wiring.static.golden.mjs
+
+Scope audit:
+- The 520-line behavior golden imports only the not-yet-created deterministic
+  orchestrator core and otherwise uses in-memory capability/byte doubles.
+- It freezes all 23 successful calls, prepared-source plan-then-claim,
+  two-phase source completion, separate semantic/atom grants, source close
+  before independent authoring open/reset/compile/close, and distilled prepare
+  from authoring closure only.
+- It covers genuine pre-claim dispose, post-claim source close, prepare-success
+  distilled finally, close-failure override, exact owner identity, and caller
+  PASS/CLEAN/issuer/provider/prebuilt-fresh rejection.
+- Neither golden launches or connects a browser, SUT, fixture SUT, network, or
+  LLM. Neither reads credentials, site configuration, or a real target value.
+
+Actual results:
+- node --check: exit 0
+- behavior golden: exit 1
+- wiring golden: exit 1
+
+Actual behavior output:
+
+teachin-replayability-orchestrator: 0 过 / 1 败
+ - production core unavailable: ERR_MODULE_NOT_FOUND
+
+Actual wiring output:
+
+teachin-replayability-orchestrator-wiring: 0 passed, 1 RED
+ - production facade unavailable: ENOENT
+
+Interpretation:
+The acceptance tests are genuinely RED because
+lib/teachin/dual-replay-orchestrator-core.mjs and
+lib/teachin/dual-replay-orchestrator.mjs have not been implemented. This is the
+expected pre-implementation baseline, not a claim that any replay or verdict
+passed.
