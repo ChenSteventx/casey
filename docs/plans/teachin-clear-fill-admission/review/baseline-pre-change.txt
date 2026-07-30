@@ -1,0 +1,77 @@
+exit=0 tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-adjacent.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-atom-roundtrip.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-boundaries.static.golden.mjs
+exit=0 tests/_golden/teachin-replayability-capture-fresh.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-clean-proof.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-compile-runtime-adapter.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs
+exit=0 tests/_golden/teachin-replayability-entity-verification.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-completion.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-core.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-evidence.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-integrity-authority.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-integrity-semantics.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-production-boundary.static.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-reset.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-sequence.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-orchestrator-wiring.static.golden.mjs
+exit=0 tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-prepared-run.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-raw-actions.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-raw-event-observation.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-raw-output-seal.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-raw-runner.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-resolved-authority-coverage.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-resolved-projection.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-review-hardening.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-runtime-bootstrap.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-runtime-cycle-adapter.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-verdict-cli-adapter.zero-sut.golden.mjs
+exit=1 tests/_golden/teachin-observation-authority-hardening.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs
+exit=78 tests/_golden/teachin-observation-driver-canonical-root.zero-sut.golden.mjs
+exit=1 tests/_golden/teachin-observation-driver-provenance.zero-sut.golden.mjs
+exit=1 tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs
+exit=1 tests/_golden/teachin-observation-sidecar-hardening.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-observation-sidecar.zero-sut.golden.mjs
+exit=78 tests/_golden/teachin-observation-transaction-root.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-intake-swap-race.zero-sut.golden.mjs
+exit=0 tests/_golden/record-distill.golden.mjs
+exit=0 tests/_golden/record-intake.golden.mjs
+exit=0 tests/_golden/cli-mcp-face.golden.mjs
+exit=0 tests/_golden/teachin-cycle-alias-args.static.golden.mjs
+exit=0 tests/_golden/record-capture.golden.mjs
+exit=0 tests/_golden/observation-identity-contract-closure.zero-sut.golden.mjs
+exit=1 tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs
+exit=0 tests/_golden/page-topology-auth-continuity-adjacent-regression.zero-sut.golden.mjs
+exit=0 tests/_golden/page-topology-auth-continuity-pipeline.zero-sut.golden.mjs
+
+# 改前既红分类（2026-07-29，本契约动工前采样，与 clear-fill 接缝无关）:
+## tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs
+FAIL  teachin-observation-safe-case-lease-v2: D6 append/reader/pair/identity/registry Proxy/accessor 零执行: CASE_LEASE_PREEXISTING
+FAIL  teachin-observation-safe-case-lease-v2: 4 过 / 13 失败
+## tests/_golden/teachin-observation-sidecar-hardening.zero-sut.golden.mjs
+RED  teachin-observation-sidecar-hardening: H5 受信复核必须对账 capture 唯一 eventSeq: {"ok":false,"trusted":false,"identityStatus":"unverified","replayReady":false,"reason":"EXPECTED_BINDING_NOT_AUTHORITY"}
+RED  teachin-observation-sidecar-hardening: 4 过 / 2 红
+## tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs
+
+Node.js v24.18.0
+## tests/_golden/teachin-observation-authority-hardening.zero-sut.golden.mjs
+RED  teachin-observation-authority-hardening: A4 fill/press 等无关 action 不得被 evidenceKind 自声明成对象读回: ACCEPTED_AUTHORITY_NOT_MINTED:INTAKE_TRANSACTION_INVALID
+RED  teachin-observation-authority-hardening: 5 过 / 3 红
+## tests/_golden/teachin-observation-driver-provenance.zero-sut.golden.mjs
+RED  teachin-observation-driver-provenance: C1 driver reader/identity consumer 的 Proxy/accessor 零执行拒绝: accepted authority 前提失败：CAPTURE_PATH_NOT_CANONICAL
+RED  teachin-observation-driver-provenance: 1 过 / 6 红
+## tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs（补足崩溃上下文）
+Error: CASE_LEASE_PREEXISTING
+    at acquireCanonicalCaseLease (file:///mnt/d/ctx/heren/casey/tests/_golden/support/canonical-case-lease.mjs:99:34)
+    at file:///mnt/d/ctx/heren/casey/tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs:108:15
+    at ModuleJob.run (node:internal/modules/esm/module_job:439:25)
+    at async node:internal/modules/esm/loader:643:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.18.0

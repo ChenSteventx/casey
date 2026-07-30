@@ -1,0 +1,1139 @@
+Reading additional input from stdin...
+2026-07-29T02:06:51.490533Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when UnexpectedServerResponse("HTTP 403: {\"message\":\"missing csrf token\"}")
+OpenAI Codex v0.144.1
+--------
+workdir: /mnt/d/ctx/heren/casey
+model: gpt-5.6-sol
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 019fab9f-cb17-7093-ba83-ee4e944ba37b
+--------
+user
+你是对抗式计划评审员（异构家族），做 delta 复审。你上一轮（r1）对仓库 /mnt/d/ctx/heren/casey 的 teachin-clear-fill-admission 计划判 PLAN_CHANGES_REQUIRED，三条 findings 如下；实现方声称已全部采纳修订。你在 read-only 沙箱，可读仓内文件、跑只读命令复核。只复核这三条的处置是否真实、有没有引入新矛盾；不重开全面评审。
+
+r1 findings 与处置声明：
+
+1. [High] plan.md R2：纯空白值坍缩会把原拒付形态洗成静默清空（fail-open）。
+   处置：C1 判据收紧为 `raw[k] === ''` 才保键（plan.md §1 C1 已改）；GRILL.md D4 定案翻转
+   （纯空白仍丢键、准入拒付）；金牌改为「纯空白仍丢键」收紧钉 + 新增「build→admit 端到端
+   纯空白拒付」钉（tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs）。
+
+2. [Medium] G3 未证明空串穿过 runner 与 canonical driver。
+   处置：金牌新增 G5（admitRawReplayCapture→runRawReplay 全链，动作替身断言请求精确含
+   value:''，keys 闭合）与 G6（canonicalRawPlaywrightDriver resolve→perform 页面替身，
+   断言 handle.fill 恰好收到一次严格全等空串）。当前实测：G6 已绿（driver 面对空串本就通，
+   「不动 driver」由此机制化实证）；G5 红在准入步（修后将激活全链断言）。
+
+3. [Medium] 复跑矩阵漏 record-capture.golden.mjs 及 buildTeachInCapture 消费金牌。
+   处置：plan.md §2 复跑矩阵补 record-capture、observation-identity-contract-closure、
+   observation-cli-authority-wiring、page-topology-auth-continuity 两枚；改前基线已扩采
+   51 枚存档 review/baseline-pre-change.txt（7 枚既红全在 observation 家族、签名与本修
+   接缝无关，复跑判据=非既红全绿+既红签名不变）。
+
+待读文件：docs/plans/teachin-clear-fill-admission/plan.md、GRILL.md、
+tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs、
+docs/plans/teachin-clear-fill-admission/review/baseline-pre-change.txt。
+金牌可直接跑：node tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs
+（预期 exit 1：4 红=等实现的语义断言，9 绿=不变量；红绿分布见输出）。
+
+输出格式（中文简体）：
+- 第一行：PLAN_APPROVE 或 PLAN_CHANGES_REQUIRED
+- 每条 finding 一行处置判定：FIXED / NOT_FIXED（附一句证据）；若发现修订引入的新问题，
+  按 [Critical|High|Medium] 列出。
+- 最后一行固定哨兵：REVIEW_DONE_SENTINEL
+deprecated: `[features].enable_experimental_windows_sandbox` is deprecated. Use `[features].experimental_windows_sandbox` instead.
+Enable it with `--enable experimental_windows_sandbox` or `[features].experimental_windows_sandbox` in config.toml. See https://developers.openai.com/codex/config-basic#feature-flags for details.
+codex
+我会严格做三条 delta 复核：逐项核对计划、定案、金牌与基线，再按你给的预期直接跑金牌；只检查修订真实性及其新矛盾，不扩成全面评审。
+exec
+/bin/bash -lc "sed -n '1,240p' CLAUDE.md && sed -n '1,260p' CONTEXT.md && sed -n '1,260p' docs/HANDOFF.md && sed -n '1,260p' loop/GUARDRAILS.md && sed -n '1,320p' .claude/skills/casey/SKILL.md" in /mnt/d/ctx/heren/casey
+ succeeded in 174ms:
+��称双定位。
+5. 至少三份正式报告转 PDF、录像转 MP4，Steven 人签后才可发布 GitHub。
+
+## 2026-07-27 sut-503-diagnosis 六阶段收口（历史覆盖层）
+
+主树进入本轮时为 `dev@242312a`；未改生产实现、冻结断言或用户既有未提交现场。
+活契约 `sut-503-diagnosis`（direct）已六阶段全 done；冻结验收
+`verify-package.mjs` 37/37，仓内 `loop-kit` shim 驱质量门禁 GREEN 1/1。
+
+三 subagent 按既定边界完成真机差分定位、缺陷包铸造和对抗性反证；只有真机差分一路接触真实
+SUT。结论：
+
+1. 2026-07-23 两个不同实例均出现
+   `/ai-manager/agentPlus/queryPlus` 与
+   `/ai-manager/agent/setup/getAgentDetail` 双 `503`；run-1 的确定性
+   `SUT_DEFECT` 与 Steven 人签历史事实保持有效。run-2 的 `PASS` 只因两请求落在因果归因窗外，
+   不表示当次 `503` 消失。
+2. 2026-07-24 第三个不同实例的编译观察为双 `200`；2026-07-27 新建且列表唯一的实例首次打开
+   同样双 `200`，页面失败提示为 0。截至 2026-07-27 当前环境不可复现。
+3. 强假设“标准表单新建骨架智能体首次打开稳定双 `503`”已被当前双 `200` 证伪；最窄事实是
+   “7 月 23 日两个实例在当时流程下真实复现”。候选根因收敛到短时服务事故、初始化时序，
+   或未隔离的配置/构建差异，客户端无法唯一裁定。
+4. 本轮 r1/r2 在确认创建前因诊断探针定位门中止，目标响应与详情打开均为 0，不计 SUT 样本。
+   r3 exit 2 来自双 `200` 取证后的后置证据门，不倒写 HTTP 事实，也不产生新四态。
+5. 本轮唯一测试件按精确名称从 1 清到 0；第二候选未创建、保持 0。编码面因卡片副标题假设错误
+   未独立证明，诚实保留未决，不扩实验。
+
+交付：
+
+- `docs/plans/sut-503-diagnosis/defect-report.md`：可交研发的最小缺陷包；
+- `docs/plans/sut-503-diagnosis/evidence/live-differential.md`：本轮真机差分与清理账；
+- `docs/plans/sut-503-diagnosis/adversarial-analysis.md`：强假设反证；
+- `docs/plans/sut-503-diagnosis/evidence/package-inventory.md`：历史与本轮证据摘要和哈希；
+- `docs/plans/sut-503-diagnosis/learn.md`：收口复盘。
+
+下一步不再扩大浏览器矩阵：先由研发按 7 月 23 日失败时点对服务日志、共同下游、创建事务/
+详情子表初始化及 7 月 23→24 的部署或配置变化；只有日志指向初始化延迟或单一表单字段时，
+再做一项有目标的复验。C1/C4 现状仍由下节覆盖层承接，C1 人签义务未因本诊断变化。
+
+## 2026-07-24 C0/C2/C3 已落 dev；C1 组合候选完成真机负向回放与异构复审（历史覆盖层）
+
+主树 `dev@cea3a9b`。C0/C2/C3 的跨契约 P3 C5 调和已由
+`integration-entity-c0c2c3@94f6da9` 完成并合入主树；原 14/15 的唯一红已闭合。
+本节以下较早的「C0/C2/C3 尚未落 dev」「C1 生产深消费未接」只作历史溯源。
+
+C1 与 C3 的正确组合树为
+`/tmp/casey-c1-c3-integration-v2`、分支 `integration-entity-c1-c3-v2@e55c2df`
+（基于 `dev@cea3a9b`；`f20522c` 合 C1 全量，`134db6b` 合深消费候选，
+`dfc2ecc` 闭合逐 `boundKind` 身份通道准入与 C3 组合门，`e55c2df` 脱敏真机账户证据）。旧
+`/tmp/casey-c1-c3-integration` 不是正确基线，不得续用。
+
+本轮实际完成：
+
+1. C1 深消费候选已接通 `replay → axes → verdict → report-model`，不再是“只有纯函数、生产未接线”。
+2. Grok `/code-review` R1 在完整组合工作树发现一条 High：旧编译准入只看“任意身份通道在场”，
+# GUARDRAILS — 护栏清单（Casey）
+
+> 永不可违反的约束。每条标注执行方式（[enforced:由谁] / [prose]）与它编码的假设——模型升级时逐条审计假设是否过期。
+> [prose] 条目是欠账：能转为确定性检查的应尽快转。
+> 1–12 迁移自 autotester（loop-kit 通用子域）；13–16 是 Casey 核心域新增，守「LLM 驱动但裁判零 LLM、fail-safe 不 fail-open」的内核。
+
+1. **[enforced:gate]** 验收测试与 golden 存档冻结：`prd.json.testChecksums` 校验不符 = 直接红，无论测试本身过没过。
+   假设：模型会修改测试让其变绿（Test Ratchet / 奖励钻营）。
+2. **[enforced:gate]** 完成判定只认可执行规格的 exit code；任何「我已完成/已验证」的自我报告不作数。
+   假设：模型会声称未验证的工作已完成。
+3. **[enforced:breaker]** 迭代上限 20 / 连续 3 轮零进展 / 同错 5 轮 / 8 小时——任一越限即熔断写 Inbox。
+   假设：无停止条件的 loop 会空转烧钱。Casey 回放/自愈 loop 的「零进展」改喂每步进展哈希（非 git HEAD）。
+4. **[enforced:hook+gate]** 统一语言白名单（ADR-0005）：弃用别名与未登记加粗英文术语 = 红。
+   假设：散文纪律约束不了模型命名行为。
+5. **[enforced:gate]** 冻结断言契约只读、自愈非就地：人签后的 `expected[]` 改动 = Test Ratchet 判红；自愈绝不就地改 spec/断言，只写漂移补丁旁文件、人签后才应用（spec 指纹另由 gate 检查项守）。
+   假设：自动重建/就地重锚会冲掉人工语义评审成果、把会变动的靶子抹成假绿。
+6. **[prose→待enforced]** loop 在真实环境创建的一切实体必须带 Reserved Prefix `atl_`；回放期实例化、绝不冻成字面量。
+   假设：变更类回放中途失败必留残留，共用环境他人数据不可误删；冻成字面量第二次必撞或假红。
+7. **[prose]** `.auth/` 与 `site.json` 内容不得出现在任何输出、日志、commit、报告中；报告落盘前过凭据兜底门。
+   假设：凭据泄漏不可逆。
+8. **[prose]** auth/计费/安全类代码改动一律走 Escalation Path 给人，不进无人值守 loop。
+   假设：这类 bug 不出现在单元测试里，出现在事故报告里。
+9. **[prose]** review 道输入只含 spec+diff+门禁证据，不含实现者推理过程。
+   假设：实现者的叙述会把锚定偏差传染给评审者（同族合谋的变体）。
+10. **[prose]** 任何模型（含 Codex）产出一律过 Quality Gate，无直通仓库权限（"Read, write, propose"）。
+    假设：任何模型的产出未经确定性验证都不可信，与家族无关。
+11. **[enforced:hook]** 阶段互锁（Loop Contract）：每阶段交付物缺失时，下一阶段的工具动作被 `hook-loop-guard` 拦——写 prd 需 plan、改 `lib`/`bin`/`web` 需冻结的红测试（accept）、提交实现需门禁绿（loop）；任何实现编辑/提交前必须先 `contract init` 声明入口分流。
+    假设：模型会「需要 loop 时不走 loop」——跳过 grill/门禁/异构评审直接动手。
+12. **[enforced:hook+gate]** 中文一律标准简体，禁繁体：`term-lint` 繁体检测命中即红，走 Stop hook + PostToolUse hook + Quality Gate。`term-lint:allow` 行豁免。
+    假设：模型偶发把简体误写成繁体；散文提醒约束不住用字，必须机制兜底。
+13. **[prose→待enforced]** 自愈准入门：自愈只对正向确证的 `HARNESS_ERROR` 开闸；`SUT_DEFECT` 与 `NEEDS_HUMAN` 一律拒绝自愈。缺取证 ≠ 工装错。
+    假设：真 bug 表现成「元素不见了」时，若默认成可自愈会被悄悄抹平——这是最危险的假绿（design §10）。
+14. **[prose→待enforced]** fail-safe 不 fail-open：机器只能终判 `PASS` 与有取证背书的 `SUT_DEFECT`；凡证不出的一律路由 `NEEDS_HUMAN`，绝不默认成可自愈或自动记缺陷。catch-all 默认是 `NEEDS_HUMAN`。
+    假设：未知失败若 fail-open 会被洗成绿或假缺陷，操作员学会无视 verdict、信号自毁。
+15. **[prose→待enforced]** 裁判零 LLM、与自愈分进程：多态裁定由零 LLM 的 `verdict.mjs` 出，自愈（LLM）是它的下游消费者，不得反向进入裁判进程。`actionPerformed` 经点击身份门判定、取证按请求发起方归因（非时间窗）。
+    假设：让 LLM 进裁判进程会把真 bug「重锚」成绿；按时间窗归因会让背景轮询 401 翻 verdict。
+16. **[prose]** gate 绿 ≠ 完成：冻结断言须经人签门才算数，需求完成以人签真机 UAT 为准（gate 是必要非充分）。
+    假设：可命令化的验收测不到语义正确性（用例是否真表达意图、真站是否真 bug），这些必须人裁。
+17. **[prose→待enforced]** 裁判按断言种类不可知：`verdict.mjs` 消费已判好的 `StepAxes`，对 `postAssertions` 只 AND 硬断言的 `ok`、忽略 `soft`，绝不按 `kind` 分支；取证缺失子字段当「本步无此特征」、不报解析错；断言 `kind` 的枚举只在 `check.mjs` 一处。
+    假设：若 `verdict.mjs` 按 kind 分支，每加一个新维度（对话/发布/画布）都要改裁判内核、重开 accept，飞轮的加法式复利失效；新 kind 应只加 `check.mjs` + 加 golden（岔一，2026-06-29 锁）。
+18. **[prose→待enforced]** 并行工作树纪律（worktree-baton）：多路并行开发碰 `lib`/`bin` 用 git worktree 隔离，每棵树各一独立 baton（`active-contract.json` 与熔断态 gitignored、每树一份、互不共享）——不建共享池、不加 `LOOP_CONTRACT_FILE` 选槽或 `breaker --state`（引入即背红队 1 High + 4 Med）。`contract worktree <slug>` 起树时 slug 全局唯一硬拒（已占用 `loop/prd-<slug>.json` 或 `docs/plans/<slug>/` 即 exit 3），防同名 baton 骑另一 baton 的 gate-绿、覆盖冻结断言；各树自绿后 git-native 合并回 `dev`（`merge`/`cherry-pick`，绝不 `cp` 进 `lib`/`bin`）；`contract list` 跨树一屏看全并行轨；建议并发 ≤5 树；每树 loop 前自己 `breaker --reset`；合并冲突人裁（route:human）。
+    假设：worktree 数无廉价全局锁（多进程 TOCTOU），硬编码上限收益低且背「零机制改动」初衷；合并策略与冲突裁定是纪律非机制，自动合并守卫不建。实证：每 worktree 的 gitignored loop 状态天然隔离，单槽机制每树各跑各的（2026-07-09 实测钉成金牌 G7）。
+19. **[prose→待enforced]** 强制层/迁移/共享冻结面改动落地必复跑全部受影响金牌，别信 `tier1` 分层绿：任何准入门 enforcement、契约层迁移、共享冻结面改动落地时，必须复跑其影响面的全部金牌——尤其起浏览器/真实回放的 browser-replay 层。`selftest --tier1` 只覆盖确定性内核（term-lint/breaker/gate demo/verdict-purity），从不跑 browser-replay 金牌；其 GREEN 掩盖不了回放层 runtime-RED。落地未复跑 = 受影响金牌陈旧绿（prd `passes:true` 与实跑 runtime-RED 脱节），fail-open 掩盖真红，直到主树/真机复跑才暴露。合并回 `dev` 后必主树复验受影响面（hermetic 契约树绿 ≠ 主树绿，与护栏 #16「gate 绿 ≠ 完成」同源）。
+    假设：模型/迁移会「只跑与本改动直接相关的金牌 + `tier1`」，漏掉被 enforcement 间接破坏的邻接面。2026-07 一会话内三次同模式实证：record-intake 陈旧绿（trust-root 迁移 `1e6c3c5` 未复跑）、supersession DrvFs 陈旧绿（timeout/租约破而 prd 仍绿）、semantic-lock 准入门 enforcement `9ee2731`/`dfee72c` 破一批 browser-replay 金牌（p5-replay/wf-publish-states/replay-settle-mount/drawer-lock/replay-nth 全 runtime-RED 而 prd `passes:true`）——每次都是 `tier1` GREEN 掩盖、直到主树/真机复跑才暴露。
+---
+name: casey
+description: 用自然语言把测试用例跑成 Casey 测试报告，或启动示教录制。当用户说"跑一下历史版本用例""把这段用例测一遍""生成测试报告""我要手动录制"时使用。用户操作面必须只收自然语言；底层 CLI/MCP 参数由代理内部处理，绝不要求用户复制命令，绝不把桩当成已完成。
+---
+
+# casey — 自然语言 → 测试报告
+
+本 skill 的用户操作面只接受自然语言。真正的活由 `bin/casey.mjs` 与 `loop-kit/bin/*` 干（在仓根执行），但命令、路径、参数是代理内部实现细节，不作为用户要手动复制的步骤输出。
+
+## 用户怎么说
+
+用户只需要这样说：
+
+- “帮我跑刚刚那个历史版本用例，生成测试报告。”
+- “跑一个 0 error 的真实用例给我看报告。”
+- “我要手动录制一个新流程，名字叫采购审批冒烟。”
+- “把这段用例在中台上测一遍，出 HTML 报告。”
+- “打开最近一次报告给我看。”
+- “给我看一份样例报告 / Casey 产物长啥样 / 先看看报告长什么样。”
+
+代理职责：
+
+1. 自行判断可用入口：已有签署用例走回放报告；新自然语言用例先走归一/编译/草拟/人签流程；手动操作走示教录制。
+2. 自行检查环境：仓根、反向隧道、本地基址、凭据文件是否具备；缺失时用一句自然语言说明缺什么，不输出复杂命令清单。
+3. 自行执行底层命令，最后只给用户报告链接、四态计数、是否 0 error、失败原因摘要。
+4. 用户明确问“给我命令”时才展示命令；否则不要把 CLI 参数当成使用说明。
+
+## 内部动作表（不要直接要求用户照抄）
+
+| 自然语言意图 | 代理内部动作 |
+|---|---|
+| “跑刚刚那个历史版本用例/跑历史版本报告” | 跑 `tc_wf_history_version`，生成报告后用 `verify-zero-error-report` 校验，返回 HTML/MD/JSON 链接。 |
+| “跑一个真实 0 error 用例” | 优先选择最近现场复跑已 0 error 的用例；当前已现场验证的是 `tc_wf_history_version`。不要把历史绿但今天复跑红的用例冒充 0 error。 |
+| “手动录制/示教录制” | 启动 `casey record`，打开浏览器让用户操作；关闭浏览器后返回 `teach-in-capture.json` 路径，并说明它只是蒸馏语料、不是正式报告。 |
+| “把这段文本用例跑成报告” | 若已有完整签署产物则直接跑；否则先产候选 TestCase/flow/expected 草稿并要求用户签署，不能代签。 |
+| “把一段自由文本用例变成候选骨架 / 我要从头写个用例” | 代理内部跑 `scaffold-case` 把自由文本零 LLM 包成候选骨架（`source.kind:freetext` + `route:human` 占位，开箱过 `parseTestCase`），再按归一提示模板 `docs/plans/ingest-scaffold/proposed/from-text-candidate.draft.md` 把 `source.raw` 归一成真实意图步、经 `ingest` 入场；如实说明候选须 LLM 归一 + 人签才算数、不是正式报告，别盲写 JSON。 |
+| “看最近报告” | 在 `runs/` 下找最新 `.report.html`，返回链接和四态摘要。 |
+| “看样例报告/Casey 产物长啥样” | 只返回 `runs/` 下已有的真实回放报告，并标明运行时间与四态；没有真实报告就如实说明。不得运行历史 `casey demo`，因为它会启动夹具 SUT。 |
+
+## 内核（不可让渡，违反即停）
+
+- 确定性是默认，`LLM` 是手术刀：`LLM` 只在归一(相0)、编译(相1)、断言草拟(相2)、自愈(相5) 出现；回放(相3)、多态裁定(相4)、报告(相6) 是零 `LLM` 确定性。
+- 裁判零 `LLM`：测试结论由 `casey verdict`（确定性 `verdict.mjs`）出。绝不用 `LLM` 判「过没过」，绝不把 `LLM` 的印象当裁定。
+- **fail-safe 不 fail-open**：机器只终判 `PASS` 与有取证背书的 `SUT_DEFECT`；证不出的一律 `NEEDS_HUMAN`，写 Inbox 等人裁。绝不默认成「可自愈」或自动记缺陷。
+- **完成是退出码，不是声明**：报告里「通过/失败」必须来自真实回放 + `verdict.json`，别拿「文件存在」或桩命令（exit 3）当通过。
+
+## 区分三类错误（用户的核心要求，别混淆）
+
+测试失败时，先分清是哪一类——这是 `verdict.mjs` 的判定树（设计 §4.2），不是凭感觉：
+
+| 裁定 | 含义 | 谁的错 |
+|---|---|---|
+| `SUT_DEFECT` 被测缺陷 | 动作做对了、断言硬失败、且有取证背书（5xx/pageerror/crash/错误信封） | **被测系统**（真 bug，出缺陷单给研发） |
+| `HARNESS_ERROR` 过程错误 | 正向确证的工装定位漂移（locator 不再命中，但同签名唯一元素仍在） | **测试工装**（步骤/录制层，可自愈） |
+| `CASE_DEFECT` 用例缺陷（`NEEDS_HUMAN` 子类） | 编译期入口可证缺席或期望自相矛盾 | **测试用例本身**（修用例） |
+| `AMBIGUOUS_ACTION`/`INDETERMINATE` 等 | 点没点对存疑 / 纯未知 | **机器不敢判，路由人** |
+
+「测试用例的错误」≈ `CASE_DEFECT`；「测试步骤/工装的错误」≈ `HARNESS_ERROR`；「被测系统的错误」= `SUT_DEFECT`。三者落点不同，绝不能都报成「失败」了事。
+
+## 底层命令映射（仅供代理内部执行）
+
+| 用户意图 | 执行 |
+|---|---|
+| 相3-4-6 编排（回放→裁定→报告） | `node bin/casey.mjs run <caseId> --sut <url> --events <f> --expected <f> --profile <f> [--run-dir <d> --login-bootstrap --no-video]`（相0-2 前段须先各自跑完备好 events 与已签 expected） |
+| 相0 前段脚手架（自由文本 → 候选骨架） | `node bin/casey.mjs scaffold-case <caseId> --from-text <text-file> --out-dir <d>`（零 LLM 产候选骨架，开箱过 `parseTestCase`；再按归一提示模板 `docs/plans/ingest-scaffold/proposed/from-text-candidate.draft.md` 把 `source.raw` 归一成真实意图步 → `ingest` 入场；候选非权威，须归一 + 重走全链 + 人签，门拒 fail-closed） |
+| 相0 归一（候选须先由 LLM 在 CLI 外产出） | `node bin/casey.mjs ingest <caseId> --in <candidate.json> --out-dir <d>` |
+| 相1 flow 桥（mapping 由 LLM 在 CLI 外产出） | `node bin/casey.mjs flow-bridge <caseId> --testcase <f> --mapping <f> --out-dir <d>` |
+| 相1 编译（三段式：闸→人 confirm→执行） | `node bin/casey.mjs compile <caseId> --testcase <f> --flow <f> --out-dir <d>`；执行段加 `--execute --sut <url> --profile <f>`（须 flow 已 confirm，否则 exit 66） |
+| 相2 草拟断言 | `node bin/casey.mjs draft <caseId> --observed <f> --compile-report <f> --out-dir <d> [--patch <f>]` |
+| 相2 人签冻结断言 | `node bin/casey.mjs sign <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id>`（**让用户签**，CC 不代签） |
+| 示教录制（相外兜底，产蒸馏语料） | `node bin/casey.mjs record <caseId> --sut <本地基址> --out-dir <d> (--login-bootstrap\|--no-login) [--from-events <f> --headless --max-ms <ms>]`（示教语料，非正式回放输入） |
+| 示教入账（安全复核 → 入账台账） | `node bin/casey.mjs intake <caseId> --capture <f>`（安全复核录制包 → 登记入账台账，拒账 fail-closed） |
+| 相3 确定性回放 | `node bin/casey.mjs replay --events <f> --sut <url> --expected <f> --profile <f> --out <axes.json>`（未签契约拒回放） |
+| 相4 出多态裁定 | `node bin/casey.mjs verdict --axes <f> --out <f>` |
+| 相5 自愈（仅工装漂移） | `node bin/casey.mjs heal <caseId>`（诚实桩 exit 3，相5 只有 lib 件） |
+| 相6 出报告 | `node bin/casey.mjs report --model <f> --out <d> [--run-history <f> --run-metrics <f>]` |
+| 链路自检 | 仅在逐项确认命令不启动/连接任何 SUT 后，直接运行对应静态、schema 或纯函数检查；不得调用未审计的整包 gate。 |
+| 看样例报告 | 从 `runs/` 读取已有真实报告；`casey demo` 已按 real-SUT-only 策略禁用。 |
+| loop 纪律 | `node bin/casey.mjs lint\|gate\|breaker\|contract ...` |
+
+相1 mapping 的实体角色必须由代理显式写出且经用户/只读候选确认：mutation（变更）原子使用单个 `{candidateId, role:'subject'}`；relation（关系变更）原子同时使用 `{role:'source'}` 与 `{role:'target'}`。candidateId、名称、编号都不得按列表顺序或同名猜测；缺失时 route:human，不得让 flow bridge 代猜或代签。
+
+执行后回给用户的标准格式：
+
+- 报告：`<html 链接>`，必要时附 `<md/json 链接>`。
+- 结论：`PASS=n / SUT_DEFECT=n / HARNESS_ERROR=n / NEEDS_HUMAN=n`。
+- 0 error：只有 `SUT_DEFECT=0`、`HARNESS_ERROR=0`、`NEEDS_HUMAN=0` 且每步都是 `PASS` 才能说 0 error。
+- 失败时只解释一层原因：被测缺陷、工装问题、用例问题或机器不敢判；不要用 LLM 自己裁定过没过。
+
+> 当前进度：七相全建且 hermetic「文本→报告」全链已由集成金牌贯通（`tests/_golden/e2e-chain.golden.mjs`）；`heal` 是唯一诚实桩（exit 3，相5 未吃过真场景）。真机端到端仍需一次真机 compile bring-up + 人签在场（route:human）。桩返回 exit 3 时**如实告诉用户该阶段未实现**，绝不假装跑完了；全部生命周期命令用法错统一 exit 64（`report` 历史例外 2 已由 report-exit64 契约收敛）。
+
+## 报告交付最低内容（Steven 2026-07-15，硬要求）
+
+每一个测试用例必须生成一份独立 HTML 正式报告；聚合 HTML 只作索引，不承载或替代单用例正文。每份独立 HTML 必须同时包含以下四项；只给四态计数或报告链接不算完整交付：
+
+1. **测试用例（自然语言描述）**：取自已签 `testcase.json` 的前置条件与 intent 文本。字段缺失时必须明确标“缺失/待补”，不得由代理临场编造另一套用例冒充签署原文。
+2. **分解后的原子操作**：逐条列出动作与断言，至少包含顺序号、代表 `stepId`/`intentId` 和原子描述；来源以同次 run 的 `*.report.json.atomicSteps` 为准。
+3. **录屏**：报告内提供可播放的回放录像，并同时给直接附件链接；默认不得用 `--no-video` 生成正式交付，除非用户明确要求无录屏。
+4. **附件**：至少附 HTML/Markdown/JSON 报告、`verdict.json`、`axes.json`、`run-history.jsonl`、`run-metrics.json`、`video.json`；有截图、trace、文本/抓取输出、缺陷单时一并附上。
+
+四项内容必须与同一次真机 run 对齐。聚合 HTML 必须逐例链接到独立 HTML，可列 caseId、四态摘要和视觉复核摘要，但不得复制单例正文形成第二份事实源；凭据、Cookie 和真实目标地址仍绝不进入任一正文或附件索引。
+
+## 报告里有什么（设计 §6）
+
+操作说明 + 标注（`LLM` 接口/生命周期取证/网络取证）+ 回放录屏(mp4) + 文本/抓取输出（含 `LLM` 的回答原文 + 截图）+ 每步裁定徽章 + 缺陷单（仅 `SUT_DEFECT`）+ trace + 截图。机读产物 `verdict.json` 是 golden 唯一校验对象。
+
+## 执行边界（重要）
+
+- **假被测系统只读，所有行为验收只驱真机**（Steven 2026-07-15 定，强制执行）：假被测系统（`fake-sut`）和夹具 `SUT` 只允许读取源码作为迁移参考，任何代理不得启动、连接或回放它们，也不得用 `casey demo` 顶替真机运行。`golden` / `gate` / `selftest --tier1` 仅在可证明不启动、不连接、不回放任何假 `SUT` 时才允许执行；静态检查、schema 检查和不接触 `SUT` 的纯函数检查可执行。所有浏览器/通道行为测试、回放、复跑与验收一律联网驱真实目标，`--sut` 只喂隧道回环基址（`site.json` 的 `devProxyUrl`，形如 `http://127.0.0.1:15519`）；无网络、仅本地监听、代理池未连真站或网络受限时一律不得开始行为验收。前置 = 相位0 三关（`casey doctor` 就绪 / Steven 带外确认 `.auth` = `autotest` / 反向隧道单实例；全流程见 `docs/runbooks/real-uat-runbook.md`；隧道两命令：`WSL` 侧 `node scripts/wsl-reverse-listen.mjs`、`Windows` 侧 `node scripts/win-reverse-agent.mjs`，顺序先 `WSL` 后 `Windows`）；除 `doctor` 外还必须取得 Windows→真站与 `WSL` 回环→真站两段真实 HTTP 成功证据。没有同次真实回放、确定性 `verdict.json`、录屏、视觉复核和独立单用例 HTML，不得声称行为验收完成。
+- **凭据让用户设**：`.auth/`、`site.json` 是凭据，CC 不把账号密码写进命令行/文件/报告。
+- **冻结断言只读**：人签后改断言 = Test Ratchet 判红，别去改。
+- 改实现先 `contract`：动 `lib`/`bin` 前先 `node loop-kit/bin/contract.mjs init <slug> --lane <...> --reason "..."`，否则 hook 拦截。
+- **真机变更有副作用**：编辑型用例（新建/发布/删除）回放=真实改环境数据，实体必带 Reserved Prefix `atl_`。
+
+exec
+/bin/bash -lc 'git status --short -- docs/plans/teachin-clear-fill-admission/plan.md docs/plans/teachin-clear-fill-admission/GRILL.md tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs docs/plans/teachin-clear-fill-admission/review/baseline-pre-change.txt && git diff -- docs/plans/teachin-clear-fill-admission/plan.md docs/plans/teachin-clear-fill-admission/GRILL.md tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs docs/plans/teachin-clear-fill-admission/review/baseline-pre-change.txt && nl -ba docs/plans/teachin-clear-fill-admission/plan.md && nl -ba docs/plans/teachin-clear-fill-admission/GRILL.md' in /mnt/d/ctx/heren/casey
+ succeeded in 880ms:
+?? docs/plans/teachin-clear-fill-admission/GRILL.md
+?? docs/plans/teachin-clear-fill-admission/plan.md
+?? docs/plans/teachin-clear-fill-admission/review/baseline-pre-change.txt
+?? tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs
+     1	# plan — teachin-clear-fill-admission
+     2	
+     3	> 前置：`GRILL.md`（证据链与定案）。lane=full。
+     4	> 目标：清空输入框的 fill 事件（空串目标值）在示教链全程可保真、可准入、可回放；
+     5	> 缺键与非 string 仍 fail-closed 拒付，准入不放宽只纠偏。
+     6	
+     7	## 1. 生产件改动（两处，各一行判据）
+     8	
+     9	### C1 `lib/record-capture.mjs` — 投影保空串键
+    10	`sanitizeRecordEvent` 字符串字段循环里，`value` 对 fill 动作无条件保留：
+    11	
+    12	```js
+    13	// 现状（第 89-90 行）
+    14	const v = cleanString(raw[k], k === 'value' ? 1000 : 200);
+    15	if (v) out[k] = v;
+    16	// 改为：fill 的 value 是语义值不是装饰字段，真清空（原始值恰为空串）必须保键；
+    17	// 纯空白等「洗成空串」形态继续丢键、交准入拒付（codex r1 High：否则把原拒付
+    18	// 形态洗成静默清空，fail-open）。其余字段维持空即丢键。
+    19	if (v || (k === 'value' && action === 'fill' && raw[k] === '')) out[k] = v;
+    20	```
+    21	
+    22	约束：`ALLOWED_EVENT_KEYS` 键集不增删；`schemaVersion` 不变；敏感字段遮值分支
+    23	（`<redacted>` + `valueMasked`）在前、不受影响；非 fill 动作的空 `value` 仍丢键。
+    24	
+    25	### C2 `lib/teachin/raw-capture.mjs` — 准入收敛判据
+    26	`checkReplayableFields`（第 126-129 行）：
+    27	
+    28	```js
+    29	// 现状
+    30	if (event.action === 'fill'
+    31	  && (typeof event.value !== 'string' || !event.value)) {
+    32	// 改为：缺键/非 string 仍拒（typeof undefined !== 'string'），空串放行。
+    33	if (event.action === 'fill' && typeof event.value !== 'string') {
+    34	```
+    35	
+    36	拒付码 `FILL_VALUE_UNAVAILABLE` 语义不变（值不可用），只是空串不再落入。
+    37	
+    38	### 明确不动（GRILL 已实证）
+    39	`bin/record.mjs` 注入侧、`lib/teachin/raw-action.mjs`、`lib/teachin/raw-playwright-driver.mjs`、
+    40	`lib/record-intake.mjs`、`lib/teachin/raw-replay-runner.mjs` 拒付码清单、蒸馏侧、
+    41	`verdict.mjs`（裁判进程零沾染）。
+    42	
+    43	## 2. 金牌矩阵（红先行）
+    44	
+    45	新金牌一枚：`tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs`（零 SUT、纯进程内），
+    46	六组断言，整体修前必须红、修后必须绿，全部按退出码判：
+    47	
+    48	- G1 投影层：`sanitizeRecordEvent` 对 `action:'fill'` 原始 `value:''` 保留 `value:''` 键；
+    49	  **纯空白值仍丢键**（D4 收紧钉，防洗空放行）；非 fill 动作空 `value` 仍丢键；敏感字段
+    50	  仍遮值；`buildTeachInCapture` 端到端形状同断言（夹具取真语料 seq 11 邻接结构脱敏
+    51	  重表达，不搬真值）。
+    52	- G2 准入三分岔：`admitRawReplayCapture` 对空串 fill 放行；缺 `value` 键仍
+    53	  `FILL_VALUE_UNAVAILABLE` 拒；`value` 非 string 仍拒；**投影后的纯空白 fill 端到端
+    54	  仍拒**（build→admit 全链 fail-closed 钉）。
+    55	- G3 传导层：空串 fill 经 `projectRawReplayAction` 产出 `{action:'fill', value:''}`
+    56	  动作请求、键值不丢。
+    57	- G4 回归钉：`value:'<redacted>'` + `valueMasked` 事件仍被 `MASKED_FILL_UNREPLAYABLE`
+    58	  整包拒；遮值闸序先于值可用闸（防 C2 收敛误伤凭据卫生面）。
+    59	- G5 runner 穿透（codex r1 Medium）：`admitRawReplayCapture → runRawReplay` 全链
+    60	  （fresh runtime 与动作驱动替身），动作替身收到的第二请求精确为
+    61	  `{action:'fill', fallbackCss, value:''}` 且回放 `CLEAN`。
+    62	- G6 物理句柄（codex r1 Medium）：`canonicalRawPlaywrightDriver` resolve→perform
+    63	  走页面/定位替身，`handle.fill` 实参严格全等 `''`（证明空串穿透到 Playwright 调用面）。
+    64	
+    65	受影响面全量复跑（护栏 #19，退出码判绿，不 grep 标记串）：
+    66	`teachin-replayability-*` 全家族（含 support 装具）、`record-capture`（codex r1 Medium 补）、
+    67	`record-distill`、`record-intake`、`teachin-observation-*` 家族、`teachin-intake-swap-race`、
+    68	`cli-mcp-face`、`observation-identity-contract-closure`、`observation-cli-authority-wiring`、
+    69	`page-topology-auth-continuity-{adjacent-regression,pipeline}`（后四者为
+    70	`buildTeachInCapture` 消费方检索补全）。改前基线已采样存档
+    71	`review/baseline-pre-change.txt`：51 枚中 7 枚既红全在 observation 家族（2 枚 exit 78
+    72	主动吊销墓碑 + 5 枚陈旧红，签名=夹具倒在硬化准入/事务门前，与本修接缝无关）；
+    73	复跑判据=非既红者全绿、既红者签名不变。预期零 `checksumAmendment`（GRILL D6；
+    74	待实测判断，复跑红则如实报账再议 amendment，不预签、不静默改冻结件）。
+    75	
+    76	## 3. prd 与门禁
+    77	
+    78	`loop/prd-teachin-clear-fill-admission.json`：spec 指向本 plan；`testChecksums` 冻结新金牌
+    79	（gate 唯一写 `passes`）；检查项 = 新金牌绿 + 受影响面复跑绿 + term-lint。
+    80	loop 开始 `breaker --reset`。
+    81	
+    82	## 4. 验证与完成口径
+    83	
+    84	- hermetic：新金牌红→绿翻转 + 受影响面全绿，全按退出码。
+    85	- 离线复核：旧语料包 `tc_chiefcomplaint_smoke_20260729_091925` 修后重过准入**仍拒**
+    86	  （seq 11 键已丢，GRILL D5 不追认）——这是预期正确行为，作为负样本证据记录。
+    87	- 真机：首链闭环真通须 Steven 到机重录（route:human，非本契约完成条件；
+    88	  本契约完成 = gate 绿 + 异构评审闭环 + 人签面处理完）。
+    89	
+    90	## 5. 评审安排
+    91	
+    92	异构铁律：实现（Claude）→ 评审 codex `gpt-5.6-sol` xhigh + grok 联审；真仓暴露版
+    93	（只读 worktree + 自跑金牌），不喂实现者推理；输入=spec（GRILL+plan）+ diff + 门禁证据。
+    94	首轮只报 Critical/High/Medium；修复后 delta 复审；账落 `loop/audit.jsonl`。
+    95	
+    96	## 6. 风险清单（给评审）
+    97	
+    98	- R1 C1 的 `action` 变量取的是白名单归一后动作（未知动作坍缩成 `click`）——坍缩成
+    99	  `click` 的伪 fill 不会误保空键，确认此路径。
+   100	- R2（已定案，codex r1 High）：纯空白值不得随清空放行——C1 判据限定原始值恰为空串，
+   101	  纯空白继续丢键、准入拒付；金牌 G1/G2 钉住。
+   102	- R3 `MASKED_FILL_UNREPLAYABLE` 优先级在 `FILL_VALUE_UNAVAILABLE` 之前（先敏感后可回放），
+   103	  C2 不得改变闸序。
+   104	- R4 别处若有对「fill 必有非空 value」的隐式假设（如报告渲染、比较器），复跑面须暴露。
+   105	
+   106	## 7. 计划评审记录
+   107	
+   108	- r1（2026-07-29）：codex `gpt-5.6-sol` xhigh、真仓只读暴露版，判
+   109	  `PLAN_CHANGES_REQUIRED`（1 High + 2 Medium，原卷 `review/plan-codex-r1.log`）；
+   110	  三条全采纳：D4 收紧（High）、G5/G6 穿透金牌（Medium）、复跑矩阵补
+   111	  `record-capture` 与 `buildTeachInCapture` 消费方（Medium）。本版即修订后计划，
+   112	  待 delta 复审与 Steven 确认。grok 联审安排在实现后代码评审轮（比例适配，
+   113	  plan 轮已满足异构铁律：实现家族 Claude ≠ 评审家族 OpenAI）。
+     1	# GRILL — teachin-clear-fill-admission（清空输入框 fill 事件误拒）
+     2	
+     3	> 契约：`teachin-clear-fill-admission`（lane=full）。
+     4	> 触发：2026-07-29 上午手录首链实证（`docs/HANDOFF.md` 最新覆盖层）——`tc_chiefcomplaint_smoke`
+     5	> 录制成功落 24 事件，闭环被 `FILL_VALUE_UNAVAILABLE` 拒。
+     6	> 本纪要在 Steven 不在场时按已落硬规则推演定案；凡由护栏/ADR 直接推出的不设开放项，
+     7	> 真正需要人签的点列在末节挂账。
+     8	
+     9	## 一、证据链（三层，全部实测）
+    10	
+    11	录制语料 `runs/teachin-uat/tc_chiefcomplaint_smoke_20260729_091925/`（只读证据，不得篡改）：
+    12	24 事件中 9 个 fill；seq 11（清空输入框那步）持久化后只有
+    13	`seq,action,path,selector,tagName,fieldLabel` 六键，`value` 键整个缺席。
+    14	
+    15	1. **注入侧没丢值**：`bin/record.mjs:167` 对 input 事件恒落
+    16	   `value: String(t.value || '').slice(0, 1000)`——清空时是空串，键始终在。
+    17	2. **投影层丢键（第一接缝）**：`lib/record-capture.mjs` `sanitizeRecordEvent` 对字符串字段
+    18	   统一 `if (v) out[k] = v`（第 90 行）——空串按假值被整键丢弃。对 `text`/`fieldLabel`
+    19	   这类装饰字段合理，对 fill 的 `value` 是语义损毁：「清空」被抹成「没值」。
+    20	3. **准入层拒空串（第二接缝）**：`lib/teachin/raw-capture.mjs:126-129` `checkReplayableFields`
+    21	   判据 `typeof event.value !== 'string' || !event.value`——后半句把空串也判成
+    22	   `FILL_VALUE_UNAVAILABLE`。即便第一接缝保住键，这里仍拦。
+    23	
+    24	下游全部实证不用动：`lib/teachin/raw-action.mjs:52` 只拒非 string（空串已放行）；
+    25	`lib/teachin/raw-playwright-driver.mjs:106` 的 `handle.fill('')` 本身就是合法清空动作；
+    26	`lib/record-intake.mjs` 复核闸对 `value` 只做「有则须 string」的类型校验、允许缺席；
+    27	`raw-replay-runner.mjs` 拒付码清单无语义变化；蒸馏侧 fill 属受支持动作、无额外值闸。
+    28	
+    29	## 二、决策树（逐条定案）
+    30	
+    31	**D1 空串是不是合法回放目标值？** 是。清空输入框是真实用户动作，回放语义就是
+    32	`fill('')`；驱动层已天然支持。拒它等于「合法动作类白名单缺一员」，不是安全收紧。
+    33	依据：设计上动作轴以可确定性重放为准；实测驱动行为。
+    34	
+    35	**D2 缺键还拒不拒？** 拒，维持 `FILL_VALUE_UNAVAILABLE`。键缺席无法区分「清空」与
+    36	「采集丢值」，证不出即不放行（护栏 #14 fail-safe 不 fail-open）。本修不是放宽准入，
+    37	是把「空串」从「缺失」里剥出来：缺键仍拒、非 string 仍拒、空串放行。
+    38	
+    39	**D3 修在哪一层？** 两接缝都修，且只修这两处：
+    40	- `sanitizeRecordEvent`：仅对 `action === 'fill'` 的 `value` 键无条件保留（含空串）；
+    41	  其余字段维持「空即丢键」不动（`selector` 空本就该拒、`key` 空亦然，装饰字段丢了无害）。
+    42	- `checkReplayableFields`：判据收敛为 `typeof event.value !== 'string'`。
+    43	不动注入侧（本来就对）、不动 `raw-action.mjs`（已对）、不改 `ALLOWED_EVENT_KEYS`
+    44	键集与 capture `schemaVersion`（键集无增删，只是空串值不再被投影抹掉）。
+    45	
+    46	**D4 纯空白值仍拒付（codex 计划评审 r1 High 采纳，推翻本节初版）**：初版把
+    47	「纯空白值坍缩成清空」当明示残留放行——那会把原本**拒付**的形态（`cleanString`
+    48	洗成空串→丢键→准入拒）洗成静默清空，是语义损毁 fail-open。定案收紧：投影只在
+    49	**原始值恰为空串**（`raw.value === ''`，真清空）时保键；纯空白与其他洗空形态
+    50	继续丢键、由准入拒付 `FILL_VALUE_UNAVAILABLE` 转人。若将来要支持空白填充保真，
+    51	另立契约。旁注：绕过录制投影、手造 capture 字节里显式 `value:'   '` 的，准入按
+    52	「string 即可回放」放行且回放忠实填空白——那是保真不是坍缩，无矛盾。
+    53	
+    54	**D5 旧语料包追认不追认？** 不追认。已存包的 seq 11 在录制时已被投影丢键，
+    55	包内无法证明它是清空；篡改语料包补键是伪造证据（记忆纪律：夹具不许倒着裁，
+    56	冻结接缝要复现不另造）。结论：修的是「今后录制」；`tc_chiefcomplaint_smoke`
+    57	手录首链须 Steven 下次到机重录，旧包保留作蒸馏语料与本契约的形状参照。
+    58	
+    59	**D6 金牌策略（按 codex r1 两条 Medium 扩充）**：新红金牌覆盖五面——①投影层：
+    60	fill 原始空串保键、纯空白仍丢键（含 `buildTeachInCapture` 端到端形状与拒付钉）；
+    61	②准入层：空串放行 / 缺键仍拒 / 非 string 仍拒三分岔；③传导层：空串经
+    62	`projectRawReplayAction` 投影不丢键；④runner 穿透：`admitRawReplayCapture →
+    63	runRawReplay` 全链，动作替身收到的请求精确含 `value:''`；⑤物理句柄：
+    64	`canonicalRawPlaywrightDriver` resolve→perform，页面替身的 `handle.fill` 实参
+    65	严格全等空串。夹具形状取自真语料 seq 11 的邻接结构（脱敏重表达，不搬真值）。
+    66	既有金牌零枚断言「空串拒」、「缺键拒」断言与修后行为一致，预期零
+    67	`checksumAmendment`——此判断按记忆纪律（承重断言先实测）以修后全量复跑退出码
+    68	为准，不预签；复跑矩阵含 `record-capture.golden.mjs` 与全部 `buildTeachInCapture`
+    69	消费金牌（codex r1 Medium 补）。
+    70	
+    71	## 三、挂账（route:human）
+    72	
+    73	- 新金牌冻结人签（ADR-0004）：accept 阶段 `testChecksums` 落 prd 后按决策超时阶梯
+    74	  （15 分钟未答发邮件、再 15 分钟代签须如实标注）处理。
+    75	- 手录首链重录：需 Steven 人在机器前（远程桌面键盘进不了 WSLg 窗口）。
+    76	- 修后真机复验：hermetic 绿只是必要条件（ADR-0009），首链闭环真通要真机重录实证。
+
+exec
+/bin/bash -lc 'nl -ba tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs && nl -ba docs/plans/teachin-clear-fill-admission/review/baseline-pre-change.txt' in /mnt/d/ctx/heren/casey
+ succeeded in 0ms:
+     1	#!/usr/bin/env node
+     2	// teachin-clear-fill-admission：清空输入框的 fill 事件（目标值=空串）在录制投影、
+     3	// raw capture 准入、runner 与 canonical driver 全链的语义钉。纯内存、零 browser/SUT/network/LLM。
+     4	// 语义：真清空（原始值恰为空串）是合法回放目标值（fill('') 即清空）；缺 value 键/非 string
+     5	// 仍 fail-closed 拒；纯空白等「洗成空串」形态在投影层丢键、由准入拒付（codex r1 High 收紧，
+     6	// 防把原拒付形态洗成静默清空）；敏感遮值闸序先于值可用闸。
+     7	// 夹具形状取自真语料 seq 11 邻接结构（脱敏重表达）。
+     8	
+     9	const TAG = 'teachin-clear-fill-admission';
+    10	const failures = [];
+    11	let passed = 0;
+    12	
+    13	function assert(condition, message) {
+    14	  if (!condition) throw new Error(message);
+    15	}
+    16	
+    17	async function check(name, fn) {
+    18	  try {
+    19	    await fn();
+    20	    passed += 1;
+    21	    console.log(`ok   ${TAG}: ${name}`);
+    22	  } catch (error) {
+    23	    failures.push(`${name}: ${String(error?.message || error).slice(-900)}`);
+    24	    console.error(`RED  ${TAG}: ${name}: ${String(error?.message || error).slice(-900)}`);
+    25	  }
+    26	}
+    27	
+    28	let recordApi;
+    29	let captureApi;
+    30	let actionApi;
+    31	let freshApi;
+    32	let runnerApi;
+    33	let driverApi;
+    34	let targetApi;
+    35	try {
+    36	  [recordApi, captureApi, actionApi, freshApi, runnerApi, driverApi, targetApi] = await Promise.all([
+    37	    import('../../lib/record-capture.mjs'),
+    38	    import('../../lib/teachin/raw-capture.mjs'),
+    39	    import('../../lib/teachin/raw-action.mjs'),
+    40	    import('../../lib/teachin/fresh-runtime.mjs'),
+    41	    import('../../lib/teachin/raw-replay-runner.mjs'),
+    42	    import('../../lib/teachin/raw-playwright-driver.mjs'),
+    43	    import('../../lib/execution-target/authority.mjs'),
+    44	  ]);
+    45	} catch {
+    46	  console.error(`RED  ${TAG}: frozen API import failed（实现模块尚未落地）`);
+    47	  process.exit(1);
+    48	}
+    49	
+    50	const { sanitizeRecordEvent, buildTeachInCapture } = recordApi;
+    51	const { admitRawReplayCapture, inspectAdmittedRawReplayCapture } = captureApi;
+    52	const { projectRawReplayAction } = actionApi;
+    53	const { createFreshReplayWitness, authorizeFreshReplayRuntime } = freshApi;
+    54	const { runRawReplay } = runnerApi;
+    55	const { canonicalRawPlaywrightDriver } = driverApi;
+    56	const { resolveExecutionTarget } = targetApi;
+    57	
+    58	for (const [name, fn] of Object.entries({
+    59	  sanitizeRecordEvent,
+    60	  buildTeachInCapture,
+    61	  admitRawReplayCapture,
+    62	  inspectAdmittedRawReplayCapture,
+    63	  projectRawReplayAction,
+    64	  createFreshReplayWitness,
+    65	  authorizeFreshReplayRuntime,
+    66	  runRawReplay,
+    67	  resolveExecutionTarget,
+    68	})) {
+    69	  assert(typeof fn === 'function', `缺 frozen API ${name}`);
+    70	}
+    71	assert(canonicalRawPlaywrightDriver && typeof canonicalRawPlaywrightDriver === 'object',
+    72	  '缺 frozen API canonicalRawPlaywrightDriver');
+    73	
+    74	const CASE_ID = 'tc_clear_fill_case';
+    75	
+    76	// 真语料 seq 11 邻接结构脱敏重表达：textarea 清空步的浏览器侧原始形状。
+    77	function rawClearFillEvent() {
+    78	  return {
+    79	    action: 'fill',
+    80	    path: '/home',
+    81	    selector: '#note-field',
+    82	    tagName: 'textarea',
+    83	    fieldLabel: '备注',
+    84	    type: 'textarea',
+    85	    value: '',
+    86	  };
+    87	}
+    88	
+    89	function captureDoc(events) {
+    90	  return {
+    91	    schemaVersion: 1,
+    92	    artifactKind: 'teach-in-capture',
+    93	    caseId: CASE_ID,
+    94	    createdAt: '2026-07-29T09:00:00.000Z',
+    95	    startPath: '/home',
+    96	    source: {
+    97	      kind: 'manual',
+    98	      signed: false,
+    99	      replayReady: false,
+   100	      distillRequired: true,
+   101	    },
+   102	    events,
+   103	  };
+   104	}
+   105	
+   106	function toBytes(doc) {
+   107	  return Buffer.from(JSON.stringify(doc, null, 2) + '\n', 'utf8');
+   108	}
+   109	
+   110	function clickEvent(seq) {
+   111	  return { seq, action: 'click', path: '/home', selector: '#open-form', tagName: 'button' };
+   112	}
+   113	
+   114	function filledEvent(seq, value) {
+   115	  const event = {
+   116	    seq,
+   117	    action: 'fill',
+   118	    path: '/home',
+   119	    selector: '#note-field',
+   120	    tagName: 'textarea',
+   121	    fieldLabel: '备注',
+   122	  };
+   123	  if (value !== undefined) event.value = value;
+   124	  return event;
+   125	}
+   126	
+   127	await check('G1 投影：fill 原始空串必须保 value 键', () => {
+   128	  const out = sanitizeRecordEvent(rawClearFillEvent(), 0);
+   129	  assert('value' in out, `清空 fill 的 value 键被投影丢弃：${JSON.stringify(out)}`);
+   130	  assert(out.value === '', `清空 fill 的 value 应为空串：${JSON.stringify(out)}`);
+   131	  assert(out.action === 'fill' && out.seq === 1, `投影基本形状漂移：${JSON.stringify(out)}`);
+   132	});
+   133	
+   134	await check('G1 投影：纯空白值仍丢键（洗空不得冒充清空，D4 收紧钉）', () => {
+   135	  const out = sanitizeRecordEvent({ ...rawClearFillEvent(), value: '   ' }, 0);
+   136	  assert(!('value' in out),
+   137	    `纯空白 fill 值不得保键放行：${JSON.stringify(out)}`);
+   138	});
+   139	
+   140	await check('G1 投影：非 fill 动作空串 value 仍丢键', () => {
+   141	  const out = sanitizeRecordEvent({
+   142	    action: 'click', path: '/home', selector: '#open-form', tagName: 'button', value: '',
+   143	  }, 0);
+   144	  assert(!('value' in out), `click 的空串 value 不应保键：${JSON.stringify(out)}`);
+   145	});
+   146	
+   147	await check('G1 投影：敏感字段遮值分支不受影响', () => {
+   148	  const out = sanitizeRecordEvent({
+   149	    ...rawClearFillEvent(), fieldLabel: '新密码', value: '',
+   150	  }, 0);
+   151	  assert(out.value === '<redacted>' && out.valueMasked === true,
+   152	    `敏感字段空值仍须遮值：${JSON.stringify(out)}`);
+   153	});
+   154	
+   155	await check('G1 端到端：buildTeachInCapture 保清空事件', () => {
+   156	  const doc = buildTeachInCapture({
+   157	    caseId: CASE_ID,
+   158	    startUrl: '/home',
+   159	    events: [
+   160	      { action: 'click', path: '/home', selector: '#open-form', tagName: 'button' },
+   161	      rawClearFillEvent(),
+   162	    ],
+   163	    createdAt: '2026-07-29T09:00:00.000Z',
+   164	  });
+   165	  const fill = doc.events[1];
+   166	  assert(fill && fill.action === 'fill' && 'value' in fill && fill.value === '',
+   167	    `capture 包应保清空事件的空串 value：${JSON.stringify(doc.events)}`);
+   168	});
+   169	
+   170	await check('G2 准入：空串 fill 放行且字节往返不丢', () => {
+   171	  const bytes = toBytes(captureDoc([clickEvent(1), filledEvent(2, '')]));
+   172	  const admitted = admitRawReplayCapture({ caseId: CASE_ID, captureBytes: bytes });
+   173	  assert(admitted.ok === true,
+   174	    `空串 fill 应准入：${JSON.stringify(admitted)}`);
+   175	  assert(admitted.eventCount === 2, `eventCount 漂移：${JSON.stringify(admitted)}`);
+   176	  const inspected = inspectAdmittedRawReplayCapture({
+   177	    captureAuthority: admitted.captureAuthority,
+   178	  });
+   179	  assert(inspected.ok === true && inspected.capture.events[1].value === '',
+   180	    `准入后空串 value 必须原样可读：${JSON.stringify(inspected.capture?.events)}`);
+   181	});
+   182	
+   183	await check('G2 准入：缺 value 键仍拒（真值丢失）', () => {
+   184	  const bytes = toBytes(captureDoc([clickEvent(1), filledEvent(2, undefined)]));
+   185	  const admitted = admitRawReplayCapture({ caseId: CASE_ID, captureBytes: bytes });
+   186	  assert(admitted.ok === false && admitted.reason === 'FILL_VALUE_UNAVAILABLE'
+   187	    && admitted.failedSeq === 2,
+   188	    `缺 value 键必须拒付 FILL_VALUE_UNAVAILABLE：${JSON.stringify(admitted)}`);
+   189	});
+   190	
+   191	await check('G2 准入：value 非 string 仍拒', () => {
+   192	  const bytes = toBytes(captureDoc([clickEvent(1), filledEvent(2, 7)]));
+   193	  const admitted = admitRawReplayCapture({ caseId: CASE_ID, captureBytes: bytes });
+   194	  assert(admitted.ok === false && admitted.reason === 'FILL_VALUE_UNAVAILABLE'
+   195	    && admitted.failedSeq === 2,
+   196	    `非 string value 必须拒付 FILL_VALUE_UNAVAILABLE：${JSON.stringify(admitted)}`);
+   197	});
+   198	
+   199	await check('G2 端到端：投影后的纯空白 fill 仍被准入拒付（fail-closed 钉）', () => {
+   200	  const doc = buildTeachInCapture({
+   201	    caseId: CASE_ID,
+   202	    startUrl: '/home',
+   203	    events: [
+   204	      { action: 'click', path: '/home', selector: '#open-form', tagName: 'button' },
+   205	      { ...rawClearFillEvent(), value: '   ' },
+   206	    ],
+   207	    createdAt: '2026-07-29T09:00:00.000Z',
+   208	  });
+   209	  const admitted = admitRawReplayCapture({
+   210	    caseId: CASE_ID,
+   211	    captureBytes: Buffer.from(JSON.stringify(doc, null, 2) + '\n', 'utf8'),
+   212	  });
+   213	  assert(admitted.ok === false && admitted.reason === 'FILL_VALUE_UNAVAILABLE',
+   214	    `纯空白经投影丢键后必须被准入拒付：${JSON.stringify(admitted)}`);
+   215	});
+   216	
+   217	await check('G3 传导：空串 fill 投影动作请求不丢键', () => {
+   218	  const result = projectRawReplayAction(filledEvent(2, ''));
+   219	  assert(result.ok === true && result.kind === 'action',
+   220	    `空串 fill 应投影为动作请求：${JSON.stringify(result)}`);
+   221	  const request = result.actionRequest;
+   222	  assert(request.action === 'fill' && request.fallbackCss === '#note-field'
+   223	    && Object.prototype.hasOwnProperty.call(request, 'value') && request.value === '',
+   224	    `动作请求应带空串 value：${JSON.stringify(request)}`);
+   225	});
+   226	
+   227	await check('G4 闸序：遮值闸先于值可用闸', () => {
+   228	  const masked = { ...filledEvent(2, undefined), valueMasked: true };
+   229	  const bytes = toBytes(captureDoc([clickEvent(1), masked]));
+   230	  const admitted = admitRawReplayCapture({ caseId: CASE_ID, captureBytes: bytes });
+   231	  assert(admitted.ok === false && admitted.reason === 'MASKED_FILL_UNREPLAYABLE',
+   232	    `遮蔽标记必须先于值可用判定：${JSON.stringify(admitted)}`);
+   233	  const redacted = toBytes(captureDoc([clickEvent(1), filledEvent(2, '<redacted>')]));
+   234	  const admittedRedacted = admitRawReplayCapture({ caseId: CASE_ID, captureBytes: redacted });
+   235	  assert(admittedRedacted.ok === false
+   236	    && admittedRedacted.reason === 'MASKED_FILL_UNREPLAYABLE',
+   237	    `规范遮蔽值必须整包拒：${JSON.stringify(admittedRedacted)}`);
+   238	});
+   239	
+   240	// —— G5 装具：fresh runtime 与动作驱动替身（复刻 raw-actions P4 模式）——
+   241	
+   242	function emitterDouble(extra = {}) {
+   243	  const listeners = new Map();
+   244	  return {
+   245	    ...extra,
+   246	    on(event, handler) {
+   247	      const entries = listeners.get(event) || [];
+   248	      entries.push(handler);
+   249	      listeners.set(event, entries);
+   250	    },
+   251	    emit(event) {
+   252	      for (const handler of listeners.get(event) || []) handler();
+   253	    },
+   254	  };
+   255	}
+   256	
+   257	function mintFresh(topologyAuthority) {
+   258	  let recordingConnected = true;
+   259	  const recordingBrowser = emitterDouble({
+   260	    isConnected: () => recordingConnected,
+   261	  });
+   262	  const recordingContext = emitterDouble({
+   263	    browser: () => recordingBrowser,
+   264	  });
+   265	  const witnessed = createFreshReplayWitness({ recordingBrowser, recordingContext });
+   266	  assert(witnessed?.ok === true && witnessed.witness,
+   267	    `fresh witness 创建失败：${JSON.stringify(witnessed)}`);
+   268	  recordingContext.emit('close');
+   269	  recordingConnected = false;
+   270	  recordingBrowser.emit('disconnected');
+   271	
+   272	  const replayBrowser = emitterDouble({ isConnected: () => true });
+   273	  const replayContext = emitterDouble({ browser: () => replayBrowser });
+   274	  const replayPage = emitterDouble({
+   275	    context: () => replayContext,
+   276	    isClosed: () => false,
+   277	  });
+   278	  const authorized = authorizeFreshReplayRuntime({
+   279	    witness: witnessed.witness,
+   280	    replayBrowser,
+   281	    replayContext,
+   282	    replayPage,
+   283	    topologyAuthority,
+   284	  });
+   285	  assert(authorized?.ok === true && authorized.freshRuntimeAuthority,
+   286	    `fresh runtime 授权失败：${JSON.stringify(authorized)}`);
+   287	  return authorized;
+   288	}
+   289	
+   290	await check('G5 runner 穿透：admit→runRawReplay 全链空串不丢', async () => {
+   291	  const bytes = toBytes(captureDoc([clickEvent(1), filledEvent(2, '')]));
+   292	  const admitted = admitRawReplayCapture({ caseId: CASE_ID, captureBytes: bytes });
+   293	  assert(admitted?.ok === true && admitted.captureAuthority,
+   294	    `空串 capture 应准入：${JSON.stringify(admitted)}`);
+   295	
+   296	  const execution = resolveExecutionTarget({
+   297	    runtime: { platform: 'linux', isWSL: false },
+   298	    logicalTarget: { startUrl: 'https://clear-fill.invalid/home' },
+   299	    transport: { mode: 'direct' },
+   300	    requiresOriginContinuity: true,
+   301	  });
+   302	  assert(execution?.ok === true && execution.authority,
+   303	    `合成 execution authority 应成功：${JSON.stringify(execution)}`);
+   304	
+   305	  const topologyAuthority = Object.freeze({
+   306	    activePageAuthority() {
+   307	      return Object.freeze(Object.create(null));
+   308	    },
+   309	  });
+   310	  const fresh = mintFresh(topologyAuthority);
+   311	  const requests = [];
+   312	  const actionGates = new WeakMap();
+   313	  const actionDriver = {
+   314	    async readActivePath() {
+   315	      return '/home';
+   316	    },
+   317	    async resolve({ event }) {
+   318	      requests.push(event);
+   319	      const actionAuthority = Object.freeze(Object.create(null));
+   320	      actionGates.set(actionAuthority, event);
+   321	      return { resolution: 'unique', candidateCount: 1, actionAuthority };
+   322	    },
+   323	    async perform({ actionAuthority }) {
+   324	      const request = actionGates.get(actionAuthority);
+   325	      assert(request, 'perform 必须消费对应 resolve 铸造的 authority');
+   326	      actionGates.delete(actionAuthority);
+   327	      return { ok: true, identityReadback: { ok: true } };
+   328	    },
+   329	  };
+   330	  const result = await runRawReplay({
+   331	    captureAuthority: admitted.captureAuthority,
+   332	    freshRuntimeAuthority: fresh.freshRuntimeAuthority,
+   333	    topologyAuthority,
+   334	    executionTargetAuthority: execution.authority,
+   335	    actionDriver,
+   336	  });
+   337	  assert(result?.ok === true && result.status === 'CLEAN',
+   338	    `空串 fill raw replay 应 CLEAN：${JSON.stringify(result)}`);
+   339	  assert(requests.length === 2, `runner 请求数漂移：${JSON.stringify(requests)}`);
+   340	  const fill = requests[1];
+   341	  const keys = Object.keys(fill).sort().join(',');
+   342	  assert(keys === 'action,fallbackCss,value',
+   343	    `fill 请求 keys 不闭合：${keys}`);
+   344	  assert(fill.action === 'fill' && fill.fallbackCss === '#note-field'
+   345	    && Object.prototype.hasOwnProperty.call(fill, 'value') && fill.value === '',
+   346	    `runner 传导的 fill 请求必须精确含空串 value：${JSON.stringify(fill)}`);
+   347	});
+   348	
+   349	// —— G6 装具：canonical driver 的页面/定位替身（裁剪 action-authority browserHarness）——
+   350	
+   351	await check('G6 物理句柄：canonical driver 对 handle.fill 实参严格全等空串', async () => {
+   352	  const DRIVER_EVENT = Object.freeze({
+   353	    action: 'fill',
+   354	    path: '/home',
+   355	    fallbackCss: '#note-field',
+   356	    value: '',
+   357	  });
+   358	  const execution = resolveExecutionTarget({
+   359	    runtime: { platform: 'linux', isWSL: false },
+   360	    logicalTarget: { startUrl: 'https://clear-fill.invalid/home' },
+   361	    transport: { mode: 'direct' },
+   362	    requiresOriginContinuity: true,
+   363	  });
+   364	  assert(execution?.ok === true && execution.authority,
+   365	    `合成 execution authority 应成功：${JSON.stringify(execution)}`);
+   366	
+   367	  const physical = [];
+   368	  const page = {};
+   369	  const state = { connected: true, count: 1, ownerPage: null };
+   370	  const frame = { page: () => state.ownerPage || page };
+   371	  const handle = {
+   372	    async evaluate() { return state.connected; },
+   373	    async ownerFrame() { return frame; },
+   374	    click: async () => { physical.push({ kind: 'click' }); },
+   375	    dblclick: async () => { physical.push({ kind: 'dblclick' }); },
+   376	    fill: async (value) => { physical.push({ kind: 'fill', value }); },
+   377	    press: async (key) => { physical.push({ kind: 'press', key }); },
+   378	  };
+   379	  const locator = {
+   380	    first() { return locator; },
+   381	    async waitFor() {},
+   382	    async count() { return state.count; },
+   383	    async elementHandle() { return handle; },
+   384	    click: handle.click,
+   385	    dblclick: handle.dblclick,
+   386	    fill: handle.fill,
+   387	    press: handle.press,
+   388	  };
+   389	  Object.assign(page, {
+   390	    locator(selector) {
+   391	      assert(selector === DRIVER_EVENT.fallbackCss, `locator selector 漂移：${selector}`);
+   392	      return locator;
+   393	    },
+   394	    mainFrame: () => frame,
+   395	    url: () => 'https://clear-fill.invalid/home',
+   396	    isClosed: () => false,
+   397	  });
+   398	  const pageAuthority = Object.freeze(Object.create(null));
+   399	  const topology = Object.freeze({
+   400	    activePageAuthority: () => pageAuthority,
+   401	    async evaluateActive({ pageAuthority: actual, evaluate }) {
+   402	      if (actual !== pageAuthority) return { ok: false, reason: 'PAGE_AUTHORITY_STALE' };
+   403	      return { ok: true, value: await evaluate(page) };
+   404	    },
+   405	    async performClick({ pageAuthority: actual, perform }) {
+   406	      if (actual !== pageAuthority) return { ok: false, reason: 'PAGE_AUTHORITY_STALE' };
+   407	      return { ok: true, value: await perform(page) };
+   408	    },
+   409	    async consumeNewPageEvent() {
+   410	      return { ok: false, reason: 'TOPOLOGY_EVENT_INVALID' };
+   411	    },
+   412	  });
+   413	
+   414	  const resolved = await canonicalRawPlaywrightDriver.resolve({
+   415	    event: DRIVER_EVENT,
+   416	    topologyAuthority: topology,
+   417	    executionTargetAuthority: execution.authority,
+   418	  });
+   419	  assert(resolved && resolved.resolution === 'unique' && resolved.candidateCount === 1
+   420	    && resolved.actionAuthority,
+   421	    `driver resolve 应 unique：${JSON.stringify(resolved)}`);
+   422	  const done = await canonicalRawPlaywrightDriver.perform({
+   423	    actionAuthority: resolved.actionAuthority,
+   424	    topologyAuthority: topology,
+   425	    executionTargetAuthority: execution.authority,
+   426	  });
+   427	  assert(done?.ok === true,
+   428	    `driver perform 应成功：${JSON.stringify(done)}`);
+   429	  const fills = physical.filter((entry) => entry.kind === 'fill');
+   430	  assert(fills.length === 1 && fills[0].value === '' && typeof fills[0].value === 'string',
+   431	    `handle.fill 必须恰好收到一次严格空串：${JSON.stringify(physical)}`);
+   432	});
+   433	
+   434	if (failures.length) {
+   435	  console.error(`\n${TAG}: ${passed} passed, ${failures.length} failed`);
+   436	  for (const failure of failures) console.error(` - ${failure}`);
+   437	  process.exit(1);
+   438	}
+   439	console.log(`\n${TAG}: ${passed} passed, 0 failed`);
+     1	exit=0 tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs
+     2	exit=0 tests/_golden/teachin-replayability-adjacent.zero-sut.golden.mjs
+     3	exit=0 tests/_golden/teachin-replayability-atom-roundtrip.zero-sut.golden.mjs
+     4	exit=0 tests/_golden/teachin-replayability-boundaries.static.golden.mjs
+     5	exit=0 tests/_golden/teachin-replayability-capture-fresh.zero-sut.golden.mjs
+     6	exit=0 tests/_golden/teachin-replayability-clean-proof.zero-sut.golden.mjs
+     7	exit=0 tests/_golden/teachin-replayability-compile-runtime-adapter.zero-sut.golden.mjs
+     8	exit=0 tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs
+     9	exit=0 tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs
+    10	exit=0 tests/_golden/teachin-replayability-entity-verification.zero-sut.golden.mjs
+    11	exit=0 tests/_golden/teachin-replayability-equivalence-completion.zero-sut.golden.mjs
+    12	exit=0 tests/_golden/teachin-replayability-equivalence-core.zero-sut.golden.mjs
+    13	exit=0 tests/_golden/teachin-replayability-equivalence-evidence.zero-sut.golden.mjs
+    14	exit=0 tests/_golden/teachin-replayability-equivalence-integrity-authority.zero-sut.golden.mjs
+    15	exit=0 tests/_golden/teachin-replayability-equivalence-integrity-semantics.zero-sut.golden.mjs
+    16	exit=0 tests/_golden/teachin-replayability-equivalence-production-boundary.static.golden.mjs
+    17	exit=0 tests/_golden/teachin-replayability-equivalence-reset.zero-sut.golden.mjs
+    18	exit=0 tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs
+    19	exit=0 tests/_golden/teachin-replayability-equivalence-sequence.zero-sut.golden.mjs
+    20	exit=0 tests/_golden/teachin-replayability-orchestrator-wiring.static.golden.mjs
+    21	exit=0 tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs
+    22	exit=0 tests/_golden/teachin-replayability-prepared-run.zero-sut.golden.mjs
+    23	exit=0 tests/_golden/teachin-replayability-raw-actions.zero-sut.golden.mjs
+    24	exit=0 tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs
+    25	exit=0 tests/_golden/teachin-replayability-raw-event-observation.zero-sut.golden.mjs
+    26	exit=0 tests/_golden/teachin-replayability-raw-output-seal.zero-sut.golden.mjs
+    27	exit=0 tests/_golden/teachin-replayability-raw-runner.zero-sut.golden.mjs
+    28	exit=0 tests/_golden/teachin-replayability-resolved-authority-coverage.zero-sut.golden.mjs
+    29	exit=0 tests/_golden/teachin-replayability-resolved-projection.zero-sut.golden.mjs
+    30	exit=0 tests/_golden/teachin-replayability-review-hardening.zero-sut.golden.mjs
+    31	exit=0 tests/_golden/teachin-replayability-runtime-bootstrap.zero-sut.golden.mjs
+    32	exit=0 tests/_golden/teachin-replayability-runtime-cycle-adapter.zero-sut.golden.mjs
+    33	exit=0 tests/_golden/teachin-replayability-verdict-cli-adapter.zero-sut.golden.mjs
+    34	exit=1 tests/_golden/teachin-observation-authority-hardening.zero-sut.golden.mjs
+    35	exit=0 tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs
+    36	exit=78 tests/_golden/teachin-observation-driver-canonical-root.zero-sut.golden.mjs
+    37	exit=1 tests/_golden/teachin-observation-driver-provenance.zero-sut.golden.mjs
+    38	exit=1 tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs
+    39	exit=1 tests/_golden/teachin-observation-sidecar-hardening.zero-sut.golden.mjs
+    40	exit=0 tests/_golden/teachin-observation-sidecar.zero-sut.golden.mjs
+    41	exit=78 tests/_golden/teachin-observation-transaction-root.zero-sut.golden.mjs
+    42	exit=0 tests/_golden/teachin-intake-swap-race.zero-sut.golden.mjs
+    43	exit=0 tests/_golden/record-distill.golden.mjs
+    44	exit=0 tests/_golden/record-intake.golden.mjs
+    45	exit=0 tests/_golden/cli-mcp-face.golden.mjs
+    46	exit=0 tests/_golden/teachin-cycle-alias-args.static.golden.mjs
+    47	exit=0 tests/_golden/record-capture.golden.mjs
+    48	exit=0 tests/_golden/observation-identity-contract-closure.zero-sut.golden.mjs
+    49	exit=1 tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs
+    50	exit=0 tests/_golden/page-topology-auth-continuity-adjacent-regression.zero-sut.golden.mjs
+    51	exit=0 tests/_golden/page-topology-auth-continuity-pipeline.zero-sut.golden.mjs
+    52	
+    53	# 改前既红分类（2026-07-29，本契约动工前采样，与 clear-fill 接缝无关）:
+    54	## tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs
+    55	FAIL  teachin-observation-safe-case-lease-v2: D6 append/reader/pair/identity/registry Proxy/accessor 零执行: CASE_LEASE_PREEXISTING
+    56	FAIL  teachin-observation-safe-case-lease-v2: 4 过 / 13 失败
+    57	## tests/_golden/teachin-observation-sidecar-hardening.zero-sut.golden.mjs
+    58	RED  teachin-observation-sidecar-hardening: H5 受信复核必须对账 capture 唯一 eventSeq: {"ok":false,"trusted":false,"identityStatus":"unverified","replayReady":false,"reason":"EXPECTED_BINDING_NOT_AUTHORITY"}
+    59	RED  teachin-observation-sidecar-hardening: 4 过 / 2 红
+    60	## tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs
+    61	
+    62	Node.js v24.18.0
+
+codex
+初步核对已确认：C1 与新增 G5/G6 的代码形态都已落下；我同时看到两处需要用实跑和基线可比性再定性——一处是 GRILL 的旧“无条件保留”措辞尚存，另一处是 7 枚既红的签名存档看起来并不完整。现在跑指定金牌并核对准确红绿分布。
+exec
+/bin/bash -lc 'node tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs' in /mnt/d/ctx/heren/casey
+ exited 1 in 797ms:
+RED  teachin-clear-fill-admission: G1 投影：fill 原始空串必须保 value 键: 清空 fill 的 value 键被投影丢弃：{"seq":1,"action":"fill","path":"/home","selector":"#note-field","tagName":"textarea","fieldLabel":"备注"}
+ok   teachin-clear-fill-admission: G1 投影：纯空白值仍丢键（洗空不得冒充清空，D4 收紧钉）
+ok   teachin-clear-fill-admission: G1 投影：非 fill 动作空串 value 仍丢键
+ok   teachin-clear-fill-admission: G1 投影：敏感字段遮值分支不受影响
+RED  teachin-clear-fill-admission: G1 端到端：buildTeachInCapture 保清空事件: capture 包应保清空事件的空串 value：[{"seq":1,"action":"click","path":"/home","selector":"#open-form","tagName":"button"},{"seq":2,"action":"fill","path":"/home","selector":"#note-field","tagName":"textarea","fieldLabel":"备注"}]
+RED  teachin-clear-fill-admission: G2 准入：空串 fill 放行且字节往返不丢: 空串 fill 应准入：{"ok":false,"reason":"FILL_VALUE_UNAVAILABLE","failedSeq":2}
+ok   teachin-clear-fill-admission: G2 准入：缺 value 键仍拒（真值丢失）
+ok   teachin-clear-fill-admission: G2 准入：value 非 string 仍拒
+ok   teachin-clear-fill-admission: G2 端到端：投影后的纯空白 fill 仍被准入拒付（fail-closed 钉）
+ok   teachin-clear-fill-admission: G3 传导：空串 fill 投影动作请求不丢键
+ok   teachin-clear-fill-admission: G4 闸序：遮值闸先于值可用闸
+RED  teachin-clear-fill-admission: G5 runner 穿透：admit→runRawReplay 全链空串不丢: 空串 capture 应准入：{"ok":false,"reason":"FILL_VALUE_UNAVAILABLE","failedSeq":2}
+ok   teachin-clear-fill-admission: G6 物理句柄：canonical driver 对 handle.fill 实参严格全等空串
+
+teachin-clear-fill-admission: 9 passed, 4 failed
+ - G1 投影：fill 原始空串必须保 value 键: 清空 fill 的 value 键被投影丢弃：{"seq":1,"action":"fill","path":"/home","selector":"#note-field","tagName":"textarea","fieldLabel":"备注"}
+ - G1 端到端：buildTeachInCapture 保清空事件: capture 包应保清空事件的空串 value：[{"seq":1,"action":"click","path":"/home","selector":"#open-form","tagName":"button"},{"seq":2,"action":"fill","path":"/home","selector":"#note-field","tagName":"textarea","fieldLabel":"备注"}]
+ - G2 准入：空串 fill 放行且字节往返不丢: 空串 fill 应准入：{"ok":false,"reason":"FILL_VALUE_UNAVAILABLE","failedSeq":2}
+ - G5 runner 穿透：admit→runRawReplay 全链空串不丢: 空串 capture 应准入：{"ok":false,"reason":"FILL_VALUE_UNAVAILABLE","failedSeq":2}
+
+exec
+/bin/bash -lc "nl -ba lib/record-capture.mjs | sed -n '1,180p'; nl -ba lib/teachin/raw-capture.mjs | sed -n '1,220p'; nl -ba lib/teachin/raw-action.mjs | sed -n '1,130p'; nl -ba lib/teachin/raw-playwright-driver.mjs | sed -n '1,170p'; nl -ba lib/teachin/raw-replay-runner.mjs | sed -n '1,260p'" in /mnt/d/ctx/heren/casey
+ succeeded in 103ms:
+	  try {
+   206	    resolved = await actionDriver.resolve({
+   207	      event: attributedRequest(actionRequest, seq),
+   208	      topologyAuthority,
+   209	      executionTargetAuthority,
+   210	    });
+   211	  } catch {
+   212	    return { reason: 'RAW_REPLAY_INTERNAL_ERROR', axis: actionAxis('internal_error', 0, false) };
+   213	  }
+   214	  const classified = classifyResolution(resolved);
+   215	  if (classified.reason) {
+   216	    const count = Number.isSafeInteger(resolved?.candidateCount) ? resolved.candidateCount : 0;
+   217	    return {
+   218	      reason: classified.reason,
+   219	      axis: actionAxis(RESOLUTION_LABEL[classified.reason] || 'internal_error', count, false),
+   220	    };
+   221	  }
+   222	  let performed;
+   223	  try {
+   224	    performed = await actionDriver.perform({
+   225	      actionAuthority: classified.actionAuthority,
+   226	      topologyAuthority,
+   227	      executionTargetAuthority,
+   228	    });
+   229	  } catch {
+   230	    return { reason: 'ACTION_FAILED', axis: actionAxis('action_failed', 1, false) };
+   231	  }
+   232	  if (performed?.ok !== true || performed?.identityReadback?.ok !== true) {
+   233	    return { reason: 'ACTION_FAILED', axis: actionAxis('action_failed', 1, false) };
+   234	  }
+   235	  return { reason: null, axis: actionAxis('unique', 1, true) };
+   236	}
+   237	
+   238	export async function runRawReplay(options = {}) {
+   239	  let captureAuthority;
+   240	  let freshRuntimeAuthority;
+   241	  let topologyAuthority;
+   242	  let executionTargetAuthority;
+   243	  let actionDriver;
+   244	  let eventObserver;
+   245	  try {
+   246	    if (!options || typeof options !== 'object') {
+   247	      return denied('RAW_CAPTURE_AUTHORITY_INVALID');
+   248	    }
+   249	    ({
+   250	      captureAuthority,
+   251	      freshRuntimeAuthority,
+   252	      topologyAuthority,
+   253	      executionTargetAuthority,
+   254	      actionDriver,
+   255	      eventObserver,
+   256	    } = options);
+   257	  } catch {
+   258	    return denied('RAW_CAPTURE_AUTHORITY_INVALID');
+   259	  }
+   260	  // 1. capture 只 inspect、不消费；伪造/clone 在读页面之前拒。
+
+exec
+/bin/bash -lc "rg -n \"buildTeachInCapture\" tests/_golden docs/plans/teachin-clear-fill-admission -g '*.mjs' -g '*.md' -g '*.txt' && rg -n \"record-capture\\.mjs|sanitizeRecordEvent\" tests/_golden -g '*.mjs'" in /mnt/d/ctx/heren/casey
+ succeeded in 1335ms:
+docs/plans/teachin-clear-fill-admission/plan.md:50:  仍遮值；`buildTeachInCapture` 端到端形状同断言（夹具取真语料 seq 11 邻接结构脱敏
+docs/plans/teachin-clear-fill-admission/plan.md:70:`buildTeachInCapture` 消费方检索补全）。改前基线已采样存档
+docs/plans/teachin-clear-fill-admission/plan.md:111:  `record-capture` 与 `buildTeachInCapture` 消费方（Medium）。本版即修订后计划，
+docs/plans/teachin-clear-fill-admission/GRILL.md:60:fill 原始空串保键、纯空白仍丢键（含 `buildTeachInCapture` 端到端形状与拒付钉）；
+docs/plans/teachin-clear-fill-admission/GRILL.md:68:为准，不预签；复跑矩阵含 `record-capture.golden.mjs` 与全部 `buildTeachInCapture`
+tests/_golden/cli-mcp-face.golden.mjs:19:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/cli-mcp-face.golden.mjs:249:          capture: buildTeachInCapture({
+tests/_golden/record-distill.golden.mjs:9:// 真 bin/distill.mjs（同 loader）」。三件套仍经生产安全构造闸产出（buildTeachInCapture →
+tests/_golden/record-distill.golden.mjs:36:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/record-distill.golden.mjs:95:// 手造合法三件套：capture 经生产安全构造闸产出（buildTeachInCapture → bindCaptureIdentityObservations，
+tests/_golden/record-distill.golden.mjs:101:    capture: buildTeachInCapture({ caseId, startUrl, createdAt: '2026-01-01T00:00:00.000Z', events }),
+tests/_golden/page-topology-auth-continuity-pipeline.zero-sut.golden.mjs:4:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/page-topology-auth-continuity-pipeline.zero-sut.golden.mjs:70:  const capture = buildTeachInCapture({
+tests/_golden/page-topology-auth-continuity-pipeline.zero-sut.golden.mjs:84:  const capture = buildTeachInCapture({
+tests/_golden/teachin-observation-authority-root.worker.mjs:29:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-observation-authority-root.worker.mjs:103:  const captureV1 = buildTeachInCapture({
+tests/_golden/page-topology-auth-continuity-adjacent-regression.zero-sut.golden.mjs:5:import { buildTeachInCapture, projectUrlSafe } from '../../lib/record-capture.mjs';
+tests/_golden/page-topology-auth-continuity-adjacent-regression.zero-sut.golden.mjs:62:  const capture = buildTeachInCapture({
+tests/_golden/teachin-observation-authority-hardening.zero-sut.golden.mjs:9:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-observation-authority-hardening.zero-sut.golden.mjs:40:  return buildTeachInCapture({
+tests/_golden/teachin-intake-swap-race.zero-sut.golden.mjs:26:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-intake-swap-race.zero-sut.golden.mjs:68:    capture: buildTeachInCapture({
+tests/_golden/observation-identity-contract-closure.zero-sut.golden.mjs:11:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/observation-identity-contract-closure.zero-sut.golden.mjs:87:    capture: buildTeachInCapture({ caseId, startUrl: '/ai-manager/process/list', createdAt: '2026-07-17T00:00:00.000Z', events }),
+tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs:50:const { sanitizeRecordEvent, buildTeachInCapture } = recordApi;
+tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs:60:  buildTeachInCapture,
+tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs:155:await check('G1 端到端：buildTeachInCapture 保清空事件', () => {
+tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs:156:  const doc = buildTeachInCapture({
+tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs:200:  const doc = buildTeachInCapture({
+tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs:11:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs:50:    capture: buildTeachInCapture({
+tests/_golden/teachin-observation-sidecar-hardening.zero-sut.golden.mjs:15:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-observation-sidecar-hardening.zero-sut.golden.mjs:43:  return buildTeachInCapture({ caseId, startUrl: '/ai-manager/process/list', createdAt: '2026-07-17T00:00:00.000Z', events });
+tests/_golden/teachin-replayability-adjacent.zero-sut.golden.mjs:4:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-replayability-adjacent.zero-sut.golden.mjs:29:  const capture = buildTeachInCapture({
+tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs:40:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs:131:    capture: buildTeachInCapture({
+tests/_golden/teachin-observation-driver-provenance.zero-sut.golden.mjs:28:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-observation-driver-provenance.zero-sut.golden.mjs:96:    capture: buildTeachInCapture({
+tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs:31:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs:68:  const captureV1 = buildTeachInCapture({
+tests/_golden/teachin-observation-sidecar.zero-sut.golden.mjs:12:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-observation-sidecar.zero-sut.golden.mjs:40:  return buildTeachInCapture({
+tests/_golden/cli-mcp-face.golden.mjs:19:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/observation-identity-contract-closure.zero-sut.golden.mjs:11:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs:11:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/page-topology-auth-continuity-pipeline.zero-sut.golden.mjs:4:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/page-topology-auth-continuity-boundaries.static.golden.mjs:115:  const capture = source('lib/record-capture.mjs');
+tests/_golden/page-topology-auth-continuity-adjacent-regression.zero-sut.golden.mjs:5:import { buildTeachInCapture, projectUrlSafe } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-observation-sidecar.zero-sut.golden.mjs:12:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-observation-sidecar-hardening.zero-sut.golden.mjs:15:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs:40:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-observation-driver-provenance.zero-sut.golden.mjs:28:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/record-distill.golden.mjs:36:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs:31:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-observation-authority-root.worker.mjs:29:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-observation-authority-hardening.zero-sut.golden.mjs:9:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-intake-swap-race.zero-sut.golden.mjs:26:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs:37:    import('../../lib/record-capture.mjs'),
+tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs:50:const { sanitizeRecordEvent, buildTeachInCapture } = recordApi;
+tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs:59:  sanitizeRecordEvent,
+tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs:128:  const out = sanitizeRecordEvent(rawClearFillEvent(), 0);
+tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs:135:  const out = sanitizeRecordEvent({ ...rawClearFillEvent(), value: '   ' }, 0);
+tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs:141:  const out = sanitizeRecordEvent({
+tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs:148:  const out = sanitizeRecordEvent({
+tests/_golden/teachin-replayability-adjacent.zero-sut.golden.mjs:4:import { buildTeachInCapture } from '../../lib/record-capture.mjs';
+tests/_golden/teachin-replayability-boundaries.static.golden.mjs:200:  const text = source('lib/record-capture.mjs');
+
+codex
+PLAN_CHANGES_REQUIRED
+1. FIXED — `plan.md:19` 已限定 `raw[k] === ''`，且金牌实跑确认纯空白经 build→admit 仍拒付。
+2. FIXED — G5 覆盖 admit→runner 且按预期红在准入；G6 已绿并证明 `handle.fill` 恰好收到一次严格空串；总计 9 绿、4 红。
+3. NOT_FIXED — 复跑矩阵已补齐，但基线未保存 3 枚既红的有效失败签名（authority-hardening、driver-provenance、observation-cli），无法执行“签名不变”复跑判据。
+[Medium] `GRILL.md:40` 仍称 fill 的 `value`“无条件保留”，与 `GRILL.md:46-52` 仅保原始严格空串的 D4 定案矛盾，需同步改写 D3。
+REVIEW_DONE_SENTINEL
+tokens used
+67,263
+PLAN_CHANGES_REQUIRED
+1. FIXED — `plan.md:19` 已限定 `raw[k] === ''`，且金牌实跑确认纯空白经 build→admit 仍拒付。
+2. FIXED — G5 覆盖 admit→runner 且按预期红在准入；G6 已绿并证明 `handle.fill` 恰好收到一次严格空串；总计 9 绿、4 红。
+3. NOT_FIXED — 复跑矩阵已补齐，但基线未保存 3 枚既红的有效失败签名（authority-hardening、driver-provenance、observation-cli），无法执行“签名不变”复跑判据。
+[Medium] `GRILL.md:40` 仍称 fill 的 `value`“无条件保留”，与 `GRILL.md:46-52` 仅保原始严格空串的 D4 定案矛盾，需同步改写 D3。
+REVIEW_DONE_SENTINEL

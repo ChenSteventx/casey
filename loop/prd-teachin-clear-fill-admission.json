@@ -1,0 +1,80 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-clear-fill-admission（full）：清空输入框的 fill 事件（目标值=空串）在示教链两接缝被误拒——lib/record-capture.mjs sanitizeRecordEvent 真值判断丢空串 value 键、lib/teachin/raw-capture.mjs checkReplayableFields 把空串判成 FILL_VALUE_UNAVAILABLE。只改两处判据：投影层仅当原始值恰为空串（真清空）时保留空串 value 键、准入判据收敛为 typeof !== 'string'。fail-closed 不放宽：缺 value 键仍拒、非 string 仍拒、纯空白等洗空形态仍丢键拒付（codex r1 High）、敏感遮值闸序不变；旧语料包不追认（键已丢无法证明是清空）；ALLOWED_EVENT_KEYS 键集与 capture schemaVersion 不变；裁判 verdict.mjs 与 replay 生产库零沾染。计划经 codex gpt-5.6-sol xhigh 三轮评审 PLAN_APPROVE（r1 三 findings + r2 两 findings 全 FIXED）。",
+  "specPath": "docs/plans/teachin-clear-fill-admission/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs": "2fba65f9a3aef2428238f233dd1e8a29fa4cf242e2be885da462e8c7a99c35dc",
+    "tests/_golden/support/clear-fill-sweep.mjs": "61f5f2a84ebedc5a6ee3eabc561c7d10fb5a8194a17351179177ef43c9dc40c7",
+    "tests/_golden/support/prd-drift-scan.mjs": "e38696f9ac78b1a6a9e7ed43a472f7842dc2075c4f3a40ba6a5c46dfbfc79f06"
+  },
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-29",
+      "round": "code-r1 换签（codex CHANGES_REQUIRED 两 Medium）",
+      "files": [
+        "tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs"
+      ],
+      "reason": "codex gpt-5.6-sol xhigh 代码评审 r1 逮出：①--from-events 通道非 string fill.value 被 cleanString 强转洗过准入（数字/布尔/对象实测过闸），违背「非 string 仍 fail-closed」承诺——投影层加类型闸（非 string 丢键→准入拒）+ 金牌补投影单元与 build→admit 端到端四类型反例（13→15 组）；②s2 gate 绿只编码 15 枚 acceptance、51 枚全量复跑未落盘即 passes:true——新增 s3 story 以确定性 sweep runner（support/clear-fill-sweep.mjs，52 枚退出码+既红签名稳定性二重核对）+ term-lint 入 gate。原件字节存档 .pre-r1-amendment.archive.gz；新件实测 15/15 exit 0。grok-4.5 同轮独立 APPROVE（真跑金牌+自造对抗探针）。Steven 签字见 observability 挂账处置。",
+      "signedBy": "Steven（2026-07-29 AskUserQuestion 批准换签并重跑 gate 收口）",
+      "addendum": "codex delta 复审判 M2 NOT_FIXED（A3 全仓漂移扫须入 gate acceptance、手动跑不算门禁绑定）——新增冻结件 support/prd-drift-scan.mjs（145 prd/742 冻结件零漂移实测）入 s3。另：gate 单条 acceptance 有 5 分钟看门狗（commandTimeoutMs 默认 300000），全量 sweep 约 14 分钟两轮 gate 均在同点被掐（非抖动）——sweep 改支持 --part k/4 轮转分片入 gate（四片并集=全集、两两不交，最重片实测 1m32s；无参仍全量，人工直跑 52/52 已两次实证），不放宽全局看门狗。均属 Steven 已批「重跑 gate 收口」的 M2 修复完成面；本 addendum 两项已由 Steven 2026-07-29 AskUserQuestion 明示确认补签。"
+    }
+  ],
+  "observability": [
+    {
+      "dimension": "新金牌冻结人签（ADR-0004）：Steven 已在 2026-07-29 AskUserQuestion 确认 grill+plan 并授权冻结推进（选项 1）；正式签字随收口汇报补账。",
+      "route": "human"
+    },
+    {
+      "dimension": "手录首链真机复录（旧语料包 seq 11 键已丢不追认；Steven 已录过一遍属实、但该包在录制时即丢键、包内无法证明清空语义，修后需在环境两坑（中文输入法、WSLg 标题栏 CJK 字体）处理后复录 tc_chiefcomplaint_smoke 实证闭环真通，ADR-0009 hermetic 绿只是必要条件）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-clear-fill-semantics",
+      "title": "S1 清空 fill 语义钉：投影仅原始空串保键（纯空白仍丢键、非 string 丢键不强转）、准入空串放行、缺键/非 string 仍拒、遮值闸序不变、runner 与物理句柄空串穿透（红先行金牌翻绿，code-r1 换签后 15 组）",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-29T03:19:37.311Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacent-zero-regression",
+      "title": "S2 邻接面零回归（护栏 #19）：示教可回放家族 + record 采集/入账/蒸馏面 + buildTeachInCapture 消费面复跑绿（改前基线 review/baseline-pre-change.txt，既红者不入本清单、复跑判签名不变）",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/teachin-replayability-raw-actions.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-capture-fresh.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-raw-event-observation.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-raw-runner.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-atom-roundtrip.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-boundaries.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-core.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs",
+        "node tests/_golden/record-capture.golden.mjs",
+        "node tests/_golden/record-distill.golden.mjs",
+        "node tests/_golden/record-intake.golden.mjs",
+        "node tests/_golden/teachin-intake-swap-race.zero-sut.golden.mjs",
+        "node tests/_golden/observation-identity-contract-closure.zero-sut.golden.mjs",
+        "node tests/_golden/page-topology-auth-continuity-adjacent-regression.zero-sut.golden.mjs",
+        "node tests/_golden/page-topology-auth-continuity-pipeline.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-29T03:23:11.358Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-full-matrix-and-terms",
+      "title": "S3 全量矩阵机制化（codex code-r1 M2）：52 枚受影响金牌确定性 sweep（44+1 绿 + 7 既红签名稳定二重核对）+ 术语表完整性",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/support/clear-fill-sweep.mjs --part 1/4",
+        "node tests/_golden/support/clear-fill-sweep.mjs --part 2/4",
+        "node tests/_golden/support/clear-fill-sweep.mjs --part 3/4",
+        "node tests/_golden/support/clear-fill-sweep.mjs --part 4/4",
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry"
+      ],
+      "evidence": "gate@2026-07-29T03:30:40.237Z 全部 acceptance exit 0"
+    }
+  ]
+}

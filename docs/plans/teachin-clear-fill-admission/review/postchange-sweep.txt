@@ -1,0 +1,76 @@
+exit=0 tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-adjacent.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-atom-roundtrip.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-boundaries.static.golden.mjs
+exit=0 tests/_golden/teachin-replayability-capture-fresh.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-clean-proof.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-compile-runtime-adapter.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs
+exit=0 tests/_golden/teachin-replayability-entity-verification.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-completion.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-core.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-evidence.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-integrity-authority.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-integrity-semantics.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-production-boundary.static.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-reset.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-equivalence-sequence.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-orchestrator-wiring.static.golden.mjs
+exit=0 tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-prepared-run.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-raw-actions.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-raw-event-observation.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-raw-output-seal.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-raw-runner.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-resolved-authority-coverage.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-resolved-projection.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-review-hardening.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-runtime-bootstrap.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-runtime-cycle-adapter.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-replayability-verdict-cli-adapter.zero-sut.golden.mjs
+exit=1 tests/_golden/teachin-observation-authority-hardening.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-observation-authority-root.zero-sut.golden.mjs
+exit=78 tests/_golden/teachin-observation-driver-canonical-root.zero-sut.golden.mjs
+exit=1 tests/_golden/teachin-observation-driver-provenance.zero-sut.golden.mjs
+exit=1 tests/_golden/teachin-observation-safe-case-lease-v2.zero-sut.golden.mjs
+exit=1 tests/_golden/teachin-observation-sidecar-hardening.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-observation-sidecar.zero-sut.golden.mjs
+exit=78 tests/_golden/teachin-observation-transaction-root.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-intake-swap-race.zero-sut.golden.mjs
+exit=0 tests/_golden/record-distill.golden.mjs
+exit=0 tests/_golden/record-intake.golden.mjs
+exit=0 tests/_golden/cli-mcp-face.golden.mjs
+exit=0 tests/_golden/teachin-cycle-alias-args.static.golden.mjs
+exit=0 tests/_golden/record-capture.golden.mjs
+exit=0 tests/_golden/observation-identity-contract-closure.zero-sut.golden.mjs
+exit=1 tests/_golden/observation-cli-authority-wiring.zero-sut.golden.mjs
+exit=0 tests/_golden/page-topology-auth-continuity-adjacent-regression.zero-sut.golden.mjs
+exit=0 tests/_golden/page-topology-auth-continuity-pipeline.zero-sut.golden.mjs
+exit=0 tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs
+
+# 改后复跑（2026-07-29，护栏 #19 受影响金牌全量复跑）
+# 采样口径：逐个 `timeout 180 node <文件>`，顺序跑不并行，只记真实退出码，不看输出标记串。
+# 前 51 行=基线清单同序；第 52 行=本契约新增金牌。
+#
+# 比对结论：
+# - 前 51 行退出码与 baseline-pre-change.txt 前 51 行逐行相同（diff 空）。
+# - 回归（基线 0 → 改后非 0）：0 个。
+# - 超时（退出码 124）：0 个。
+# - 新金牌 teachin-clear-fill-admission.zero-sut.golden.mjs：exit=0。
+# - 既红 7 枚退出码保持不变：5 枚 exit=1 + 2 枚 exit=78。
+#
+# 既红签名复核（与基线附录逐条对照，均未变，故不另附尾部输出）：
+# - teachin-observation-authority-hardening: 5 过 / 3 红；A4 仍为 ACCEPTED_AUTHORITY_NOT_MINTED:INTAKE_TRANSACTION_INVALID
+# - teachin-observation-driver-provenance: 1 过 / 6 红；C1 仍为 CAPTURE_PATH_NOT_CANONICAL
+# - teachin-observation-safe-case-lease-v2: 4 过 / 13 失败；D6 仍为 CASE_LEASE_PREEXISTING
+# - teachin-observation-sidecar-hardening: 4 过 / 2 红；H5 仍为 EXPECTED_BINDING_NOT_AUTHORITY
+# - observation-cli-authority-wiring: 仍在 canonical-case-lease.mjs:99:34 抛 CASE_LEASE_PREEXISTING 崩溃
+# - teachin-observation-driver-canonical-root: exit=78，SECURITY_REVOKED 提示不变
+# - teachin-observation-transaction-root: exit=78，SECURITY_REVOKED 提示不变
+#
+# 采样备注：首轮 while-read 跑法被 cli-mcp-face.golden.mjs 读走 stdin，
+# 导致清单末 7 项未执行；改用 fd 3 读清单 + 子进程 stdin 接 /dev/null 后补跑，
+# 并以干净 stdin 重跑 cli-mcp-face 复核（仍 exit=0）。本表为补跑后的完整 52 项。
