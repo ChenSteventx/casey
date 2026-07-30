@@ -48,3 +48,37 @@ p4-drafter / 前序契约新金牌）；s3 漂移扫+术语。
 - R3 假绿自证陷阱（本修复效果就是把红变绿）→ A4 首末轮探针为唯一区分证据，
   实现不得省；
 - R4 自愈路径同步生效 → 复验金牌进 s2 复跑清单。
+
+## 5. 主会话裁决（红先行落地后，2026-07-30）
+
+红金牌落地时抛上来四条矛盾，逐条裁定如下，裁定即本计划的修订。
+
+**M1 · D5「新增夹具情景」不走 `publish-sut`，改走 hermetic 固定语料。** 原文
+写「假环境夹具新增只隐藏不清空的关闭情景」，但 `tests/fixtures/publish-sut/server.mjs`
+被 `prd-wf-publish-states` 与 `prd-wf-history-version` 同时冻结（同一 sha），
+加情景要双 prd 重签；且它是真 HTTP 假 SUT + 浏览器，与本金牌的零 SUT 命名与
+纪律直接冲突。**裁定：接缝的确定性复现放 hermetic 固定语料
+（`tests/_golden/fixtures/assert-visibility-semantics/dom-page.mjs`，两种关闭
+语义各一——`CLOSE_UNMOUNT` 逐条复刻现役 `publish-sut/server.mjs:93` 的清空行为，
+`CLOSE_HIDE` 复刻真机隐藏不卸载），浏览器层的真实证据由 A4 四轮真机承担。**
+这不是降级：A4 本来就是唯一能区分「修对了」与「洗绿」的证据，浏览器层再加一层
+假环境情景是重复取证换双 prd 重签，不划算。`publish-sut` 一字不动。
+
+**M2 · `hermetic-golden-sut-census` 闭集陈旧红，挂账不在本契约修。** 该件硬编码
+「起 SUT/浏览器的金牌闭集恰为 27」，干净基线实跑 4/5、exit 1，实际闭集是 30
+（多 `agent-id-readback.chat-sut`、`entity-ui-wiring.bindagent-replay`、
+`entity-ui-wiring.searchopen`）。属 `prd-hermetic-golden-zero-sut-lifecycle`
+的验收面，非本契约引入、也不在本契约 s2 清单内。本契约新金牌不进该闭集
+（census 扫描零命中，已实测）。**挂账另立契约。**
+
+**M3 · `hermetic-golden-prd-reverse-closure` 同为既有红，同样挂账。**
+（隔离 live executable 仍被 acceptance 引用：`p3-compile.golden.mjs`、
+`report-diagnostics.golden.mjs`。）与本契约无关，输出零处提到本契约新件。
+
+**M4 · D4 冲突规则补齐采集失败口径。** 原 D4 只定了「同值冲突取可见计数」，
+没定采集失败时的冲突口径——而 `textVisible` 与 `textHidden` 共用同一
+`textHits` 键空间，省键会连带把正向断言也变成证不出。**裁定：可见计数与
+DOM 计数任一采不到，就省该键，正反两向断言一律落未知（`ok:false actual:null`
+→ `NEEDS_HUMAN`）。** 理由是 `fail-safe` 方向唯一自洽：证不出就别判，宁可要人看，
+不可两向各判各的。该规则须写进代码注释并在实现期补一枚金牌钉。
+

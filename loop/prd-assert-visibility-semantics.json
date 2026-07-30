@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "task": "assert-visibility-semantics（full）：tc_wf_publish_states 末步四轮真机稳定红的真因是断言口径错、动作对——真机探针实测按 Esc 前「创建时间」DOM 命中 1 可见命中 1，按 Esc 后 DOM 命中仍 1、可见命中 0（浮层视觉关闭但节点不卸载），而现役 textHidden 数的是 DOM 命中。作者层注册表 lib/atoms-registry.snapshot.json:866 把 assert.textHidden 定义为 toBeHidden（含未挂载），故签字时的契约本来就是可见性，现行实现才是偏离——这是实现纠偏不是语义变更；且可见命中恒 ≤ DOM 命中，本改动只可能把 textHidden 由假翻真，不可能把任何现役绿判红。修法（GRILL D1，opus xhigh 审裁定路线 1）：最小改 lib/replay/intent-observation.mjs 的 readTextHits，被 textHidden 请求的文本值改用可见过滤计数；同文件两处 fail-open 缝一并钉死（safeRead(...,0) 查询抛错回 0 致负向断言判过、readToasts 兜底回 [] 致 noErrorToast 判过，护栏 #14）；toast 兜底改滤不砍（保时间敏感度、换带可见性过滤的读取，readToasts 本体不动因其同供 noErrorToast）；补 lib/assertion-draft.mjs 的 assert.textHidden 映射使其不再落待补。计划审 codex sol max 出、opus xhigh 审出七条修订并入 GRILL v1。",
+  "specPath": "docs/plans/assert-visibility-semantics/plan.md",
+  "testChecksums": {
+    "tests/_golden/assert-visibility-semantics.zero-sut.golden.mjs": "220fede7e1b5aadca6ce9242d995dd6a3bce8417d012e60593ba86f0db91ffec",
+    "tests/_golden/fixtures/assert-visibility-semantics/dom-page.mjs": "d9d239cdbec880812f7ca543c1fcc6546f533454e314f150af359a084ebb2787"
+  },
+  "observability": [
+    {
+      "dimension": "A4 真机四轮（route:human）：publish 连跑 4 轮全步 PASS，intent_5 的 textHidden 创建时间 均 ok:true actual:0；首轮与末轮须保留辅助探针证 DOM=1 可见=0——该探针不是可选项，是唯一能区分「修对了」与「把动作失败洗绿」的证据（GRILL A4，R3 假绿自证陷阱）。",
+      "route": "human"
+    },
+    {
+      "dimension": "A5 新金牌与固定语料冻结人签（ADR-0004）+ 语义变更留痕知会：chiefcomplaint 两条错误文案的负向敏感度有实质变化（toast 兜底由全量读改为可见过滤读），不许静默改判据。",
+      "route": "human"
+    },
+    {
+      "dimension": "挂账（route:human，本契约不修）：assert.textVisible 同类背离只修了一半（注册表写可见文字、实现数 DOM）；assert.textHidden 声明的 timeoutMs（等待消失，缺省 8000）根本没实现，现行是静默点一次瞬时计数，关闭动画偶发红的根因在此，加等待会平移其后按钮态与回复面的同刻采样时刻，不能只在一处插一段；tc_wf_history_version 两处 Esc 零关闭效果断言属实但拆独立契约、排在本契约之后且签前必须先真机探针；真机 4 轮会留 4 条已发布残留（flow 无清理原子）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-visibility-semantics-golden",
+      "title": "S1 新金牌九钉红先行翻绿：V1 DOM1/可见1 判假（既有面回归护栏）、V2 DOM1/可见0 判真（真机红签名）、V3 DOM0/可见0 判真（真卸载情景）、V4 采集抛错不回退 0、V5 隐藏提示节点不得经 toast 兜底重计、V6 孪生缝 noErrorToast 采集失败不得判过、V7 assert.textHidden 映射为硬断言、V8 D4 同值冲突取可见计数、V9 冲突局面下采集失败正负两向一律落未知（红先行实测 exit 1、2/9 通过，V9 现行红签名 textVisible ok=false actual=0 / textHidden ok=true actual=0 即「各判各的」实例）",
+      "passes": false,
+      "acceptance": [
+        "node tests/_golden/assert-visibility-semantics.zero-sut.golden.mjs"
+      ]
+    },
+    {
+      "id": "s2-adjacent-zero-regression",
+      "title": "S2 邻接面零回归（护栏 #19）：同一采集原语的全部下游——自愈复验、断言草拟器、回放覆盖、主诉冒烟、种类加固、历史版本、挂载沉降，加前序契约新金牌",
+      "passes": false,
+      "acceptance": [
+        "node tests/_golden/p6-heal-reverify-rollback.zero-sut.golden.mjs",
+        "node tests/_golden/p4-drafter.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/replay-settle-mount.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs",
+        "node tests/_golden/teachin-raw-actionability.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs",
+        "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs"
+      ]
+    },
+    {
+      "id": "s3-repo-drift-and-terms",
+      "title": "S3 全仓冻结件零漂移 + 术语表完整性",
+      "passes": false,
+      "acceptance": [
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry"
+      ]
+    }
+  ]
+}

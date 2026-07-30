@@ -28,6 +28,9 @@
 
 ## publish 阻塞项详情
 
+> **⚠ 本节以下的两点诊断已被后续实测推翻一半，先读下方「2026-07-31 凌晨订正」
+> 再读本节。** 保留原文是为了留痕诊断是怎么走弯的，不是因为它还成立。
+
 07-30 重表达后真机复跑判 PASS 4 / NEEDS_HUMAN 2，Steven 看录像确认两处
 **根本没发生**：
 
@@ -72,7 +75,56 @@
 （登录接口本身一直 200 成功）。Steven 授权后重启，登录探针 7 秒通过、
 零失败资源。WSL 侧监听进程健康未动。
 
+## 2026-07-31 凌晨订正：publish 只剩一个阻断点，且是断言口径不是动作
+
+四轮真机（`run_baseline1/2_20260730`、`run_loadfix1/2_20260730`）逐轮核实：
+
+| 事实 | 证据 |
+|---|---|
+| 12 步动作**全部** `result=ok`，四轮无例外 | 各轮 `run-history.jsonl` 逐行 |
+| 唯一非 PASS 是 `atstep_11` 关闭步，四轮一致 | 各轮 `verdict.json`：`NEEDS_HUMAN / SUT_DEFECT_OR_STALE` |
+| 保存步 `atstep_8` 四轮**全 PASS** | 同上，`workflow.save` 逐轮 `result=ok` 且步级 PASS |
+
+**订正一：保存步的「顶栏延迟挂载」诊断不成立。** 上节记的
+`resolution: none, candidateCount: 0` 是重表达前的旧样本；重表达后四轮
+`locatorResolution: unique`、步级全 PASS。剖面加的 `loading` 活配置
+（`cases/tc_wf_publish_states/profile.json`，原 `quiet.loadingSelector` 是运行时
+从不读取的死配置）已经覆盖这一面。保存步**不再是阻断项**，此前判它「系统性红」
+是把一次旧样本当了稳定结论。
+
+**订正二：关闭步动作是对的，错的是断言口径。** 真机探针实测：按 Esc 前
+「创建时间」DOM 命中 1、可见命中 1；按 Esc 后 **DOM 命中仍 1、可见命中 0**
+——浮层视觉关闭但节点不卸载，而现役 `assert.textHidden` 数的是 DOM 命中。
+作者层注册表把该原子定义为 `toBeHidden`（含未挂载），**签字时的契约本来就是
+可见性，现行实现才是偏离**。故这不是「证据不足以冻结替代选择器」，不需要
+Steven 带外侦察关闭控件——契约 `assert-visibility-semantics` 修采集口径即可。
+
+**因此上节「需要的动作」四条作废，改为**：①`assert-visibility-semantics`
+落地（红金牌九钉已冻、accept 已过、实现在跑）；②publish 真机四轮全 PASS，
+首末轮保留 DOM=1/可见=0 辅助探针（唯一能区分「修对了」与「把动作失败洗绿」
+的证据）；③回填本账本，P9 方可关账。
+
+## 2026-07-31 凌晨追记：tier-2 A4 的真实阻塞面
+
+A4（`selftest --tier2 --sut <回环>`）**当前跑不出 exit 0，且不是工装问题**：
+
+1. 现役成员集只有一员 `tc_agent_id_readback_real_uat_v1`，其 `preconditions`
+   明写真实环境须预置名为 `atl_同名对抗0722` 的智能体一枚，而该件已在
+   2026-07-23 见证收尾时按「我建我删」清理归零——**须由人重新预置，否则
+   本例必落非 PASS，属真机前置事实不是工装红**（清单原文）；
+2. 清单要求的两份带外收据 `runs/_tier2/win-probe-target.result.json` 与
+   `runs/_tier2/out-of-band-account-receipt.json` **两份都不存在**
+   （目录下只有 `win-probe-challenge.json` 与八份 judge-smoke 产物）；
+3. 另四例（chiefcomplaint / catalog_wf_crud / wf_publish_states /
+   wf_history_version）全在 `pendingMembers`，卡「C 轨授权」，其中三例还要
+   每 run 逐次 `--authorize-mutation`。
+
+即 **A4 是人闸不是机器闸**，我无法代跑。隧道本身健康（回环探针 HTTP 200、
+4.4 秒）。
+
 ## 待决
 
 - 后继契约与 tier-2 谁先占契约槽（tier-2 收口在即，预计先收 tier-2 再开）；
-- 三轮复跑是否必须换新实例（计划建议如此，防把一次绿当时序问题消失）。
+- 三轮复跑是否必须换新实例（计划建议如此，防把一次绿当时序问题消失）；
+- **tier-2 A4 的三项人闸**（重新预置智能体、两份带外收据、C 轨授权）由谁
+  在什么时候做——不解这三项，P9 的 tier-2 面永远停在待办。
