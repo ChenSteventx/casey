@@ -1,3 +1,254 @@
+Reading additional input from stdin...
+2026-07-30T14:04:24.925452Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when UnexpectedServerResponse("HTTP 403: {\"message\":\"missing csrf token\"}")
+OpenAI Codex v0.144.1
+--------
+workdir: /mnt/d/ctx/heren/casey
+model: gpt-5.6-sol
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: high
+reasoning summaries: none
+session id: 019fb357-0662-7ee2-af6b-bfc6f92d091c
+--------
+user
+计划 delta r4（cycle-evidence-inner-reason，read-only，只复核你 r3 剩的两处文档同步）。已改：
+①GRILL D1 不再笼统说「都是本地字面量」——改写为：15 条拒付位中 12 处是发射点本地字面量、3 处（预检/raw 消费者/resolved 消费者）是被调方动态值，复用既有表达式已算出的原始值、不新增外来对象读取、经 D2b 六码局部归一器落码；并明写不得复用全局归一器（它会放过全局合法却非本生产者六码的成员）；
+②plan A4 收紧为：须同时满足「新归因点为六码之一」与「随后出现既有外层统一码」两条才算验收通过，只判前者会把外层通报缺失误放行。
+只复核这两条。输出简体中文：第一行 PLAN_APPROVE 或 PLAN_CHANGES_REQUIRED；末行 REVIEW_DONE_SENTINEL
+deprecated: `[features].enable_experimental_windows_sandbox` is deprecated. Use `[features].experimental_windows_sandbox` instead.
+Enable it with `--enable experimental_windows_sandbox` or `[features].experimental_windows_sandbox` in config.toml. See https://developers.openai.com/codex/config-basic#feature-flags for details.
+codex
+我会按只读范围复核这两处：先定位 r4 的实际文档差异，再逐条核对 GRILL D1 与 plan A4 是否精确落实所述约束；不检查其他内容、不改文件。
+exec
+/bin/bash -lc "pwd && rg --files -g 'CLAUDE.md' -g 'CONTEXT.md' -g 'docs/HANDOFF.md' -g 'loop/GUARDRAILS.md' -g 'plan.md' -g '*GRILL*' -g '*grill*' -g '*.md' | sed -n '1,160p' && git status --short && git diff -- '*.md'" in /mnt/d/ctx/heren/casey
+ exited 130 in 22279ms:
+/mnt/d/ctx/heren/casey
+AGENTS.md
+CONTEXT.md
+CLAUDE.md
+README.md
+docs/FLYWHEEL.md
+loop/inbox.md
+loop/GUARDRAILS.md
+docs/atom-readiness-assessment-20260715.md
+docs/runbooks/review-model-budget.md
+docs/runbooks/report-output-requirements.md
+docs/runbooks/real-zero-error-examples.md
+docs/runbooks/real-uat-runbook.md
+docs/runbooks/onboarding.md
+docs/runbooks/adaptive-page-execution-sop.md
+docs/REQUIREMENTS-STATUS.md
+docs/design/midscene-adaptation.md
+docs/design/autonoma-adaptation.md
+docs/design/txt2testreport-design.md
+docs/design/stagehand-action-ir-adaptation.md
+docs/design/report-spec.md
+docs/adr/0005-ubiquitous-language-enforcement.md
+docs/adr/0004-assertion-freeze-sign-versioning.md
+docs/adr/0003-compile-then-replay.md
+docs/adr/0002-polymorphic-verdict-fail-safe.md
+docs/adr/0001-reuse-loop-kit.md
+docs/adr/0008-loop-kit-extraction.md
+docs/adr/0007-p5-replay-substrate-and-forensics.md
+docs/adr/0006-fuse-autotester-regress.md
+docs/adr/0009-fidelity-audit-and-real-uat-gate.md
+docs/adr/0010-admission-audience-credential-gate.md
+docs/plans/_session-resume/RESUME-2026-07-13.md
+docs/codex/NEXT-SESSION.md
+docs/codex/HANDOFF.md
+docs/plans/entity-identity-lastmile/plan.md
+docs/plans/zero-shot-page-execution-research/subagent-plan.md
+tests/fixtures/fake-sut/CONTRACT.md
+docs/plans/zero-shot-page-execution-research/review/sop-gap-review.md
+docs/plans/zero-shot-page-execution-research/review/grok-verdict.md
+docs/plans/zero-shot-page-execution-research/plan.md
+docs/plans/zero-shot-page-execution-research/learn.md
+docs/plans/zero-shot-page-execution-research/execution-plan.md
+docs/plans/output-seal/proposed/GRILL.md
+docs/plans/output-seal/proposed/AUDIT.md
+docs/plans/output-seal/plan.md
+docs/plans/output-seal/learn.md
+docs/plans/intent-event-fold/review/fable-xhigh-r1.md
+docs/plans/teachin-observation-sidecar/review/pi-attempt.md
+docs/plans/report-cleanup-evidence/proposed/GRILL.md
+docs/plans/report-cleanup-evidence/plan.md
+docs/plans/report-cleanup-evidence/learn.md
+docs/plans/entity-destructive-continuity-guard/review/codex-verdict.md
+docs/plans/entity-destructive-continuity-guard/plan.md
+docs/plans/entity-destructive-continuity-guard/learn.md
+docs/plans/entity-destructive-continuity-guard/GRILL.md
+docs/plans/zero-shot-observe-admit-step/review.md
+docs/plans/zero-shot-observe-admit-step/review-grok-20260727.md
+docs/plans/zero-shot-observe-admit-step/plan.md
+docs/plans/zero-shot-observe-admit-step/learn.md
+docs/plans/zero-shot-observe-admit-step/GRILL.md
+tests/fixtures/loop-kit-expected/package/README.md
+docs/plans/intent-event-fold/proposed/GRILL.md
+docs/plans/intent-event-fold/plan.md
+docs/plans/intent-event-fold/learn.md
+docs/plans/teachin-observation-sidecar/proposed/GRILL.md
+docs/plans/teachin-observation-sidecar/plan.md
+tests/fixtures/loop-kit-expected/baseline/raw/contract-advance-grill.json
+docs/plans/replay-video/proposed/GRILL.md
+docs/plans/replay-video/plan.md
+docs/plans/replay-video/learn.md
+docs/plans/cli-authority-wiring-fill/red/STOP-golden-contradiction.md
+docs/plans/cli-authority-wiring-fill/plan.md
+docs/plans/cli-authority-wiring-fill/grill.md
+docs/plans/distribution/proposed/GRILL.md
+docs/plans/distribution/proposed/GOLDEN-TESTPLAN.md
+docs/plans/distribution/plan.md
+tests/fixtures/loop-kit-expected/baseline/normalized/contract-advance-grill.json
+docs/plans/integrate-regress-agent-tool-slice/proposed/GRILL.md
+docs/plans/integrate-regress-agent-tool-slice/plan.md
+docs/plans/observation-runtime-trust-root/plan.md
+docs/plans/delete-confirm-causal-binding/plan.md
+docs/plans/worktree-baton/WORKTREE-PARALLEL.md
+docs/plans/observation-contract-closure/plan.md
+docs/plans/cycle-evidence-inner-reason/plan.md
+docs/plans/cycle-evidence-inner-reason/GRILL.md
+docs/plans/chiefcomplaint-smoke/proposed/GRILL.md
+docs/plans/chiefcomplaint-smoke/plan.md
+docs/plans/chiefcomplaint-smoke/learn.md
+docs/plans/replay-settle-mount/review/planreview-material.md
+docs/plans/replay-settle-mount/review/planreview-codex.md
+docs/plans/replay-settle-mount/review/pi-impl-r3.md
+docs/plans/replay-settle-mount/review/pi-impl-r2.md
+docs/plans/replay-settle-mount/review/pi-impl-r1.md
+docs/plans/replay-settle-mount/review/material-impl-r3.md
+docs/plans/replay-settle-mount/review/material-impl-r2.md
+docs/plans/replay-settle-mount/review/material-impl-r1.md
+docs/plans/replay-settle-mount/review/dispositions-impl-r2.md
+docs/plans/replay-settle-mount/review/dispositions-impl-r1.md
+docs/plans/replay-settle-mount/review/codex-impl-r3.md
+docs/plans/replay-settle-mount/review/codex-impl-r2.md
+docs/plans/replay-settle-mount/review/codex-impl-r1.md
+docs/plans/replay-settle-mount/review/arb-impl-r1.md
+docs/plans/teachin-observation-safe-case-lease-v2/plan.md
+docs/plans/worktree-baton/proposed/GRILL.md
+docs/plans/worktree-baton/proposed/DESIGN-DRAFT.md
+docs/plans/worktree-baton/plan.md
+docs/plans/cross-platform-execution-target/review.md
+docs/plans/cross-platform-execution-target/review-independent.md
+docs/plans/cross-platform-execution-target/review-independent-round3.md
+docs/plans/cross-platform-execution-target/review-independent-round2.md
+docs/plans/cross-platform-execution-target/review-adversarial.md
+docs/plans/cross-platform-execution-target/replay-decomposition.md
+docs/plans/cross-platform-execution-target/plan.md
+docs/plans/cross-platform-execution-target/learn.md
+docs/plans/cross-platform-execution-target/GRILL.md
+docs/plans/compile-caseid-shape/proposed/GRILL.md
+docs/plans/compile-caseid-shape/plan.md
+docs/plans/compile-caseid-shape/learn.md
+docs/plans/entity-c0c2c3-p3-reconcile/review/grok-code-review-r2.md
+docs/plans/ingest-scaffold/proposed/GRILL.md
+docs/plans/ingest-scaffold/proposed/GOLDEN-TESTPLAN.md
+docs/plans/ingest-scaffold/proposed/from-text-candidate.draft.md
+docs/plans/ingest-scaffold/plan.md
+docs/plans/closed-loop-evolution/review-claude-20260717.md
+docs/plans/closed-loop-evolution/plan.md
+docs/plans/obs-cases-isolation/plan.md
+docs/plans/obs-cases-isolation/grill.md
+docs/plans/entity-c0c2c3-p3-reconcile/proposed/GRILL.md
+docs/plans/entity-c0c2c3-p3-reconcile/plan.md
+docs/plans/entity-c0c2c3-p3-reconcile/learn.md
+docs/plans/chief-bringup/proposed/GRILL.md
+docs/plans/chief-bringup/plan.md
+docs/plans/chief-bringup/learn.md
+docs/plans/replay-settle-mount/proposed/GRILL.md
+docs/plans/replay-settle-mount/plan.md
+docs/plans/replay-settle-mount/learn.md
+docs/plans/workflow-delete-by-name-hardening/review/real-uat-b2.md
+docs/plans/workflow-delete-by-name-hardening/review/real-uat-20260716-final.md
+tests/fixtures/loop-kit-expected/baseline/fixture/loop/GUARDRAILS.md
+tests/fixtures/loop-kit-expected/baseline/fixture/loop/grill-baseline.md
+docs/plans/ingest/proposed/GRILL.md
+docs/plans/ingest/plan.md
+docs/plans/ingest/learn.md
+docs/plans/teachin-observation-driver-provenance/plan.md
+docs/plans/workflow-delete-by-name-hardening/proposed/GRILL.md
+docs/plans/workflow-delete-by-name-hardening/plan.md
+docs/plans/workflow-delete-by-name-hardening/learn.md
+docs/plans/cli-mcp-face/proposed/GRILL.md
+docs/plans/cli-mcp-face/plan.md
+docs/plans/cli-mcp-face/learn.md
+docs/plans/noerrenv-absence/proposed/GRILL.md
+docs/plans/noerrenv-absence/plan.md
+docs/plans/noerrenv-absence/learn.md
+docs/plans/entity-binding-operability-successor/plan.md
+docs/plans/checksum-drift-closure/review/pi-implementation.md
+docs/plans/checksum-drift-closure/review/grok-implementation.md
+docs/plans/checksum-drift-closure/plan.md
+docs/plans/checksum-drift-closure/learn.md
+docs/plans/checksum-drift-closure/HUMAN-SIGN.md
+docs/plans/checksum-drift-closure/GRILL.md
+tests/fixtures/loop-kit-expected/baseline/fixture/fixtures-extra/violation.md
+
+exec
+/bin/bash -lc "wc -l CLAUDE.md CONTEXT.md docs/HANDOFF.md loop/GUARDRAILS.md docs/plans/cycle-evidence-inner-reason/GRILL.md docs/plans/cycle-evidence-inner-reason/plan.md && sed -n '1,240p' CLAUDE.md && sed -n '1,260p' CONTEXT.md && rg -n -C 10 'D1|D2b|本地字面量|全局归一|15 条|12 处|3 处' docs/plans/cycle-evidence-inner-reason/GRILL.md && rg -n -C 12 'A4|新归因点|外层统一码|六码之一|验收通过' docs/plans/cycle-evidence-inner-reason/plan.md" in /mnt/d/ctx/heren/casey
+ succeeded in 911ms:
+    54 CLAUDE.md
+   170 CONTEXT.md
+  1349 docs/HANDOFF.md
+    44 loop/GUARDRAILS.md
+   115 docs/plans/cycle-evidence-inner-reason/GRILL.md
+    58 docs/plans/cycle-evidence-inner-reason/plan.md
+  1790 total
+# CLAUDE.md
+
+**Casey（测易）** —— LLM 驱动的「文本用例 → 测试报告」自动化测试系统。一段文本用例（excel/json/txt/自由文本）→ LLM 编译成确定性可回放 spec → 确定性回放（录屏 + 抓输出）→ 零 LLM 多态裁定出严格结论 → 自包含测试报告。三处统一标识符 `casey`：CLI `bin/casey.mjs`、skill `casey`、MCP server `casey`。
+
+复用 autotester 的 **loop-kit**（loop engineering 工具箱）作为第二消费者（ADR-0001）。Casey 是 autotester（人录、机回放、零 LLM）的「翻面」：输入端改 LLM，但「确定性是默认、LLM 是手术刀、完成是退出码、裁判零 LLM」的内核一字不让。
+
+## 必读顺序
+
+1. `CONTEXT.md` —— 统一语言注册表：**所有概念命名以它为准**，弃用别名列是黑名单；
+2. `docs/design/txt2testreport-design.md` —— 端到端设计（v0.2，已并入 4 路红队修订）；
+3. `docs/plans/bootstrap/plan.md` —— 落地计划（P0–P9 里程碑）；
+4. `loop/GUARDRAILS.md` —— 护栏清单，逐条有效（1–12 迁移，13–16 Casey 新增）。
+
+## Bootstrap（`loop-kit` 兄弟目录）
+
+`loop-kit` 已提取为独立包（ADR-0008）：Casey 与 autotester 双消费者。拓扑关系优先于绝对路径——包是消费树的**兄弟目录**独立仓（`../loop-kit` 与 `../<本仓目录名>` 平级），任何机器、任何 OS 同构；`/mnt/d/ctx/heren/loop-kit` 只是当前环境下的一个实例位置，不是必须坐落的路径。新机器 bootstrap：把包 clone 到消费树的兄弟目录；非同层布局须显式设 `LOOP_KIT_PKG` 指向实际位置（只改包位置，不豁免身份锁校验）。
+
+注意：`hook-loop-guard` 遇包缺失或身份锁（`kit-lock.json`）失配会 fail-closed（拦，见护栏与 D5 降级矩阵），这会连带拦住用来修复现场的工具调用本身——恢复动作（clone 包或设 `LOOP_KIT_PKG`）须在 hook 触发范围之外（人工终端等）完成，不能指望在被拦的同一回合里用工具调用修。
+
+## 硬规则（由机制强制，不是建议）
+
+- 双 hook 在 `.claude/settings.json` 生效：回合输出与写入的 md/json 都会被 `loop-kit/bin/term-lint.mjs` 扫描，术语违例与繁体字会被拦截（ADR-0005）。新概念先查既有学科术语，造词必须先登记 CONTEXT.md；英文术语首次出现附中文白话解释。
+- 阶段互锁：实现编辑/提交前必须先 `contract init` 声明入口分流；缺上一阶段交付物时 `hook-loop-guard` 拦截（护栏 #11）。
+- `loop/prd-<slug>.json` 的 `passes` 字段只有 `loop-kit/bin/gate.mjs` 有权写入；`testChecksums` 冻结的断言文件对实现者只读。
+- **裁判零 LLM**：多态裁定由 `bin/verdict.mjs`（零 LLM）出，自愈（LLM）是其下游消费者，不得进裁判进程（护栏 #15）。
+- **fail-safe 不 fail-open**：机器只终判 `PASS` 与有取证背书的 `SUT_DEFECT`；证不出的一律 `NEEDS_HUMAN`（护栏 #14）。自愈只对确证 `HARNESS_ERROR` 开闸（护栏 #13）。
+- `.auth/` 与 `site.json` 是凭据，内容不得进任何输出、日志、提交、报告。
+
+## 常用命令
+
+```
+node loop-kit/bin/term-lint.mjs --registry              # 术语表完整性检查
+node loop-kit/bin/breaker.mjs --reset                   # 熔断器清零（loop 开始时）
+node loop-kit/bin/gate.mjs --prd loop/prd-<slug>.json   # 质量门禁（确定性裁判，唯一写 passes）
+node loop-kit/bin/contract.mjs init <slug> --lane <direct|light|full> --reason "<一句理由>"
+node bin/casey.mjs selftest --tier1                     # 链路自检（hermetic，零外部依赖）
+```
+
+业务命令（ingest/compile/sign/replay/verdict/report）见 `bin/casey.mjs --help` 与 README；当前实现进度见计划 P0–P9。
+
+## 开发工作法（准则，非机制强制）
+
+- **长链条走确定性编排**：起 subagent 前先估链条长度。短活/单步——直接派 `Agent` 或自己做；长链/多阶段（多契约并行落地 + 逐个异构评审 + 分波合并这类）——走 ultracode 模式（`Workflow` 工具编排：`pipeline` 各契约 + 并行评审 + 对抗式核验 findings + 循环到干），别手派一堆 `Agent` 自己盯完成再手接下一步。已在跑的手派 `Agent` 不为切换而杀重来（浪费），从下一个编排步（某波收口 / 下一波落地）起改走 `Workflow`。（Steven 2026-07-09 定。）
+- 配套既有准则：可并行的活优先 `fan-out` 子代理；碰 `lib`/`bin` 的真并行走 `worktree`（护栏 #18）；异构评审家族≠实现家族（`codex` 评 Claude 实现）。
+- **Claude Code 额度纪律**：评审先跑确定性检查，再用 `pi.dev` 的 `deepseek-v4-pro` high 清普通问题；Claude Code 只审已收敛的高风险小差异。每次只开一个进程，输入必须限定基线、文件白名单、风险清单与现成证据；禁止全仓漫游、派生子代理和无上限续跑。首轮只报 `Critical`/`High`/`Medium`，复审只看已确认 finding 的修复 hunks。额度不可用时，不反复探测；有 Steven 明确授权可由 `pi.dev` 代审，否则诚实挂账。详细操作见 `docs/runbooks/review-model-budget.md`。
+
+## 决策档案
+
+- `docs/adr/` —— 难逆转决策（复用 loop-kit / 多态裁定 fail-safe / 编译再回放 / 断言冻结人签 / 统一语言强制）；
+- `docs/design/`、`docs/plans/` —— 端到端设计与里程碑计划。
+
+## git 分支
+
+`master`（稳定主干）/ `dev`（日常开发，默认工作分支）/ `test`（提测/真机 UAT）。
 # CONTEXT.md — 统一语言注册表
 
 > 本文件是本仓库「什么叫好」的唯一事实源之一（术语部分）。决策记录见 `docs/adr/`，需求级决策见 `docs/decisions/`，端到端设计见 `docs/design/`。
@@ -168,3 +419,181 @@
 | `MCP` | 模型上下文协议 | Model Context Protocol：编辑器/agent 驱动工具的协议；`mcp/casey-server.mjs` 是 CLI 的 MCP 薄壳 | — |
 | `skill` | 技能 | Claude Code 的能力封装；`.claude/skills/casey` 是把自然语言意图映射到 CLI 命令的薄壳 | — |
 | `PowerShell` | （Windows 主壳） | Casey 在 win32 主机上的主命令行壳（与 Bash 工具并存、各自语法）；运维/卸载脚本用它 | — |
+16-| `RAW_AXES_PROJECTION_INVALID` | 依赖包不可用（缺 raw/resolved 消费者、投影器或裁判适配器）或入参非精确键形状 |
+17-| `RAW_OBSERVATION_AUTHORITY_INVALID` | raw 预检/消费抛错、非 ok、或无可用投影 |
+18-| `RESOLVED_PROJECTION_AUTHORITY_INVALID` | resolved 预检/消费抛错、非 ok、或无可用投影 |
+19-| `RAW_AXES_BINDING_MISMATCH` | 绑定预检不符（capture/case/expected digest、观测计数、**待补计数非零**、resolved 计数）或执行后两侧投影绑定不一致、意图事件规划失败、轴输入构造失败 |
+20-| `RAW_AXES_PROJECTION_FAILED` | 轴投影器抛错或返回非空字符串以外的东西 |
+21-| `VERDICT_EXECUTION_FAILED` | 裁判适配器抛错/非 ok/产物非缓冲区，或证据投影非法 |
+22-
+23-四处字符串透传在生产接线下闭合（raw 侧只产第二码、resolved 侧只产第三码，
+24-接线点 `runtime-cycle-adapter.mjs`），注入式其他串必须降格。
+25-
+26:## D1 修法（乙路：下沉到发射点）
+27-
+28:在 `raw-axes-adapter.mjs` 内部，把 `projectAndVerify` 方法体内全部 15 条
+29-`return denied(...)` 换成「先通报再返回」的小助手。拒付码的来源分两类
+30:（codex r3 订正，别笼统说「都是本地字面量」）：**12 处是发射点本地字面量；
+31:3 处（预检、raw 消费者、resolved 消费者）是被调方给的动态值——复用既有表达式
+32:已算出的原始值，不新增外来对象读取，并经 D2b 的六码局部归一器落码**。
+33-该文件已有同形先例 `reportFormalRefusal`，照它的通报形制写；但**不得复用
+34:全局归一器**（它会放过全局合法却不属本生产者六码的成员，见 D2b）。
+35-
+36-乙路相对甲路（在外层读内层返回对象）省掉的：描述符读取、代理陷阱、抛错
+37-getter、继承属性四类负控；惰性载荷与「被观测探测口」的代理计数钉；以及对
+38-`replay-completion.mjs`（带逐字节钉的文件）的任何改动——**该文件一字不动**。
+39-
+40-## D2 归因点（21→22 员，成员名写死）
+41-
+42-新增成员名定为 `raw-axes.projection-denied`（写死，实现不得另取），专用于
+43-本发射点。**不复用
+44-`resolved-completion.result-shape`**：既有 E3 的前提是逐点唯一归因、一员对
+45-一个生产点，两个模块发同一员会破这条。按 A4 给新成员配一枚真实分支钉。
+46-
+47:## D2b 生产者局部归一器（codex r2 阻断二）
+48-
+49-`projectAndVerify` 里有 `preflight`、raw 消费者、resolved 消费者三处**动态
+50:拒付透传**（值来自被调方而非本地字面量）。若通报只写硬编码本地码，这些真实
+51:分支落不到正确码；若直接复用全局归一器，它又会放过「全局合法但不属本生产者
+52-六码」的成员（如动作失败码）。故定案：**写一枚精确六码的生产者局部归一器**
+53-——只认 D0 六码，其余一律落兜底成员 `OTHER_REASON`；复用既有表达式已算出的
+54-原始值，不新增外来对象读取。负控至少含一个全局合法但非本生产者六码的成员，
+55-以及一个完全未知串。
+56-
+57-## D3 零行为差
+58-
+59-判定、返回形状、控制流零改；`safeEmit` 同步、吞异常、零返回值消费、不进
+60-异步控制流、不加 `await`。既有 75 钉金牌 E0b 逐字节钉的是三处 catch 与两条
+61-issuer 直接 await 的字面量，不在本次改动字节内。行数纪律有余量
+15-3. 明确不改：`lib/dual-replay/replay-completion.mjs`（带逐字节钉，一字不动）、
+16-   `cycle-evidence-output.mjs`（四层闸零改、不升 schemaVersion）、
+17-   `verdict.mjs`、一切 authority 形状与判定语义。
+18-
+19-## 2. 金牌（红先行，只扩既有 75 钉件）
+20-
+21-扩 `tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs`：
+22-- 六码各一枚从**真实分支**击发的正控（合成夹具驱动 `projectAndVerify` 真路径，
+23-  禁直调发射器硬编码）；
+24-- **静态完整性钉（codex r2 阻断三，必须有）**：`projectAndVerify` 方法体内
+25-  15 个拒付位**全部经新助手**、禁止残留裸 `return denied(...)`——否则某个
+26-  同码多分支漏接，六码正控仍会全绿；
+27:- 新归因点成员的真实分支钉（A4 逐点唯一归因不破）；
+28-- 降格负控两枚：**全局合法但非本生产者六码**的成员（如动作失败码）、
+29-  完全未知串 → 均须 **不中毒 + 落兜底成员**（按 D5 口径，不是只断言原串
+30-  不出现）；
+31-- 零行为差：带/不带收集器双跑，返回值深等、调用次数相等、控制流无差；
+32-- E3 逐员矩阵与既有 75 钉全部不得削弱。
+33-
+34-## 3. prd 与验收
+35-
+36-单锁：只对 `loop/prd-teachin-cycle-evidence.json` 做一次 checksum
+37-amendment（金牌 sha 由 `9a138436…` 换新），**不新建 prd**。
+38-s2 邻接：raw-axes-adapter / raw-runner / cycle-entry / equivalence-completion /
+39-equivalence-production-boundary / boundaries / cycle-plan.static /
+40-orchestrator / runtime-cycle-adapter / raw-actionability（新）/ nav-expansion /
+41-clear-fill。s3 漂移扫 + 术语。
+42-
+43-验收：
+44-- A1 扩钉红→绿；A2 邻接零回归；A3 零漂移；
+45:- A4（route:human）：Steven 真机复录一次，边车按 D6 判读表判——
+46:  **须同时满足「新归因点为六码之一」与「随后出现既有外层统一码」两条才算
+47:  验收通过**（codex r3 收紧：只判前者会把外层通报缺失误放行）；通过
+48-  **不等于闭环转绿**，见 GRILL D7；
+49-- A5（route:human）：换签人签。
+50-
+51-## 4. 评审与风险
+52-
+53-计划 v1 codex delta 一轮（乙路换根说明）；实现 opus 5 medium（可回抛 sol max
+54-咨询）；实现后 codex 快速 delta。
+55:- R1 新归因点破坏逐点唯一归因 → D2 不复用既有成员 + 真实分支钉；
+56-- R2 降格漏路致整份边车中毒丢失 → D5 负控按「不中毒 + 落兜底」断言；
+57-- R3 通报点混进判定路 → 零行为差双跑钉 + `safeEmit` 同步契约；
+58:- R4 误把「验收通过」读成「闭环打通」→ GRILL D7 写死诚实预期。
+
+codex
+两处目标文字已定位，表面上都包含 r3 要求的关键限定。接下来只做最后一层一致性核对：确认 D1 的“12+3=15、六码局部归一、禁全局归一器”与同文 D2b 无冲突，以及 A4 的“双条件同时满足”没有被后文措辞削弱。
+exec
+/bin/bash -lc "sed -n '1,115p' docs/plans/cycle-evidence-inner-reason/GRILL.md && sed -n '1,58p' docs/plans/cycle-evidence-inner-reason/plan.md && git diff --no-ext-diff --unified=20 -- docs/plans/cycle-evidence-inner-reason/GRILL.md docs/plans/cycle-evidence-inner-reason/plan.md" in /mnt/d/ctx/heren/casey
+ succeeded in 603ms:
+# plan — cycle-evidence-inner-reason（v1，乙路）
+
+> 前置：`GRILL.md` v1（codex 计划 + opus xhigh 审三处阻断订正 + Steven 点乙路）。
+> lane=full。目标：内层拒付码在发射点直接通报，一次真机复录即可定位真因。
+
+## 1. 生产件改动（两处，约 20-25 行）
+
+1. `lib/teachin/raw-axes-adapter.mjs`：`projectAndVerify` 方法体内**全部 15 个**
+   `return denied(...)` 改经小助手「先 `safeEmit` 再返回」——照同文件既有
+   `reportFormalRefusal` 形制写；判定与返回形状零改。三处动态透传（预检、
+   raw 消费者、resolved 消费者）经 GRILL D2b 的生产者局部归一器落码，
+   不新增外来对象读取。
+2. `lib/teachin/cycle-evidence-context.mjs`：`refusalPoint` 枚举加一员
+   （21→22）；拒付码白名单补 D0 六码（若已在则只补缺的）+ 兜底成员。
+3. 明确不改：`lib/dual-replay/replay-completion.mjs`（带逐字节钉，一字不动）、
+   `cycle-evidence-output.mjs`（四层闸零改、不升 schemaVersion）、
+   `verdict.mjs`、一切 authority 形状与判定语义。
+
+## 2. 金牌（红先行，只扩既有 75 钉件）
+
+扩 `tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs`：
+- 六码各一枚从**真实分支**击发的正控（合成夹具驱动 `projectAndVerify` 真路径，
+  禁直调发射器硬编码）；
+- **静态完整性钉（codex r2 阻断三，必须有）**：`projectAndVerify` 方法体内
+  15 个拒付位**全部经新助手**、禁止残留裸 `return denied(...)`——否则某个
+  同码多分支漏接，六码正控仍会全绿；
+- 新归因点成员的真实分支钉（A4 逐点唯一归因不破）；
+- 降格负控两枚：**全局合法但非本生产者六码**的成员（如动作失败码）、
+  完全未知串 → 均须 **不中毒 + 落兜底成员**（按 D5 口径，不是只断言原串
+  不出现）；
+- 零行为差：带/不带收集器双跑，返回值深等、调用次数相等、控制流无差；
+- E3 逐员矩阵与既有 75 钉全部不得削弱。
+
+## 3. prd 与验收
+
+单锁：只对 `loop/prd-teachin-cycle-evidence.json` 做一次 checksum
+amendment（金牌 sha 由 `9a138436…` 换新），**不新建 prd**。
+s2 邻接：raw-axes-adapter / raw-runner / cycle-entry / equivalence-completion /
+equivalence-production-boundary / boundaries / cycle-plan.static /
+orchestrator / runtime-cycle-adapter / raw-actionability（新）/ nav-expansion /
+clear-fill。s3 漂移扫 + 术语。
+
+验收：
+- A1 扩钉红→绿；A2 邻接零回归；A3 零漂移；
+- A4（route:human）：Steven 真机复录一次，边车按 D6 判读表判——
+  **须同时满足「新归因点为六码之一」与「随后出现既有外层统一码」两条才算
+  验收通过**（codex r3 收紧：只判前者会把外层通报缺失误放行）；通过
+  **不等于闭环转绿**，见 GRILL D7；
+- A5（route:human）：换签人签。
+
+## 4. 评审与风险
+
+计划 v1 codex delta 一轮（乙路换根说明）；实现 opus 5 medium（可回抛 sol max
+咨询）；实现后 codex 快速 delta。
+- R1 新归因点破坏逐点唯一归因 → D2 不复用既有成员 + 真实分支钉；
+- R2 降格漏路致整份边车中毒丢失 → D5 负控按「不中毒 + 落兜底」断言；
+- R3 通报点混进判定路 → 零行为差双跑钉 + `safeEmit` 同步契约；
+- R4 误把「验收通过」读成「闭环打通」→ GRILL D7 写死诚实预期。
+
+codex
+PLAN_APPROVE
+
+两处文档同步均符合 r3 要求：
+
+- GRILL D1 已准确区分 12 处本地字面量与 3 处动态值，并明确复用原始值、经 D2b 六码局部归一器落码、禁止复用全局归一器。
+- plan A4 已将“新归因点为六码之一”和“随后出现既有外层统一码”设为缺一不可的验收条件。
+
+未发现措辞冲突或约束削弱；全程只读，未修改文件。
+
+REVIEW_DONE_SENTINEL
+tokens used
+41,285
+PLAN_APPROVE
+
+两处文档同步均符合 r3 要求：
+
+- GRILL D1 已准确区分 12 处本地字面量与 3 处动态值，并明确复用原始值、经 D2b 六码局部归一器落码、禁止复用全局归一器。
+- plan A4 已将“新归因点为六码之一”和“随后出现既有外层统一码”设为缺一不可的验收条件。
+
+未发现措辞冲突或约束削弱；全程只读，未修改文件。
+
+REVIEW_DONE_SENTINEL

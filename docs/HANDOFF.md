@@ -3,7 +3,40 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-07-29 晚至 07-30 晨：两契约连闭 + 闭环真因见光（最新覆盖层）
+## 2026-07-30 晚：闭环真因修复真机验证 + tier-2 收口（最新覆盖层）
+
+1. **闭环点击恒败真因已修并在真机验证**（契约 `teachin-raw-actionability-closure`，
+   commit `68f39b9`）。根因不是可操作性——是 `page-topology/controller.mjs` 的
+   `performClick` 丢弃回调返回值且成功体无 `value` 键，而
+   `raw-playwright-driver.mjs` 以 `performed.value === true` 判成败，于是
+   click/dblclick 物理落地却恒判失败（`fill`/`press` 走 `evaluateActive` 有
+   `value` 故好）。正式面 `replay-action.mjs` 早有闭包捕获先例，raw 面未沿用。
+   **此洞长期不可见的原因**：两枚冻结金牌的拓扑替身虚构了真控制器从不返回的
+   `value` 键（夹具不保真），且全仓无真控制器×canonical raw 驱动接合金牌。
+   修法只动 `performRawCandidate` 一处（闭包捕获、双条件合取 fail-closed）；
+   两枚夹具保真化换签 + 补真接合金牌。计划审 codex sol max 五轮 PLAN_APPROVE，
+   gate GREEN 3/3。**真机实证**（`…_20260730_1930/` 边车）：seq1/seq2 两击
+   `performOk` 由假转真（修前 false、修后 true）。
+   代码联审 r1 逮到金牌一个洞（双条件未钉死：把判据变异成只看闭包值仍全绿），
+   补钉中。
+2. **tier-2 真机冒烟自检从桩到实装**（commit `9b2e9fb`，gate GREEN 3/3，
+   金牌 77→111 钉）。codex 三轮联审逮到两个真假绿：工装错被当业务性非 PASS
+   放行（exit 0 带绿尾行）、零步裁定产物冒充「合法非全过」。
+3. **新阻断（下一层）**：`resolved-completion.result-shape` 拒付
+   `SOURCE_SEMANTIC_COMPLETION_INVALID`——外层统一码吞掉了
+   `projectAndVerify` 的六类内层具名拒付。窄契约 `cycle-evidence-inner-reason`
+   已出计划（六码全集+触发条件+行号，工程量小），审中；落地后 Steven 再录
+   一次即可定位。
+4. **环境侧**：Windows 反向代理进程（连跑近两周）劣化，浏览器成批发请求时
+   丢连接致前端 JS 代码块拿空响应、单页应用离不开登录页（登录接口本身一直
+   200 成功）。Steven 授权后重启，登录探针 7 秒通过、零失败资源。
+5. **邮件决策闭环 skill**（`.claude/skills/mail-loop/`）：发决策信/读回信执行/
+   问进度如实汇报附额度/轮询节奏四流程；额度机读入口实证为 `claude -p "/usage"`
+   （不能加 `--bare`）。术语已登记 `CONTEXT.md`。当日实跑一轮：发信→Steven
+   回信裁定五条→回执→执行。铁律两条（每封必回、他不在电脑前时需要他做的事
+   必须发邮件）是他当场纠的。
+
+## 2026-07-29 晚至 07-30 晨：两契约连闭 + 闭环真因见光（历史覆盖层）
 
 三件大事，全部真机/机器证据在案：
 

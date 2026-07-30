@@ -34,6 +34,15 @@
 //   · plan §1.1 把读取方写成 readCycleEvidence(captureSha256)，未写目录从何而来。
 //     hermetic 金牌不得依赖进程级全局取证目录，故本金牌冻结显式二参形态
 //     readCycleEvidence(captureSha256, { outDir })；若实现要留缺省目录，多一个可选参数无碍。
+//
+// ── 扩钉轮：cycle-evidence-inner-reason（内层归因下沉，GRILL v1 / plan v1）────
+// 单锁扩钉，不新建金牌件：原件（75 钉，sha 9a138436…）已 gzip 存档同目录
+//   teachin-cycle-evidence.zero-sut.golden.mjs.pre-inner-reason-amendment.archive.gz。
+// 新增 E10 组 14 钉 + REQUIRED_REFUSAL_POINTS 补一员（21→22，成员名写死
+//   raw-axes.projection-denied）。既有 75 钉一条不削弱，只有两条因枚举补员转红：
+//   E0a（枚举闭合缺新成员）与 E3 发射点矩阵（缺生产拒付点）——属红先行预期。
+// 修前红绿预期：新 14 钉中 13 红、1 绿（E10e 成功路双跑：成功路本就无通报，
+//   改前改后都该全等，如实标注为修前应绿，不冒充红）。
 
 import {
   readFileSync, existsSync, readdirSync, mkdtempSync, rmSync, rmdirSync,
@@ -237,6 +246,16 @@ try {
   harnessImportError = error;
 }
 
+// 现役 raw axes 接缝：内层六类具名拒付就发生在它的 projectAndVerify 里（E10 组的被观测生产件）。
+// 合成夹具驱动它的真路径，不直调发射器、不硬编码通报——替身逮不到「某个拒付位没接上助手」。
+let axesApi = null;
+let axesImportError = null;
+try {
+  axesApi = await import('../../lib/teachin/raw-axes-adapter.mjs');
+} catch (error) {
+  axesImportError = error;
+}
+
 // ══════════════════════════════════════════════════════════════════════
 // 冻结清单（实现须为超集且闭合；全部串出自固定枚举，D3）
 // ══════════════════════════════════════════════════════════════════════
@@ -260,6 +279,10 @@ try {
 //   lib/teachin/dual-replay-orchestrator-core.mjs —— 阶段边界
 // 注（文档缺口，正签前请确认）：plan v3 只写「prepared-runtime 各分支」，未逐分支命名；
 //   本金牌按其两个导出入口收敛为 claim / preflight 两员。
+// 扩钉轮补第 22 员 raw-axes.projection-denied（cycle-evidence-inner-reason GRILL D2，
+//   成员名写死、实现不得另取）：raw-axes-adapter 的 projectAndVerify 全部 15 个拒付位共用它，
+//   专记内层六码。明确不复用 resolved-completion.result-shape——那是外层统一码的生产点，
+//   两个模块发同一员会破 E3 的逐点唯一归因前提。
 const REQUIRED_REFUSAL_POINTS = Object.freeze([
   'source-completion.input-shape',
   'source-completion.issuer-throw',
@@ -282,6 +305,7 @@ const REQUIRED_REFUSAL_POINTS = Object.freeze([
   'prepared-runtime.claim',
   'prepared-runtime.preflight',
   'orchestrator.stage-boundary',
+  'raw-axes.projection-denied',
 ]);
 
 // 阶段枚举：dual-replay-orchestrator-core 编号步 1–14 的归组。
@@ -1546,6 +1570,567 @@ await check('E9e 生产件行数纪律（新件与被改件逐个严格小于 60
     if (lines >= 600) violations.push(`${rel}:${lines}`);
   }
   assert(violations.length === 0, `超行或缺件：${violations.join(', ')}`);
+});
+
+// ══════════════════════════════════════════════════════════════════════
+// E10 内层归因下沉（契约 cycle-evidence-inner-reason，GRILL v1 D0–D6 / plan v1 §2）
+//
+// 病灶：闭环推进到 source-resolved-completion 仍不通，边车只记外层统一码
+//   SOURCE_SEMANTIC_COMPLETION_INVALID；raw-axes-adapter 的 projectAndVerify 六类
+//   内层具名拒付被外层吞掉，真因不可判。乙路修法 = 把通报下沉到发射点本身。
+//
+// 阶段取值不是本金牌自选，有唯一事实源：projectAndVerify 的唯一生产调用点是
+//   lib/dual-replay/replay-completion.mjs 的 completeResolvedSourceReplay
+//   （经 lib/teachin/runtime-cycle-adapter.mjs 的 resolvedSourceIssuer 一跳委托），
+//   那段用的 RESOLVED_STAGE = 'source-resolved-completion'。
+//
+// 本组不合成任何拒付点替身：一律铸合成依赖夹具、驱动现役 projectAndVerify 的真分支，
+//   再断言观测上下文里收到什么。直调发射器、硬编码通报的写法在本组一律不算数。
+// ══════════════════════════════════════════════════════════════════════
+
+const INNER_REFUSAL_POINT = 'raw-axes.projection-denied';
+const INNER_STAGE = 'source-resolved-completion';
+// GRILL D0（审校逐条点过全部 denied，无第七个）：projectAndVerify 与其 inspectBinding
+// 预检去重后恰六个具名内层拒付码。
+const INNER_REASON_CODES = Object.freeze([
+  'RAW_AXES_PROJECTION_INVALID',
+  'RAW_OBSERVATION_AUTHORITY_INVALID',
+  'RESOLVED_PROJECTION_AUTHORITY_INVALID',
+  'RAW_AXES_BINDING_MISMATCH',
+  'RAW_AXES_PROJECTION_FAILED',
+  'VERDICT_EXECUTION_FAILED',
+]);
+// GRILL D1（codex r3 订正）：15 个拒付位 = 12 处发射点本地字面量 + 3 处动态值
+// （预检 / raw 消费者 / resolved 消费者，值来自被调方）。
+const INNER_DENIAL_SITES = 15;
+const INNER_DYNAMIC_SITES = 3;
+// 12 处本地字面量的逐码分布（按现役件逐位点算）：漏接任何一处都会打破计数。
+const INNER_LITERAL_SITE_COUNTS = Object.freeze({
+  RAW_AXES_PROJECTION_INVALID: 2,
+  RAW_OBSERVATION_AUTHORITY_INVALID: 1,
+  RESOLVED_PROJECTION_AUTHORITY_INVALID: 1,
+  RAW_AXES_BINDING_MISMATCH: 3,
+  RAW_AXES_PROJECTION_FAILED: 2,
+  VERDICT_EXECUTION_FAILED: 3,
+});
+
+// —— 合成投影夹具：形状取自现役 raw-axes-adapter 金牌的 happy 夹具，最小化到一 intent 两 event ——
+
+const AXES_CASE = 'tc_inner_reason';
+const AXES_CAPTURE = 'a'.repeat(64);
+const AXES_EXPECTED = 'b'.repeat(64);
+
+function axesEvent(seq, path) {
+  return {
+    seq,
+    eventKey: `${seq}:click`,
+    stepId: `rawstep_${seq}`,
+    action: 'click',
+    actionAxis: { resolution: 'unique', candidateCount: 1 },
+    before: { count: 10 + seq },
+    after: {
+      path,
+      count: 11 + seq,
+      toasts: [],
+      textHits: { 终页: seq - 1 },
+      buttonHits: {},
+      buttonSeen: seq,
+      buttonDisabledHits: {},
+      inputReadback: { ok: true },
+      reply: null,
+    },
+  };
+}
+
+function axesRawProjection(overrides = {}) {
+  return {
+    caseId: AXES_CASE,
+    captureSha256: AXES_CAPTURE,
+    expectedSha256: AXES_EXPECTED,
+    expected: {
+      intents: [{
+        intentId: 'authored_i1',
+        expected: [{ kind: 'textVisible', op: 'appears', value: '终页', soft: false }],
+      }],
+      globalAssertions: [],
+    },
+    events: [axesEvent(1, '/first'), axesEvent(2, '/terminal')],
+    pageErrors: [],
+    records: [],
+    chatCfg: null,
+    ...overrides,
+  };
+}
+
+function axesResolvedProjection(overrides = {}) {
+  return {
+    caseId: AXES_CASE,
+    captureSha256: AXES_CAPTURE,
+    expectedSha256: AXES_EXPECTED,
+    resolved: [{
+      mappingKey: 'm1',
+      intentId: 'authored_i1',
+      atom: 'nav.workflowManagement',
+      params: {},
+      evidenceEventSeqs: [1, 2],
+    }],
+    pending: [],
+    structural: [],
+    ...overrides,
+  };
+}
+
+// trace 逐次记依赖调用名：既作「调用次数相等」的对照面，也证明每枚正控真踩到了指定分支。
+function makeAxesHarness(options = {}) {
+  const {
+    raw = axesRawProjection(),
+    resolved = axesResolvedProjection(),
+    rawOutcome = null,
+    resolvedOutcome = null,
+    inspectors = null,
+    projectFailure = null,
+    verdictFailure = null,
+    starveDependencies = false,
+  } = options;
+  const trace = [];
+  const axesText = `${JSON.stringify({
+    caseId: AXES_CASE,
+    steps: [{
+      stepId: 'rawstep_2',
+      intentId: 'authored_i1',
+      action: { resolution: 'unique' },
+      postAssertions: [{ kind: 'textVisible', ok: true, soft: false }],
+    }],
+  })}\n`;
+  const verdictBytes = Buffer.from(`${JSON.stringify({
+    caseId: AXES_CASE,
+    steps: [{ stepId: 'rawstep_2', intentId: 'authored_i1', verdict: 'PASS', reason: null }],
+  })}\n`);
+  const dependencies = {
+    consumeRawObservationAuthority() {
+      trace.push('raw');
+      if (rawOutcome === 'throw') throw new TypeError('PRIVATE_RAW_MARKER https://must-not-leak.invalid');
+      return rawOutcome || { ok: true, projection: structuredClone(raw) };
+    },
+    consumeResolvedProjectionAuthority() {
+      trace.push('resolved');
+      if (resolvedOutcome === 'throw') throw new TypeError('PRIVATE_RESOLVED_MARKER');
+      return resolvedOutcome || { ok: true, projection: structuredClone(resolved) };
+    },
+    projectReplayAxes() {
+      trace.push('axes');
+      if (projectFailure === 'throw') throw new Error('PRIVATE_AXES_MARKER https://must-not-leak.invalid');
+      if (projectFailure === 'malformed') return undefined;
+      return axesText;
+    },
+    verdictAdapter: {
+      async runFrozenVerdict() {
+        trace.push('verdict');
+        if (verdictFailure === 'throw') throw new Error('PRIVATE_VERDICT_MARKER');
+        if (verdictFailure === 'returned') return { ok: false, reason: 'PRIVATE_JUDGE_REASON' };
+        return { ok: true, verdictBytes: Buffer.from(verdictBytes) };
+      },
+    },
+  };
+  if (inspectors) {
+    dependencies.inspectRawObservationAuthority = () => {
+      trace.push('inspect-raw');
+      return inspectors.raw;
+    };
+    dependencies.inspectResolvedProjectionAuthority = () => {
+      trace.push('inspect-resolved');
+      return inspectors.resolved;
+    };
+  }
+  return {
+    // starveDependencies：依赖包不齐（usable 判假）时的第一枚拒付位，同样得通报。
+    adapter: axesApi.createRawAxesAdapter(starveDependencies ? {} : dependencies),
+    trace,
+    axesText,
+    verdictBytes,
+    rawObservationAuthority: Object.freeze(Object.create(null)),
+    resolvedProjectionAuthority: Object.freeze(Object.create(null)),
+  };
+}
+
+function axesInput(built, overrides = {}) {
+  return {
+    rawObservationAuthority: built.rawObservationAuthority,
+    resolvedProjectionAuthority: built.resolvedProjectionAuthority,
+    ...overrides,
+  };
+}
+
+async function runAxesObserved(built, overrides = {}) {
+  const { createCycleEvidenceCollector, runWithCycleEvidence, sealCycleEvidence } = ctx();
+  const collector = createCycleEvidenceCollector();
+  const observed = await runWithCycleEvidence(collector,
+    () => built.adapter.projectAndVerify(axesInput(built, overrides)));
+  return { observed, snapshot: sealCycleEvidence(collector) };
+}
+
+// 逐钉共用的内层通报判据：一条入档、归因点/阶段/拒付码三项对齐、零原文外泄。
+function expectInnerReport(snapshot, reason, label) {
+  assert(snapshot.poisoned === false,
+    `${label} 合法内层通报不得毒化整批：${JSON.stringify(snapshot).slice(-300)}`);
+  assert(snapshot.events.length === 1,
+    `${label} 须恰一条内层通报入档（修前为 0 条，属红先行预期）：${JSON.stringify(snapshot.events)}`);
+  const row = snapshot.events[0];
+  assert(row.refusalPoint === INNER_REFUSAL_POINT,
+    `${label} 归因点须为 ${INNER_REFUSAL_POINT}：${JSON.stringify(row)}`);
+  assert(row.stage === INNER_STAGE,
+    `${label} 阶段须为 ${INNER_STAGE}（唯一生产调用点在 completeResolvedSourceReplay）：${JSON.stringify(row)}`);
+  assert(row.reason === reason, `${label} 内层拒付码失准：${JSON.stringify(row)}`);
+  assert(!('message' in row) && !('stack' in row),
+    `${label} 不得随通报外带异常原文键：${JSON.stringify(row)}`);
+  const text = JSON.stringify(snapshot);
+  assert(!text.includes('PRIVATE') && !text.includes('must-not-leak'),
+    `${label} 不得外带私密原文或地址：${text.slice(-200)}`);
+  return row;
+}
+
+// ── E10a 六码正控：逐码从真实分支击发 ────────────────────────────────
+// 每条都带 trace 断言，证明真走到了指定那一段（而不是提前被别的分支截胡后碰巧同码）。
+const INNER_POSITIVE_BRANCHES = [
+  ['RAW_AXES_PROJECTION_INVALID', '依赖包不齐（第 1 位：usable 判假）',
+    { starveDependencies: true }, {}, []],
+  ['RAW_AXES_PROJECTION_INVALID', '入参非精确键形状（第 2 位：调用方夹带 axes 事实）',
+    {}, { axesBytes: Buffer.from('{}') }, []],
+  ['RAW_OBSERVATION_AUTHORITY_INVALID', 'raw 消费者非 ok（动态透传位）',
+    { rawOutcome: { ok: false, reason: 'RAW_OBSERVATION_AUTHORITY_INVALID' } }, {}, ['raw']],
+  ['RESOLVED_PROJECTION_AUTHORITY_INVALID', 'resolved 消费者抛错（catch 位）',
+    { resolvedOutcome: 'throw' }, {}, ['raw', 'resolved']],
+  ['RAW_AXES_BINDING_MISMATCH', '消费后两侧投影绑定不一致（capture 错绑）',
+    { resolved: axesResolvedProjection({ captureSha256: 'c'.repeat(64) }) }, {}, ['raw', 'resolved']],
+  ['RAW_AXES_PROJECTION_FAILED', '轴投影器抛错',
+    { projectFailure: 'throw' }, {}, ['raw', 'resolved', 'axes']],
+  ['VERDICT_EXECUTION_FAILED', '裁判适配器抛错',
+    { verdictFailure: 'throw' }, {}, ['raw', 'resolved', 'axes', 'verdict']],
+];
+
+for (const [reason, label, harnessOptions, inputOverrides, expectedTrace] of INNER_POSITIVE_BRANCHES) {
+  await check(`E10a 六码正控（真实分支）：${label} → ${INNER_REFUSAL_POINT}=${reason}`, async () => {
+    assert(!axesImportError && typeof axesApi?.createRawAxesAdapter === 'function',
+      `现役 raw axes 接缝不可用：${String(axesImportError?.message || axesImportError).slice(-200)}`);
+    const built = makeAxesHarness(harnessOptions);
+    const { observed, snapshot } = await runAxesObserved(built, inputOverrides);
+    assert(observed?.ok === false && observed.reason === reason,
+      `${label} 的判定与返回形状必须一字不改（仍诚实拒付 ${reason}）：${JSON.stringify(observed)}`);
+    sameShape(Object.keys(observed).sort(), ['ok', 'reason'],
+      `${label} 拒付返回值键集必须仍 exact 闭合`);
+    sameShape(built.trace, expectedTrace, `${label} 必须真走到指定分支（依赖调用序列失准即钉错了位）`);
+    expectInnerReport(snapshot, reason, label);
+  });
+}
+
+await check('E10b 预检动态透传（第 3 处动态值）：绑定预检拒付 → 内层通报且两枚 genuine authority 一个不烧', async () => {
+  assert(!axesImportError && typeof axesApi?.createRawAxesAdapter === 'function',
+    `现役 raw axes 接缝不可用：${String(axesImportError?.message || axesImportError).slice(-200)}`);
+  const built = makeAxesHarness({
+    inspectors: {
+      raw: {
+        ok: true, caseId: AXES_CASE, captureSha256: AXES_CAPTURE,
+        expectedSha256: AXES_EXPECTED, observationCount: 2,
+      },
+      resolved: {
+        ok: true, caseId: AXES_CASE, captureSha256: 'c'.repeat(64),
+        expectedSha256: AXES_EXPECTED, pendingCount: 0, resolvedCount: 1,
+      },
+    },
+  });
+  const { observed, snapshot } = await runAxesObserved(built);
+  assert(observed?.ok === false && observed.reason === 'RAW_AXES_BINDING_MISMATCH',
+    `预检错绑须仍在消费前 fail-closed：${JSON.stringify(observed)}`);
+  sameShape(built.trace, ['inspect-raw', 'inspect-resolved'],
+    '预检拒付绝不许烧掉 genuine one-shot authority（消费者一次都不许被调）');
+  expectInnerReport(snapshot, 'RAW_AXES_BINDING_MISMATCH', '预检动态透传');
+});
+
+// ── E10c 降格负控两枚（GRILL D2b + D5）──────────────────────────────
+// D5 口径：白名单外的自由串不是泄露，是记录投影判空→整批中毒→落盘端拒写，
+// 也就是整份边车丢失。所以负控要断言的是「不中毒 + 落兜底成员 + 整批仍可成档过闸」，
+// 只断言「原串不出现」打不到真正的失效面。
+// 第一枚尤其是 D2b 的照妖镜：ACTION_FAILED 全局合法，复用全局归一器会原样放过它。
+const INNER_DEGRADE_CASES = [
+  ['全局合法但非本生产者六码（动作失败类码）', 'ACTION_FAILED', true,
+    (code) => ({ rawOutcome: { ok: false, reason: code } })],
+  ['完全未知的自由串', 'ZZZ_INNER_REASON_NOT_IN_ANY_ENUM', false,
+    (code) => ({ resolvedOutcome: { ok: false, reason: code } })],
+];
+
+for (const [label, code, globallyLegal, makeOptions] of INNER_DEGRADE_CASES) {
+  await check(`E10c 降格负控：${label} → 不中毒 + 落兜底成员 OTHER_REASON`, async () => {
+    assert(!axesImportError && typeof axesApi?.createRawAxesAdapter === 'function',
+      `现役 raw axes 接缝不可用：${String(axesImportError?.message || axesImportError).slice(-200)}`);
+    const { CYCLE_EVIDENCE_REASONS } = ctx();
+    const { buildCycleEvidenceDocument, screenCycleEvidenceDocument } = out();
+    // 夹具自证：第一枚必须真是「全局合法」，否则这枚负控证不到 D2b 那条边。
+    assert(CYCLE_EVIDENCE_REASONS.includes(code) === globallyLegal,
+      `夹具自证失败：「${code}」的全局合法性应为 ${globallyLegal}`);
+    const built = makeAxesHarness(makeOptions(code));
+    const { observed, snapshot } = await runAxesObserved(built);
+    assert(observed?.ok === false && observed.reason === code,
+      `${label} 的返回值必须原样透传被调方拒付码（判定与返回零改）：${JSON.stringify(observed)}`);
+    const row = expectInnerReport(snapshot, 'OTHER_REASON', label);
+    assert(row.refusalPoint === INNER_REFUSAL_POINT,
+      `${label} 降格后归因点仍须是本发射点：${JSON.stringify(row)}`);
+    assert(!JSON.stringify(snapshot).includes(code),
+      `${label} 的自由串绝不许原样进取证通道：${JSON.stringify(snapshot).slice(-200)}`);
+    // 真正的失效面在这里：降格漏了就是整批中毒、整份边车落不了盘。
+    const built1 = buildCycleEvidenceDocument({
+      snapshot, captureSha256: CAPTURE_A, recordedAt: RECORDED_AT,
+    });
+    assert(built1?.ok === true,
+      `${label} 降格后整批必须仍可成档（否则边车整份丢失）：${JSON.stringify(built1)}`);
+    assert(screenCycleEvidenceDocument(built1.document)?.ok === true,
+      `${label} 降格后整批必须仍过四层闸：${JSON.stringify(built1.document).slice(-200)}`);
+  });
+}
+
+// ── E10d 静态完整性钉（plan §2，codex r2 阻断三）────────────────────
+// 六码正控只证「每个码至少一条路通报了」，证不出「同码的另外几个分支也接上了」；
+// 15 位里漏接一个，六码正控照样全绿。故本钉走源码级全覆盖：
+//   ① 拒付位恰 15 + 成功返回恰 1；② 方法体内零裸 denied、零就地 safeEmit；
+//   ③ 15 位共用同一枚「先通报再返回」的助手，助手写死新归因点且不复用全局归一器；
+//   ④ 12 处本地字面量的逐码分布与 D0/D1 一致；⑤ 3 处动态值仍复用既有表达式的原始值。
+// 掩噪切片：把注释与字符串内容换成同长空白（引号保留），索引与原文 1:1 对齐——
+// 于是括号配平与禁用形态扫描不会被注释里的示例字面量诱骗，切出的区间又能原样回读原文。
+function maskSourceNoise(text) {
+  const out = text.split('');
+  const blank = (from, to) => {
+    for (let k = from; k < to && k < out.length; k += 1) if (out[k] !== '\n') out[k] = ' ';
+  };
+  let i = 0;
+  while (i < text.length) {
+    const ch = text[i];
+    if (ch === '/' && text[i + 1] === '/') {
+      let j = i;
+      while (j < text.length && text[j] !== '\n') j += 1;
+      blank(i, j); i = j; continue;
+    }
+    if (ch === '/' && text[i + 1] === '*') {
+      const closed = text.indexOf('*/', i + 2);
+      const end = closed < 0 ? text.length : closed + 2;
+      blank(i, end); i = end; continue;
+    }
+    if (ch === "'" || ch === '"' || ch === '`') {
+      let j = i + 1;
+      while (j < text.length && text[j] !== ch) j += text[j] === '\\' ? 2 : 1;
+      blank(i + 1, j); i = Math.min(j + 1, text.length); continue;
+    }
+    i += 1;
+  }
+  return out.join('');
+}
+
+function balancedEnd(masked, openIndex, open, close) {
+  let depth = 0;
+  for (let i = openIndex; i < masked.length; i += 1) {
+    if (masked[i] === open) depth += 1;
+    else if (masked[i] === close) {
+      depth -= 1;
+      if (depth === 0) return i;
+    }
+  }
+  return -1;
+}
+
+// 从函数头（名字所在处）切出其函数体区间：先配平参数表括号，再配平体大括号。
+function functionBodySpan(masked, headerIndex) {
+  const paren = masked.indexOf('(', headerIndex);
+  if (paren < 0) return null;
+  const parenEnd = balancedEnd(masked, paren, '(', ')');
+  if (parenEnd < 0) return null;
+  const open = masked.indexOf('{', parenEnd);
+  if (open < 0) return null;
+  const end = balancedEnd(masked, open, '{', '}');
+  return end < 0 ? null : { start: open, end: end + 1 };
+}
+
+await check(`E10d 静态完整性：projectAndVerify 的 ${INNER_DENIAL_SITES} 个拒付位全部经新助手、零裸 denied`, () => {
+  const source = readFileSync(resolve(ROOT, 'lib/teachin/raw-axes-adapter.mjs'), 'utf8');
+  const masked = maskSourceNoise(source);
+  const header = masked.indexOf('async projectAndVerify');
+  assert(header >= 0, 'raw-axes-adapter 须仍以 async projectAndVerify 暴露内层投影入口');
+  const span = functionBodySpan(masked, header);
+  assert(span, 'projectAndVerify 方法体括号配平失败（切不出方法体就证不出全覆盖）');
+  const bodyMasked = masked.slice(span.start, span.end);
+  const bodyText = source.slice(span.start, span.end);
+
+  // ① 逐 return 归类：成功返回恰一条（frozen(...)），其余全是拒付位。
+  const returns = [];
+  const returnPattern = /\breturn\s+([^;]*);/g;
+  let hit = returnPattern.exec(bodyMasked);
+  while (hit !== null) {
+    const from = hit.index + hit[0].length - 1 - hit[1].length;
+    returns.push({
+      masked: hit[1].trim(),
+      text: bodyText.slice(from, from + hit[1].length).replace(/\s+/g, ' ').trim(),
+    });
+    hit = returnPattern.exec(bodyMasked);
+  }
+  const isSuccess = (row) => /^frozen\s*\(/.test(row.masked);
+  const refusals = returns.filter((row) => !isSuccess(row));
+  assert(returns.filter(isSuccess).length === 1,
+    `projectAndVerify 须恰一条成功返回，实得 ${returns.filter(isSuccess).length}`);
+  assert(refusals.length === INNER_DENIAL_SITES,
+    `projectAndVerify 拒付位须恰 ${INNER_DENIAL_SITES} 个（GRILL D0 已逐条点过），实得 ${refusals.length}`);
+
+  // ② 裸发射器清零 + 通报必须下沉：抄写式逐处 safeEmit 正是漏接的温床。
+  assert(!/\bdenied\s*\(/.test(bodyMasked),
+    '方法体不得残留裸 denied(...)：漏接一个就会同码多分支只报一半，而六码正控仍全绿');
+  assert(!/\bsafeEmit\s*\(/.test(bodyMasked),
+    '通报须下沉进一枚小助手，不得把 safeEmit 逐处抄进 projectAndVerify 方法体');
+
+  // ③ 15 位共用同一枚「先通报再返回」的助手。
+  const callees = new Set(refusals.map((row) => (/^([A-Za-z_$][\w$]*)\s*\(/.exec(row.masked) || [])[1]));
+  assert(!callees.has(undefined) && callees.size === 1,
+    `${INNER_DENIAL_SITES} 个拒付位须全部经同一枚助手返回，实得调用方 ${JSON.stringify([...callees])}`);
+  const helper = [...callees][0];
+  assert(helper !== 'denied' && helper !== 'frozen', `助手不得就是原发射器：${helper}`);
+  const helperHeader = masked.search(new RegExp(
+    `(?:function\\s+${helper}\\s*\\(|\\b${helper}\\s*=\\s*(?:async\\s+)?(?:function\\s*)?\\()`));
+  assert(helperHeader >= 0, `找不到助手 ${helper} 的定义`);
+  const helperSpan = functionBodySpan(masked, helperHeader);
+  assert(helperSpan, `助手 ${helper} 的函数体括号配平失败`);
+  const helperMasked = masked.slice(helperSpan.start, helperSpan.end);
+  const helperText = source.slice(helperSpan.start, helperSpan.end);
+  assert(helperText.includes(`'${INNER_REFUSAL_POINT}'`) || helperText.includes(`"${INNER_REFUSAL_POINT}"`),
+    `助手 ${helper} 必须写死新归因点 ${INNER_REFUSAL_POINT}（GRILL D2：成员名写死，实现不得另取）`);
+  assert(/\bsafeEmit\s*\(/.test(helperMasked) && /\bdenied\s*\(/.test(helperMasked),
+    `助手 ${helper} 必须「先 safeEmit 通报、再原样 return denied(...)」`);
+  assert(!/\bnormalizeRefusalReason\s*\(/.test(helperMasked),
+    `助手 ${helper} 不得复用全局归一器（它放过全局合法却不属本生产者六码的成员，GRILL D2b）`);
+
+  // ④ 12 处本地字面量的逐码分布：少接一处即分布失衡。
+  const isDynamic = (row) => /\b(?:preflight|rawConsumed|resolvedConsumed)\b/.test(row.masked);
+  const dynamic = refusals.filter(isDynamic);
+  const literal = refusals.filter((row) => !isDynamic(row));
+  assert(dynamic.length === INNER_DYNAMIC_SITES,
+    `动态透传位须恰 ${INNER_DYNAMIC_SITES} 处（预检 / raw 消费者 / resolved 消费者），实得 ${dynamic.length}`);
+  const tally = {};
+  for (const row of literal) {
+    const codes = row.text.match(/'([A-Z0-9_]+)'/g) || [];
+    assert(codes.length === 1, `本地字面量拒付位须恰带一枚闭合码：${row.text}`);
+    const code = codes[0].slice(1, -1);
+    assert(INNER_REASON_CODES.includes(code), `本地字面量拒付位出现六码之外的码「${code}」`);
+    tally[code] = (tally[code] || 0) + 1;
+  }
+  sameShape(tally, { ...INNER_LITERAL_SITE_COUNTS },
+    '本地字面量拒付位的逐码分布必须与 GRILL D0/D1 一致（漏接一处即失衡）');
+
+  // ⑤ 三处动态值必须仍是被调方给的原始值：改写成硬编码码等于换掉真因。
+  assert(dynamic.some((row) => row.text === `${helper}(preflight)`),
+    `预检位须原样透传 preflight：实得 ${JSON.stringify(dynamic.map((row) => row.text))}`);
+  for (const expression of [
+    "typeof rawConsumed?.reason === 'string'",
+    "typeof resolvedConsumed?.reason === 'string'",
+  ]) {
+    assert(dynamic.some((row) => row.text.includes(expression)),
+      `动态透传须复用既有表达式已算出的原始值：缺「${expression}」`);
+  }
+});
+
+// ── E10e 零行为差双跑（GRILL D3 / plan §2 R3）────────────────────────
+async function innerProbe(harnessOptions, inputOverrides, collector) {
+  const { runWithCycleEvidence } = ctx();
+  const built = makeAxesHarness(harnessOptions);
+  const captured = await captureConsole(async () => {
+    const call = () => built.adapter.projectAndVerify(axesInput(built, inputOverrides));
+    const result = collector === null ? await call() : await runWithCycleEvidence(collector, call);
+    console.error(`inner-probe: ${JSON.stringify(result)}`);
+    return result;
+  });
+  return { result: captured.value, chunks: captured.chunks, trace: built.trace };
+}
+
+await check('E10e 零行为差（拒付路）：带/不带收集器双跑，返回深等 + 依赖调用次数相等 + 控制流无差', async () => {
+  assert(!axesImportError && typeof axesApi?.createRawAxesAdapter === 'function',
+    `现役 raw axes 接缝不可用：${String(axesImportError?.message || axesImportError).slice(-200)}`);
+  const { createCycleEvidenceCollector, sealCycleEvidence } = ctx();
+  const dir = join(tmpRoot, 'e10-sidecar');
+  mkdirSync(dir, { recursive: true });
+  const before = sidecarNames(dir);
+  const rootBefore = sidecarNames(ROOT);
+
+  const options = { verdictFailure: 'throw' };
+  const plain = await innerProbe(options, {}, null);
+  const collector = createCycleEvidenceCollector();
+  const observed = await innerProbe(options, {}, collector);
+
+  sameShape(observed.result, plain.result, '观测上下文不得改变 projectAndVerify 的返回');
+  sameShape(observed.trace, plain.trace, '观测上下文不得改变依赖调用次数与次序');
+  sameShape(observed.chunks, plain.chunks, '观测上下文不得改变控制台输出');
+  assert(plain.chunks.length > 0, '控制台对照面不得空转（须有可比字节）');
+  assert(plain.trace.length > 0, '依赖调用对照面不得空转（须真踩到依赖）');
+  // 真踩到通报位才算数：否则「零行为差」只是因为压根没通报（修前即如此）。
+  const snapshot = sealCycleEvidence(collector);
+  assert(snapshot.events.length === 1 && snapshot.events[0].refusalPoint === INNER_REFUSAL_POINT,
+    `双跑须真踩到内层通报位：${JSON.stringify(snapshot.events)}`);
+  sameShape(sidecarNames(dir), before, '缺省路径不得落任何边车文件');
+  sameShape(sidecarNames(ROOT), rootBefore, '缺省路径不得往仓库根落边车文件');
+});
+
+await check('E10e 零行为差（成功路，修前应绿）：happy 投影带/不带收集器全等且零通报', async () => {
+  assert(!axesImportError && typeof axesApi?.createRawAxesAdapter === 'function',
+    `现役 raw axes 接缝不可用：${String(axesImportError?.message || axesImportError).slice(-200)}`);
+  const { createCycleEvidenceCollector, sealCycleEvidence } = ctx();
+  const plain = await innerProbe({}, {}, null);
+  assert(plain.result?.ok === true,
+    `happy 夹具必须真跑通成功路（否则这枚零行为差是空转）：${JSON.stringify(plain.result)}`);
+  const collector = createCycleEvidenceCollector();
+  const observed = await innerProbe({}, {}, collector);
+  sameShape(observed.result, plain.result, '成功路返回必须深等（含 axes/verdict 字节与 evidence）');
+  sameShape(observed.trace, plain.trace, '成功路依赖调用次数与次序必须相等');
+  sameShape(observed.chunks, plain.chunks, '成功路控制台输出必须全等');
+  sameShape(sealCycleEvidence(collector).events, [],
+    '成功路不是拒付位，绝不许通报任何内层事件');
+});
+
+// ── E10f 归因唯一性（GRILL D2 / E3 逐点唯一归因不破）────────────────
+await check('E10f 归因唯一性：22 员闭合、全仓仅一处发射、与既有 21 员同批共存不串位', async () => {
+  const { CYCLE_EVIDENCE_REFUSAL_POINTS, createCycleEvidenceCollector,
+    runWithCycleEvidence, sealCycleEvidence } = ctx();
+  assert(CYCLE_EVIDENCE_REFUSAL_POINTS.length === REQUIRED_REFUSAL_POINTS.length,
+    `归因枚举须恰 ${REQUIRED_REFUSAL_POINTS.length} 员（21→22，不多不少）：实得 ${CYCLE_EVIDENCE_REFUSAL_POINTS.length}`);
+  assert(CYCLE_EVIDENCE_REFUSAL_POINTS.filter((row) => row === INNER_REFUSAL_POINT).length === 1,
+    `新成员 ${INNER_REFUSAL_POINT} 须恰一员`);
+  assert(!CYCLE_EVIDENCE_REFUSAL_POINTS.includes('resolved-completion.raw-axes'),
+    '新成员不得另取别名（GRILL D2 已写死成员名）');
+
+  // 全仓扫：新成员只许出现在枚举件与唯一发射件——多一处发射就破逐点唯一归因。
+  const scanned = [
+    ...walkSources(resolve(ROOT, 'lib'), 'lib', []),
+    ...walkSources(resolve(ROOT, 'bin'), 'bin', []),
+  ];
+  const holders = scanned
+    .filter((rel) => readFileSync(resolve(ROOT, rel), 'utf8').includes(INNER_REFUSAL_POINT))
+    .sort();
+  sameShape(holders, ['lib/teachin/cycle-evidence-context.mjs', 'lib/teachin/raw-axes-adapter.mjs'],
+    `${INNER_REFUSAL_POINT} 只许由枚举件登记、由 raw-axes-adapter 独家发射`);
+
+  // 同批共存：外层统一码那枚归因点与内层新点在同一 cycle 内各归各位、按击发次序只追加。
+  assert(!dualImportError && typeof dualApi?.completeResolvedSourceReplay === 'function',
+    `dual-replay façade 不可用：${String(dualImportError?.message || '').slice(-200)}`);
+  const collector = createCycleEvidenceCollector();
+  const built = makeAxesHarness({ projectFailure: 'malformed' });
+  await runWithCycleEvidence(collector, async () => {
+    await dualApi.completeResolvedSourceReplay({
+      rawExecutionAuthority: null,
+      sourceSemanticGrant: null,
+      trustedResolvedSourceIssuer: null,
+      smuggledExtraInput: 1,
+    });
+    await built.adapter.projectAndVerify(axesInput(built));
+  });
+  const snapshot = sealCycleEvidence(collector);
+  assert(snapshot.poisoned === false, `同批共存不得毒化：${JSON.stringify(snapshot).slice(-300)}`);
+  sameShape(snapshot.events.map((row) => row.refusalPoint),
+    ['resolved-completion.input-shape', INNER_REFUSAL_POINT],
+    '内外两层归因必须逐点唯一、互不串位，且按击发次序只追加');
+  sameShape(snapshot.events.map((row) => row.reason),
+    ['SOURCE_SEMANTIC_COMPLETION_INVALID', 'RAW_AXES_PROJECTION_FAILED'],
+    '同一批里外层统一码与内层具名码必须各记各的（这正是本契约要挖出的那条真因）');
 });
 
 } finally {

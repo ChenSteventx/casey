@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "task": "teachin-cycle-evidence（full）：真机自动闭环停 RUN_COMPLETION_INVALID，同码多分支+catch 吞真因不可诊断（诚实脱敏的代价面）。加开发期取证边车：模块级 AsyncLocalStorage 观测上下文（als.run 词法边界包单次 cycle、聚合前封存、迟到发射只计数）+ 各生产拒付点统一 safeEmit（同步、吞异常、零返回值消费、不进异步控制流）+ refusalPoint 闭合枚举 18 员逐生产点一员（source 六分支/resolved 二/distilled 三/observer begin·finish/raw-runner 逐事件/formal/prepared claim·preflight/orchestrator 阶段边界）。两模块分立防传递依赖：cycle-evidence-context.mjs（纯：上下文+safeEmit+六组冻结枚举+封存式收集器，零 fs 零 import output）与 cycle-evidence-output.mjs（四层闸+全量 digest 派生文件名+原子写先闸后盘+读取方 readCycleEvidence(captureSha256,{outDir})，全仓 import 站点仅 bin/record.mjs）。凭据面：一切字符串出自固定枚举、异常名内建白名单外降格 OtherError（Reflect.get 防 getter）、内存规范化→四层闸→才写临时件→rename（拒写零临时件零目标写入）、三码 EVIDENCE_SCHEMA_REJECTED/EVIDENCE_CREDENTIAL_REJECTED/EVIDENCE_WRITE_FAILED、CLI 非零。裁定路径零沾染：既有函数签名/键集/返回值字节级不动，E5 双跑（带/不带观测上下文）返回深等+产物字节全等+调用关闭次数相等+控制台全等+零边车副作用。金牌 E1-E9（68 钉）：形状毒化/吞异常路/发射点矩阵/异常名规范化与凭据注入分组/零行为差/收集器中毒/身份绑定单判+digest 前 12 位碰撞不同目标/并发双 cycle 零串账/依赖闭包三钉。计划审 codex sol xhigh 七轮收敛 PLAN_APPROVE（r1-r7 日志在 docs/plans/teachin-cycle-evidence/）。",
+  "task": "teachin-cycle-evidence（full）：真机自动闭环停 RUN_COMPLETION_INVALID，同码多分支+catch 吞真因不可诊断（诚实脱敏的代价面）。加开发期取证边车：模块级 AsyncLocalStorage 观测上下文（als.run 词法边界包单次 cycle、聚合前封存、迟到发射只计数）+ 各生产拒付点统一 safeEmit（同步、吞异常、零返回值消费、不进异步控制流）+ refusalPoint 闭合枚举（初签 18 员 → code-r1 补至 21 员 → 内层归因轮补至 22 员）逐生产点一员（source 六分支/resolved 二/distilled 三/observer begin·finish/raw-runner 逐事件/formal/prepared claim·preflight/orchestrator 阶段边界）。两模块分立防传递依赖：cycle-evidence-context.mjs（纯：上下文+safeEmit+六组冻结枚举+封存式收集器，零 fs 零 import output）与 cycle-evidence-output.mjs（四层闸+全量 digest 派生文件名+原子写先闸后盘+读取方 readCycleEvidence(captureSha256,{outDir})，全仓 import 站点仅 bin/record.mjs）。凭据面：一切字符串出自固定枚举、异常名内建白名单外降格 OtherError（Reflect.get 防 getter）、内存规范化→四层闸→才写临时件→rename（拒写零临时件零目标写入）、三码 EVIDENCE_SCHEMA_REJECTED/EVIDENCE_CREDENTIAL_REJECTED/EVIDENCE_WRITE_FAILED、CLI 非零。裁定路径零沾染：既有函数签名/键集/返回值字节级不动，E5 双跑（带/不带观测上下文）返回深等+产物字节全等+调用关闭次数相等+控制台全等+零边车副作用。金牌 E1-E9（68 钉）：形状毒化/吞异常路/发射点矩阵/异常名规范化与凭据注入分组/零行为差/收集器中毒/身份绑定单判+digest 前 12 位碰撞不同目标/并发双 cycle 零串账/依赖闭包三钉。计划审 codex sol xhigh 七轮收敛 PLAN_APPROVE（r1-r7 日志在 docs/plans/teachin-cycle-evidence/）。",
   "specPath": "docs/plans/teachin-cycle-evidence/plan.md",
   "testChecksums": {
-    "tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs": "9a13843671a2b6ea63d6f4483e4d0f96558d146444fcc8cce5f61fa247789794"
+    "tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs": "13d6f192fcf2b3f14fbf553c057812ddb4a23ace91dcf636b252bedae50d6f23"
   },
   "observability": [
     {
@@ -70,6 +70,15 @@
       ],
       "reason": "①[M1] reportedCall async 包裹改变异常栈与微任务时序（codex 实测 settled→queued 反序、栈多包裹帧）→ 删包裹、safeEmit 同步写进原三处 catch 内后原样 return denied；活体探针实测微任务世代 3→2、异常栈帧 6→4 与取证落地前基线全等（fix-probes/m1-live.*.json）；金牌 E0b 换签逐字节钉三处新形态+反 rig 钉禁包裹函数。②[M2] extraInputs 分支由 index.mjs 公开导出、A4 逐生产点归因不认「录制链不可达」挂账 → refusalPoint 枚举 18→21（source/distilled 两枚 input-shape + 同形 resolved-completion.input-shape 一并接通不留半接），三枚各配真实分支钉+互不串位钉。③[M3] readCycleEvidence 协调双伪造可绕 → 采收窄口径：威胁模型=防误放/残留旧档冒充本次证据、不防同一可写目录蓄意篡改（那把写权限连 capture 本体都能改），GRILL D4+金牌 E7 措辞同步、实现不动；双路探针实证确认收窄是诚实口径。④[M4] record.mjs async 箭头属迎合静态钉字面量的 rig、主金牌 E2/E5 全合成替身触不到真实通报路径 → record.mjs 回自然形态；金牌加 E2 真实生产路径钉（零 SUT 铸 genuine authority 真跑 executeAuthorizedSourceReplay issuer 吞异常位）与 E5c 更深双跑。⑤[M5] 金牌自证只扫本文件 readFileSync 字面量、传递链 credentialGate→collectSecretLiterals 实测真读凭据源 → 金牌自我重启进隔离根（lib/bin/tests/node_modules 符号链接指真仓、.auth 与 site.json 合成夹具、--preserve-symlinks），E4c 三重机制证据，凭据源零注入口。五条负控实测全数在案（fix-probes/negctl-m*.log）。过程诚信账：修复代理两次证据打滑（非忠实保真测量、声称未在档的加钉前实录）均被 codex 逮住、均已撤回/补录真账。原件字节存档 .pre-evidence-amendment.archive.gz（gunzip 回验 sha=9fcb632f… 与原冻结值一致）。新件 75 钉 exit 0。",
       "signedBy": "Steven（2026-07-29 AskUserQuestion 补签：code-r1 联审修复轮八轮换签合并账，含枚举 18→21 偏离与两处威胁模型收窄，现役 sha 9a138436）"
+    },
+    {
+      "amendedAt": "2026-07-30",
+      "round": "cycle-evidence-inner-reason 契约红先行扩钉（后继轮换签，codex 四轮 PLAN_APPROVE + opus xhigh 审）",
+      "files": [
+        "tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs"
+      ],
+      "reason": "闭环推进到语义完成层后，外层统一码 SOURCE_SEMANTIC_COMPLETION_INVALID 吞掉 projectAndVerify 的六类内层具名拒付，真因不可判。乙路（Steven 点）：通报下沉到发射点——15 条拒付位全经新助手，12 处本地字面量、3 处动态透传经只认六码的生产者局部归一器落码（禁复用全局归一器，它会放过全局合法却非本生产者六码的成员）；归因点枚举 21→22 新增 raw-axes.projection-denied（不复用外层成员，保 E3 逐点唯一归因）。金牌扩 14 钉（75→89）：六码正控 7 枚（PROJECTION_INVALID 两发射位各一）从真实分支击发、预检动态透传钉（两枚权柄一个不烧）、降格负控 2 枚（全局合法非六码成员与未知串均须不中毒且落兜底并仍成档过闸）、静态完整性钉（15 位全经助手零裸拒付）、零行为差双跑 2 枚、归因唯一性钉。既有 75 钉转红 2 条系补第 22 员所致（加强非削弱），其余 73 绿。起草期两枚探针实证：模拟实现后全绿（钉可满足非死钉），且三条作弊路（漏接一位／动态改硬编码／助手复用全局归一器）全被逮住。原件 gzip 存档 .pre-inner-reason-amendment.archive.gz（回验 sha=9a138436… 与原冻结值一致）。顺带订正 task 里陈旧的枚举员数文案。",
+      "signedBy": "PENDING_STEVEN"
     }
   ]
 }

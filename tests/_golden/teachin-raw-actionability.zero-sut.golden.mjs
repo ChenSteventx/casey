@@ -27,6 +27,11 @@
 //   两钉合起来即「驱动的成功判定不得依赖 value 键」的双向证明。
 //
 // 生产件一字不动（本金牌只读生产件；修复由 plan v3 §1.1 单点落地）。
+//
+// 换签修订（codex 联审 r1 [Medium]，2026-07-30）：补 G1g/G1h 两枚合取负控。
+//   原 17 钉没把生产判据的「双条件合取」钉死——只覆盖了「动作抛错致两条件同时为假」
+//   与「闭包值非真」，缺两条单边路。实证：把判据纯内存变异成 `return actionResult === true`
+//   （去掉拓扑条件）后原钉集仍 17/0，门禁会放过假绿实现。本次同样一字不改生产件，只补钉。
 
 import { readFileSync } from 'node:fs';
 import { deepStrictEqual } from 'node:assert/strict';
@@ -169,6 +174,9 @@ function createRawPageDouble({ name = 'page', url = HOME_URL, actions = {} } = {
       error.name = 'TimeoutError';
       throw error;
     }
+    // 函数式行为：物理动作已如实记账（上一行）后再触发副作用，
+    // 用来合成「动作确实落地、但页面在动作窗口内被关掉」这类拓扑后检查失败场景。
+    if (typeof behavior === 'function') return behavior(page);
     return undefined;
   };
 
@@ -318,6 +326,42 @@ function legacyValueTopologyDouble(page) {
     async consumeNewPageEvent() { return { ok: false, reason: 'TOPOLOGY_EVENT_INVALID' }; },
   });
 }
+
+// 非调用替身（只作 G1h 负控用，全金牌别处一律不用）：成功体形制与真控制器全等，
+// 但 performClick 蓄意从不调用回调。它存在的唯一意义是证明「拓扑 ok 单独不足以判成功」——
+// 闭包值缺席（回调没被调用过）必须拒付。
+function nonInvokingTopologyDouble(page) {
+  const authority = Object.freeze(Object.create(null));
+  const deny = (reason) => Object.freeze({ ok: false, reason, verdictHint: 'NEEDS_HUMAN' });
+  return Object.freeze({
+    activePageAuthority: () => authority,
+    async evaluateActive({ pageAuthority, evaluate } = {}) {
+      if (pageAuthority !== authority) return deny('PAGE_AUTHORITY_STALE');
+      if (typeof evaluate !== 'function') return Object.freeze({ ok: false, reason: 'PAGE_EVALUATION_INVALID' });
+      try {
+        return Object.freeze({ ok: true, reason: null, value: await evaluate(page) });
+      } catch {
+        return deny('PAGE_EVALUATION_FAILED');
+      }
+    },
+    async performClick({ pageAuthority, perform } = {}) {
+      if (pageAuthority !== authority) return deny('PAGE_AUTHORITY_STALE');
+      if (typeof perform !== 'function') return Object.freeze({ ok: false, reason: 'PAGE_ACTION_INVALID' });
+      // 蓄意跳过 perform：合成「拓扑判成功，但动作从未真正发生」。
+      return Object.freeze({
+        ok: true,
+        reason: null,
+        handoff: Object.freeze({ kind: 'none', candidateCount: 0 }),
+        activePageAuthority: authority,
+      });
+    },
+    async consumeNewPageEvent() { return deny('TOPOLOGY_EVENT_INVALID'); },
+  });
+}
+
+// 真接缝返回形制（G1h/G2 共用；G1h 在 G2 之前跑，故常量提到装具段声明）。
+const PERFORM_CLICK_SUCCESS_KEYS = ['ok', 'reason', 'handoff', 'activePageAuthority'];
+const EVALUATE_SUCCESS_KEYS = ['ok', 'reason', 'value'];
 
 function driverEvent(action, extra = {}) {
   return Object.freeze({ action, path: '/home', fallbackCss: SELECTOR, ...extra });
@@ -480,6 +524,76 @@ await check('G1f 边车印证（GRILL D4）：修后闭环零 raw-runner.event �
     `边车在场不得改变闭环结论：${JSON.stringify(result)}`);
 });
 
+// —— 合取钉（codex r1 [Medium] 补洞）——
+// 生产判据是 `performed?.ok === true && actionResult === true` 的双条件合取。
+// 原 17 钉只覆盖「动作抛错致两条件同时为假」（G1c/G3b）与「闭包值非真」（G3c），
+// 缺两条单边路：拓扑为假而闭包为真（G1g）、拓扑为真而闭包缺席（G1h）。
+// 缺口的后果已实证：把生产判据变异成只看闭包值，原 17 钉仍全绿——门禁会放过
+// 「去掉拓扑条件」的假绿实现。以下两钉各钉死合取的一条边，任一边被拿掉即红。
+
+await check('G1g 合取负控：拓扑后检查失败而闭包值为真（active page 在动作窗口内关闭）→ 仍须拒付', async () => {
+  // 其一，把接缝事实先钉死：回调成功返回后，真控制器仍做 active page 后检查，
+  // 页面在动作窗口内关掉即拒付——此时闭包值是真、拓扑结果是假。
+  const seam = await realTopology();
+  let closureValue;
+  const seamResult = await seam.controller.performClick({
+    pageAuthority: seam.activePageAuthority,
+    perform: async (page) => {
+      await page.close();
+      closureValue = true;
+      return true;
+    },
+  });
+  assert(closureValue === true, '回调必须已成功走完（闭包值为真），否则本负控没打在合取的拓扑边上');
+  assert(seamResult?.ok === false && seamResult.reason === 'NO_ACTIVE_PAGE'
+    && seamResult.verdictHint === 'NEEDS_HUMAN',
+  `真控制器后检查必须判失败：${JSON.stringify(seamResult)}`);
+
+  // 其二，同一情形走真驱动全路：合取的拓扑边为假，驱动必须拒付。
+  // 实现若退成「只看闭包值」（return actionResult === true），本钉当场红。
+  const topology = await realTopology({
+    actions: { click: async (page) => { await page.close(); } },
+  });
+  const { resolved, performed } = await driveOnce(topology.topologyAuthority, driverEvent('click'));
+  assert(resolved?.resolution === 'unique' && resolved.candidateCount === 1,
+    `resolve 应先 unique（拒付发生在动作窗口后检查）：${JSON.stringify(resolved)}`);
+  assert(performed?.ok === false && performed.reason === 'ACTION_FAILED',
+    `拓扑后检查失败必须拒付（合取的拓扑边）：${JSON.stringify(performed)}`);
+  assert(exactKeys(performed, ['ok', 'reason']),
+    `失败返回键集不得漂移：${JSON.stringify(performed)}`);
+  sameShape(topology.page.physical, [{ kind: 'click' }],
+    '拒付不得被读成「没点」——物理动作确已恰一次发生（取证面必须如实）');
+  const text = JSON.stringify(performed);
+  assert(!text.includes(SELECTOR) && !text.includes('://'),
+    `selector/地址不得随失败轴外泄：${text}`);
+});
+
+await check('G1h 合取负控：拓扑回 ok:true 但从不调用回调（闭包值缺席）→ 仍须拒付且零物理动作', async () => {
+  const page = createRawPageDouble({ name: 'non-invoking' });
+  const topology = nonInvokingTopologyDouble(page);
+
+  // 先钉替身自身：它回的是形制与真控制器全等的成功体，且回调一次都没被调用。
+  let invoked = false;
+  const probe = await topology.performClick({
+    pageAuthority: topology.activePageAuthority(),
+    perform: async () => { invoked = true; return true; },
+  });
+  assert(probe?.ok === true && exactKeys(probe, PERFORM_CLICK_SUCCESS_KEYS),
+    `负控替身须回一个形制保真的成功体（否则拒付可能只是形状不合）：${JSON.stringify(probe)}`);
+  assert(invoked === false, '负控替身的定义就是从不调用回调');
+
+  // 驱动面：拓扑边为真、闭包边缺席（undefined），合取必须为假。
+  // 实现若退成「只看拓扑」（return performed?.ok === true），本钉当场红。
+  const { resolved, performed } = await driveOnce(topology, driverEvent('click'));
+  assert(resolved?.resolution === 'unique' && resolved.candidateCount === 1,
+    `resolve 应 unique：${JSON.stringify(resolved)}`);
+  assert(performed?.ok === false && performed.reason === 'ACTION_FAILED',
+    `闭包值缺席必须拒付（合取的动作边）：${JSON.stringify(performed)}`);
+  assert(exactKeys(performed, ['ok', 'reason']),
+    `失败返回键集不得漂移：${JSON.stringify(performed)}`);
+  sameShape(page.physical, [], '回调从未被调用，不得有任何物理动作');
+});
+
 // fresh runtime 授权：录制段真关闭 → 回放段对象归属，逐段用现役生产件铸权。
 function mintFresh(topologyAuthority) {
   const emitter = (extra = {}) => {
@@ -523,9 +637,6 @@ function mintFresh(topologyAuthority) {
 // ══════════════════════════════════════════════════════════════════════
 // G2 保真对账钉：真控制器返回形制（事实冻结）与金牌替身逐键相等
 // ══════════════════════════════════════════════════════════════════════
-
-const PERFORM_CLICK_SUCCESS_KEYS = ['ok', 'reason', 'handoff', 'activePageAuthority'];
-const EVALUATE_SUCCESS_KEYS = ['ok', 'reason', 'value'];
 
 await check('G2a 真接缝事实：performClick 成功体键集恰四键且无 value 键、回调返回值被丢弃', async () => {
   const topology = await realTopology();

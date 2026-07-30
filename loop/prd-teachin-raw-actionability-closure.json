@@ -3,7 +3,7 @@
   "task": "teachin-raw-actionability-closure（full）：真机闭环 click/dblclick 恒败真因=raw 驱动误读拓扑控制器返回契约——controller.performClick 丢弃回调返回值且成功体无 value 键，而 raw-playwright-driver 以 performed.ok===true && performed.value===true 判成败，于是点击物理落地却恒判失败；fill/press 走 evaluateActive（有 value）故好。正式面 page-topology/replay-action.mjs 早有闭包捕获先例，raw 面未沿用。两枚冻结金牌的拓扑替身虚构了真控制器从不返回的 value 键（夹具不保真），且全仓无真控制器×canonical raw 驱动接合金牌，故此洞长期不可见。瘦身直修（Steven 2026-07-30 两轮确认，v2 诊断基建整体降级后继契约）：①performRawCandidate 改闭包捕获（拓扑结果只判 ok、动作成败由闭包值判、双条件合取 fail-closed）；②两枚金牌夹具保真化换签（吞异常/无 value/键集与真控制器全等，各配替身回填 value 即红的防再漂钉）；③新增真接合结构性正控金牌（此前全仓缺失）。计划审 codex sol max 五轮至 PLAN_APPROVE（独立内存复现坐实 D0 事实链）。",
   "specPath": "docs/plans/teachin-raw-actionability-closure/plan.md",
   "testChecksums": {
-    "tests/_golden/teachin-raw-actionability.zero-sut.golden.mjs": "7028587abbbafa12a374aff6f43a5494006844e347a19fd91dabe0d46d96e511"
+    "tests/_golden/teachin-raw-actionability.zero-sut.golden.mjs": "b1870fb2aa34cf1d0817163b756b4cf9fc4d958cab9af3cb4d513cad1edffd5d"
   },
   "observability": [
     {
@@ -54,6 +54,17 @@
         "node loop-kit/bin/term-lint.mjs --registry"
       ],
       "evidence": "gate@2026-07-30T09:56:29.937Z 全部 acceptance exit 0"
+    }
+  ],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-30",
+      "round": "code-r1 联审补洞换签（codex 1 Medium：双条件合取未钉死）",
+      "files": [
+        "tests/_golden/teachin-raw-actionability.zero-sut.golden.mjs"
+      ],
+      "reason": "codex 把生产判据纯内存变异成 return actionResult === true（只看闭包值、去掉拓扑条件）后金牌仍 17/0——门禁会放过该假绿实现。补两枚负控：G1g 拓扑后检查失败路（真控制器+真驱动，物理点击落地后动作窗口内关页，钉接缝事实=闭包值真而控制器回 ok:false，再走全路断言驱动出 ACTION_FAILED、失败键集恰 {ok,reason}、物理动作恰一次、selector 与地址零外泄）；G1h 拓扑 ok:true 但从不调用回调（新增保真替身，成功体键集与真控制器全等、蓄意跳过 perform，钉驱动拒付且零物理动作）。双向变异验证均真红：只看闭包值→18/1 红在 G1g；只看拓扑→17/2 红在 G1h。变异在磁盘做、跑完按字节副本还原，还原后 cmp 字节全同、金牌复跑仍 exit 0。金牌 17→19 钉。原件 gzip 存档 .pre-conjunction-amendment.archive.gz（回验 sha=7028587a… 与原冻结值一致）。",
+      "signedBy": "PENDING_STEVEN"
     }
   ]
 }

@@ -1,0 +1,2129 @@
+Reading additional input from stdin...
+2026-07-30T13:56:50.217101Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when UnexpectedServerResponse("HTTP 403: {\"message\":\"missing csrf token\"}")
+OpenAI Codex v0.144.1
+--------
+workdir: /mnt/d/ctx/heren/casey
+model: gpt-5.6-sol
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 019fb350-159c-7f11-a1b1-f8eabedf43ae
+--------
+user
+计划 delta r3（cycle-evidence-inner-reason，read-only，重读两文档）。你 r2 三处阻断已改：
+①判读表纠正：内层通报后外层统一码仍会照常再发（结果形状本就是必达分支），故正常结果是「新归因点六码之一 + 既有外层码」同时出现；表改三行——六码之一且随后外层统一码=通过 / 新归因点落兜底=接线不符不许放宽白名单 / 无新归因点只有外层码=改动未生效或某拒付位漏接。原「另两条不可达分支」的推论已删（与外层码是否出现无关）；
+②新增 D2b 生产者局部归一器：三处动态透传（预检/raw 消费者/resolved 消费者）不硬编码本地码、也不用全局归一器（它会放过全局合法但非本生产者六码的成员），改用只认六码的局部归一器、其余落 OTHER_REASON；复用既有表达式已算出的原始值不新增外来对象读取；负控两枚=全局合法但非六码的成员 + 完全未知串；
+③金牌加静态完整性钉：projectAndVerify 方法体内 15 个拒付位全部经新助手、禁止残留裸 return denied(...)；
+④新归因点成员名写死 raw-axes.projection-denied；
+⑤挂账措辞纠正：四处分属两个 issuer（source raw 两处、distilled 原子两处）。
+只复核这五条与乙路有无新洞。输出简体中文：第一行 PLAN_APPROVE 或 PLAN_CHANGES_REQUIRED；末行 REVIEW_DONE_SENTINEL
+deprecated: `[features].enable_experimental_windows_sandbox` is deprecated. Use `[features].experimental_windows_sandbox` instead.
+Enable it with `--enable experimental_windows_sandbox` or `[features].experimental_windows_sandbox` in config.toml. See https://developers.openai.com/codex/config-basic#feature-flags for details.
+codex
+我会按只读评审执行：先从当前状态与近期改动定位你说的两份文档，再逐项核对这五条修订，并专门沿“乙路”追生产者、消费者、负控与金牌静态钉之间是否还存在漏接。不会改文件。
+exec
+/bin/bash -lc "pwd && rg --files -g 'CLAUDE.md' -g 'docs/HANDOFF.md' -g 'plan.md' -g '*plan*.md' -g '*.md' | sed -n '1,160p' && git status --short && git log -5 --oneline --decorate" in /mnt/d/ctx/heren/casey
+ exited 130 in 49003ms:
+/mnt/d/ctx/heren/casey
+CLAUDE.md
+AGENTS.md
+CONTEXT.md
+README.md
+docs/FLYWHEEL.md
+docs/atom-readiness-assessment-20260715.md
+docs/NEXT-SESSION.md
+docs/HANDOFF.md
+loop/inbox.md
+loop/GUARDRAILS.md
+docs/adr/0010-admission-audience-credential-gate.md
+docs/adr/0009-fidelity-audit-and-real-uat-gate.md
+docs/adr/0008-loop-kit-extraction.md
+docs/adr/0007-p5-replay-substrate-and-forensics.md
+docs/adr/0006-fuse-autotester-regress.md
+docs/adr/0005-ubiquitous-language-enforcement.md
+docs/adr/0004-assertion-freeze-sign-versioning.md
+docs/adr/0003-compile-then-replay.md
+docs/adr/0002-polymorphic-verdict-fail-safe.md
+docs/adr/0001-reuse-loop-kit.md
+docs/design/txt2testreport-design.md
+docs/design/stagehand-action-ir-adaptation.md
+docs/design/report-spec.md
+docs/design/midscene-adaptation.md
+docs/design/autonoma-adaptation.md
+docs/runbooks/real-uat-runbook.md
+docs/runbooks/onboarding.md
+docs/runbooks/adaptive-page-execution-sop.md
+docs/REQUIREMENTS-STATUS.md
+docs/runbooks/report-output-requirements.md
+docs/runbooks/real-zero-error-examples.md
+docs/runbooks/review-model-budget.md
+docs/codex/NEXT-SESSION.md
+docs/codex/HANDOFF.md
+docs/plans/_session-resume/RESUME-2026-07-13.md
+tests/fixtures/fake-sut/CONTRACT.md
+docs/plans/zero-shot-page-execution-research/subagent-plan.md
+docs/plans/cross-platform-execution-target/replay-decomposition.md
+docs/plans/cross-platform-execution-target/plan.md
+docs/plans/cross-platform-execution-target/learn.md
+docs/plans/cross-platform-execution-target/GRILL.md
+docs/plans/cross-platform-execution-target/review.md
+docs/plans/cross-platform-execution-target/review-independent.md
+docs/plans/cross-platform-execution-target/review-independent-round3.md
+docs/plans/cross-platform-execution-target/review-independent-round2.md
+docs/plans/cross-platform-execution-target/review-adversarial.md
+docs/plans/closed-loop-evolution/review-claude-20260717.md
+docs/plans/closed-loop-evolution/plan.md
+tests/fixtures/loop-kit-expected/package/README.md
+docs/plans/zero-shot-page-execution-research/review/sop-gap-review.md
+docs/plans/zero-shot-page-execution-research/review/grok-verdict.md
+docs/plans/zero-shot-page-execution-research/plan.md
+docs/plans/zero-shot-page-execution-research/learn.md
+docs/plans/zero-shot-page-execution-research/execution-plan.md
+docs/plans/entity-binding-operability-successor/plan.md
+docs/plans/casey-doctor/proposed/GRILL.md
+docs/plans/casey-doctor/proposed/GOLDEN-TESTPLAN.md
+docs/plans/casey-doctor/plan.md
+docs/plans/entity-rename-negative-guard/review/proposed/grok-code-review-20260724.md
+docs/plans/entity-rename-negative-guard/review/codex-verdict.md
+docs/plans/zero-shot-observe-admit-step/review.md
+docs/plans/zero-shot-observe-admit-step/review-grok-20260727.md
+docs/plans/zero-shot-observe-admit-step/plan.md
+docs/plans/zero-shot-observe-admit-step/learn.md
+docs/plans/zero-shot-observe-admit-step/GRILL.md
+docs/plans/cli-authority-wiring-fill/red/STOP-golden-contradiction.md
+docs/plans/cli-authority-wiring-fill/plan.md
+docs/plans/cli-authority-wiring-fill/grill.md
+docs/plans/cli-mcp-face/learn.md
+docs/plans/cli-mcp-face/plan.md
+docs/plans/compile-caseid-shape/proposed/GRILL.md
+docs/plans/compile-caseid-shape/plan.md
+docs/plans/compile-caseid-shape/learn.md
+docs/plans/entity-binding-operability-review-successor/plan.md
+docs/plans/chiefcomplaint-smoke/proposed/GRILL.md
+docs/plans/chiefcomplaint-smoke/plan.md
+docs/plans/chiefcomplaint-smoke/learn.md
+docs/plans/cli-mcp-face/proposed/GRILL.md
+docs/plans/entity-rename-negative-guard/proposed/boundary-correction.md
+docs/plans/entity-rename-negative-guard/plan.md
+docs/plans/entity-rename-negative-guard/GRILL.md
+docs/plans/cred-route-mask/learn.md
+docs/plans/cred-route-mask/plan.md
+docs/plans/draft-cli/learn.md
+docs/plans/delete-confirm-causal-binding/plan.md
+docs/plans/draft-cli/plan.md
+docs/plans/cycle-evidence-inner-reason/plan.md
+docs/plans/cycle-evidence-inner-reason/GRILL.md
+docs/plans/casey-demo/proposed/GRILL.md
+docs/plans/casey-demo/proposed/GOLDEN-TESTPLAN.md
+docs/plans/casey-demo/plan.md
+docs/plans/cred-route-mask/proposed/GRILL.md
+docs/plans/e2e-chain/learn.md
+docs/plans/e2e-chain/plan.md
+docs/plans/e2e-chain/proposed/GRILL.md
+docs/plans/chief-bringup/proposed/GRILL.md
+docs/plans/chief-bringup/plan.md
+docs/plans/chief-bringup/learn.md
+docs/plans/draft-cli/proposed/GRILL.md
+docs/plans/entity-identity-lastmile/plan.md
+docs/plans/distribution/proposed/GRILL.md
+docs/plans/distribution/proposed/GOLDEN-TESTPLAN.md
+docs/plans/distribution/plan.md
+docs/plans/worktree-baton/WORKTREE-PARALLEL.md
+docs/plans/p2-intent-compile/regress-intel.md
+docs/plans/p2-intent-compile/plan.md
+docs/plans/p2-intent-compile/learn.md
+docs/plans/p2-intent-compile/grill.md
+docs/plans/p2-intent-compile/flywheel-schedule.md
+docs/plans/drawer-lock-hardening/review/planreview-material.md
+docs/plans/drawer-lock-hardening/review/planreview-dispositions.md
+docs/plans/drawer-lock-hardening/review/planreview-codex.md
+docs/plans/drawer-lock-hardening/review/pi-impl-r6.md
+docs/plans/drawer-lock-hardening/review/pi-impl-r5.md
+docs/plans/drawer-lock-hardening/review/pi-impl-r4.md
+docs/plans/drawer-lock-hardening/review/pi-impl-r3.md
+docs/plans/drawer-lock-hardening/review/pi-impl-r2.md
+docs/plans/drawer-lock-hardening/review/pi-impl-r1.md
+docs/plans/drawer-lock-hardening/review/material-r1.md
+docs/plans/drawer-lock-hardening/review/material-impl-r6.md
+docs/plans/drawer-lock-hardening/review/material-impl-r5.md
+docs/plans/drawer-lock-hardening/review/material-impl-r4.md
+docs/plans/drawer-lock-hardening/review/material-impl-r3.md
+docs/plans/drawer-lock-hardening/review/material-impl-r2.md
+docs/plans/drawer-lock-hardening/review/material-impl-r1.md
+docs/plans/drawer-lock-hardening/review/codex-impl-r6.md
+docs/plans/drawer-lock-hardening/review/codex-impl-r5.md
+docs/plans/drawer-lock-hardening/review/codex-impl-r4.md
+docs/plans/drawer-lock-hardening/review/codex-impl-r3.md
+docs/plans/drawer-lock-hardening/review/codex-impl-r2.md
+docs/plans/drawer-lock-hardening/review/codex-impl-r1.md
+docs/plans/drawer-lock-hardening/review/arb-impl-r3.md
+docs/plans/caseid-echo-mask/proposed/GRILL.md
+docs/plans/caseid-echo-mask/plan.md
+docs/plans/caseid-echo-mask/learn.md
+docs/plans/drafter-patch-intent-guard/review/r2-packet.md
+docs/plans/drafter-patch-intent-guard/review/r1-packet.md
+docs/plans/drafter-patch-intent-guard/plan.md
+docs/plans/drafter-patch-intent-guard/learn.md
+docs/plans/drafter-patch-intent-guard/GRILL.md
+docs/plans/p2-failsafe-coverage/plan.md
+docs/plans/p2-failsafe-coverage/grill.md
+docs/plans/worktree-baton/proposed/GRILL.md
+docs/plans/worktree-baton/proposed/DESIGN-DRAFT.md
+docs/plans/worktree-baton/plan.md
+docs/plans/entity-identity-spine/review/codex-r7-verify.md
+docs/plans/entity-identity-spine/plan.md
+docs/plans/entity-identity-spine/learn.md
+docs/plans/entity-identity-spine/GRILL.md
+docs/plans/checksum-drift-closure/review/pi-implementation.md
+docs/plans/checksum-drift-closure/review/grok-implementation.md
+docs/plans/checksum-drift-closure/plan.md
+docs/plans/checksum-drift-closure/learn.md
+docs/plans/checksum-drift-closure/HUMAN-SIGN.md
+docs/plans/checksum-drift-closure/GRILL.md
+docs/plans/drawer-lock-hardening/proposed/GRILL.md
+docs/plans/drawer-lock-hardening/plan.md
+docs/plans/drawer-lock-hardening/learn.md
+docs/plans/entity-destructive-continuity-guard/review/codex-verdict.md
+docs/plans/entity-destructive-continuity-guard/plan.md
+
+exec
+/bin/bash -lc "wc -l CLAUDE.md docs/plans/cycle-evidence-inner-reason/plan.md docs/plans/cycle-evidence-inner-reason/GRILL.md && sed -n '1,240p' CLAUDE.md" in /mnt/d/ctx/heren/casey
+ succeeded in 380ms:
+   54 CLAUDE.md
+   56 docs/plans/cycle-evidence-inner-reason/plan.md
+  112 docs/plans/cycle-evidence-inner-reason/GRILL.md
+  222 total
+# CLAUDE.md
+
+**Casey（测易）** —— LLM 驱动的「文本用例 → 测试报告」自动化测试系统。一段文本用例（excel/json/txt/自由文本）→ LLM 编译成确定性可回放 spec → 确定性回放（录屏 + 抓输出）→ 零 LLM 多态裁定出严格结论 → 自包含测试报告。三处统一标识符 `casey`：CLI `bin/casey.mjs`、skill `casey`、MCP server `casey`。
+
+复用 autotester 的 **loop-kit**（loop engineering 工具箱）作为第二消费者（ADR-0001）。Casey 是 autotester（人录、机回放、零 LLM）的「翻面」：输入端改 LLM，但「确定性是默认、LLM 是手术刀、完成是退出码、裁判零 LLM」的内核一字不让。
+
+## 必读顺序
+
+1. `CONTEXT.md` —— 统一语言注册表：**所有概念命名以它为准**，弃用别名列是黑名单；
+2. `docs/design/txt2testreport-design.md` —— 端到端设计（v0.2，已并入 4 路红队修订）；
+3. `docs/plans/bootstrap/plan.md` —— 落地计划（P0–P9 里程碑）；
+4. `loop/GUARDRAILS.md` —— 护栏清单，逐条有效（1–12 迁移，13–16 Casey 新增）。
+
+## Bootstrap（`loop-kit` 兄弟目录）
+
+`loop-kit` 已提取为独立包（ADR-0008）：Casey 与 autotester 双消费者。拓扑关系优先于绝对路径——包是消费树的**兄弟目录**独立仓（`../loop-kit` 与 `../<本仓目录名>` 平级），任何机器、任何 OS 同构；`/mnt/d/ctx/heren/loop-kit` 只是当前环境下的一个实例位置，不是必须坐落的路径。新机器 bootstrap：把包 clone 到消费树的兄弟目录；非同层布局须显式设 `LOOP_KIT_PKG` 指向实际位置（只改包位置，不豁免身份锁校验）。
+
+注意：`hook-loop-guard` 遇包缺失或身份锁（`kit-lock.json`）失配会 fail-closed（拦，见护栏与 D5 降级矩阵），这会连带拦住用来修复现场的工具调用本身——恢复动作（clone 包或设 `LOOP_KIT_PKG`）须在 hook 触发范围之外（人工终端等）完成，不能指望在被拦的同一回合里用工具调用修。
+
+## 硬规则（由机制强制，不是建议）
+
+- 双 hook 在 `.claude/settings.json` 生效：回合输出与写入的 md/json 都会被 `loop-kit/bin/term-lint.mjs` 扫描，术语违例与繁体字会被拦截（ADR-0005）。新概念先查既有学科术语，造词必须先登记 CONTEXT.md；英文术语首次出现附中文白话解释。
+- 阶段互锁：实现编辑/提交前必须先 `contract init` 声明入口分流；缺上一阶段交付物时 `hook-loop-guard` 拦截（护栏 #11）。
+- `loop/prd-<slug>.json` 的 `passes` 字段只有 `loop-kit/bin/gate.mjs` 有权写入；`testChecksums` 冻结的断言文件对实现者只读。
+- **裁判零 LLM**：多态裁定由 `bin/verdict.mjs`（零 LLM）出，自愈（LLM）是其下游消费者，不得进裁判进程（护栏 #15）。
+- **fail-safe 不 fail-open**：机器只终判 `PASS` 与有取证背书的 `SUT_DEFECT`；证不出的一律 `NEEDS_HUMAN`（护栏 #14）。自愈只对确证 `HARNESS_ERROR` 开闸（护栏 #13）。
+- `.auth/` 与 `site.json` 是凭据，内容不得进任何输出、日志、提交、报告。
+
+## 常用命令
+
+```
+node loop-kit/bin/term-lint.mjs --registry              # 术语表完整性检查
+node loop-kit/bin/breaker.mjs --reset                   # 熔断器清零（loop 开始时）
+node loop-kit/bin/gate.mjs --prd loop/prd-<slug>.json   # 质量门禁（确定性裁判，唯一写 passes）
+node loop-kit/bin/contract.mjs init <slug> --lane <direct|light|full> --reason "<一句理由>"
+node bin/casey.mjs selftest --tier1                     # 链路自检（hermetic，零外部依赖）
+```
+
+业务命令（ingest/compile/sign/replay/verdict/report）见 `bin/casey.mjs --help` 与 README；当前实现进度见计划 P0–P9。
+
+## 开发工作法（准则，非机制强制）
+
+- **长链条走确定性编排**：起 subagent 前先估链条长度。短活/单步——直接派 `Agent` 或自己做；长链/多阶段（多契约并行落地 + 逐个异构评审 + 分波合并这类）——走 ultracode 模式（`Workflow` 工具编排：`pipeline` 各契约 + 并行评审 + 对抗式核验 findings + 循环到干），别手派一堆 `Agent` 自己盯完成再手接下一步。已在跑的手派 `Agent` 不为切换而杀重来（浪费），从下一个编排步（某波收口 / 下一波落地）起改走 `Workflow`。（Steven 2026-07-09 定。）
+- 配套既有准则：可并行的活优先 `fan-out` 子代理；碰 `lib`/`bin` 的真并行走 `worktree`（护栏 #18）；异构评审家族≠实现家族（`codex` 评 Claude 实现）。
+- **Claude Code 额度纪律**：评审先跑确定性检查，再用 `pi.dev` 的 `deepseek-v4-pro` high 清普通问题；Claude Code 只审已收敛的高风险小差异。每次只开一个进程，输入必须限定基线、文件白名单、风险清单与现成证据；禁止全仓漫游、派生子代理和无上限续跑。首轮只报 `Critical`/`High`/`Medium`，复审只看已确认 finding 的修复 hunks。额度不可用时，不反复探测；有 Steven 明确授权可由 `pi.dev` 代审，否则诚实挂账。详细操作见 `docs/runbooks/review-model-budget.md`。
+
+## 决策档案
+
+- `docs/adr/` —— 难逆转决策（复用 loop-kit / 多态裁定 fail-safe / 编译再回放 / 断言冻结人签 / 统一语言强制）；
+- `docs/design/`、`docs/plans/` —— 端到端设计与里程碑计划。
+
+## git 分支
+
+`master`（稳定主干）/ `dev`（日常开发，默认工作分支）/ `test`（提测/真机 UAT）。
+
+exec
+/bin/bash -lc "sed -n '1,220p' docs/plans/cycle-evidence-inner-reason/plan.md && sed -n '1,260p' docs/plans/cycle-evidence-inner-reason/GRILL.md" in /mnt/d/ctx/heren/casey
+ succeeded in 245ms:
+# plan — cycle-evidence-inner-reason（v1，乙路）
+
+> 前置：`GRILL.md` v1（codex 计划 + opus xhigh 审三处阻断订正 + Steven 点乙路）。
+> lane=full。目标：内层拒付码在发射点直接通报，一次真机复录即可定位真因。
+
+## 1. 生产件改动（两处，约 20-25 行）
+
+1. `lib/teachin/raw-axes-adapter.mjs`：`projectAndVerify` 方法体内**全部 15 个**
+   `return denied(...)` 改经小助手「先 `safeEmit` 再返回」——照同文件既有
+   `reportFormalRefusal` 形制写；判定与返回形状零改。三处动态透传（预检、
+   raw 消费者、resolved 消费者）经 GRILL D2b 的生产者局部归一器落码，
+   不新增外来对象读取。
+2. `lib/teachin/cycle-evidence-context.mjs`：`refusalPoint` 枚举加一员
+   （21→22）；拒付码白名单补 D0 六码（若已在则只补缺的）+ 兜底成员。
+3. 明确不改：`lib/dual-replay/replay-completion.mjs`（带逐字节钉，一字不动）、
+   `cycle-evidence-output.mjs`（四层闸零改、不升 schemaVersion）、
+   `verdict.mjs`、一切 authority 形状与判定语义。
+
+## 2. 金牌（红先行，只扩既有 75 钉件）
+
+扩 `tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs`：
+- 六码各一枚从**真实分支**击发的正控（合成夹具驱动 `projectAndVerify` 真路径，
+  禁直调发射器硬编码）；
+- **静态完整性钉（codex r2 阻断三，必须有）**：`projectAndVerify` 方法体内
+  15 个拒付位**全部经新助手**、禁止残留裸 `return denied(...)`——否则某个
+  同码多分支漏接，六码正控仍会全绿；
+- 新归因点成员的真实分支钉（A4 逐点唯一归因不破）；
+- 降格负控两枚：**全局合法但非本生产者六码**的成员（如动作失败码）、
+  完全未知串 → 均须 **不中毒 + 落兜底成员**（按 D5 口径，不是只断言原串
+  不出现）；
+- 零行为差：带/不带收集器双跑，返回值深等、调用次数相等、控制流无差；
+- E3 逐员矩阵与既有 75 钉全部不得削弱。
+
+## 3. prd 与验收
+
+单锁：只对 `loop/prd-teachin-cycle-evidence.json` 做一次 checksum
+amendment（金牌 sha 由 `9a138436…` 换新），**不新建 prd**。
+s2 邻接：raw-axes-adapter / raw-runner / cycle-entry / equivalence-completion /
+equivalence-production-boundary / boundaries / cycle-plan.static /
+orchestrator / runtime-cycle-adapter / raw-actionability（新）/ nav-expansion /
+clear-fill。s3 漂移扫 + 术语。
+
+验收：
+- A1 扩钉红→绿；A2 邻接零回归；A3 零漂移；
+- A4（route:human）：Steven 真机复录一次，边车按 D6 三岔判读表判——
+  六码之一即验收通过（**不等于闭环转绿**，见 GRILL D7）；
+- A5（route:human）：换签人签。
+
+## 4. 评审与风险
+
+计划 v1 codex delta 一轮（乙路换根说明）；实现 opus 5 medium（可回抛 sol max
+咨询）；实现后 codex 快速 delta。
+- R1 新归因点破坏逐点唯一归因 → D2 不复用既有成员 + 真实分支钉；
+- R2 降格漏路致整份边车中毒丢失 → D5 负控按「不中毒 + 落兜底」断言；
+- R3 通报点混进判定路 → 零行为差双跑钉 + `safeEmit` 同步契约；
+- R4 误把「验收通过」读成「闭环打通」→ GRILL D7 写死诚实预期。
+# GRILL — cycle-evidence-inner-reason（内层归因下沉，v1）
+
+> 触发：闭环点击真因修复后（真机实证两击 `performOk` 转真），链路推进到
+> `source-resolved-completion` 仍未通，边车只记外层统一码
+> `SOURCE_SEMANTIC_COMPLETION_INVALID`——`projectAndVerify` 的六类内层具名
+> 拒付被吞，真因不可判。codex sol max 出计划、opus xhigh 审出三处阻断 + 一条
+> 更省的路，Steven 2026-07-30 点乙路（下沉到发射点）。
+
+## D0 事实（已核，不是推测）
+
+`lib/teachin/raw-axes-adapter.mjs` 的 `projectAndVerify` 与其 `inspectBinding`
+预检，去重后**恰六个**具名拒付码（审校逐条点过全部 `denied(...)`，无第七个）：
+
+| 码 | 触发要点 |
+|---|---|
+| `RAW_AXES_PROJECTION_INVALID` | 依赖包不可用（缺 raw/resolved 消费者、投影器或裁判适配器）或入参非精确键形状 |
+| `RAW_OBSERVATION_AUTHORITY_INVALID` | raw 预检/消费抛错、非 ok、或无可用投影 |
+| `RESOLVED_PROJECTION_AUTHORITY_INVALID` | resolved 预检/消费抛错、非 ok、或无可用投影 |
+| `RAW_AXES_BINDING_MISMATCH` | 绑定预检不符（capture/case/expected digest、观测计数、**待补计数非零**、resolved 计数）或执行后两侧投影绑定不一致、意图事件规划失败、轴输入构造失败 |
+| `RAW_AXES_PROJECTION_FAILED` | 轴投影器抛错或返回非空字符串以外的东西 |
+| `VERDICT_EXECUTION_FAILED` | 裁判适配器抛错/非 ok/产物非缓冲区，或证据投影非法 |
+
+四处字符串透传在生产接线下闭合（raw 侧只产第二码、resolved 侧只产第三码，
+接线点 `runtime-cycle-adapter.mjs`），注入式其他串必须降格。
+
+## D1 修法（乙路：下沉到发射点）
+
+在 `raw-axes-adapter.mjs` 内部，把 `projectAndVerify` 的各条
+`return denied(X)` 换成「先通报再返回」的小助手——**拒付码在发射点就是本地
+字面量，不读任何外来对象**。该文件已导入 `safeEmit` 与 `normalizeRefusalReason`，
+且已有同形先例 `reportFormalRefusal`，照它写。
+
+乙路相对甲路（在外层读内层返回对象）省掉的：描述符读取、代理陷阱、抛错
+getter、继承属性四类负控；惰性载荷与「被观测探测口」的代理计数钉；以及对
+`replay-completion.mjs`（带逐字节钉的文件）的任何改动——**该文件一字不动**。
+
+## D2 归因点（21→22 员，成员名写死）
+
+新增成员名定为 `raw-axes.projection-denied`（写死，实现不得另取），专用于
+本发射点。**不复用
+`resolved-completion.result-shape`**：既有 E3 的前提是逐点唯一归因、一员对
+一个生产点，两个模块发同一员会破这条。按 A4 给新成员配一枚真实分支钉。
+
+## D2b 生产者局部归一器（codex r2 阻断二）
+
+`projectAndVerify` 里有 `preflight`、raw 消费者、resolved 消费者三处**动态
+拒付透传**（值来自被调方而非本地字面量）。若通报只写硬编码本地码，这些真实
+分支落不到正确码；若直接复用全局归一器，它又会放过「全局合法但不属本生产者
+六码」的成员（如动作失败码）。故定案：**写一枚精确六码的生产者局部归一器**
+——只认 D0 六码，其余一律落兜底成员 `OTHER_REASON`；复用既有表达式已算出的
+原始值，不新增外来对象读取。负控至少含一个全局合法但非本生产者六码的成员，
+以及一个完全未知串。
+
+## D3 零行为差
+
+判定、返回形状、控制流零改；`safeEmit` 同步、吞异常、零返回值消费、不进
+异步控制流、不加 `await`。既有 75 钉金牌 E0b 逐字节钉的是三处 catch 与两条
+issuer 直接 await 的字面量，不在本次改动字节内。行数纪律有余量
+（该文件 519 行 + 约 20 行，600 行内）。
+
+## D4 冻结面与换签（审校纠正：单锁，不建新契约文件）
+
+**只扩既有 75 钉金牌 `tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs`
+（现役 sha `9a138436…`），对 `loop/prd-teachin-cycle-evidence.json` 做一次
+换签**。不新建 prd——新建会与「只扩 75 钉」形成双锁（两份 prd 冻同一文件、
+全仓漂移扫两处都校验、此后每改必两次人签）。该 prd 的 observability 本就写着
+「真因修复=后继契约」，本轮按后继轮换签记账。
+
+不升 schemaVersion：`reason` 已在事件键白名单、六码与兜底成员进拒付码白名单
+即可，四层闸零改。**不新增 `innerReason` 字段**——写入端的记录投影会当场把
+整批标记中毒，事件根本到不了读取方。
+
+## D5 白名单外的失效模式（审校纠正的威胁模型）
+
+白名单外的自由串**不是泄露，是整份边车丢失**：记录投影对 `reason` 走白名单
+判定，不命中返回空，`safeEmit` 随即把整批标记中毒、落盘端拒写。所以负控要
+断言的是「不中毒 + 降格成兜底成员」，只断言「原串不出现」打不到真正的失效面。
+真机若边车干脆没落盘、CLI 报边车模式拒付码，第一嫌疑就是降格漏了某条路径，
+别误判成录制失败。
+
+## D6 验收（含可达性证明与三岔判读表）
+
+**可达性证明**（审校补，使纪律更硬）：`replay-completion.mjs` 的三个
+`resolved-completion.result-shape` 发射位里，只有结果形状那一条在 canonical
+接线下可达——绑定换绑那条因两枚权柄由适配器原样回传恒相等而不可达；
+`ok:true` 但字节非缓冲区那条因构造与前置闸而不可达。故今晚边车那条事件必然
+对应六码之一，**生产路径上兜底成员不可达**。
+
+**先纠正 v1 的一处错读（codex r2 阻断一）**：内层通报之后，外层那条统一码
+**仍会照常再发一次**——结果形状分支本就是正常必达分支。所以正常结果是
+「新归因点六码之一 **加** 既有外层码」同时出现，不是三者择一。判读表：
+
+| 边车实得 | 判读 |
+|---|---|
+| 新归因点=六码之一，随后外层点=统一码 | 验收通过，真因已定位，转入修复 |
+| 新归因点=兜底成员 | 实际返回契约与静态核查不符（接线被改或注入非 canonical 依赖）——回去核接线，**不许临时放宽白名单** |
+| 无新归因点、只有外层码 | 改动未生效，或某个拒付位漏接助手 |
+
+## D7 诚实预期（审校风险提示，必须让人知道）
+
+**「再录一次」≠「闭环转绿」。** 修完本轮定位到的内层码之后，下一个失败点
+极可能落在 `replay-completion.mjs` 的语义证据投影失败路——那里**完全无通报**，
+且它产的码（意图覆盖不符、收据模式非法、终态谓词类、拓扑类、实体类、影响类）
+**一个都不在**边车拒付码白名单里。届时要么再瞎一次，要么得扩白名单（那才是
+真正牵动四层闸的改动）。到闭环绿之间大概率还有两到三个契约。
+
+## 挂账（route:human）
+
+- 无通报的 issuer 内部拒付**共四处、分属两个 issuer**（codex r2 措辞纠正）：
+  source raw 侧两处（执行开启返空、拥有者缺失）、distilled 原子侧两处
+  （执行开启返空、阶段声明失败）——另立任务；
+- 换签人签（ADR-0004）；真机复录 Steven 一次。
+
+codex
+两份文档已完整重读。五项修订在文字层面都已出现；我现在回到现有生产接线做一次只读反证，重点确认“15 个拒付位 / 三处动态透传 / 外层统一码必达 / 四处两 issuer”这些数量与调用顺序没有因表述修正而引入新的不可执行要求。
+exec
+/bin/bash -lc "rg -n \"projectAndVerify|inspectBinding|return denied|resolved-completion\\.result-shape|SOURCE_SEMANTIC_COMPLETION_INVALID|safeEmit|normalizeRefusalReason|execution-enabled|stage\" lib/teachin/raw-axes-adapter.mjs lib/teachin/cycle-evidence-context.mjs lib/dual-replay/replay-completion.mjs lib/teachin/cycle-evidence-output.mjs tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs | sed -n '1,300p'" in /mnt/d/ctx/heren/casey
+ succeeded in 571ms:
+lib/teachin/cycle-evidence-context.mjs:2:// 旁路通报 safeEmit、固定枚举与封存式收集器。
+lib/teachin/cycle-evidence-context.mjs:17:// resolved 那枚同形同理由，只是拒付码为 SOURCE_SEMANTIC_COMPLETION_INVALID。
+lib/teachin/cycle-evidence-context.mjs:28:  'resolved-completion.result-shape',
+lib/teachin/cycle-evidence-context.mjs:39:  'orchestrator.stage-boundary',
+lib/teachin/cycle-evidence-context.mjs:60:  'stage', 'refusalPoint', 'reason', 'errorName',
+lib/teachin/cycle-evidence-context.mjs:75:  'SOURCE_SEMANTIC_COMPLETION_INVALID', 'SOURCE_SEMANTIC_BINDING_MISMATCH',
+lib/teachin/cycle-evidence-context.mjs:137:    case 'stage': return STAGE_SET.has(value);
+lib/teachin/cycle-evidence-context.mjs:163:    if (!STAGE_SET.has(record.stage)) return null;
+lib/teachin/cycle-evidence-context.mjs:204:export function safeEmit(refusalPoint, payload) {
+lib/teachin/cycle-evidence-context.mjs:254:export function normalizeRefusalReason(value) {
+lib/dual-replay/replay-completion.mjs:1:// staged completion：source 分两相（raw execute seal 与 resolved semantic completion），
+lib/dual-replay/replay-completion.mjs:17:  normalizeErrorName, safeEmit,
+lib/dual-replay/replay-completion.mjs:57:function reportRefusal(refusalPoint, stage, reason) {
+lib/dual-replay/replay-completion.mjs:58:  safeEmit(refusalPoint, { stage, reason });
+lib/dual-replay/replay-completion.mjs:107:    return denied('RUN_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:111:    return denied('RUN_COMPLETION_AUTHORITY_INVALID');
+lib/dual-replay/replay-completion.mjs:114:    return denied('REPLAY_ISSUER_INVALID');
+lib/dual-replay/replay-completion.mjs:125:    safeEmit('source-completion.issuer-throw', {
+lib/dual-replay/replay-completion.mjs:126:      stage: RAW_STAGE,
+lib/dual-replay/replay-completion.mjs:130:    return denied('RUN_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:134:    return denied('RUN_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:138:    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+lib/dual-replay/replay-completion.mjs:143:    return denied('RUN_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:147:    return denied('RUN_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:151:    return denied('RUN_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:155:    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+lib/dual-replay/replay-completion.mjs:159:    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+lib/dual-replay/replay-completion.mjs:167:    return denied('RUN_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:171:    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+lib/dual-replay/replay-completion.mjs:178:    return denied('RUN_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:183:    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+lib/dual-replay/replay-completion.mjs:207:      'SOURCE_SEMANTIC_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:208:    return denied('SOURCE_SEMANTIC_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:212:  if (!raw || raw.consumed) return denied('RAW_EXECUTION_AUTHORITY_INVALID');
+lib/dual-replay/replay-completion.mjs:215:  if (!inspected) return denied('SOURCE_SEMANTIC_GRANT_INVALID');
+lib/dual-replay/replay-completion.mjs:216:  if (!usableIssuer(trustedResolvedSourceIssuer, 'projectAndVerify')) {
+lib/dual-replay/replay-completion.mjs:217:    return denied('REPLAY_ISSUER_INVALID');
+lib/dual-replay/replay-completion.mjs:222:    return denied('SOURCE_SEMANTIC_BINDING_MISMATCH');
+lib/dual-replay/replay-completion.mjs:225:  if (!resolution) return denied('SOURCE_SEMANTIC_GRANT_INVALID');
+lib/dual-replay/replay-completion.mjs:243:    result = await trustedResolvedSourceIssuer.projectAndVerify({
+lib/dual-replay/replay-completion.mjs:248:    safeEmit('resolved-completion.issuer-throw', {
+lib/dual-replay/replay-completion.mjs:249:      stage: RESOLVED_STAGE,
+lib/dual-replay/replay-completion.mjs:250:      reason: 'SOURCE_SEMANTIC_COMPLETION_INVALID',
+lib/dual-replay/replay-completion.mjs:253:    return denied('SOURCE_SEMANTIC_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:256:    reportRefusal('resolved-completion.result-shape', RESOLVED_STAGE,
+lib/dual-replay/replay-completion.mjs:257:      'SOURCE_SEMANTIC_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:258:    return denied('SOURCE_SEMANTIC_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:262:    reportRefusal('resolved-completion.result-shape', RESOLVED_STAGE,
+lib/dual-replay/replay-completion.mjs:264:    return denied('SOURCE_SEMANTIC_BINDING_MISMATCH');
+lib/dual-replay/replay-completion.mjs:267:    reportRefusal('resolved-completion.result-shape', RESOLVED_STAGE,
+lib/dual-replay/replay-completion.mjs:268:      'SOURCE_SEMANTIC_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:269:    return denied('SOURCE_SEMANTIC_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:299:    return denied('RUN_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:303:    return denied('RUN_COMPLETION_AUTHORITY_INVALID');
+lib/dual-replay/replay-completion.mjs:306:    return denied('REPLAY_ISSUER_INVALID');
+lib/dual-replay/replay-completion.mjs:316:    safeEmit('distilled-completion.issuer-throw', {
+lib/dual-replay/replay-completion.mjs:317:      stage: DISTILLED_STAGE,
+lib/dual-replay/replay-completion.mjs:321:    return denied('RUN_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:325:    return denied('RUN_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:330:    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+lib/dual-replay/replay-completion.mjs:335:    return denied('RUN_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:339:    return denied('RUN_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:344:    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+lib/dual-replay/replay-completion.mjs:349:    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+lib/dual-replay/replay-completion.mjs:380:  if (!entry || entry.consumed) return denied('RESOLVED_PROJECTION_AUTHORITY_INVALID');
+lib/dual-replay/replay-completion.mjs:397:  if (!entry || entry.consumed) return denied('RESOLVED_PROJECTION_AUTHORITY_INVALID');
+lib/teachin/raw-axes-adapter.mjs:9:  normalizeErrorName, normalizeRefusalReason, safeEmit,
+lib/teachin/raw-axes-adapter.mjs:26:  const row = { stage: 'distilled-completion', reason: normalizeRefusalReason(reason) };
+lib/teachin/raw-axes-adapter.mjs:27:  safeEmit('formal-replay.refusal', thrown === undefined
+lib/teachin/raw-axes-adapter.mjs:254:function inspectBinding(dependencies, input) {
+lib/teachin/raw-axes-adapter.mjs:305:    async projectAndVerify(input) {
+lib/teachin/raw-axes-adapter.mjs:306:      if (!usable) return denied('RAW_AXES_PROJECTION_INVALID');
+lib/teachin/raw-axes-adapter.mjs:308:      if (!exactKeys(input, INPUT_KEYS)) return denied('RAW_AXES_PROJECTION_INVALID');
+lib/teachin/raw-axes-adapter.mjs:312:      const preflight = inspectBinding(dependencies, input);
+lib/teachin/raw-axes-adapter.mjs:313:      if (preflight) return denied(preflight);
+lib/teachin/raw-axes-adapter.mjs:321:        return denied('RAW_OBSERVATION_AUTHORITY_INVALID');
+lib/teachin/raw-axes-adapter.mjs:324:        return denied(typeof rawConsumed?.reason === 'string'
+lib/teachin/raw-axes-adapter.mjs:333:        return denied('RESOLVED_PROJECTION_AUTHORITY_INVALID');
+lib/teachin/raw-axes-adapter.mjs:336:        return denied(typeof resolvedConsumed?.reason === 'string'
+lib/teachin/raw-axes-adapter.mjs:342:      if (!bindingsAgree(raw, resolved)) return denied('RAW_AXES_BINDING_MISMATCH');
+lib/teachin/raw-axes-adapter.mjs:344:      if (!plan) return denied('RAW_AXES_BINDING_MISMATCH');
+lib/teachin/raw-axes-adapter.mjs:346:      if (!axesInput) return denied('RAW_AXES_BINDING_MISMATCH');
+lib/teachin/raw-axes-adapter.mjs:352:        return denied('RAW_AXES_PROJECTION_FAILED');
+lib/teachin/raw-axes-adapter.mjs:355:        return denied('RAW_AXES_PROJECTION_FAILED');
+lib/teachin/raw-axes-adapter.mjs:364:        return denied('VERDICT_EXECUTION_FAILED');
+lib/teachin/raw-axes-adapter.mjs:367:        return denied('VERDICT_EXECUTION_FAILED');
+lib/teachin/raw-axes-adapter.mjs:370:      if (!evidence) return denied('VERDICT_EXECUTION_FAILED');
+lib/teachin/raw-axes-adapter.mjs:400:        return denied('RUN_COMPLETION_INVALID');
+lib/teachin/raw-axes-adapter.mjs:413:        return denied('RUN_COMPLETION_INVALID');
+lib/teachin/raw-axes-adapter.mjs:418:        return denied(typeof replayed?.reason === 'string'
+lib/teachin/raw-axes-adapter.mjs:428:          return denied('RAW_AXES_PROJECTION_FAILED');
+lib/teachin/raw-axes-adapter.mjs:432:          return denied('RAW_AXES_PROJECTION_FAILED');
+lib/teachin/raw-axes-adapter.mjs:441:        return denied('VERDICT_EXECUTION_FAILED');
+lib/teachin/raw-axes-adapter.mjs:445:        return denied('VERDICT_EXECUTION_FAILED');
+lib/teachin/raw-axes-adapter.mjs:466:        return denied('RUN_COMPLETION_INVALID');
+lib/teachin/raw-axes-adapter.mjs:482:        if (judged === null || judged === undefined) return denied('VERDICT_EXECUTION_FAILED');
+lib/teachin/raw-axes-adapter.mjs:489:        if (!closedVerdictDocument(judged)) return denied('VERDICT_EXECUTION_FAILED');
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:5:// 零 SUT：纯内存直调 + 合成收集器直击 safeEmit + 临时目录原子写；
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:11://       + safeEmit + 固定枚举 + 封存式收集器；零 node:fs 且零 import output 件（纯核心只许导入它）；
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:32://     ——safeEmit 一律吞、闭环结论与基线全等。
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:256://     三枚同形，只是 resolved 那枚拒付码为 SOURCE_SEMANTIC_COMPLETION_INVALID。
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:258://   lib/teachin/raw-axes-adapter.mjs —— formal replay（sealFormalRun / projectAndVerify）
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:273:  'resolved-completion.result-shape',
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:284:  'orchestrator.stage-boundary',
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:288:// 注（文档缺口）：GRILL D4 只说边车顶层带 stages，未逐项命名；本清单为按生产件推导的冻结值。
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:306:  'stage', 'refusalPoint', 'reason', 'errorName',
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:328:  'schemaVersion', 'artifactKind', 'captureSha256', 'recordedAt', 'stages', 'events',
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:412:    'createCycleEvidenceCollector', 'runWithCycleEvidence', 'safeEmit',
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:429:await check('E0a 枚举闭合：refusalPoint / stage / event 键 / 异常名 / 拒付码 / 顶层键', () => {
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:467:  // 换签（codex code-r1 M1）：原钉钉的是取证落地前的 `catch { return denied(...) }` 字面量；
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:469:  // catch 绑异常 → 同步 safeEmit（只带阶段/闭合拒付码/规范化异常名）→ 原样 return 原拒付。
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:473:    safeEmit('source-completion.issuer-throw', {
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:474:      stage: RAW_STAGE,
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:478:    return denied('RUN_COMPLETION_INVALID');
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:481:    safeEmit('resolved-completion.issuer-throw', {
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:482:      stage: RESOLVED_STAGE,
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:483:      reason: 'SOURCE_SEMANTIC_COMPLETION_INVALID',
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:486:    return denied('SOURCE_SEMANTIC_COMPLETION_INVALID');
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:489:    safeEmit('distilled-completion.issuer-throw', {
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:490:      stage: DISTILLED_STAGE,
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:494:    return denied('RUN_COMPLETION_INVALID');
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:499:      `replay-completion 的 ${label} 吞异常位必须逐字节为「catch 绑异常 → 同步 safeEmit → 原样 return 原拒付」`);
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:522:    stage: 'source-raw-execute',
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:535:  const { createCycleEvidenceCollector, runWithCycleEvidence, safeEmit, sealCycleEvidence } = ctx();
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:538:    safeEmit(refusalPoint, payload);
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:559:  ['枚举外 stage', legalPayload({ stage: 'zzz-not-a-stage' })],
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:572:    const { createCycleEvidenceCollector, runWithCycleEvidence, safeEmit, sealCycleEvidence } = ctx();
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:576:      safeEmit('observer.begin', legalPayload({ seq: 1 }));
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:577:      safeEmit('source-completion.result-shape', payload);
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:578:      safeEmit('observer.finish', legalPayload({ seq: 1 }));
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:597:await check('E1 safeEmit 契约：同步、零返回值、吞异常、不进异步控制流（R4 钉）', () => {
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:598:  const { createCycleEvidenceCollector, runWithCycleEvidence, safeEmit } = ctx();
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:601:    const returned = safeEmit('observer.begin', legalPayload({ seq: 1 }));
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:602:    assert(returned === undefined, `safeEmit 必须零返回值，实得 ${JSON.stringify(returned)}`);
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:603:    assert(!(returned && typeof returned.then === 'function'), 'safeEmit 不得返回 thenable');
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:606:  assert(!/\basync\s+function\s+safeEmit\b/.test(src), 'safeEmit 不得是 async 函数');
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:607:  // 只截 safeEmit 函数体（起点到下一处顶格 }）判：同步契约、不 await、不进 Promise 链（R4）。
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:608:  const start = src.indexOf('function safeEmit');
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:609:  assert(start >= 0, 'cycle-evidence-context 须以具名 function 定义 safeEmit（便于逐字节复核同步契约）');
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:613:    assert(!forbidden.test(body), `safeEmit 函数体命中异步扩散形态 ${forbidden}：${body.slice(0, 200)}`);
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:615:  assert(/try\s*\{/.test(body), 'safeEmit 须整体吞异常（try 包裹），绝不许把取证故障抛回生产路径');
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:625:function synthCatchSite(refusalPoint, stage, thrower) {
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:626:  const { safeEmit, normalizeErrorName } = ctx();
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:631:    safeEmit(refusalPoint, { stage, reason: 'RUN_COMPLETION_INVALID', errorName: normalizeErrorName(error) });
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:642:for (const [label, refusalPoint, stage] of SWALLOW_SITES) {
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:649:    runWithCycleEvidence(collector, () => { observed = synthCatchSite(refusalPoint, stage, thrower); });
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:650:    const bare = synthCatchSite(refusalPoint, stage, thrower);
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:713:  assert(record.stage === 'source-raw-execute', `真实阶段失准：${JSON.stringify(record)}`);
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:754:    'SOURCE_SEMANTIC_COMPLETION_INVALID',
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:766:for (const [name, point, stage, reason, malformed] of PUBLIC_INPUT_SHAPE_BRANCHES) {
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:784:    assert(row.stage === stage, `${name} 阶段失准：${JSON.stringify(row)}`);
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:806:  const { createCycleEvidenceCollector, runWithCycleEvidence, safeEmit, sealCycleEvidence, CYCLE_EVIDENCE_REFUSAL_POINTS } = ctx();
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:810:      safeEmit(point, legalPayload({ seq: index + 1 }));
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:849:    const { normalizeErrorName, createCycleEvidenceCollector, runWithCycleEvidence, safeEmit, sealCycleEvidence } = ctx();
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:856:      safeEmit('source-completion.issuer-throw', {
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:857:        stage: 'source-raw-execute', reason: 'RUN_COMPLETION_INVALID', errorName: name,
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:881:      stages: [], events: [{ refusalPoint: 'observer.begin', stage: 'source-raw-execute', errorName: poison }],
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:899:      stages: [{ stage: 'source-raw-execute', reason: 'RUN_COMPLETION_INVALID' }],
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:902:        stage: 'source-raw-execute',
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:962:    stages: [], events: [{ refusalPoint: 'observer.begin', errorName: ISOLATED_FIXTURE_SECRET }],
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:970:    stages: [], events: [{ refusalPoint: 'observer.begin', errorName: 'TypeError' }],
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1155:  await check(`E6 收集器中毒：${label} → safeEmit 全吞、闭环结论与基线全等`, async () => {
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1156:    const { runWithCycleEvidence, safeEmit, CYCLE_EVIDENCE_REFUSAL_POINTS } = ctx();
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1159:      for (const point of CYCLE_EVIDENCE_REFUSAL_POINTS) safeEmit(point, legalPayload());
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1168:await check('E6 抛错 getter 载荷：safeEmit 不抛、整批毒化、结论不变', async () => {
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1169:  const { createCycleEvidenceCollector, runWithCycleEvidence, safeEmit, sealCycleEvidence } = ctx();
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1173:    safeEmit('observer.begin', legalPayload({ seq: 1 }));
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1174:    safeEmit('source-completion.proof', {
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1175:      stage: 'source-raw-execute',
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1187:  const { safeEmit, createCycleEvidenceCollector, sealCycleEvidence } = ctx();
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1189:  safeEmit('observer.begin', legalPayload({ seq: 1 }));
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1205:  const { createCycleEvidenceCollector, runWithCycleEvidence, safeEmit, sealCycleEvidence } = ctx();
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1209:    safeEmit('observer.begin', legalPayload({ seq: 1 }));
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1210:    safeEmit('source-completion.raw-status', legalPayload({ seq: 1 }));
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1357:  const { createCycleEvidenceCollector, runWithCycleEvidence, safeEmit, sealCycleEvidence } = ctx();
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1362:    safeEmit('observer.begin', legalPayload({ seq: 11 }));
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1364:    safeEmit('observer.finish', legalPayload({ seq: 11 }));
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1366:    safeEmit('source-completion.proof', legalPayload({ seq: 11 }));
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1371:    safeEmit('prepared-runtime.claim', legalPayload({ seq: 22 }));
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1373:    safeEmit('orchestrator.stage-boundary', legalPayload({ seq: 22 }));
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1384:    ['prepared-runtime.claim', 'orchestrator.stage-boundary'],
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1391:  const { createCycleEvidenceCollector, runWithCycleEvidence, safeEmit, sealCycleEvidence, inspectCycleEvidence } = ctx();
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1395:    safeEmit('observer.begin', legalPayload({ seq: 1 }));
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1399:        safeEmit('observer.finish', legalPayload({ seq: 1 }));
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1416:  const { createCycleEvidenceCollector, runWithCycleEvidence, safeEmit, sealCycleEvidence } = ctx();
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1418:  runWithCycleEvidence(collector, () => { safeEmit('observer.begin', legalPayload({ seq: 1 })); });
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1434:// 逐件对应 plan §1.3 的 safeEmit 落点 + §1.4 明确不改但在链路上的两件。
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1509:      `${rel} 是 plan §1.3 的 safeEmit 落点，须导入 context 件（修前无此导入即红，属预期）`);
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:1510:    assert(/safeEmit\s*\(/.test(src), `${rel} 须真调 safeEmit 通报，不得只导入不发射`);
+lib/teachin/cycle-evidence-output.mjs:29:  'schemaVersion', 'artifactKind', 'captureSha256', 'recordedAt', 'stages', 'events',
+lib/teachin/cycle-evidence-output.mjs:77:    case 'stage': return STAGE_SET.has(value);
+lib/teachin/cycle-evidence-output.mjs:103:  if (!Array.isArray(document.stages) || document.stages.length > CYCLE_EVIDENCE_STAGES.length) {
+lib/teachin/cycle-evidence-output.mjs:107:  for (const stage of document.stages) {
+lib/teachin/cycle-evidence-output.mjs:108:    if (!STAGE_SET.has(stage) || seenStages.has(stage)) return SCHEMA_REJECTED;
+lib/teachin/cycle-evidence-output.mjs:109:    seenStages.add(stage);
+lib/teachin/cycle-evidence-output.mjs:121:    if (!STAGE_SET.has(event.stage)) return SCHEMA_REJECTED;
+lib/teachin/cycle-evidence-output.mjs:150:  if (shape) return denied(shape);
+lib/teachin/cycle-evidence-output.mjs:152:  if (address) return denied(address);
+lib/teachin/cycle-evidence-output.mjs:158:  if (typeof text !== 'string' || text.length === 0) return denied(SCHEMA_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:159:  if (Buffer.byteLength(text, 'utf8') > MAX_TEXT_BYTES) return denied(SCHEMA_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:160:  if (hasAddressForm(text)) return denied(CREDENTIAL_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:165:    return denied(CREDENTIAL_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:167:  if (gate?.ok !== true) return denied(CREDENTIAL_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:186:function stagesOf(events) {
+lib/teachin/cycle-evidence-output.mjs:187:  const seen = new Set(events.map((event) => event.stage));
+lib/teachin/cycle-evidence-output.mjs:188:  return CYCLE_EVIDENCE_STAGES.filter((stage) => seen.has(stage));
+lib/teachin/cycle-evidence-output.mjs:193:  if (!isRecord(snapshot) || !Array.isArray(snapshot.events)) return denied(SCHEMA_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:194:  if (snapshot.poisoned === true) return denied(SCHEMA_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:196:    return denied(SCHEMA_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:201:  if (typeof stamped !== 'string' || !RECORDED_AT_RE.test(stamped)) return denied(SCHEMA_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:206:    return denied(SCHEMA_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:213:    stages: stagesOf(events),
+lib/teachin/cycle-evidence-output.mjs:217:  if (screened.ok !== true) return denied(screened.reason);
+lib/teachin/cycle-evidence-output.mjs:234:  if (typeof outDir !== 'string' || !outDir) return denied(SCHEMA_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:236:  if (screened.ok !== true) return denied(screened.reason);
+lib/teachin/cycle-evidence-output.mjs:238:  if (!fileName) return denied(SCHEMA_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:243:    return denied(SCHEMA_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:246:  if (gated.ok !== true) return denied(gated.reason);
+lib/teachin/cycle-evidence-output.mjs:254:    return denied(WRITE_FAILED);
+lib/teachin/cycle-evidence-output.mjs:260:    return denied(WRITE_FAILED);
+lib/teachin/cycle-evidence-output.mjs:270:  if (!fileName) return denied(SCHEMA_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:272:  if (typeof outDir !== 'string' || !outDir) return denied(SCHEMA_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:277:    return denied(SCHEMA_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:283:    return denied(SCHEMA_REJECTED);
+lib/teachin/cycle-evidence-output.mjs:286:  if (screened.ok !== true) return denied(screened.reason);
+lib/teachin/cycle-evidence-output.mjs:287:  if (document.captureSha256 !== captureSha256) return denied(SCHEMA_REJECTED);
+
+exec
+/bin/bash -lc "sed -n '1,105p' lib/teachin/cycle-evidence-context.mjs && sed -n '240,385p' lib/teachin/raw-axes-adapter.mjs && sed -n '185,280p' lib/dual-replay/replay-completion.mjs && sed -n '360,420p' lib/dual-replay/replay-completion.mjs && rg -n \"execution.*enabled|owner|stage.*declar|declare|formal|raw\" lib/teachin/raw-axes-adapter.mjs lib/dual-replay/replay-completion.mjs | sed -n '1,220p'" in /mnt/d/ctx/heren/casey
+ succeeded in 398ms:
+nAuthority,
+        });
+      } catch {
+        return denied('RESOLVED_PROJECTION_AUTHORITY_INVALID');
+      }
+      if (resolvedConsumed?.ok !== true || !usableProjection(resolvedConsumed.projection)) {
+        return denied(typeof resolvedConsumed?.reason === 'string'
+          ? resolvedConsumed.reason : 'RESOLVED_PROJECTION_AUTHORITY_INVALID');
+      }
+
+      const raw = rawConsumed.projection;
+      const resolved = resolvedConsumed.projection;
+      if (!bindingsAgree(raw, resolved)) return denied('RAW_AXES_BINDING_MISMATCH');
+      const plan = planIntentEvents(raw, resolved);
+      if (!plan) return denied('RAW_AXES_BINDING_MISMATCH');
+      const axesInput = buildAxesInput(raw, plan);
+      if (!axesInput) return denied('RAW_AXES_BINDING_MISMATCH');
+
+      let axesText;
+      try {
+        axesText = dependencies.projectReplayAxes(axesInput);
+      } catch {
+        return denied('RAW_AXES_PROJECTION_FAILED');
+      }
+      if (typeof axesText !== 'string' || !axesText) {
+        return denied('RAW_AXES_PROJECTION_FAILED');
+      }
+      // 投影结果只做 UTF-8 bytes 化，不在本地重写 axes。
+      const axesBytes = Buffer.from(axesText, 'utf8');
+
+      let judged;
+      try {
+        judged = await dependencies.verdictAdapter.runFrozenVerdict({ axesBytes });
+      } catch {
+        return denied('VERDICT_EXECUTION_FAILED');
+      }
+      if (judged?.ok !== true || !Buffer.isBuffer(judged.verdictBytes)) {
+        return denied('VERDICT_EXECUTION_FAILED');
+      }
+      const evidence = projectEvidence(raw, plan, axesBytes, judged.verdictBytes);
+      if (!evidence) return denied('VERDICT_EXECUTION_FAILED');
+      return frozen({
+        ok: true,
+        rawObservationAuthority: input.rawObservationAuthority,
+        resolvedProjectionAuthority: input.resolvedProjectionAuthority,
+        axesBytes,
+        verdictBytes: judged.verdictBytes,
+        evidence,
+      });
+    },
+  });
+}
+
+// 逐 role 的 axes/verdict 接缝：canonical 走现役 projector 与 frozen judge 桥；
+// zero-SUT 装配注入现役接缝替身时，其 axes 投影文档同样只做 UTF-8 bytes 化，本模块不改写。
+export function createRoleAxesSeam({ role, projectAxes, runVerdict } = {}) {
+
+  const rawExecutionAuthority = frozen(Object.create(null));
+  RAW_EXECUTION_STATE.set(rawExecutionAuthority, {
+    record,
+    digests,
+    rawObservationAuthority: result.rawObservationAuthority,
+    captureSha256: record.captureSha256,
+    consumed: false,
+  });
+  return frozen({
+    ok: true,
+    rawExecutionAuthority,
+    cleanProofAuthority: result.rawReplay.cleanProofAuthority,
+    sourceRuntimeOwnerAuthority: record.runtimeOwnerAuthority,
+  });
+}
+
+export async function completeResolvedSourceReplay({
+  rawExecutionAuthority, sourceSemanticGrant, trustedResolvedSourceIssuer, ...extraInputs
+}) {
+  if (Object.keys(extraInputs).length > 0) {
+    reportRefusal('resolved-completion.input-shape', RESOLVED_STAGE,
+      'SOURCE_SEMANTIC_COMPLETION_INVALID');
+    return denied('SOURCE_SEMANTIC_COMPLETION_INVALID');
+  }
+  const raw = rawExecutionAuthority && typeof rawExecutionAuthority === 'object'
+    ? RAW_EXECUTION_STATE.get(rawExecutionAuthority) : null;
+  if (!raw || raw.consumed) return denied('RAW_EXECUTION_AUTHORITY_INVALID');
+  // grant 先非消费式验真并核 binding：cross-pair 探针不得吃掉任一方 genuine grant。
+  const inspected = inspectSourceSemanticGrant(sourceSemanticGrant);
+  if (!inspected) return denied('SOURCE_SEMANTIC_GRANT_INVALID');
+  if (!usableIssuer(trustedResolvedSourceIssuer, 'projectAndVerify')) {
+    return denied('REPLAY_ISSUER_INVALID');
+  }
+  if (inspected.captureSha256 !== raw.captureSha256
+    || (inspected.caseId !== null && raw.record.caseId !== null
+      && inspected.caseId !== raw.record.caseId)) {
+    return denied('SOURCE_SEMANTIC_BINDING_MISMATCH');
+  }
+  const resolution = consumeSourceSemanticGrant(sourceSemanticGrant);
+  if (!resolution) return denied('SOURCE_SEMANTIC_GRANT_INVALID');
+  raw.consumed = true;
+
+  const resolvedProjectionAuthority = frozen(Object.create(null));
+  RESOLVED_PROJECTION_STATE.set(resolvedProjectionAuthority, {
+    consumed: false,
+    projection: frozen({
+      caseId: resolution.caseId,
+      captureSha256: resolution.captureSha256,
+      expectedSha256: raw.record.planDigests.expectedSha256,
+      resolved: resolution.resolved,
+      pending: resolution.pending,
+      structural: resolution.structural,
+    }),
+  });
+
+  let result;
+  try {
+    result = await trustedResolvedSourceIssuer.projectAndVerify({
+      rawObservationAuthority: raw.rawObservationAuthority,
+      resolvedProjectionAuthority,
+    });
+  } catch (error) {
+    safeEmit('resolved-completion.issuer-throw', {
+      stage: RESOLVED_STAGE,
+      reason: 'SOURCE_SEMANTIC_COMPLETION_INVALID',
+      errorName: normalizeErrorName(error),
+    });
+    return denied('SOURCE_SEMANTIC_COMPLETION_INVALID');
+  }
+  if (!exactKeys(result, SEMANTIC_RESULT_KEYS) || result.ok !== true) {
+    reportRefusal('resolved-completion.result-shape', RESOLVED_STAGE,
+      'SOURCE_SEMANTIC_COMPLETION_INVALID');
+    return denied('SOURCE_SEMANTIC_COMPLETION_INVALID');
+  }
+  if (result.rawObservationAuthority !== raw.rawObservationAuthority
+    || result.resolvedProjectionAuthority !== resolvedProjectionAuthority) {
+    reportRefusal('resolved-completion.result-shape', RESOLVED_STAGE,
+      'SOURCE_SEMANTIC_BINDING_MISMATCH');
+    return denied('SOURCE_SEMANTIC_BINDING_MISMATCH');
+  }
+  if (!Buffer.isBuffer(result.axesBytes) || !Buffer.isBuffer(result.verdictBytes)) {
+    reportRefusal('resolved-completion.result-shape', RESOLVED_STAGE,
+      'SOURCE_SEMANTIC_COMPLETION_INVALID');
+    return denied('SOURCE_SEMANTIC_COMPLETION_INVALID');
+  }
+  const projected = projectSemanticEvidence(result.evidence, raw.record.expectedObligations);
+  if (projected.ok !== true) return closedFailure(projected.reason);
+
+  const completionAuthority = frozen(Object.create(null));
+  SOURCE_COMPLETION_STATE.set(completionAuthority, {
+    record: raw.record,
+    binding: bindingOf(raw.record, raw.digests, result.axesBytes, result.verdictBytes),
+    freshness: raw.record.freshness,
+    projection: projected.projection,
+    consumed: false,
+    runOrdinal: 2,
+    runNamespace: record.runNamespace,
+    predecessorReceiptSha256: record.sourceReceiptSha256,
+    binding: bindingOf(record, digests, result.axesBytes, result.verdictBytes),
+    freshness: record.freshness,
+    projection: projected.projection,
+  });
+  return frozen({
+    ok: true,
+    completionAuthority,
+    distilledRuntimeOwnerAuthority: record.runtimeOwnerAuthority,
+  });
+}
+
+// 非消费式验真：只暴露 binding 元数据与 pending/resolved 计数，供 axes 适配器在双消费之前核绑定。
+// 探针、错绑与 cross-pair 因此烧不掉 genuine one-shot projection。
+export function inspectResolvedProjectionAuthority(options = {}) {
+  const authority = options?.resolvedProjectionAuthority;
+  const entry = authority && typeof authority === 'object'
+    ? RESOLVED_PROJECTION_STATE.get(authority) : null;
+  if (!entry || entry.consumed) return denied('RESOLVED_PROJECTION_AUTHORITY_INVALID');
+  const projection = entry.projection;
+  return frozen({
+    ok: true,
+    caseId: projection.caseId,
+    captureSha256: projection.captureSha256,
+    expectedSha256: projection.expectedSha256,
+    pendingCount: Array.isArray(projection.pending) ? projection.pending.length : -1,
+    resolvedCount: Array.isArray(projection.resolved) ? projection.resolved.length : -1,
+  });
+}
+
+// canonical raw axes consumer 的唯一入口：一次性读取 authority 绑定的 resolved projection。
+export function consumeResolvedProjectionAuthority(options = {}) {
+  const authority = options?.resolvedProjectionAuthority;
+  const entry = authority && typeof authority === 'object'
+    ? RESOLVED_PROJECTION_STATE.get(authority) : null;
+  if (!entry || entry.consumed) return denied('RESOLVED_PROJECTION_AUTHORITY_INVALID');
+  entry.consumed = true;
+  return frozen({ ok: true, projection: entry.projection });
+}
+
+// canonical issuer 的唯一执行面：只有拿到 opaque runExecutionAuthority 才能取用
+// 本次 run 已绑定的 runtime capability 与 exact artifacts；调用方无从自造。
+// 一次性开箱：同一 runExecutionAuthority 只允许开一次 runtime 三件套与 artifacts。
+// authority 万一外泄，第二次开箱固定返回 null，拿不到 fresh/topology/owner capability。
+const OPENED_EXECUTIONS = new WeakSet();
+
+export function openRunExecution(runExecutionAuthority) {
+  const record = runExecutionAuthority && typeof runExecutionAuthority === 'object'
+    ? EXECUTION_STATE.get(runExecutionAuthority) : null;
+  if (!record) return null;
+  if (OPENED_EXECUTIONS.has(runExecutionAuthority)) return null;
+  OPENED_EXECUTIONS.add(runExecutionAuthority);
+  return frozen({
+    role: record.role,
+    runNamespace: record.runNamespace,
+    caseId: record.caseId,
+    captureAuthority: record.captureAuthority,
+    expectedBytes: Buffer.from(record.expectedBytes),
+    artifacts: frozen({
+lib/dual-replay/replay-completion.mjs:1:// staged completion：source 分两相（raw execute seal 与 resolved semantic completion），
+lib/dual-replay/replay-completion.mjs:2:// distilled 只走 formal atom 相。issuer 恰调用一次，缺/多字段、throw、malformed、换绑均 fail-closed。
+lib/dual-replay/replay-completion.mjs:10:import { inspectCleanRawReplayAuthority } from '../teachin/raw-proof.mjs';
+lib/dual-replay/replay-completion.mjs:11:import { inspectRawEventObservationAuthority } from '../teachin/raw-event-observation.mjs';
+lib/dual-replay/replay-completion.mjs:28:  'ok', 'runExecutionAuthority', 'runtimeOwnerAuthority', 'rawObservationAuthority',
+lib/dual-replay/replay-completion.mjs:29:  'artifacts', 'rawReplay',
+lib/dual-replay/replay-completion.mjs:37:  'ok', 'rawObservationAuthority', 'resolvedProjectionAuthority',
+lib/dual-replay/replay-completion.mjs:52:const RAW_STAGE = 'source-raw-execute';
+lib/dual-replay/replay-completion.mjs:145:  if (!exactKeys(result.rawReplay, ['status', 'cleanProofAuthority'])) {
+lib/dual-replay/replay-completion.mjs:146:    reportRefusal('source-completion.raw-status', RAW_STAGE, 'RUN_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:149:  if (result.rawReplay.status !== 'CLEAN') {
+lib/dual-replay/replay-completion.mjs:150:    reportRefusal('source-completion.raw-status', RAW_STAGE, 'RUN_COMPLETION_INVALID');
+lib/dual-replay/replay-completion.mjs:163:    cleanProofAuthority: result.rawReplay.cleanProofAuthority,
+lib/dual-replay/replay-completion.mjs:174:    rawObservationAuthority: result.rawObservationAuthority,
+lib/dual-replay/replay-completion.mjs:186:  const rawExecutionAuthority = frozen(Object.create(null));
+lib/dual-replay/replay-completion.mjs:187:  RAW_EXECUTION_STATE.set(rawExecutionAuthority, {
+lib/dual-replay/replay-completion.mjs:190:    rawObservationAuthority: result.rawObservationAuthority,
+lib/dual-replay/replay-completion.mjs:196:    rawExecutionAuthority,
+lib/dual-replay/replay-completion.mjs:197:    cleanProofAuthority: result.rawReplay.cleanProofAuthority,
+lib/dual-replay/replay-completion.mjs:203:  rawExecutionAuthority, sourceSemanticGrant, trustedResolvedSourceIssuer, ...extraInputs
+lib/dual-replay/replay-completion.mjs:210:  const raw = rawExecutionAuthority && typeof rawExecutionAuthority === 'object'
+lib/dual-replay/replay-completion.mjs:211:    ? RAW_EXECUTION_STATE.get(rawExecutionAuthority) : null;
+lib/dual-replay/replay-completion.mjs:212:  if (!raw || raw.consumed) return denied('RAW_EXECUTION_AUTHORITY_INVALID');
+lib/dual-replay/replay-completion.mjs:219:  if (inspected.captureSha256 !== raw.captureSha256
+lib/dual-replay/replay-completion.mjs:220:    || (inspected.caseId !== null && raw.record.caseId !== null
+lib/dual-replay/replay-completion.mjs:221:      && inspected.caseId !== raw.record.caseId)) {
+lib/dual-replay/replay-completion.mjs:226:  raw.consumed = true;
+lib/dual-replay/replay-completion.mjs:234:      expectedSha256: raw.record.planDigests.expectedSha256,
+lib/dual-replay/replay-completion.mjs:244:      rawObservationAuthority: raw.rawObservationAuthority,
+lib/dual-replay/replay-completion.mjs:260:  if (result.rawObservationAuthority !== raw.rawObservationAuthority
+lib/dual-replay/replay-completion.mjs:271:  const projected = projectSemanticEvidence(result.evidence, raw.record.expectedObligations);
+lib/dual-replay/replay-completion.mjs:276:    record: raw.record,
+lib/dual-replay/replay-completion.mjs:277:    binding: bindingOf(raw.record, raw.digests, result.axesBytes, result.verdictBytes),
+lib/dual-replay/replay-completion.mjs:278:    freshness: raw.record.freshness,
+lib/dual-replay/replay-completion.mjs:285:    pairId: raw.record.pairId,
+lib/dual-replay/replay-completion.mjs:286:    caseId: raw.record.caseId,
+lib/dual-replay/replay-completion.mjs:287:    baselineProjectionSha256: raw.record.freshness.baselineProjectionSha256,
+lib/dual-replay/replay-completion.mjs:288:    resetPlanDigest: raw.record.planDigests.resetPlanDigest,
+lib/dual-replay/replay-completion.mjs:289:    executionTargetAuthority: raw.record.executionTargetAuthority,
+lib/dual-replay/replay-completion.mjs:392:// canonical raw axes consumer 的唯一入口：一次性读取 authority 绑定的 resolved projection。
+lib/dual-replay/replay-completion.mjs:405:// authority 万一外泄，第二次开箱固定返回 null，拿不到 fresh/topology/owner capability。
+lib/teachin/raw-axes-adapter.mjs:1:// resolved raw observations → 现役 replay axes 投影 → frozen 裁判子进程桥。
+lib/teachin/raw-axes-adapter.mjs:12:const INPUT_KEYS = ['rawObservationAuthority', 'resolvedProjectionAuthority'];
+lib/teachin/raw-axes-adapter.mjs:24:// 取证旁路：formal 相拒付照原样通报归因与稳定码，判定与返回值一字不动。
+lib/teachin/raw-axes-adapter.mjs:27:  safeEmit('formal-replay.refusal', thrown === undefined
+lib/teachin/raw-axes-adapter.mjs:66:function bindingsAgree(raw, resolved) {
+lib/teachin/raw-axes-adapter.mjs:67:  if (!usableProjection(raw) || !usableProjection(resolved)) return false;
+lib/teachin/raw-axes-adapter.mjs:68:  if (typeof raw.caseId !== 'string' || raw.caseId !== resolved.caseId) return false;
+lib/teachin/raw-axes-adapter.mjs:69:  if (typeof raw.captureSha256 !== 'string'
+lib/teachin/raw-axes-adapter.mjs:70:    || raw.captureSha256 !== resolved.captureSha256) return false;
+lib/teachin/raw-axes-adapter.mjs:71:  if (typeof raw.expectedSha256 !== 'string'
+lib/teachin/raw-axes-adapter.mjs:72:    || raw.expectedSha256 !== resolved.expectedSha256) return false;
+lib/teachin/raw-axes-adapter.mjs:75:  if (!Array.isArray(raw.events) || raw.events.length === 0) return false;
+lib/teachin/raw-axes-adapter.mjs:80:function planIntentEvents(raw, resolved) {
+lib/teachin/raw-axes-adapter.mjs:82:  for (const event of raw.events) {
+lib/teachin/raw-axes-adapter.mjs:130:  if (usedSeqs.size !== raw.events.length) return null;
+lib/teachin/raw-axes-adapter.mjs:135:function expectedByIntentOf(raw, intentOrder) {
+lib/teachin/raw-axes-adapter.mjs:137:  const intents = Array.isArray(raw.expected?.intents) ? raw.expected.intents : [];
+lib/teachin/raw-axes-adapter.mjs:147:function buildAxesInput(raw, plan) {
+lib/teachin/raw-axes-adapter.mjs:148:  const expectedByIntent = expectedByIntentOf(raw, plan.intentOrder);
+lib/teachin/raw-axes-adapter.mjs:151:    caseId: raw.caseId,
+lib/teachin/raw-axes-adapter.mjs:152:    records: Array.isArray(raw.records) ? raw.records : [],
+lib/teachin/raw-axes-adapter.mjs:153:    pageErrors: Array.isArray(raw.pageErrors) ? raw.pageErrors : [],
+lib/teachin/raw-axes-adapter.mjs:160:    globalAssertions: Array.isArray(raw.expected?.globalAssertions)
+lib/teachin/raw-axes-adapter.mjs:161:      ? raw.expected.globalAssertions : [],
+lib/teachin/raw-axes-adapter.mjs:170:    chatCfg: raw.chatCfg ?? null,
+lib/teachin/raw-axes-adapter.mjs:206:function projectEvidence(raw, plan, axesBytes, verdictBytes) {
+lib/teachin/raw-axes-adapter.mjs:209:      intents: raw.expected.intents,
+lib/teachin/raw-axes-adapter.mjs:210:      globalAssertions: raw.expected.globalAssertions,
+lib/teachin/raw-axes-adapter.mjs:258:  let raw;
+lib/teachin/raw-axes-adapter.mjs:261:    raw = inspectRaw({ rawObservationAuthority: input.rawObservationAuthority });
+lib/teachin/raw-axes-adapter.mjs:265:  if (raw?.ok !== true) {
+lib/teachin/raw-axes-adapter.mjs:266:    return typeof raw?.reason === 'string' ? raw.reason : 'RAW_OBSERVATION_AUTHORITY_INVALID';
+lib/teachin/raw-axes-adapter.mjs:277:  if (typeof raw.captureSha256 !== 'string' || raw.captureSha256 !== resolved.captureSha256) {
+lib/teachin/raw-axes-adapter.mjs:282:  if (typeof raw.caseId !== 'string' || raw.caseId !== resolved.caseId) {
+lib/teachin/raw-axes-adapter.mjs:285:  if (typeof raw.expectedSha256 !== 'string' || raw.expectedSha256 !== resolved.expectedSha256) {
+lib/teachin/raw-axes-adapter.mjs:288:  if (!Number.isSafeInteger(raw.observationCount) || raw.observationCount <= 0) {
+lib/teachin/raw-axes-adapter.mjs:315:      let rawConsumed;
+lib/teachin/raw-axes-adapter.mjs:317:        rawConsumed = dependencies.consumeRawObservationAuthority({
+lib/teachin/raw-axes-adapter.mjs:318:          rawObservationAuthority: input.rawObservationAuthority,
+lib/teachin/raw-axes-adapter.mjs:323:      if (rawConsumed?.ok !== true || !usableProjection(rawConsumed.projection)) {
+lib/teachin/raw-axes-adapter.mjs:324:        return denied(typeof rawConsumed?.reason === 'string'
+lib/teachin/raw-axes-adapter.mjs:325:          ? rawConsumed.reason : 'RAW_OBSERVATION_AUTHORITY_INVALID');
+lib/teachin/raw-axes-adapter.mjs:340:      const raw = rawConsumed.projection;
+lib/teachin/raw-axes-adapter.mjs:342:      if (!bindingsAgree(raw, resolved)) return denied('RAW_AXES_BINDING_MISMATCH');
+lib/teachin/raw-axes-adapter.mjs:343:      const plan = planIntentEvents(raw, resolved);
+lib/teachin/raw-axes-adapter.mjs:345:      const axesInput = buildAxesInput(raw, plan);
+lib/teachin/raw-axes-adapter.mjs:369:      const evidence = projectEvidence(raw, plan, axesBytes, judged.verdictBytes);
+lib/teachin/raw-axes-adapter.mjs:373:        rawObservationAuthority: input.rawObservationAuthority,
+lib/teachin/raw-axes-adapter.mjs:395:    // distilled formal 相：在已归属 runtime 内跑现役 replay，再投 axes 并只经 frozen judge 桥裁定。
+
+exec
+/bin/bash -lc "sed -n '80,190p' lib/dual-replay/replay-completion.mjs && sed -n '290,365p' lib/dual-replay/replay-completion.mjs && sed -n '385,505p' lib/teachin/raw-axes-adapter.mjs" in /mnt/d/ctx/heren/casey
+ succeeded in 271ms:
+
+function bindingOf(record, digests, axesBytes, verdictBytes) {
+  const plan = record.planDigests;
+  return {
+    testcaseSha256: plan.testcaseSha256,
+    expectedSha256: plan.expectedSha256,
+    expectedObligationsSha256: plan.expectedObligationsSha256,
+    candidateSha256: digests.candidateSha256,
+    eventsSha256: digests.eventsSha256,
+    axesSha256: digestOf(axesBytes),
+    verdictSha256: digestOf(verdictBytes),
+    entityLockSetSha256: digests.entityLockSetSha256,
+    executionTargetAttestationSha256: record.executionTargetAttestationSha256,
+    sutBuildDigest: plan.sutBuildDigest,
+    channelProfileDigest: plan.channelProfileDigest,
+    identityProfileDigest: plan.identityProfileDigest,
+    replayKernelDigest: plan.replayKernelDigest,
+    resetPlanDigest: plan.resetPlanDigest,
+    sessionPolicyDigest: plan.sessionPolicyDigest,
+  };
+}
+
+export async function executeAuthorizedSourceReplay({
+  runAuthority, trustedRawReplayIssuer, ...extraInputs
+}) {
+  if (Object.keys(extraInputs).length > 0) {
+    reportRefusal('source-completion.input-shape', RAW_STAGE, 'RUN_COMPLETION_INVALID');
+    return denied('RUN_COMPLETION_INVALID');
+  }
+  const record = readRunRecord(runAuthority);
+  if (!record || record.role !== 'source' || record.executed) {
+    return denied('RUN_COMPLETION_AUTHORITY_INVALID');
+  }
+  if (!usableIssuer(trustedRawReplayIssuer, 'executeAndVerify')) {
+    return denied('REPLAY_ISSUER_INVALID');
+  }
+  // run 是一次性 ratchet：真实执行发生前就落闸，失败不得换 issuer 重跑到 CLEAN。
+  record.executed = true;
+  const runExecutionAuthority = frozen(Object.create(null));
+  EXECUTION_STATE.set(runExecutionAuthority, record);
+
+  let result;
+  try {
+    result = await trustedRawReplayIssuer.executeAndVerify({ runExecutionAuthority });
+  } catch (error) {
+    safeEmit('source-completion.issuer-throw', {
+      stage: RAW_STAGE,
+      reason: 'RUN_COMPLETION_INVALID',
+      errorName: normalizeErrorName(error),
+    });
+    return denied('RUN_COMPLETION_INVALID');
+  }
+  if (!exactKeys(result, RAW_RESULT_KEYS) || result.ok !== true) {
+    reportRefusal('source-completion.result-shape', RAW_STAGE, 'RUN_COMPLETION_INVALID');
+    return denied('RUN_COMPLETION_INVALID');
+  }
+  if (result.runExecutionAuthority !== runExecutionAuthority) {
+    reportRefusal('source-completion.result-shape', RAW_STAGE, 'RUN_COMPLETION_BINDING_MISMATCH');
+    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+  }
+  const digests = artifactDigests(result.artifacts);
+  if (!digests) {
+    reportRefusal('source-completion.artifact', RAW_STAGE, 'RUN_COMPLETION_INVALID');
+    return denied('RUN_COMPLETION_INVALID');
+  }
+  if (!exactKeys(result.rawReplay, ['status', 'cleanProofAuthority'])) {
+    reportRefusal('source-completion.raw-status', RAW_STAGE, 'RUN_COMPLETION_INVALID');
+    return denied('RUN_COMPLETION_INVALID');
+  }
+  if (result.rawReplay.status !== 'CLEAN') {
+    reportRefusal('source-completion.raw-status', RAW_STAGE, 'RUN_COMPLETION_INVALID');
+    return denied('RUN_COMPLETION_INVALID');
+  }
+  if (!artifactsAgree(digests, record.planDigests)) {
+    reportRefusal('source-completion.artifact', RAW_STAGE, 'RUN_COMPLETION_BINDING_MISMATCH');
+    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+  }
+  if (result.runtimeOwnerAuthority !== record.runtimeOwnerAuthority) {
+    reportRefusal('source-completion.result-shape', RAW_STAGE, 'RUN_COMPLETION_BINDING_MISMATCH');
+    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+  }
+  // CLEAN 只做非消费式验真；唯一 consumer 仍是 resolved projection。
+  const proof = inspectCleanRawReplayAuthority({
+    cleanProofAuthority: result.rawReplay.cleanProofAuthority,
+  });
+  if (proof?.ok !== true) {
+    reportRefusal('source-completion.proof', RAW_STAGE, 'RUN_COMPLETION_INVALID');
+    return denied('RUN_COMPLETION_INVALID');
+  }
+  if (proof.captureSha256 !== record.captureSha256) {
+    reportRefusal('source-completion.proof', RAW_STAGE, 'RUN_COMPLETION_BINDING_MISMATCH');
+    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+  }
+  const observation = inspectRawEventObservationAuthority({
+    rawObservationAuthority: result.rawObservationAuthority,
+  });
+  if (observation?.ok !== true) {
+    reportRefusal('source-completion.observation', RAW_STAGE, 'RUN_COMPLETION_INVALID');
+    return denied('RUN_COMPLETION_INVALID');
+  }
+  if (observation.captureSha256 !== record.captureSha256
+    || observation.runExecutionAuthority !== runExecutionAuthority) {
+    reportRefusal('source-completion.observation', RAW_STAGE, 'RUN_COMPLETION_BINDING_MISMATCH');
+    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+  }
+
+  const rawExecutionAuthority = frozen(Object.create(null));
+  RAW_EXECUTION_STATE.set(rawExecutionAuthority, {
+    record,
+    digests,
+    rawObservationAuthority: result.rawObservationAuthority,
+  });
+  return frozen({ ok: true, completionAuthority, authoringBaselineGrant });
+}
+
+export async function completeAuthorizedReplay({
+  runAuthority, trustedReplayIssuer, ...extraInputs
+}) {
+  if (Object.keys(extraInputs).length > 0) {
+    reportRefusal('distilled-completion.input-shape', DISTILLED_STAGE, 'RUN_COMPLETION_INVALID');
+    return denied('RUN_COMPLETION_INVALID');
+  }
+  const record = readRunRecord(runAuthority);
+  if (!record || record.role !== 'distilled' || record.executed) {
+    return denied('RUN_COMPLETION_AUTHORITY_INVALID');
+  }
+  if (!usableIssuer(trustedReplayIssuer, 'executeAndVerify')) {
+    return denied('REPLAY_ISSUER_INVALID');
+  }
+  record.executed = true;
+  const runExecutionAuthority = frozen(Object.create(null));
+  EXECUTION_STATE.set(runExecutionAuthority, record);
+
+  let result;
+  try {
+    result = await trustedReplayIssuer.executeAndVerify({ runExecutionAuthority });
+  } catch (error) {
+    safeEmit('distilled-completion.issuer-throw', {
+      stage: DISTILLED_STAGE,
+      reason: 'RUN_COMPLETION_INVALID',
+      errorName: normalizeErrorName(error),
+    });
+    return denied('RUN_COMPLETION_INVALID');
+  }
+  if (!exactKeys(result, ATOM_RESULT_KEYS) || result.ok !== true) {
+    reportRefusal('distilled-completion.result-shape', DISTILLED_STAGE, 'RUN_COMPLETION_INVALID');
+    return denied('RUN_COMPLETION_INVALID');
+  }
+  if (result.runExecutionAuthority !== runExecutionAuthority) {
+    reportRefusal('distilled-completion.result-shape', DISTILLED_STAGE,
+      'RUN_COMPLETION_BINDING_MISMATCH');
+    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+  }
+  const digests = artifactDigests(result.artifacts);
+  if (!digests) {
+    reportRefusal('distilled-completion.artifact', DISTILLED_STAGE, 'RUN_COMPLETION_INVALID');
+    return denied('RUN_COMPLETION_INVALID');
+  }
+  if (!Buffer.isBuffer(result.axesBytes) || !Buffer.isBuffer(result.verdictBytes)) {
+    reportRefusal('distilled-completion.artifact', DISTILLED_STAGE, 'RUN_COMPLETION_INVALID');
+    return denied('RUN_COMPLETION_INVALID');
+  }
+  if (!artifactsAgree(digests, record.roleDigests)) {
+    reportRefusal('distilled-completion.artifact', DISTILLED_STAGE,
+      'RUN_COMPLETION_BINDING_MISMATCH');
+    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+  }
+  if (result.runtimeOwnerAuthority !== record.runtimeOwnerAuthority) {
+    reportRefusal('distilled-completion.result-shape', DISTILLED_STAGE,
+      'RUN_COMPLETION_BINDING_MISMATCH');
+    return denied('RUN_COMPLETION_BINDING_MISMATCH');
+  }
+  const projected = projectSemanticEvidence(result.evidence, record.expectedObligations);
+  if (projected.ok !== true) return closedFailure(projected.reason);
+
+  const completionAuthority = frozen(Object.create(null));
+  COMPLETION_STATE.set(completionAuthority, {
+    pairBound: true,
+    pairRecord: record.pairRecord,
+    pairId: record.pairId,
+    role: 'distilled',
+    runOrdinal: 2,
+    runNamespace: record.runNamespace,
+    predecessorReceiptSha256: record.sourceReceiptSha256,
+    binding: bindingOf(record, digests, result.axesBytes, result.verdictBytes),
+    freshness: record.freshness,
+    projection: projected.projection,
+export function createRoleAxesSeam({ role, projectAxes, runVerdict } = {}) {
+  const project = typeof projectAxes === 'function' ? projectAxes : null;
+  const judge = typeof runVerdict === 'function' ? runVerdict : null;
+  return frozen({
+    projectReplayAxes(input) {
+      if (!project) return projectReplayAxes(input);
+      const projection = project({ role, axes: input });
+      return typeof projection === 'string' ? projection : JSON.stringify(projection);
+    },
+    evidenceOf: semanticEvidenceOf,
+    // distilled formal 相：在已归属 runtime 内跑现役 replay，再投 axes 并只经 frozen judge 桥裁定。
+    // 本函数不 launch、不关闭、不裁定，也不接受 caller 提交的 axes/verdict/evidence。
+    async sealFormalRun({ runExecutionAuthority, execution, runFormalReplay }) {
+      if (typeof runFormalReplay !== 'function') {
+        reportFormalRefusal('RUN_COMPLETION_INVALID');
+        return denied('RUN_COMPLETION_INVALID');
+      }
+      let replayed;
+      try {
+        replayed = await runFormalReplay({
+          runExecutionAuthority,
+          freshRuntimeAuthority: execution.freshRuntimeAuthority,
+          topologyAuthority: execution.topologyAuthority,
+          runtimeOwnerAuthority: execution.runtimeOwnerAuthority,
+          executionTargetAuthority: execution.executionTargetAuthority,
+        });
+      } catch (error) {
+        reportFormalRefusal('RUN_COMPLETION_INVALID', error);
+        return denied('RUN_COMPLETION_INVALID');
+      }
+      if (replayed?.ok !== true) {
+        reportFormalRefusal(typeof replayed?.reason === 'string'
+          ? replayed.reason : 'RUN_COMPLETION_INVALID');
+        return denied(typeof replayed?.reason === 'string'
+          ? replayed.reason : 'RUN_COMPLETION_INVALID');
+      }
+      let axesBytes = Buffer.isBuffer(replayed.axesBytes) ? replayed.axesBytes : null;
+      if (!axesBytes) {
+        let axesText;
+        try {
+          axesText = await this.projectReplayAxes({ evidence: replayed.evidence });
+        } catch (error) {
+          reportFormalRefusal('RAW_AXES_PROJECTION_FAILED', error);
+          return denied('RAW_AXES_PROJECTION_FAILED');
+        }
+        if (typeof axesText !== 'string' || !axesText) {
+          reportFormalRefusal('RAW_AXES_PROJECTION_FAILED');
+          return denied('RAW_AXES_PROJECTION_FAILED');
+        }
+        axesBytes = Buffer.from(axesText, 'utf8');
+      }
+      let judged;
+      try {
+        judged = await this.verdictAdapter.runFrozenVerdict({ axesBytes });
+      } catch (error) {
+        reportFormalRefusal('VERDICT_EXECUTION_FAILED', error);
+        return denied('VERDICT_EXECUTION_FAILED');
+      }
+      if (judged?.ok !== true || !Buffer.isBuffer(judged.verdictBytes)) {
+        reportFormalRefusal('VERDICT_EXECUTION_FAILED');
+        return denied('VERDICT_EXECUTION_FAILED');
+      }
+      let semanticEvidence = null;
+      try {
+        const expectedDocument = JSON.parse(execution.expectedBytes.toString('utf8'));
+        semanticEvidence = projectReadOnlySemanticEvidence({
+          expectedDocument,
+          intentOrder: (expectedDocument.intents || []).map((intent) => intent.intentId),
+          axesBytes,
+          verdictBytes: judged.verdictBytes,
+        });
+      } catch {
+        semanticEvidence = null;
+      }
+      // 注入的 role projector/judge 可把既有测试 evidence 封在 axes 中；canonical
+      // 路径绝不采用这一退路，必须从 expected + axes + verdict 重新确定性投影。
+      if (!semanticEvidence && project && judge) {
+        semanticEvidence = semanticEvidenceOf(axesBytes, replayed.evidence);
+      }
+      if (!semanticEvidence) {
+        reportFormalRefusal('RUN_COMPLETION_INVALID');
+        return denied('RUN_COMPLETION_INVALID');
+      }
+      return frozen({
+        ok: true,
+        runExecutionAuthority,
+        runtimeOwnerAuthority: execution.runtimeOwnerAuthority,
+        artifacts: execution.artifacts,
+        axesBytes,
+        verdictBytes: judged.verdictBytes,
+        evidence: semanticEvidenceOf(axesBytes, semanticEvidence),
+      });
+    },
+    verdictAdapter: frozen({
+      async runFrozenVerdict({ axesBytes }) {
+        if (!judge) return canonicalVerdictCliAdapter.runFrozenVerdict({ axesBytes });
+        const judged = await judge({ role, axesBytes });
+        if (judged === null || judged === undefined) return denied('VERDICT_EXECUTION_FAILED');
+        if (Buffer.isBuffer(judged)) return frozen({ ok: true, verdictBytes: judged });
+        if (Buffer.isBuffer(judged.verdictBytes)) {
+          return frozen({ ok: true, verdictBytes: judged.verdictBytes });
+        }
+        // 非 Buffer 返回不再被无条件 JSON 化成「判决字节」：必须先是闭合判决文档
+        // （逐步带 intent/step identity 与 canonical 四态之一），否则任意对象都能洗成 ok。
+        if (!closedVerdictDocument(judged)) return denied('VERDICT_EXECUTION_FAILED');
+        return frozen({
+          ok: true,
+          verdictBytes: Buffer.from(JSON.stringify(judged), 'utf8'),
+        });
+      },
+    }),
+  });
+}
+
+// axes 文档若自带确定性 evidence 投影，语义证据只能从这份 axes 产物里读出；
+// 现役 axes 文本没有该字段时退回 adapter 由 verdict 导出的最小 evidence。调用方无从提交。
+export function semanticEvidenceOf(axesBytes, fallback) {
+  let doc;
+  try {
+    doc = JSON.parse(axesBytes.toString('utf8'));
+  } catch {
+
+exec
+/bin/bash -lc "sed -n '1,85p' lib/dual-replay/replay-completion.mjs && sed -n '1,45p' lib/teachin/raw-axes-adapter.mjs && sed -n '190,275p' lib/teachin/cycle-evidence-context.mjs && rg -n \"source raw|执行开启|拥有者缺失|阶段声明失败|openRunExecution|sealFormalRun|runFormalReplay\" lib tests docs/plans/cycle-evidence-inner-reason -g '*.mjs' -g '*.md' | sed -n '1,260p'" in /mnt/d/ctx/heren/casey
+ succeeded in 5129ms:
+// staged completion：source 分两相（raw execute seal 与 resolved semantic completion），
+// distilled 只走 formal atom 相。issuer 恰调用一次，缺/多字段、throw、malformed、换绑均 fail-closed。
+// 纯核心：零 browser、零 fs、零 network、零 LLM；裁判由现役 frozen verdict 出，本模块不判四态。
+
+import {
+  denied, digestOf, exactKeys, frozen,
+} from './source-plan-authority.mjs';
+import { readRunRecord } from './run-authority.mjs';
+import { projectSemanticEvidence } from './semantic-projection.mjs';
+import { inspectCleanRawReplayAuthority } from '../teachin/raw-proof.mjs';
+import { inspectRawEventObservationAuthority } from '../teachin/raw-event-observation.mjs';
+import {
+  consumeSourceSemanticGrant,
+  inspectSourceSemanticGrant,
+} from '../teachin/resolved-projection.mjs';
+import {
+  normalizeErrorName, safeEmit,
+} from '../teachin/cycle-evidence-context.mjs';
+
+const EXECUTION_STATE = new WeakMap();
+const RAW_EXECUTION_STATE = new WeakMap();
+const SOURCE_COMPLETION_STATE = new WeakMap();
+const COMPLETION_STATE = new WeakMap();
+const BASELINE_GRANT_STATE = new WeakMap();
+const RESOLVED_PROJECTION_STATE = new WeakMap();
+
+const RAW_RESULT_KEYS = [
+  'ok', 'runExecutionAuthority', 'runtimeOwnerAuthority', 'rawObservationAuthority',
+  'artifacts', 'rawReplay',
+];
+const ATOM_RESULT_KEYS = [
+  'ok', 'runExecutionAuthority', 'runtimeOwnerAuthority', 'artifacts',
+  'axesBytes', 'verdictBytes', 'evidence',
+];
+const ARTIFACT_KEYS = ['candidateBytes', 'eventsBytes', 'entityLockBytes'];
+const SEMANTIC_RESULT_KEYS = [
+  'ok', 'rawObservationAuthority', 'resolvedProjectionAuthority',
+  'axesBytes', 'verdictBytes', 'evidence',
+];
+
+// 语义纵向失败返回闭合四键，绝不携带 evidence、异常原文或半成品 authority。
+function closedFailure(reason) {
+  return frozen({
+    ok: false, equivalent: false, promotionEligible: false, reason,
+  });
+}
+
+function usableIssuer(issuer, method) {
+  return !!issuer && typeof issuer === 'object' && typeof issuer[method] === 'function';
+}
+
+const RAW_STAGE = 'source-raw-execute';
+const RESOLVED_STAGE = 'source-resolved-completion';
+const DISTILLED_STAGE = 'distilled-completion';
+
+// 取证旁路：同码多分支各自通报归因，判定、键集与返回值一字不动。
+function reportRefusal(refusalPoint, stage, reason) {
+  safeEmit(refusalPoint, { stage, reason });
+}
+
+// 吞异常那一路的真因只经取证通道通报（仅归因与内建异常名，绝不带原文）：
+// 通报同步写在原 catch 块内、随后原样 return 原拒付——不套任何包裹函数、不多一次 await，
+// 于是异常栈帧数与微任务世代与取证边车落地之前逐轴全等（codex code-r1 M1）。
+
+function artifactDigests(artifacts) {
+  if (!exactKeys(artifacts, ARTIFACT_KEYS)) return null;
+  for (const key of ARTIFACT_KEYS) if (!Buffer.isBuffer(artifacts[key])) return null;
+  return {
+    candidateSha256: digestOf(artifacts.candidateBytes),
+    eventsSha256: digestOf(artifacts.eventsBytes),
+    entityLockSetSha256: digestOf(artifacts.entityLockBytes),
+  };
+}
+
+function artifactsAgree(digests, expected) {
+  return digests.candidateSha256 === expected.candidateSha256
+    && digests.eventsSha256 === expected.eventsSha256
+    && digests.entityLockSetSha256 === expected.entityLockSetSha256;
+}
+
+function bindingOf(record, digests, axesBytes, verdictBytes) {
+  const plan = record.planDigests;
+  return {
+    testcaseSha256: plan.testcaseSha256,
+    expectedSha256: plan.expectedSha256,
+// resolved raw observations → 现役 replay axes 投影 → frozen 裁判子进程桥。
+// 本模块不裁定：既不复制断言求值，也不写任何四态判断；只做确定性聚合与首错停止。
+// 两枚 authority 都是一次性；mapping 未验证前不得投影 axes（runtime-seams-design §5）。
+
+import { projectReplayAxes } from '../replay-axes.mjs';
+import { canonicalVerdictCliAdapter } from './verdict-cli-adapter.mjs';
+import { projectReadOnlySemanticEvidence } from './read-only-obligations.mjs';
+import {
+  normalizeErrorName, normalizeRefusalReason, safeEmit,
+} from './cycle-evidence-context.mjs';
+
+const INPUT_KEYS = ['rawObservationAuthority', 'resolvedProjectionAuthority'];
+const DEPENDENCY_KEYS = [
+  'consumeRawObservationAuthority',
+  'consumeResolvedProjectionAuthority',
+  'projectReplayAxes',
+  'verdictAdapter',
+];
+
+function frozen(value) {
+  return Object.freeze(value);
+}
+
+// 取证旁路：formal 相拒付照原样通报归因与稳定码，判定与返回值一字不动。
+function reportFormalRefusal(reason, thrown) {
+  const row = { stage: 'distilled-completion', reason: normalizeRefusalReason(reason) };
+  safeEmit('formal-replay.refusal', thrown === undefined
+    ? row
+    : { ...row, errorName: normalizeErrorName(thrown) });
+}
+
+function denied(reason) {
+  return frozen({ ok: false, reason });
+}
+
+function exactKeys(value, expected) {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return false;
+  return Object.keys(value).sort().join(' ') === [...expected].sort().join(' ');
+}
+
+function usableProjection(value) {
+  return !!value && typeof value === 'object' && !Array.isArray(value);
+}
+
+// 注入 judge 只有返回闭合判决文档才可被序列化成 verdict bytes：逐步必须带 intent/step identity
+  const collector = Object.freeze(Object.create(null));
+  COLLECTOR_STATE.set(collector, {
+    events: [], poisoned: false, sealed: false, lateEmitCount: 0, snapshot: null,
+  });
+  return collector;
+}
+
+// 词法边界：单次 cycle 整段包在 run 里，返回值原样透传；无词法退出的写法一律不用。
+export function runWithCycleEvidence(collector, body) {
+  if (typeof body !== 'function') return undefined;
+  return cycleEvidenceStore.run(collector, body);
+}
+
+// 旁路通报：同步、零返回值、吞异常、不进异步控制流——取证故障绝不回流生产路径。
+export function safeEmit(refusalPoint, payload) {
+  let state = null;
+  try {
+    state = readState(cycleEvidenceStore.getStore());
+    if (!state) return;
+    if (state.sealed === true) {
+      state.lateEmitCount += 1;
+      return;
+    }
+    const record = projectRecord(refusalPoint, payload);
+    if (record === null || state.events.length >= MAX_EVENTS) {
+      state.poisoned = true;
+      return;
+    }
+    state.events.push(record);
+  } catch {
+    if (state) state.poisoned = true;
+  }
+}
+
+// 封存：聚合之前调用一次，之后迟到的击发只计数不入档；重复封存幂等。
+export function sealCycleEvidence(collector) {
+  const state = readState(collector);
+  if (!state) return EMPTY_VIEW;
+  state.sealed = true;
+  if (!state.snapshot) state.snapshot = viewOf(state);
+  return state.snapshot;
+}
+
+// 非封存读：给诊断与金牌看当下账面（含封存后迟到计数）。
+export function inspectCycleEvidence(collector) {
+  const state = readState(collector);
+  return state ? viewOf(state) : EMPTY_VIEW;
+}
+
+// 异常名安全规范化：读取用 Reflect.get 包 try 防抛错 getter，白名单外一律降格 OtherError。
+export function normalizeErrorName(thrown) {
+  let name;
+  try {
+    if (!thrown || (typeof thrown !== 'object' && typeof thrown !== 'function')) {
+      return 'OtherError';
+    }
+    name = Reflect.get(thrown, 'name');
+  } catch {
+    return 'OtherError';
+  }
+  return typeof name === 'string' && ERROR_NAME_SET.has(name) ? name : 'OtherError';
+}
+
+// 三枚降格器：生产点把自由串折成闭合枚举之后才通报，绝不拿自由串直塞取证通道。
+export function normalizeRefusalReason(value) {
+  return REASON_SET.has(value) ? value : 'OTHER_REASON';
+}
+
+export function normalizeActionName(value) {
+  return ACTION_SET.has(value) ? value : 'other';
+}
+
+export function normalizeResolutionName(value) {
+  return RESOLUTION_SET.has(value) ? value : 'other';
+}
+docs/plans/cycle-evidence-inner-reason/GRILL.md:110:  source raw 侧两处（执行开启返空、拥有者缺失）、distilled 原子侧两处
+docs/plans/cycle-evidence-inner-reason/GRILL.md:111:  （执行开启返空、阶段声明失败）——另立任务；
+lib/dual-replay/replay-completion.mjs:408:export function openRunExecution(runExecutionAuthority) {
+tests/_golden/teachin-replayability-boundaries.static.golden.mjs:347:await check('B11 record→entry→core 同进程交权，source raw 只有 core 一次', () => {
+tests/_golden/teachin-replayability-boundaries.static.golden.mjs:360:    assert(!forbidden.test(`${record}\n${entry}`), `record/entry 禁止第二 source raw：${forbidden}`);
+tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:258://   lib/teachin/raw-axes-adapter.mjs —— formal replay（sealFormalRun / projectAndVerify）
+tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs:226:  await check('E1 exact input 同进程 admission→recording close→prepare→core，source raw 总计一次', async () => {
+tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs:238:    `source raw 必须只由 core 执行一次：${JSON.stringify(h.calls)}`);
+tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs:297:    'second use 不得触发第二次 source raw/close');
+tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs:329:  'entry 禁止自行执行 source raw');
+tests/_golden/support/teachin-replayability-equivalence-harness.mjs:475:  }), 'source raw execution');
+tests/_golden/support/teachin-replayability-equivalence-harness.mjs:477:    'source raw execution 必须原样转移 owner');
+tests/_golden/teachin-replayability-equivalence-sequence.zero-sut.golden.mjs:33:  await check('S1 source raw + distilled formal 两 evidence replay，另有 authoring 物理链', async () => {
+tests/_golden/teachin-replayability-runtime-cycle-adapter.zero-sut.golden.mjs:246:  await check('Y4 full evidence path 只有 source raw + distilled formal 两次 evidence replay', async () => {
+lib/teachin/runtime-cycle-adapter.mjs:30:  openRunExecution, consumeResolvedProjectionAuthority, consumeAuthoringBaselineGrant,
+lib/teachin/runtime-cycle-adapter.mjs:146:  const runFormalReplay = seam(deps.runCompiledReplay, (input) => preparedRun.runPreparedReplay(input));
+lib/teachin/runtime-cycle-adapter.mjs:259:        const execution = openRunExecution(runExecutionAuthority);
+lib/teachin/runtime-cycle-adapter.mjs:279:        const execution = openRunExecution(runExecutionAuthority);
+lib/teachin/runtime-cycle-adapter.mjs:286:        return distilledAxes.sealFormalRun({ runExecutionAuthority, execution, runFormalReplay });
+lib/teachin/raw-axes-adapter.mjs:397:    async sealFormalRun({ runExecutionAuthority, execution, runFormalReplay }) {
+lib/teachin/raw-axes-adapter.mjs:398:      if (typeof runFormalReplay !== 'function') {
+lib/teachin/raw-axes-adapter.mjs:404:        replayed = await runFormalReplay({
+
+exec
+/bin/bash -lc "sed -n '225,300p' lib/teachin/runtime-cycle-adapter.mjs && rg -n \"phase|stage|declare|owner|execution\" lib/teachin/runtime-cycle-adapter.mjs | sed -n '1,180p'" in /mnt/d/ctx/heren/casey
+ succeeded in 368ms:
+      verificationScopeAuthority: authoringClosureAuthority, authoringClosureAuthority,
+    });
+    if (verified?.ok !== true) return denied(verified?.reason || 'ENTITY_LOCK_AUTHORITY_INVALID');
+    const admitted = verified.mode === 'not-required'
+      || (verified.mode === 'runtime-required' && verified.runtimeAuthorized === true);
+    if (!admitted) return denied('ENTITY_LOCK_RUNTIME_UNAUTHORIZED');
+    const roundtripCandidate = { caseId, candidateBytes, eventsBytes };
+    const sealed = sealDistilledCandidateAuthority({
+      roundtripCandidate, authoringClosureAuthority,
+      verifiedEntityLockHandle: verified.handle,
+      verifiedEntityLockSetSha256: verified.setSha256, executionTargetAuthority,
+    });
+    if (sealed?.ok !== true) return denied(sealed?.reason || 'DISTILLED_CANDIDATE_SEAL_INVALID');
+    return frozen({
+      ok: true, authoringClosureAuthority,
+      distilledCandidateAuthority: sealed.distilledCandidateAuthority,
+    });
+  }
+
+  async function prepareDistilledReplayRuntime({
+    authoringClosureAuthority, pairAuthority, runNamespace, executionTargetAuthority,
+  }) {
+    return prepareOwnedDistilledRuntime({
+      authoringClosureAuthority, pairAuthority, runNamespace, executionTargetAuthority,
+      openDistilled, observeReset, closeRuntimeOwners,
+    });
+  }
+
+  // ── 两次 evidence replay 的薄 issuer ───────────────────────────────────────
+  return frozen({
+    // reset 事实只能来自 canonical live reset issuer；zero-SUT 装配注入 verifyReset 时才改走替身。
+    resetIssuer: frozen({ verifyReset: (input) => verifyResetFacts(input) }),
+    rawReplayIssuer: frozen({
+      async executeAndVerify({ runExecutionAuthority }) {
+        const execution = openRunExecution(runExecutionAuthority);
+        if (!execution) return denied('RUN_COMPLETION_INVALID');
+        const owner = readRuntimeOwner(execution.runtimeOwnerAuthority);
+        if (!owner) return denied(OWNERSHIP_MISMATCH);
+        return runObservedRawReplay({
+          execution: { ...execution, runExecutionAuthority }, owner, runRawReplay,
+          actionDriver: canonicalRawPlaywrightDriver,
+        });
+      },
+    }),
+    // source 语义只能来自 resolved 之后的 canonical axes 接缝；evidence 由 axes 产物确定性导出。
+    resolvedSourceIssuer: frozen({
+      async projectAndVerify(input) {
+        const result = await rawAxes.projectAndVerify(input);
+        if (result?.ok !== true) return result;
+        return frozen({ ...result, evidence: sourceAxes.evidenceOf(result.axesBytes, result.evidence) });
+      },
+    }),
+    atomReplayIssuer: frozen({
+      async executeAndVerify({ runExecutionAuthority }) {
+        const execution = openRunExecution(runExecutionAuthority);
+        if (!execution) return denied('RUN_COMPLETION_INVALID');
+        // canonical prepared runner 只经本次开箱的 exact execution 取事实，无第二条入口。
+        // stage 失败（同一 authority 重复 stage 或形状不合）即归属失守，零动作退出。
+        if (stageClaimedReplayExecution({ runExecutionAuthority, execution }) !== true) {
+          return denied(OWNERSHIP_MISMATCH);
+        }
+        return distilledAxes.sealFormalRun({ runExecutionAuthority, execution, runFormalReplay });
+      },
+    }),
+    prepareSourceReplayRuntime,
+    claimPreparedSourceReplayRuntime,
+    disposePreparedSourceReplayRuntime,
+    closeReplayRuntimeOwners,
+    runAndSealDistilledCandidate,
+    prepareDistilledReplayRuntime,
+  });
+}
+
+export const canonicalRuntimeCycleAdapter = createRuntimeCycleAdapter({});
+22:  inspectClaimedReplayRuntime, runCanonicalPreflight, stageClaimedReplayExecution,
+40:} from './runtime-owner.mjs';
+83:const canonicalRoleOpen = (role) => ({ executionTargetAuthority }) =>
+84:  canonicalRuntimeBootstrap.openRuntime({ role, executionTargetAuthority });
+85:const canonicalSourceOpen = ({ executionTargetAuthority }) =>
+86:  canonicalRuntimeBootstrap.openRuntime({ role: 'source', executionTargetAuthority });
+92:  return (role, runNamespace, executionTargetAuthority, topologyAuthority) =>
+93:    observeRuntimeResetBaseline({ role, runNamespace, executionTargetAuthority, topologyAuthority });
+160:    executionTargetAuthority, recordingBrowser, recordingContext, runNamespace,
+162:    if (!isRecord(executionTargetAuthority) || typeof runNamespace !== 'string') return denied(OWNERSHIP_MISMATCH);
+168:      const opened = await runtimeBootstrap.openRuntime({ role: 'source', executionTargetAuthority });
+174:      if (await observeReset('source', runNamespace, executionTargetAuthority, topology) !== true) {
+179:        runtime, runNamespace, executionTargetAuthority, adapterIdentity,
+189:    sourceRuntimePreparationAuthority, sourcePlanAuthority, runNamespace, executionTargetAuthority,
+193:      sourceRuntimePreparationAuthority, runNamespace, executionTargetAuthority, adapterIdentity,
+212:    runNamespace, entityLockAuthority, executionTargetAuthority,
+216:      runNamespace, executionTargetAuthority,
+235:      verifiedEntityLockSetSha256: verified.setSha256, executionTargetAuthority,
+245:    authoringClosureAuthority, pairAuthority, runNamespace, executionTargetAuthority,
+248:      authoringClosureAuthority, pairAuthority, runNamespace, executionTargetAuthority,
+259:        const execution = openRunExecution(runExecutionAuthority);
+260:        if (!execution) return denied('RUN_COMPLETION_INVALID');
+261:        const owner = readRuntimeOwner(execution.runtimeOwnerAuthority);
+262:        if (!owner) return denied(OWNERSHIP_MISMATCH);
+264:          execution: { ...execution, runExecutionAuthority }, owner, runRawReplay,
+279:        const execution = openRunExecution(runExecutionAuthority);
+280:        if (!execution) return denied('RUN_COMPLETION_INVALID');
+281:        // canonical prepared runner 只经本次开箱的 exact execution 取事实，无第二条入口。
+282:        // stage 失败（同一 authority 重复 stage 或形状不合）即归属失守，零动作退出。
+283:        if (stageClaimedReplayExecution({ runExecutionAuthority, execution }) !== true) {
+286:        return distilledAxes.sealFormalRun({ runExecutionAuthority, execution, runFormalReplay });
+
+exec
+/bin/bash -lc "git diff -- docs/plans/cycle-evidence-inner-reason/plan.md docs/plans/cycle-evidence-inner-reason/GRILL.md && git log -3 --format='%h %s' -- docs/plans/cycle-evidence-inner-reason/plan.md docs/plans/cycle-evidence-inner-reason/GRILL.md" in /mnt/d/ctx/heren/casey
+ succeeded in 1924ms:
+exec
+/bin/bash -lc 'git ls-files --stage docs/plans/cycle-evidence-inner-reason/plan.md docs/plans/cycle-evidence-inner-reason/GRILL.md; git status --short --untracked-files=all -- docs/plans/cycle-evidence-inner-reason' in /mnt/d/ctx/heren/casey
+ succeeded in 3228ms:
+?? docs/plans/cycle-evidence-inner-reason/GRILL.md
+?? docs/plans/cycle-evidence-inner-reason/plan-codex-r2.log
+?? docs/plans/cycle-evidence-inner-reason/plan-codex-r3.log
+?? docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log
+?? docs/plans/cycle-evidence-inner-reason/plan.md
+
+exec
+/bin/bash -lc "sed -n '1,240p' docs/plans/cycle-evidence-inner-reason/plan-codex-r2.log" in /mnt/d/ctx/heren/casey
+ succeeded in 453ms:
+-evidence-inner-reason/plan-sol-max-r1.log:1580:./tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:754:    'SOURCE_SEMANTIC_COMPLETION_INVALID',
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1581:./tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs:143:      async projectAndVerify(x) {
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1582:./tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs:278:        await x.trustedResolvedSourceIssuer.projectAndVerify({
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1583:./tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:295:    const result = await built.adapter.projectAndVerify(runInput(built));
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1584:./tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:338:    const result = await built.adapter.projectAndVerify(runInput(built));
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1585:./tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:363:      expectReason(await built.adapter.projectAndVerify(runInput(built)),
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1586:./tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:378:      expectReason(await built.adapter.projectAndVerify(runInput(built, poison)),
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1587:./tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:388:    expectReason(await forged.adapter.projectAndVerify({
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1588:./tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:396:    assert((await replay.adapter.projectAndVerify(runInput(replay)))?.ok === true,
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1589:./tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:398:    expectReason(await replay.adapter.projectAndVerify(runInput(replay)),
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1590:./tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:407:      const result = await built.adapter.projectAndVerify(runInput(built));
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1591:./tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:416:      const result = await built.adapter.projectAndVerify(runInput(built));
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1592:./tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:43:      async projectAndVerify(input) {
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1593:./tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:45:        const result = await built.adapter.resolvedSourceIssuer.projectAndVerify(input);
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1594:./tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:115:        async projectAndVerify() { throw new Error('POISON_SEMANTIC_ERROR'); },
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1595:./tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:116:      }, 'SOURCE_SEMANTIC_COMPLETION_INVALID'],
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1596:./tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:119:        async projectAndVerify() { return { ok: true }; },
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1597:./tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:120:      }, 'SOURCE_SEMANTIC_COMPLETION_INVALID'],
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1598:./tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:138:    })), 'SOURCE_SEMANTIC_COMPLETION_INVALID', 'caller free semantic fields');
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1599:./tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:154:        'SOURCE_SEMANTIC_COMPLETION_INVALID'],
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1600:./loop/prd-teachin-replayability-closure.json:174:      "reason": "Claude 四路评审 M6（承 grok R2 残差）：raw-axes 非消费预检窄于消费后 bindingsAgree（缺 caseId 与 expectedSha256 比对），同 capture 异 expected/caseId 的错绑通过预检后照烧两枚 genuine 一次性 authority，与预检自述目标相反；而 inspector 返回键集被本金牌 exactKeys 钉死、键名禁令含 expected 字样，产码无法合法补暴露。修单（Steven 2026-07-28 批准）：exactKeys 扩 caseId 与 expectedSha256 两键并加值钉（caseId 精确等于夹具、expectedSha256 为 sha256 摘要格式），键名禁令保留、唯一例外 expectedSha256——纯摘要不携 expected 内容，禁令精神（不开放 observation/expected/action facts）不变，字面放宽已如实标注。配套产码：inspector 补两字段、inspectBinding 补两比对全量对齐 bindingsAgree。修正后 raw-event-observation 7/7、raw-axes-adapter 7/7、raw-runner 9/9、production-boundary 7/7、boundaries 16/16 全绿；外科 stash 无实现态重钉真红（0 过 1 败 exit 1，红因模块缺席）。同轮记账：L1（comparator promotionEligible 悬空真旗标）被 equivalence-integrity-semantics 与 equivalence-sequence 两枚冻结金牌钉死，按例外条款挂账不修；M6 之外其余五 Medium 三 Low 已在闭合轮产码修复，其中 M3 采用 record 交接点归属回收方案以保全 cycle-entry E2/E4 冻结断言。"
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1601:./docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:26:  { refusalPoint: "resolved-completion.result-shape", reason: "SOURCE_SEMANTIC_COMPLETION_INVALID" }
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1602:./docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:27:  { refusalPoint: "orchestrator.stage-boundary", reason: "SOURCE_SEMANTIC_COMPLETION_INVALID" }
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1603:./docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:30:问题：`lib/dual-replay/replay-completion.mjs` 在 `projectAndVerify` 返回非法形状/非 ok 时统一拒付 `SOURCE_SEMANTIC_COMPLETION_INVALID`，而 `lib/teachin/raw-axes-adapter.mjs` 的 `projectAndVerify` 内部有六类以上互不相同的具名拒付（自己去数全，至少含 RAW_AXES_PROJECTION_INVALID / RAW_OBSERVATION_AUTHORITY_INVALID / RESOLVED_PROJECTION_AUTHORITY_INVALID / RAW_AXES_BINDING_MISMATCH / RAW_AXES_PROJECTION_FAILED / VERDICT_EXECUTION_FAILED，以及 inspectBinding 预检的各拒付码）。**内层码被外层吞掉**，边车拿不到，于是真因不可判——与本项目刚修完的那一类可诊断性缺陷同族。
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1604:./docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:36:1. **枚举全集**：`projectAndVerify` 与其 `inspectBinding` 预检的全部具名拒付码，逐个列出并标出触发条件（这是新枚举成员的来源，必须穷尽，不能「等等」）。同时核 distilled 侧是否有同构的吞码点（`completeDistilledReplay` 一带），要不要一并接。
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1605:./docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:37:2. **最小改法**：在 `replay-completion.mjs` 的 resolved 结果形状拒付点，把内层 `result.reason` 作为**闭合枚举**的附加字段带进 `safeEmit`（沿用取证边车既有的 `reason` 闭合口径——新增字段还是复用现有字段，你比较后给方案）。要求：内层码必须先过闭合白名单校验，不在白名单的一律降格成一个兜底成员，**绝不把自由字符串放进边车**；判定与返回形状零改动（外层仍返回 `SOURCE_SEMANTIC_COMPLETION_INVALID`，只是观测面多一条事实）。
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1606:./docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:48:我会按仓库权威顺序先核规则与当前冻结状态，再逐条追 `projectAndVerify`、`inspectBinding`、source/distilled completion、边车闭合枚举和所有签名引用；全程只读，不改文件。最终会给出带精确行号、实际 SHA 与换签对象的计划。
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1607:./docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1565:规则边界已锁定：本轮只能增加观测事实，不能改变 `projectAndVerify` 的判定、completion 返回值或任何裁定链。现在开始按生产调用链反向核拒付全集，并同时检查 distilled 分支是否存在同构折损。
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1608:./docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1573:/bin/bash -lc "rg -n --hidden --glob '"'!node_modules/**'"' --glob '"'!.git/**'"' 'projectAndVerify|inspectBinding|completeSourceReplay|completeDistilledReplay|SOURCE_SEMANTIC_COMPLETION_INVALID|DISTILLED_SEMANTIC_COMPLETION_INVALID|resolved-completion\\.result-shape' ." in /mnt/d/ctx/heren/casey
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1625:/bin/bash -lc "rg -n 'projectAndVerify|inspectBinding|completeSourceReplay|completeDistilledReplay|SOURCE_SEMANTIC_COMPLETION_INVALID|DISTILLED_SEMANTIC_COMPLETION_INVALID|resolved-completion\\.result-shape' lib bin tests/_golden loop --glob '*.mjs' --glob '*.json'" in /mnt/d/ctx/heren/casey
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1632:loop/prd-teachin-replayability-closure.json:174:      "reason": "Claude 四路评审 M6（承 grok R2 残差）：raw-axes 非消费预检窄于消费后 bindingsAgree（缺 caseId 与 expectedSha256 比对），同 capture 异 expected/caseId 的错绑通过预检后照烧两枚 genuine 一次性 authority，与预检自述目标相反；而 inspector 返回键集被本金牌 exactKeys 钉死、键名禁令含 expected 字样，产码无法合法补暴露。修单（Steven 2026-07-28 批准）：exactKeys 扩 caseId 与 expectedSha256 两键并加值钉（caseId 精确等于夹具、expectedSha256 为 sha256 摘要格式），键名禁令保留、唯一例外 expectedSha256——纯摘要不携 expected 内容，禁令精神（不开放 observation/expected/action facts）不变，字面放宽已如实标注。配套产码：inspector 补两字段、inspectBinding 补两比对全量对齐 bindingsAgree。修正后 raw-event-observation 7/7、raw-axes-adapter 7/7、raw-runner 9/9、production-boundary 7/7、boundaries 16/16 全绿；外科 stash 无实现态重钉真红（0 过 1 败 exit 1，红因模块缺席）。同轮记账：L1（comparator promotionEligible 悬空真旗标）被 equivalence-integrity-semantics 与 equivalence-sequence 两枚冻结金牌钉死，按例外条款挂账不修；M6 之外其余五 Medium 三 Low 已在闭合轮产码修复，其中 M3 采用 record 交接点归属回收方案以保全 cycle-entry E2/E4 冻结断言。"
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1635:lib/dual-replay/replay-completion.mjs:216:  if (!usableIssuer(trustedResolvedSourceIssuer, 'projectAndVerify')) {
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1636:lib/dual-replay/replay-completion.mjs:243:    result = await trustedResolvedSourceIssuer.projectAndVerify({
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1639:lib/dual-replay/replay-completion.mjs:256:    reportRefusal('resolved-completion.result-shape', RESOLVED_STAGE,
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1642:lib/dual-replay/replay-completion.mjs:262:    reportRefusal('resolved-completion.result-shape', RESOLVED_STAGE,
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1643:lib/dual-replay/replay-completion.mjs:267:    reportRefusal('resolved-completion.result-shape', RESOLVED_STAGE,
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1646:lib/teachin/runtime-cycle-adapter.mjs:271:      async projectAndVerify(input) {
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1647:lib/teachin/runtime-cycle-adapter.mjs:272:        const result = await rawAxes.projectAndVerify(input);
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1649:tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:258://   lib/teachin/raw-axes-adapter.mjs —— formal replay（sealFormalRun / projectAndVerify）
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1650:tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:273:  'resolved-completion.result-shape',
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1653:tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs:754:    'SOURCE_SEMANTIC_COMPLETION_INVALID',
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1654:tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:295:    const result = await built.adapter.projectAndVerify(runInput(built));
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1655:tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:338:    const result = await built.adapter.projectAndVerify(runInput(built));
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1656:tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:363:      expectReason(await built.adapter.projectAndVerify(runInput(built)),
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1657:tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:378:      expectReason(await built.adapter.projectAndVerify(runInput(built, poison)),
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1658:tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:388:    expectReason(await forged.adapter.projectAndVerify({
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1659:tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:396:    assert((await replay.adapter.projectAndVerify(runInput(replay)))?.ok === true,
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1660:tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:398:    expectReason(await replay.adapter.projectAndVerify(runInput(replay)),
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1661:tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:407:      const result = await built.adapter.projectAndVerify(runInput(built));
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1662:tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs:416:      const result = await built.adapter.projectAndVerify(runInput(built));
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1663:lib/teachin/raw-axes-adapter.mjs:254:function inspectBinding(dependencies, input) {
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1664:lib/teachin/raw-axes-adapter.mjs:305:    async projectAndVerify(input) {
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1665:lib/teachin/raw-axes-adapter.mjs:312:      const preflight = inspectBinding(dependencies, input);
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1666:tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs:143:      async projectAndVerify(x) {
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1667:tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs:278:        await x.trustedResolvedSourceIssuer.projectAndVerify({
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1668:tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:43:      async projectAndVerify(input) {
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1669:tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:45:        const result = await built.adapter.resolvedSourceIssuer.projectAndVerify(input);
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1670:tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:115:        async projectAndVerify() { throw new Error('POISON_SEMANTIC_ERROR'); },
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1671:tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:116:      }, 'SOURCE_SEMANTIC_COMPLETION_INVALID'],
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1672:tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:119:        async projectAndVerify() { return { ok: true }; },
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1673:tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:120:      }, 'SOURCE_SEMANTIC_COMPLETION_INVALID'],
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1674:tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:138:    })), 'SOURCE_SEMANTIC_COMPLETION_INVALID', 'caller free semantic fields');
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1675:tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs:154:        'SOURCE_SEMANTIC_COMPLETION_INVALID'],
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1677:lib/teachin/cycle-evidence-context.mjs:28:  'resolved-completion.result-shape',
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1678:lib/teachin/cycle-evidence-context.mjs:75:  'SOURCE_SEMANTIC_COMPLETION_INVALID', 'SOURCE_SEMANTIC_BINDING_MISMATCH',
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1681:/bin/bash -lc "nl -ba lib/dual-replay/replay-completion.mjs | sed -n '1,360p' && nl -ba lib/teachin/raw-axes-adapter.mjs | sed -n '1,460p'" in /mnt/d/ctx/heren/casey
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1735:    53	const RESOLVED_STAGE = 'source-resolved-completion';
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1757:    75	function artifactsAgree(digests, expected) {
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1815:   133	    reportRefusal('source-completion.result-shape', RAW_STAGE, 'RUN_COMPLETION_INVALID');
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1819:   137	    reportRefusal('source-completion.result-shape', RAW_STAGE, 'RUN_COMPLETION_BINDING_MISMATCH');
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1840:   158	    reportRefusal('source-completion.result-shape', RAW_STAGE, 'RUN_COMPLETION_BINDING_MISMATCH');
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1857:   175	  });
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1888:   206	    reportRefusal('resolved-completion.input-shape', RESOLVED_STAGE,
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1898:   216	  if (!usableIssuer(trustedResolvedSourceIssuer, 'projectAndVerify')) {
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1925:   243	    result = await trustedResolvedSourceIssuer.projectAndVerify({
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1930:   248	    safeEmit('resolved-completion.issuer-throw', {
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1938:   256	    reportRefusal('resolved-completion.result-shape', RESOLVED_STAGE,
+docs/plans/cycle-evidence-inner-reason/plan-sol-max-r1.log:1944:   262	    reportRefusal('resolved-completion.result-shape', RESOLVED_STAGE,
+
+exec
+/bin/bash -lc 'tail -80 docs/plans/cycle-evidence-inner-reason/plan-codex-r2.log' in /mnt/d/ctx/heren/casey
+ succeeded in 0ms:
+   267	      },
+   268	    }),
+   269	    // source 语义只能来自 resolved 之后的 canonical axes 接缝；evidence 由 axes 产物确定性导出。
+   270	    resolvedSourceIssuer: frozen({
+   271	      async projectAndVerify(input) {
+   272	        const result = await rawAxes.projectAndVerify(input);
+   273	        if (result?.ok !== true) return result;
+   274	        return frozen({ ...result, evidence: sourceAxes.evidenceOf(result.axesBytes, result.evidence) });
+   275	      },
+   276	    }),
+   277	    atomReplayIssuer: frozen({
+   278	      async executeAndVerify({ runExecutionAuthority }) {
+   279	        const execution = openRunExecution(runExecutionAuthority);
+   280	        if (!execution) return denied('RUN_COMPLETION_INVALID');
+   281	        // canonical prepared runner 只经本次开箱的 exact execution 取事实，无第二条入口。
+   282	        // stage 失败（同一 authority 重复 stage 或形状不合）即归属失守，零动作退出。
+   283	        if (stageClaimedReplayExecution({ runExecutionAuthority, execution }) !== true) {
+   284	          return denied(OWNERSHIP_MISMATCH);
+   285	        }
+   286	        return distilledAxes.sealFormalRun({ runExecutionAuthority, execution, runFormalReplay });
+   287	      },
+   288	    }),
+
+codex
+PLAN_CHANGES_REQUIRED
+
+乙路方向成立，但 v1 仍有三处阻断：
+
+1. D6 三岔判读与乙路冲突。内层拒付通报后，外层仍会在 [`replay-completion.mjs:255`](/mnt/d/ctx/heren/casey/lib/dual-replay/replay-completion.mjs:255) 必然再发 `SOURCE_SEMANTIC_COMPLETION_INVALID`。正常结果是“新归因点六码之一 + 既有外层码”同时出现，不是三者择一。应改为：
+
+   - 新归因点=六码之一，且随后外层点=统一码：通过；
+   - 新归因点=`OTHER_REASON`：接线不符；
+   - 无新归因点、只有外层码：改动未生效或某个拒付位漏接。
+
+   所谓另外两个不可达分支与外层统一码是否出现无关；第一个结果形状分支正是正常必达分支。
+
+2. “本地字面量”与兜底负控未闭合。当前存在 `preflight`、raw consumer、resolved consumer 等动态拒付透传，[`raw-axes-adapter.mjs:313`](/mnt/d/ctx/heren/casey/lib/teachin/raw-axes-adapter.mjs:313)。若通报只用硬编码本地码，真实分支无法落 `OTHER_REASON`；若复用动态码，现有全局 `normalizeRefusalReason` 又会放过 `ACTION_FAILED` 等“全局合法、但不属于本生产者六码”的成员。须明确采用“精确六码的生产者局部归一器”，复用既有表达式算出的 primitive，不新增外来对象读取；负控至少包含 `ACTION_FAILED` 和完全未知串。
+
+3. 六码各一枚正控不能证明全部发射位已接通。`projectAndVerify` 现有 15 个 `return denied(...)`，同码多分支很多。应增加最小静态完整性钉：方法体内 15 个拒付位全部经新助手，禁止残留直接 `return denied(...)`；否则某个 `VERDICT_EXECUTION_FAILED` 分支漏接，六码测试仍可能全绿。
+
+其余复核：
+
+- 六个具名码全集成立，无第七码。
+- 21→22 且不复用外层成员是对的，语义不重叠；但文档应写死新成员的确切名称。
+- 单锁成立：该 75 钉仅 `prd-teachin-cycle-evidence.json` 持有 checksum；不应新建 PRD。
+- 整批中毒丢失的失效模式成立；不升版本、不加 `innerReason` 正确。
+- 两个后续外层分支在 canonical 接线下不可达的证明成立，但不能推出外层统一码不再出现。
+- 语义证据投影失败路确实无通报；抽取到的 14 个拒付码与现有边车白名单零重叠，诚实预期成立。
+- 挂账共四处成立，但分属两个 issuer：source raw 两处、distilled atom 两处；“distilled 侧四处”措辞不准确。
+
+REVIEW_DONE_SENTINEL
+tokens used
+165,473
+PLAN_CHANGES_REQUIRED
+
+乙路方向成立，但 v1 仍有三处阻断：
+
+1. D6 三岔判读与乙路冲突。内层拒付通报后，外层仍会在 [`replay-completion.mjs:255`](/mnt/d/ctx/heren/casey/lib/dual-replay/replay-completion.mjs:255) 必然再发 `SOURCE_SEMANTIC_COMPLETION_INVALID`。正常结果是“新归因点六码之一 + 既有外层码”同时出现，不是三者择一。应改为：
+
+   - 新归因点=六码之一，且随后外层点=统一码：通过；
+   - 新归因点=`OTHER_REASON`：接线不符；
+   - 无新归因点、只有外层码：改动未生效或某个拒付位漏接。
+
+   所谓另外两个不可达分支与外层统一码是否出现无关；第一个结果形状分支正是正常必达分支。
+
+2. “本地字面量”与兜底负控未闭合。当前存在 `preflight`、raw consumer、resolved consumer 等动态拒付透传，[`raw-axes-adapter.mjs:313`](/mnt/d/ctx/heren/casey/lib/teachin/raw-axes-adapter.mjs:313)。若通报只用硬编码本地码，真实分支无法落 `OTHER_REASON`；若复用动态码，现有全局 `normalizeRefusalReason` 又会放过 `ACTION_FAILED` 等“全局合法、但不属于本生产者六码”的成员。须明确采用“精确六码的生产者局部归一器”，复用既有表达式算出的 primitive，不新增外来对象读取；负控至少包含 `ACTION_FAILED` 和完全未知串。
+
+3. 六码各一枚正控不能证明全部发射位已接通。`projectAndVerify` 现有 15 个 `return denied(...)`，同码多分支很多。应增加最小静态完整性钉：方法体内 15 个拒付位全部经新助手，禁止残留直接 `return denied(...)`；否则某个 `VERDICT_EXECUTION_FAILED` 分支漏接，六码测试仍可能全绿。
+
+其余复核：
+
+- 六个具名码全集成立，无第七码。
+- 21→22 且不复用外层成员是对的，语义不重叠；但文档应写死新成员的确切名称。
+- 单锁成立：该 75 钉仅 `prd-teachin-cycle-evidence.json` 持有 checksum；不应新建 PRD。
+- 整批中毒丢失的失效模式成立；不升版本、不加 `innerReason` 正确。
+- 两个后续外层分支在 canonical 接线下不可达的证明成立，但不能推出外层统一码不再出现。
+- 语义证据投影失败路确实无通报；抽取到的 14 个拒付码与现有边车白名单零重叠，诚实预期成立。
+- 挂账共四处成立，但分属两个 issuer：source raw 两处、distilled atom 两处；“distilled 侧四处”措辞不准确。
+
+REVIEW_DONE_SENTINEL
+
+exec
+/bin/bash -lc "nl -ba docs/plans/cycle-evidence-inner-reason/plan.md | sed -n '1,90p' && nl -ba docs/plans/cycle-evidence-inner-reason/GRILL.md | sed -n '35,125p' && nl -ba lib/teachin/raw-axes-adapter.mjs | sed -n '300,375p' && nl -ba lib/dual-replay/replay-completion.mjs | sed -n '240,272p' && nl -ba lib/teachin/runtime-cycle-adapter.mjs | sed -n '255,290p'" in /mnt/d/ctx/heren/casey
+ succeeded in 422ms:
+     1	# plan — cycle-evidence-inner-reason（v1，乙路）
+     2	
+     3	> 前置：`GRILL.md` v1（codex 计划 + opus xhigh 审三处阻断订正 + Steven 点乙路）。
+     4	> lane=full。目标：内层拒付码在发射点直接通报，一次真机复录即可定位真因。
+     5	
+     6	## 1. 生产件改动（两处，约 20-25 行）
+     7	
+     8	1. `lib/teachin/raw-axes-adapter.mjs`：`projectAndVerify` 方法体内**全部 15 个**
+     9	   `return denied(...)` 改经小助手「先 `safeEmit` 再返回」——照同文件既有
+    10	   `reportFormalRefusal` 形制写；判定与返回形状零改。三处动态透传（预检、
+    11	   raw 消费者、resolved 消费者）经 GRILL D2b 的生产者局部归一器落码，
+    12	   不新增外来对象读取。
+    13	2. `lib/teachin/cycle-evidence-context.mjs`：`refusalPoint` 枚举加一员
+    14	   （21→22）；拒付码白名单补 D0 六码（若已在则只补缺的）+ 兜底成员。
+    15	3. 明确不改：`lib/dual-replay/replay-completion.mjs`（带逐字节钉，一字不动）、
+    16	   `cycle-evidence-output.mjs`（四层闸零改、不升 schemaVersion）、
+    17	   `verdict.mjs`、一切 authority 形状与判定语义。
+    18	
+    19	## 2. 金牌（红先行，只扩既有 75 钉件）
+    20	
+    21	扩 `tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs`：
+    22	- 六码各一枚从**真实分支**击发的正控（合成夹具驱动 `projectAndVerify` 真路径，
+    23	  禁直调发射器硬编码）；
+    24	- **静态完整性钉（codex r2 阻断三，必须有）**：`projectAndVerify` 方法体内
+    25	  15 个拒付位**全部经新助手**、禁止残留裸 `return denied(...)`——否则某个
+    26	  同码多分支漏接，六码正控仍会全绿；
+    27	- 新归因点成员的真实分支钉（A4 逐点唯一归因不破）；
+    28	- 降格负控两枚：**全局合法但非本生产者六码**的成员（如动作失败码）、
+    29	  完全未知串 → 均须 **不中毒 + 落兜底成员**（按 D5 口径，不是只断言原串
+    30	  不出现）；
+    31	- 零行为差：带/不带收集器双跑，返回值深等、调用次数相等、控制流无差；
+    32	- E3 逐员矩阵与既有 75 钉全部不得削弱。
+    33	
+    34	## 3. prd 与验收
+    35	
+    36	单锁：只对 `loop/prd-teachin-cycle-evidence.json` 做一次 checksum
+    37	amendment（金牌 sha 由 `9a138436…` 换新），**不新建 prd**。
+    38	s2 邻接：raw-axes-adapter / raw-runner / cycle-entry / equivalence-completion /
+    39	equivalence-production-boundary / boundaries / cycle-plan.static /
+    40	orchestrator / runtime-cycle-adapter / raw-actionability（新）/ nav-expansion /
+    41	clear-fill。s3 漂移扫 + 术语。
+    42	
+    43	验收：
+    44	- A1 扩钉红→绿；A2 邻接零回归；A3 零漂移；
+    45	- A4（route:human）：Steven 真机复录一次，边车按 D6 三岔判读表判——
+    46	  六码之一即验收通过（**不等于闭环转绿**，见 GRILL D7）；
+    47	- A5（route:human）：换签人签。
+    48	
+    49	## 4. 评审与风险
+    50	
+    51	计划 v1 codex delta 一轮（乙路换根说明）；实现 opus 5 medium（可回抛 sol max
+    52	咨询）；实现后 codex 快速 delta。
+    53	- R1 新归因点破坏逐点唯一归因 → D2 不复用既有成员 + 真实分支钉；
+    54	- R2 降格漏路致整份边车中毒丢失 → D5 负控按「不中毒 + 落兜底」断言；
+    55	- R3 通报点混进判定路 → 零行为差双跑钉 + `safeEmit` 同步契约；
+    56	- R4 误把「验收通过」读成「闭环打通」→ GRILL D7 写死诚实预期。
+    35	`replay-completion.mjs`（带逐字节钉的文件）的任何改动——**该文件一字不动**。
+    36	
+    37	## D2 归因点（21→22 员，成员名写死）
+    38	
+    39	新增成员名定为 `raw-axes.projection-denied`（写死，实现不得另取），专用于
+    40	本发射点。**不复用
+    41	`resolved-completion.result-shape`**：既有 E3 的前提是逐点唯一归因、一员对
+    42	一个生产点，两个模块发同一员会破这条。按 A4 给新成员配一枚真实分支钉。
+    43	
+    44	## D2b 生产者局部归一器（codex r2 阻断二）
+    45	
+    46	`projectAndVerify` 里有 `preflight`、raw 消费者、resolved 消费者三处**动态
+    47	拒付透传**（值来自被调方而非本地字面量）。若通报只写硬编码本地码，这些真实
+    48	分支落不到正确码；若直接复用全局归一器，它又会放过「全局合法但不属本生产者
+    49	六码」的成员（如动作失败码）。故定案：**写一枚精确六码的生产者局部归一器**
+    50	——只认 D0 六码，其余一律落兜底成员 `OTHER_REASON`；复用既有表达式已算出的
+    51	原始值，不新增外来对象读取。负控至少含一个全局合法但非本生产者六码的成员，
+    52	以及一个完全未知串。
+    53	
+    54	## D3 零行为差
+    55	
+    56	判定、返回形状、控制流零改；`safeEmit` 同步、吞异常、零返回值消费、不进
+    57	异步控制流、不加 `await`。既有 75 钉金牌 E0b 逐字节钉的是三处 catch 与两条
+    58	issuer 直接 await 的字面量，不在本次改动字节内。行数纪律有余量
+    59	（该文件 519 行 + 约 20 行，600 行内）。
+    60	
+    61	## D4 冻结面与换签（审校纠正：单锁，不建新契约文件）
+    62	
+    63	**只扩既有 75 钉金牌 `tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs`
+    64	（现役 sha `9a138436…`），对 `loop/prd-teachin-cycle-evidence.json` 做一次
+    65	换签**。不新建 prd——新建会与「只扩 75 钉」形成双锁（两份 prd 冻同一文件、
+    66	全仓漂移扫两处都校验、此后每改必两次人签）。该 prd 的 observability 本就写着
+    67	「真因修复=后继契约」，本轮按后继轮换签记账。
+    68	
+    69	不升 schemaVersion：`reason` 已在事件键白名单、六码与兜底成员进拒付码白名单
+    70	即可，四层闸零改。**不新增 `innerReason` 字段**——写入端的记录投影会当场把
+    71	整批标记中毒，事件根本到不了读取方。
+    72	
+    73	## D5 白名单外的失效模式（审校纠正的威胁模型）
+    74	
+    75	白名单外的自由串**不是泄露，是整份边车丢失**：记录投影对 `reason` 走白名单
+    76	判定，不命中返回空，`safeEmit` 随即把整批标记中毒、落盘端拒写。所以负控要
+    77	断言的是「不中毒 + 降格成兜底成员」，只断言「原串不出现」打不到真正的失效面。
+    78	真机若边车干脆没落盘、CLI 报边车模式拒付码，第一嫌疑就是降格漏了某条路径，
+    79	别误判成录制失败。
+    80	
+    81	## D6 验收（含可达性证明与三岔判读表）
+    82	
+    83	**可达性证明**（审校补，使纪律更硬）：`replay-completion.mjs` 的三个
+    84	`resolved-completion.result-shape` 发射位里，只有结果形状那一条在 canonical
+    85	接线下可达——绑定换绑那条因两枚权柄由适配器原样回传恒相等而不可达；
+    86	`ok:true` 但字节非缓冲区那条因构造与前置闸而不可达。故今晚边车那条事件必然
+    87	对应六码之一，**生产路径上兜底成员不可达**。
+    88	
+    89	**先纠正 v1 的一处错读（codex r2 阻断一）**：内层通报之后，外层那条统一码
+    90	**仍会照常再发一次**——结果形状分支本就是正常必达分支。所以正常结果是
+    91	「新归因点六码之一 **加** 既有外层码」同时出现，不是三者择一。判读表：
+    92	
+    93	| 边车实得 | 判读 |
+    94	|---|---|
+    95	| 新归因点=六码之一，随后外层点=统一码 | 验收通过，真因已定位，转入修复 |
+    96	| 新归因点=兜底成员 | 实际返回契约与静态核查不符（接线被改或注入非 canonical 依赖）——回去核接线，**不许临时放宽白名单** |
+    97	| 无新归因点、只有外层码 | 改动未生效，或某个拒付位漏接助手 |
+    98	
+    99	## D7 诚实预期（审校风险提示，必须让人知道）
+   100	
+   101	**「再录一次」≠「闭环转绿」。** 修完本轮定位到的内层码之后，下一个失败点
+   102	极可能落在 `replay-completion.mjs` 的语义证据投影失败路——那里**完全无通报**，
+   103	且它产的码（意图覆盖不符、收据模式非法、终态谓词类、拓扑类、实体类、影响类）
+   104	**一个都不在**边车拒付码白名单里。届时要么再瞎一次，要么得扩白名单（那才是
+   105	真正牵动四层闸的改动）。到闭环绿之间大概率还有两到三个契约。
+   106	
+   107	## 挂账（route:human）
+   108	
+   109	- 无通报的 issuer 内部拒付**共四处、分属两个 issuer**（codex r2 措辞纠正）：
+   110	  source raw 侧两处（执行开启返空、拥有者缺失）、distilled 原子侧两处
+   111	  （执行开启返空、阶段声明失败）——另立任务；
+   112	- 换签人签（ADR-0004）；真机复录 Steven 一次。
+   300	    && typeof dependencies.consumeRawObservationAuthority === 'function'
+   301	    && typeof dependencies.consumeResolvedProjectionAuthority === 'function'
+   302	    && typeof dependencies.projectReplayAxes === 'function'
+   303	    && typeof dependencies.verdictAdapter?.runFrozenVerdict === 'function';
+   304	  return frozen({
+   305	    async projectAndVerify(input) {
+   306	      if (!usable) return denied('RAW_AXES_PROJECTION_INVALID');
+   307	      // 调用方不得提交 expected、mapping、artifacts、axes、verdict、evidence 或 judge 事实。
+   308	      if (!exactKeys(input, INPUT_KEYS)) return denied('RAW_AXES_PROJECTION_INVALID');
+   309	
+   310	      // 双消费之前先做非消费式绑定预检：capture 绑定不符或 resolved 仍有 pending 时，
+   311	      // 两枚 genuine one-shot authority 一个都不许被烧掉（探针/错绑不吃 genuine）。
+   312	      const preflight = inspectBinding(dependencies, input);
+   313	      if (preflight) return denied(preflight);
+   314	
+   315	      let rawConsumed;
+   316	      try {
+   317	        rawConsumed = dependencies.consumeRawObservationAuthority({
+   318	          rawObservationAuthority: input.rawObservationAuthority,
+   319	        });
+   320	      } catch {
+   321	        return denied('RAW_OBSERVATION_AUTHORITY_INVALID');
+   322	      }
+   323	      if (rawConsumed?.ok !== true || !usableProjection(rawConsumed.projection)) {
+   324	        return denied(typeof rawConsumed?.reason === 'string'
+   325	          ? rawConsumed.reason : 'RAW_OBSERVATION_AUTHORITY_INVALID');
+   326	      }
+   327	      let resolvedConsumed;
+   328	      try {
+   329	        resolvedConsumed = dependencies.consumeResolvedProjectionAuthority({
+   330	          resolvedProjectionAuthority: input.resolvedProjectionAuthority,
+   331	        });
+   332	      } catch {
+   333	        return denied('RESOLVED_PROJECTION_AUTHORITY_INVALID');
+   334	      }
+   335	      if (resolvedConsumed?.ok !== true || !usableProjection(resolvedConsumed.projection)) {
+   336	        return denied(typeof resolvedConsumed?.reason === 'string'
+   337	          ? resolvedConsumed.reason : 'RESOLVED_PROJECTION_AUTHORITY_INVALID');
+   338	      }
+   339	
+   340	      const raw = rawConsumed.projection;
+   341	      const resolved = resolvedConsumed.projection;
+   342	      if (!bindingsAgree(raw, resolved)) return denied('RAW_AXES_BINDING_MISMATCH');
+   343	      const plan = planIntentEvents(raw, resolved);
+   344	      if (!plan) return denied('RAW_AXES_BINDING_MISMATCH');
+   345	      const axesInput = buildAxesInput(raw, plan);
+   346	      if (!axesInput) return denied('RAW_AXES_BINDING_MISMATCH');
+   347	
+   348	      let axesText;
+   349	      try {
+   350	        axesText = dependencies.projectReplayAxes(axesInput);
+   351	      } catch {
+   352	        return denied('RAW_AXES_PROJECTION_FAILED');
+   353	      }
+   354	      if (typeof axesText !== 'string' || !axesText) {
+   355	        return denied('RAW_AXES_PROJECTION_FAILED');
+   356	      }
+   357	      // 投影结果只做 UTF-8 bytes 化，不在本地重写 axes。
+   358	      const axesBytes = Buffer.from(axesText, 'utf8');
+   359	
+   360	      let judged;
+   361	      try {
+   362	        judged = await dependencies.verdictAdapter.runFrozenVerdict({ axesBytes });
+   363	      } catch {
+   364	        return denied('VERDICT_EXECUTION_FAILED');
+   365	      }
+   366	      if (judged?.ok !== true || !Buffer.isBuffer(judged.verdictBytes)) {
+   367	        return denied('VERDICT_EXECUTION_FAILED');
+   368	      }
+   369	      const evidence = projectEvidence(raw, plan, axesBytes, judged.verdictBytes);
+   370	      if (!evidence) return denied('VERDICT_EXECUTION_FAILED');
+   371	      return frozen({
+   372	        ok: true,
+   373	        rawObservationAuthority: input.rawObservationAuthority,
+   374	        resolvedProjectionAuthority: input.resolvedProjectionAuthority,
+   375	        axesBytes,
+   240	
+   241	  let result;
+   242	  try {
+   243	    result = await trustedResolvedSourceIssuer.projectAndVerify({
+   244	      rawObservationAuthority: raw.rawObservationAuthority,
+   245	      resolvedProjectionAuthority,
+   246	    });
+   247	  } catch (error) {
+   248	    safeEmit('resolved-completion.issuer-throw', {
+   249	      stage: RESOLVED_STAGE,
+   250	      reason: 'SOURCE_SEMANTIC_COMPLETION_INVALID',
+   251	      errorName: normalizeErrorName(error),
+   252	    });
+   253	    return denied('SOURCE_SEMANTIC_COMPLETION_INVALID');
+   254	  }
+   255	  if (!exactKeys(result, SEMANTIC_RESULT_KEYS) || result.ok !== true) {
+   256	    reportRefusal('resolved-completion.result-shape', RESOLVED_STAGE,
+   257	      'SOURCE_SEMANTIC_COMPLETION_INVALID');
+   258	    return denied('SOURCE_SEMANTIC_COMPLETION_INVALID');
+   259	  }
+   260	  if (result.rawObservationAuthority !== raw.rawObservationAuthority
+   261	    || result.resolvedProjectionAuthority !== resolvedProjectionAuthority) {
+   262	    reportRefusal('resolved-completion.result-shape', RESOLVED_STAGE,
+   263	      'SOURCE_SEMANTIC_BINDING_MISMATCH');
+   264	    return denied('SOURCE_SEMANTIC_BINDING_MISMATCH');
+   265	  }
+   266	  if (!Buffer.isBuffer(result.axesBytes) || !Buffer.isBuffer(result.verdictBytes)) {
+   267	    reportRefusal('resolved-completion.result-shape', RESOLVED_STAGE,
+   268	      'SOURCE_SEMANTIC_COMPLETION_INVALID');
+   269	    return denied('SOURCE_SEMANTIC_COMPLETION_INVALID');
+   270	  }
+   271	  const projected = projectSemanticEvidence(result.evidence, raw.record.expectedObligations);
+   272	  if (projected.ok !== true) return closedFailure(projected.reason);
+   255	    // reset 事实只能来自 canonical live reset issuer；zero-SUT 装配注入 verifyReset 时才改走替身。
+   256	    resetIssuer: frozen({ verifyReset: (input) => verifyResetFacts(input) }),
+   257	    rawReplayIssuer: frozen({
+   258	      async executeAndVerify({ runExecutionAuthority }) {
+   259	        const execution = openRunExecution(runExecutionAuthority);
+   260	        if (!execution) return denied('RUN_COMPLETION_INVALID');
+   261	        const owner = readRuntimeOwner(execution.runtimeOwnerAuthority);
+   262	        if (!owner) return denied(OWNERSHIP_MISMATCH);
+   263	        return runObservedRawReplay({
+   264	          execution: { ...execution, runExecutionAuthority }, owner, runRawReplay,
+   265	          actionDriver: canonicalRawPlaywrightDriver,
+   266	        });
+   267	      },
+   268	    }),
+   269	    // source 语义只能来自 resolved 之后的 canonical axes 接缝；evidence 由 axes 产物确定性导出。
+   270	    resolvedSourceIssuer: frozen({
+   271	      async projectAndVerify(input) {
+   272	        const result = await rawAxes.projectAndVerify(input);
+   273	        if (result?.ok !== true) return result;
+   274	        return frozen({ ...result, evidence: sourceAxes.evidenceOf(result.axesBytes, result.evidence) });
+   275	      },
+   276	    }),
+   277	    atomReplayIssuer: frozen({
+   278	      async executeAndVerify({ runExecutionAuthority }) {
+   279	        const execution = openRunExecution(runExecutionAuthority);
+   280	        if (!execution) return denied('RUN_COMPLETION_INVALID');
+   281	        // canonical prepared runner 只经本次开箱的 exact execution 取事实，无第二条入口。
+   282	        // stage 失败（同一 authority 重复 stage 或形状不合）即归属失守，零动作退出。
+   283	        if (stageClaimedReplayExecution({ runExecutionAuthority, execution }) !== true) {
+   284	          return denied(OWNERSHIP_MISMATCH);
+   285	        }
+   286	        return distilledAxes.sealFormalRun({ runExecutionAuthority, execution, runFormalReplay });
+   287	      },
+   288	    }),
+   289	    prepareSourceReplayRuntime,
+   290	    claimPreparedSourceReplayRuntime,
+
+exec
+/bin/bash -lc "nl -ba docs/plans/cycle-evidence-inner-reason/GRILL.md | sed -n '15,38p'" in /mnt/d/ctx/heren/casey
+ succeeded in 0ms:
+    15	|---|---|
+    16	| `RAW_AXES_PROJECTION_INVALID` | 依赖包不可用（缺 raw/resolved 消费者、投影器或裁判适配器）或入参非精确键形状 |
+    17	| `RAW_OBSERVATION_AUTHORITY_INVALID` | raw 预检/消费抛错、非 ok、或无可用投影 |
+    18	| `RESOLVED_PROJECTION_AUTHORITY_INVALID` | resolved 预检/消费抛错、非 ok、或无可用投影 |
+    19	| `RAW_AXES_BINDING_MISMATCH` | 绑定预检不符（capture/case/expected digest、观测计数、**待补计数非零**、resolved 计数）或执行后两侧投影绑定不一致、意图事件规划失败、轴输入构造失败 |
+    20	| `RAW_AXES_PROJECTION_FAILED` | 轴投影器抛错或返回非空字符串以外的东西 |
+    21	| `VERDICT_EXECUTION_FAILED` | 裁判适配器抛错/非 ok/产物非缓冲区，或证据投影非法 |
+    22	
+    23	四处字符串透传在生产接线下闭合（raw 侧只产第二码、resolved 侧只产第三码，
+    24	接线点 `runtime-cycle-adapter.mjs`），注入式其他串必须降格。
+    25	
+    26	## D1 修法（乙路：下沉到发射点）
+    27	
+    28	在 `raw-axes-adapter.mjs` 内部，把 `projectAndVerify` 的各条
+    29	`return denied(X)` 换成「先通报再返回」的小助手——**拒付码在发射点就是本地
+    30	字面量，不读任何外来对象**。该文件已导入 `safeEmit` 与 `normalizeRefusalReason`，
+    31	且已有同形先例 `reportFormalRefusal`，照它写。
+    32	
+    33	乙路相对甲路（在外层读内层返回对象）省掉的：描述符读取、代理陷阱、抛错
+    34	getter、继承属性四类负控；惰性载荷与「被观测探测口」的代理计数钉；以及对
+    35	`replay-completion.mjs`（带逐字节钉的文件）的任何改动——**该文件一字不动**。
+    36	
+    37	## D2 归因点（21→22 员，成员名写死）
+    38	
+
+codex
+PLAN_CHANGES_REQUIRED
+
+还剩两处文档同步阻断：
+
+1. [GRILL.md:28](</mnt/d/ctx/heren/casey/docs/plans/cycle-evidence-inner-reason/GRILL.md:28>) 仍称拒付码“都是本地字面量、不读外来对象”，与 D2b 的三处动态透传矛盾。应明确为“12 处本地字面量；3 处复用既有表达式所得原始值，并经六码局部归一器处理”，同时避免暗示复用全局 `normalizeRefusalReason`。
+
+2. [plan.md:45](</mnt/d/ctx/heren/casey/docs/plans/cycle-evidence-inner-reason/plan.md:45>) 的 A4 仍写“六码之一即验收通过”，弱于 D6 判读表。应改为“新归因点为六码之一，且随后出现既有外层统一码，才验收通过”，否则外层通报缺失也会被误放行。
+
+其余三项成立：15 个拒付位静态完整性钉已写明；成员名已锁定为 `raw-axes.projection-denied`；挂账已正确表述为四处、两个 issuer。乙路未发现其他结构性新洞。
+
+REVIEW_DONE_SENTINEL
+tokens used
+88,973
+PLAN_CHANGES_REQUIRED
+
+还剩两处文档同步阻断：
+
+1. [GRILL.md:28](</mnt/d/ctx/heren/casey/docs/plans/cycle-evidence-inner-reason/GRILL.md:28>) 仍称拒付码“都是本地字面量、不读外来对象”，与 D2b 的三处动态透传矛盾。应明确为“12 处本地字面量；3 处复用既有表达式所得原始值，并经六码局部归一器处理”，同时避免暗示复用全局 `normalizeRefusalReason`。
+
+2. [plan.md:45](</mnt/d/ctx/heren/casey/docs/plans/cycle-evidence-inner-reason/plan.md:45>) 的 A4 仍写“六码之一即验收通过”，弱于 D6 判读表。应改为“新归因点为六码之一，且随后出现既有外层统一码，才验收通过”，否则外层通报缺失也会被误放行。
+
+其余三项成立：15 个拒付位静态完整性钉已写明；成员名已锁定为 `raw-axes.projection-denied`；挂账已正确表述为四处、两个 issuer。乙路未发现其他结构性新洞。
+
+REVIEW_DONE_SENTINEL
