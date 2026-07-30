@@ -1,0 +1,101 @@
+{
+  "schemaVersion": 1,
+  "task": "P6 自愈：casey heal 从诚实桩落成「自愈准入门 + 非就地有界自愈」全链（零 LLM；裁判 verdict.mjs 与 replay 生产库零改；计划经五轮 codex sol xhigh + grok-4.5 联合评审 PLAN_APPROVE）",
+  "specPath": "docs/plans/p6-heal/plan.md",
+  "testChecksums": {
+    "tests/_golden/support/p6-heal-fixtures.mjs": "c498fdfd66f4db0f9945f7b8e8f347eef2a93ef885fd702f3b889f9dbae69ac2",
+    "tests/_golden/support/p6-heal-runtime-seam.mjs": "81c87e57493e979a7cad0a5ec19cb48fbd77b69b52177fb6f4ce659c4b1475b2",
+    "tests/_golden/p6-heal-hotpath-evidence.zero-sut.golden.mjs": "e7772722d74aa1d1938f5d2894f3f341f96f0fb8430490d3d94fae830f54c88a",
+    "tests/_golden/p6-heal-admission.zero-sut.golden.mjs": "04599b445851235b55b5792c6a3a72de4337ca406e9e62860b335c0b42c06863",
+    "tests/_golden/p6-heal-proposal-ledger.zero-sut.golden.mjs": "127a4b080c7cf1941e5a7536dd4144f1f9cef31ca63fc8633cad53c6084141ea",
+    "tests/_golden/p6-heal-apply-promote.zero-sut.golden.mjs": "2a418639b534c0e4bd7578d2f73bcc2aba4760922723fbd6ddd075ed36267e75",
+    "tests/_golden/p6-heal-reverify-rollback.zero-sut.golden.mjs": "0f91b804906b12ffceaa2aa3c15f71f9d80502358975fccdd8da0df5bf405a00",
+    "tests/_golden/p6-heal-breaker.zero-sut.golden.mjs": "5950221b2232a5019aaedb5863f2c3745caa7cf7baf7efd4c7c900095c1fdbb9"
+  },
+  "observability": [
+    {
+      "dimension": "真机两不变量：自愈绝不抹平真 bug、绝不就地悄改 spec（bootstrap P6 人工验收点）。",
+      "route": "human"
+    },
+    {
+      "dimension": "真机 healed→PASS 实例（真实漂移样本稀缺，等真实漂移发生）。",
+      "route": "human"
+    },
+    {
+      "dimension": "变更型用例的复核（D3：reset/幂等证明缺失时 route:human，现役唯一词表原子即变更型）。",
+      "route": "human"
+    },
+    {
+      "dimension": "不可伪造回放收据（含定位内容摘要）挂账 replay 面后继契约；落地后 D12 纯语义定位收窄可解除。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s0-hotpath-evidence",
+      "title": "S0 热路径可达性证明（可达出金牌绿证据/不可达出证据文档，两分支诚实）",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/p6-heal-hotpath-evidence.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-29T01:08:56.920Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s1-admission",
+      "title": "S1 准入门：四态拒付、干净案、词表、血缘互证与畸形面（A1/A6/A8）",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/p6-heal-admission.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-29T01:09:11.758Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2s3-proposal-ledger",
+      "title": "S2+S3 重锚提案与证据元组台账：落盘、幂等、升级、并发（A2/A4）",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/p6-heal-proposal-ledger.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-29T01:09:28.821Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4s5-apply-promote",
+      "title": "S4+S5 候选式应用与日志式事务晋升：签署门、篡改拒、journal fail-closed（A3a/A3b）",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/p6-heal-apply-promote.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-29T01:10:00.572Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s6-reverify-rollback",
+      "title": "S6 真链路复核与对称回滚：非目标回归翻败、逐件恢复断言、reset-proof 门（A3c/A7）",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/p6-heal-reverify-rollback.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-29T01:11:01.960Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s7-breaker",
+      "title": "S7 case 级熔断：三步空转跳闸 exit 2 + inbox（A5）",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/p6-heal-breaker.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-29T01:13:30.140Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "红基线证据（2026-07-29 铸造即录）：六枚金牌对 heal 桩全部非零退出（桩 exit 3 撞码断言；hotpath 两分支皆不成立）。金牌内两条回归保护（拒付零写入、breaker 真件字节不动）铸造时即绿属设计。三条拒因码位与七处接缝解释按 GRILL v4.2 与 plan §3.5 补钉段执行；实现须迎合金牌，金牌对实现者只读。",
+  "openIssues": [],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-29",
+      "round": "A5 换签（冻结金牌互斥裁决）",
+      "files": [
+        "tests/_golden/p6-heal-breaker.zero-sut.golden.mjs"
+      ],
+      "reason": "金牌铸造期逮出 A4 与 A5 在夹具层互斥（同构三轮，A4 要求全 exit 0、A5 要求第 3 轮 exit 2；五轮计划评审漏检）。fable 裁读：纯提案轮在等人签、不构成 D8「完整 heal 周期」，A5 夹具误当完整周期，应重表达为三个真完整周期（apply→promote→reverify 全程、以无终局收尾）。Steven 2026-07-29 批准按此裁读换签。新件 11 项含四路跳闸、reverified/route:human 双清零、破损账两项、子进程并发两项负控；换签前经 S7 增量双家评审闭环（codex 6/6 FIXED 零新 Critical、grok 同向收敛）。原件字节存档 .pre-a5-amendment.archive.gz；换签后新件实测 exit 0。"
+    }
+  ]
+}
