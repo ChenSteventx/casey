@@ -298,18 +298,27 @@ const HINT_QUERY_RE = /hr-toast|hr-message|role\s*=\s*["']?(?:status|alert)/;
 
 // 短命提示的时间窗替身：第一次提示查询如实返回提示在场，其后任何一次都返回提示已谢幕。
 // 只读一次快照的实现拿到的是「在场」，两次采样的实现第二次拿到的是「已谢幕」——判别力全在这里。
+// 两条查询通道都要拦、都要计数（codex delta 第三轮 Medium）：只拦 evaluate 会漏两种情形——
+//   ①「一次 evaluate 读可见 + 一次 locator.evaluateAll 读全量」的混合实现仍是两次采样却计成 1，蒙绿；
+//   ②合法的单次 locator(选择器).evaluateAll(同时派生两份) 会计成 0 次而误判红，挡住正当重构。
+// 故判据是「提示查询总次数」，与走哪条通道无关。
 function withVanishingHint(onStage, afterCurtain) {
   const reads = { hint: 0 };
+  // 一次提示查询登记一次，并决定这一次由「在场」还是「已谢幕」的页面作答。
+  const stageFor = () => { reads.hint += 1; return reads.hint === 1 ? onStage : afterCurtain; };
   const page = new Proxy(afterCurtain, {
     get(target, property) {
-      if (property !== 'evaluate') return Reflect.get(target, property);
-      return async (fn, argument) => {
-        if (typeof fn === 'function' && HINT_QUERY_RE.test(String(fn))) {
-          reads.hint += 1;
-          if (reads.hint === 1) return onStage.evaluate(fn, argument);
-        }
-        return target.evaluate(fn, argument);
-      };
+      if (property === 'evaluate') {
+        return async (fn, argument) => (typeof fn === 'function' && HINT_QUERY_RE.test(String(fn))
+          ? stageFor().evaluate(fn, argument)
+          : target.evaluate(fn, argument));
+      }
+      if (property === 'locator') {
+        return (selector, ...rest) => (HINT_QUERY_RE.test(String(selector))
+          ? stageFor().locator(selector, ...rest)
+          : target.locator(selector, ...rest));
+      }
+      return Reflect.get(target, property);
     },
   });
   return { page, reads };
@@ -345,7 +354,8 @@ await check('V10 同刻快照：提示在两次读取窗口内谢幕，仍不得
   // 必须字面留在 evaluate 回调体内，否则 V6 的孪生缝钉也一并失去判别力。
   assert(reads.hint === 1,
     `两份视图必须来自一次查询，提示查询次数须恰为 1，实际 ${reads.hint} 次`
-    + '（2 次=仍在分开采样；0 次=选择器被挪出回调体、替身认不出提示查询）');
+    + '（≥2 次=仍在分开采样，含 evaluate 与 locator 混合通道；'
+    + '0 次=选择器被挪出回调体、替身认不出提示查询）');
 });
 
 const total = passed + failures.length;

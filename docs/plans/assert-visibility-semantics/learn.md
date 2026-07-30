@@ -1,7 +1,7 @@
 # learn — assert-visibility-semantics
 
 > 六阶段收口沉淀。证据源：`GRILL.md`、`plan.md`（含 §5 主会话裁决）、
-> codex sol max 异构评审两轮、`loop/prd-assert-visibility-semantics.json`
+> codex sol max 异构评审三轮、`loop/prd-assert-visibility-semantics.json`
 > （gate GREEN 3/3），真机 `runs/tc_wf_publish_states/run_final{1,3,4,5}_20260731`
 > 与探针 `runs/tc_wf_publish_states/_a4-probes/`。
 
@@ -57,7 +57,12 @@ fail-open 缝（护栏 #14）。真机最终码四轮全 PASS，首末轮辅助�
    可见那次读在前的实现，会拿到 `actual:1` 与 `NEEDS_HUMAN`，反把 V10 蒙绿。
    加固成断言「提示查询次数恰为 1」后，判据才从「顺序」变成「次数」，也就是
    真正的不变量：**两份视图必须来自一次查询**。变异实测印证（两次采样 → 红在
-   V10，报文「实际 2 次」）。
+   V10，报文「实际 2 次」）。第三轮复审又指出计数只覆盖了一条通道——`Proxy` 拦
+   `evaluate` 不拦 `locator`，于是「一次 `evaluate` + 一次 `locator.evaluateAll`」
+   的混合实现仍能蒙绿，而合法的单次 `locator.evaluateAll` 反被计成 0 次误判红。
+   两条通道都拦都计数之后才真正稳。**「钉不变量」这件事本身也要迭代**：第一版
+   钉了顺序、第二版钉了次数但只覆盖一条通道、第三版才是「无论走哪条通道，总次数
+   恰一次」。
 8. **修一处缝，要顺手查同族。** 复审在同模块又找出两处同型缺陷：回复快照分开读
    数量与末条文本（新失败回复消失后会读回旧的成功回复，`replyContains` 假绿）、
    按钮观察分开读命中数与禁用数（按钮禁用时被计中、随后卸载使禁用数归零，

@@ -3,7 +3,7 @@
   "task": "assert-visibility-semantics（full）：tc_wf_publish_states 末步四轮真机稳定红的真因是断言口径错、动作对——真机探针实测按 Esc 前「创建时间」DOM 命中 1 可见命中 1，按 Esc 后 DOM 命中仍 1、可见命中 0（浮层视觉关闭但节点不卸载），而现役 textHidden 数的是 DOM 命中。作者层注册表 lib/atoms-registry.snapshot.json:866 把 assert.textHidden 定义为 toBeHidden（含未挂载），故签字时的契约本来就是可见性，现行实现才是偏离——这是实现纠偏不是语义变更；且可见命中恒 ≤ DOM 命中，本改动只可能把 textHidden 由假翻真，不可能把任何现役绿判红。修法（GRILL D1，opus xhigh 审裁定路线 1）：最小改 lib/replay/intent-observation.mjs 的 readTextHits，被 textHidden 请求的文本值改用可见过滤计数；同文件两处 fail-open 缝一并钉死（safeRead(...,0) 查询抛错回 0 致负向断言判过、readToasts 兜底回 [] 致 noErrorToast 判过，护栏 #14）；toast 兜底改滤不砍（保时间敏感度、换带可见性过滤的读取，readToasts 本体不动因其同供 noErrorToast）；补 lib/assertion-draft.mjs 的 assert.textHidden 映射使其不再落待补。计划审 codex sol max 出、opus xhigh 审出七条修订并入 GRILL v1。",
   "specPath": "docs/plans/assert-visibility-semantics/plan.md",
   "testChecksums": {
-    "tests/_golden/assert-visibility-semantics.zero-sut.golden.mjs": "b36a9db72a375f3fe8b0d30db1aa5d747d17d4465414249b0f1830229cf84e65",
+    "tests/_golden/assert-visibility-semantics.zero-sut.golden.mjs": "560b2c30a7712f4b6782035e6b364c5c0259b2b5e69b2d412e8c0eb905d1c15d",
     "tests/_golden/fixtures/assert-visibility-semantics/dom-page.mjs": "d9d239cdbec880812f7ca543c1fcc6546f533454e314f150af359a084ebb2787"
   },
   "observability": [
@@ -35,11 +35,11 @@
   "checksumAmendments": [
     {
       "amendedAt": "2026-07-31",
-      "round": "code-r1+delta 异构评审补洞换签（codex sol max：r1 一条 Critical、delta 一条 Medium）",
+      "round": "code-r1+delta×2 异构评审补洞换签（codex sol max：r1 一条 Critical、delta 两条 Medium）",
       "files": [
         "tests/_golden/assert-visibility-semantics.zero-sut.golden.mjs"
       ],
-      "reason": "codex 逮到实现把提示读取拆成两次采样：readToasts（不过滤，供 noErrorToast）先读一次，readVisibleToasts（可见过滤，供 textHidden 兜底）稍后另读一次。短命提示若在两读之间谢幕，第二次合法返回空数组，textHidden 拿到 0 判过——恰好废掉 GRILL D3「兜底的全部价值是时间」那条，亲手打开了兜底本该防的假绿。codex 实测复现 toasts=[操作失败] → textHits={操作失败:0} → textHidden ok:true actual:0 → PASS。生产件已修：两函数合成 readToastSnapshot，在同一次 page.evaluate 里同刻派生 all 与 visible 两份，整次采不到则两份都 null；终端 toasts 仍输出 all（noErrorToast 不过滤口径不变），textHidden 兜底消费同刻的 visible；readVisibleToasts 删除。补 V10 钉住该失效模式：金牌侧用 Proxy 包替身的 evaluate，第一次提示查询由「提示在场」页面作答、其后由「已谢幕」页面作答，断言锁死 ok:false 与 actual:1 两者（省键是 ok:false actual:null，不与「同刻证据判不过」混为一谈）外加裁定须落 NEEDS_HUMAN。固定语料 dom-page.mjs 一个字节没动（冻结面）。双向变异验证：控制组 exit 0 十钉全绿；把同刻快照改回两次独立采样 → exit 1、红恰 V10 一枚，其余九钉零扰动，缺陷实现红签名 ok=true actual=0（提示查询 2 次）。金牌 9→10 钉。原件 gzip 存档 .pre-v10-amendment.archive.gz（回验 sha=220fede7… 与原冻结值一致）。另记一条实现约束：提示选择器必须字面写在 evaluate 回调体内、不许改成传参——固定语料靠正则匹配回调源码判别「是不是提示查询」（dom-page.mjs:162），挪成参数会让 V6 孪生缝钉当场失去判别力（实测踩过一次）。 【delta 复审追加】codex 复审确认那条 Critical 已消除（原复现路径不能重现、noErrorToast 口径未变、快照整次失败时三类断言均落证不出），但指出 V10 只钉住了旧实现的调用顺序、没钉住不变量本身：Proxy 靠回调源码认提示查询却没断言查询次数，于是「仍分两次采样、只是把可见那次读在前」的实现会拿到 actual:1 与 NEEDS_HUMAN、反把 V10 蒙绿。已加固：V10 追加 reads.hint===1 断言，判据由「顺序」改成「次数」。实测变异（仍两次采样、可见那次读在前）→ exit 1、红恰 V10、报文「提示查询次数须恰为 1，实际 2 次」；还原后按 sha256 校验字节全同、复跑 exit 0、10/10。金牌 sha 由 a7f86121… 换 b36a9db7…。已知代价有意接受：该判别靠替身正则匹配回调源码，故实现若把选择器挪成传参会数成 0 次而判红——这与生产件注释里写死的约束一致（选择器必须字面留在 evaluate 回调体内，否则 V6 孪生缝钉也一并失去判别力）。",
+      "reason": "codex 逮到实现把提示读取拆成两次采样：readToasts（不过滤，供 noErrorToast）先读一次，readVisibleToasts（可见过滤，供 textHidden 兜底）稍后另读一次。短命提示若在两读之间谢幕，第二次合法返回空数组，textHidden 拿到 0 判过——恰好废掉 GRILL D3「兜底的全部价值是时间」那条，亲手打开了兜底本该防的假绿。codex 实测复现 toasts=[操作失败] → textHits={操作失败:0} → textHidden ok:true actual:0 → PASS。生产件已修：两函数合成 readToastSnapshot，在同一次 page.evaluate 里同刻派生 all 与 visible 两份，整次采不到则两份都 null；终端 toasts 仍输出 all（noErrorToast 不过滤口径不变），textHidden 兜底消费同刻的 visible；readVisibleToasts 删除。补 V10 钉住该失效模式：金牌侧用 Proxy 包替身的 evaluate，第一次提示查询由「提示在场」页面作答、其后由「已谢幕」页面作答，断言锁死 ok:false 与 actual:1 两者（省键是 ok:false actual:null，不与「同刻证据判不过」混为一谈）外加裁定须落 NEEDS_HUMAN。固定语料 dom-page.mjs 一个字节没动（冻结面）。双向变异验证：控制组 exit 0 十钉全绿；把同刻快照改回两次独立采样 → exit 1、红恰 V10 一枚，其余九钉零扰动，缺陷实现红签名 ok=true actual=0（提示查询 2 次）。金牌 9→10 钉。原件 gzip 存档 .pre-v10-amendment.archive.gz（回验 sha=220fede7… 与原冻结值一致）。另记一条实现约束：提示选择器必须字面写在 evaluate 回调体内、不许改成传参——固定语料靠正则匹配回调源码判别「是不是提示查询」（dom-page.mjs:162），挪成参数会让 V6 孪生缝钉当场失去判别力（实测踩过一次）。 【delta 复审追加】codex 复审确认那条 Critical 已消除（原复现路径不能重现、noErrorToast 口径未变、快照整次失败时三类断言均落证不出），但指出 V10 只钉住了旧实现的调用顺序、没钉住不变量本身：Proxy 靠回调源码认提示查询却没断言查询次数，于是「仍分两次采样、只是把可见那次读在前」的实现会拿到 actual:1 与 NEEDS_HUMAN、反把 V10 蒙绿。已加固：V10 追加 reads.hint===1 断言，判据由「顺序」改成「次数」。实测变异（仍两次采样、可见那次读在前）→ exit 1、红恰 V10、报文「提示查询次数须恰为 1，实际 2 次」；还原后按 sha256 校验字节全同、复跑 exit 0、10/10。金牌 sha 由 a7f86121… 换 b36a9db7…。已知代价有意接受：该判别靠替身正则匹配回调源码，故实现若把选择器挪成传参会数成 0 次而判红——这与生产件注释里写死的约束一致（选择器必须字面留在 evaluate 回调体内，否则 V6 孪生缝钉也一并失去判别力）。 【delta 第三轮追加】复审确认次数判据堵住了实测变异且稳定（同一实现重复跑结论一致、不依赖调度时序），但再报一条 Medium：Proxy 只拦 evaluate、不拦 locator，于是两种情形漏网——①「一次 evaluate 读可见 + 一次 locator.evaluateAll 读全量」的混合实现仍是两次采样却计成 1 次而蒙绿；②合法的单次 locator(选择器).evaluateAll(同时派生两份) 会计成 0 次而误判红，挡住正当重构。已修：withVanishingHint 两条通道都拦都计数，判据改为「提示查询总次数」与通道无关。实测混合通道变异（evaluate 读可见 + locator.evaluateAll 读全量）→ exit 1、红恰 V10、报文「实际 2 次」；还原后 sha256 校验字节全同、复跑 exit 0、10/10。金牌 sha 由 b36a9db7… 换 560b2c30…。",
       "signedBy": "PENDING_STEVEN"
     }
   ],
@@ -51,7 +51,7 @@
       "acceptance": [
         "node tests/_golden/assert-visibility-semantics.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-07-30T19:30:01.702Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-30T19:52:11.764Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-adjacent-zero-regression",
@@ -65,7 +65,7 @@
         "node tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs",
         "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-07-30T19:36:06.863Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-30T19:58:25.465Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-repo-drift-and-terms",
@@ -75,7 +75,7 @@
         "node tests/_golden/support/prd-drift-scan.mjs",
         "node loop-kit/bin/term-lint.mjs --registry"
       ],
-      "evidence": "gate@2026-07-30T19:37:40.524Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-30T19:59:57.700Z 全部 acceptance exit 0"
     }
   ]
 }
