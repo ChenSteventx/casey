@@ -3,9 +3,25 @@
   "task": "mcp-parity（light）：MCP 面补齐 record/intake 两工具 + 版本单源 + CLI⊆MCP 覆盖断言 + 三面漂移锁加固。① mcp/casey-server.mjs 的 TOOLS 在 casey_sign 后插 casey_record/casey_intake（inputSchema 逐字对齐 bin/record.mjs、bin/intake.mjs 真旗标；toArgs 只对在场值拼旗标，空参透传 CLI 落真实用法错码，壳里不预判），SERVER_INFO.version 改为从 package.json 读（单一事实源，不再写死字面量）。② package.json version 0.1.0→0.2.0（唯一事实源）。③ tests/_golden/cli-mcp-face.golden.mjs 加严：EXPECT_TOOL_NAMES 12→14 保 deepEq、C6 加 record/intake 全量入参 deepEq、C5 加 record/intake 空参 exit 64、新增 A4 CLI 生命周期命令集（switch 源派生 − EXCLUDED{help,breaker,contract,heal,distill}）⊆ MCP 工具集覆盖断言、A5 版本结构性验等（serverInfo.version===package.json.version）、A6 MCP 层 intake happy 全管道（真 record --from-events 接缝产 capture → 经协议 casey_intake → 台账 accepted）。④ SKILL.md 命令映射表 sign 行后补 record/intake 两行真实签名（立场段不动）。⑤ README.md MCP 挂载段 12→14 工具口径 + 点出 CLI⊆MCP 覆盖断言。不改 bin/casey.mjs 的 CLI 分发（非目标）。决策 docs/plans/mcp-parity/proposed/GRILL.md（D1-D10）。红先行证据：金牌改到 14 工具 + 版本验等后跑，实现前 4 过 / 5 败（C2 版本 0.1.0≠0.2.0 / A4 record·intake 未被 MCP 覆盖 / C5 casey_record 未知工具 / C6 casey_record 不在目录 / A6 casey_intake 未知工具）。",
   "specPath": "docs/plans/mcp-parity/plan.md",
   "testChecksums": {
-    "tests/_golden/cli-mcp-face.golden.mjs": "04899debbb8d92dbb5f729ed212d67cdc30b3dc1a4ed86cbb61ec1b5b774bd43",
+    "tests/_golden/cli-mcp-face.golden.mjs": "39fd97fea207297f521ab4f2061cdab86b9a964faa7966e50f4cebdb6534fbbe",
     "tests/_golden/support/ephemeral-driver-publication.mjs": "eada8b25310d25306d476e3857c9b74fa695f7a6f54af7acf46c9655006b3688"
   },
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-28",
+      "files": [
+        "tests/_golden/cli-mcp-face.golden.mjs"
+      ],
+      "reason": "teachin-replayability-closure 契约的 boundaries 金牌 B4 要求 bin/casey.mjs 对 teachin-cycle 真实分发，而本金牌 A4 的 CLI⊆MCP 覆盖断言会把新 case 派生进覆盖集、C2 又把工具名集钉死为 14 条，双向实测互斥（加 case 则 A4 红，去 case 则 B4 红）。裁决：teachin-cycle 属 developmentOnly 技术闭环，不进用户 MCP 工具面，加入 CLI_MCP_EXCLUDED 排除集（幽灵检查同时强制 switch 真有该 case，与 B4 双向咬合）；14 条工具集与其余断言零变化。修正后金牌 12/12 exit 0，gate 重跑重挣 passes。Steven 2026-07-28 批准修单。"
+    },
+    {
+      "amendedAt": "2026-07-28",
+      "files": [
+        "tests/_golden/cli-mcp-face.golden.mjs"
+      ],
+      "reason": "teachin-plan 与已批准的 teachin-cycle 同属 developmentOnly 示教技术闭环：它要求仓内 agent 编排 capture/testcase/expected/profile 路径与 build digest，不应反向要求自然语言用户经 MCP 填底层参数。A4 首轮真实抓到新 CLI 未分类（11/12）；将 teachin-plan 与 teachin-cycle 成对纳入显式 CLI_MCP_EXCLUDED，幽灵反向检查继续保证两者均有真实 CLI dispatch，14 个正式 MCP 工具集与其余断言零变化。Steven 2026-07-28 已批准本轮评审修复。"
+    }
+  ],
   "observability": [
     {
       "dimension": "真机 MCP 挂载核验（claude mcp add casey 后在 codex/pi 上实调 casey_record 真浏览器示教与 casey_intake 真 capture 入账，确认能挂能用、无凭据/目标地址泄漏，对应审计 R3/R4）。record 浏览器 happy 路径需真机 + 凭据 + 站点，不进 hermetic 金牌；intake happy 由真 record --from-events 接缝产 capture 后 hermetic 跑通（A6）。",
@@ -22,7 +38,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-21T03:37:24.522Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-28T07:25:20Z cli-mcp-face 12/12 + selftest --tier1 exit 0"
     },
     {
       "id": "s2-ripple-record",
@@ -33,7 +49,7 @@
         "node tests/_golden/record-intake.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-21T03:37:34.876Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-28T04:18:40.001Z 全部 acceptance exit 0"
     }
   ]
 }

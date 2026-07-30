@@ -22,7 +22,7 @@
         "node tests/_golden/teachin-semantic-lock-unit-discrimination.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-18T07:39:36.388Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-18T07:52:31.459Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-adjacent-greens-hold",
@@ -34,7 +34,7 @@
         "node tests/_golden/teachin-runtime-nonvacuous-readiness.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-18T07:39:37.550Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-18T07:52:32.734Z 全部 acceptance exit 0"
     }
   ],
   "notes": "冻结面说明：初签以红先行字节入冻（金牌 b410891f、lib 4b370340 为加导出前字节、前瞻基线 4c707ff1 承本契约零触碰）。loop 期按 2026-07-13 工程纪律②原地重签。codex 异构评审判 CHANGES_REQUIRED（High-1 硬门旁路：旧导出面公开 compareCandidate，其 same() 返回 allowAction:true，import 即可在 evaluateEntityAction 的 runtimeAuthorized 硬门外拿到放行）。Steven 2026-07-18 裁「剥离 allowAction 重修」：导出面把 compareCandidate 换成剥壳纯函数 compareCandidateFacts（只出 status/reason/candidateCount、剥掉 allowAction 与 nextAction），allowAction 唯一决定权保留在硬门后的 evaluateEntityAction，生产 compareCandidate/same/evaluateEntityAction/createRunSuccessorProof 行为字节零改动。此轮重修改 lib（40fd8eb0→b7b5a47e）与金牌（b410891f→8440965898：新增剥壳事实『无 allowAction 键』承重断言 + Med-2 parseReceipt 外锚逐字段覆盖 + Med-1 反滥用扩展名全覆盖·多引入形态检测），故两项均重签；前瞻基线 4c707ff1 全程不变。codex 聚焦复审判 High-1 已消解（RESOLVED）、Med-1/Med-2 判 PARTIAL，收尾轮金牌再改（8440965898→0cd3a5ac）：Med-2 查明 bindingMode 与 provenance.kind 确在 canonicalReceipt 覆盖内（非真洞），用正负控制隔离证 receiptHash 联合覆盖二字段（单改撞模式↔provenance 耦合门、非 hash 门）；Med-1 反滥用补拼接形态检测并诚实标注静态边界（穷尽绕过不可能、真 backstop 是导出面不产 allowAction+硬门）。故金牌再重签一次。跨契约共享冻结：loop/prd-semantic-lock-cert-closure.json 冻结 lib 旧 sha（4b370340），本契约改 lib 后其 gate 该项必 MISMATCH，最新 lib sha b7b5a47e 报回主会话合并点原子重签，本契约不改 cert-closure。"

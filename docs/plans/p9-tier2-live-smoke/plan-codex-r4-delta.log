@@ -1,0 +1,177 @@
+Reading additional input from stdin...
+2026-07-29T07:55:06.479697Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when UnexpectedServerResponse("HTTP 403: {\"message\":\"missing csrf token\"}")
+OpenAI Codex v0.144.1
+--------
+workdir: /mnt/d/ctx/heren/casey
+model: gpt-5.6-sol
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 019facde-a223-7413-b409-2757fbb38d93
+--------
+user
+第四轮微型 delta（p9-tier2-live-smoke，read-only，重读 docs/plans/p9-tier2-live-smoke/plan.md v4）。你 r3 剩 Critical 与 H3。处置：Critical→plan §1 第 2 条残留「动态发现」句已删改为只读 manifest 零发现；变更型条目增逐次授权（每次调用显式 --authorize-mutation <caseId>、receipt 记授权来源、缺授权拒跑 exit 2 路），T7 增该限；H3→两段连通改权威口径：Windows→真实目标段由 scripts/win-probe-target.mjs 结构化结果文件承接（路径进 manifest、壳层读形状与新鲜度）+ WSL 回环→隧道段壳层自采，两段独立成功才过 readiness。只复核这两条。输出：第一行 PLAN_APPROVE 或 PLAN_CHANGES_REQUIRED；两条 FIXED/NOT_FIXED+证据；新问题按级；末行 REVIEW_DONE_SENTINEL
+deprecated: `[features].enable_experimental_windows_sandbox` is deprecated. Use `[features].experimental_windows_sandbox` instead.
+Enable it with `--enable experimental_windows_sandbox` or `[features].experimental_windows_sandbox` in config.toml. See https://developers.openai.com/codex/config-basic#feature-flags for details.
+codex
+我会按只读范围重读 `docs/plans/p9-tier2-live-smoke/plan.md` v4，仅核验 r3 的 Critical 与 H3，不扩展到其他既有条目。
+exec
+/bin/bash -lc "sed -n '1,260p' docs/plans/p9-tier2-live-smoke/plan.md" in /mnt/d/ctx/heren/casey
+ succeeded in 0ms:
+# plan — p9-tier2-live-smoke
+
+> 前置：`GRILL.md`（边界事实与 D1-D6 定案）。lane=full。
+> 目标：`casey selftest --tier2` 从桩落成真机冒烟自检（机器面），配套证据结构与
+> 人签口径，使 P9 可按 D6 关账。
+
+## 1. 生产件改动
+
+1. `lib/selftest-tier2.mjs`（新，纯层，零 fs/spawn/net/browser）：
+   - `TIER2_READINESS_IDS`（v3 补全，codex r2 H3）：doctor 就绪级四项 + 隧道监听
+     形状 + **manifest 在场且 checksum 合法** + **带外账户回执标志**（采集接缝=
+     壳层读取 Steven 当日确认的回执文件形状，路径进 manifest）+ **两段真实连通
+     证据**（隧道回环 HTTP 探针 + 登录引导可达探针的结构化结果，壳层采集、
+     纯层判定）；
+   - `judgeTier2RunEvidence(projection)`：吃单 run 产物投影（verdict/axes/report-model
+     的形状字段，非全文），出逐项判定——四态账 well-formed、catch-all 语义未被
+     旁路（fail-safe 不变量）、网络取证按发起方归因结构在场、生命周期取证在场、
+     凭据兜底扫描零命中标志、含流式断言时其硬断言已被裁、退出码归一图例合法；
+   - `runTier2(env)` 聚合：readiness 任一红→exit 2；证据判定任一红→exit 1；
+     全绿→exit 0（附「机器面绿≠完成」尾行文案常量）。
+2. `bin/casey.mjs`：`--tier2` 桩（:313）替换为壳层——doctor 采集复用、**用例集
+   只读 manifest**（读 `cases/tier2-suite.manifest.json`、逐例核 artifact hash，
+   **零动态发现**；v3 消除与 D2 的残留矛盾）、逐例 spawn 生产 `runPipeline`
+   同链、run 产物投影提取、调纯层、按纯层退出码退出。**变更型条目逐次授权**：
+   manifest 标 `effect: mutation` 的条目还须本次调用显式
+   `--authorize-mutation <caseId>`（每 run 一授权，不留常开口子），receipt 记录
+   授权来源；缺授权 → 该例拒跑、exit 2 路。凭据纪律同 doctor（输出零凭据
+   零真实地址，run 目录固定 `runs/<caseId>/run_tier2_<时间戳>`）。
+   两段连通证据（v3 按 runbook 权威口径）：①Windows→真实目标段（由
+   `scripts/win-probe-target.mjs` 产出的结构化结果文件，路径进 manifest、
+   壳层只读形状与新鲜度）；②WSL 回环→隧道段（壳层自采）。两段独立成功
+   才过 readiness。
+3. run receipt 生产写入者（v3，codex r2 H2）：壳层每例落
+   `runs/<caseId>/run_tier2_*/tier2-receipt.json`，稳定失败子类枚举
+   `{pipeline_complete_with_verdict, stage_failed, timeout, partial_artifacts,
+   systemic_abort}`；系统性故障（凭据/登录/隧道类，按 replay 前置闸具名拒付码
+   白名单判别）→ `systemic_abort` 并**停全集**；`runPipeline` 本体不改（exit 1
+   语义由 receipt 层分流，产物齐全+verdict.json 合法四态即
+   `pipeline_complete_with_verdict`）。
+4. suite manifest（v3，codex r2 Critical）：`cases/tier2-suite.manifest.json`
+   人签 + 冻入本契约 prd checksum（GRILL D2 v3 形制）。
+5. `docs/plans/bootstrap/plan.md` P9 段 + `CONTEXT.md:156-157` 两层旧定义 +
+   README/help 文字修订（GRILL D5 v2 三层：管线义务 waiver 明记、四态分类证据=
+   `p2-verdict` 金牌、**徽章渲染证据=`p7-report` 金牌**（v3 纠正：不是
+   verdict-cases）；Steven 签）。
+
+明确不动：gate 分层（冻结令）、MCP 面（D9 + 冻结映射）、`verdict.mjs`/replay
+生产库、loop-kit。
+
+## 2. 金牌（红先行）
+
+新金牌 `tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs`（零 SUT，纯层直调
++ 壳层 spawn 稳定面）：
+- T1 readiness fail-closed（v2 确定性化，codex r1 H3）：**合成坏前置**（空用例
+  suite/凭据形状缺/带外回执标志缺/连通证据缺）→ exit 2 且**断言 run 子进程
+  从未启动**——不依赖环境恰好无隧道；前置清单=GRILL D4 v2 显式六项；
+- T2 证据判定各项红绿翻转（合成投影夹具逐项击穿：四态账畸形、取证结构缺席、
+  流式断言未裁、凭据扫描命中 → 各自红；全备 → 绿）；
+- T2b run receipt 归类钉（codex r1 H2）：`pipeline_complete_with_verdict`（产物齐+
+  合法 SUT_DEFECT/NEEDS_HUMAN）不判机器红；`stage_failed`、超时、半产物各自红；
+  系统性故障（凭据/登录/隧道类）触发**停全集**语义；
+- T2c 流式覆盖非空钉（codex r1 H1）：合格流式件（硬 `streamReplyReceived`、
+  `soft:false`、expected↔axes 按 `intentId/stepId/kind` 唯一 join、`ok` 布尔）
+  缺席 → exit 2 不得绿；在场 → 必真裁；
+- T3 fail-safe 不变量：catch-all 被旁路的合成投影（如出现第五态/未知终态标签）
+  必红；
+- T4 壳层用法面（v2 扩，codex r1 M6）：tier-2 严格解析器——重复 `--case` 收数组
+  且钉顺序、缺值/重复 case/危险 caseId/未知参数/`--tier1 --tier2` 并出/非回环
+  `--sut` 全拒 64；`--help` 含 tier2 可用描述；
+- T4b 凭据扫描时序钉（codex r1 M7）：原始字节（含子进程 stdout/stderr）先扫→
+  投影→证据落盘前再扫；白名单外嵌套敏感值/畸形 JSON/目标地址形态命中 →
+  **零证据落盘**；
+- T5 「机器面绿≠完成」尾行常量在 exit 0 路径必然输出（纯层常量+壳层透传双钉）；
+- T6 tier1 无回归：`selftest --tier1` 仍 exit 0（横切锚点，与既有金牌同式）；
+- T7 manifest 强制钉（v3/v4，codex r2 Critical）：非 manifest 成员 `--case` 拒 64；
+  manifest checksum 失配拒 exit 2；变更型条目无 smoke 授权标志拒 exit 2；
+  **变更型条目缺本次 `--authorize-mutation` 逐次授权 → 拒跑（exit 2 路）且
+  receipt 记录**；`--case` 数量超上限（manifest 声明）拒 64；
+- T8 裁判通道运行时冒烟钉（v3，codex r2 High）：冻结三轴反例集真调现役
+  `verdict.mjs` 二进制，SUT_DEFECT 两到达口/错步归因/catch-all 四态产出精确；
+  历史真机先例引用带产物 hash 绑定。
+
+预期红绿：T1-T5（含 b/c 限）修前红（桩 exit 3）；T6 修前绿修后仍绿。
+doctor 结构化采集复用重构（探针导出化、行为零变化）随实现落，`doctor` 金牌
+复跑作零回归钉。
+
+复跑矩阵（护栏 #19）：`cli-mcp-face`（selftest 映射面）、`doctor`、
+`record-distill`（C7 tier1 锚）、`ingest-scaffold`（C8 tier1 锚）、
+`replay-nth-visible-hardening`（C5 tier1 锚）、`model-lane-guard`、
+上两契约新金牌 + 全仓漂移扫。
+
+## 3. prd 与验收
+
+`loop/prd-p9-tier2-live-smoke.json`：s1=新金牌红→绿；s2=邻接复跑；
+s3=漂移扫+term-lint。gate 独写 `passes`。
+
+验收点（全按退出码；「契约完成」与「P9 需求完成」两层分离，GRILL D6 v2）：
+- A1 新金牌翻绿；A2 邻接零回归；A3 零漂移；
+- A4（真机、route:human）：`selftest --tier2 --sut <回环>` 对现役已签用例集
+  真机实跑 exit 0 + 证据落盘（含流式合格件在集，否则 exit 2 如实记）；
+- A5（人签，P9 层）：D5 三层口径修订 Steven 明签（含 CONTEXT/bootstrap/README
+  同步）+ UAT 签认书（仿 uat-signoff.md 形制：签认人/run/产物 hash/逐项结论，
+  冻入 prd checksum）——P9 关账须清单全过或逐项明确 waiver，open 项保持 P9 open。
+
+## 4. 评审与分工
+
+计划审 codex sol xhigh；实现 opus（worktree，护栏 #18：与主树 nav 契约并行）；
+实现后 codex+grok 联审；账落 `loop/audit.jsonl`。
+
+## 5. 风险清单（给评审）
+
+- R1 「已签+准入可过」的用例集发现逻辑若误把未签件收进来=纪律事故——纯层判定
+  须复用签署验证的生产判据，金牌钉未签件被拒；
+- R2（v3 修正，codex r2 H2）：失败归类三分——业务性非 PASS（receipt=
+  `pipeline_complete_with_verdict`）不判机器红、继续余例；单例工装红
+  （`stage_failed`/`timeout`/`partial_artifacts`）记红继续余例；**系统性故障
+  （凭据/登录/隧道）`systemic_abort` 立即停全集**——绝不对着断链环境轰剩余用例；
+- R3 run 产物投影提取只读字段白名单，防把凭据面字节带进证据文件；
+- R4 P9 口径修订是文档承重改动（bootstrap plan 是必读件），须 Steven 明签不代签。
+
+codex
+初读已定位到两处修订。现在我在做交叉一致性检查：重点看同一计划其他段落是否仍保留旧的连通口径，以及 T7 是否真正把逐次授权约束钉进验收。
+exec
+/bin/bash -lc "nl -ba docs/plans/p9-tier2-live-smoke/plan.md | sed -n '1,145p'
+rg -n \"动态发现|发现逻辑|authorize-mutation|授权来源|两段真实连通|win-probe-target|登录引导可达|形状与新鲜度|独立成功\" docs/plans/p9-tier2-live-smoke/plan.md" in /mnt/d/ctx/heren/casey
+ succeeded in 175ms:
+12:     壳层读取 Steven 当日确认的回执文件形状，路径进 manifest）+ **两段真实连通
+13:     证据**（隧道回环 HTTP 探针 + 登录引导可达探针的结构化结果，壳层采集、
+23:   **零动态发现**；v3 消除与 D2 的残留矛盾）、逐例 spawn 生产 `runPipeline`
+26:   `--authorize-mutation <caseId>`（每 run 一授权，不留常开口子），receipt 记录
+27:   授权来源；缺授权 → 该例拒跑、exit 2 路。凭据纪律同 doctor（输出零凭据
+30:   `scripts/win-probe-target.mjs` 产出的结构化结果文件，路径进 manifest、
+31:   壳层只读形状与新鲜度）；②WSL 回环→隧道段（壳层自采）。两段独立成功
+77:  **变更型条目缺本次 `--authorize-mutation` 逐次授权 → 拒跑（exit 2 路）且
+112:- R1 「已签+准入可过」的用例集发现逻辑若误把未签件收进来=纪律事故——纯层判定
+
+codex
+PLAN_CHANGES_REQUIRED
+
+- Critical — FIXED：§1 第 2 条已明确只读 manifest、逐例核 hash、零动态发现；变更型条目要求每次显式 `--authorize-mutation <caseId>`，receipt 记录授权来源，缺授权拒跑走 exit 2。T7 也覆盖缺逐次授权的拒跑与 receipt 记录。[plan.md](/mnt/d/ctx/heren/casey/docs/plans/p9-tier2-live-smoke/plan.md:21)
+- H3 — NOT_FIXED：§1 第 2 条已采用正确的两段权威口径，但 `TIER2_READINESS_IDS` 仍写成旧口径“隧道回环 HTTP 探针 + 登录引导可达探针”，没有明确 Windows 结构化结果文件、manifest 路径、形状与新鲜度以及两段独立成功条件，形成内部不一致。[plan.md](/mnt/d/ctx/heren/casey/docs/plans/p9-tier2-live-smoke/plan.md:9) 应将此处同步为第 29–32 行的完整权威口径。
+
+新问题：无。
+
+REVIEW_DONE_SENTINEL
+tokens used
+28,876
+PLAN_CHANGES_REQUIRED
+
+- Critical — FIXED：§1 第 2 条已明确只读 manifest、逐例核 hash、零动态发现；变更型条目要求每次显式 `--authorize-mutation <caseId>`，receipt 记录授权来源，缺授权拒跑走 exit 2。T7 也覆盖缺逐次授权的拒跑与 receipt 记录。[plan.md](/mnt/d/ctx/heren/casey/docs/plans/p9-tier2-live-smoke/plan.md:21)
+- H3 — NOT_FIXED：§1 第 2 条已采用正确的两段权威口径，但 `TIER2_READINESS_IDS` 仍写成旧口径“隧道回环 HTTP 探针 + 登录引导可达探针”，没有明确 Windows 结构化结果文件、manifest 路径、形状与新鲜度以及两段独立成功条件，形成内部不一致。[plan.md](/mnt/d/ctx/heren/casey/docs/plans/p9-tier2-live-smoke/plan.md:9) 应将此处同步为第 29–32 行的完整权威口径。
+
+新问题：无。
+
+REVIEW_DONE_SENTINEL

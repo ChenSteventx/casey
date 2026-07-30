@@ -4,8 +4,17 @@
   "specPath": "docs/plans/chiefcomplaint-smoke/plan.md",
   "testChecksums": {
     "tests/_golden/chiefcomplaint-smoke.golden.mjs": "0a014f1ac56b12b8fca4e5cc81a1aa77ba725a8cb61755bd72d0042195ba7f4f",
-    "tests/fixtures/chat-sut/server.mjs": "7262aac8f26724c21ba3471e1ed4fbf68abe3a150c42d09fc529caa8e84eca6a"
+    "tests/fixtures/chat-sut/server.mjs": "959e18c5dd28f35b38e3cf3f2acf350db7906c554ba700a1a4c0a96bd90cbf6e"
   },
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-28",
+      "files": [
+        "tests/fixtures/chat-sut/server.mjs"
+      ],
+      "reason": "共享夹具由 agent-id-readback 契约在 b920b4f 收口时改动并在其 PRD 重冻，本账未随之同步成跨 PRD 不一致（2026-07-28 全仓漂移普查逮出，Steven 批准同步）。本笔只同步 checksum 至现役已提交字节；s1/s2 的 passes 证据仍为历史 gate——夹具 SUT 属 agent 会话禁启面，不在会话内重跑重挣，重挣证据 route:human。"
+    }
+  ],
   "observability": [
     {
       "dimension": "真机四停站（route:human，需 Steven 在场）：① flow 草稿 confirm（真机闸段过目）→ ② casey compile --execute 真机跑（隧道 + 登录预备动作，keydown 垫按钮真 enable 验证）→ ③ casey draft 草拟 + Steven 人签冻结 expected（负向映射 textHidden 终抉）→ ④ casey run 真机报告过目。人不在场只挂账绝不代签。",

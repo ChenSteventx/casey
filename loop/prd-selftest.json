@@ -10,7 +10,7 @@
         "node -e \"process.exit(0)\""
       ],
       "passes": true,
-      "evidence": "gate@2026-06-25T10:59:32.568Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-10T05:49:45.961Z 全部 acceptance exit 0"
     }
   ],
   "testChecksums": {}

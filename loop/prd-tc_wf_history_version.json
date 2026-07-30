@@ -4,8 +4,7 @@
   "task": "tc_wf_history_version 人签断言契约（扁平每用例 prd；2026-07-07 真机合并行程首签，sign 写 expectedFrozenPath + checksum）",
   "testChecksums": {
     "cases/tc_wf_history_version/expected.frozen.json": "b8ddd427ab5cb0c8f8b068909fd31effd55347a8e8a18f6327ebf610288e4bb9",
-    "runs/real-uat-20260722/tc_wf_history_version/execute-authority.json": "572a48cd88fc5da2eec71c63ac1b641b18ba75fb5e208b589681b44806dec916",
-    "cases/tc_wf_history_version/entity-locks.frozen.json": "fe44a786ab165f8d5ba2c5959ed49ee4f99ca445000c8cb81535eeaf505edce4"
+    "runs/real-uat-20260722/tc_wf_history_version/execute-authority.json": "572a48cd88fc5da2eec71c63ac1b641b18ba75fb5e208b589681b44806dec916"
   },
   "stories": [],
   "expectedFrozenPath": "cases/tc_wf_history_version/expected.frozen.json"

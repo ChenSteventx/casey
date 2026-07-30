@@ -83,7 +83,9 @@ const LIFECYCLE_EMPTY_EXIT = {
 // promptset-seed/promptset-freeze 是被测参数 authoring 一次性工序（gen-prompts 契约，GRILL D6）：驱动者是仓内
 // 有 shell 的 coding agent（当前会话本身），非跑测试操作面，镜像 scaffold-case「CLI 外 LLM」范式的既有取舍；
 // 后续易用性契约若真机需求起来可补 casey_* 工具并移出（同 distill 挂账法）。
-const CLI_MCP_EXCLUDED = new Set(['help', 'breaker', 'contract', 'heal', 'distill', 'scaffold-case', 'demo', 'doctor', 'mcp-config', 'promptset-seed', 'promptset-freeze']);
+// teachin-plan/teachin-cycle 是同一 developmentOnly 技术闭环的内部两段，不要求用户经 MCP
+// 提交底层路径与 digest；自然语言操作面由 agent 在仓内编排，正式能力成熟后再成对升 MCP。
+const CLI_MCP_EXCLUDED = new Set(['help', 'breaker', 'contract', 'heal', 'distill', 'scaffold-case', 'demo', 'doctor', 'mcp-config', 'promptset-seed', 'promptset-freeze', 'teachin-plan', 'teachin-cycle']);
 
 // ---------- C1 CLI 三分发真跑非桩 ----------
 await checkAsync('C1 CLI：replay/verdict/report 零参走真 bin 用法错非桩 exit 3；heal 仍真桩 exit 3', async () => {

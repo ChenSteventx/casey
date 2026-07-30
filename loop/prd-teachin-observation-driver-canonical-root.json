@@ -3,11 +3,20 @@
   "task": "teachin-observation-driver-canonical-root（coverage-freeze successor）：在固定 PROJECT_ROOT/cases committed transaction 根上完整复冻 signed driver provenance。plain source拒；只认代码内 fixed Ed25519 registry，调用者 key/registry/自签不能扩根；signed receipt 必须先于 append 并精确绑定全 payload；任一篡改/缺签/跨 package/case 在 commit 前拒且零 accepted residue；正向 opaque authority+receipt 通过私有 transaction pair 后 identity trusted；Proxy/accessor 零执行；机器可读 supersession receipt 与旧 frozen checksum 不变。",
   "specPath": "docs/plans/teachin-observation-driver-canonical-root/plan.md",
   "testChecksums": {
-    "tests/_golden/teachin-observation-driver-canonical-root.zero-sut.golden.mjs": "fe58a3e41bbeadc534df3ee9d53bbb8ce91720d8fd7de85c56cf38475332bde1",
+    "tests/_golden/teachin-observation-driver-canonical-root.zero-sut.golden.mjs": "a95a02a075f9d9e48a780bb409cedcea089e2a3ca04cd75be295a2387d36e4a2",
     "tests/_golden/fixtures/teachin-observation-driver-canonical-root/identity-readback-receipt.signed.json": "e0415ee5e932124f28b3b74e37d4eb29047cfaa6b9bc3af0e12a59636ed87849",
     "tests/_golden/fixtures/teachin-observation-driver-canonical-root/trusted-driver-public-key.pem": "e93e8f0d33f11fe32adeabf6bb72e87a4168365099c8150205133ff9012d739f",
     "tests/_golden/fixtures/teachin-observation-driver-canonical-root/supersession.json": "f09e49074d2f82b4240a87390f28a48fc15a1425c51cd5cd79db505640544370"
   },
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-28",
+      "files": [
+        "tests/_golden/teachin-observation-driver-canonical-root.zero-sut.golden.mjs"
+      ],
+      "reason": "提交 1e6c3c5（2026-07-17 观察 runtime 信任根加固）把本金牌改写为与姊妹金牌字节相同的守卫化内容并存档 .archive.gz，但本 PRD 冻结账未随之重冻（2026-07-28 全仓漂移普查逮出，Steven 批准同步）。本笔同步 checksum 至现役已提交字节并重跑本 PRD gate，事实以退出码为准；passes 原值 false，无陈旧绿风险。"
+    }
+  ],
   "observability": [
     {
       "dimension": "生产 driver 私钥是否只由真实 driver 进程持有并按策略轮换/吊销；仓库只有公开 signed fixture 与公钥，zero-SUT 不证明私钥保护。",

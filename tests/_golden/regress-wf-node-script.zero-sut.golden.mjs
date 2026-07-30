@@ -95,14 +95,17 @@ await check('C6 inputReadback 精确相等才通过', () => {
 });
 
 await check('C7 回放接线取代表事件动作轴，不另猜 DOM', () => {
-  // e1f5201 把三轴投影抽成生产纯函数 lib/replay-axes.mjs：回读证据仍在 bin/replay.mjs 构建
-  // （intentInputReadback.set(... inputReadbackFromAction(...))）并经 projectReplayAxes 交给
-  // replay-axes 消费喂 evaluateAssertions。断言随接线真实所在刷新、强度不减：验壳内提取+构建+交接，
-  // 再验 replay-axes 确以同一物理字段回读喂断言（原「消费点」grep 随之定位到 replay-axes）。
-  const source = readFileSync(join(ROOT, 'bin', 'replay.mjs'), 'utf8');
-  if (!source.includes('inputReadbackFromAction')) throw new Error('replay 未接动作轴回读提取器');
-  if (!/intentInputReadback\.set\(/u.test(source)) throw new Error('replay 未构建 intentInputReadback 回读证据');
-  if (!/intentInputReadback,/u.test(source)) throw new Error('replay 未把 intentInputReadback 交给 projectReplayAxes');
+  // e1f5201 把三轴投影抽成生产纯函数 lib/replay-axes.mjs；6f91125 又把逐事件执行与回读证据构建
+  // 从 bin/replay.mjs 抽成生产模块 lib/replay/event-runner.mjs（intentInputReadback.set(...
+  // inputReadbackFromAction(...)) 随之搬家）。断言随接线真实所在刷新、强度不减反增：
+  // 验 event-runner 内提取+构建+交接，另增入口连续性断言（bin/replay.mjs 必须真接
+  // event-runner 的 runReplayEvents），防壳内接线成孤岛；replay-axes 消费断言原样保留。
+  const source = readFileSync(join(ROOT, 'lib', 'replay', 'event-runner.mjs'), 'utf8');
+  if (!source.includes('inputReadbackFromAction')) throw new Error('event-runner 未接动作轴回读提取器');
+  if (!/intentInputReadback\.set\(/u.test(source)) throw new Error('event-runner 未构建 intentInputReadback 回读证据');
+  if (!/intentInputReadback,/u.test(source)) throw new Error('event-runner 未把 intentInputReadback 交给 projectReplayAxes');
+  const entrySource = readFileSync(join(ROOT, 'bin', 'replay.mjs'), 'utf8');
+  if (!entrySource.includes("from '../lib/replay/event-runner.mjs'") || !/\brunReplayEvents\s*\(/u.test(entrySource)) throw new Error('replay 入口未真接 event-runner');
   const axesSource = readFileSync(join(ROOT, 'lib', 'replay-axes.mjs'), 'utf8');
   if (!axesSource.includes('inputReadback: intentInputReadback.get(iid)')) throw new Error('replay-axes 的 evaluateAssertions 未接 intentInputReadback');
   const actionSource = readFileSync(join(ROOT, 'lib', 'replay-actions.mjs'), 'utf8');

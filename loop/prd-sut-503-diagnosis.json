@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "task": "sut-503-diagnosis（direct）：用最小真机差分收窄骨架智能体详情页双 503 的触发条件，铸造自包含缺陷上报包，并以高价值替代解释反证误报；不改生产实现或冻结断言。",
+  "specPath": "docs/plans/sut-503-diagnosis/plan.md",
+  "testChecksums": {
+    "docs/plans/sut-503-diagnosis/verify-package.mjs": "532f39b0f4ed2f7025ae0adc61326450bb35c032b761c33ffe8ceec924b1d112"
+  },
+  "observability": [
+    {
+      "dimension": "服务端最终根因与修复方案由研发结合服务日志确认；本契约只交触发条件、客户端取证和最小复现。",
+      "route": "human"
+    },
+    {
+      "dimension": "新真机探针用于因果收窄，不自行改写四态；SUT_DEFECT 只引用确定性 verdict.json 与其取证链。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-diagnosis-package",
+      "desc": "诊断包闭环：历史基线、真机差分、缺陷报告、对抗性反证与清理证据齐全且统一语言检查通过。",
+      "lane": "implementation",
+      "acceptance": [
+        "node docs/plans/sut-503-diagnosis/verify-package.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-27T01:39:10.158Z 全部 acceptance exit 0"
+    }
+  ]
+}

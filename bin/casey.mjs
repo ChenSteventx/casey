@@ -255,8 +255,12 @@ ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅�
                                           相2 断言草拟：骨架+补缝合并+闸 → expected.draft（未签）
   casey sign    <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--events <f> --entity-bindings-draft <f> --entity-confirmations <f> --entity-locks-out <f> --audience <test|production>] [--signed-at <iso> --verdict-baseline <f> --resign --force --archive-dir <d>]
                                           相2 人签门：草稿→冻结签署（未签契约会被回放前置闸拒）
-  casey record  <caseId> --sut <本地基址> --out-dir <d> (--login-bootstrap|--no-login) [--from-events <f> --headless --max-ms <ms>]
+  casey record  <caseId> --sut <本地基址> --out-dir <d> (--login-bootstrap|--no-login) [--from-events <f>] [--cycle-plan <f> | --testcase <f> --expected <f> --entity-lock <f> --profile <f> --sut-build-digest <sha256:...>] [--headless --max-ms <ms>]
                                           示教采集：人工操作→teach-in-capture.json（只作蒸馏语料，不签署、不直通回放）
+  casey teachin-plan <caseId> --capture <f> --testcase <f> --expected <f> --entity-lock <f> --profile <f> --sut-build-digest <sha256:...> --out <f>
+                                          capture 后生成 known-recipe read-only 闭环计划；pending/popup/entity 明确转人工
+  casey teachin-cycle <caseId> --sut <本地基址> --out-dir <d> --testcase <f> --expected <f> --entity-lock <f> --profile <f> --sut-build-digest <sha256:...> [--headless --max-ms <ms>]
+                                          同次人工录制→原始 fresh 回放→atom 编译→第二 fresh 回放→确定性语义等价；--cycle-plan 仅作兼容模板（开发期候选）
   casey promptset-seed --agent-name <被测 agent 中文名> [--embedded <f>] [--n <条数，默认 6>] --out <f.md>
                                           被测参数 authoring：零 LLM 出合成种子模板（生成指引+格式说明）；合成在 CLI 外（当前会话）完成，本命令零 LLM 零网络
   casey promptset-freeze --candidates <候选 JSON> --promptset <promptset.json> [--dry-run]
@@ -321,6 +325,8 @@ function main() {
     case 'flow-bridge': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'flow-bridge.mjs'), rest); process.exit(r.code); }
     case 'sign': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'sign.mjs'), rest); process.exit(r.code); }
     case 'record': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'record.mjs'), rest); process.exit(r.code); }
+    case 'teachin-plan': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'teachin-plan.mjs'), rest); process.exit(r.code); }
+    case 'teachin-cycle': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'teachin-cycle.mjs'), rest); process.exit(r.code); }
     // 被测参数 authoring（gen-prompts 契约，regress scope C 改形态）：合成在 CLI 外（当前会话）完成，
     // 这两个命令只做零 LLM 确定性工作——出合成种子模板 / 校验候选 + 幂等冻结；绝不进回放/裁定进程。
     case 'promptset-seed': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'promptset-seed.mjs'), rest); process.exit(r.code); }
@@ -333,7 +339,10 @@ function main() {
     // 此前为桩而底层 bin 早已建成、run 编排内部直连在用——cli-mcp-face 契约接通门面）。
     case 'replay': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'replay.mjs'), rest); process.exit(r.code); }
     case 'verdict': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'verdict.mjs'), rest); process.exit(r.code); }
-    case 'heal':    return notImplemented('相5 heal 自愈', 'P6 自愈准入门 + 非就地有界自愈', '仅对确证 HARNESS_ERROR：重锚 → 写 drift 补丁旁文件（原 spec 不变）→ 人签后应用 → 重跑。');
+    // 相5 自愈（P6）：门面直通 bin/heal.mjs（同 replay/verdict/report 五先例，参数契约归该 bin 自管）。
+    // 本波落地提案主链（准入门 + 确定性重锚 + 补丁与证据元组台账）；--apply/--promote/--reverify
+    // 三模式与零参调用仍诚实落 exit 3（该 bin 内自陈未实现，不在门面里假装）。
+    case 'heal': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'heal.mjs'), rest); process.exit(r.code); }
     case 'report': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'report.mjs'), rest); process.exit(r.code); }
     // run --promptset（regress-promptset）：数据驱动被测参数直通编排器 bin/promptset.mjs（一条冻结 flow 跑 N 行 + 聚合）。
     case 'run':

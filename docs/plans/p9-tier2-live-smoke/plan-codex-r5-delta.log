@@ -1,0 +1,480 @@
+Reading additional input from stdin...
+2026-07-29T07:57:55.524689Z ERROR rmcp::transport::worker: worker quit with fatal: Transport channel closed, when UnexpectedServerResponse("HTTP 403: {\"message\":\"missing csrf token\"}")
+OpenAI Codex v0.144.1
+--------
+workdir: /mnt/d/ctx/heren/casey
+model: gpt-5.6-sol
+provider: openai
+approval: never
+sandbox: read-only
+reasoning effort: xhigh
+reasoning summaries: none
+session id: 019face1-2e4a-7c83-bf7f-3795cceb8653
+--------
+user
+第五轮微型 delta（p9-tier2-live-smoke，read-only）。你 r4 只剩 H3 的内部一致性：TIER2_READINESS_IDS 措辞未同步两段权威口径。处置：plan.md §1 第 1 条已改为与第 2 条同口径（Windows→真实目标段=win-probe-target 结构化结果文件路径进 manifest+纯层判形状新鲜度；WSL 回环→隧道段壳层自采；两段独立成功、任一缺席/过期/失败 exit 2）。只复核这一条。输出：第一行 PLAN_APPROVE 或 PLAN_CHANGES_REQUIRED；FIXED/NOT_FIXED+证据；末行 REVIEW_DONE_SENTINEL
+deprecated: `[features].enable_experimental_windows_sandbox` is deprecated. Use `[features].experimental_windows_sandbox` instead.
+Enable it with `--enable experimental_windows_sandbox` or `[features].experimental_windows_sandbox` in config.toml. See https://developers.openai.com/codex/config-basic#feature-flags for details.
+codex
+我只复核 H3：定位 `plan.md` §1 第 1 条及 `TIER2_READINESS_IDS` 的两段权威口径，核对措辞是否已完全同步；不扩展到其他问题，也不改文件。
+exec
+/bin/bash -lc 'rg -n -C 5 "TIER2_READINESS_IDS|win-probe-target|Windows.*真实目标|WSL.*回环|隧道段壳层自采|独立成功|exit 2" plan.md CLAUDE.md CONTEXT.md docs/HANDOFF.md loop/GUARDRAILS.md .claude/skills/casey/SKILL.md README.md docs/adr 2>/dev/null' in /mnt/d/ctx/heren/casey
+ exited 2 in 311ms:
+README.md-35-2. **hermetic 回放就绪**（验 npm install + chromium）：`node tests/_golden/e2e-chain.golden.mjs`
+README.md-36-   ——十站全链集成金牌（文本→报告，约 35 秒），8/8 过即本机可跑全部 hermetic 面。
+README.md-37-   看样例报告：`node bin/casey.mjs demo`——零真机零凭据出一份自包含 `PASS` 报告（含裁定徽章），落
+README.md-38-   `runs/sample-wf-publish/`；与上一级 `selftest --tier1` 的区别：demo 需 chromium、不是零依赖，
+README.md-39-   不冒充「零依赖一句话出报告」。
+README.md:40:3. **真机连通**（需凭据与隧道，见下两节）：`node scripts/win-probe-target.mjs`（Windows 侧）
+README.md-41-   只回显状态码不回显目标地址。
+README.md-42-
+README.md-43-## 凭据面（格式说明——真值一律带外交付，绝不入库/提交/回显）
+README.md-44-
+README.md-45-两件均已 gitignored，新环境须自建；本节只写字段形状，不含任何真值：
+--
+docs/HANDOFF.md-263-   同样双 `200`，页面失败提示为 0。截至 2026-07-27 当前环境不可复现。
+docs/HANDOFF.md-264-3. 强假设“标准表单新建骨架智能体首次打开稳定双 `503`”已被当前双 `200` 证伪；最窄事实是
+docs/HANDOFF.md-265-   “7 月 23 日两个实例在当时流程下真实复现”。候选根因收敛到短时服务事故、初始化时序，
+docs/HANDOFF.md-266-   或未隔离的配置/构建差异，客户端无法唯一裁定。
+docs/HANDOFF.md-267-4. 本轮 r1/r2 在确认创建前因诊断探针定位门中止，目标响应与详情打开均为 0，不计 SUT 样本。
+docs/HANDOFF.md:268:   r3 exit 2 来自双 `200` 取证后的后置证据门，不倒写 HTTP 事实，也不产生新四态。
+docs/HANDOFF.md-269-5. 本轮唯一测试件按精确名称从 1 清到 0；第二候选未创建、保持 0。编码面因卡片副标题假设错误
+docs/HANDOFF.md-270-   未独立证明，诚实保留未决，不扩实验。
+docs/HANDOFF.md-271-
+docs/HANDOFF.md-272-交付：
+docs/HANDOFF.md-273-
+--
+docs/HANDOFF.md-310-
+docs/HANDOFF.md-311-真实环境与 Playwright 事实（不是夹具）：
+docs/HANDOFF.md-312-
+docs/HANDOFF.md-313-- Steven 已带外确认当前 `.auth` 为批准的测试账户；`casey doctor` exit 0，Node、Playwright、Chromium、
+docs/HANDOFF.md-314-  中文字体、`site.json`、凭据形态与单实例回环隧道均就绪。
+docs/HANDOFF.md:315:- Windows 网络栈与 WSL 回环隧道访问真实 SUT 均为 HTTP 200。
+docs/HANDOFF.md-316-- 只读 smoke 用真实 Chromium 完成登录并进入智能体列表，目标控件可见，5190ms，exit 0。
+docs/HANDOFF.md-317-- 完整 `casey run` 真实回放 `tc_agent_id_readback_real_uat_v1`，产出
+docs/HANDOFF.md-318-  `axes.json`、`verdict.json`、三形态报告、`video.webm`、三张同次抽帧与
+docs/HANDOFF.md-319-  `visual-review.json`。本地留存：
+docs/HANDOFF.md-320-  `runs/tc_agent_id_readback_real_uat_v1/run_c1_candidate_live_20260724_r1/`。
+--
+docs/HANDOFF.md-891-0. `wf-connect-nodes`（full，`efaa41a`）：并发 session（codex 实现）补收口——`workflow.connectNodes` 画布连线原子（`COMPILE_KNOWN_ATOMS` 14→15，复用 `dragTo` 不扩枚举 + `doConnectNodes` 专用回放门按 `ev.atom` 分发 + `.lf-edge` +1 身份回读）+ `addNode` `expectedNodeDelta` 精化（真并行网关开始 +2）+ fake-sut 连线夹具。codex 已把实现/金牌写对、真机验过，但六阶段治理未走：无契约、四棘轮 prd 未重签（golden 改了 checksum 漂移、gate 必红）、无端到端连线金牌。Claude 侧补：契约台账 + 端到端金牌（8 检查填覆盖缺口）+ 四漂移 prd 重签 + 修 codex 两健壮性缝（F1 `nodeBoxByLabel`/`workflowNodeBox` 两处 `waitFor` 未守卫→节点缺席崩整轮回放/无诊断 exit 1；F2 目标缺席无 blocker→加三分支预检替 `ox`/`oy` `:0` 兜底）。评审归属反转：codex 主实现→Claude 侧对抗评审（异构原则实现方≠评审方避同族自评），四主线交叉核验 PASS。画布维度现两原子（addNode + connectNodes），R9 余量 openNode/setNodeField 等续建。
+docs/HANDOFF.md-892-
+docs/HANDOFF.md-893-
+docs/HANDOFF.md-894-1. 真机合并行程首航（`24865f4`，route:human）：`tc_wf_publish_states` 4/4 PASS + `tc_wf_history_version` 8/8 PASS 真机四停站全绿（flow confirm → `compile --execute` 真机 → `casey draft` 人签 → `casey run` 报告过目）；`sign` 真 prd 首航——扁平每用例 prd `loop/prd-tc_<caseId>.json` 两份建成（sign 写 `expectedFrozenPath` + checksum，与金牌契约 prd 分离）；回放诊断栏目 + 录屏 + 中文字体三项过目 OK。`tc_wf_open_smoke` 三件已备（占位符 `<OPEN_NAME_TBD>` 待平台有稳定记录），本次跳过。
+docs/HANDOFF.md-895-2. `wf-add-node`（full，`dbc0d0d`）：画布维度首原子 `workflow.addNode` 建成（`COMPILE_KNOWN_ATOMS` 13→14）+ `dragTo` 动作类入双冻结。真机二号探针定案乙案（面板项单击/双击死刑、`mouse` 三段式拖落 `.lf-node` 实证；`window.lf` 缺席 → `connectNodes` 拓扑取证挂账 SUT）；回放 `dragTo` 专用同刻门（源锁 `.node-item` 域 = 编译门、落点 `ox`/`oy` 必填不缺省）+ profile `countSelector` 计数通道；fake-sut 画布通路纯加法（双守卫拖落，预研 9/9）；例翻 `agent.openToolPicker`（flow-bridge C5/C14/C15 + wf-open-smoke C1）+ 六 prd 十四键重签；设计条款 :135 修订 + CONTEXT 词条同步。codex 两轮 R2 PASS（R1 四发现两 High：落点缺省假绿 / 编译门≠回放门，全采信）。真机四停站挂 prd observability（21 面板项文本漂移 / `lf-node` 族类名 / 拖拽时序 / `window.lf` 图对象口）。
+docs/HANDOFF.md:896:3. `report-exit64`（light，`407b511`）：`report` 用法错历史码 `exit 2→64` 收敛（cli-mcp-face 挂账兑现、消熔断器语义撞车）——单行本体 + cli-mcp-face 金牌四钉位翻 64 + prd 重签 + SKILL.md 真面文字漂移同轮捕获。codex 一轮 R1 PASS。
+docs/HANDOFF.md:897:4. `output-seal`（full，`cc7a3c2`）：全仓输出通道系统封缝（prd-caseid-echo-mask observability 挂账兑现）——审计全筛约 200 处、封 A1-A13/B1-B8/C 类 23 口 + `report.mjs` 穿越面字符集闸 + inbox/candidates 落盘过凭据门 + 3 追加缝（`replay` 裸 `JSON.parse` 收进消毒助手 / `term-guard` 候选门放写前 / 凭据门产物名键改固定标签）；核心手法「定位字段一律改结构性数组下标」（`SAFE_ID` 挡不住字母数字种子——codex 连三条同型实证）；碰裁判内核 `verdict.mjs` 一行输入消毒零动裁定逻辑。27 哨兵金牌每轮 stash 旧面红证；codex 三轮 R1(3)→R2(2)→R3 PASS。顺修 report-exit64 遗漏尾巴（p7-credgate-coverage 也钉 report exit 2→64）+ prd-p7-report 重签。
+docs/HANDOFF.md-898-5. 真机账户禁令（Steven 明令）：真机只许使用带外确认的测试账户，此前账户停用——任何真机动作（登录探针 / `compile --execute` / `casey run --login-bootstrap` / 示教录制）前须 Steven 带外确认 `.auth/credentials.json` 已切到批准账户；未确认只做 hermetic。凭据内容照例不进任何输出/提交/报告。
+docs/HANDOFF.md-899-6. 真机观测现状（只读探针核实）：平台侧栏菜单重组——工作流管理/智能体管理/`AI服务管理` 收进「智能应用」大菜单组（侧栏全景另见 组织权限/知识库管理/能力资产/HiClaw/运营监控/模型中心/平台配置/医疗业务管理）。影响面零杀伤：两条列表路由 `/heren/aimanagement/process/list`、`/agent/list` 直达未变、锚点全活（新增工作流钮/智能体搜索框/「互联网问诊-主诉」均在场），已建原子全走路由导航一击即中（chief-bringup G1 弃菜单点击的决策被反向验证）；唯 `nav.agentManagement` 无路由点击兜底（`.hr-menu :text-is("智能体管理")` 现嵌「智能应用」组内、折叠态或需先展开父级）本就标脆、真机优先配 `routes`，状态不变。「AI服务管理」可作未来维度候选。
+docs/HANDOFF.md-900-
+docs/HANDOFF.md-901-以下为本日早前时段快照（2026-07-07 凌晨，Steven 三问审计 + 点单四契约收口——移交包 / 断言提硬 / 欠账清洗 / 飞轮第五条），只溯源：
+docs/HANDOFF.md-902-
+--
+docs/HANDOFF.md-913-本 session 四契约六提交入 dev（Steven「把剩下的相都跑完」+「先继续做」+「先清目录，然后接着干」+ 三承重决策签核：D3 `source.kind` 必填 / D6 存 raw / D7 只当校验器）：相0 归一（最后一个未建相）建成 → 姊妹 CLI 回显缝收口 → hermetic「文本→报告」全链首次贯通为集成金牌 → CLI/MCP/skill 三面对齐现状。baton 空闲，下一契约直接 `contract init`：
+docs/HANDOFF.md-914-
+docs/HANDOFF.md-915-1. `ingest`（相0 归一，full，`b7c8f61`）：`tests/_golden/schemas/testcase.schema.json` 冻结形态契约（draft-07、additionalProperties:false 处处、必填 schemaVersion/caseId/source.kind/steps/uniquePrefix；`uniquePrefix` `^\S+$` 封「纯空白过 compile 长度闸」缝、`preconditions` 数组形态是唯一守点——下游对非数组静默吞）+ `lib/parse-testcase.mjs`（手写闸与 schema 同刻——金牌 C4 从 schema 文件读必填集/enum 现场构造坏输入锁双源；语义闸 intentId 全局唯一 + caseId 一致；手写 JSON 数据投影器：不调 toJSON、own enumerable data、数组稠密 own、`Object.create(null)` 防 `__proto__` setter——校验对象=落盘对象按构造同一）+ `bin/ingest.mjs`（薄 CLI 镜像 flow-bridge：凭据门前置扫输入原文 exit 1 早于解析/回显/mkdir；输出通道三封——成功日志只回显定名产物、读失败只回显 errno、落盘异常捕获 65）+ `bin/casey.mjs` 接线（桩换 runNode + help 真实旗标 + 顺手补 flow-bridge help 行）。金牌 C1–C22（16 起红先行 14 败/2 过，评审期 +C17..C22 逐轮钉红）。codex 七轮 R7 PASS（12 发现 = 10 采信 + 2 修正采纳；R6 High：`JSON.parse` 建 `__proto__` own 键 + 投影赋值触发原型 setter——必填从原型链满足、落盘成空壳，经 CLI 候选文件端到端可达、红跑 exit 0 实锤）。产物 `testcase-<caseId>.json` 直喂相1，round-trip 金牌证相0→相1→compile gate 三段贯通。learn 六教训落 `docs/plans/ingest/learn.md`。
+docs/HANDOFF.md-916-2. 挂账：① 姊妹 CLI 同族缝**已收口**——`caseid-echo-mask`（direct，`d3a5c11`）六处拒绝分支原值回显封缝（compile:267 / draft:40 / flow-bridge:31 / sign:87,90,91，哨兵三断言金牌红先行 0/6→6/6，codex 一轮 R1 PASS，五涟漪金牌零行为差）；余留全仓输出通道系统审计另立契约（prd-caseid-echo-mask observability）；② caseId 形态接缝张力——testcase `^[A-Za-z0-9_-]+$` 宽于 events `^tc_[a-z0-9_]+$`（记 prd-ingest observability，route:human）；③ `casey run` 编排器仍起于相3，相0–2 前段接线属后续契约（真机 compile bring-up 后才有意义）。
+docs/HANDOFF.md-917-3. `e2e-chain`（light，`365c185`）：hermetic「文本→报告」全链首次贯通——十站集成金牌 `tests/_golden/e2e-chain.golden.mjs`（C1–C8）：候选文本(mock 归一)→ingest→flow-bridge(mock mapping 含 assert.* 原子)→compile gate→confirm 门(手编，p3 金牌先例)→execute(fake-sut + --skip-login + AT_SITE_JSON 合成隔离 + 凭据 env 毒化陷阱)→draft(+patch 补 nav 硬断言防 INDETERMINATE)→sign(CLI 真签面 + 最小 prd 夹具)→casey run→verdict 3 intent 全 PASS→报告三件。bring-up 首跑零集成缝（各相接缝纪律迟到红利）。codex 四轮 R4 PASS（15 发现全打金牌断言强度：11 采信——源头期望集 deepEq 钉死/参数双侧闭环/prd 回写 sha256 实算/cwd:tmp；2 修正采纳——真回放铁证钉 axes 取证轴（保存 POST 按步归因+信封 ok+轮询 null 归因+identityReadback）不改冻结夹具；2 证伪留案指认既有守点）。零 lib/bin 改动。链金牌 ~35s 不入 tier1、gate acceptance 位。
+docs/HANDOFF.md:918:4. `cli-mcp-face`（light，`0d0d779`）：CLI/MCP/skill 三面对齐现状——① `bin/casey.mjs` 的 replay/verdict/report 分发桩换 `runNode` 直通（底层 bin 早已建成、run 编排内部直连在用；镜像五先例；heal 保持真桩）+ help 真实旗标；② `mcp/casey-server.mjs` 工具目录 6→12（新增相0–2 六工具、修 `casey_run` 为真 runPipeline 签名、verdict/report 去「诚实桩」误标）0.1.0→0.2.0、协议/传输零动、`TOOLS` 导出供金牌直测；③ `.claude/skills/casey/SKILL.md` 命令映射表逐行真实旗标 + 进度段改现状（立场段零动）。漂移锁金牌 `cli-mcp-face` C1–C7（工具名集/版本 deepEq、argv 映射表 12 工具全量旗标钉死含 camelCase→kebab 与布尔负形态、MCP 层 ingest happy 全管道真产物、九生命周期工具空参落真用法错码——`report` 用法错历史码 exit 2 如实标注、收敛另案挂账）。codex 两轮 R2 PASS（R1-F1 High 映射未真验→TOOLS 导出 argv 表 deepEq；R1-F2 修正采纳分层锁）。红先行 1过/4败；六涟漪金牌含 e2e-chain 全链复跑零行为差。
+docs/HANDOFF.md-919-5. 端到端诚实交底更新：hermetic 机制面七相全建且首尾成链（集成金牌锁定）、CLI/MCP/skill 三面同真（漂移锁金牌盯防再滞后）；「文本用例→报告」真机端到端仍需一次真机 compile bring-up（ADR-0003）+ 相2 人签在场，全属 route:human（记 prd-e2e-chain observability）；相5 自愈不在链上（happy 链不触发，维持未吃过真场景交底）；`heal` 是 CLI 唯一诚实桩。
+docs/HANDOFF.md-920-
+docs/HANDOFF.md-921-以下为本日早前时段快照（三相补齐：相2 sign + 相1 flow-bridge + 相3 video-login-carry），只溯源（其「相0 归一是唯一剩口/下一 session 地基」已由上条收口）：
+docs/HANDOFF.md-922-
+docs/HANDOFF.md-923-本 session 续三契约三提交入 dev（Steven「三块全建」+ 规范嵌套 TestCase + sign 未签闸硬接 replay 前置闸），把「文本用例→报告」流水线前半段的两处 stub/缺口补成真机制。端到端唯一剩口 = 相0 归一 ingest（下一 session 地基）。baton 空闲，下一契约直接 `contract init`：
+--
+docs/HANDOFF.md-984-
+docs/HANDOFF.md-985-以下为本日早前 session 快照（tier-2 上半场；其「直接下一步/已知缺口」已被顶部条目接管，只溯源）：
+docs/HANDOFF.md-986-
+docs/HANDOFF.md-987-本 session 再续（2026-07-02 傍晚）：P3 tier-2 真机 bring-up 上半场（969ffbb + 第六雷收口一笔入 dev）——六项 route:human 走到半程：
+docs/HANDOFF.md-988-
+docs/HANDOFF.md:989:1. 反向隧道全通：`scripts/wsl-reverse-listen.mjs` 加逐请求 Host 头重写（网关按虚拟主机路由，原 Host 落默认静态块致 API 405）+ keep-alive 状态机整请求单次写出（配合 Windows 代理首包捕获）；环回隔离自测三案（GET / POST 带 body / keep-alive 第二请求）钉绿；僵尸池根因定位——Windows 代理先于 WSL 监听器启动则池不补，重启即愈（启动顺序：先 WSL 后 Windows）；登录页经隧道 HTTP 200 / 38ms 热路径；新增 Windows 侧连通探针 `scripts/win-probe-target.mjs`（只出状态码、目标地址不回显，护栏 #7）。
+docs/HANDOFF.md-990-2. spike（route:human ①）机器侧四向全过：真机登录 1.7s（顺验 login-bootstrap SPA 判据修正）、前台 XHR（queryProcess）按 `initiator` 归因到活动步、无活动步期 56 条流量零违例归 null、错误信封经隧道解析 14/14。录屏曾整片无中文——根因 WSL 零中文字体（headless 无字形可画，DOM/定位/断言不受影响），已装用户级 Noto Sans CJK 修复、登录页截图亲验中文齐；旧录屏作废、待重录人签。
+docs/HANDOFF.md-991-3. `tc_catalog_wf_crud` 三件备齐（`cases/` 下 gitignored）：手写规范 TestCase（意图留痕四 intent）/ 通道剖面 profile.json（背景 denylist 4 条 app-shell 实采 + 信封 successField status/200 + `routes.workflowList`）/ flow 草稿过 compile-gate 闸并人 confirm（Steven，2026-07-02T16:09:22+08:00）。
+docs/HANDOFF.md-992-4. 首跑 `--execute` 撞出真机五雷、fail-closed 诊断报告逐轮收敛后全修（969ffbb）：① 登录入口须 = `--sut` 基址 + site.json startUrl 路径段（裸基址根路径无登录表单，SPA 判据被误读为已登录 fail-open、后续全步 absent）；② `/ai-manager/process/list` 真机是 API 前缀（503）→ 列表路由按通道剖面正名做成 `profile.routes.workflowList` 可选覆盖（缺省 `ROUTE_LIST`、hermetic 行为不变，形状校验 fail-closed）；③ Heren 表单标签是 div 无程序化关联（getByLabel 必 0）→ form__item 容器锚定 fallbackCss（count=1 亲验），描述实名「工作流描述」；④ 分类下拉无 combobox 角色 → 线性化两击（回放 doSelect 只认 combobox；选项限定 `.hr-select__list:visible`——全局同名文本会撞列表页分类 tab 被抽屉遮罩拦点，亲验）；⑤ 抽屉 footer 与删除对话框是 div 按钮（role=button 采样必 0）→ 主按钮锚定 + 实采文本记 compile-report（route:human ⑤⑦ 证据位）。真机分支全部只在角色采样 0 命中时启用；hermetic golden 13/13 + p5/p7 回归锁 + tier1 全绿。
+docs/HANDOFF.md-993-5. site.json 起草的 login 覆盖段真机命中 0（错草稿）已删，回落内置默认（真机逐字吻合）。
+docs/HANDOFF.md-994-6. 二跑 `--execute`（2026-07-02 16:52）撞第六雷、修复已落并补冻：12 步全 `unique` 且 acted（五雷修复全兑现），但删除段计数对账不恒等（表格行=0、删除目标=1）fail-closed 截断——真机列表是卡片布局非表格（`.hr-table-row` 必 0）。修复：对账兼容表格/卡片双布局（`summarizeDeleteCountAudit`/`auditDeleteCount`，卡片按 `.hr-card--bordered` 含目标名计数，证不出仍截断）+ `observed` 的 `requestLog` 只落 pathname 不携 origin（护栏 #7 收紧）；golden 增 C3b 卡片对账 + C4b pathname 断言至 14 检查、checksum 补冻入 prd（护栏 #1 加法，先例同 p5 补冻 b0dcaff）、gate GREEN 2/2 复验、tier1 无回归。**注意真机残留**：二跑 create 段已成、删除被截断 → `atl_c1` 实体残留真机，三跑前先人工清掉或换 `--unique-name c2`。
+--
+.claude/skills/casey/SKILL.md-104-
+.claude/skills/casey/SKILL.md-105-操作说明 + 标注（`LLM` 接口/生命周期取证/网络取证）+ 回放录屏(mp4) + 文本/抓取输出（含 `LLM` 的回答原文 + 截图）+ 每步裁定徽章 + 缺陷单（仅 `SUT_DEFECT`）+ trace + 截图。机读产物 `verdict.json` 是 golden 唯一校验对象。
+.claude/skills/casey/SKILL.md-106-
+.claude/skills/casey/SKILL.md-107-## 执行边界（重要）
+.claude/skills/casey/SKILL.md-108-
+.claude/skills/casey/SKILL.md:109:- **假被测系统只读，所有行为验收只驱真机**（Steven 2026-07-15 定，强制执行）：假被测系统（`fake-sut`）和夹具 `SUT` 只允许读取源码作为迁移参考，任何代理不得启动、连接或回放它们，也不得用 `casey demo` 顶替真机运行。`golden` / `gate` / `selftest --tier1` 仅在可证明不启动、不连接、不回放任何假 `SUT` 时才允许执行；静态检查、schema 检查和不接触 `SUT` 的纯函数检查可执行。所有浏览器/通道行为测试、回放、复跑与验收一律联网驱真实目标，`--sut` 只喂隧道回环基址（`site.json` 的 `devProxyUrl`，形如 `http://127.0.0.1:15519`）；无网络、仅本地监听、代理池未连真站或网络受限时一律不得开始行为验收。前置 = 相位0 三关（`casey doctor` 就绪 / Steven 带外确认 `.auth` = `autotest` / 反向隧道单实例；全流程见 `docs/runbooks/real-uat-runbook.md`；隧道两命令：`WSL` 侧 `node scripts/wsl-reverse-listen.mjs`、`Windows` 侧 `node scripts/win-reverse-agent.mjs`，顺序先 `WSL` 后 `Windows`）；除 `doctor` 外还必须取得 Windows→真站与 `WSL` 回环→真站两段真实 HTTP 成功证据。没有同次真实回放、确定性 `verdict.json`、录屏、视觉复核和独立单用例 HTML，不得声称行为验收完成。
+.claude/skills/casey/SKILL.md-110-- **凭据让用户设**：`.auth/`、`site.json` 是凭据，CC 不把账号密码写进命令行/文件/报告。
+.claude/skills/casey/SKILL.md-111-- **冻结断言只读**：人签后改断言 = Test Ratchet 判红，别去改。
+.claude/skills/casey/SKILL.md-112-- 改实现先 `contract`：动 `lib`/`bin` 前先 `node loop-kit/bin/contract.mjs init <slug> --lane <...> --reason "..."`，否则 hook 拦截。
+.claude/skills/casey/SKILL.md-113-- **真机变更有副作用**：编辑型用例（新建/发布/删除）回放=真实改环境数据，实体必带 Reserved Prefix `atl_`。
+
+exec
+/bin/bash -lc "pwd; rg --files -g 'plan.md' -g 'CLAUDE.md' -g 'CONTEXT.md' -g 'HANDOFF.md' -g 'GUARDRAILS.md' -g 'SKILL.md' | sort; rg -n -C 6 \"TIER2_READINESS_IDS\" . --glob '"'!node_modules/**'"' --glob '"'!runs/**'"' --glob '"'!artifacts/**'"'" in /mnt/d/ctx/heren/casey
+ succeeded in 6183ms:
+CLAUDE.md
+CONTEXT.md
+docs/HANDOFF.md
+docs/codex/HANDOFF.md
+docs/plans/admission-trust-root-separation/plan.md
+docs/plans/agent-id-readback/plan.md
+docs/plans/bootstrap/plan.md
+docs/plans/btn-enable-ops/plan.md
+docs/plans/caseid-echo-mask/plan.md
+docs/plans/casey-demo/plan.md
+docs/plans/casey-doctor/plan.md
+docs/plans/checksum-drift-closure/plan.md
+docs/plans/chief-bringup/plan.md
+docs/plans/chiefcomplaint-smoke/plan.md
+docs/plans/cli-authority-wiring-fill/plan.md
+docs/plans/cli-mcp-face/plan.md
+docs/plans/closed-loop-evolution/plan.md
+docs/plans/compile-caseid-shape/plan.md
+docs/plans/cred-route-mask/plan.md
+docs/plans/cross-platform-execution-target/plan.md
+docs/plans/delete-confirm-causal-binding/plan.md
+docs/plans/distribution/plan.md
+docs/plans/draft-cli/plan.md
+docs/plans/drafter-patch-intent-guard/plan.md
+docs/plans/drawer-lock-hardening/plan.md
+docs/plans/e2e-chain/plan.md
+docs/plans/entity-binding-operability-review-successor/plan.md
+docs/plans/entity-binding-operability-successor/plan.md
+docs/plans/entity-c0c2c3-p3-reconcile/plan.md
+docs/plans/entity-destructive-continuity-guard/plan.md
+docs/plans/entity-identity-lastmile/plan.md
+docs/plans/entity-identity-spine/plan.md
+docs/plans/entity-rename-negative-guard/plan.md
+docs/plans/entity-rename-unknown-action-guard/plan.md
+docs/plans/entity-ui-wiring/plan.md
+docs/plans/entity-workflow-source-readback/plan.md
+docs/plans/fix-agent-delete-zero-window/plan.md
+docs/plans/flow-bridge-golden-refit/plan.md
+docs/plans/flow-bridge/plan.md
+docs/plans/gen-prompts/plan.md
+docs/plans/handover-pack/plan.md
+docs/plans/hermetic-golden-zero-sut-lifecycle/plan.md
+docs/plans/ingest-scaffold/plan.md
+docs/plans/ingest/plan.md
+docs/plans/integrate-regress-agent-tool-slice/plan.md
+docs/plans/intent-event-fold/plan.md
+docs/plans/intent-plan-known-atom-foundation/plan.md
+docs/plans/kinds-harden/plan.md
+docs/plans/layer3-wiring/plan.md
+docs/plans/login-traffic-drop/plan.md
+docs/plans/loop-kit-extract/plan.md
+docs/plans/mcp-parity/plan.md
+docs/plans/model-lane-guard/plan.md
+docs/plans/mountdelay-fidelity/plan.md
+docs/plans/noerrenv-absence/plan.md
+docs/plans/obs-cases-isolation/plan.md
+docs/plans/observation-contract-closure/plan.md
+docs/plans/observation-runtime-trust-root/plan.md
+docs/plans/output-seal/plan.md
+docs/plans/p2-failsafe-coverage/plan.md
+docs/plans/p2-intent-compile/plan.md
+docs/plans/p3-compile/plan.md
+docs/plans/p4-drafter/plan.md
+docs/plans/p4-freeze/plan.md
+docs/plans/p5-replay/plan.md
+docs/plans/p6-heal/plan.md
+docs/plans/p6-selfheal/plan.md
+docs/plans/p7-report/plan.md
+docs/plans/p9-tier2-live-smoke/plan.md
+docs/plans/page-topology-auth-continuity/plan.md
+docs/plans/plan-debt-sweep/plan.md
+docs/plans/precondition-atom-workflow/plan.md
+docs/plans/ratchet-reverse-index/plan.md
+docs/plans/real-report-delivery/plan.md
+docs/plans/real-run-trust-fix/plan.md
+docs/plans/real-uat-attestation/plan.md
+docs/plans/record-capture/plan.md
+docs/plans/record-distill/plan.md
+docs/plans/record-intake/plan.md
+docs/plans/regress-agent-tool-first-slice/plan.md
+docs/plans/regress-promptset/plan.md
+docs/plans/regress-wf-node-script/plan.md
+docs/plans/replay-admission-hermetic-migration/plan.md
+docs/plans/replay-login-bootstrap/plan.md
+docs/plans/replay-nth-visible-hardening/plan.md
+docs/plans/replay-settle-mount/plan.md
+docs/plans/replay-video/plan.md
+docs/plans/report-cleanup-evidence/plan.md
+docs/plans/report-diagnostics/plan.md
+docs/plans/report-exit64/plan.md
+docs/plans/report-fidelity/plan.md
+docs/plans/report-nl-atomic/plan.md
+docs/plans/report-video-block/plan.md
+docs/plans/report-workflow-structure/plan.md
+docs/plans/resign-drift-closure/plan.md
+docs/plans/resolution/plan.md
+docs/plans/review-provider-inline-auth-hook/plan.md
+docs/plans/run-convention/plan.md
+docs/plans/run-history/plan.md
+docs/plans/seams-freeze-v2/plan.md
+docs/plans/seams-freeze/plan.md
+docs/plans/semantic-lock-cert-closure/plan.md
+docs/plans/semantic-unit-discrimination/plan.md
+docs/plans/sign-publication-recovery/plan.md
+docs/plans/sign/plan.md
+docs/plans/stale-red-admission-refit/plan.md
+docs/plans/sut-503-diagnosis/plan.md
+docs/plans/teachin-admission-side-effect-policy/plan.md
+docs/plans/teachin-clear-fill-admission/plan.md
+docs/plans/teachin-entity-binding-sidecar-successor/plan.md
+docs/plans/teachin-nav-expansion-recipe/plan.md
+docs/plans/teachin-observation-authority-hardening/plan.md
+docs/plans/teachin-observation-authority-root/plan.md
+docs/plans/teachin-observation-driver-canonical-root/plan.md
+docs/plans/teachin-observation-driver-provenance/plan.md
+docs/plans/teachin-observation-safe-case-lease-v2/plan.md
+docs/plans/teachin-observation-sidecar-hardening/plan.md
+docs/plans/teachin-observation-sidecar/plan.md
+docs/plans/teachin-observation-transaction-root/plan.md
+docs/plans/teachin-replayability-closure/plan.md
+docs/plans/teachin-runtime-authority-bundle-successor/plan.md
+docs/plans/teachin-runtime-nonvacuous-readiness/plan.md
+docs/plans/teachin-runtime-provenance-budget-successor/plan.md
+docs/plans/teachin-runtime-provenance-successor/plan.md
+docs/plans/teachin-runtime-readiness-successor/plan.md
+docs/plans/teachin-semantic-lock-admission-authority/plan.md
+docs/plans/teachin-semantic-lock-capability-hardening/plan.md
+docs/plans/teachin-semantic-lock-runtime-authority/plan.md
+docs/plans/teachin-semantic-lock-v2/plan.md
+docs/plans/teachin-semantic-lock-wiring-gaps/plan.md
+docs/plans/teachin-semantic-lock-wiring/plan.md
+docs/plans/teachin-semantic-lock/plan.md
+docs/plans/term-guard/plan.md
+docs/plans/video-login-carry/plan.md
+docs/plans/wf-add-node/plan.md
+docs/plans/wf-connect-nodes/plan.md
+docs/plans/wf-history-version/plan.md
+docs/plans/wf-open-node/plan.md
+docs/plans/wf-open-smoke/plan.md
+docs/plans/wf-publish-states/plan.md
+docs/plans/wf-select-node-dropdown/plan.md
+docs/plans/wf-set-node-field/plan.md
+docs/plans/workflow-delete-by-name-hardening/plan.md
+docs/plans/worktree-baton/plan.md
+docs/plans/zero-shot-observe-admit-step/plan.md
+docs/plans/zero-shot-page-execution-research/plan.md
+loop/GUARDRAILS.md
+tests/fixtures/loop-kit-expected/baseline/fixture/CONTEXT.md
+tests/fixtures/loop-kit-expected/baseline/fixture/docs/plans/demo-light/plan.md
+tests/fixtures/loop-kit-expected/baseline/fixture/loop/GUARDRAILS.md
+./docs/plans/p9-tier2-live-smoke/plan.md-4-> 目标：`casey selftest --tier2` 从桩落成真机冒烟自检（机器面），配套证据结构与
+./docs/plans/p9-tier2-live-smoke/plan.md-5-> 人签口径，使 P9 可按 D6 关账。
+./docs/plans/p9-tier2-live-smoke/plan.md-6-
+./docs/plans/p9-tier2-live-smoke/plan.md-7-## 1. 生产件改动
+./docs/plans/p9-tier2-live-smoke/plan.md-8-
+./docs/plans/p9-tier2-live-smoke/plan.md-9-1. `lib/selftest-tier2.mjs`（新，纯层，零 fs/spawn/net/browser）：
+./docs/plans/p9-tier2-live-smoke/plan.md:10:   - `TIER2_READINESS_IDS`（v4 与 §1 第 2 条同口径）：doctor 就绪级四项 +
+./docs/plans/p9-tier2-live-smoke/plan.md-11-     **manifest 在场且 checksum 合法** + **带外账户回执标志**（壳层读 Steven
+./docs/plans/p9-tier2-live-smoke/plan.md-12-     当日确认的回执文件形状，路径进 manifest）+ **两段真实连通证据两项独立判定**
+./docs/plans/p9-tier2-live-smoke/plan.md-13-     ——①Windows→真实目标段：`scripts/win-probe-target.mjs` 结构化结果文件
+./docs/plans/p9-tier2-live-smoke/plan.md-14-     （路径进 manifest，纯层判形状与新鲜度）；②WSL 回环→隧道段：壳层自采
+./docs/plans/p9-tier2-live-smoke/plan.md-15-     结构化结果。两段独立成功才过，任一缺席/过期/失败 → exit 2；
+./docs/plans/p9-tier2-live-smoke/plan.md-16-   - `judgeTier2RunEvidence(projection)`：吃单 run 产物投影（verdict/axes/report-model
+--
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-9-sandbox: read-only
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-10-reasoning effort: xhigh
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-11-reasoning summaries: none
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-12-session id: 019face1-2e4a-7c83-bf7f-3795cceb8653
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-13---------
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-14-user
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log:15:第五轮微型 delta（p9-tier2-live-smoke，read-only）。你 r4 只剩 H3 的内部一致性：TIER2_READINESS_IDS 措辞未同步两段权威口径。处置：plan.md §1 第 1 条已改为与第 2 条同口径（Windows→真实目标段=win-probe-target 结构化结果文件路径进 manifest+纯层判形状新鲜度；WSL 回环→隧道段壳层自采；两段独立成功、任一缺席/过期/失败 exit 2）。只复核这一条。输出：第一行 PLAN_APPROVE 或 PLAN_CHANGES_REQUIRED；FIXED/NOT_FIXED+证据；末行 REVIEW_DONE_SENTINEL
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-16-deprecated: `[features].enable_experimental_windows_sandbox` is deprecated. Use `[features].experimental_windows_sandbox` instead.
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-17-Enable it with `--enable experimental_windows_sandbox` or `[features].experimental_windows_sandbox` in config.toml. See https://developers.openai.com/codex/config-basic#feature-flags for details.
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-18-codex
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log:19:我只复核 H3：定位 `plan.md` §1 第 1 条及 `TIER2_READINESS_IDS` 的两段权威口径，核对措辞是否已完全同步；不扩展到其他问题，也不改文件。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-20-exec
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log:21:/bin/bash -lc 'rg -n -C 5 "TIER2_READINESS_IDS|win-probe-target|Windows.*真实目标|WSL.*回环|隧道段壳层自采|独立成功|exit 2" plan.md CLAUDE.md CONTEXT.md docs/HANDOFF.md loop/GUARDRAILS.md .claude/skills/casey/SKILL.md README.md docs/adr 2>/dev/null' in /mnt/d/ctx/heren/casey
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-22- exited 2 in 311ms:
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-23-README.md-35-2. **hermetic 回放就绪**（验 npm install + chromium）：`node tests/_golden/e2e-chain.golden.mjs`
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-24-README.md-36-   ——十站全链集成金牌（文本→报告，约 35 秒），8/8 过即本机可跑全部 hermetic 面。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-25-README.md-37-   看样例报告：`node bin/casey.mjs demo`——零真机零凭据出一份自包含 `PASS` 报告（含裁定徽章），落
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-26-README.md-38-   `runs/sample-wf-publish/`；与上一级 `selftest --tier1` 的区别：demo 需 chromium、不是零依赖，
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-27-README.md-39-   不冒充「零依赖一句话出报告」。
+--
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-102-.claude/skills/casey/SKILL.md-110-- **凭据让用户设**：`.auth/`、`site.json` 是凭据，CC 不把账号密码写进命令行/文件/报告。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-103-.claude/skills/casey/SKILL.md-111-- **冻结断言只读**：人签后改断言 = Test Ratchet 判红，别去改。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-104-.claude/skills/casey/SKILL.md-112-- 改实现先 `contract`：动 `lib`/`bin` 前先 `node loop-kit/bin/contract.mjs init <slug> --lane <...> --reason "..."`，否则 hook 拦截。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-105-.claude/skills/casey/SKILL.md-113-- **真机变更有副作用**：编辑型用例（新建/发布/删除）回放=真实改环境数据，实体必带 Reserved Prefix `atl_`。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-106-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log-107-exec
+./docs/plans/p9-tier2-live-smoke/plan-codex-r5-delta.log:108:/bin/bash -lc "pwd; rg --files -g 'plan.md' -g 'CLAUDE.md' -g 'CONTEXT.md' -g 'HANDOFF.md' -g 'GUARDRAILS.md' -g 'SKILL.md' | sort; rg -n -C 6 \"TIER2_READINESS_IDS\" . --glob '"'!node_modules/**'"' --glob '"'!runs/**'"' --glob '"'!artifacts/**'"'" in /mnt/d/ctx/heren/casey
+--
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-26-> 目标：`casey selftest --tier2` 从桩落成真机冒烟自检（机器面），配套证据结构与
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-27-> 人签口径，使 P9 可按 D6 关账。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-28-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-29-## 1. 生产件改动
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-30-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-31-1. `lib/selftest-tier2.mjs`（新，纯层，零 fs/spawn/net/browser）：
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log:32:   - `TIER2_READINESS_IDS`（v3 补全，codex r2 H3）：doctor 就绪级四项 + 隧道监听
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-33-     形状 + **manifest 在场且 checksum 合法** + **带外账户回执标志**（采集接缝=
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-34-     壳层读取 Steven 当日确认的回执文件形状，路径进 manifest）+ **两段真实连通
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-35-     证据**（隧道回环 HTTP 探针 + 登录引导可达探针的结构化结果，壳层采集、
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-36-     纯层判定）；
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-37-   - `judgeTier2RunEvidence(projection)`：吃单 run 产物投影（verdict/axes/report-model
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-38-     的形状字段，非全文），出逐项判定——四态账 well-formed、catch-all 语义未被
+--
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-157-112:- R1 「已签+准入可过」的用例集发现逻辑若误把未签件收进来=纪律事故——纯层判定
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-158-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-159-codex
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-160-PLAN_CHANGES_REQUIRED
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-161-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-162-- Critical — FIXED：§1 第 2 条已明确只读 manifest、逐例核 hash、零动态发现；变更型条目要求每次显式 `--authorize-mutation <caseId>`，receipt 记录授权来源，缺授权拒跑走 exit 2。T7 也覆盖缺逐次授权的拒跑与 receipt 记录。[plan.md](/mnt/d/ctx/heren/casey/docs/plans/p9-tier2-live-smoke/plan.md:21)
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log:163:- H3 — NOT_FIXED：§1 第 2 条已采用正确的两段权威口径，但 `TIER2_READINESS_IDS` 仍写成旧口径“隧道回环 HTTP 探针 + 登录引导可达探针”，没有明确 Windows 结构化结果文件、manifest 路径、形状与新鲜度以及两段独立成功条件，形成内部不一致。[plan.md](/mnt/d/ctx/heren/casey/docs/plans/p9-tier2-live-smoke/plan.md:9) 应将此处同步为第 29–32 行的完整权威口径。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-164-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-165-新问题：无。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-166-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-167-REVIEW_DONE_SENTINEL
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-168-tokens used
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-169-28,876
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-170-PLAN_CHANGES_REQUIRED
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-171-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-172-- Critical — FIXED：§1 第 2 条已明确只读 manifest、逐例核 hash、零动态发现；变更型条目要求每次显式 `--authorize-mutation <caseId>`，receipt 记录授权来源，缺授权拒跑走 exit 2。T7 也覆盖缺逐次授权的拒跑与 receipt 记录。[plan.md](/mnt/d/ctx/heren/casey/docs/plans/p9-tier2-live-smoke/plan.md:21)
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log:173:- H3 — NOT_FIXED：§1 第 2 条已采用正确的两段权威口径，但 `TIER2_READINESS_IDS` 仍写成旧口径“隧道回环 HTTP 探针 + 登录引导可达探针”，没有明确 Windows 结构化结果文件、manifest 路径、形状与新鲜度以及两段独立成功条件，形成内部不一致。[plan.md](/mnt/d/ctx/heren/casey/docs/plans/p9-tier2-live-smoke/plan.md:9) 应将此处同步为第 29–32 行的完整权威口径。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-174-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-175-新问题：无。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-176-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r4-delta.log-177-REVIEW_DONE_SENTINEL
+--
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-9-sandbox: read-only
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-10-reasoning effort: xhigh
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-11-reasoning summaries: none
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-12-session id: 019facd8-2869-76f3-b3f1-24c4aa976b58
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-13---------
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-14-user
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log:15:第三轮 delta（p9-tier2-live-smoke，read-only，重读 docs/plans/p9-tier2-live-smoke/ 两文档 v3）。你 r2 判 4 NOT_FIXED + 新 Critical/High。处置：Critical→suite manifest 人签冻结（GRILL D2 v3：逐例 hash/effect/超时/清理义务/smoke 授权、变更型逐次授权、--case 限 manifest 成员且有上限；金牌 T7 四限）；High→裁判通道运行时冒烟（GRILL D1 v3：冻结三轴反例真调现役 verdict.mjs、历史先例 hash 绑定；金牌 T8）；H2→receipt 生产写入者与五类稳定子类+systemic_abort 停全集（plan §1 第 3 条）、R2 三分修正；H3→TIER2_READINESS_IDS 补 manifest 校验/带外回执采集接缝/两段连通证据（plan §1 第 1 条）；H5→徽章证据改指 p7-report+CONTEXT/README/waiver 全列（plan §1 第 5 条）；M6→上限入 manifest+T7 超限拒 64。只复核六条处置。输出：第一行 PLAN_APPROVE 或 PLAN_CHANGES_REQUIRED；各条 FIXED/NOT_FIXED+证据；新问题按级；末行 REVIEW_DONE_SENTINEL
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-16-deprecated: `[features].enable_experimental_windows_sandbox` is deprecated. Use `[features].experimental_windows_sandbox` instead.
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-17-Enable it with `--enable experimental_windows_sandbox` or `[features].experimental_windows_sandbox` in config.toml. See https://developers.openai.com/codex/config-basic#feature-flags for details.
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-18-codex
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-19-我会按只读复核处理：先确认 v3 的两份文档与仓库约束，再逐条核对 Critical、High、H2、H3、H5、M6，只报告这六项及由这些改动直接引出的新问题。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-20-exec
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-21-/bin/bash -lc "pwd && rg --files docs/plans/p9-tier2-live-smoke && rg --files -g 'CLAUDE.md' -g 'CONTEXT.md' -g 'docs/HANDOFF.md' -g 'loop/GUARDRAILS.md' -g 'AGENTS.md'" in /mnt/d/ctx/heren/casey
+--
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-324-     4	> 目标：`casey selftest --tier2` 从桩落成真机冒烟自检（机器面），配套证据结构与
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-325-     5	> 人签口径，使 P9 可按 D6 关账。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-326-     6	
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-327-     7	## 1. 生产件改动
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-328-     8	
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-329-     9	1. `lib/selftest-tier2.mjs`（新，纯层，零 fs/spawn/net/browser）：
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log:330:    10	   - `TIER2_READINESS_IDS`（v3 补全，codex r2 H3）：doctor 就绪级四项 + 隧道监听
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-331-    11	     形状 + **manifest 在场且 checksum 合法** + **带外账户回执标志**（采集接缝=
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-332-    12	     壳层读取 Steven 当日确认的回执文件形状，路径进 manifest）+ **两段真实连通
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-333-    13	     证据**（隧道回环 HTTP 探针 + 登录引导可达探针的结构化结果，壳层采集、
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-334-    14	     纯层判定）；
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-335-    15	   - `judgeTier2RunEvidence(projection)`：吃单 run 产物投影（verdict/axes/report-model
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-336-    16	     的形状字段，非全文），出逐项判定——四态账 well-formed、catch-all 语义未被
+--
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-711-  ✓ 检查改动间一致性及新问题，形成最终裁定
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-712-codex
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-713-PLAN_CHANGES_REQUIRED
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-714-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-715-- H1 — FIXED：覆盖矩阵非空、流式合格件缺席 exit 2 已写入 `GRILL.md:21-23`；T2c 又钉死硬断言、唯一 join 与缺席红，见 `plan.md:39-41`。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-716-- H2 — NOT_FIXED：D4/T2b 已加入两类 receipt 和系统性故障停全集（`GRILL.md:52-58`、`plan.md:36-38`），但风险 R2 仍要求“per-case 失败继续余例”，未排除凭据/登录/隧道故障（`plan.md:84-85`）；生产件清单也未定义 receipt 的稳定失败子类或生产写入者。现役 `runPipeline` 仍把阶段故障与合法非 PASS 都压成 exit 1（`bin/casey.mjs:138-145,174-182`），合成 T2b 不足以证明壳层能正确分流。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log:717:- H3 — NOT_FIXED：GRILL 六项前置、逐例登录、doctor 导出化和确定性 T1 均已写入（`GRILL.md:59-63`、`plan.md:31-33,54-55`）；但生产设计的 `TIER2_READINESS_IDS` 仍是“doctor 四项+隧道+用例集”（`plan.md:9-16`）。doctor 四项实际只是 node/playwright/chromium，不包含带外账户回执或两段真实 HTTP 连通；计划也未定义后二者的采集/签认输入接缝。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-718-- H4 — FIXED：契约完成与 P9 需求完成已严格分层；open/pending、逐项 waiver、签认人/run/hash/逐项结论及 PRD checksum 冻结均明确，见 `GRILL.md:72-78`、`plan.md:67-73`。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-719-- H5 — NOT_FIXED：D5 与 A5 的总口径正确（`GRILL.md:65-70`、`plan.md:71-73`），但生产改动项仍把“四态徽章”错误指向 verdict-cases（`plan.md:21-22`）。`p2-verdict` 只验证四态 JSON，徽章证据实际在 `p7-report.golden.mjs:73-81`；该改动清单也未列 `CONTEXT.md`、README/help 和管线义务 waiver/替代证据的具体修改。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-720-- M6 — NOT_FIXED：严格解析反例与重复 `--case` 数组已补（`GRILL.md:40-42`、`plan.md:44-46`），但 r1 要求的用例数量上限仍未定义、T4 也没有超限 exit 64 反例。真机批量入口仍可接收无界 case 列表。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-721-- M7 — FIXED：原始字节先扫、解析后白名单投影、落盘前复扫、命中零落盘已明确；T4b 覆盖白名单外嵌套值、畸形 JSON、子进程输出与目标地址形态，见 `GRILL.md:42-45`、`plan.md:47-49`。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-722-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-723-新问题：
+--
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-729-tokens used
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-730-164,239
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-731-PLAN_CHANGES_REQUIRED
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-732-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-733-- H1 — FIXED：覆盖矩阵非空、流式合格件缺席 exit 2 已写入 `GRILL.md:21-23`；T2c 又钉死硬断言、唯一 join 与缺席红，见 `plan.md:39-41`。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-734-- H2 — NOT_FIXED：D4/T2b 已加入两类 receipt 和系统性故障停全集（`GRILL.md:52-58`、`plan.md:36-38`），但风险 R2 仍要求“per-case 失败继续余例”，未排除凭据/登录/隧道故障（`plan.md:84-85`）；生产件清单也未定义 receipt 的稳定失败子类或生产写入者。现役 `runPipeline` 仍把阶段故障与合法非 PASS 都压成 exit 1（`bin/casey.mjs:138-145,174-182`），合成 T2b 不足以证明壳层能正确分流。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log:735:- H3 — NOT_FIXED：GRILL 六项前置、逐例登录、doctor 导出化和确定性 T1 均已写入（`GRILL.md:59-63`、`plan.md:31-33,54-55`）；但生产设计的 `TIER2_READINESS_IDS` 仍是“doctor 四项+隧道+用例集”（`plan.md:9-16`）。doctor 四项实际只是 node/playwright/chromium，不包含带外账户回执或两段真实 HTTP 连通；计划也未定义后二者的采集/签认输入接缝。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-736-- H4 — FIXED：契约完成与 P9 需求完成已严格分层；open/pending、逐项 waiver、签认人/run/hash/逐项结论及 PRD checksum 冻结均明确，见 `GRILL.md:72-78`、`plan.md:67-73`。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-737-- H5 — NOT_FIXED：D5 与 A5 的总口径正确（`GRILL.md:65-70`、`plan.md:71-73`），但生产改动项仍把“四态徽章”错误指向 verdict-cases（`plan.md:21-22`）。`p2-verdict` 只验证四态 JSON，徽章证据实际在 `p7-report.golden.mjs:73-81`；该改动清单也未列 `CONTEXT.md`、README/help 和管线义务 waiver/替代证据的具体修改。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-738-- M6 — NOT_FIXED：严格解析反例与重复 `--case` 数组已补（`GRILL.md:40-42`、`plan.md:44-46`），但 r1 要求的用例数量上限仍未定义、T4 也没有超限 exit 64 反例。真机批量入口仍可接收无界 case 列表。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-739-- M7 — FIXED：原始字节先扫、解析后白名单投影、落盘前复扫、命中零落盘已明确；T4b 覆盖白名单外嵌套值、畸形 JSON、子进程输出与目标地址形态，见 `GRILL.md:42-45`、`plan.md:47-49`。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-740-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-741-新问题：
+--
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-2181-2980:docs/plans/p9-tier2-live-smoke/plan-codex-r1.log:4747:docs/plans/real-uat-attestation/review/codex-review-r2.log:196:- **假被测系统只读，所有行为验收只驱真机**（Steven 2026-07-15 定，强制执行）：假被测系统（`fake-sut`）和夹具 `SUT` 只允许读取源码作为迁移参考，任何代理不得启动、连接或回放它们，也不得用 `casey demo` 顶替真机运行。`golden` / `gate` / `selftest --tier1` 仅在可证明不启动、不连接、不回放任何假 `SUT` 时才允许执行；静态检查、schema 检查和不接触 `SUT` 的纯函数检查可执行。所有浏览器/通道行为测试、回放、复跑与验收一律联网驱真实目标，`--sut` 只喂隧道回环基址（`site.json` 的 `devProxyUrl`，形如 `http://127.0.0.1:15519`）；无网络、仅本地监听、代理池未连真站或网络受限时一律不得开始行为验收。前置 = 相位0 三关（`casey doctor` 就绪 / Steven 带外确认 `.auth` = `autotest` / 反向隧道单实例；全流程见 `docs/runbooks/real-uat-runbook.md`；隧道两命令：`WSL` 侧 `node scripts/wsl-reverse-listen.mjs`、`Windows` 侧 `node scripts/win-reverse-agent.mjs`，顺序先 `WSL` 后 `Windows`）；除 `doctor` 外还必须取得 Windows→真站与 `WSL` 回环→真站两段真实 HTTP 成功证据。没有同次真实回放、确定性 `verdict.json`、录屏、视觉复核和独立单用例 HTML，不得声称行为验收完成。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-2182-2983:docs/plans/p9-tier2-live-smoke/plan-codex-r1.log:4759:docs/plans/real-uat-attestation/review/codex-review-r2.log:321:- **假被测系统只读，所有行为验收只驱真机**（Steven 2026-07-15 定，强制执行）：假被测系统（`fake-sut`）和夹具 `SUT` 只允许读取源码作为迁移参考，任何代理不得启动、连接或回放它们，也不得用 `casey demo` 顶替真机运行。`golden` / `gate` / `selftest --tier1` 仅在可证明不启动、不连接、不回放任何假 `SUT` 时才允许执行；静态检查、schema 检查和不接触 `SUT` 的纯函数检查可执行。所有浏览器/通道行为测试、回放、复跑与验收一律联网驱真实目标，`--sut` 只喂隧道回环基址（`site.json` 的 `devProxyUrl`，形如 `http://127.0.0.1:15519`）；无网络、仅本地监听、代理池未连真站或网络受限时一律不得开始行为验收。前置 = 相位0 三关（`casey doctor` 就绪 / Steven 带外确认 `.auth` = `autotest` / 反向隧道单实例；全流程见 `docs/runbooks/real-uat-runbook.md`；隧道两命令：`WSL` 侧 `node scripts/wsl-reverse-listen.mjs`、`Windows` 侧 `node scripts/win-reverse-agent.mjs`，顺序先 `WSL` 后 `Windows`）；除 `doctor` 外还必须取得 Windows→真站与 `WSL` 回环→真站两段真实 HTTP 成功证据。没有同次真实回放、确定性 `verdict.json`、录屏、视觉复核和独立单用例 HTML，不得声称行为验收完成。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-2183-2987:docs/plans/p9-tier2-live-smoke/plan-codex-r1.log:4798:docs/plans/real-uat-attestation/review/codex-review-r2.log:529:- **假被测系统只读，所有行为验收只驱真机**（Steven 2026-07-15 定，强制执行）：假被测系统（`fake-sut`）和夹具 `SUT` 只允许读取源码作为迁移参考，任何代理不得启动、连接或回放它们，也不得用 `casey demo` 顶替真机运行。`golden` / `gate` / `selftest --tier1` 仅在可证明不启动、不连接、不回放任何假 `SUT` 时才允许执行；静态检查、schema 检查和不接触 `SUT` 的纯函数检查可执行。所有浏览器/通道行为测试、回放、复跑与验收一律联网驱真实目标，`--sut` 只喂隧道回环基址（`site.json` 的 `devProxyUrl`，形如 `http://127.0.0.1:15519`）；无网络、仅本地监听、代理池未连真站或网络受限时一律不得开始行为验收。前置 = 相位0 三关（`casey doctor` 就绪 / Steven 带外确认 `.auth` = `autotest` / 反向隧道单实例；全流程见 `docs/runbooks/real-uat-runbook.md`；隧道两命令：`WSL` 侧 `node scripts/wsl-reverse-listen.mjs`、`Windows` 侧 `node scripts/win-reverse-agent.mjs`，顺序先 `WSL` 后 `Windows`）；除 `doctor` 外还必须取得 Windows→真站与 `WSL` 回环→真站两段真实 HTTP 成功证据。没有同次真实回放、确定性 `verdict.json`、录屏、视觉复核和独立单用例 HTML，不得声称行为验收完成。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-2184-3028:- [High] `docs/plans/p9-tier2-live-smoke/plan.md:9-20,31-32`：前置门和零 SUT 金牌不足以安全落地。doctor 的凭据与 site 只是 warn、隧道恒为 route-human，纯层退出码只看四项就绪级（`lib/doctor.mjs:82-108,111-124`）；真机 runbook 还要求 autotest 账户带外确认和两段真实连通证据（`docs/runbooks/real-uat-runbook.md:11-45`）。计划也未写逐例透传 `--login-bootstrap`；当前默认锁明确是 production audience（`cases/tc_agent_id_readback_real_uat_v1/entity-locks.frozen.json:9`），不带登录会在凭据上下文门被拒（`bin/replay.mjs:275-292`）。此外 T1 依赖环境“恰好无隧道”，在隧道已开机器上可能让名为 zero-SUT 的金牌进入真机链。修法：把凭据形状、登录、执行目标、隧道、带外账户回执及两段连通列为显式前置；逐例强制 login-bootstrap。T1 用确定性空 suite/坏前置并断言 run 子进程未启动，不能依赖环境偶然无隧道。另须补 doctor 结构化采集复用件；当前 `bin/doctor.mjs:176-220` 的探针私有且 `main()` 无条件执行，不能按计划直接复用。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-2185-3055:- [High] `docs/plans/p9-tier2-live-smoke/plan.md:9-20,31-32`：前置门和零 SUT 金牌不足以安全落地。doctor 的凭据与 site 只是 warn、隧道恒为 route-human，纯层退出码只看四项就绪级（`lib/doctor.mjs:82-108,111-124`）；真机 runbook 还要求 autotest 账户带外确认和两段真实连通证据（`docs/runbooks/real-uat-runbook.md:11-45`）。计划也未写逐例透传 `--login-bootstrap`；当前默认锁明确是 production audience（`cases/tc_agent_id_readback_real_uat_v1/entity-locks.frozen.json:9`），不带登录会在凭据上下文门被拒（`bin/replay.mjs:275-292`）。此外 T1 依赖环境“恰好无隧道”，在隧道已开机器上可能让名为 zero-SUT 的金牌进入真机链。修法：把凭据形状、登录、执行目标、隧道、带外账户回执及两段连通列为显式前置；逐例强制 login-bootstrap。T1 用确定性空 suite/坏前置并断言 run 子进程未启动，不能依赖环境偶然无隧道。另须补 doctor 结构化采集复用件；当前 `bin/doctor.mjs:176-220` 的探针私有且 `main()` 无条件执行，不能按计划直接复用。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-2186-3103:     6	> 联网纪律：行为验收必须同时取得 Windows→真实目标与 `WSL` 回环→真实目标两段成功证据；仅端口在听、离线产物、缓存页面或受限网络环境均不算真实联网。任一段不通即停，不得降级为假被测系统。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log:2187:3275:- H3 — NOT_FIXED：GRILL 六项前置、逐例登录、doctor 导出化和确定性 T1 均已写入（`GRILL.md:59-63`、`plan.md:31-33,54-55`）；但生产设计的 `TIER2_READINESS_IDS` 仍是“doctor 四项+隧道+用例集”（`plan.md:9-16`）。doctor 四项实际只是 node/playwright/chromium，不包含带外账户回执或两段真实 HTTP 连通；计划也未定义后二者的采集/签认输入接缝。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log:2188:3293:- H3 — NOT_FIXED：GRILL 六项前置、逐例登录、doctor 导出化和确定性 T1 均已写入（`GRILL.md:59-63`、`plan.md:31-33,54-55`）；但生产设计的 `TIER2_READINESS_IDS` 仍是“doctor 四项+隧道+用例集”（`plan.md:9-16`）。doctor 四项实际只是 node/playwright/chromium，不包含带外账户回执或两段真实 HTTP 连通；计划也未定义后二者的采集/签认输入接缝。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-2189-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-2190-exec
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-2191-/bin/bash -lc "wc -l .claude/skills/casey/SKILL.md README.md docs/design/txt2testreport-design.md docs/plans/bootstrap/plan.md && sed -n '1,260p' .claude/skills/casey/SKILL.md" in /mnt/d/ctx/heren/casey
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-2192- succeeded in 112ms:
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-2193----
+./docs/plans/p9-tier2-live-smoke/plan-codex-r3-delta.log-2194-name: casey
+--
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-1691-     4	> 目标：`casey selftest --tier2` 从桩落成真机冒烟自检（机器面），配套证据结构与
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-1692-     5	> 人签口径，使 P9 可按 D6 关账。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-1693-     6	
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-1694-     7	## 1. 生产件改动
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-1695-     8	
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-1696-     9	1. `lib/selftest-tier2.mjs`（新，纯层，零 fs/spawn/net/browser）：
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log:1697:    10	   - `TIER2_READINESS_IDS`：doctor 就绪级四项 + 隧道监听形状 + 已签用例集非空；
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-1698-    11	   - `judgeTier2RunEvidence(projection)`：吃单 run 产物投影（verdict/axes/report-model
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-1699-    12	     的形状字段，非全文），出逐项判定——四态账 well-formed、catch-all 语义未被
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-1700-    13	     旁路（fail-safe 不变量）、网络取证按发起方归因结构在场、生命周期取证在场、
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-1701-    14	     凭据兜底扫描零命中标志、含流式断言时其硬断言已被裁、退出码归一图例合法；
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-1702-    15	   - `runTier2(env)` 聚合：readiness 任一红→exit 2；证据判定任一红→exit 1；
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-1703-    16	     全绿→exit 0（附「机器面绿≠完成」尾行文案常量）。
+--
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3269-  ✓ 检查改动间一致性及新问题，形成最终裁定
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3270-codex
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3271-PLAN_CHANGES_REQUIRED
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3272-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3273-- H1 — FIXED：覆盖矩阵非空、流式合格件缺席 exit 2 已写入 `GRILL.md:21-23`；T2c 又钉死硬断言、唯一 join 与缺席红，见 `plan.md:39-41`。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3274-- H2 — NOT_FIXED：D4/T2b 已加入两类 receipt 和系统性故障停全集（`GRILL.md:52-58`、`plan.md:36-38`），但风险 R2 仍要求“per-case 失败继续余例”，未排除凭据/登录/隧道故障（`plan.md:84-85`）；生产件清单也未定义 receipt 的稳定失败子类或生产写入者。现役 `runPipeline` 仍把阶段故障与合法非 PASS 都压成 exit 1（`bin/casey.mjs:138-145,174-182`），合成 T2b 不足以证明壳层能正确分流。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log:3275:- H3 — NOT_FIXED：GRILL 六项前置、逐例登录、doctor 导出化和确定性 T1 均已写入（`GRILL.md:59-63`、`plan.md:31-33,54-55`）；但生产设计的 `TIER2_READINESS_IDS` 仍是“doctor 四项+隧道+用例集”（`plan.md:9-16`）。doctor 四项实际只是 node/playwright/chromium，不包含带外账户回执或两段真实 HTTP 连通；计划也未定义后二者的采集/签认输入接缝。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3276-- H4 — FIXED：契约完成与 P9 需求完成已严格分层；open/pending、逐项 waiver、签认人/run/hash/逐项结论及 PRD checksum 冻结均明确，见 `GRILL.md:72-78`、`plan.md:67-73`。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3277-- H5 — NOT_FIXED：D5 与 A5 的总口径正确（`GRILL.md:65-70`、`plan.md:71-73`），但生产改动项仍把“四态徽章”错误指向 verdict-cases（`plan.md:21-22`）。`p2-verdict` 只验证四态 JSON，徽章证据实际在 `p7-report.golden.mjs:73-81`；该改动清单也未列 `CONTEXT.md`、README/help 和管线义务 waiver/替代证据的具体修改。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3278-- M6 — NOT_FIXED：严格解析反例与重复 `--case` 数组已补（`GRILL.md:40-42`、`plan.md:44-46`），但 r1 要求的用例数量上限仍未定义、T4 也没有超限 exit 64 反例。真机批量入口仍可接收无界 case 列表。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3279-- M7 — FIXED：原始字节先扫、解析后白名单投影、落盘前复扫、命中零落盘已明确；T4b 覆盖白名单外嵌套值、畸形 JSON、子进程输出与目标地址形态，见 `GRILL.md:42-45`、`plan.md:47-49`。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3280-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3281-新问题：
+--
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3287-tokens used
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3288-164,239
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3289-PLAN_CHANGES_REQUIRED
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3290-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3291-- H1 — FIXED：覆盖矩阵非空、流式合格件缺席 exit 2 已写入 `GRILL.md:21-23`；T2c 又钉死硬断言、唯一 join 与缺席红，见 `plan.md:39-41`。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3292-- H2 — NOT_FIXED：D4/T2b 已加入两类 receipt 和系统性故障停全集（`GRILL.md:52-58`、`plan.md:36-38`），但风险 R2 仍要求“per-case 失败继续余例”，未排除凭据/登录/隧道故障（`plan.md:84-85`）；生产件清单也未定义 receipt 的稳定失败子类或生产写入者。现役 `runPipeline` 仍把阶段故障与合法非 PASS 都压成 exit 1（`bin/casey.mjs:138-145,174-182`），合成 T2b 不足以证明壳层能正确分流。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log:3293:- H3 — NOT_FIXED：GRILL 六项前置、逐例登录、doctor 导出化和确定性 T1 均已写入（`GRILL.md:59-63`、`plan.md:31-33,54-55`）；但生产设计的 `TIER2_READINESS_IDS` 仍是“doctor 四项+隧道+用例集”（`plan.md:9-16`）。doctor 四项实际只是 node/playwright/chromium，不包含带外账户回执或两段真实 HTTP 连通；计划也未定义后二者的采集/签认输入接缝。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3294-- H4 — FIXED：契约完成与 P9 需求完成已严格分层；open/pending、逐项 waiver、签认人/run/hash/逐项结论及 PRD checksum 冻结均明确，见 `GRILL.md:72-78`、`plan.md:67-73`。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3295-- H5 — NOT_FIXED：D5 与 A5 的总口径正确（`GRILL.md:65-70`、`plan.md:71-73`），但生产改动项仍把“四态徽章”错误指向 verdict-cases（`plan.md:21-22`）。`p2-verdict` 只验证四态 JSON，徽章证据实际在 `p7-report.golden.mjs:73-81`；该改动清单也未列 `CONTEXT.md`、README/help 和管线义务 waiver/替代证据的具体修改。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3296-- M6 — NOT_FIXED：严格解析反例与重复 `--case` 数组已补（`GRILL.md:40-42`、`plan.md:44-46`），但 r1 要求的用例数量上限仍未定义、T4 也没有超限 exit 64 反例。真机批量入口仍可接收无界 case 列表。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3297-- M7 — FIXED：原始字节先扫、解析后白名单投影、落盘前复扫、命中零落盘已明确；T4b 覆盖白名单外嵌套值、畸形 JSON、子进程输出与目标地址形态，见 `GRILL.md:42-45`、`plan.md:47-49`。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3298-
+./docs/plans/p9-tier2-live-smoke/plan-codex-r2-delta.log-3299-新问题：
+--
+./docs/plans/p9-tier2-live-smoke/plan-codex-r1.log-98-     4	> 目标：`casey selftest --tier2` 从桩落成真机冒烟自检（机器面），配套证据结构与
+./docs/plans/p9-tier2-live-smoke/plan-codex-r1.log-99-     5	> 人签口径，使 P9 可按 D6 关账。
+./docs/plans/p9-tier2-live-smoke/plan-codex-r1.log-100-     6	
+./docs/plans/p9-tier2-live-smoke/plan-codex-r1.log-101-     7	## 1. 生产件改动
+./docs/plans/p9-tier2-live-smoke/plan-codex-r1.log-102-     8	
+./docs/plans/p9-tier2-live-smoke/plan-codex-r1.log-103-     9	1. `lib/selftest-tier2.mjs`（新，纯层，零 fs/spawn/net/browser）：
+./docs/plans/p9-tier2-live-smoke/plan-codex-r1.log:104:    10	   - `TIER2_READINESS_IDS`：doctor 就绪级四项 + 隧道监听形状 + 已签用例集非空；
+./docs/plans/p9-tier2-live-smoke/plan-codex-r1.log-105-    11	   - `judgeTier2RunEvidence(projection)`：吃单 run 产物投影（verdict/axes/report-model
+./docs/plans/p9-tier2-live-smoke/plan-codex-r1.log-106-    12	     的形状字段，非全文），出逐项判定——四态账 well-formed、catch-all 语义未被
+./docs/plans/p9-tier2-live-smoke/plan-codex-r1.log-107-    13	     旁路（fail-safe 不变量）、网络取证按发起方归因结构在场、生命周期取证在场、
+./docs/plans/p9-tier2-live-smoke/plan-codex-r1.log-108-    14	     凭据兜底扫描零命中标志、含流式断言时其硬断言已被裁、退出码归一图例合法；
+./docs/plans/p9-tier2-live-smoke/plan-codex-r1.log-109-    15	   - `runTier2(env)` 聚合：readiness 任一红→exit 2；证据判定任一红→exit 1；
+./docs/plans/p9-tier2-live-smoke/plan-codex-r1.log-110-    16	     全绿→exit 0（附「机器面绿≠完成」尾行文案常量）。
+
+exec
+/bin/bash -lc "nl -ba docs/plans/p9-tier2-live-smoke/plan.md | sed -n '7,36p'; git diff -- docs/plans/p9-tier2-live-smoke/plan.md | sed -n '1,120p'" in /mnt/d/ctx/heren/casey
+ succeeded in 168ms:
+codex
+PLAN_APPROVE
+
+H3 — FIXED：`TIER2_READINESS_IDS` 已同步两段权威口径：Windows 结构化结果路径进 manifest、纯层判形状与新鲜度；WSL 段由壳层自采；两段须独立成功，任一缺席、过期或失败均 exit 2。[plan.md](/mnt/d/ctx/heren/casey/docs/plans/p9-tier2-live-smoke/plan.md:10)
+
+REVIEW_DONE_SENTINEL
+tokens used
+42,930
+PLAN_APPROVE
+
+H3 — FIXED：`TIER2_READINESS_IDS` 已同步两段权威口径：Windows 结构化结果路径进 manifest、纯层判形状与新鲜度；WSL 段由壳层自采；两段须独立成功，任一缺席、过期或失败均 exit 2。[plan.md](/mnt/d/ctx/heren/casey/docs/plans/p9-tier2-live-smoke/plan.md:10)
+
+REVIEW_DONE_SENTINEL

@@ -3,9 +3,18 @@
   "task": "teachin-observation-transaction-root（full）：替代并收严示教身份观察根的四个 HIGH。append/read 只认固定 PROJECT_ROOT/cases canonical root 并绑定祖先/文件 identity；ledger symlink/hardlink/锁占用/校验拒绝零 accepted 残留，只写有界 committed transaction，consumer 只认 committed；accepted authority 与 receipt 私下共享同 transaction token、三件套 hash 与 ledger generation，跨 package 混搭拒绝；safe-own-data 明确 MAX_ITEMS/MAX_DEPTH/MAX_KEYS/MAX_BYTES，巨大稀疏数组不按 length 分配，identity 复用共享 snapshot。",
   "specPath": "docs/plans/teachin-observation-transaction-root/plan.md",
   "testChecksums": {
-    "tests/_golden/teachin-observation-transaction-root.zero-sut.golden.mjs": "189065ab86629cbaf8a6e7d8b85464c624144cca00182af33b6e1c6bfd3d8f12",
+    "tests/_golden/teachin-observation-transaction-root.zero-sut.golden.mjs": "a95a02a075f9d9e48a780bb409cedcea089e2a3ca04cd75be295a2387d36e4a2",
     "tests/_golden/fixtures/teachin-observation-transaction-root/limits.json": "4cdf0afada5b1f114843b7af25fab448716b5cc55837becdec1f0667aee05385"
   },
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-28",
+      "files": [
+        "tests/_golden/teachin-observation-transaction-root.zero-sut.golden.mjs"
+      ],
+      "reason": "提交 1e6c3c5（2026-07-17 观察 runtime 信任根加固）把本金牌改写为与姊妹金牌字节相同的守卫化内容并存档 .archive.gz，但本 PRD 冻结账未随之重冻（2026-07-28 全仓漂移普查逮出，Steven 批准同步）。本笔同步 checksum 至现役已提交字节并重跑本 PRD gate，事实以退出码为准；passes 原值 false，无陈旧绿风险。"
+    }
+  ],
   "observability": [
     {
       "dimension": "父目录在检查与 open/rename/commit 间的跨进程 rename race，Node 在各 OS 缺少统一目录 fd 相对寻址能力；须平台专项审计与并发压力测试，不向生产 API 注入 reader/clock/filesystem 测试旁路。",

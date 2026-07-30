@@ -35,7 +35,7 @@
         "node tests/_golden/teachin-semantic-lock-intake-joint.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-18T07:59:53.675Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-18T11:02:18.953Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-record-intake-canonical-contract",
@@ -45,7 +45,7 @@
         "node tests/_golden/record-intake.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-18T07:59:57.773Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-18T11:02:23.804Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-observation-and-adjacency-zero-regression",
@@ -60,8 +60,8 @@
         "node tests/_golden/teachin-semantic-lock-package-integrity.zero-sut.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-07-18T11:05:04.815Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-intake-swap-race-atomicity",
@@ -71,7 +71,7 @@
         "node tests/_golden/teachin-intake-swap-race.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-18T08:00:37.298Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-18T11:05:12.465Z 全部 acceptance exit 0"
     }
   ]
 }

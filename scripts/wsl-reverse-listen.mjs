@@ -19,6 +19,27 @@ const HERE = dirname(fileURLToPath(import.meta.url));
 const site = JSON.parse(readFileSync(join(HERE, '..', 'site.json'), 'utf8'));
 const HOST_HEADER = new URL(site.target.startUrl).host; // host[:port]，只进内存、绝不回显
 
+// 代理形态支持（origin-preserving-proxy）：浏览器挂 http 代理后请求行是绝对 URI（GET http://host/path）。
+// 目标 host 匹配 → 归一回源站形态（仅路径），交由既有 Host 重写与转发；其余一律拒——
+// 非目标 host 502（代理面只通目标站，第三方资源明确失败不悬挂）、CONNECT 501（目标纯 http 用不上）、
+// 绝对 URI 解析失败 400。host 比对做 :80 默认端口归一。
+const normHost = (h) => String(h || '').toLowerCase().replace(/:80$/, '');
+const TARGET_HOST = normHost(HOST_HEADER);
+function normalizeRequestLine(reqLine) {
+  const m = /^(\S+)\s+(\S+)\s+(HTTP\/\S+)$/.exec(reqLine);
+  if (!m) return { line: reqLine };
+  const [, method, target, version] = m;
+  if (method === 'CONNECT') return { reject: 501 };
+  if (target.startsWith('/')) return { line: reqLine }; // 源站形态，维持原行为
+  // 承诺边界闭合（评审 M2）：非源站形态且非 http(s) 绝对 URI（如 ftp://、单斜杠畸形 http:/）一律 400，
+  // 不得当源站形态改写 Host 后转发——分类必须 fail-closed。
+  if (!/^https?:\/\//i.test(target)) return { reject: 400 };
+  let u;
+  try { u = new URL(target); } catch { return { reject: 400 }; }
+  if (u.protocol !== 'http:' || normHost(u.host) !== TARGET_HOST) return { reject: 502 };
+  return { line: `${method} ${u.pathname}${u.search} ${version}` };
+}
+
 const CLIENT_PORT = 15519;
 const TUNNEL_PORT = 15520;
 const HEAD_MAX = 65536;
@@ -51,8 +72,9 @@ async function takeTunnel(budgetMs = 4000) {
 // 状态机保证 keep-alive 复用连接上的每个请求都被改写（不止首个）。
 // 关键：每个完整请求（改写头 + 原 body）攒齐后【单次】writeOut——Windows 代理用 tunnel.once('data') 抓首包
 // 再异步连 upstream，期间到达的后续包会丢；把整条请求合成一次写，保证首个请求头+body 一起落进 once 捕获。
-function makeRewriter(writeOut) {
+function makeRewriter(writeOut, onReject) {
   let buf = Buffer.alloc(0);
+  let dead = false;        // 拒付后不可逆终态（评审 High）：不再解析、不再向隧道写任何字节
   let mode = 'HEAD';       // HEAD | LEN | CHUNK
   let remaining = 0;       // LEN 模式待透传的 body 字节
   let pending = [];        // 当前请求累积的输出片（头 + body），完整后一次 flush
@@ -65,7 +87,9 @@ function makeRewriter(writeOut) {
     const raw = headBuf.toString('latin1');
     const headEnd = raw.indexOf('\r\n\r\n');
     const lines = raw.slice(0, headEnd).split('\r\n');
-    const out = [lines[0]]; // 请求行原样
+    const norm = normalizeRequestLine(lines[0]);
+    if (norm.reject) return { reject: norm.reject };
+    const out = [norm.line]; // 请求行（代理形态已归一回源站形态）
     let te = null, cl = 0;
     for (let i = 1; i < lines.length; i++) {
       const l = lines[i];
@@ -81,6 +105,7 @@ function makeRewriter(writeOut) {
   }
 
   return (chunk) => {
+    if (dead) return true; // 终态：吞掉后续数据，收尾由 onReject 的 end/destroy 链完成
     buf = Buffer.concat([buf, chunk]);
     // 循环消费缓冲：一个 data 可能含多个请求（流水线）或半个头。
     for (;;) {
@@ -89,7 +114,14 @@ function makeRewriter(writeOut) {
         if (idx < 0) { if (buf.length > HEAD_MAX) return false; return true; }
         const headBuf = buf.subarray(0, idx + 4);
         buf = buf.subarray(idx + 4);
-        const { head, te, cl } = rewriteHead(headBuf);
+        const r = rewriteHead(headBuf);
+        if (r.reject) {
+          // 不可逆终态（评审 High）：清空缓冲与待写片，防止已缓冲的后续请求在 close 竞态里被转发
+          dead = true; buf = Buffer.alloc(0); pending = [];
+          onReject(r.reject);
+          return true;
+        }
+        const { head, te, cl } = r;
         pending.push(head);
         if (te === 'chunked') { mode = 'CHUNK'; }
         else if (cl > 0) { mode = 'LEN'; remaining = cl; }
@@ -124,7 +156,14 @@ const clientServer = net.createServer((client) => {
     tunnel.on('error', drop);
     tunnel.on('close', () => client.end());
     client.on('close', () => tunnel.destroy());
-    const rewrite = makeRewriter((b) => { try { tunnel.write(b); } catch { drop(); } });
+    const rewrite = makeRewriter(
+      (b) => { try { tunnel.write(b); } catch { drop(); } },
+      (code) => {
+        const txt = code === 501 ? 'Not Implemented' : code === 400 ? 'Bad Request' : 'Bad Gateway';
+        try { client.end(`HTTP/1.1 ${code} ${txt}\r\nContent-Length: 0\r\nConnection: close\r\n\r\n`); } catch { drop(); }
+        tunnel.destroy(); // 立即释放隧道侧（评审 High）：拒付连接不占池、也断掉与在途上游响应的交叉
+      },
+    );
     client.on('data', (d) => { if (rewrite(d) === false) drop(); });
     tunnel.pipe(client); // 响应方向：原样回传
     client.resume();

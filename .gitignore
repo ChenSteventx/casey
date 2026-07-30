@@ -31,3 +31,9 @@ loop/contracts/
 *.key
 *.deepseek-key
 runs/
+
+# 外部工具临时产物：.nodequality<时间戳>/BenchOs 合成根文件系统树，非 Casey 产物、由某活进程持续写；不入库、待写入方停后再清理
+.nodequality*/
+
+# 金牌起草期脚手架目录（会话内临时，产物已冻入 tests/_golden）
+.golden-scratch-*/
