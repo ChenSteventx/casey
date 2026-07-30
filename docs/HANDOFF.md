@@ -21,14 +21,29 @@
      「创建时间」DOM 命中 1、可见命中 0，而现役 `assert.textHidden` 数 DOM 命中；
      注册表把该原子定义为 `toBeHidden`（含未挂载），**签字时的契约就是可见性**。
      故不需要带外侦察关闭控件。
-2. **契约 `assert-visibility-semantics`**：红金牌九钉冻结（红先行实测 exit 1、
-   2/9 通过），accept 已过，生产件改 `lib/replay/intent-observation.mjs` 与
-   `lib/assertion-draft.mjs`。九钉里 V9 是主会话裁定 M4 补的——钉住「采集失败
-   下的冲突口径」，它现行的红签名 `textVisible ok=false actual=0 /
-   textHidden ok=true actual=0` 正是「各判各的」实例。
-   主会话裁决四条（`plan.md` §5）：M1 夹具走 hermetic 不碰被双 prd 冻结的
-   `publish-sut`（浏览器层证据由 A4 四轮真机承担）；M2/M3 两枚既有陈旧红挂账；
-   M4 可见与 DOM 计数任一采不到就省键、正反两向一律落未知。
+2. **契约 `assert-visibility-semantics` 六阶段全收口，11 个提交已 push `origin/dev`**。
+   金牌十钉（红先行 exit 1、2/9 → 收口 exit 0、10/10），gate GREEN 3/3。
+   生产件改 `lib/replay/intent-observation.mjs` 与 `lib/assertion-draft.mjs`。
+   - **真机 A4 已兑现**：最终码上跑五轮，`run_final1/3/4/5_20260731` 均 6/6 全
+     PASS、`textHidden 创建时间` 逐轮 `ok:true actual:0`；`run_final2` 抖动作废
+     并记账（`atstep_1` 即 `locatorError` 级联，失败在定位层不在采集层，且系统落
+     `NEEDS_HUMAN` 未假绿）。辅助探针首末轮各一次，均 `Esc 前 DOM 1/可见 1 →
+     Esc 后 DOM 1/可见 0`、判 `HIDDEN_NOT_UNMOUNTED`，独立会话复现真机接缝。
+     探针 `scripts/visibility-a4-probe.mjs`，证据
+     `docs/plans/assert-visibility-semantics/evidence/`。
+   - **异构评审 codex sol max 三轮**（全部对着不可变 commit 跑）：r1 一条
+     Critical（提示读取拆成两次采样→短命提示谢幕后 `textHidden` 判过，废掉
+     「兜底的价值是时间」）；r2 一条 Medium（补的 V10 只钉调用顺序、没钉不变量，
+     「两次采样但可见那次读在前」能蒙绿）；r3 一条 Medium（计数只覆盖 `evaluate`
+     一条通道，混合通道蒙绿、合法单次 `locator` 读法误判红）。三条全修、各自
+     双向变异验证、还原后按 sha256 字节全同。
+   - **开口项（如实标注）**：r3 那条修法只做了变异验证、**未再跑第四轮复审**；
+     r2 顺带发现同模块两处同族假绿（回复快照 `:9` 分开读数量与末条文本、按钮
+     观察 `:188` 分开读命中数与禁用数，都是「同一事实两个视图分开采样」），
+     非本契约引入、已挂账另立契约；三笔换签 `PENDING_STEVEN`。
+   - 主会话裁决四条（`plan.md` §5）：M1 夹具走 hermetic 不碰被双 prd 冻结的
+     `publish-sut`；M2/M3 两枚既有陈旧红挂账；M4 可见与 DOM 计数任一采不到就
+     省键、正反两向一律落未知。
 3. **实测新逮到的覆盖洞（D5 起草时）**：四态**分类**证据齐
    （`p2-verdict` 夹具四态全，我核过），但四态**徽章渲染**只覆盖 `PASS` 与
    `SUT_DEFECT`——`p7-report` 夹具只有两步，`HARNESS_ERROR` 与 `NEEDS_HUMAN`
