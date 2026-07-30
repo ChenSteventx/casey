@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 // Shared resolve→opaque authority→revalidate→perform gate. Pure-memory Playwright doubles.
+// 换签（teachin-raw-actionability-closure，GRILL v3 D2）：browserHarness 拓扑替身保真化（旧替身回填
+// value 键曾使 A9 raw 正控假绿，D0b）；A9 判据不变、语义变真；新增 A10 负控。原件存档 .archive.gz。
 
 import { resolveExecutionTarget } from '../../lib/execution-target/authority.mjs';
 
@@ -204,18 +206,37 @@ function browserHarness() {
   let active = first;
   let activeAuthority = firstAuthority;
   let originOk = true;
+  // 拓扑替身保真化（换签面，GRILL v3 D2/D0b）：复现冻结接缝 lib/page-topology/controller.mjs——
+  // performClick 丢弃回调返回值、成功体无 value 键、吞回调抛错；只有 evaluateActive 回传 value。
+  const deny = (reason) => Object.freeze({ ok: false, reason, verdictHint: 'NEEDS_HUMAN' });
   const topology = Object.freeze({
     activePageAuthority: () => activeAuthority,
     async evaluateActive({ pageAuthority, evaluate }) {
-      if (pageAuthority !== activeAuthority) return { ok: false, reason: 'PAGE_AUTHORITY_STALE' };
-      return { ok: true, value: await evaluate(active.page) };
+      if (pageAuthority !== activeAuthority) return deny('PAGE_AUTHORITY_STALE');
+      try {
+        return Object.freeze({ ok: true, reason: null, value: await evaluate(active.page) });
+      } catch {
+        return deny('PAGE_EVALUATION_FAILED');
+      }
     },
     async performClick({ pageAuthority, perform }) {
-      if (pageAuthority !== activeAuthority) return { ok: false, reason: 'PAGE_AUTHORITY_STALE' };
-      return { ok: true, value: await perform(active.page) };
+      if (pageAuthority !== activeAuthority) return deny('PAGE_AUTHORITY_STALE');
+      let performFailed = false;
+      try {
+        await perform(active.page); // 返回值一律丢弃：真控制器如此，替身绝不偷偷回传。
+      } catch {
+        performFailed = true;
+      }
+      if (performFailed) return deny('PAGE_ACTION_FAILED');
+      return Object.freeze({
+        ok: true,
+        reason: null,
+        handoff: Object.freeze({ kind: 'none', candidateCount: 0 }),
+        activePageAuthority: activeAuthority,
+      });
     },
     async consumeNewPageEvent() {
-      return { ok: false, reason: 'TOPOLOGY_EVENT_INVALID' };
+      return deny('TOPOLOGY_EVENT_INVALID');
     },
   });
   const replaceActive = () => {
@@ -523,10 +544,11 @@ if (api && formalApi && rawDriverApi) {
 
     const positive = browserHarness();
     const done = await performRaw(positive, await resolveRaw(positive));
+    // 保真替身下的真判据：物理动作已落地就必须判成功（修前红=驱动 :119 的 value 判据）。
     assert(exactKeys(done, ['ok', 'identityReadback'])
       && done.ok === true && done.identityReadback?.ok === true
       && positive.stats.physical.join(',') === 'click',
-    `raw positive 未真实成功：${JSON.stringify({ done, stats: positive.stats })}`);
+    `raw positive 未真实成功（保真替身下的 seam 修复钉）：${JSON.stringify({ done, stats: positive.stats })}`);
 
     for (const [label, mutate] of [
       ['active-page-replaced', (harness) => harness.replaceActive()],
@@ -545,6 +567,26 @@ if (api && formalApi && rawDriverApi) {
         && harness.stats.physical.length === 0,
       `raw ${label} 未稳定零动作拒绝：${JSON.stringify({ denied, stats: harness.stats })}`);
     }
+  });
+
+  await check('A10 夹具保真负控：拓扑替身返回形制与冻结接缝全等（回填 value 键即红）', async () => {
+    const { topology } = browserHarness();
+    const pageAuthority = topology.activePageAuthority();
+    const sentinel = 'CALLBACK_RETURN_SENTINEL';
+    const ok = await topology.performClick({ pageAuthority, perform: async () => sentinel });
+    assert(exactKeys(ok, ['ok', 'reason', 'handoff', 'activePageAuthority'])
+      && !('value' in ok) && !Object.values(ok).includes(sentinel),
+    `performClick 成功体须与真控制器键集全等且不回传回调值：${JSON.stringify(ok)}`);
+    const swallowed = await topology.performClick({ // 外抛而非吞成拒付即红（本行直接抛）
+      pageAuthority,
+      perform: async () => { throw new Error('PRIVATE_ACTION_DETAIL'); },
+    });
+    assert(swallowed?.ok === false && swallowed.reason === 'PAGE_ACTION_FAILED'
+      && !JSON.stringify(swallowed).includes('PRIVATE'),
+    `回调抛错须吞成闭合拒付：${JSON.stringify(swallowed)}`);
+    const evaluated = await topology.evaluateActive({ pageAuthority, evaluate: async () => true });
+    assert(exactKeys(evaluated, ['ok', 'reason', 'value']) && evaluated.value === true,
+      `只有 evaluateActive 回传 value（click 路与 fill/press 路的分野）：${JSON.stringify(evaluated)}`);
   });
 }
 

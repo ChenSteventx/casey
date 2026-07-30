@@ -3,7 +3,7 @@
   "task": "teachin-replayability-closure（full）：完成不冒充正式测试结论的示教技术闭环——manual capture exact bytes → 同进程 application service 准入并真实关闭录制 runtime → canonical bootstrap 新开 source fresh runtime → raw source reproduction → clean proof authority → resolved existing-atom projection → 现役 flow-bridge/compile → distilled fresh runtime → semantic replay receipt pair → deterministic equivalence。LLM 不进入 replay、proof、receipt、comparator 或 verdict，只能在 CLI 外提出 mapping 候选，机器执行前由确定性门证明候选逐 event 忠实。fresh 不能自报：一次性 fresh runtime authority 只由录制 browser/context 真实终止事件与新对象身份归属共同铸造。首版只收 effect=read、persistentMutation=false；不给 capture 增加 signed:true 或 replayReady:true，不把 CLEAN/REPRODUCED/EQUIVALENT 写成正式 PASS；acceptance 全程 zero-SUT，不运行 fake SUT、浏览器或网络；新增或修改生产/golden 文件逐个严格少于 600 行。",
   "specPath": "docs/plans/teachin-replayability-closure/plan.md",
   "testChecksums": {
-    "tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs": "298fa41311d3cc71a2253210622eca3db0779901c4bdc9491af4a3a7daee0d71",
+    "tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs": "9bb6a4e827a708f6ab82e1cde179c72a01af9e20b467a6b861d10232dfc006a8",
     "tests/_golden/teachin-replayability-adjacent.zero-sut.golden.mjs": "f6f16b1dc11ac85b9c5ebc998b81ff0ef831144b9cda9a92c9b7dfbe5cdde1e1",
     "tests/_golden/teachin-replayability-atom-roundtrip.zero-sut.golden.mjs": "3ea7376fd9f075c5cd9e06d8985c36dffd3518b22d99c9deb77c66493a5e36bb",
     "tests/_golden/teachin-replayability-boundaries.static.golden.mjs": "ea3e08b8366c5d1abea75078b2a97361e87e465aac3fc3d86e9180a524c5561f",
@@ -181,6 +181,15 @@
       ],
       "reason": "原 C1/C6 裸字面量钉迫使取证包裹写成 async 箭头多铸一枚 Promise（codex 判 rig）。六轮合法语法反例逐轮抬高（注释诱饵→字符串→别名正则→对象字面量除号/debugger 正则→实参位 IIFE 求值期启动→Unicode 转义标识符影子→as 别名替换包裹）后止损定终态六钉：①原始字节计数纪律（两标识符裸名恰 2 处 import+调用、调用形恰 1 处）；②词法歧义毒化 fail-closed（/ 证不出除号或正则整扫描毒化转红）；③span 归属；④刚性模板（零参箭头+箭头后第一个非空白 token 即唯一调用形+配平后 span 内再无内容，封 IIFE/逗号表达式/第三实参/默认参数位）；⑤原始字节禁反斜杠 u 转义（同一标识符两套字节唯一通路，真件实核 0 处）；⑥具名导入双钉（全文禁 as 目标名 + 目标名须为对应模块 import 花括号内恰等裸 specifier）。威胁模型写诚实：本静态门是协作文件回归闸（防重构走形与迎合钉 rig 回归），不防拥有仓写权的对抗性混淆——该对抗者可直接改金牌本身、任何静态门在此威胁下自反；验收标准=真件自然写法原样过、任何走形当场红。十四条负控全打进真 record.mjs 实测各红、负控后 record.mjs sha 回验一致；运行时侧证探针（自然形态 eventCount=1、IIFE/尾随实参/别名替换 0）在案。原件字节存档 .pre-evidence-amendment.archive.gz（gunzip 回验 sha=020f2025… 与原冻结值一致；中间态 677ccc6b/7b145b72/2a0d7446/8a1587d9/16a9f3a0 未经人签不叠档，直接记 020f2025→31956edc 一笔）。新件 7 钉 exit 0、472 行。production-boundary.static 经排查无 catch 字面量钉、未受 M1 影响、字节未动不换签。",
       "signedBy": "Steven（2026-07-29 AskUserQuestion 补签：与主金牌换签同一合并账，现役 sha 31956edc）"
+    },
+    {
+      "amendedAt": "2026-07-30",
+      "round": "teachin-raw-actionability-closure 契约 D2 夹具保真化换签（codex r5 PLAN_APPROVE 独立复核 D0）",
+      "files": [
+        "tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs"
+      ],
+      "reason": "金牌拓扑替身返回了真控制器（page-topology/controller.mjs performClick）从不返回的 value 键=夹具不保真，正是 raw 驱动 :119 value 判据 bug（click 恒败且物理点击已落地）藏匿多日的原因。保真化：替身丢弃回调返回值、吞异常入闭合拒付、成功返回体键集与真控制器逐键全等；新增夹具保真负控（替身回填 value 键即红）。修后 9 绿/1 红——A9 raw 正控之红即 seam 修复钉（判据未变、语义现真），随 seam 修复契约翻绿。原件 gzip 存档 .pre-actionability-amendment.archive.gz（回验 sha=298fa413… 与原冻结值一致）。",
+      "signedBy": "Steven（2026-07-30 AskUserQuestion 签：seam 修复冻结签字包三件全认）"
     }
   ],
   "observability": [

@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-raw-actionability-closure（full）：真机闭环 click/dblclick 恒败真因=raw 驱动误读拓扑控制器返回契约——controller.performClick 丢弃回调返回值且成功体无 value 键，而 raw-playwright-driver 以 performed.ok===true && performed.value===true 判成败，于是点击物理落地却恒判失败；fill/press 走 evaluateActive（有 value）故好。正式面 page-topology/replay-action.mjs 早有闭包捕获先例，raw 面未沿用。两枚冻结金牌的拓扑替身虚构了真控制器从不返回的 value 键（夹具不保真），且全仓无真控制器×canonical raw 驱动接合金牌，故此洞长期不可见。瘦身直修（Steven 2026-07-30 两轮确认，v2 诊断基建整体降级后继契约）：①performRawCandidate 改闭包捕获（拓扑结果只判 ok、动作成败由闭包值判、双条件合取 fail-closed）；②两枚金牌夹具保真化换签（吞异常/无 value/键集与真控制器全等，各配替身回填 value 即红的防再漂钉）；③新增真接合结构性正控金牌（此前全仓缺失）。计划审 codex sol max 五轮至 PLAN_APPROVE（独立内存复现坐实 D0 事实链）。",
+  "specPath": "docs/plans/teachin-raw-actionability-closure/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-raw-actionability.zero-sut.golden.mjs": "7028587abbbafa12a374aff6f43a5494006844e347a19fd91dabe0d46d96e511"
+  },
+  "observability": [
+    {
+      "dimension": "新金牌冻结人签（ADR-0004）：Steven 2026-07-30 已签（三件全认：新金牌 17 钉红先行 12 绿/5 红实证 + 两笔夹具保真化换签）。",
+      "route": "human"
+    },
+    {
+      "dimension": "A4 真机闭环绿（route:human）：Steven 重录 tc_wf_list_smoke 两击，record 退出码 0（技术等价 developmentOnly，不冒充正式结论）；不通则边车如实取证再议、不硬闯。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-seam-fix-golden",
+      "title": "S1 真控制器×canonical raw 驱动接合金牌（G1 成功路+物理动作恰一次+seam 回退负控；G2 替身保真逐键对账；G3 fill/press 回归）红先行翻绿",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/teachin-raw-actionability.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-30T09:49:08.786Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacent-zero-regression",
+      "title": "S2 邻接面零回归（护栏 #19）：换签两金牌新件 + 闭环全链 + 结构门 + 前序契约金牌复跑绿",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-raw-runner.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-completion.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-production-boundary.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-boundaries.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-runtime-cycle-adapter.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-nav-expansion-recipe.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-30T09:54:48.726Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-repo-drift-and-terms",
+      "title": "S3 全仓冻结件零漂移 + 术语表完整性",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry"
+      ],
+      "evidence": "gate@2026-07-30T09:56:29.937Z 全部 acceptance exit 0"
+    }
+  ]
+}

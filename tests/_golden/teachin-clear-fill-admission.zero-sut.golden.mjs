@@ -5,6 +5,11 @@
 // 仍 fail-closed 拒；纯空白等「洗成空串」形态在投影层丢键、由准入拒付（codex r1 High 收紧，
 // 防把原拒付形态洗成静默清空）；敏感遮值闸序先于值可用闸。
 // 夹具形状取自真语料 seq 11 邻接结构（脱敏重表达）。
+//
+// 换签（teachin-raw-actionability-closure，GRILL v3 D2）：G6 的拓扑替身保真化——
+// performClick 复现 lib/page-topology/controller.mjs 真实语义（丢弃回调返回值、成功体无 value 键、
+// 吞回调抛错）。fill 走 evaluateActive 路，故本件判据与结论一字不变；新增 G6 夹具保真负控。
+// 原件存档 teachin-clear-fill-admission.zero-sut.golden.mjs.pre-actionability-amendment.archive.gz。
 
 const TAG = 'teachin-clear-fill-admission';
 const failures = [];
@@ -424,18 +429,46 @@ await check('G6 物理句柄：canonical driver 对 handle.fill 实参严格全�
     isClosed: () => false,
   });
   const pageAuthority = Object.freeze(Object.create(null));
+  // 拓扑替身保真化（换签面，GRILL v3 D2）：复现冻结接缝 lib/page-topology/controller.mjs——
+  // performClick 丢弃回调返回值、成功体无 value 键、吞回调抛错；只有 evaluateActive 回传 value。
+  // 本件的 fill 路本就走 evaluateActive，故行为不变；改的是夹具保真度，不是判据。
+  const STALE = Object.freeze({
+    ok: false, reason: 'PAGE_AUTHORITY_STALE', verdictHint: 'NEEDS_HUMAN',
+  });
   const topology = Object.freeze({
     activePageAuthority: () => pageAuthority,
     async evaluateActive({ pageAuthority: actual, evaluate }) {
-      if (actual !== pageAuthority) return { ok: false, reason: 'PAGE_AUTHORITY_STALE' };
-      return { ok: true, value: await evaluate(page) };
+      if (actual !== pageAuthority) return STALE;
+      try {
+        return Object.freeze({ ok: true, reason: null, value: await evaluate(page) });
+      } catch {
+        return Object.freeze({
+          ok: false, reason: 'PAGE_EVALUATION_FAILED', verdictHint: 'NEEDS_HUMAN',
+        });
+      }
     },
     async performClick({ pageAuthority: actual, perform }) {
-      if (actual !== pageAuthority) return { ok: false, reason: 'PAGE_AUTHORITY_STALE' };
-      return { ok: true, value: await perform(page) };
+      if (actual !== pageAuthority) return STALE;
+      let performFailed = false;
+      try {
+        await perform(page);
+      } catch {
+        performFailed = true;
+      }
+      if (performFailed) {
+        return Object.freeze({
+          ok: false, reason: 'PAGE_ACTION_FAILED', verdictHint: 'NEEDS_HUMAN',
+        });
+      }
+      return Object.freeze({
+        ok: true,
+        reason: null,
+        handoff: Object.freeze({ kind: 'none', candidateCount: 0 }),
+        activePageAuthority: pageAuthority,
+      });
     },
     async consumeNewPageEvent() {
-      return { ok: false, reason: 'TOPOLOGY_EVENT_INVALID' };
+      return Object.freeze({ ok: false, reason: 'TOPOLOGY_EVENT_INVALID' });
     },
   });
 
@@ -457,6 +490,36 @@ await check('G6 物理句柄：canonical driver 对 handle.fill 实参严格全�
   const fills = physical.filter((entry) => entry.kind === 'fill');
   assert(fills.length === 1 && fills[0].value === '' && typeof fills[0].value === 'string',
     `handle.fill 必须恰好收到一次严格空串：${JSON.stringify(physical)}`);
+
+  // —— G6 夹具保真负控（换签面，GRILL v3 D2/D0b）——
+  // 替身回填真控制器从不返回的 value 键即红：那正是把 raw 点击路正控养成假绿的机制。
+  const keys = (value) => Object.keys(value).sort().join(',');
+  const sentinel = 'CALLBACK_RETURN_SENTINEL';
+  const clicked = await topology.performClick({
+    pageAuthority,
+    perform: async () => sentinel,
+  });
+  assert(keys(clicked) === 'activePageAuthority,handoff,ok,reason',
+    `performClick 成功体键集须与冻结接缝全等：${keys(clicked)}`);
+  assert(!('value' in clicked) && !Object.values(clicked).includes(sentinel),
+    `替身不得回传回调值（真控制器丢弃它）：${JSON.stringify(clicked)}`);
+  let escaped = null;
+  let swallowed = null;
+  try {
+    swallowed = await topology.performClick({
+      pageAuthority,
+      perform: async () => { throw new Error('PRIVATE_ACTION_DETAIL'); },
+    });
+  } catch (error) {
+    escaped = error;
+  }
+  assert(escaped === null, 'performClick 须吞回调抛错、不外抛');
+  assert(swallowed?.ok === false && swallowed.reason === 'PAGE_ACTION_FAILED'
+    && !JSON.stringify(swallowed).includes('PRIVATE'),
+  `吞抛错后的闭合拒付形状不符：${JSON.stringify(swallowed)}`);
+  const evaluated = await topology.evaluateActive({ pageAuthority, evaluate: async () => true });
+  assert(keys(evaluated) === 'ok,reason,value' && evaluated.value === true,
+    `只有 evaluateActive 回传 value（fill 路正因此不受 seam 缺陷影响）：${JSON.stringify(evaluated)}`);
 });
 
 if (failures.length) {
