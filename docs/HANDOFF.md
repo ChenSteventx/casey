@@ -3,7 +3,60 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-07-30 晚：闭环真因修复真机验证 + tier-2 收口（最新覆盖层）
+## 2026-07-31 凌晨：publish 阻断点定性纠偏 + P9 推到只剩人签（最新覆盖层）
+
+> Steven 睡前授权自行判断推进，总目标 P9 完成、顺带起接口交互。本层记的是
+> 无人值守这一段。**凡需人签的一律没签**——D5 口径修订在契约里明写「须
+> Steven 明签不代签」，我只备文本与证据。
+
+1. **publish 只剩一个阻断点，而且此前的定性是错的**。四轮真机
+   （`run_baseline1/2_20260730`、`run_loadfix1/2_20260730`）逐轮核实：12 步动作
+   **全部** `result=ok`，唯一非 PASS 是 `atstep_11` 关闭步
+   （`NEEDS_HUMAN` / `SUT_DEFECT_OR_STALE`），**保存步四轮全 PASS**。
+   - 订正一：此前记的「顶栏延迟挂载致保存步系统性红」不成立——那是重表达前的
+     旧样本，重表达后四轮 `locatorResolution: unique` 且步级全 PASS。剖面新增的
+     `loading` 活配置（原 `quiet.loadingSelector` 是运行时从不读取的死配置）
+     已覆盖该面。
+   - 订正二：关闭步动作是对的，错的是断言口径。真机探针实测按 Esc 后
+     「创建时间」DOM 命中 1、可见命中 0，而现役 `assert.textHidden` 数 DOM 命中；
+     注册表把该原子定义为 `toBeHidden`（含未挂载），**签字时的契约就是可见性**。
+     故不需要带外侦察关闭控件。
+2. **契约 `assert-visibility-semantics`**：红金牌九钉冻结（红先行实测 exit 1、
+   2/9 通过），accept 已过，生产件改 `lib/replay/intent-observation.mjs` 与
+   `lib/assertion-draft.mjs`。九钉里 V9 是主会话裁定 M4 补的——钉住「采集失败
+   下的冲突口径」，它现行的红签名 `textVisible ok=false actual=0 /
+   textHidden ok=true actual=0` 正是「各判各的」实例。
+   主会话裁决四条（`plan.md` §5）：M1 夹具走 hermetic 不碰被双 prd 冻结的
+   `publish-sut`（浏览器层证据由 A4 四轮真机承担）；M2/M3 两枚既有陈旧红挂账；
+   M4 可见与 DOM 计数任一采不到就省键、正反两向一律落未知。
+3. **实测新逮到的覆盖洞（D5 起草时）**：四态**分类**证据齐
+   （`p2-verdict` 夹具四态全，我核过），但四态**徽章渲染**只覆盖 `PASS` 与
+   `SUT_DEFECT`——`p7-report` 夹具只有两步，`HARNESS_ERROR` 与 `NEEDS_HUMAN`
+   在夹具里只作汇总计数且值为 0，全仓无金牌真渲染断言过这两态。
+   `lib/report.mjs:17-19/64-68/102-103` 四态徽章齐全，**补齐只需夹具加两步 +
+   一次换签，渲染器一行不用改**。两案（甲补齐 / 乙如实降级）待 Steven 择一。
+4. **tier-2 A4 是人闸不是机器闸**（我代不了）：清单唯一成员的前置要求人重新
+   预置 `atl_同名对抗0722`（已在 07-23 见证收尾时清理归零）；两份带外收据
+   `runs/_tier2/win-probe-target.result.json` 与
+   `runs/_tier2/out-of-band-account-receipt.json` **都不存在**；另四例全卡
+   C 轨授权。隧道本身健康（回环探针 HTTP 200、4.4 秒）。
+5. **两份待签草案已备好**：`docs/plans/p9-uat-close/D5-ACCEPTANCE-SEMANTICS-REVISION.draft.md`
+   （三处文本的具体改法逐字写好，含甲乙两案）与
+   `docs/plans/p9-uat-close/P9-UAT-SIGNOFF.draft.md`（五行清单，三例已核实的
+   逐步裁定与产物清单在案；publish 一行留空待四轮跑完）。
+6. **接口交互诊断**：首版计划流产——codex 会话在发出终稿前断线，
+   `plan-sol-max-r1.log` 里没有计划正文（那句「现提交计划书」是待办清单渲染），
+   八百多万 input token 只吐了三万多 output。接手评审自己核代码产出了一份
+   事实基线，已落盘 `docs/plans/api-interaction-diagnosis/REVIEW-opus-r1-fact-baseline.md`。
+   **三条主会话裁定**：首刀=把已采到却没呈现的东西呈现出来（零新增采集、
+   零 LLM、零真机）；**只做元数据级、绝不开正文面**（Steven 原话「抓包」与既有
+   已冻安全面正面冲突——响应正文是刻意不落盘的，`seams-freeze` 与
+   `layer3-wiring` 两枚金牌对产物做敏感词深扫命中即红，正文面须单独走安全裁决）；
+   `SCOPE.md:39`「照 P6 自愈的合规范式接线」是**误设前提**——`lib/heal/` 里
+   根本没有 LLM，真 L3 重锚已整个换成零 LLM 确定性重锚。首刀在独立工作树
+   `casey-api-interaction-forensics-surfacing` 起契约，与 P9 零真机冲突。
+
+## 2026-07-30 晚：闭环真因修复真机验证 + tier-2 收口（历史覆盖层）
 
 1. **闭环点击恒败真因已修并在真机验证**（契约 `teachin-raw-actionability-closure`，
    commit `68f39b9`）。根因不是可操作性——是 `page-topology/controller.mjs` 的

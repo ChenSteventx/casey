@@ -51,8 +51,13 @@ CLI `bin/casey.mjs`、skill `.claude/skills/casey`、MCP `mcp/casey-server.mjs`�
 - `passes` 只由 `loop-kit/bin/gate.mjs` 写；`testChecksums` 冻结件对实现者只读，
   改动走 checksumAmendment + 人签。
 - 双 hook 术语拦截：回合输出与写入的 md/json 都被扫，违例、繁体、未登记的加粗英文拦红。
-- 模型分工（Steven 2026-07-28 定）：plan 用 fable；执行用 opus 5 medium 的 subagent；
-  执行过程多回抛 fable 咨询；评审用 codex `gpt-5.6-sol` xhigh + grok 联合，codex 无额度走 pi.dev。
+- 模型分工（Steven 2026-07-30 改，覆盖 07-28 版）：fable 额度见底，**计划改用
+  codex `gpt-5.6-sol` max 且允许开 fast 模式**（`--enable fast_mode`，下划线；
+  `-c model_service_tier="fast"` 会被静默忽略，只有加 `--strict-config` 才报错），
+  出的计划交 **opus 5 xhigh 审**；执行仍是 opus 5 medium 的 subagent，执行中可回抛
+  `gpt-5.6-sol` max 咨询；评审仍 codex + grok 联合，codex 无额度走 pi.dev。
+  约束 codex 时要明说「这是技术验证、安全性后置」，否则它会过度偏向安全。
+  每一环节都允许且鼓励多开 subagent。
 - 决策超时阶梯：提问 15 分钟未答发邮件，再 15 分钟未答可代签（须全盘披露、代签身份如实标注）。
 - 每收口一个批次主动发完工邮件通知 Steven（agently 两阶段确认）。
 
@@ -70,7 +75,28 @@ CLI `bin/casey.mjs`、skill `.claude/skills/casey`、MCP `mcp/casey-server.mjs`�
   P9 tier-1 已建、tier-2 与真机 UAT 未完成；P10 可信闭环自进化未开始
   （晋升链、跨运行复验、自动撤销均未建）。
 
-【当前契约 / 状态（2026-07-30 晨更新）】
+【当前契约 / 状态（2026-07-31 凌晨更新，以下为最新；再往下是 07-30 晨的旧层）】
+- **闭环点击真因已修并真机实证**：`teachin-raw-actionability-closure` 六阶段
+  收口（gate 3/3）。真因不是可操作性失败，而是 raw 驱动误读拓扑控制器返回
+  契约——`performClick` 丢弃回调返回值且成功体无 `value` 键，驱动却以
+  `performed.value === true` 判成败，于是点击物理落地却恒判失败。修法是闭包
+  捕获（正式面 `page-topology/replay-action.mjs` 早有先例）。真机两击 `performOk`
+  由假转真。**下方旧层里「真因=点击可操作性失败」那段已被推翻，别再照它开工。**
+- 闭环新阻断点：`resolved-completion.result-shape` 的外层统一码吞掉六类内层
+  具名拒付。窄契约 `cycle-evidence-inner-reason` 已出 GRILL+plan，金牌扩到
+  89 钉，换签待签。诚实预期：到闭环真绿之间大概率还有两三个契约。
+- **publish 只剩一个阻断点，且是断言口径不是动作**：四轮真机 12 步动作全部
+  `result=ok`，唯一非 PASS 是 `atstep_11` 关闭步，保存步四轮全 PASS。真机探针
+  实测按 Esc 后「创建时间」DOM 命中 1、可见命中 0，而现役 `assert.textHidden`
+  数 DOM 命中。契约 `assert-visibility-semantics` 正在修（九钉红金牌已冻、
+  accept 已过）。此前记的「顶栏延迟挂载致保存步系统性红」不成立，已订正。
+- tier-2 机器面实装完成（`lib/selftest-tier2.mjs` 等六件 + `doctor-probes`），
+  金牌 111 钉、Steven 已签；但 A4 真机跑不出 exit 0，卡三项人闸（见下一步 C）。
+- 实测新逮到的覆盖洞：四态**分类**证据齐（`p2-verdict` 夹具四态全），但四态
+  **徽章渲染**只覆盖 `PASS`/`SUT_DEFECT`——`p7-report` 夹具只有两步，另两态
+  在夹具里只作汇总计数且值为 0。渲染器四态齐全，补齐只需夹具加两步 + 换签。
+
+【当前契约 / 状态（2026-07-30 晨，旧层，部分已被上方推翻）】
 - 07-29 晚至 07-30 晨三契约连闭：`teachin-clear-fill-admission`（清空 fill 误拒修+
   真机 54 事件实证）、`teachin-nav-expansion-recipe`（带槽双击导航配方，计划四轮+
   代码三轮评审，真机计划层 exit 0）、`teachin-cycle-evidence`（闭环取证边车，
@@ -93,13 +119,20 @@ CLI `bin/casey.mjs`、skill `.claude/skills/casey`、MCP `mcp/casey-server.mjs`�
 - 工作树仍全未提交（Steven 已裁「全部入库分批提」+push dev）——禁止 `git add -A`、
   按批次显式路径提交。
 
-【下一步（任选其一）】
-A. 后继契约：修点击可操作性真因（`teachin-raw-replay` 机器侧可复现，
-   从「元素唯一定位但 performOk:false」入手查遮挡/可见性/稳定等待）。
-B. B-2 收口：Steven 跑三条 `!` 签字线 → 三次真机重跑 → B.5 正式报告
-   （report-to-pdf.mjs / video-to-mp4.mjs）。
-C. tier-2 落地：主树槽空后 contract init，按已批 plan 实现 `selftest --tier2`。
-D. 若 07-30 晨未完成：分批语义提交 + push origin dev + P9 账本收口。
+【下一步（按优先级）】
+A. **推 P9 关账**：可见性契约收口后跑 publish 真机四轮（`casey run
+   tc_wf_publish_states --sut <回环> --run-dir … --unique-name … --login-bootstrap`，
+   无需人点），首末轮补 DOM/可见双计数辅助探针（可复用
+   `lib/login-bootstrap.mjs` 自写探针，仓内暂无现成件）；再回填账本。
+B. **等 Steven 签的四件**（都已备好文本，他只需裁定）：可见性金牌换签、
+   内层归因金牌换签、D5 口径修订草案（含四态徽章覆盖洞甲/乙择一）、
+   UAT 签认书草案。
+C. **解 tier-2 A4 的三项人闸**：重新预置 `atl_同名对抗0722`、补两份带外收据、
+   C 轨授权。这三项 Claude 代不了。
+D. 接口交互诊断首刀（独立工作树 `casey-api-interaction-forensics-surfacing`）：
+   GRILL/plan 写完后走 accept → 实现。它全程零真机，可与 P9 并行。
+E. 两枚既有陈旧红挂账（census 闭集 27 对实际 30、reverse-closure 的隔离件
+   仍被 acceptance 引用），属 `prd-hermetic-golden-zero-sut-lifecycle`，另立契约。
 
 【环境坑（WSL）】
 - `/mnt/d` 的 git 慢，给足 300 秒；短超时的空输出别误判成干净工作树。
