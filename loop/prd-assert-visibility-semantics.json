@@ -3,12 +3,12 @@
   "task": "assert-visibility-semantics（full）：tc_wf_publish_states 末步四轮真机稳定红的真因是断言口径错、动作对——真机探针实测按 Esc 前「创建时间」DOM 命中 1 可见命中 1，按 Esc 后 DOM 命中仍 1、可见命中 0（浮层视觉关闭但节点不卸载），而现役 textHidden 数的是 DOM 命中。作者层注册表 lib/atoms-registry.snapshot.json:866 把 assert.textHidden 定义为 toBeHidden（含未挂载），故签字时的契约本来就是可见性，现行实现才是偏离——这是实现纠偏不是语义变更；且可见命中恒 ≤ DOM 命中，本改动只可能把 textHidden 由假翻真，不可能把任何现役绿判红。修法（GRILL D1，opus xhigh 审裁定路线 1）：最小改 lib/replay/intent-observation.mjs 的 readTextHits，被 textHidden 请求的文本值改用可见过滤计数；同文件两处 fail-open 缝一并钉死（safeRead(...,0) 查询抛错回 0 致负向断言判过、readToasts 兜底回 [] 致 noErrorToast 判过，护栏 #14）；toast 兜底改滤不砍（保时间敏感度、换带可见性过滤的读取，readToasts 本体不动因其同供 noErrorToast）；补 lib/assertion-draft.mjs 的 assert.textHidden 映射使其不再落待补。计划审 codex sol max 出、opus xhigh 审出七条修订并入 GRILL v1。",
   "specPath": "docs/plans/assert-visibility-semantics/plan.md",
   "testChecksums": {
-    "tests/_golden/assert-visibility-semantics.zero-sut.golden.mjs": "220fede7e1b5aadca6ce9242d995dd6a3bce8417d012e60593ba86f0db91ffec",
+    "tests/_golden/assert-visibility-semantics.zero-sut.golden.mjs": "a7f86121bfe96810e591f9d5cd2ba11e76431fdaa2e1342319e44494c8b15e8c",
     "tests/_golden/fixtures/assert-visibility-semantics/dom-page.mjs": "d9d239cdbec880812f7ca543c1fcc6546f533454e314f150af359a084ebb2787"
   },
   "observability": [
     {
-      "dimension": "A4 真机四轮（route:human）：publish 连跑 4 轮全步 PASS，intent_5 的 textHidden 创建时间 均 ok:true actual:0；首轮与末轮须保留辅助探针证 DOM=1 可见=0——该探针不是可选项，是唯一能区分「修对了」与「把动作失败洗绿」的证据（GRILL A4，R3 假绿自证陷阱）。",
+      "dimension": "A4 真机四轮（route:human）——**已兑现，待人复核**。最终码（含 codex Critical 修复）上跑了五轮：run_final1/3/4/5_20260731 四轮均 6/6 全 PASS，intent_5 的 textHidden 创建时间 逐轮 ok:true actual:0；同轮三条正向断言 textVisible 保存成功/创建时间/查看 逐轮 ok:true actual:1——同一轮内「Esc 前可见 1、Esc 后可见 0」的转变本身就是反洗绿证据（动作若没发生，可见计数不会归零）。run_final2 抖动作废并如实记账：它在 atstep_1/atstep_2 就 locatorError（res=none）、后续级联，失败点在定位层不在文本采集层，与本改动无关；且系统未假绿，落 NEEDS_HUMAN/INDETERMINATE，fail-safe 正常。辅助探针（GRILL A4 硬要求）首末轮各一次，产物 docs/plans/assert-visibility-semantics/evidence/a4-probe-first-round.json 与 a4-probe-last-round.json（runs/ 全仓 gitignore，故证据落到跟踪面）：两次均 Esc 前 DOM 1/可见 1、Esc 后 DOM 1/可见 0，判定 HIDDEN_NOT_UNMOUNTED——独立浏览器会话独立复现了真机接缝。探针脚本 scripts/visibility-a4-probe.mjs，其头注记了踩通的四个坑。",
       "route": "human"
     },
     {
@@ -28,15 +28,26 @@
       "route": "human"
     }
   ],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-31",
+      "round": "code-r1 异构评审补洞换签（codex sol max 1 Critical：两次采样窗口的真假绿）",
+      "files": [
+        "tests/_golden/assert-visibility-semantics.zero-sut.golden.mjs"
+      ],
+      "reason": "codex 逮到实现把提示读取拆成两次采样：readToasts（不过滤，供 noErrorToast）先读一次，readVisibleToasts（可见过滤，供 textHidden 兜底）稍后另读一次。短命提示若在两读之间谢幕，第二次合法返回空数组，textHidden 拿到 0 判过——恰好废掉 GRILL D3「兜底的全部价值是时间」那条，亲手打开了兜底本该防的假绿。codex 实测复现 toasts=[操作失败] → textHits={操作失败:0} → textHidden ok:true actual:0 → PASS。生产件已修：两函数合成 readToastSnapshot，在同一次 page.evaluate 里同刻派生 all 与 visible 两份，整次采不到则两份都 null；终端 toasts 仍输出 all（noErrorToast 不过滤口径不变），textHidden 兜底消费同刻的 visible；readVisibleToasts 删除。补 V10 钉住该失效模式：金牌侧用 Proxy 包替身的 evaluate，第一次提示查询由「提示在场」页面作答、其后由「已谢幕」页面作答，断言锁死 ok:false 与 actual:1 两者（省键是 ok:false actual:null，不与「同刻证据判不过」混为一谈）外加裁定须落 NEEDS_HUMAN。固定语料 dom-page.mjs 一个字节没动（冻结面）。双向变异验证：控制组 exit 0 十钉全绿；把同刻快照改回两次独立采样 → exit 1、红恰 V10 一枚，其余九钉零扰动，缺陷实现红签名 ok=true actual=0（提示查询 2 次）。金牌 9→10 钉。原件 gzip 存档 .pre-v10-amendment.archive.gz（回验 sha=220fede7… 与原冻结值一致）。另记一条实现约束：提示选择器必须字面写在 evaluate 回调体内、不许改成传参——固定语料靠正则匹配回调源码判别「是不是提示查询」（dom-page.mjs:162），挪成参数会让 V6 孪生缝钉当场失去判别力（实测踩过一次）。",
+      "signedBy": "PENDING_STEVEN"
+    }
+  ],
   "stories": [
     {
       "id": "s1-visibility-semantics-golden",
-      "title": "S1 新金牌九钉红先行翻绿：V1 DOM1/可见1 判假（既有面回归护栏）、V2 DOM1/可见0 判真（真机红签名）、V3 DOM0/可见0 判真（真卸载情景）、V4 采集抛错不回退 0、V5 隐藏提示节点不得经 toast 兜底重计、V6 孪生缝 noErrorToast 采集失败不得判过、V7 assert.textHidden 映射为硬断言、V8 D4 同值冲突取可见计数、V9 冲突局面下采集失败正负两向一律落未知（红先行实测 exit 1、2/9 通过，V9 现行红签名 textVisible ok=false actual=0 / textHidden ok=true actual=0 即「各判各的」实例）",
+      "title": "S1 新金牌十钉红先行翻绿：V1 DOM1/可见1 判假（既有面回归护栏）、V2 DOM1/可见0 判真（真机红签名）、V3 DOM0/可见0 判真（真卸载情景）、V4 采集抛错不回退 0、V5 隐藏提示节点不得经 toast 兜底重计、V6 孪生缝 noErrorToast 采集失败不得判过、V7 assert.textHidden 映射为硬断言、V8 D4 同值冲突取可见计数、V9 冲突局面下采集失败正负两向一律落未知、V10 同刻快照（提示在两次读取窗口内谢幕仍不得判过，codex 异构评审逮到的 Critical，换签补钉）。红先行实测 exit 1、2/9 通过；V9 现行红签名 textVisible ok=false actual=0 / textHidden ok=true actual=0 即「各判各的」实例；V10 在两次采样的缺陷实现下红签名 ok=true actual=0（提示查询 2 次）",
       "passes": true,
       "acceptance": [
         "node tests/_golden/assert-visibility-semantics.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-07-30T17:33:11.687Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-30T18:32:37.566Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-adjacent-zero-regression",
@@ -50,7 +61,7 @@
         "node tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs",
         "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-07-30T17:39:29.717Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-30T18:38:27.154Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-repo-drift-and-terms",
@@ -60,7 +71,7 @@
         "node tests/_golden/support/prd-drift-scan.mjs",
         "node loop-kit/bin/term-lint.mjs --registry"
       ],
-      "evidence": "gate@2026-07-30T17:41:06.666Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-30T18:39:59.017Z 全部 acceptance exit 0"
     }
   ]
 }

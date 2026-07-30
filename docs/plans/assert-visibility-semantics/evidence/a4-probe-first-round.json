@@ -1,0 +1,14 @@
+{
+  "probe": "assert-visibility-semantics-a4",
+  "workflow": "atl_vf0731e",
+  "beforeEsc": {
+    "dom": 1,
+    "visible": 1
+  },
+  "afterEsc": {
+    "dom": 1,
+    "visible": 0
+  },
+  "verdict": "HIDDEN_NOT_UNMOUNTED",
+  "note": "按 Esc 后节点仍在 DOM 但不可见——正是本契约纠偏的真机接缝，且证明关闭动作确实发生过"
+}

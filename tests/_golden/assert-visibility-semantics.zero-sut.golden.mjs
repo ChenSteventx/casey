@@ -16,6 +16,7 @@
 //   V7 assert.textHidden 经草拟器映射为硬断言、不再落待补
 //   V8 D4 冲突裁决：同一意图内同值被正负两向同时请求时取可见计数
 //   V9 M4 裁定（主会话 plan §5）：冲突局面下该值采集失败 → 省该键，正负两向一律落未知
+//   V10 同刻快照（codex 异构评审 Critical）：提示在两次读取窗口内谢幕，仍不得判过
 //
 // 回放向各钉都走完整回放路径：真实 runReplayEvents（事件运行器）→ 真实 projectReplayAxes（三轴）
 // → 真实 bin/verdict.mjs（裁定）。不直调 readTextHits / readToasts 交差。
@@ -288,6 +289,54 @@ await check('V9 M4 裁定：冲突局面下采集失败 → 正负两向一律�
   assert(negative?.ok === false && negative?.actual === null,
     `采集失败时 textHidden 必证不出，实际 ok=${negative?.ok} actual=${negative?.actual}`);
   assert(run.verdict.verdict === 'NEEDS_HUMAN', `证不出应落 NEEDS_HUMAN，实际 ${run.verdict.verdict}`);
+});
+
+// 提示查询判别式：与固定语料 dom-page.mjs 的同名判别同源——靠回调源码里的选择器字面量认「这是
+// 不是提示查询」。生产件因此有一条硬约束：选择器必须字面写在 evaluate 回调体内、不许改成传参
+// （改了本判别与 V6 的孪生缝钉一并失去判别力）。固定语料是冻结面，本钉不碰它，只在金牌侧包一层。
+const HINT_QUERY_RE = /hr-toast|hr-message|role\s*=\s*["']?(?:status|alert)/;
+
+// 短命提示的时间窗替身：第一次提示查询如实返回提示在场，其后任何一次都返回提示已谢幕。
+// 只读一次快照的实现拿到的是「在场」，两次采样的实现第二次拿到的是「已谢幕」——判别力全在这里。
+function withVanishingHint(onStage, afterCurtain) {
+  const reads = { hint: 0 };
+  const page = new Proxy(afterCurtain, {
+    get(target, property) {
+      if (property !== 'evaluate') return Reflect.get(target, property);
+      return async (fn, argument) => {
+        if (typeof fn === 'function' && HINT_QUERY_RE.test(String(fn))) {
+          reads.hint += 1;
+          if (reads.hint === 1) return onStage.evaluate(fn, argument);
+        }
+        return target.evaluate(fn, argument);
+      };
+    },
+  });
+  return { page, reads };
+}
+
+await check('V10 同刻快照：提示在两次读取窗口内谢幕，仍不得判过（codex Critical）', async () => {
+  const HINT = '操作失败';
+  const hintNode = { text: HINT, classes: ['hr-toast'] };
+  const onStage = createVisibilityPage({ nodes: [editorTitle, hintNode], closeMode: CLOSE_HIDE });
+  const afterCurtain = createVisibilityPage({ nodes: [editorTitle], closeMode: CLOSE_HIDE });
+  const { page, reads } = withVanishingHint(onStage, afterCurtain);
+  const probe = afterCurtain.probe(HINT);
+  assert(probe.dom === 0 && probe.visible === 0,
+    `前提事实：文本读取那一刻提示已谢幕，应为 DOM 0 / 可见 0，实际 ${JSON.stringify(probe)}`);
+  const run = await replayIntent({
+    page, assertions: [{ kind: 'textHidden', op: 'absent', value: HINT }], act: false,
+  });
+  const result = run.of('textHidden');
+  const seen = `（提示查询 ${reads.hint} 次）`;
+  // ok:false 不够——省键也是 ok:false 但 actual:null，那是「证不出」不是「同刻证据判不过」，
+  // 两者不可混为一谈。故 ok 与 actual 一起锁死。
+  assert(result?.ok === false,
+    `同刻快照读到提示在场，textHidden 必判不过，实际 ok=${result?.ok} actual=${result?.actual}${seen}`);
+  assert(result?.actual === 1,
+    `actual 须是同刻快照的命中数 1（null=证不出、0=兜底被晚读洗空，都不算），实际 ${result?.actual}${seen}`);
+  assert(run.verdict.verdict === 'NEEDS_HUMAN',
+    `硬断言判不过应落 NEEDS_HUMAN，实际 ${run.verdict.verdict}${seen}`);
 });
 
 const total = passed + failures.length;
