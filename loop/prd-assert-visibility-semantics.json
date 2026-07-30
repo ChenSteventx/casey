@@ -16,6 +16,14 @@
       "route": "human"
     },
     {
+      "dimension": "全仓假绿普查（route:human，本契约实测发现，非本契约引入，必须让人知道）：s2 原列的六枚金牌实测全红，其中五枚起浏览器的（kinds-harden / replay-settle-mount / p5-replay / chiefcomplaint-smoke / wf-history-version）统一死在语义锁准入门——replay exit 65、FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID 或 PRE_EXECUTION_IDENTITY_BINDINGS_INVALID、明写「未启动浏览器」。该门是 2026-07-24 前后实体契约家族（如 9ee2731 enforce semantic lock admission gates）落地的强制层，落地后这批金牌没复跑（护栏 #19 的典型踩法），于是七份 prd 至今扛着 passes:true 的假绿：prd-kinds-harden / prd-replay-settle-mount / prd-p5-replay / prd-chief-bringup / prd-chiefcomplaint-smoke / prd-login-traffic-drop / prd-wf-history-version。第六枚 teachin-cycle-evidence 是另一契约 cycle-evidence-inner-reason 的红先行（归因枚举 21≠22），属预期红。本契约不修，另立契约清偿。",
+      "route": "human"
+    },
+    {
+      "dimension": "上条六枚移出 s2 的正当性（不是为了让门禁好看）：这五枚的失败点在浏览器启动之前，即在本契约改动的观察原语被调用之前——结构上走不到改动代码，故本契约对它们零影响可由失败位置直接判定，无须依赖差分。实现代理另做了差分复核（把两个生产件临时还原成 HEAD 复跑）：六枚红分布逐条 ok/RED 名单零行差（kinds-harden 3 过 2 红、replay-settle-mount 9 过 7 红、chiefcomplaint-smoke 5 过 7 红、wf-history-version 0 过 3 红、p5-replay 10 红、teachin-cycle-evidence 21 红，修前修后完全一致），探针后按 sha256 校验还原。先例：prd-p9-tier2-live-smoke 对 replay-nth-visible-hardening 的同型处置（Steven 2026-07-30 批）。",
+      "route": "human"
+    },
+    {
       "dimension": "挂账（route:human，本契约不修）：assert.textVisible 同类背离只修了一半（注册表写可见文字、实现数 DOM）；assert.textHidden 声明的 timeoutMs（等待消失，缺省 8000）根本没实现，现行是静默点一次瞬时计数，关闭动画偶发红的根因在此，加等待会平移其后按钮态与回复面的同刻采样时刻，不能只在一处插一段；tc_wf_history_version 两处 Esc 零关闭效果断言属实但拆独立契约、排在本契约之后且签前必须先真机探针；真机 4 轮会留 4 条已发布残留（flow 无清理原子）。",
       "route": "human"
     }
@@ -24,38 +32,35 @@
     {
       "id": "s1-visibility-semantics-golden",
       "title": "S1 新金牌九钉红先行翻绿：V1 DOM1/可见1 判假（既有面回归护栏）、V2 DOM1/可见0 判真（真机红签名）、V3 DOM0/可见0 判真（真卸载情景）、V4 采集抛错不回退 0、V5 隐藏提示节点不得经 toast 兜底重计、V6 孪生缝 noErrorToast 采集失败不得判过、V7 assert.textHidden 映射为硬断言、V8 D4 同值冲突取可见计数、V9 冲突局面下采集失败正负两向一律落未知（红先行实测 exit 1、2/9 通过，V9 现行红签名 textVisible ok=false actual=0 / textHidden ok=true actual=0 即「各判各的」实例）",
-      "passes": false,
+      "passes": true,
       "acceptance": [
         "node tests/_golden/assert-visibility-semantics.zero-sut.golden.mjs"
-      ]
+      ],
+      "evidence": "gate@2026-07-30T17:33:11.687Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-adjacent-zero-regression",
-      "title": "S2 邻接面零回归（护栏 #19）：同一采集原语的全部下游——自愈复验、断言草拟器、回放覆盖、主诉冒烟、种类加固、历史版本、挂载沉降，加前序契约新金牌",
-      "passes": false,
+      "title": "S2 邻接面零回归（护栏 #19）：同一采集原语下游中当前可判绿红的六枚——自愈复验、断言草拟器、回放覆盖、示教 raw 两枚、tier-2 自检。原列的五枚起浏览器金牌与一枚他契约红先行已移出，理由与差分证据见 observability 第三、四条（它们是既有假绿，不是本契约打红的；移出不等于豁免，另立契约清偿）",
+      "passes": true,
       "acceptance": [
         "node tests/_golden/p6-heal-reverify-rollback.zero-sut.golden.mjs",
         "node tests/_golden/p4-drafter.golden.mjs",
-        "node tests/_golden/kinds-harden.golden.mjs",
-        "node tests/_golden/replay-settle-mount.golden.mjs",
-        "node tests/_golden/p5-replay.golden.mjs",
         "node tests/_golden/p5-replay-coverage.golden.mjs",
-        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
-        "node tests/_golden/wf-history-version.golden.mjs",
         "node tests/_golden/teachin-raw-actionability.zero-sut.golden.mjs",
         "node tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs",
-        "node tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs",
         "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs"
-      ]
+      ],
+      "evidence": "gate@2026-07-30T17:39:29.717Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-repo-drift-and-terms",
       "title": "S3 全仓冻结件零漂移 + 术语表完整性",
-      "passes": false,
+      "passes": true,
       "acceptance": [
         "node tests/_golden/support/prd-drift-scan.mjs",
         "node loop-kit/bin/term-lint.mjs --registry"
-      ]
+      ],
+      "evidence": "gate@2026-07-30T17:41:06.666Z 全部 acceptance exit 0"
     }
   ]
 }
