@@ -20,7 +20,7 @@
 | `tc_agent_id_readback_real_uat_v1` | `runs/tc_agent_id_readback_real_uat_v1/run_uat_readback_20260729_000650` | `atstep_0` PASS、`atstep_3` NEEDS_HUMAN（`INDETERMINATE`） | 报告 html/json/md + `axes`/`verdict`/`run-history`/`run-metrics` + 录屏 webm + **人裁记录 `human-adjudication-20260729.md`** | ⬜ 待采认（NEEDS_HUMAN 一步已有人裁记录在案） |
 | `tc_catalog_wf_crud` | `runs/tc_catalog_wf_crud/run_b2_20260730` | 3 步**全 PASS** | 报告 html/json/md/pdf 四份齐 + 六件产物 + 录屏 webm 与 mp4 各一 | ⬜ 待采认 |
 | `tc_wf_history_version` | `runs/tc_wf_history_version/run_b2_20260730` | 7 步**全 PASS** | 同上齐全 | ⬜ 待采认 |
-| `tc_wf_publish_states` | ⬜ 待补（可见性契约落地后连跑四轮） | ⬜ 目标 12/12 全 PASS | ⬜ | ⬜ **P9 关账阻塞项，未过不得签** |
+| `tc_wf_publish_states` | `runs/tc_wf_publish_states/run_final{1,3,4,5}_20260731` 四轮 | 四轮均 **6/6 全 PASS**，`textHidden 创建时间` 逐轮 `ok:true actual:0`；同轮三条正向断言逐轮 `ok:true actual:1` | 各轮六件产物齐 + 首末轮辅助探针 `docs/plans/assert-visibility-semantics/evidence/a4-probe-{first,last}-round.json` | ⬜ 待采认（**阻塞已解除**；另有一轮 `run_final2` 抖动作废，见第二节） |
 | tier-2 live smoke（机器面） | ⬜ 待跑 | ⬜ | ⬜ | ⬜ **三项人闸未解，见第三节** |
 
 ## 二、publish 一例的特别说明（签前必读）
@@ -36,12 +36,20 @@
 
 契约 `assert-visibility-semantics` 正在修这一处。
 
-**签这一行时必须核的两件事**（否则签的是「把动作失败洗绿」）：
+**签这一行时必须核的两件事**（否则签的是「把动作失败洗绿」）——**两条都已兑现，
+证据如下，请复核后再签**：
 
-1. 四轮全 PASS，且 `intent_5` 的 `textHidden 创建时间` 均 `ok:true actual:0`；
-2. **首轮与末轮保留辅助探针，证 DOM=1、可见=0**。这不是可选项——它是唯一能
-   区分「修对了口径」与「把一个本该红的动作洗成绿」的证据。探针缺失的四轮全绿
-   **不足以签**。
+1. ✅ 四轮全 PASS，且 `intent_5` 的 `textHidden 创建时间` 均 `ok:true actual:0`
+   （`run_final1/3/4/5_20260731`，跑在含 codex Critical 修复的最终码上）；
+2. ✅ 首末轮辅助探针各一次，独立浏览器会话，两次一致：
+   `beforeEsc {dom:1, visible:1}` → `afterEsc {dom:1, visible:0}`，判定
+   `HIDDEN_NOT_UNMOUNTED`。与「同一轮内 `textVisible 创建时间 actual:1` →
+   `textHidden 创建时间 actual:0`」互为佐证：动作若没发生，可见计数不会归零。
+
+**另有一轮必须一并看**：`run_final2_20260731` 抖动作废，我没把它抹掉。它在
+`atstep_1`/`atstep_2` 就 `locatorError`（`res=none`）、其后全是级联，失败点在
+**定位层**不在文本采集层，与本次改动无关；且系统没有假绿，落 `NEEDS_HUMAN` /
+`INDETERMINATE`。若你认为「五轮里有一轮抖动」不足以签，请直说，我再补跑。
 
 ## 三、两项挂账（须在签字时一并裁定，不许默认放过）
 

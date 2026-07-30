@@ -24,7 +24,7 @@
 | UAT 例 `tc_agent_id_readback_real_uat_v1` | ✅ | PASS 1 / NEEDS_HUMAN 1（身份回读已人裁） |
 | UAT 例 `tc_catalog_wf_crud` | ✅ | 07-30 重签后真机全 PASS，B.5 报告齐 |
 | UAT 例 `tc_wf_history_version` | ✅ | 07-30 重签后真机全 PASS，B.5 报告齐 |
-| UAT 例 `tc_wf_publish_states` | ❌ **P9 关账阻塞项** | 见下 |
+| UAT 例 `tc_wf_publish_states` | ✅ **已转绿（2026-07-31 凌晨）** | 见下方「07-31 凌晨订正」与「publish 转绿实录」 |
 
 ## publish 阻塞项详情
 
@@ -121,6 +121,45 @@ A4（`selftest --tier2 --sut <回环>`）**当前跑不出 exit 0，且不是工
 
 即 **A4 是人闸不是机器闸**，我无法代跑。隧道本身健康（回环探针 HTTP 200、
 4.4 秒）。
+
+## publish 转绿实录（2026-07-31 凌晨，契约 `assert-visibility-semantics`）
+
+契约六阶段推到 loop 收口，gate GREEN 3/3，金牌十钉（红先行 exit 1、2/9 → 修后
+exit 0、10/10）。异构评审 codex sol max 两轮：r1 逮到 1 条 Critical（两次采样
+窗口的真假绿），已修并补 V10 钉住，delta 复审在跑。
+
+**真机 A4（跑在含 Critical 修复的最终码上，共五轮）**：
+
+| run | 结论 | `textHidden 创建时间` | 同轮正向断言 |
+|---|---|---|---|
+| `run_final1_20260731` | 6/6 全 PASS | `ok:true actual:0` | 三条均 `ok:true actual:1` |
+| `run_final2_20260731` | **抖动作废** | — | 三条均 `false/0` |
+| `run_final3_20260731` | 6/6 全 PASS | `ok:true actual:0` | 三条均 `ok:true actual:1` |
+| `run_final4_20260731` | 6/6 全 PASS | `ok:true actual:0` | 三条均 `ok:true actual:1` |
+| `run_final5_20260731` | 6/6 全 PASS | `ok:true actual:0` | 三条均 `ok:true actual:1` |
+
+`run_final2` 抖动如实记账、不当噪声抹掉：它在 `atstep_1`/`atstep_2` 就
+`locatorError`（`res=none`）、其后全是级联，**失败点在定位层不在文本采集层**，
+与本次改动无关；且系统没有假绿，落 `NEEDS_HUMAN` / `INDETERMINATE`，
+`fail-safe` 表现正常。
+
+**辅助探针（GRILL A4 硬要求，不是可选项）**：首末轮各一次，独立浏览器会话，
+产物 `docs/plans/assert-visibility-semantics/evidence/a4-probe-{first,last}-round.json`：
+
+```
+beforeEsc: { dom: 1, visible: 1 }
+afterEsc:  { dom: 1, visible: 0 }
+verdict:   HIDDEN_NOT_UNMOUNTED
+```
+
+两次一致，独立复现了真机接缝——按 Esc 后节点仍在 DOM 但不可见。这条与「同一轮内
+`textVisible 创建时间 actual:1` → `textHidden 创建时间 actual:0`」互为佐证：
+动作若没发生，可见计数不会归零。**即这不是把动作失败洗绿。**
+
+探针脚本 `scripts/visibility-a4-probe.mjs`（`runs/` 全仓 `gitignore`，故挪到跟踪面），
+头注记了踩通的四个坑，其中一条对后续真机工装有普遍价值：**登录预备动作在慢渲染下
+会误判成「已登录」**——它只给登录表单 3 秒出现机会，超时即判表单不在场、直接返回
+`{loggedIn:true, viaForm:false}`，于是根本没登录却报成功。
 
 ## 待决
 
