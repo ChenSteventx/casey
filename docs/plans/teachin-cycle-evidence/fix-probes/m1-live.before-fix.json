@@ -1,0 +1,1 @@
+{"label":"before-fix-wrapped","generation":{"generation":3,"reason":"RUN_COMPLETION_INVALID","ok":false},"stack":{"reason":"RUN_COMPLETION_INVALID","frameCount":6,"hasWrapperFrame":true,"frameNames":["Object.executeAndVerify","<anonymous>","reportedCall","Module.executeAuthorizedSourceReplay","measureStack","async"]}}

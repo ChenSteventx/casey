@@ -1,0 +1,37 @@
+补录说明（codex code-r7 第 2 条：声称过的证据必须真实在档）
+============================================================
+上一轮我在回报里声称「加钉前 7 过 / 0 败 假绿实录」，但本文件当时只留了加钉后的 6 过 / 1 败，
+那条实录没进档。本次补测补录，两段实测原文都在下面，测量方式逐段标明。
+
+反例（codex code-r6 原样）：在 browserMode 里插一行
+  const runWithCycleEvidence = (collector, body) => body();
+JS 把这个标识符解析回 runWithCycleEvidence（影子掉 import 进来的那个），
+于是闭环压根不进 als.run；而原始字节里不含完整名，计数纪律数不到它。
+实测：裸名原始字节计数 2 处、调用形 1 处、\u 转义 1 处。
+
+【第一段】加钉前实测
+测量方式：现役金牌的副本（tests/_golden/zz-tmp-no-escape-pin.mjs），只把 ⑤ 转义钉整条注释掉，
+其余一字不动；bin/record.mjs 装上述转义反例。期望复现假绿（7 过 / 0 败，exit 0）。
+------------------------------------------------------------
+ok   teachin-replayability-cycle-plan: C1 默认闭环绑定同次落盘 capture，且只在 login-bootstrap 后交权
+ok   teachin-replayability-cycle-plan: C2 坏计划/坏路径折叠为固定 reason，不泄异常原文
+ok   teachin-replayability-cycle-plan: C3 旧计划只作模板，身份与 events 重绑当前 capture 且不自铸 authority
+ok   teachin-replayability-cycle-plan: C4 闭环回显只含固定 reason，路径与真实值不回显
+ok   teachin-replayability-cycle-plan: C5 --cycle-plan 是须带值旗标，裸旗标必须立即拒绝
+ok   teachin-replayability-cycle-plan: C6 闭环走唯一入口且录制归属交接先于闭环、finally 按交接与否收尾
+ok   teachin-replayability-cycle-plan: C7 两名字各只许 import 一处 + 调用一处，且第二实参恰为「零参箭头体内唯一调用」刚性模板
+teachin-replayability-cycle-plan: 7 过 / 0 败
+EXIT=0
+
+【第二段】加钉后复核
+测量方式：现役金牌原件（⑤ 在场）+ 同一枚转义反例。期望当场红（6 过 / 1 败，exit 1）。
+------------------------------------------------------------
+ok   teachin-replayability-cycle-plan: C1 默认闭环绑定同次落盘 capture，且只在 login-bootstrap 后交权
+ok   teachin-replayability-cycle-plan: C2 坏计划/坏路径折叠为固定 reason，不泄异常原文
+ok   teachin-replayability-cycle-plan: C3 旧计划只作模板，身份与 events 重绑当前 capture 且不自铸 authority
+ok   teachin-replayability-cycle-plan: C4 闭环回显只含固定 reason，路径与真实值不回显
+ok   teachin-replayability-cycle-plan: C5 --cycle-plan 是须带值旗标，裸旗标必须立即拒绝
+ok   teachin-replayability-cycle-plan: C6 闭环走唯一入口且录制归属交接先于闭环、finally 按交接与否收尾
+RED  teachin-replayability-cycle-plan: C7 两名字各只许 import 一处 + 调用一处，且第二实参恰为「零参箭头体内唯一调用」刚性模板: bin/record.mjs 的原始字节里不得出现 \u 转义序列——转义能把同一个标识符写成两套字节，让影子声明躲过计数纪律（真要用转义时请人工复核后同步改本钉，别绕）
+teachin-replayability-cycle-plan: 6 过 / 1 败
+EXIT=1

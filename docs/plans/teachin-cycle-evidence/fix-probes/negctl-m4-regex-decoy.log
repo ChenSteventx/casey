@@ -1,0 +1,25 @@
+撤回声明（本文件上一版结论作废）
+================================
+上一轮我在此记「r2 口径 + 正则反例 = C7 红，codex 说的假绿不成立」。那条测量不作数：
+我把 codex 的原样反例（真调用走**别名**外移）换成了直接调用形，于是全文多出一处
+`runRecordedTeachinReplayabilityCycle(`，才被当时的「真调用恰一处」哨兵逮住。
+不是忠实复现，结论作废。
+
+如实重记（下面是原样别名反例的实测）：
+  r2 口径（字符级剥离、按前一有效字符判正则）+ codex 原样别名反例 → **C7 判绿**，
+  哨兵 realCalls=1 拦不住（别名调用不含被数的那串字节）。假绿成立，codex code-r3 判词正确。
+  同一枚反例在 r3 整词回溯口径下才转红；r4 现役口径红在计数纪律
+  （实测见 negctl-m4-alias-regex-decoy.log）。
+  逐代矩阵另见 m4-lexical-decoy.out.json 的 C 行（r1=true r2=true r3=false r4=false）。
+
+下面是本次实测原始输出（r3 期金牌副本 + 临时装回 r2 判别器 + 原样别名反例；
+注意整体退出码是 1，但那是 C1 的定位钉红，C7 本身判绿——假绿指的就是 C7 这一条）：
+RED  teachin-replayability-cycle-plan: C1 默认闭环绑定同次落盘 capture，且只在 login-bootstrap 后交权: 必须先落盘→只读同份 exact capture→生成 input→交权→cycle
+ok   teachin-replayability-cycle-plan: C2 坏计划/坏路径折叠为固定 reason，不泄异常原文
+ok   teachin-replayability-cycle-plan: C3 旧计划只作模板，身份与 events 重绑当前 capture 且不自铸 authority
+ok   teachin-replayability-cycle-plan: C4 闭环回显只含固定 reason，路径与真实值不回显
+ok   teachin-replayability-cycle-plan: C5 --cycle-plan 是须带值旗标，裸旗标必须立即拒绝
+ok   teachin-replayability-cycle-plan: C6 闭环走唯一入口且录制归属交接先于闭环、finally 按交接与否收尾
+ok   teachin-replayability-cycle-plan: C7 闭环调用落在取证词法包裹内，且包裹里不多铸一次 await 跳
+teachin-replayability-cycle-plan: 6 过 / 1 败
+EXIT=1

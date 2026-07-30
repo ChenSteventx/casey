@@ -1,0 +1,9 @@
+ok   teachin-replayability-cycle-plan: C1 默认闭环绑定同次落盘 capture，且只在 login-bootstrap 后交权
+ok   teachin-replayability-cycle-plan: C2 坏计划/坏路径折叠为固定 reason，不泄异常原文
+ok   teachin-replayability-cycle-plan: C3 旧计划只作模板，身份与 events 重绑当前 capture 且不自铸 authority
+ok   teachin-replayability-cycle-plan: C4 闭环回显只含固定 reason，路径与真实值不回显
+ok   teachin-replayability-cycle-plan: C5 --cycle-plan 是须带值旗标，裸旗标必须立即拒绝
+ok   teachin-replayability-cycle-plan: C6 闭环走唯一入口且录制归属交接先于闭环、finally 按交接与否收尾
+RED  teachin-replayability-cycle-plan: C7 两名字各只许 import 一处 + 调用一处，且第二实参恰为「零参箭头体内唯一调用」刚性模板: 取证词法包裹到闭环调用之间不得多铸 await 跳（为迎合字面量钉而多套 Promise 属 rig）
+teachin-replayability-cycle-plan: 6 过 / 1 败
+EXIT=1

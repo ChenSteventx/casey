@@ -1,0 +1,56 @@
+{
+  "measured": {
+    "BASE": {
+      "microtaskOrder": "sync:settled@gen1 | async:settled@gen1",
+      "returned": "DENIED",
+      "frameCount": 4,
+      "hasWrapperFrame": false,
+      "topFrames": [
+        "at call (file:///mnt/d/ctx/heren/casey/docs/plans/teachin-cycle-evidence/fix-probes/m1-timing-equivalence.probe.mjs:107:19)",
+        "at baseSite (file:///mnt/d/ctx/heren/casey/docs/plans/teachin-cycle-evidence/fix-probes/m1-timing-equivalence.probe.mjs:40:20)",
+        "at measureStack (file:///mnt/d/ctx/heren/casey/docs/plans/teachin-cycle-evidence/fix-probes/m1-timing-equivalence.probe.mjs:111:26)"
+      ],
+      "emitted": []
+    },
+    "WRAPPED": {
+      "microtaskOrder": "sync:settled@gen2 | async:settled@gen2",
+      "returned": "DENIED",
+      "frameCount": 5,
+      "hasWrapperFrame": true,
+      "topFrames": [
+        "at call (file:///mnt/d/ctx/heren/casey/docs/plans/teachin-cycle-evidence/fix-probes/m1-timing-equivalence.probe.mjs:107:19)",
+        "at reportedCall (file:///mnt/d/ctx/heren/casey/docs/plans/teachin-cycle-evidence/fix-probes/m1-timing-equivalence.probe.mjs:30:18)",
+        "at wrappedSite (file:///mnt/d/ctx/heren/casey/docs/plans/teachin-cycle-evidence/fix-probes/m1-timing-equivalence.probe.mjs:51:20)"
+      ],
+      "emitted": [
+        {
+          "point": "source-completion.issuer-throw",
+          "errorName": "TypeError"
+        }
+      ]
+    },
+    "FIXED": {
+      "microtaskOrder": "sync:settled@gen1 | async:settled@gen1",
+      "returned": "DENIED",
+      "frameCount": 4,
+      "hasWrapperFrame": false,
+      "topFrames": [
+        "at call (file:///mnt/d/ctx/heren/casey/docs/plans/teachin-cycle-evidence/fix-probes/m1-timing-equivalence.probe.mjs:107:19)",
+        "at fixedSite (file:///mnt/d/ctx/heren/casey/docs/plans/teachin-cycle-evidence/fix-probes/m1-timing-equivalence.probe.mjs:62:20)",
+        "at measureStack (file:///mnt/d/ctx/heren/casey/docs/plans/teachin-cycle-evidence/fix-probes/m1-timing-equivalence.probe.mjs:111:26)"
+      ],
+      "emitted": [
+        {
+          "point": "source-completion.issuer-throw",
+          "errorName": "TypeError"
+        }
+      ]
+    }
+  },
+  "verdict": {
+    "fixedEqualsBase": true,
+    "wrappedDiffersFromBase": true,
+    "fixedStillReports": true
+  }
+}
+PROBE_GREEN: FIXED≡BASE（微任务时序与异常栈两轴全等）且仍真通报；WRAPPED≠BASE 复现原判

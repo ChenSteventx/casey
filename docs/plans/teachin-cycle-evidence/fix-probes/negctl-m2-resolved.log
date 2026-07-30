@@ -1,0 +1,80 @@
+ok   teachin-cycle-evidence: T0 纯层两模块在场且 API 形态正确（缺席即整体红）
+ok   teachin-cycle-evidence: E0a 枚举闭合：refusalPoint / stage / event 键 / 异常名 / 拒付码 / 顶层键
+ok   teachin-cycle-evidence: E0b 既有生产件在场且同码拒付分支未漂移（修前应绿的横切锚点）
+ok   teachin-cycle-evidence: E1 合法载荷入档且键集恰为白名单子集
+ok   teachin-cycle-evidence: E1 形状击穿：未知键走私 → 整批毒化且拒写
+ok   teachin-cycle-evidence: E1 形状击穿：异常原文走私（stack） → 整批毒化且拒写
+ok   teachin-cycle-evidence: E1 形状击穿：枚举外 stage → 整批毒化且拒写
+ok   teachin-cycle-evidence: E1 形状击穿：枚举外 reason → 整批毒化且拒写
+ok   teachin-cycle-evidence: E1 形状击穿：枚举外 errorName（未经降格直塞） → 整批毒化且拒写
+ok   teachin-cycle-evidence: E1 形状击穿：seq 非安全整数 → 整批毒化且拒写
+ok   teachin-cycle-evidence: E1 形状击穿：seq 非数值 → 整批毒化且拒写
+ok   teachin-cycle-evidence: E1 形状击穿：candidateCount 负数 → 整批毒化且拒写
+ok   teachin-cycle-evidence: E1 形状击穿：performOk 非布尔（truthy 串） → 整批毒化且拒写
+ok   teachin-cycle-evidence: E1 形状击穿：action 非串 → 整批毒化且拒写
+ok   teachin-cycle-evidence: E1 形状击穿：嵌套对象走私 → 整批毒化且拒写
+ok   teachin-cycle-evidence: E1 枚举外 refusalPoint 直击 → 整批毒化（归因面同样闭合）
+ok   teachin-cycle-evidence: E1 safeEmit 契约：同步、零返回值、吞异常、不进异步控制流（R4 钉）
+ok   teachin-cycle-evidence: E2 吞异常路：source issuer-throw → 记 {refusalPoint, errorName}、无 message、主结论原样
+ok   teachin-cycle-evidence: E2 吞异常路：resolved issuer-throw → 记 {refusalPoint, errorName}、无 message、主结论原样
+ok   teachin-cycle-evidence: E2 吞异常路：distilled issuer-throw → 记 {refusalPoint, errorName}、无 message、主结论原样
+ok   teachin-cycle-evidence: E2 真实生产路径：现役 source completion 的 issuer 吞异常位真通报（零 SUT，不经合成替身）
+ok   teachin-cycle-evidence: E3 发射点矩阵：枚举逐成员击发且互不串位
+ok   teachin-cycle-evidence: E3 真实分支：公开导出 executeAuthorizedSourceReplay 的 extraInputs 拒付 → 唯一归因 source-completion.input-shape
+RED  teachin-cycle-evidence: E3 真实分支：公开导出 completeResolvedSourceReplay 的 extraInputs 拒付 → 唯一归因 resolved-completion.input-shape: completeResolvedSourceReplay 的 extraInputs 分支须恰通报一条（codex 实测修前为 0）：[]
+ok   teachin-cycle-evidence: E3 真实分支：公开导出 completeAuthorizedReplay 的 extraInputs 拒付 → 唯一归因 distilled-completion.input-shape
+RED  teachin-cycle-evidence: E3 三枚 input-shape 归因互不串位（同批直调三个公开导出）: 三枚 input-shape 归因必须逐点唯一、按击发次序只追加：实得 ["source-completion.input-shape","distilled-completion.input-shape"] vs 期望 ["source-completion.input-shape","resolved-completion.input-shape","distilled-completion.input-shape"]
+ok   teachin-cycle-evidence: E3 同批多点：一次 cycle 内全枚举击发后仍逐点唯一可读
+ok   teachin-cycle-evidence: E4a 异常名规范化：内建 TypeError → TypeError（成功记录，不拒写）
+ok   teachin-cycle-evidence: E4a 异常名规范化：内建 RangeError → RangeError（成功记录，不拒写）
+ok   teachin-cycle-evidence: E4a 异常名规范化：内建 SyntaxError → SyntaxError（成功记录，不拒写）
+ok   teachin-cycle-evidence: E4a 异常名规范化：自定义 name（白名单外） → OtherError（成功记录，不拒写）
+ok   teachin-cycle-evidence: E4a 异常名规范化：name 为凭据串形态 → OtherError（成功记录，不拒写）
+ok   teachin-cycle-evidence: E4a 异常名规范化：name 为地址形态 → OtherError（成功记录，不拒写）
+ok   teachin-cycle-evidence: E4a 异常名规范化：name 非串（数值） → OtherError（成功记录，不拒写）
+ok   teachin-cycle-evidence: E4a 异常名规范化：name getter 抛错 → OtherError（成功记录，不拒写）
+ok   teachin-cycle-evidence: E4a 异常名规范化：无原型裸对象 → OtherError（成功记录，不拒写）
+ok   teachin-cycle-evidence: E4a 异常名规范化：抛出 null → OtherError（成功记录，不拒写）
+ok   teachin-cycle-evidence: E4a 异常名规范化：抛出裸串 → OtherError（成功记录，不拒写）
+ok   teachin-cycle-evidence: E4a 异常名规范化：抛出 Proxy（任意读抛错） → OtherError（成功记录，不拒写）
+ok   teachin-cycle-evidence: E4b 末门整文扫描：env 凭据串（禁字段关键词 secret） → EVIDENCE_CREDENTIAL_REJECTED
+ok   teachin-cycle-evidence: E4b 末门整文扫描：授权头形态（禁字段关键词 bearer ） → EVIDENCE_CREDENTIAL_REJECTED
+ok   teachin-cycle-evidence: E4b 末门整文扫描：cookie 形态（禁字段关键词 cookie） → EVIDENCE_CREDENTIAL_REJECTED
+ok   teachin-cycle-evidence: E4b 末门整文扫描：裸 URL（内嵌 scheme） → EVIDENCE_CREDENTIAL_REJECTED
+ok   teachin-cycle-evidence: E4b 末门整文扫描：编码变体（%3a%2f%2f 走私） → EVIDENCE_CREDENTIAL_REJECTED
+ok   teachin-cycle-evidence: E4b 末门整文扫描：协议相对地址 → EVIDENCE_CREDENTIAL_REJECTED
+ok   teachin-cycle-evidence: E4b 文档级注入：过不了闸且一个字节都不落盘
+ok   teachin-cycle-evidence: E4b 本金牌自身零真值：夹具全为合成假串与保留域名
+ok   teachin-cycle-evidence: E4c 凭据闸隔离根：凭据源解析进隔离根，真仓凭据件零读取（机制证明）
+ok   teachin-cycle-evidence: E5b 双跑基线自等（无观测上下文，修前应绿）：录制句柄对不匹配
+ok   teachin-cycle-evidence: E5 零行为差：带/不带观测上下文全等 + 零边车副作用：录制句柄对不匹配
+ok   teachin-cycle-evidence: E5b 双跑基线自等（无观测上下文，修前应绿）：cycleInput 键集不闭合
+ok   teachin-cycle-evidence: E5 零行为差：带/不带观测上下文全等 + 零边车副作用：cycleInput 键集不闭合
+ok   teachin-cycle-evidence: E5c 零行为差（更深路径，零 SUT）：现役 source completion 带/不带观测上下文全等
+ok   teachin-cycle-evidence: E6 收集器中毒：异物对象（非本模块铸造） → safeEmit 全吞、闭环结论与基线全等
+ok   teachin-cycle-evidence: E6 收集器中毒：任意读即抛的 Proxy → safeEmit 全吞、闭环结论与基线全等
+ok   teachin-cycle-evidence: E6 收集器中毒：null → safeEmit 全吞、闭环结论与基线全等
+ok   teachin-cycle-evidence: E6 收集器中毒：冻结裸对象 → safeEmit 全吞、闭环结论与基线全等
+ok   teachin-cycle-evidence: E6 抛错 getter 载荷：safeEmit 不抛、整批毒化、结论不变
+ok   teachin-cycle-evidence: E6 观测上下文外击发：不抛、不入任何档
+ok   teachin-cycle-evidence: E7 文件名按完整 digest 派生：cycle-evidence.<captureSha256 全量>.json
+ok   teachin-cycle-evidence: E7 前 12 位相同的两枚完整 digest → 不同目标文件（D4 v3 终修钉）
+ok   teachin-cycle-evidence: E7 绑定单判：两个不同 capture 的档并存，读取方只认匹配者
+ok   teachin-cycle-evidence: E7 改名冒充：文件名 digest 对但内文 captureSha256 不对 → 读取方复核拒认
+ok   teachin-cycle-evidence: E7 拒写不触既有目标：旧档在场 + 本次拒写 → 旧档字节原样、不被误认
+ok   teachin-cycle-evidence: E7 写盘失败：只清临时件、绝不触目标，报 EVIDENCE_WRITE_FAILED
+ok   teachin-cycle-evidence: E7 顶层形状：exact-key 闭合 + artifactKind 绑定
+ok   teachin-cycle-evidence: E8 并发双 als.run 各自收集、零串账
+ok   teachin-cycle-evidence: E8 封存后迟到击发：只计数、不入档（迟到异步任务零串账）
+ok   teachin-cycle-evidence: E8 重复封存幂等：不得二次改写既有快照
+ok   teachin-cycle-evidence: E9a-① 纯上下文件零 node:fs、零 I/O 家族、零 import output 件
+ok   teachin-cycle-evidence: E9b-② output 件全仓 import 站点恰为 bin/record.mjs
+ok   teachin-cycle-evidence: E9c-③ 各纯核心件取证 import 只指向 context 件
+ok   teachin-cycle-evidence: E9f 生产 façade 纯委托：dual-replay-orchestrator.mjs 零取证语义（明确不改）
+ok   teachin-cycle-evidence: E9d bin/record.mjs 用词法边界包裹单次 cycle 且聚合前封存
+ok   teachin-cycle-evidence: E9e 生产件行数纪律（新件与被改件逐个严格小于 600 行）
+
+teachin-cycle-evidence: 73 passed, 2 failed
+ - E3 真实分支：公开导出 completeResolvedSourceReplay 的 extraInputs 拒付 → 唯一归因 resolved-completion.input-shape: completeResolvedSourceReplay 的 extraInputs 分支须恰通报一条（codex 实测修前为 0）：[]
+ - E3 三枚 input-shape 归因互不串位（同批直调三个公开导出）: 三枚 input-shape 归因必须逐点唯一、按击发次序只追加：实得 ["source-completion.input-shape","distilled-completion.input-shape"] vs 期望 ["source-completion.input-shape","resolved-completion.input-shape","distilled-completion.input-shape"]
+NEGCTL_M2_RESOLVED_EXIT=1

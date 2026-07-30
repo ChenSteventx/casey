@@ -1,0 +1,327 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-replayability-closure（full）：完成不冒充正式测试结论的示教技术闭环——manual capture exact bytes → 同进程 application service 准入并真实关闭录制 runtime → canonical bootstrap 新开 source fresh runtime → raw source reproduction → clean proof authority → resolved existing-atom projection → 现役 flow-bridge/compile → distilled fresh runtime → semantic replay receipt pair → deterministic equivalence。LLM 不进入 replay、proof、receipt、comparator 或 verdict，只能在 CLI 外提出 mapping 候选，机器执行前由确定性门证明候选逐 event 忠实。fresh 不能自报：一次性 fresh runtime authority 只由录制 browser/context 真实终止事件与新对象身份归属共同铸造。首版只收 effect=read、persistentMutation=false；不给 capture 增加 signed:true 或 replayReady:true，不把 CLEAN/REPRODUCED/EQUIVALENT 写成正式 PASS；acceptance 全程 zero-SUT，不运行 fake SUT、浏览器或网络；新增或修改生产/golden 文件逐个严格少于 600 行。",
+  "specPath": "docs/plans/teachin-replayability-closure/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs": "298fa41311d3cc71a2253210622eca3db0779901c4bdc9491af4a3a7daee0d71",
+    "tests/_golden/teachin-replayability-adjacent.zero-sut.golden.mjs": "f6f16b1dc11ac85b9c5ebc998b81ff0ef831144b9cda9a92c9b7dfbe5cdde1e1",
+    "tests/_golden/teachin-replayability-atom-roundtrip.zero-sut.golden.mjs": "3ea7376fd9f075c5cd9e06d8985c36dffd3518b22d99c9deb77c66493a5e36bb",
+    "tests/_golden/teachin-replayability-boundaries.static.golden.mjs": "ea3e08b8366c5d1abea75078b2a97361e87e465aac3fc3d86e9180a524c5561f",
+    "tests/_golden/teachin-replayability-capture-fresh.zero-sut.golden.mjs": "d354dcf39a37d5dcff5fe8658ce4860a1759ffc9b29ea7237842db36a7c0a097",
+    "tests/_golden/teachin-replayability-clean-proof.zero-sut.golden.mjs": "6dca7716fc5da262ac8e7b56b616c8f6508f37c033424330f85cb28147e1a9a1",
+    "tests/_golden/teachin-replayability-compile-runtime-adapter.zero-sut.golden.mjs": "e063f4797723ce661f7f47c6677b68c0b4407334096252514d0e6da9132e2b86",
+    "tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs": "533b1f46d6c2d37c365a64b8db43102c1cdc86936272c5f600f5a65a84ea24d8",
+    "tests/_golden/teachin-replayability-entity-verification.zero-sut.golden.mjs": "8a9ca417158ee23dde6bc802a139bf6a48fef1c69c51d9c688f8b8a3fab8d5fd",
+    "tests/_golden/teachin-replayability-equivalence-completion.zero-sut.golden.mjs": "e8bbce324a1a114180ef91d0b2528bfd8ff589acad97fdae941c9338f7e7caf6",
+    "tests/_golden/teachin-replayability-equivalence-core.zero-sut.golden.mjs": "2cf9a104dcb609000ea6dd828947d215c9bb48d786c48b53e17dec002c868ae0",
+    "tests/_golden/teachin-replayability-equivalence-evidence.zero-sut.golden.mjs": "338276bcfe2c7bf838ac6fb10e991b3296e33c106c689dae0fd3ac13fa31b1f4",
+    "tests/_golden/teachin-replayability-equivalence-integrity-authority.zero-sut.golden.mjs": "ffb83adda2e3a5d0cf2c16556c2e758069d875815b0b26034a51289f06764781",
+    "tests/_golden/teachin-replayability-equivalence-integrity-semantics.zero-sut.golden.mjs": "7fce1fd422446f6b2f1e5a79ef51d8d21f0a326baeee1a5a7ef16e0cabe4442a",
+    "tests/_golden/teachin-replayability-equivalence-production-boundary.static.golden.mjs": "81228228acc3d908fe9220fee6173defa5aae00b58a456be5c108e117719db02",
+    "tests/_golden/teachin-replayability-equivalence-reset.zero-sut.golden.mjs": "3e9e14e683da1ba28cccc147c143d4bac3cc93851ae81d5088aad9e5d63ca87e",
+    "tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs": "231ab8f94d6f7102a52b9ddd384ec4d5a6b42e3820ef6a090829b23828652488",
+    "tests/_golden/teachin-replayability-equivalence-sequence.zero-sut.golden.mjs": "a4fd83dedc5cede43b5eb79d4a894c2f0923bc10bef97d0cdc76a1fb32e13bef",
+    "tests/_golden/teachin-replayability-orchestrator-wiring.static.golden.mjs": "caca4be0c34d3b10561d87d2eb1d45c75d18ad69df2361681bdb2930fe24be06",
+    "tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs": "517ac4bd1a242e387f85048a89c5d7acbf9144ad62f804209f35c2b8113ef90c",
+    "tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs": "31956edcf3554d78cfd51d702d5e7c2c989d235e2085cfa15c1fdfd2cba52cbd",
+    "tests/_golden/teachin-replayability-review-hardening.zero-sut.golden.mjs": "cf40707a162b1f5d350d57add36e0ec8b8850e2a4496fd91b2e6ce1d143f0a47",
+    "tests/_golden/teachin-replayability-prepared-run.zero-sut.golden.mjs": "6d09057c85cebc4bd623e55e407828693f6195a755a389f26ddc6477a594a23e",
+    "tests/_golden/teachin-replayability-raw-actions.zero-sut.golden.mjs": "de5e164c5b97c8019d8c756761bada23c73eeb07200aa892e265536b9b9f70f6",
+    "tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs": "79f12524d9b5eb64962adeaadd093dc35a0ebeb12346a97bd9810961913c06b7",
+    "tests/_golden/teachin-replayability-raw-event-observation.zero-sut.golden.mjs": "ceccded6c04ff49ecfba1a5587e8cababc5d63d08b90ccae4916e6af5836dc8f",
+    "tests/_golden/teachin-replayability-raw-output-seal.zero-sut.golden.mjs": "be3d22521ff1c26853cfcfef79110f23359f25fe38c2ffdd6b86989abec3896f",
+    "tests/_golden/teachin-replayability-raw-runner.zero-sut.golden.mjs": "360d4bc074a2aa9ace84cb31d3b0abf81bc2675348e707a0604e00e23c5e1e05",
+    "tests/_golden/teachin-replayability-resolved-authority-coverage.zero-sut.golden.mjs": "aa26d4306921240930a6257063a6351a3adf8bf85c399a0871ecbf05b07d6add",
+    "tests/_golden/teachin-replayability-resolved-projection.zero-sut.golden.mjs": "014935c06131b62a1804236c18ef92997b2ef52a6a85d94fca362c5928b48228",
+    "tests/_golden/teachin-replayability-runtime-bootstrap.zero-sut.golden.mjs": "afe83b36592ae3c3125dcea59ae293406118db49739c8b4b9b36de1910920b7a",
+    "tests/_golden/teachin-replayability-runtime-cycle-adapter.zero-sut.golden.mjs": "eddd20d89a2656284dde500c91ee7c9f1eb6b51e125f4f2edb92303b357400c7",
+    "tests/_golden/teachin-replayability-verdict-cli-adapter.zero-sut.golden.mjs": "ad129f0a75c321cc0f233dad376d12d162b67f1cced1d79cfbae9d765fcee597",
+    "tests/_golden/support/teachin-replayability-equivalence-harness.mjs": "fb4fec5fae2e9d851c00026a858dececd90761f0e4402d8738adb92fc2db0a62",
+    "docs/plans/teachin-replayability-closure/GRILL.md": "7e93baf6f7679da892b6a2ea02313c44b0d39750eb2d6931baf560bf9b4dfde8",
+    "docs/plans/teachin-replayability-closure/action-authority-design.md": "c1546801e22cf49a6158b5848bffe4bab75ac5452d9f5952b8e21ac56aa84b5f",
+    "docs/plans/teachin-replayability-closure/distillation-design.md": "c83ca09391c360b0bbab118d8c391e88bc316c420dc65902de2f8d77578b20f9",
+    "docs/plans/teachin-replayability-closure/dual-replay-design.md": "fe7ac0bde98284275db09793ffd1eb6bd7e4acb360e843829a8c3bce5422ae77",
+    "docs/plans/teachin-replayability-closure/entity-verification-design.md": "d585d2311656e0185faf7317e0f52f02f0d04b26c1381f7e05096a32d18779b0",
+    "docs/plans/teachin-replayability-closure/orchestrator-design.md": "aae4b0ef398b183f2ed086a56f220329560b2c6aa1273bdcf56647890fc82413",
+    "docs/plans/teachin-replayability-closure/plan.md": "7927cfcf6a75fd264dff2ed6886f9887d4e9c46005ab7fcbeb1e972782da75a1",
+    "docs/plans/teachin-replayability-closure/raw-replay-design.md": "06d5a7339c26b6c90ae6be375d31457c1f1000df396381a3b362036a766117b6",
+    "docs/plans/teachin-replayability-closure/runtime-seams-design.md": "3735a804a0888070bc239c487eb8dfed796bde3675a17624da1d9861e461d887",
+    "docs/plans/teachin-replayability-closure/verdict-cli-design.md": "247b7ba24a792bf65d29f7d91c765ce7d653507f508626e3ff0607d181799149",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/action-authority.red.txt": "37fb758e3f014140eaefbdff170940969e3e027f30168f1d7ff818c02ebc8c31",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/adjacent-full.green.txt": "e19f071a4f6c1d3a95d008b5377abe6b6e5c8a6091607553263d656c172428b1",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/adjacent.green.txt": "b5abb13e7c5edab8b6a6d5861b5fcb5de759e34925df52f67519a8add7fb789f",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/atom-roundtrip.red.txt": "5ee61e06c54c62f6c3b6788e0148a40aa4b23637f1a232e45ce425602e031f49",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/boundaries.red.txt": "3fa66a35ec450e1ecd58fde10ea85ae06a5b144ad55cce87f8dd361aa6af6dfd",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/capture-fresh.red.txt": "0bd9718e6f9f92fdf0e60fdeb898eed322e39bdab874337e75214fa81d70423e",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/clean-proof.red.txt": "62371e8e8966e28cb0754872fae779bb682541172bca3c565579d51eaccc1e9b",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/compile-runtime-adapter.red.txt": "e444fb9c08ac197687d15024f8924963b203f0c6356101e50e3ca522a69b6911",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/cycle-entry.red.txt": "b0ef5eec9845c1c51f63dc866bd688d2d7136eb35764336c80bb5c802b66cdb3",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/entity-verification.red.txt": "7ff8a5113d589753eb969b6ff4c8c81c742f6ea8e9b00b0baac2337951f9a284",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/equivalence-completion.red.txt": "30fa895126dbdf77bcd091b9c336506b6bad6d7c0c4e4c88c98e2449949258b5",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/equivalence-core.red.txt": "10531167d3b1385f50ed8406d6609a9aa5d4314cedac43c14235464d62cc04bb",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/equivalence-evidence.red.txt": "3acb91f564213969ef037c12a7452bfac95e2f6c3b544d22cb859eca38a3a2f6",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/equivalence-integrity-authority.red.txt": "dde76018a47466841af68b9705ed9a338b30225742f526e810b75c90c1392a42",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/equivalence-integrity-semantics.red.txt": "8c167cacf6e3062a7d19ac2c6e43a36bb6e4e9f405de1a0143933cff68f945cb",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/equivalence-production-boundary.red.txt": "f76eb8beb5a9c8862e999180695f09720562745b90c959e3525340e8666d5da4",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/equivalence-reset.red.txt": "8ab50ca39c141b47a1c06cdd5370853655481a22d8fc58ec7ee30d3cd1e4c7dd",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/equivalence-resolved-completion.red.txt": "d7ace60c971c85a94732a7572f66eef5883a2e135b2bd2a7f08840fc6011ec8d",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/equivalence-sequence.red.txt": "edddc8ae41500c7897a51e0c56c82b9f4d2dba5ed9895e3e61d86ca3faa696f6",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/orchestrator-wiring.red.txt": "5b35c6b32109aba0976c1692144f86ce82ca779f106ef97c627344a337b0ad8f",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/orchestrator.red.txt": "0ec1aa71197de4395c9e5833351160f9b52a1752995c7d9506dcf2e93bd3bba5",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/prepared-run.red.txt": "925eb78f2823a2829add86ef4f33b611b6b4144e970781aa04f2523ec66b822c",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/raw-actions.red.txt": "617dab3f7d95c2312217df81fb9a35eecf6670aa197259bd538d5ed2948cc5a7",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/raw-axes-adapter.red.txt": "6134e0bc9268f36e69a497ce2af6a7db5f581e8cdb4f5e54b48233745b6d16e6",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/raw-event-observation.red.txt": "feaf8e728b87f792ad07929aa0f635499226cade446199cfbd76e63393a39cc2",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/raw-output-seal.red.txt": "5c8e49dc4fa8b29c202c71dde3ee573e6b294e831914cec3f99af978259126bc",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/raw-runner.red.txt": "d9bf963581beb8b8571c08c5e2c46830705049543513c10737b8ec9aa6b61d2b",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/resolved-authority-coverage.red.txt": "bd7847f34c497207a1eb65cb88860491c9c73fc77e0ee96fabd0b1ccbb913597",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/resolved-projection.red.txt": "2143bbcb3ffb96255d8ce77721f0dd913686a2a9d7c55ec38a4e9725c1c5bfc6",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/runtime-bootstrap.red.txt": "87cda4d6e19a4310616c16622d56a0d1e76c80063b8b0b4cab6ef3fa296a3098",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/runtime-cycle-adapter.red.txt": "4935b33e12d1fc2f9ea4a569c728cdc2f6242301df6543687ac0a854fde02342",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/verdict-cli-adapter.red.txt": "768e6d05215a73e985a7a8c809089b952f764b19853bf85d125bc17b8ecf397c",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/cycle-plan.red.txt": "5afeba1300d00ddf58903042f9da6ce5052abfbb2808abc8d207e2f23bfff0d9",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/orchestrator-compare-7keys.red.txt": "30c743bbfbdf4a927879c58bb58a924c6a601aa5c3ddf5c4c279b142974826df",
+    "docs/plans/teachin-replayability-closure/accept/red-proofs/orchestrator-wiring-canonical.red.txt": "56a6e31ead80a5b8c00f1735f98a26239134d877cbc2e9ca5b44669c731f0973"
+  },
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-28",
+      "round": "R1 S3 夹具对齐冻结接缝",
+      "files": [
+        "tests/_golden/teachin-replayability-resolved-projection.zero-sut.golden.mjs",
+        "tests/_golden/teachin-replayability-resolved-authority-coverage.zero-sut.golden.mjs",
+        "docs/plans/teachin-replayability-closure/accept/red-proofs/resolved-projection.red.txt",
+        "docs/plans/teachin-replayability-closure/accept/red-proofs/resolved-authority-coverage.red.txt"
+      ],
+      "reason": "S3 实现者挂账两处金牌夹具与已冻结邻接面矛盾，主会话独立实测坐实：newpage 夹具误用 driver 侧永不存在的 selector 键（S2 冻结接缝把 capture selector 固定投影为 fallbackCss，raw-actions exactKeys 断言与 raw-runner 自家夹具为证），改按 fallbackCss 触发 promote；helper 对空 candidateMapping 强制过现役 flow-bridge，与冻结 compile-gate「steps 必须是非空数组」结构性冲突，加 candidateMapping 非空前提。P4/P5/C4 业务断言零弱化。外科 stash 无实现态重钉红两枚（红因仍为目标模块缺席的动态 import fail-closed，exit 1），恢复实现后 9/9、11/11、9/9 全绿。Steven 2026-07-28 批准修单。"
+    },
+    {
+      "amendedAt": "2026-07-28",
+      "round": "R2 harness preconditions 对齐现役状态机",
+      "files": [
+        "tests/_golden/support/teachin-replayability-equivalence-harness.mjs"
+      ],
+      "reason": "S4 实现者挂账、主会话独立实测坐实：冻结 harness 的 authored preconditions 冻为空数组，而现役注册表 nav.workflowManagement requires 已登录、flow-bridge 用 preconditions 种状态机初态，空数组使正控 happy path 恒 BRIDGE_REJECTED；计划 §3.4 规定 preconditions 只能原样复制禁止补写，实现侧无合法解法，属 harness 冻结值缺陷。修正为 ['已登录'] 一行，断言零弱化。外科 stash S4 模块无实现态重钉红：8 枚等价金牌全部 exit 1、红因均为 production API 缺席 ERR_MODULE_NOT_FOUND，与既有红证记录逐字一致，红证无须重写。Steven 2026-07-28 批准修单。同轮记录两项不动冻结件的处置：S4 五枚金牌红因含共享 harness 静态 import S5 runtime-cycle-adapter 等模块，属切片依赖顺序，调序先落 S5 再验 S4；lib/teachin-distillation/fidelity.mjs 对 mapping 行 intentId 强制等于合成序数与「intentId 只作业务归组」相悖，按产码缺陷修实现并保持 S3 金牌全绿。"
+    },
+    {
+      "amendedAt": "2026-07-28",
+      "round": "R3 harness expectedBytes 结构有效化",
+      "files": [
+        "tests/_golden/support/teachin-replayability-equivalence-harness.mjs"
+      ],
+      "reason": "S5 实现者挂账、主会话独立实测坐实：harness sourceInput 冻结的 expectedBytes 为结构无效占位（缺 intents 数组），而 S2 冻结语义 readExpected 按 fail-safe 要求 intents[] 且逐 intent 有 intentId 与 expected[]（S2 金牌自家 expected 夹具即全结构），无效字节使 raw event observation 会话恒 RAW_OBSERVATION_INPUT_INVALID、连坐 runtime-cycle-adapter 与五枚等价金牌。修正为结构有效最小 expected 文档（caseId 对齐 capture、intentId 对齐 authored intent_1、expected 空数组不虚增断言宇宙；谓词/效果/清理义务仍由 harness 单独冻结的 obligations 纵向校验）。断言零弱化。外科 stash 无实现态重钉红九枚（runtime-cycle-adapter + 八枚等价，全部 exit 1、红因均为模块缺席）：八枚等价输出与既有红证逐字一致；runtime-cycle-adapter 红证为该金牌未改动的原始基线，本轮重钉仅 Y7 所报缺席模块名随实现进度不同，红因同族，红证无须重写。Steven 2026-07-28 批准修单。同轮记录两项不动冻结件的处置：mapping 行 intentId 走行驱动业务归组修产码（S3 金牌 P1 钉的是 authored 回显非合成序数，复核确认修后保持全绿）；runtime-cycle-adapter composer 按 Y5 薄装配设计真拆真用压到 300 行以内，重逻辑归接缝模块，非金牌矛盾。"
+    },
+    {
+      "amendedAt": "2026-07-28",
+      "round": "R4 R3 hunk 收行",
+      "files": [
+        "tests/_golden/support/teachin-replayability-equivalence-harness.mjs"
+      ],
+      "reason": "R3 修单落笔时把单行 expectedBytes 折成四行，harness 由 598 行涨到 601 行，触碰 equivalence-production-boundary P1 把 SUPPORT_MODULES 一并计入的 600 行预算。本笔仅把已批准的 R3 内容按原样收回单行：JSON 内容、字节语义与断言零变化，harness 恢复 598 行，production-boundary 7/7 转绿（exit 0）。属 R3 批准范围内的排版修正，不引入新断言变更。"
+    },
+    {
+      "amendedAt": "2026-07-28",
+      "round": "R5 integrity-authority 对齐 harness entity 纪律",
+      "files": [
+        "tests/_golden/teachin-replayability-equivalence-integrity-authority.zero-sut.golden.mjs"
+      ],
+      "reason": "S4 实现者双向探针证实两枚冻结金牌对字节相同的产码输入要求相反行为：harness mock（冻结件）规定非 runtime-required 模式递 entityLockAuthority 即 ENTITY_LOCK_AUTHORITY_INVALID，runtime-cycle-adapter Y2c 在 runtime-required 模式要求真转发，而 integrity-authority 却在默认非必需模式递真 authority 且要求封印成功；模式信号只存在于 mock 配置，产码无合法分辨通道（压制转发则 I1/I5/I10 绿而 Y2c 按预言断，恢复转发则反之，两次实测）。修单：删金牌两处非必需模式的 entityLockAuthority 传参（prepareAuthoring 输入与 I1 封印调用），回归 harness 自家冻结纪律，I1-I10 其余断言与 Y2c 真转发纪律零变化。修正后带实现 10/10 exit 0；外科 stash 无实现态重钉真红（ERR_MODULE_NOT_FOUND，与既有红证同文，红证无须重写）。Steven 2026-07-28 批准修单。"
+    },
+    {
+      "amendedAt": "2026-07-28",
+      "round": "R6 E9 定位随 entity handle 分层刷新",
+      "files": [
+        "tests/_golden/teachin-replayability-entity-verification.zero-sut.golden.mjs"
+      ],
+      "reason": "S6 实现者双向实测证实 E9 与 boundaries B16 对 pair-authority 的 import 要求互斥：E9 原文钉 pair sealer 直接 import teachin/entity-lock-verifier，B16 钉 dual-replay 纯接缝分层禁止该直接依赖并要求经 lib/dual-replay/entity-lock-handle.mjs。分层判 B16 方向正确（handle 是零依赖纯接缝，verifier 铸造侧 import handle、pair 消费侧 import handle，同一 WeakMap 私有状态端到端仍不可伪造）。修单：E9 定位刷新为 pair-authority 须 import ./entity-lock-handle.mjs 且 verifier 须 import ../dual-replay/entity-lock-handle.mjs（铸造侧链条钉死），consumeVerifiedEntityLockVerification 调用与 authoring closure 绑定断言原样保留，断言零弱化、分层收紧。修正后 10/10 exit 0；外科 stash 无实现态重钉真红（0 过 3 败、缺 verifier 模块，与既有红证逐字一致，红证无须重写）。同轮记录跨契约处置：cli-mcp-face 金牌排除集加 teachin-cycle（developmentOnly 技术闭环不进用户 MCP 工具面，幽灵检查与 boundaries B4 双向要求 bin/casey.mjs 真分发 case 存在），该金牌字节仅 prd-mcp-parity 冻结、已同步记账重挣。Steven 2026-07-28 批准修单。"
+    },
+    {
+      "amendedAt": "2026-07-28",
+      "round": "R7 评审强化：compare 七键 mock 收紧 + canonical 装配静态钉 + cycle-plan 门",
+      "files": [
+        "tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs",
+        "tests/_golden/teachin-replayability-orchestrator-wiring.static.golden.mjs",
+        "tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs",
+        "docs/plans/teachin-replayability-closure/accept/red-proofs/cycle-plan.red.txt",
+        "docs/plans/teachin-replayability-closure/accept/red-proofs/orchestrator-compare-7keys.red.txt",
+        "docs/plans/teachin-replayability-closure/accept/red-proofs/orchestrator-wiring-canonical.red.txt"
+      ],
+      "reason": "grok 主审 CHANGES_REQUIRED 修单（Steven 2026-07-28 批准，断言零弱化全为收紧）：① orchestrator 金牌 compare mock 原只校验 3 键，测不出生产调用缺 comparator exact 7 键（grok C1 亲跑实证恒 COMPARISON_AUTHORITY_INVALID）——mock 收紧到 exact 7 键 + 四项 bytes/authority 绑定单例校验；② orchestrator-wiring 新增 W6（canonical adapter 三接缝以 seam 加 canonical 实现装配且 canonical 实现静态 import，禁裸转发空心装配——grok C2 空心实锤的静态钉）与 W7（compare 生产调用点唯一且键集字面闭合）；③ 新增 cycle-plan 静态金牌六检查覆盖 record 的 cycle-plan CLI 面（grok H3），C5 红先行钉住须带值旗标名单缺 cycle-plan 的真缺口，配套产码一行修后 6/6 绿；s5 acceptance 增补该金牌。红先行证据：cycle-plan.red.txt（C5 天然红 5 过 1 败）、orchestrator-compare-7keys.red.txt（变异探针拔 distilledReceiptAuthority 一键，O 金牌 5 过 2 败 + W7 红，双门咬住）、orchestrator-wiring-canonical.red.txt（变异探针裸转发 runCanonicalPreflight，W6 红）；探针后产码即恢复，三金牌终态 7/7、7/7、6/6 全绿。"
+    },
+    {
+      "amendedAt": "2026-07-28",
+      "round": "R8 Claude diff 生产闭环评审硬化",
+      "files": [
+        "tests/_golden/teachin-replayability-review-hardening.zero-sut.golden.mjs"
+      ],
+      "reason": "Steven 逐项批准评审修复后新增零 SUT 棘轮，覆盖：known-recipe plan 绑定 exact capture bytes；模糊 intent/expected 错绑/pending/popup/mutation 不得确定性硬猜；录制显式完成、预装 lifecycle witness 与早退 cleanup；raw CLI 的 anchor close→第二 fresh runtime→canonical raw 顺序；活动页、共享取证、signed expected 与 authoring baseline 摘要生产接线；本轮文件尺寸。新增断言未替换或弱化既有 32 枚 teach-in 金牌，首轮 7/8 红定位为静态正则左右项写反，按实际 exact 比较表达式修正后 8/8 绿。"
+    },
+    {
+      "amendedAt": "2026-07-28",
+      "round": "R9 同次 capture 身份链收口",
+      "files": [
+        "tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs",
+        "tests/_golden/teachin-replayability-review-hardening.zero-sut.golden.mjs"
+      ],
+      "reason": "最终静态集成复核发现公开 teachin-plan→teachin-cycle 路径跨两次人工录制：计划锁定旧 capture bytes，cycle-entry 却以新 capture 铸 admission authority，source-plan exact hash 门因此必然拒绝。修单不放宽任何 authority/hash 校验：默认入口改为同次录制落盘后读取唯一 exact bytes，再同步生成 cycle input；旧 cycle-plan 降为 mapping/expected 模板，events、pairId 与三 runtime namespace 全部重绑本次 capture。两枚金牌先真实红（缺 loader/export），实现后 cycle-plan 6/6、review-hardening 9/9；全组 33 枚 teach-in zero-SUT/static golden exit 0。"
+    },
+    {
+      "amendedAt": "2026-07-28",
+      "round": "R10 raw 观察 inspector 补绑定摘要",
+      "files": [
+        "tests/_golden/teachin-replayability-raw-event-observation.zero-sut.golden.mjs"
+      ],
+      "reason": "Claude 四路评审 M6（承 grok R2 残差）：raw-axes 非消费预检窄于消费后 bindingsAgree（缺 caseId 与 expectedSha256 比对），同 capture 异 expected/caseId 的错绑通过预检后照烧两枚 genuine 一次性 authority，与预检自述目标相反；而 inspector 返回键集被本金牌 exactKeys 钉死、键名禁令含 expected 字样，产码无法合法补暴露。修单（Steven 2026-07-28 批准）：exactKeys 扩 caseId 与 expectedSha256 两键并加值钉（caseId 精确等于夹具、expectedSha256 为 sha256 摘要格式），键名禁令保留、唯一例外 expectedSha256——纯摘要不携 expected 内容，禁令精神（不开放 observation/expected/action facts）不变，字面放宽已如实标注。配套产码：inspector 补两字段、inspectBinding 补两比对全量对齐 bindingsAgree。修正后 raw-event-observation 7/7、raw-axes-adapter 7/7、raw-runner 9/9、production-boundary 7/7、boundaries 16/16 全绿；外科 stash 无实现态重钉真红（0 过 1 败 exit 1，红因模块缺席）。同轮记账：L1（comparator promotionEligible 悬空真旗标）被 equivalence-integrity-semantics 与 equivalence-sequence 两枚冻结金牌钉死，按例外条款挂账不修；M6 之外其余五 Medium 三 Low 已在闭合轮产码修复，其中 M3 采用 record 交接点归属回收方案以保全 cycle-entry E2/E4 冻结断言。"
+    },
+    {
+      "amendedAt": "2026-07-29",
+      "round": "teachin-cycle-evidence 契约 code-r1 M4 跨 prd 换签（codex 八轮收敛 REVIEW_APPROVE）",
+      "files": [
+        "tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs"
+      ],
+      "reason": "原 C1/C6 裸字面量钉迫使取证包裹写成 async 箭头多铸一枚 Promise（codex 判 rig）。六轮合法语法反例逐轮抬高（注释诱饵→字符串→别名正则→对象字面量除号/debugger 正则→实参位 IIFE 求值期启动→Unicode 转义标识符影子→as 别名替换包裹）后止损定终态六钉：①原始字节计数纪律（两标识符裸名恰 2 处 import+调用、调用形恰 1 处）；②词法歧义毒化 fail-closed（/ 证不出除号或正则整扫描毒化转红）；③span 归属；④刚性模板（零参箭头+箭头后第一个非空白 token 即唯一调用形+配平后 span 内再无内容，封 IIFE/逗号表达式/第三实参/默认参数位）；⑤原始字节禁反斜杠 u 转义（同一标识符两套字节唯一通路，真件实核 0 处）；⑥具名导入双钉（全文禁 as 目标名 + 目标名须为对应模块 import 花括号内恰等裸 specifier）。威胁模型写诚实：本静态门是协作文件回归闸（防重构走形与迎合钉 rig 回归），不防拥有仓写权的对抗性混淆——该对抗者可直接改金牌本身、任何静态门在此威胁下自反；验收标准=真件自然写法原样过、任何走形当场红。十四条负控全打进真 record.mjs 实测各红、负控后 record.mjs sha 回验一致；运行时侧证探针（自然形态 eventCount=1、IIFE/尾随实参/别名替换 0）在案。原件字节存档 .pre-evidence-amendment.archive.gz（gunzip 回验 sha=020f2025… 与原冻结值一致；中间态 677ccc6b/7b145b72/2a0d7446/8a1587d9/16a9f3a0 未经人签不叠档，直接记 020f2025→31956edc 一笔）。新件 7 钉 exit 0、472 行。production-boundary.static 经排查无 catch 字面量钉、未受 M1 影响、字节未动不换签。",
+      "signedBy": "Steven（2026-07-29 AskUserQuestion 补签：与主金牌换签同一合并账，现役 sha 31956edc）"
+    }
+  ],
+  "observability": [
+    {
+      "dimension": "AI 中台真实 browser/context 生命周期与登录连续性。",
+      "route": "human"
+    },
+    {
+      "dimension": "Windows native direct 的新标签页/login continuity：canonical 逻辑目标不得改写成 WSL-only loopback transport；隧道只在明确 WSL mode 使用。",
+      "route": "human"
+    },
+    {
+      "dimension": "raw source 在 current build 与 version-held-out build 的复现。",
+      "route": "human"
+    },
+    {
+      "dimension": "source/distilled 两次真实独立 fresh runtime。",
+      "route": "human"
+    },
+    {
+      "dimension": "独立 guided-compile authoring runtime 使用相同前置 workflow/reset baseline，且不与两次 evidence replay 共用 browser/context/owner。",
+      "route": "human"
+    },
+    {
+      "dimension": "source/distilled 正式 draft/sign/replay/verdict/report。",
+      "route": "human"
+    },
+    {
+      "dimension": "setup→body 独立场景。",
+      "route": "human"
+    },
+    {
+      "dimension": "医生站 site-held-out。",
+      "route": "human"
+    },
+    {
+      "dimension": "Hi 小助 CEF/iframe/shadow/container。",
+      "route": "human"
+    },
+    {
+      "dimension": "AI 中台、医生站、Hi 小助真实页面的 name+code 与 signed platform ID 双定位/回读。",
+      "route": "human"
+    },
+    {
+      "dimension": "driver receipt 的真实生产签发。",
+      "route": "human"
+    },
+    {
+      "dimension": "至少三份带录屏正式报告与用户明确验收。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-capture-fresh-authority",
+      "desc": "实现 exact bytes capture admission 与多读深拷贝 inspector、一次性 fresh runtime lifecycle authority、raw action opaque authority 门：全包校 seq/masked 敏感证据/selector/topology，所有拒绝路径零 action driver 调用，公开 receipt 全部脱敏，fresh 不能自报。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-replayability-capture-fresh.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-raw-actions.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-28T09:30:36.121Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-raw-source-replay",
+      "desc": "实现 raw source replay：path checkpoint 与 selector unique driver、nav 零 goto、首错停止、newpage 走现役 topology、逐 event 同次采 observation 铸 opaque rawObservationAuthority、诊断 proof 与一次性 clean proof authority、raw axes adapter 与 frozen verdict 子进程 adapter、输出封口。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-replayability-raw-runner.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-clean-proof.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-raw-output-seal.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-verdict-cli-adapter.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-raw-event-observation.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-28T09:30:39.287Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-resolved-atom-roundtrip",
+      "desc": "实现 resolved existing-atom projection 与 roundtrip：逐 event evidenceEventSeqs、纯函数 mapped/pending/coverage、existing atom registry 准入、topology 独立覆盖、resolutionAuthority 各铸一次 source-semantic/atom-roundtrip grant、经现役 flow-bridge/compile 接缝不复制编译器。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-replayability-resolved-projection.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-resolved-authority-coverage.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-atom-roundtrip.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-28T09:30:43.662Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4-semantic-receipt-equivalence",
+      "desc": "实现 staged pair、两相 source completion、semantic receipt 与 deterministic equivalence：raw execute seal 与 resolved semantic completion 分相、reset authority 恰一次 verifyReset、receipt 只含 canonical digest 与稳定投影、predecessor/comparison grant 各一次、comparator 固定首错、动态字段差异不得制造假红。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-replayability-equivalence-completion.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-core.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-reset.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-sequence.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-integrity-authority.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-integrity-semantics.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-evidence.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-28T09:31:27.350Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s5-orchestration-boundary",
+      "desc": "实现编排边界：atom-roundtrip、replayability-cycle-entry、runtime-cycle-adapter、dual-replay-orchestrator-core/facade 按 23 步次序静态绑定 canonical adapter；三 runtime 两两不同 namespace、失败后业务 stage 零调用但 required cleanup 恰一次；同进程录制→source 入口、entity 验证、跨平台 fresh runtime bootstrap、独立 authoring compile runtime、prepared replay 与生产静态咬合；输出 developmentOnly:true/promotionReady:false。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-orchestrator-wiring.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-runtime-cycle-adapter.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-entity-verification.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-runtime-bootstrap.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-compile-runtime-adapter.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-prepared-run.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-production-boundary.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-review-hardening.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-28T09:32:00.955Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s6-adjacent-structure",
+      "desc": "结构与邻接：现役 capture 三元降权不变、intake/distill/sign/replay/verdict 无旁路、page topology/execution-target/agent-id/output-seal 邻接门保持、新增或修改生产/golden 文件逐个严格少于 600 行、纯核心不 import browser/fs/network/LLM/verdict/report、CLI 只薄接线。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/teachin-replayability-boundaries.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-adjacent.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-07-28T09:32:15.730Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "acceptance 于 2026-07-28 初冻：30 枚新能力金牌实现前全部真实 exit 1（红因均为计划内生产模块缺席的行为级红，非 marker 假红；28 枚红证由上一轮采集，cycle-entry 与 entity-verification 两枚本轮补采），邻接金牌与 22 条现役零 SUT 命令保持绿（见 adjacent.green.txt 与 adjacent-full.green.txt）。红绿判定只信退出码。zero-SUT 绿只是必要条件：真实 AI 中台/医生站/Hi 小助 browser 生命周期、双回放独立 fresh runtime 与正式 draft/sign/replay/verdict/report 全部 route:human（见 observability），技术 CLEAN/REPRODUCED/EQUIVALENT 不冒充正式 PASS。passes 只由 gate 写入；冻结件后续变化必须走 checksumAmendments 修单路径与 ADR-0004 重签。",
+  "openIssues": []
+}

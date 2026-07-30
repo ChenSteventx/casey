@@ -1,0 +1,28 @@
+{
+  "naturalForm": {
+    "eventCount": 1,
+    "refusalPoints": [
+      "source-completion.issuer-throw"
+    ]
+  },
+  "iifeArgumentForm": {
+    "eventCount": 0,
+    "refusalPoints": []
+  },
+  "trailingArgumentForm": {
+    "eventCount": 0,
+    "refusalPoints": []
+  },
+  "shadowWrapperForm": {
+    "eventCount": 0,
+    "refusalPoints": [],
+    "returnedSameAsNatural": true
+  },
+  "aliasedSubstituteForm": {
+    "eventCount": 0,
+    "refusalPoints": [],
+    "bodyCalls": 0,
+    "returned": "undefined"
+  }
+}
+PROBE_GREEN: 自然形态 eventCount=1；实参位 IIFE、尾随实参、影子包裹、别名改写均 eventCount=0（影子包裹连返回值都与自然形态相同；别名改写更狠，bodyCalls=0 回调压根没跑）——「在 span 内」「闭环跑通了」都证不出取证边界在场，C7 的刚性模板、\u 禁令与裸具名导入钉分别钉的就是这几道缝

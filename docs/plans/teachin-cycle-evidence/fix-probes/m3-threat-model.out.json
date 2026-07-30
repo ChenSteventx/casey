@@ -1,0 +1,13 @@
+{
+  "pathA_singleSidedRename": {
+    "accepted": false,
+    "reason": "EVIDENCE_SCHEMA_REJECTED",
+    "inContract": true
+  },
+  "pathB_coordinatedForge": {
+    "accepted": true,
+    "staleEventsSurvived": true,
+    "inContract": false
+  }
+}
+PROBE_GREEN: 单侧改名被拦（界内已兑现）；协调双改可绕（界外，GRILL D4 已按此收窄措辞）

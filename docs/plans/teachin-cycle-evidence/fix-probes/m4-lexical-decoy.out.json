@@ -1,0 +1,108 @@
+[
+  {
+    "label": "A 注释诱饵",
+    "foolsGeneration": "r1",
+    "r1_noStrip": {
+      "passes": true,
+      "why": "inner=22 realCalls=2"
+    },
+    "r2_charStrip": {
+      "passes": false,
+      "why": "inner=-1 realCalls=1"
+    },
+    "r3_tokenStrip": {
+      "passes": false,
+      "why": "inner=-1 realCalls=1"
+    },
+    "r4_current": {
+      "passes": false,
+      "why": "计数纪律：runRecordedTeachinReplayabilityCycle 裸名 3 处（须 2）"
+    },
+    "r3OverStripsRealCall": null
+  },
+  {
+    "label": "B 字符串诱饵",
+    "foolsGeneration": "r1",
+    "r1_noStrip": {
+      "passes": true,
+      "why": "inner=38 realCalls=2"
+    },
+    "r2_charStrip": {
+      "passes": false,
+      "why": "inner=-1 realCalls=1"
+    },
+    "r3_tokenStrip": {
+      "passes": false,
+      "why": "inner=-1 realCalls=1"
+    },
+    "r4_current": {
+      "passes": false,
+      "why": "计数纪律：runRecordedTeachinReplayabilityCycle 裸名 3 处（须 2）"
+    },
+    "r3OverStripsRealCall": null
+  },
+  {
+    "label": "C 别名 + return 正则（codex code-r3 原样反例）",
+    "foolsGeneration": "r2",
+    "r1_noStrip": {
+      "passes": true,
+      "why": "inner=35 realCalls=1"
+    },
+    "r2_charStrip": {
+      "passes": true,
+      "why": "inner=35 realCalls=1"
+    },
+    "r3_tokenStrip": {
+      "passes": false,
+      "why": "inner=-1 realCalls=0"
+    },
+    "r4_current": {
+      "passes": false,
+      "why": "计数纪律：runRecordedTeachinReplayabilityCycle 裸名 3 处（须 2）"
+    },
+    "r3OverStripsRealCall": false
+  },
+  {
+    "label": "E debugger 后正则（codex code-r4 ②）",
+    "foolsGeneration": "r3",
+    "r1_noStrip": {
+      "passes": true,
+      "why": "inner=57 realCalls=1"
+    },
+    "r2_charStrip": {
+      "passes": true,
+      "why": "inner=57 realCalls=1"
+    },
+    "r3_tokenStrip": {
+      "passes": true,
+      "why": "inner=57 realCalls=1"
+    },
+    "r4_current": {
+      "passes": false,
+      "why": "计数纪律：runRecordedTeachinReplayabilityCycle 裸名 3 处（须 2）"
+    },
+    "r3OverStripsRealCall": false
+  },
+  {
+    "label": "D 别名 + 对象字面量除号（codex code-r4 ①）",
+    "foolsGeneration": null,
+    "r1_noStrip": {
+      "passes": false,
+      "why": "inner=-1 realCalls=0"
+    },
+    "r2_charStrip": {
+      "passes": false,
+      "why": "inner=-1 realCalls=0"
+    },
+    "r3_tokenStrip": {
+      "passes": false,
+      "why": "inner=-1 realCalls=0"
+    },
+    "r4_current": {
+      "passes": false,
+      "why": "计数纪律：runRecordedTeachinReplayabilityCycle( 调用形 0 处（须 1）"
+    },
+    "r3OverStripsRealCall": true
+  }
+]
+PROBE_GREEN: 五枚诱饵在现役 r4 口径下全红；A/B 在 r1、C 在 r2、E 在 r3 的假绿逐条复现

@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-cycle-evidence（full）：真机自动闭环停 RUN_COMPLETION_INVALID，同码多分支+catch 吞真因不可诊断（诚实脱敏的代价面）。加开发期取证边车：模块级 AsyncLocalStorage 观测上下文（als.run 词法边界包单次 cycle、聚合前封存、迟到发射只计数）+ 各生产拒付点统一 safeEmit（同步、吞异常、零返回值消费、不进异步控制流）+ refusalPoint 闭合枚举 18 员逐生产点一员（source 六分支/resolved 二/distilled 三/observer begin·finish/raw-runner 逐事件/formal/prepared claim·preflight/orchestrator 阶段边界）。两模块分立防传递依赖：cycle-evidence-context.mjs（纯：上下文+safeEmit+六组冻结枚举+封存式收集器，零 fs 零 import output）与 cycle-evidence-output.mjs（四层闸+全量 digest 派生文件名+原子写先闸后盘+读取方 readCycleEvidence(captureSha256,{outDir})，全仓 import 站点仅 bin/record.mjs）。凭据面：一切字符串出自固定枚举、异常名内建白名单外降格 OtherError（Reflect.get 防 getter）、内存规范化→四层闸→才写临时件→rename（拒写零临时件零目标写入）、三码 EVIDENCE_SCHEMA_REJECTED/EVIDENCE_CREDENTIAL_REJECTED/EVIDENCE_WRITE_FAILED、CLI 非零。裁定路径零沾染：既有函数签名/键集/返回值字节级不动，E5 双跑（带/不带观测上下文）返回深等+产物字节全等+调用关闭次数相等+控制台全等+零边车副作用。金牌 E1-E9（68 钉）：形状毒化/吞异常路/发射点矩阵/异常名规范化与凭据注入分组/零行为差/收集器中毒/身份绑定单判+digest 前 12 位碰撞不同目标/并发双 cycle 零串账/依赖闭包三钉。计划审 codex sol xhigh 七轮收敛 PLAN_APPROVE（r1-r7 日志在 docs/plans/teachin-cycle-evidence/）。",
+  "specPath": "docs/plans/teachin-cycle-evidence/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs": "9a13843671a2b6ea63d6f4483e4d0f96558d146444fcc8cce5f61fa247789794"
+  },
+  "observability": [
+    {
+      "dimension": "新金牌冻结人签（ADR-0004）：Steven 确认 grill+plan+冻结（红先行 63 红/5 绿 exit 1 实证在案）。",
+      "route": "human"
+    },
+    {
+      "dimension": "A4 真因可见（本契约完成语义）：仪表落地 gate 绿后 Steven 重录 wf_list 两击，边车落盘且 RUN_COMPLETION_INVALID 的 refusalPoint 唯一归因到具体生产点；真因修复=后继契约。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-evidence-sidecar-golden",
+      "title": "S1 取证边车金牌 E1-E9 红先行翻绿（形状毒化/吞异常/发射点矩阵/凭据面双组/零行为差/收集器中毒/身份绑定/并发隔离/依赖闭包三钉）",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-29T15:54:50.639Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacent-zero-regression",
+      "title": "S2 邻接面零回归（护栏 #19）：闭环全链+同码拒付邻接+结构门+上两契约金牌复跑绿",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-raw-runner.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-raw-event-observation.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-prepared-run.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-core.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-completion.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-production-boundary.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-orchestrator-wiring.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-runtime-cycle-adapter.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-boundaries.static.golden.mjs",
+        "node tests/_golden/adaptive-module-boundaries.static.golden.mjs",
+        "node tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-nav-expansion-recipe.zero-sut.golden.mjs",
+        "node tests/_golden/record-capture.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-29T15:57:38.773Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-repo-drift-and-terms",
+      "title": "S3 全仓冻结件零漂移 + 术语表完整性",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry"
+      ],
+      "evidence": "gate@2026-07-29T15:58:03.850Z 全部 acceptance exit 0"
+    }
+  ],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-29",
+      "round": "code-r1 联审修复轮换签（codex REVIEW_CHANGES_REQUIRED 5 Medium 全采信 + 同形第三枚一并接通，八轮收敛 REVIEW_APPROVE）",
+      "files": [
+        "tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs"
+      ],
+      "reason": "①[M1] reportedCall async 包裹改变异常栈与微任务时序（codex 实测 settled→queued 反序、栈多包裹帧）→ 删包裹、safeEmit 同步写进原三处 catch 内后原样 return denied；活体探针实测微任务世代 3→2、异常栈帧 6→4 与取证落地前基线全等（fix-probes/m1-live.*.json）；金牌 E0b 换签逐字节钉三处新形态+反 rig 钉禁包裹函数。②[M2] extraInputs 分支由 index.mjs 公开导出、A4 逐生产点归因不认「录制链不可达」挂账 → refusalPoint 枚举 18→21（source/distilled 两枚 input-shape + 同形 resolved-completion.input-shape 一并接通不留半接），三枚各配真实分支钉+互不串位钉。③[M3] readCycleEvidence 协调双伪造可绕 → 采收窄口径：威胁模型=防误放/残留旧档冒充本次证据、不防同一可写目录蓄意篡改（那把写权限连 capture 本体都能改），GRILL D4+金牌 E7 措辞同步、实现不动；双路探针实证确认收窄是诚实口径。④[M4] record.mjs async 箭头属迎合静态钉字面量的 rig、主金牌 E2/E5 全合成替身触不到真实通报路径 → record.mjs 回自然形态；金牌加 E2 真实生产路径钉（零 SUT 铸 genuine authority 真跑 executeAuthorizedSourceReplay issuer 吞异常位）与 E5c 更深双跑。⑤[M5] 金牌自证只扫本文件 readFileSync 字面量、传递链 credentialGate→collectSecretLiterals 实测真读凭据源 → 金牌自我重启进隔离根（lib/bin/tests/node_modules 符号链接指真仓、.auth 与 site.json 合成夹具、--preserve-symlinks），E4c 三重机制证据，凭据源零注入口。五条负控实测全数在案（fix-probes/negctl-m*.log）。过程诚信账：修复代理两次证据打滑（非忠实保真测量、声称未在档的加钉前实录）均被 codex 逮住、均已撤回/补录真账。原件字节存档 .pre-evidence-amendment.archive.gz（gunzip 回验 sha=9fcb632f… 与原冻结值一致）。新件 75 钉 exit 0。",
+      "signedBy": "Steven（2026-07-29 AskUserQuestion 补签：code-r1 联审修复轮八轮换签合并账，含枚举 18→21 偏离与两处威胁模型收窄，现役 sha 9a138436）"
+    }
+  ]
+}

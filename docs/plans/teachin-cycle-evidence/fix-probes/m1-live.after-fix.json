@@ -1,0 +1,1 @@
+{"label":"after-fix-inline","generation":{"generation":2,"reason":"RUN_COMPLETION_INVALID","ok":false},"stack":{"reason":"RUN_COMPLETION_INVALID","frameCount":4,"hasWrapperFrame":false,"frameNames":["Object.executeAndVerify","Module.executeAuthorizedSourceReplay","measureStack","async"]}}
