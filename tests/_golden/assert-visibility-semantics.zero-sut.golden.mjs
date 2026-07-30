@@ -337,6 +337,15 @@ await check('V10 同刻快照：提示在两次读取窗口内谢幕，仍不得
     `actual 须是同刻快照的命中数 1（null=证不出、0=兜底被晚读洗空，都不算），实际 ${result?.actual}${seen}`);
   assert(run.verdict.verdict === 'NEEDS_HUMAN',
     `硬断言判不过应落 NEEDS_HUMAN，实际 ${run.verdict.verdict}${seen}`);
+  // 不变量本身要钉死：两份视图必须来自【一次】查询。缺了这条，「仍分两次采样、只是把
+  // 可见那次读在前」的实现会拿到 actual:1 与 NEEDS_HUMAN，反而把 V10 蒙绿（codex delta
+  // 复审 Medium 实证）。所以顺序无关、次数才是判据。
+  // 已知代价（有意接受）：本判别靠替身正则匹配回调源码认「这是提示查询」，故实现若把
+  // 选择器改成传参，次数会数成 0 而判红。这与生产件注释里写死的约束一致——该选择器
+  // 必须字面留在 evaluate 回调体内，否则 V6 的孪生缝钉也一并失去判别力。
+  assert(reads.hint === 1,
+    `两份视图必须来自一次查询，提示查询次数须恰为 1，实际 ${reads.hint} 次`
+    + '（2 次=仍在分开采样；0 次=选择器被挪出回调体、替身认不出提示查询）');
 });
 
 const total = passed + failures.length;
