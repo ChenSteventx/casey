@@ -3,8 +3,9 @@
   "caseId": "tc_catalog_wf_crud",
   "task": "tc_catalog_wf_crud 人签断言契约（2026-07-15 真机重签，新增 cleanup countChange equals 0）",
   "testChecksums": {
-    "cases/tc_catalog_wf_crud/expected.frozen.json": "ad0209109c8ee389635f0bb6baa25cc584e3a7f9584452efb8d8f7fe056a57ad",
-    "runs/real-uat-20260722/tc_catalog_wf_crud/execute-authority.json": "37183b948b38fa1ea30ca46d530a175bc72b0aa3c54db7f61dd240d1548a95b0"
+    "cases/tc_catalog_wf_crud/expected.frozen.json": "ea35071743349ad51e36360dc3269645beb53cc61f43124b341eb340b6dfd4b8",
+    "runs/real-uat-20260722/tc_catalog_wf_crud/execute-authority.json": "37183b948b38fa1ea30ca46d530a175bc72b0aa3c54db7f61dd240d1548a95b0",
+    "cases/tc_catalog_wf_crud/entity-locks.frozen.json": "2430a8566bde597727b9cdb7391b30de9020daf319171fdd720af732c3b3a560"
   },
   "stories": [],
   "expectedFrozenPath": "cases/tc_catalog_wf_crud/expected.frozen.json"
