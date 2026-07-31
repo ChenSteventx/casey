@@ -36,13 +36,27 @@ const notes = [];
 // 合成根会被无声忽略、gate 转而去读真仓契约并以 exit 64 收场——那正是本轮实测踩到的假绿口。
 // 拓扑约定同 boot.mjs：LOOP_KIT_PKG 优先，否则消费树的兄弟目录 ../loop-kit。
 const isShim = (p) => { try { return /lib\/boot\.mjs/.test(readFileSync(p, 'utf8')); } catch { return true; } };
-const GATE = [
-  process.env.LOOP_KIT_PKG ? join(process.env.LOOP_KIT_PKG, 'bin', 'gate.mjs') : null,
-  join(ROOT, '..', 'loop-kit', 'bin', 'gate.mjs'),
-].filter(Boolean).find((p) => existsSync(p) && !isShim(p));
+// 显式 LOOP_KIT_PKG 在场时【只认它】，不静默回退到兄弟目录——否则金牌会报绿却测的是别的二进制
+//（本轮实测：LOOP_KIT_PKG 指向转发层时，旧版静默回退到 ../loop-kit，测的不是被指定的那份）。
+let GATE = null;
+if (process.env.LOOP_KIT_PKG) {
+  const p = join(process.env.LOOP_KIT_PKG, 'bin', 'gate.mjs');
+  if (!existsSync(p)) {
+    console.error(`RED  ${NAME}: LOOP_KIT_PKG 指向的包内没有 bin/gate.mjs（${p}）——显式定位失败不静默回退`);
+    process.exit(64);
+  }
+  if (isShim(p)) {
+    console.error(`RED  ${NAME}: LOOP_KIT_PKG 指向的是消费树内的薄转发层（${p}）——它无法被 LOOP_KIT_ROOT 重定向；拒绝回退到别的 gate`);
+    process.exit(64);
+  }
+  GATE = p;
+} else {
+  const sib = join(ROOT, '..', 'loop-kit', 'bin', 'gate.mjs');
+  if (existsSync(sib) && !isShim(sib)) GATE = sib;
+}
 
 if (!GATE) {
-  console.error(`RED  ${NAME}: 找不到独立包的 gate.mjs 真实现（试过 LOOP_KIT_PKG 与兄弟目录 ../loop-kit；消费树内的薄转发层不可用，它无法被 LOOP_KIT_ROOT 重定向）`);
+  console.error(`RED  ${NAME}: 找不到独立包的 gate.mjs 真实现（试过兄弟目录 ../loop-kit；消费树内的薄转发层不可用，它无法被 LOOP_KIT_ROOT 重定向）`);
   process.exit(64);
 }
 
@@ -68,19 +82,51 @@ function runGate(root) {
   });
   let prd = null;
   try { prd = JSON.parse(readFileSync(join(root, 'loop', 'prd-nail.json'), 'utf8')); } catch { /* 保持 null */ }
-  return { status: r.status, stdout: String(r.stdout || ''), stderr: String(r.stderr || ''), prd };
+  return { root, status: r.status, stdout: String(r.stdout || ''), stderr: String(r.stderr || ''), prd };
 }
 
 const story = (over = {}) => ({ id: 's1', desc: '合成钉用 story', lane: 'toil', acceptance: ['node ok.mjs'], passes: false, ...over });
 const prdOf = (over = {}) => ({ id: 'nail', title: '合成钉用契约', stories: [story()], ...over });
 
-// 通用前提闸：gate.mjs 只有一路跑到底才会打印收尾摘要行 `gate: GREEN|RED —— story x/y 过`。
-// 缺这行说明工装没把 gate 送进被测路径（合成根没生效、包缺失、引导失败等），此时任何「钉子没报红」
-// 都是假绿。本轮实测：转发层无声吃掉 LOOP_KIT_ROOT → gate exit 64 → N1/N2/N3 三钉全部静默「通过」。
-// 所以前提不成立一律当红报出，绝不让它冒充绿。
+// ── 通用前提闸（2026-07-31 改写）────────────────────────────────────────────
+// 它防的东西一个字没变：工装没把 gate 送进被测路径时（合成根没生效、包缺失、引导失败、
+// 打到消费树内的薄转发层等），「钉子没报红」是假绿，必须当红报出。本轮实测过的那条真实假绿——
+// 转发层无声吃掉 LOOP_KIT_ROOT → gate exit 64 → N1/N2/N3 三钉静默「通过」——仍然被挡住。
+//
+// 为什么不能再只靠收尾摘要行：门禁新增了可执行契约前置闸，非可执行契约在【判绿判红之前】就
+// exit 64，本来就不打印 `gate: GREEN|RED`。若继续把「没有摘要行」一律判成工装坏了，N1/N2 会因为
+// 缺口【已被修好】而报「前提不成立」——那是把正确行为读成工装故障，等于让钉子永远绿不了。
+//
+// 改法是把前提从「看输出形状」换成「先证工装真能把 gate 跑到底」：
+//   ① 正向对照 —— 同样的合成根喂一份完全合法的契约，必须 exit 0 + 打印 GREEN + 回写 passes=true。
+//      这一条同时证明：打到的是真 gate（不是转发层）、LOOP_KIT_ROOT 真被认领、合成根真生效。
+//      对照不成立 → 本轮全部钉子的前提都不成立。
+//   ② 逐钉证据绑定 —— 每次观测还要求 gate 的输出确实落在【本次这个合成根】上：要么跑到了摘要行，
+//      要么是前置闸的 exit 64 且 stderr 里点名本次的契约路径。二者皆无 = 没打到本次被测对象，判红。
+// 「什么都不做直接退」的假实现会在 ① 当场倒下（拿不到 GREEN），故本前提闸不会被空实现骗过。
+let harnessProven = null; // null=未测，true/false=已测
+function proveHarness() {
+  if (harnessProven !== null) return harnessProven;
+  const g = runGate(makeRoot(prdOf()));
+  harnessProven = g.status === 0
+    && /gate:\s*GREEN/.test(g.stdout)
+    && g.prd?.stories?.[0]?.passes === true;
+  if (!harnessProven) {
+    fail('P0', `工装前提不成立：合法契约的正向对照应 exit 0 + 打印 gate: GREEN + 回写 passes=true，实测 exit ${g.status}。stdout=${JSON.stringify(g.stdout.slice(0, 200))} stderr=${JSON.stringify(g.stderr.slice(0, 200))}`);
+  }
+  return harnessProven;
+}
+
 function harnessOk(nail, g) {
+  if (!proveHarness()) {
+    fail(nail, '工装前提不成立（正向对照未过，见 P0）——本钉的观测不可信，不当作通过');
+    return false;
+  }
   if (/gate:\s*(GREEN|RED)/.test(g.stdout)) return true;
-  fail(nail, `工装前提不成立：gate 未跑到收尾摘要行（exit ${g.status}）。stdout=${JSON.stringify(g.stdout.slice(0, 200))} stderr=${JSON.stringify(g.stderr.slice(0, 200))}`);
+  // 前置闸路径：exit 64 且 stderr 点名【本次】契约，说明 gate 确实读到并拒了本次被测对象。
+  const prdMark = join(g.root, 'loop', 'prd-nail.json');
+  if (g.status === 64 && g.stderr.includes(prdMark)) return true;
+  fail(nail, `工装前提不成立：gate 既没跑到收尾摘要行，也没给出针对本次契约的前置闸拒绝（exit ${g.status}）。stdout=${JSON.stringify(g.stdout.slice(0, 200))} stderr=${JSON.stringify(g.stderr.slice(0, 200))}`);
   return false;
 }
 
