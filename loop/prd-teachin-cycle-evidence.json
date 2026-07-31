@@ -19,11 +19,11 @@
     {
       "id": "s1-evidence-sidecar-golden",
       "title": "S1 取证边车金牌 E1-E9 红先行翻绿（形状毒化/吞异常/发射点矩阵/凭据面双组/零行为差/收集器中毒/身份绑定/并发隔离/依赖闭包三钉）",
-      "passes": true,
+      "passes": false,
       "acceptance": [
         "node tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-07-29T15:54:50.639Z 全部 acceptance exit 0"
+      "evidence": ""
     },
     {
       "id": "s2-adjacent-zero-regression",
@@ -48,7 +48,7 @@
         "node tests/_golden/teachin-nav-expansion-recipe.zero-sut.golden.mjs",
         "node tests/_golden/record-capture.golden.mjs"
       ],
-      "evidence": "gate@2026-07-29T15:57:38.773Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-31T01:25:47.134Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-repo-drift-and-terms",
@@ -58,7 +58,7 @@
         "node tests/_golden/support/prd-drift-scan.mjs",
         "node loop-kit/bin/term-lint.mjs --registry"
       ],
-      "evidence": "gate@2026-07-29T15:58:03.850Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-31T01:26:09.389Z 全部 acceptance exit 0"
     }
   ],
   "checksumAmendments": [
@@ -78,7 +78,8 @@
         "tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs"
       ],
       "reason": "闭环推进到语义完成层后，外层统一码 SOURCE_SEMANTIC_COMPLETION_INVALID 吞掉 projectAndVerify 的六类内层具名拒付，真因不可判。乙路（Steven 点）：通报下沉到发射点——15 条拒付位全经新助手，12 处本地字面量、3 处动态透传经只认六码的生产者局部归一器落码（禁复用全局归一器，它会放过全局合法却非本生产者六码的成员）；归因点枚举 21→22 新增 raw-axes.projection-denied（不复用外层成员，保 E3 逐点唯一归因）。金牌扩 14 钉（75→89）：六码正控 7 枚（PROJECTION_INVALID 两发射位各一）从真实分支击发、预检动态透传钉（两枚权柄一个不烧）、降格负控 2 枚（全局合法非六码成员与未知串均须不中毒且落兜底并仍成档过闸）、静态完整性钉（15 位全经助手零裸拒付）、零行为差双跑 2 枚、归因唯一性钉。既有 75 钉转红 2 条系补第 22 员所致（加强非削弱），其余 73 绿。起草期两枚探针实证：模拟实现后全绿（钉可满足非死钉），且三条作弊路（漏接一位／动态改硬编码／助手复用全局归一器）全被逮住。原件 gzip 存档 .pre-inner-reason-amendment.archive.gz（回验 sha=9a138436… 与原冻结值一致）。顺带订正 task 里陈旧的枚举员数文案。",
-      "signedBy": "PENDING_STEVEN"
+      "signedBy": "Steven（2026-07-31 会话内明示「签字」，对应待裁信主题「[待裁]P9 已推到只剩签字」四项；签的是本批换签整体，不含逐条技术细节的审阅。**本字段由 Claude 代填**，凭据即该句会话原话，非 Steven 本人书写；如对措辞或范围有异议以他后续更正为准）",
+      "signedAt": "2026-07-31"
     }
   ]
 }

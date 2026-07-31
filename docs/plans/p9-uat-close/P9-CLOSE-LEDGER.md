@@ -133,15 +133,30 @@ exit 0、10/10）。异构评审 codex sol max 两轮：r1 逮到 1 条 Critical
 | run | 结论 | `textHidden 创建时间` | 同轮正向断言 |
 |---|---|---|---|
 | `run_final1_20260731` | 6/6 全 PASS | `ok:true actual:0` | 三条均 `ok:true actual:1` |
-| `run_final2_20260731` | **抖动作废** | — | 三条均 `false/0` |
+| `run_final2_20260731` | **抖动作废** | `ok:true actual:0`（**空过**，见下方订正） | 三条均 `false/0` |
 | `run_final3_20260731` | 6/6 全 PASS | `ok:true actual:0` | 三条均 `ok:true actual:1` |
 | `run_final4_20260731` | 6/6 全 PASS | `ok:true actual:0` | 三条均 `ok:true actual:1` |
 | `run_final5_20260731` | 6/6 全 PASS | `ok:true actual:0` | 三条均 `ok:true actual:1` |
 
 `run_final2` 抖动如实记账、不当噪声抹掉：它在 `atstep_1`/`atstep_2` 就
-`locatorError`（`res=none`）、其后全是级联，**失败点在定位层不在文本采集层**，
-与本次改动无关；且系统没有假绿，落 `NEEDS_HUMAN` / `INDETERMINATE`，
-`fail-safe` 表现正常。
+`locatorError`（`res=none`），**失败点在定位层不在文本采集层**，与本次改动无关。
+
+> **📌 订正（2026-07-31 落签前独立复核，逐行读 `run-history.jsonl` ×
+> `verdict.json` × `axes.json`）**：本段原写「其后全是级联」「且系统没有假绿」，
+> 两处都写过强，收窄如下——
+>
+> 1. **级联断在 `atstep_10`，不是一路到底**。`atstep_11`（`workflow.closeDrawer`）
+>    动作层是 `ok`（按 Esc 不需定位，`res=null`），并落**步级 PASS**。
+> 2. **步级有一处空过**：该轮 `atstep_11`（`intent_5`）的 `textHidden 创建时间`
+>    是 `ok:true actual:0`，但同轮 `atstep_10` 的 `textVisible 创建时间` 是
+>    `ok:false actual:0`——浮层**从未打开**，「创建时间」本就不可见，负向断言
+>    平凡为真。前置从未成立，这一过不携带信息。
+> 3. **run 级 `fail-safe` 没有失效**：`atstep_7/8/9/10` 四步落
+>    `NEEDS_HUMAN` / `INDETERMINATE`，全轮未判全绿，机器没把这轮报成通过。
+>
+> 这条订正**加固而非削弱**四轮采认：它是活体反例，证明 `textHidden actual:0`
+> 单独一条不足以证明动作发生，必须与同轮 `textVisible actual:1` 配对——
+> `run_final1/3/4/5` 四轮都有这个配对，`run_final2` 没有。
 
 **辅助探针（GRILL A4 硬要求，不是可选项）**：首末轮各一次，独立浏览器会话，
 产物 `docs/plans/assert-visibility-semantics/evidence/a4-probe-{first,last}-round.json`：
@@ -161,9 +176,60 @@ verdict:   HIDDEN_NOT_UNMOUNTED
 会误判成「已登录」**——它只给登录表单 3 秒出现机会，超时即判表单不在场、直接返回
 `{loggedIn:true, viaForm:false}`，于是根本没登录却报成功。
 
+## 2026-07-31 人闸进展：两笔裁定到位 + 三笔换签落签
+
+### 已到位的裁定（Steven 2026-07-31 会话内）
+
+| 岔口 | 裁定 |
+|---|---|
+| UAT 签认书：最终码五轮里一轮抖动作废，四轮够不够签 | **够签**，抖动如实记账即可；`run_final2` 明细保留在签认书第二节，不删不淡化 |
+| D5：四态徽章渲染覆盖洞 甲/乙 | **择甲**（补齐 `p7-report` 夹具两步 + 一次换签）；乙案未采纳、文本留档 |
+
+两份草案已按裁定定稿到「答案已落、只等人签」：
+`P9-UAT-SIGNOFF.draft.md`（签认人与日期两栏留白）与
+`D5-ACCEPTANCE-SEMANTICS-REVISION.draft.md`（三处文本仍一字未动，待明签）。
+甲案的夹具补齐与换签由后继契约承担（另派代理在做），prd 名待回填。
+
+### 三笔换签落签（`PENDING_STEVEN` → 如实签字记录）
+
+Steven 2026-07-31 会话内明示「签字」（对应待裁信主题「[待裁]P9 已推到只剩
+签字」四项）。三份 prd 的 `checksumAmendments` 相应条目已由 `PENDING_STEVEN`
+改为 `signedBy: Steven` + `signedAt` + `signedVia`（`signedVia` 如实写明凭据
+是那句会话内明示、签的是本批换签整体而非逐条技术细节、字段由代理代填）：
+
+- `loop/prd-assert-visibility-semantics.json`
+- `loop/prd-teachin-raw-actionability-closure.json`
+- `loop/prd-teachin-cycle-evidence.json`
+
+### 落签后复跑门禁的结果（判绿只信退出码）
+
+| prd | gate 退出码 | 说明 |
+|---|---|---|
+| `prd-assert-visibility-semantics` | **0 GREEN** 3/3 | 无异常 |
+| `prd-teachin-raw-actionability-closure` | **1 RED** 2/3 | s2 红 |
+| `prd-teachin-cycle-evidence` | **1 RED** 2/3 | s1 红 |
+
+**两处红都不是签字改出来的**（签字字段不参与金牌执行），而是**此前的陈旧绿被
+这次复跑照出来**——两者同一个根因：`tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs`
+自 07-30 起处于后继契约 `cycle-evidence-inner-reason` 的**红先行**态（归因枚举
+须 22 员、现役实现 21 员，故 E10 系列整组红）。
+
+- `prd-teachin-cycle-evidence` 的 s1 直接消费该金牌 → 红，属**红先行的预期态**，
+  待 `cycle-evidence-inner-reason` 实现落地后自然转绿；
+- `prd-teachin-raw-actionability-closure` 的 s2 邻接面清单里也列了该金牌 → 连带红。
+
+两份 prd 的 `passes` 已由 gate 按实翻 `false`（`true → false`，gate 是唯一有权
+写 `passes` 的）。这正是护栏 #19「强制层落地必复跑受影响金牌」要防的陈旧绿，
+两份 prd 从 07-29／07-30 起就一直扛着假绿到今天。**这两处红与 P9 关账口径的
+关系需 Steven 定**：它们不在真机 UAT 清单五行里，但确实是仓内两份 prd 的现役
+非绿态。
+
 ## 待决
 
 - 后继契约与 tier-2 谁先占契约槽（tier-2 收口在即，预计先收 tier-2 再开）；
 - 三轮复跑是否必须换新实例（计划建议如此，防把一次绿当时序问题消失）；
 - **tier-2 A4 的三项人闸**（重新预置智能体、两份带外收据、C 轨授权）由谁
-  在什么时候做——不解这三项，P9 的 tier-2 面永远停在待办。
+  在什么时候做——不解这三项，P9 的 tier-2 面永远停在待办。**该项 2026-07-31
+  仍未裁定**，是签认书第四节唯一未填的一栏；
+- 上节两处红先行陈旧绿（`teachin-cycle-evidence` 与连带的
+  `teachin-raw-actionability-closure`）是否阻挡 P9 关账。

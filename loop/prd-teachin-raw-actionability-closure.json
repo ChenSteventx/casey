@@ -23,12 +23,12 @@
       "acceptance": [
         "node tests/_golden/teachin-raw-actionability.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-07-30T09:49:08.786Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-31T01:21:33.618Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-adjacent-zero-regression",
       "title": "S2 邻接面零回归（护栏 #19）：换签两金牌新件 + 闭环全链 + 结构门 + 前序契约金牌复跑绿",
-      "passes": true,
+      "passes": false,
       "acceptance": [
         "node tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs",
         "node tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs",
@@ -43,7 +43,7 @@
         "node tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs",
         "node tests/_golden/teachin-nav-expansion-recipe.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-07-30T09:54:48.726Z 全部 acceptance exit 0"
+      "evidence": ""
     },
     {
       "id": "s3-repo-drift-and-terms",
@@ -53,7 +53,7 @@
         "node tests/_golden/support/prd-drift-scan.mjs",
         "node loop-kit/bin/term-lint.mjs --registry"
       ],
-      "evidence": "gate@2026-07-30T09:56:29.937Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-31T01:22:53.979Z 全部 acceptance exit 0"
     }
   ],
   "checksumAmendments": [
@@ -64,7 +64,8 @@
         "tests/_golden/teachin-raw-actionability.zero-sut.golden.mjs"
       ],
       "reason": "codex 把生产判据纯内存变异成 return actionResult === true（只看闭包值、去掉拓扑条件）后金牌仍 17/0——门禁会放过该假绿实现。补两枚负控：G1g 拓扑后检查失败路（真控制器+真驱动，物理点击落地后动作窗口内关页，钉接缝事实=闭包值真而控制器回 ok:false，再走全路断言驱动出 ACTION_FAILED、失败键集恰 {ok,reason}、物理动作恰一次、selector 与地址零外泄）；G1h 拓扑 ok:true 但从不调用回调（新增保真替身，成功体键集与真控制器全等、蓄意跳过 perform，钉驱动拒付且零物理动作）。双向变异验证均真红：只看闭包值→18/1 红在 G1g；只看拓扑→17/2 红在 G1h。变异在磁盘做、跑完按字节副本还原，还原后 cmp 字节全同、金牌复跑仍 exit 0。金牌 17→19 钉。原件 gzip 存档 .pre-conjunction-amendment.archive.gz（回验 sha=7028587a… 与原冻结值一致）。",
-      "signedBy": "PENDING_STEVEN"
+      "signedBy": "Steven（2026-07-31 会话内明示「签字」，对应待裁信主题「[待裁]P9 已推到只剩签字」四项；签的是本批换签整体，不含逐条技术细节的审阅。**本字段由 Claude 代填**，凭据即该句会话原话，非 Steven 本人书写；如对措辞或范围有异议以他后续更正为准）",
+      "signedAt": "2026-07-31"
     }
   ]
 }
