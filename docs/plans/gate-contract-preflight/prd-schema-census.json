@@ -1,9 +1,9 @@
 {
   "generatedBy": "gate-contract-preflight 契约（Claude Opus 5）独立复算",
   "judgedAgainst": "docs/plans/seams-freeze/proposed/5-prd-schema-v2.schema.json（冻结件）",
-  "generatedAt": "2026-07-31T09:39:51.657Z",
+  "generatedAt": "2026-07-31T10:39:19.591Z",
   "repoState": {
-    "head": "59a0d31",
+    "head": "55902ec",
     "branch": "dev"
   },
   "totals": {
@@ -836,5 +836,13 @@
         }
       ]
     }
-  ]
+  ],
+  "contractKindApplied": {
+    "registry": 7,
+    "executable": 1,
+    "unlabelledPendingHuman": [
+      "prd-replay-admission-hermetic-migration.json"
+    ],
+    "note": "7 份登记账标 registry；prd-cli-mcp-face 标 executable（它是验收被撤空的可执行契约、非登记账，标 registry 即后门）；prd-replay-admission-hermetic-migration 登记面全空、既非可执行也非登记账，不给任何 kind，留待人裁。"
+  }
 }
