@@ -1,4 +1,4 @@
-# P9 · 真机 UAT 终局人签（草案，待 Steven 明签）
+# P9 · 真机 UAT 终局人签（**已签**）
 
 > 依据：`docs/plans/bootstrap/plan.md` P9 验收点「tier-2 live smoke + 真机 UAT
 > 清单全 🧑 通过 = 需求完成（gate 绿 ≠ 完成）」与 ADR-0009 完成闸；形制仿
@@ -9,8 +9,8 @@
 > 下表逐行的证据我都亲自核过（`verdict.json` 逐步裁定 + 产物清单），不是
 > 转述账本。
 >
-> **文本状态：可签态（内容已填满，签认人与日期两栏留给 Steven 本人填）。**
-> 文件名保留 `.draft` 后缀直到他真签——去后缀是签后动作，见文末。
+> **签署状态：Steven 2026-07-31 会话内明签「1、签」（对三问的第一问），并另答
+> 「3、满足」认可 A4 的 exit 2 分支成立。据此本文去 `.draft` 定稿。**
 
 ## 〇、已到位的裁定与仍未闭合的一项
 
@@ -18,7 +18,7 @@
 |---|---|
 | 抖动那轮够不够签（原第二节末尾的问句） | ✅ **Steven 2026-07-31 裁定：够签，抖动如实记账即可**——四轮全 PASS + 首末轮辅助探针 `HIDDEN_NOT_UNMOUNTED` 为采认依据；`run_final2` 明细保留在第二节不删不淡化 |
 | 3.2 四态徽章覆盖洞 甲/乙 | ✅ **Steven 2026-07-31 裁定：择甲（补齐夹具）**——落地见 `D5-ACCEPTANCE-SEMANTICS-REVISION.draft.md` |
-| 3.1 tier-2 A4 三项人闸的处置 | ✅ **Steven 2026-07-31 裁定：由他本人来做，P9 等做完再关账**——不走 waiver，与 07-30 关账口径一致；P9 保持 open 直到三项人闸解完且 tier-2 A4 跑绿 |
+| 3.1 tier-2 A4 三项人闸的处置 | ✅ **三项已全部解除**：智能体实为已在场恰一枚（不必新建，再建反会判歧义动作）；两份带外收据已产出并经生产判据校验（`problems: []`）；C 轨授权 Steven 已给、清单扩集到五员并落签 |
 
 > ⚠ **签前必读一条订正**：我按纪律自己复核四组 run 的原始产物时，逮到第二节
 > 原文有一句承重断言写得过强（`run_final2` 那句「其后全是级联」与「系统没有
@@ -41,7 +41,7 @@
 | `tc_catalog_wf_crud` | `runs/tc_catalog_wf_crud/run_b2_20260730` | 3 步**全 PASS** | 9/9 动作 `ok`，`locatorHitRate: 1` | 报告 html/json/md/pdf **四份齐** + 六件产物 + 录屏 webm 与 mp4 **各一** | ⬜ 待采认 |
 | `tc_wf_history_version` | `runs/tc_wf_history_version/run_b2_20260730` | 7 步**全 PASS** | 13/13 动作 `ok`，`locatorHitRate: 1` | 同上齐全（含 pdf 与 mp4） | ⬜ 待采认 |
 | `tc_wf_publish_states` | `runs/tc_wf_publish_states/run_final{1,3,4,5}_20260731` 四轮 | 四轮均 **6/6 全 PASS**，`intent_5` 的 `textHidden 创建时间` 逐轮 `ok:true actual:0`；同轮三条正向断言（`textVisible 保存成功`／`创建时间`／`查看`）逐轮 `ok:true actual:1` | 逐轮 12/12 动作 `ok`，`locatorHitRate: 1` | 各轮六件产物齐 + 报告 html/json/md + 录屏 webm（**无 pdf／mp4，本例未出这两件**）+ 首末轮辅助探针 `docs/plans/assert-visibility-semantics/evidence/a4-probe-{first,last}-round.json` | ⬜ 待采认（**阻塞已解除**；裁定一已定四轮够签；另一轮 `run_final2` 抖动作废，见第二节） |
-| tier-2 live smoke（机器面） | ⬜ 待跑 | ⬜ | ⬜ | ⬜ | ⬜ **三项人闸未解，见 3.1** |
+| tier-2 live smoke（机器面） | `runs/_tier2/judge-smoke_20260731T030518296Z_3302ad` | 17 道前置门全绿；`tc_agent_id_readback_real_uat_v1` 落账 `pipeline_complete_with_verdict` | 覆盖矩阵：取证面非空 / **流式面空** / `SUT_DEFECT` 面成立 | 裁判通道冒烟证据已落盘 | ✅ **已采认（exit 2）**——A4 条款「流式合格件缺席则 exit 2 如实记」成立，见第五节 |
 
 ## 二、publish 一例的特别说明（签前必读）
 
@@ -159,12 +159,33 @@
 
 | 项 | 取值 |
 |---|---|
-| 第一节五行逐行采认 | ⬜ 待 Steven |
-| 3.1 tier-2 三项人闸的处置 | ✅ **他来做，P9 等做完再关账**——Steven 2026-07-31 会话内裁定（邮件第 4 项「同意」措辞含糊，已按流程二追问一次后取得明确裁定） |
+| 第一节五行逐行采认 | ✅ **已采认**——Steven 2026-07-31 会话内明签「1、签」 |
+| A4 的 exit 2 是否满足验收 | ✅ **满足**——Steven 2026-07-31 明答「3、满足」（我另行披露了「缺席原因是合格件残废而非不存在」，他知悉后仍判满足） |
+| 3.1 tier-2 三项人闸的处置 | ✅ **已解除并已实跑**，见第五节 |
 | 3.2 徽章覆盖洞 甲/乙 裁定 | ✅ **甲（补齐夹具）**——Steven 2026-07-31 会话内裁定 |
-| 第二节订正框（`run_final2` 步级空过）已复核 | ⬜ 待 Steven |
-| 签认人 | ⬜ 待 Steven 本人填 |
-| 签认日期 | ⬜ 待 Steven 本人填 |
+| 第二节订正框（`run_final2` 步级空过）已复核 | ✅ 订正已在签前当面披露，他据此签 |
+| 签认人 | Steven（2026-07-31 会话内明签；本行由 Claude 代填，凭据即该句会话原话，非本人书写） |
+| 签认日期 | 2026-07-31 |
 
-签后动作：本文件去掉 `.draft` 后缀、冻入 `loop/prd-p9-tier2-live-smoke.json`
-的 `testChecksums` → 回填 `P9-CLOSE-LEDGER.md` → P9 关账。
+## 五、tier-2 A4 实跑结果与流式面开口（签前已披露）
+
+`node bin/casey.mjs selftest --tier2 --sut <回环> --case tc_agent_id_readback_real_uat_v1`
+→ **退出码 2**。17 道前置门全绿（含 2026-07-31 新产出的两份带外收据：连通面
+HTTP 200、账户面 acknowledged，均经生产判据 `readWinProbeResult` /
+`readOutOfBandReceipt` 校验 `problems: []`）；唯一非绿是**覆盖矩阵流式面为空**。
+
+A4 验收条款原文即写「exit 0 + 证据落盘（流式合格件缺席则 exit 2 如实记）」，
+故 exit 2 是条款内的合法结果。**签前已如实披露一处措辞落差**：流式面之所以空，
+不是「没有这个件」，而是**唯一候选 `tc_chiefcomplaint_smoke` 残废跑不了**——
+它没有 `entity-locks.frozen.json`，死在语义锁准入门
+（`FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID`、浏览器未启动）。这与本轮照出的七份
+prd 假绿是同一笔债（2026-07-24 前后那道强制层落地后这批用例从未重新表达），
+它是第八例。**Steven 知悉后判「满足」。**
+
+操作坑留痕：连通挑战字每次 tier-2 尝试都轮换（防重放），故 Windows 侧探针必须
+紧接着 tier-2 跑，中间隔一次尝试即作废（首次实跑即因此判前置门红）。
+
+## 六、签后动作
+
+本文件已去 `.draft` 后缀；冻入 `loop/prd-p9-tier2-live-smoke.json` 的
+`testChecksums` → 回填 `P9-CLOSE-LEDGER.md` → **P9 关账**。

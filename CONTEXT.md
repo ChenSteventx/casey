@@ -155,7 +155,7 @@
 | `buildability` | 可建造性 | 红队评审维度之一：组件是「照搬」还是「新建」、依赖是否可实现 | — |
 | `watchNetworkForensics` | 网络取证函数 | 实现「网络取证」的函数：记 response/requestfailed + 错误信封、按请求发起方归因 | — |
 | `helper` | 辅助件 | 被复用为底层工具而非主逻辑的代码件（如报告自包含机制保留当 helper） | — |
-| `tier-1` | 第一层自检 | hermetic 自检：假 SUT、零外部依赖，验编译→回放→报告管线 + 给分类器喂合成四元组逐一触发四态 | — |
+| `tier-1` | 第一层自检 | hermetic 自检：零外部依赖，验确定性内核五项（统一语言白名单与黑名单双向 + 熔断器可清零 + 质量门禁翻绿 + 裁判零 LLM）；管线端到端与四态徽章不在其内、由 `demo` 与分段金牌承担（口径修订 2026-07-31 Steven 明签，见 P9 关账账本） | — |
 | `tier-2` | 第二层自检 | live smoke：需 site.json + creds，覆盖 SUT_DEFECT/取证/流式分支，gated route:human | — |
 | 只读漂移探针 | Read-only Drift Probe | findEquivalentAffordance：无 spec 变更、无重跑地探明「同稳定签名唯一元素是否仍在」，供 verdict.mjs 判 `HARNESS_ERROR`；与自愈写回（相5）严格分离（拆 P5/P6 循环依赖） | — |
 | 回放历史 | Run History | 确定性回放 逐步落盘的第二层事实 run-history.jsonl（每步一行执行证据：动作/定位解析/静默点/耗时/result）+ 聚合 run-metrics.json（回放指标）；仅报告/诊断，绝不进 verdict.mjs、绝不写 passes（护栏 #15）；落盘过凭据兜底门、动作值打码（护栏 #7）。result 非四态、passedActions 非 PASS | 运行历史 |

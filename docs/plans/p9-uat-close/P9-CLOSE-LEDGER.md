@@ -17,10 +17,10 @@
 | 项 | 状态 | 证据 / 阻塞 |
 |---|---|---|
 | tier-1 全链绿 + 四态徽章 | ✅ 早期建成 | tier-2 金牌 T6 横切锚点复跑绿 |
-| tier-2 机器面（契约 `p9-tier2-live-smoke`） | 🔄 收口中 | 实现完、gate 曾绿；codex 联审三轮（r3 跑中）；两笔换签待 Steven 签 |
-| A4 tier-2 真机实跑 | ⬜ 待办 | 需两段连通证据；流式面空缺按设计 exit 2 如实记 |
-| A5 D5 三层口径修订 + 人签 | ⬜ 待办 | bootstrap plan / CONTEXT.md:156-157 / README |
-| UAT 签认书（冻入 prd checksum） | ⬜ 待办 | 仿 uat-signoff 形制 |
+| tier-2 机器面（契约 `p9-tier2-live-smoke`） | ✅ 已收口 | 实现完、金牌 111 钉 exit 0、codex 联审三轮闭环；清单扩集到五员并落签 |
+| A4 tier-2 真机实跑 | ✅ **已跑并采认** | `runs/_tier2/judge-smoke_20260731T030518296Z_3302ad`：exit 2，17 门全绿、readback 落账完成；流式面空按条款如实记，Steven 判满足 |
+| A5 D5 三层口径修订 + 人签 | ✅ **已签已落地** | Steven 2026-07-31 明签「2、签」；三处文本已改，全文见 `D5-ACCEPTANCE-SEMANTICS-REVISION.md` |
+| UAT 签认书（冻入 prd checksum） | ✅ **已签已冻** | `P9-UAT-SIGNOFF.md`，sha `637f4708…` 已进 `prd-p9-tier2-live-smoke` 的 `testChecksums`，漂移扫 exit 0 |
 | UAT 例 `tc_agent_id_readback_real_uat_v1` | ✅ | PASS 1 / NEEDS_HUMAN 1（身份回读已人裁） |
 | UAT 例 `tc_catalog_wf_crud` | ✅ | 07-30 重签后真机全 PASS，B.5 报告齐 |
 | UAT 例 `tc_wf_history_version` | ✅ | 07-30 重签后真机全 PASS，B.5 报告齐 |
@@ -233,3 +233,39 @@ Steven 2026-07-31 会话内明示「签字」（对应待裁信主题「[待裁]
   仍未裁定**，是签认书第四节唯一未填的一栏；
 - 上节两处红先行陈旧绿（`teachin-cycle-evidence` 与连带的
   `teachin-raw-actionability-closure`）是否阻挡 P9 关账。
+
+
+## 2026-07-31：P9 关账
+
+**P9 已关账。** 清单五行全过，不走 waiver——与 Steven 2026-07-30 定的关账口径一致。
+
+Steven 2026-07-31 会话内三问三答落定最后三关：
+
+| 问 | 答 |
+|---|---|
+| UAT 签认书 | 「1、签」 |
+| D5 三处文本修订 | 「2、签」 |
+| A4 的 exit 2 算不算满足 | 「3、满足」 |
+
+三关之前另有四项裁定同日落定：抖动那轮够签、徽章覆盖洞择甲、tier-2 三项人闸
+由他本人处置（后经实况核查全部解除）、清单扩集换签落签。
+
+### 关账时的四项已知开口（都不阻塞 P9，但要记着）
+
+1. **流式面无合格件**：`tc_chiefcomplaint_smoke` 缺 `entity-locks.frozen.json`、
+   死在语义锁准入门跑不了。A4 按条款走 exit 2 分支采认，但覆盖面确实是空的。
+2. **八份 prd 的同笔债**：上条与本轮照出的七份（`prd-kinds-harden` /
+   `prd-replay-settle-mount` / `prd-p5-replay` / `prd-chief-bringup` /
+   `prd-chiefcomplaint-smoke` / `prd-login-traffic-drop` / `prd-wf-history-version`）
+   是同一根因——2026-07-24 前后语义锁准入门落地后这批用例从未重新表达。另立契约清偿。
+3. **三例变更型无清理链**：`tc_catalog_wf_crud` / `tc_wf_publish_states` /
+   `tc_wf_history_version` 的回放链没有删除原子，每轮在真实环境留不可逆残留。
+   Steven 2026-07-31 裁定「先给三例补清理链再跑」，故它们虽已入清单但**不得实跑**。
+4. **徽章颜色语义仍无判别力**：`p7-report` 只钉中文态名、未钉徽章 CSS 类，
+   `HARNESS_ERROR` 与 `NEEDS_HUMAN` 的颜色可被改成通过绿而门禁不红。另立契约清偿。
+
+### 两笔待签换签（P9 之外）
+
+`loop/prd-p7-report.json` 与 `loop/prd-seams-freeze.json` 各一笔
+（徽章夹具补两态），均 `PENDING_STEVEN`。注意：`testChecksums` 已同步更新，
+**机制面是绿的，欠账只剩一个不被强制的字符串**——没有任何机器会拦它。

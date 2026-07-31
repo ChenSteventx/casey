@@ -174,11 +174,14 @@ P0 引导 loop 机制(direct)  →  P1 DDD 词表 + ADR(plan)  →  P2 TestCase 
 ## P9 · 两层 selftest + 真机 UAT（lane: full）
 
 **目标**（红队 buildability-M：「零依赖」与「真站覆盖」冲突 → 分两层）：
-- **tier-1** hermetic：`data:` URL 假 SUT，只验**编译→spec→确定性回放→报告**管线 + 给分类器喂**合成 actionPerformed/postAssertions/forensics 四元组**逐一触发 4 态，证 §4.2 树与徽章。零外部依赖。
+- **tier-1** hermetic：零外部依赖的**确定性内核自检**——统一语言注册表白名单与弃用别名黑名单双向有效、熔断器可清零、质量门禁消费可执行规格并翻绿、裁判零 LLM（护栏 #15）。
+  *（口径修订 2026-07-31，Steven 明签）：原写「`data:` URL 假 SUT 验编译→回放→报告管线 + 喂四元组触发 4 态证徽章」，实现未纳入且不宜纳入——tier-1 的价值在零依赖，管线端到端需 chromium。该义务改由 `casey demo` 子命令（含徽章的自包含报告，需 chromium）与分段金牌 `p3-compile`/`p5-replay`/`p7-report` 承担，此处**明记 waiver 而非删除义务**。修订依据与三层证据见 `docs/plans/p9-uat-close/D5-ACCEPTANCE-SEMANTICS-REVISION.md`。*
 - **tier-2** live smoke：需 site.json + creds，覆盖 SUT_DEFECT/取证/流式分支，**gated route:human**。
 
 **验收点**
-- [命令] `node bin/casey.mjs selftest --tier1` 全链路 exit 0，4 态徽章全覆盖。
+- [命令] `node bin/casey.mjs selftest --tier1` 全链路 exit 0（确定性内核五项）。
+- [金牌] 四态**分类**全覆盖 = `tests/_golden/p2-verdict.golden.mjs`（夹具四态齐）。
+- [金牌] 四态**徽章渲染**全覆盖 = `tests/_golden/p7-report.golden.mjs`，夹具已补齐 `HARNESS_ERROR` 与 `NEEDS_HUMAN` 两步，四态逐步渲染并断言（口径修订 2026-07-31 Steven 择甲并明签；补齐由契约 `report-badge-four-state-coverage` 落地，换签见 `prd-p7-report` 与 `prd-seams-freeze`）。已知开口项：金牌只钉中文态名、未钉徽章 CSS 类，故这两态的颜色语义尚无判别力，另立契约清偿。
 - [🧑] tier-2 live smoke + 真机 UAT 清单全 🧑 通过 = 需求完成（gate 绿 ≠ 完成）。
 
 ---

@@ -4,7 +4,8 @@
   "specPath": "docs/plans/p9-tier2-live-smoke/plan.md",
   "testChecksums": {
     "tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs": "f6e6a5a1ee05d476f17c29b85b070248740a30fbbf98c265db221a9d21ae936c",
-    "cases/tier2-suite.manifest.json": "89dea66de4965a0ab5a5c1e2eca0b8ad61952b50b920027eb1353191a2a7acfb"
+    "cases/tier2-suite.manifest.json": "89dea66de4965a0ab5a5c1e2eca0b8ad61952b50b920027eb1353191a2a7acfb",
+    "docs/plans/p9-uat-close/P9-UAT-SIGNOFF.md": "637f4708f9b7687dd1e778f991ea76590af778db384c2296d92c35d1284de88f"
   },
   "observability": [
     {
@@ -12,11 +13,11 @@
       "route": "human"
     },
     {
-      "dimension": "A4 真机 tier-2（route:human）：selftest --tier2 --sut 回环对现役已签用例集真机实跑 exit 0 + 证据落盘（流式合格件缺席则 exit 2 如实记）。",
+      "dimension": "A4 真机 tier-2（route:human）——**已兑现并经 Steven 采认**。selftest --tier2 --sut 回环 --case tc_agent_id_readback_real_uat_v1 实跑退出码 2，证据 runs/_tier2/judge-smoke_20260731T030518296Z_3302ad：17 道前置门全绿（含新产出两份带外收据，经生产判据 readWinProbeResult / readOutOfBandReceipt 校验 problems 均为空）、readback 落账 pipeline_complete_with_verdict、取证面非空、SUT_DEFECT 面成立、用例证据落盘允许；唯一非绿是覆盖矩阵流式面为空，正是本条款「流式合格件缺席则 exit 2 如实记」的分支。签前已如实披露措辞落差：流式面空的原因不是「没有该件」而是唯一候选 tc_chiefcomplaint_smoke 残废跑不了（缺 entity-locks.frozen.json、死在语义锁准入门、浏览器未启动），与本轮照出的七份 prd 假绿同一笔债、它是第八例。Steven 2026-07-31 知悉后明答「3、满足」。",
       "route": "human"
     },
     {
-      "dimension": "A5 P9 口径修订与 UAT 签认书（route:human）：D5 三层修订（bootstrap/CONTEXT/README）Steven 明签；UAT 签认书冻入 prd checksum；P9 关账清单全过或逐项 waiver。",
+      "dimension": "A5 P9 口径修订与 UAT 签认书（route:human）——**已全部落地**。D5 三层修订经 Steven 2026-07-31 会话内明签「2、签」后已改三处文本：docs/plans/bootstrap/plan.md 的 P9 段与验收点、CONTEXT.md 的 tier-1 释义、README.md 第 33-34 行；修订全文与三层证据见 docs/plans/p9-uat-close/D5-ACCEPTANCE-SEMANTICS-REVISION.md。UAT 签认书经他明签「1、签」后定稿为 docs/plans/p9-uat-close/P9-UAT-SIGNOFF.md，已冻入本 prd 的 testChecksums。P9 关账清单五行全过，不走 waiver。",
       "route": "human"
     },
     {
