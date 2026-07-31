@@ -463,6 +463,11 @@ const entityLocksSha = entityLocksText ? createHash('sha256').update(entityLocks
 const newPrd = {
   ...prd,
   schemaVersion: 2,
+  // 契约类别（Steven 2026-07-31 裁定）：sign 产出的是【登记账】——只登记冻结断言面、无可执行
+  // 义务（stories 恒空，见 HANDOFF.md 已锁纪律「真机人签契约 = sv2 + caseId + 空 stories」）。
+  // 显式标 registry，让质量门禁按登记账硬拒 exit 64、永不判绿；不标则门禁只能靠形状猜。
+  // 红线：本字段只决定门禁调哪套校验，绝不授予绿——registry 在 gate 里没有任何返 0 的路径。
+  contractKind: 'registry',
   expectedFrozenPath: frozenKey,
   testChecksums: {
     ...(prd.testChecksums || {}),
