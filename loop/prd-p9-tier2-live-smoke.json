@@ -4,7 +4,7 @@
   "specPath": "docs/plans/p9-tier2-live-smoke/plan.md",
   "testChecksums": {
     "tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs": "f6e6a5a1ee05d476f17c29b85b070248740a30fbbf98c265db221a9d21ae936c",
-    "cases/tier2-suite.manifest.json": "44f226bbb9b0206299b50d9c14ee096a6694d520223458c62c68cd2eeffce26b"
+    "cases/tier2-suite.manifest.json": "89dea66de4965a0ab5a5c1e2eca0b8ad61952b50b920027eb1353191a2a7acfb"
   },
   "observability": [
     {
@@ -71,6 +71,20 @@
       ],
       "reason": "两个真假绿是本轮核心收获：①HARNESS_ERROR（工装红）原被 pipeline_complete_with_verdict 一视同仁，实测得 exitCode 0/machineRed false/带绿尾行——现改为 HARNESS_ERROR>0 必判机器红 exit 1，receipt 仍诚实记管线完成；②零步裁定产物（steps:[]）原被认作「合法非全过」，配齐附件+childExitCode=1 即归管线完成、聚合可达绿尾行——现由纯层单一判据 judgeVerdictStepIdentity 要求步数>0、四态计数总和等于步数、与三轴步双射。其余：manifest 准入闭合（同一份已 hash 字节解析、拒 draft、拒重复/超限/缺件/越界路径、spawn 前重核并显式传核过路径）；原始字节扫描补全（axes/verdict/report-model/expected 先扫后解析，复用 FORBIDDEN_KEYWORDS+collectSecretLiterals，回环 carve-out 按 cred-gate 池来源精确绑定单值、六种非裸形态不 carve）；run 目录排他（不可碰撞空目录+产物 mtime≥本次启动+child exit⇔verdict 一致+完整附件集含 video.webm/video.json）；用法错零回显原值（稳定码+参数序号+脱敏类别，逐行封印）；绿尾行改 process.exitCode+writeSync 防管道截断；win-probe 原子写+一次性挑战字绑定（写与删除同时失败时旧成功件由挑战字作废）。金牌 77→111 钉全绿。manifest 同批修正提签时漏删的 draft 标记。原件 gzip 存档 .pre-review-amendment.archive.gz（回验 sha=57cc8bca… 与原冻结值一致）。",
       "signedBy": "Steven（2026-07-30 AskUserQuestion 签：tier-2 三轮联审修复两笔换签合并账）"
+    },
+    {
+      "amendedAt": "2026-07-31",
+      "round": "tier-2 用例集扩集换签（caseLimit 4→5 + pendingMembers 四例全数移入 members）",
+      "files": [
+        "cases/tier2-suite.manifest.json"
+      ],
+      "shaBefore": "44f226bbb9b0206299b50d9c14ee096a6694d520223458c62c68cd2eeffce26b",
+      "shaAfter": "89dea66de4965a0ab5a5c1e2eca0b8ad61952b50b920027eb1353191a2a7acfb",
+      "archive": "cases/tier2-suite.manifest.json.pre-tier2-suite-expand-amendment.archive.gz",
+      "contract": "p9-tier2-live-smoke（既有契约内的用例集扩集，未另立契约）",
+      "reason": "为什么改：Steven 2026-07-31 会话内两次明示——先答「把另四例一并授权入集」，随后在 caseLimit 冲突的追问里答「把上限提到 5，全部入集」。改法两项：①caseLimit 由 4 提到 5（安全边界放宽，即一次 live smoke 最多打真实环境的例数上限，已在 manifest 内新增 caseLimitNote 逐字留痕）；②pendingMembers 四例（tc_chiefcomplaint_smoke / tc_catalog_wf_crud / tc_wf_publish_states / tc_wf_history_version）全数补齐现役成员同款字段后移入 members，该数组清空，成员数 1→5。四员的 artifact hash 全部本轮现算，三例变更型的 expected.frozen.json 与 entity-locks.frozen.json 与各自 loop/prd-tc_*.json 的 testChecksums 逐字节同值（对账全过）；tc_chiefcomplaint_smoke 全仓无同名 prd 故无同级对账面，其凭据是件内逐条断言自带的 signerId=Steven / signedAt=2026-07-03T04:40:30.832Z，且该件无 entity-locks（签期早于实体锁机制，采集层列为可选）、无 audience 标记（不猜故不填）。timeoutMs 按各例真机 run-metrics.json 的 totalDurationMs 实测分档（catalog 20.6 秒→600000、chiefcomplaint 11.9 秒+LLM 流式等待→660000、history 21.6 秒→720000、publish 31.3 秒→780000），依据写进 manifest 的 timeoutBasis。cleanupObligation 逐例按 events.json 末步实证重写，纠正了原 pendingMembers 的乐观文案：三例变更型的回放链全部没有删除原子，工装一律不自清，残留清理百分之百是人的义务；publish 每轮留一条不可逆的已发布工作流（2026-07-30 夜五轮即留五条），history 每轮留已发布工作流加不可删的版本记录。lib/ 与金牌一字未改，本笔只动 manifest 数据面。原件 gzip 存档见 archive 字段（gunzip 回验 sha=44f226bb… 与原冻结值一致）。",
+      "verification": "改后清单经 lib/selftest-tier2-manifest.mjs 的 validateSuiteManifestDoc 校验：problems 空数组、ok=true、members.length=5、caseLimit=5、signedOk=true、无 draft 标记、pendingMembers 为空数组。五员逐一过 verifyMemberExecutionFiles 的磁盘字节重核（全 ok=true，三例变更型 perRunApproval 均为 true）。readSuiteManifest 全链在本笔换签落签前会如实报「manifest 字节与契约冻结值失配」——那是本 testChecksums 尚未随扩集更新时的正确 fail-closed 行为，本笔更新后即闭合。",
+      "signedBy": "Steven（2026-07-31 会话内明示落签：先答「把另四例一并授权入集」，再在 caseLimit 冲突的追问里答「把上限提到 5，全部入集」，最后在残留代价披露后就本笔换签答「你现在签，我写出处落笔」。签的是【清单扩集到五员 + caseLimit 4→5】这件事整体，不含逐条 artifacts 校验和的人工复核。**本字段由 Claude 代填**，凭据即上述三句会话原话，非 Steven 本人书写；如对措辞或范围有异议以他后续更正为准。同时留痕：他在知悉「三例变更型回放链无清理原子、每轮留不可逆残留」之后，另行裁定「先给三例补清理链再跑」——故本次扩集只是清单授权到位，三例变更型在补齐清理链之前不得实跑。"
     }
   ]
 }
