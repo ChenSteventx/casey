@@ -4,9 +4,25 @@
   "specPath": "docs/plans/p7-report/plan.md",
   "testChecksums": {
     "tests/_golden/p7-report.golden.mjs": "1e6b7955dd654f05bec2ea085f93873422dbb317a3a1bb884038fc614b158b76",
-    "tests/_golden/fixtures/seams/report-model.fixture.json": "1a9e08871c8e8b756c42daa91c4207b31f520eee784894c0c3cdc9d28b61d32e",
+    "tests/_golden/fixtures/seams/report-model.fixture.json": "a9ef3ee1e4240bf96a78455b6866e63646f2da2ca82c0a4c3a9ea5d9433a501a",
     "tests/_golden/p7-credgate-coverage.golden.mjs": "549da2350d52f1ab464e49814d903f8b7d8f1691cbba09c9590f2e8dfe641d8f"
   },
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-31",
+      "files": [
+        "tests/_golden/fixtures/seams/report-model.fixture.json"
+      ],
+      "shaBefore": "1a9e08871c8e8b756c42daa91c4207b31f520eee784894c0c3cdc9d28b61d32e",
+      "shaAfter": "a9ef3ee1e4240bf96a78455b6866e63646f2da2ca82c0a4c3a9ea5d9433a501a",
+      "archive": "tests/_golden/fixtures/seams/report-model.fixture.json.pre-report-badge-four-state-coverage-amendment.archive.gz",
+      "contract": "report-badge-four-state-coverage (lane=light)",
+      "reason": "为什么改：docs/plans/bootstrap/plan.md 的 P9 验收点写着「4 态徽章全覆盖」，实测不成立——tests/_golden/p7-report.golden.mjs 逐步校「该步态名必须在其片段内出现」，但本夹具原只有两步、步级 verdict 取值集合 = {PASS, SUT_DEFECT}；HARNESS_ERROR 与 NEEDS_HUMAN 只作为裁定概览计数出现且值为 0，两态徽章从未被证过。NEEDS_HUMAN 尤其要紧：它是 fail-safe 内核最常落的一态（publish 真机四轮全落它）。Steven 2026-07-31 裁定「择甲」——补夹具、不动渲染器。改法：加 atstep_2（HARNESS_ERROR：录制 locator 未命中 resolution=none + 只读漂移探针正命中，对齐 tests/_golden/fixtures/p2/verdict-cases.json 的 harness_error case）与 atstep_3（NEEDS_HUMAN + reason=SUT_DEFECT_OR_STALE：纯断言步 kind=none、硬断言失败、取证干净，对齐同夹具 sut_defect_or_stale case），并把 verdictSummary 的 HARNESS_ERROR/NEEDS_HUMAN 由 0 同步改为 1 以免与步级数据自相矛盾。lib/report.mjs 与 tests/_golden/p7-report.golden.mjs 一字未改——渲染器四态本就齐全（VERDICT_ZH/VERDICT_CLS/四个徽章 CSS 类/badge() 查表），金牌断言本就是遍历 model.steps 的通用形态且已预置 NEEDS_HUMAN+reason 分支（写着但因夹具不含该态而从未执行）。新增两步经 draft-07 子集校验合 report-model.schema.json（顶层与各层 additionalProperties:false 全过），且裁定与 bin/verdict.mjs 判定树自洽。",
+      "mutationVerification": "隔离副本变异验证（主树 lib/report.mjs sha256 前后一致 f033d110c34056d50c4354635b3bfe099e9225cc740f898632403a8b90e6e54b，零污染）：副本基线绿；M1 把 VERDICT_ZH.HARNESS_ERROR「过程错误」改坏 -> RED exit 1「步 atstep_2 缺裁定徽章文案」；M2 把 VERDICT_ZH.NEEDS_HUMAN「待人裁决」改坏 -> RED exit 1「步 atstep_3 缺裁定徽章文案」；M5 删掉 NEEDS_HUMAN 理由子类整段 -> RED exit 1「缺 reason 子类 SUT_DEFECT_OR_STALE」；M6 badge() 查表退化成恒定通过 -> RED exit 1。残留缺口（如实挂账、未修）：M3/M4 把 VERDICT_CLS 的 harness/human 徽章 CSS 类改坏，p7-report 仍绿——该金牌只钉中文态名文案、不钉徽章颜色语义 CSS 类；补该判别力须改已冻 golden、属另一笔换签面，留给 Steven 定夺。",
+      "adjacencyRegression": "邻接零回归（护栏 #19，判绿只信退出码）：改前 HEAD 基线与改后逐条对比，11 个消费者退出码与结论行逐条一致，唯一差异是 p7-report 自身成功行由「2 步」变「4 步」（exit 仍 0，即本次预期变化）。绿：p7-report / seams-freeze / report-cleanup-evidence / report-nl-atomic / report-video-block / report-workflow-structure / output-seal / checksum-drift-closure.zero-sut。既有陈旧红（改前即红、非本轮引入）：replay-video exit 1（7 过 / 6 红，语义锁准入门 FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID、未启动浏览器）、layer3-wiring exit 1（同源，replay 阶段 exit 65 fail-closed）、casey-demo exit 1（1 过 / 8 败，demo 入口已由真实 SUT only 策略禁用）。",
+      "signedBy": "PENDING_STEVEN"
+    }
+  ],
   "observability": [
     {
       "dimension": "真机生成报告在浏览器自包含、双击可看、录屏内联可播（tier-2 目检）",
@@ -30,7 +46,7 @@
         "node tests/_golden/p7-report.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-07T07:22:15.257Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-31T01:51:02.916Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-credgate-coverage",
@@ -40,7 +56,7 @@
         "node tests/_golden/p7-credgate-coverage.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-07T07:22:16.131Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-31T01:51:04.113Z 全部 acceptance exit 0"
     }
   ]
 }

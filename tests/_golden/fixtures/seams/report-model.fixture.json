@@ -10,8 +10,8 @@
   "verdictSummary": {
     "PASS": 1,
     "SUT_DEFECT": 1,
-    "HARNESS_ERROR": 0,
-    "NEEDS_HUMAN": 0
+    "HARNESS_ERROR": 1,
+    "NEEDS_HUMAN": 1
   },
   "steps": [
     {
@@ -185,6 +185,115 @@
         "videoAt": 4200,
         "traceRef": "trace/catalog_wf_crud.atstep_1.zip"
       }
+    },
+    {
+      "stepId": "atstep_2",
+      "intentId": "intent_2",
+      "atom": "workflow.deleteByName",
+      "intentText": "回到工作流目录，删除刚建的这条流程",
+      "action": {
+        "kind": "click",
+        "describe": "点击该流程行的「删除」按钮",
+        "resolution": "none"
+      },
+      "verdict": "HARNESS_ERROR",
+      "reason": null,
+      "postAssertions": [
+        {
+          "kind": "countChange",
+          "op": "equals",
+          "value": 0,
+          "actual": 1,
+          "ok": false,
+          "soft": false
+        }
+      ],
+      "forensics": {
+        "lifecycle": {
+          "pageerror": [],
+          "crashed": false,
+          "crashedAtStepId": null
+        },
+        "network": [
+          {
+            "url": "/ai-manager/process/queryProcessPage",
+            "status": 200,
+            "initiator": "atstep_2",
+            "attributedStepId": "atstep_2",
+            "errorEnvelope": {
+              "field": "status",
+              "expected": 200,
+              "actual": 200,
+              "ok": true
+            }
+          }
+        ]
+      },
+      "observed": {
+        "urlPathnameAfter": "/process/list",
+        "cleanTitles": [
+          "流程管理"
+        ],
+        "toastTexts": [],
+        "replyText": null,
+        "replyStreamUrl": null
+      },
+      "attachments": {
+        "video": "step/atstep_2.mp4",
+        "screenshot": "step/atstep_2.png",
+        "trace": "trace/catalog_wf_crud.atstep_2.zip",
+        "stepPage": "step/atstep_2.html",
+        "videoAt": 7800
+      },
+      "defectTicket": null
+    },
+    {
+      "stepId": "atstep_3",
+      "intentId": "intent_3",
+      "atom": "assert.onPage",
+      "intentText": "确认该流程已从工作流目录消失",
+      "action": {
+        "kind": "none",
+        "describe": "仅断言当前页，无点击动作",
+        "resolution": "none"
+      },
+      "verdict": "NEEDS_HUMAN",
+      "reason": "SUT_DEFECT_OR_STALE",
+      "postAssertions": [
+        {
+          "kind": "textVisible",
+          "op": "contains",
+          "value": "暂无数据",
+          "actual": "共 1 条",
+          "ok": false,
+          "soft": false
+        }
+      ],
+      "forensics": {
+        "lifecycle": {
+          "pageerror": [],
+          "crashed": false,
+          "crashedAtStepId": null
+        },
+        "network": []
+      },
+      "observed": {
+        "urlPathnameAfter": "/process/list",
+        "cleanTitles": [
+          "流程管理"
+        ],
+        "toastTexts": [],
+        "replyText": null,
+        "replyStreamUrl": null
+      },
+      "attachments": {
+        "video": "step/atstep_3.mp4",
+        "screenshot": "step/atstep_3.png",
+        "trace": "trace/catalog_wf_crud.atstep_3.zip",
+        "stepPage": "step/atstep_3.html",
+        "videoAt": 9400
+      },
+      "defectTicket": null
     }
   ]
 }

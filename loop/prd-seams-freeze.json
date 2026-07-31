@@ -12,11 +12,28 @@
     "loop/prd.schema.json": "d98f08032c1b140958e5315a16de31db3c8f1a4fd9728709b1f6b342babd0926",
     "tests/_golden/fixtures/seams/events.fixture.json": "49545e6efe597c33d9eeaaff65e9f8f9e268e125509533ccf54026a70023dd14",
     "tests/_golden/fixtures/seams/observed-reality.fixture.json": "5e7559b328e3ebb334342fa19a8d574494e97f1e24db1de0d24ed140ca60fbed",
-    "tests/_golden/fixtures/seams/report-model.fixture.json": "1a9e08871c8e8b756c42daa91c4207b31f520eee784894c0c3cdc9d28b61d32e",
+    "tests/_golden/fixtures/seams/report-model.fixture.json": "a9ef3ee1e4240bf96a78455b6866e63646f2da2ca82c0a4c3a9ea5d9433a501a",
     "tests/_golden/fixtures/seams/drift-patch.fixture.json": "a862362286e27c87988199ad2b0365d5c4107c50c0c766e24bb1dcefec704e70",
     "tests/_golden/fixtures/seams/expected-frozen.fixture.json": "f8e5666374eb50050c713ad6787b48c318ec5ce7c3354b11ec8dabccda9f02f8",
     "tests/_golden/fixtures/seams/prd-v2.fixture.json": "ee1732f7ea1c9c846e231c9e81b41501f8680865d6af0d3677c3c385d22e4135"
   },
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-31",
+      "files": [
+        "tests/_golden/fixtures/seams/report-model.fixture.json"
+      ],
+      "shaBefore": "1a9e08871c8e8b756c42daa91c4207b31f520eee784894c0c3cdc9d28b61d32e",
+      "shaAfter": "a9ef3ee1e4240bf96a78455b6866e63646f2da2ca82c0a4c3a9ea5d9433a501a",
+      "archive": "tests/_golden/fixtures/seams/report-model.fixture.json.pre-report-badge-four-state-coverage-amendment.archive.gz",
+      "contract": "report-badge-four-state-coverage (lane=light)",
+      "sharedWith": "loop/prd-p7-report.json（同一夹具被两份 prd 同时冻结，本笔换签逐份做，两份记同一账）",
+      "reason": "为什么改：见 loop/prd-p7-report.json 同日同笔换签——夹具原只有两步、步级 verdict 取值集合 = {PASS, SUT_DEFECT}，导致 P9 验收点声称的「4 态徽章全覆盖」不成立。本 prd 侧的关切是接缝形状而非渲染：新增 atstep_2（HARNESS_ERROR）与 atstep_3（NEEDS_HUMAN + reason=SUT_DEFECT_OR_STALE）后，tests/_golden/schemas/report-model.schema.json 未改（仍冻在 4068ff97），两步经 draft-07 子集校验全过（含各层 additionalProperties:false 与 reasonEnum 闭集），seams-freeze 金牌的两条 report-model 不变量（verdict 只认已知四态、defectTicket 仅 SUT_DEFECT 步）继续成立且新增两步 defectTicket 均为 null。verdictSummary 的 HARNESS_ERROR/NEEDS_HUMAN 由 0 同步改为 1，与步级数据自洽。",
+      "mutationVerification": "见 loop/prd-p7-report.json 同笔：隔离副本四组变异（两态中文态名、理由子类整段、badge() 查表退化）均使 p7-report 变红 exit 1，主树 lib/report.mjs sha256 前后一致零污染；残留缺口如实挂账——徽章 CSS 类（harness/human）改坏仍绿，未修。",
+      "adjacencyRegression": "见 loop/prd-p7-report.json 同笔：11 个消费者改前改后退出码逐条一致；seams-freeze 本身改前改后均 exit 0。既有陈旧红 replay-video / layer3-wiring / casey-demo 三枚为改前即红，非本轮引入。",
+      "signedBy": "PENDING_STEVEN"
+    }
+  ],
   "observability": [
     {
       "dimension": "events.json 须能被 autotester runner 真加载且不触 authored 拒绝（P3 真机集成验，非 hermetic）",
@@ -40,7 +57,7 @@
         "node tests/_golden/seams-freeze.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-21T06:55:18.232Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-31T01:51:40.549Z 全部 acceptance exit 0"
     }
   ]
 }
