@@ -1,0 +1,15 @@
+真红   M1 结构性变更面被改坏（workflow.create 自称不改业务实体）
+       翻红断言 = F1, A4
+真红   M2 身份钉定面被清空（workflow.addNode 不再索要 subject 绑定）
+       翻红断言 = Q2, F1, A1, A4
+真红   M3 非实体持久副作用面失效（只读判据不再看它）
+       翻红断言 = F2, F3, F5
+真红   M4 unsupported 档退回「非只读 + 空角色集」（实测过的 fail-open）
+       翻红断言 = F3, F3b, F5
+真红   M5 第四面（目标身份连续性）被写死成 none
+       翻红断言 = F2b
+真红   M6 未登记原子默认被放松（持久副作用面改成 none）
+       翻红断言 = F6, A4
+真红   M7 unsupported 不再在查表出口被判死（policyForAtom 直接放行）
+       翻红断言 = W5
+还原一致 = true e96c5f27a46da34cf390a00cf2438449d1acee3d582471dea963c2172c4b12b1

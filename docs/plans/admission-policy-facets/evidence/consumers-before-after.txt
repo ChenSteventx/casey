@@ -1,0 +1,34 @@
+准入模块消费方逐个复跑（护栏 #19）：改前 = HEAD，改后 = 三面拆分后。退出码 0=绿 1=红。
+同  改前=1  改后=1  bin/casey.mjs selftest --tier1
+同  改前=0  改后=0  tests/_golden/admission-audience-credential-gate.zero-sut.golden.mjs
+漂移!!  改前=(未跑)  改后=0  tests/_golden/admission-policy-facets.zero-sut.golden.mjs
+同  改前=0  改后=0  tests/_golden/agent-id-readback.chat-sut.golden.mjs
+同  改前=0  改后=0  tests/_golden/agent-id-regression-diff.zero-sut.golden.mjs
+同  改前=0  改后=0  tests/_golden/agent-id-sign-observation.zero-sut.golden.mjs
+同  改前=0  改后=0  tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs
+同  改前=1  改后=1  tests/_golden/entity-destructive-continuity-guard.compile-admission.golden.mjs
+同  改前=0  改后=0  tests/_golden/entity-destructive-continuity-guard.failclosed-replay.golden.mjs
+同  改前=1  改后=1  tests/_golden/entity-destructive-continuity-guard.round3.golden.mjs
+同  改前=1  改后=1  tests/_golden/entity-destructive-continuity-guard.wiring.golden.mjs
+同  改前=0  改后=0  tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs
+同  改前=0  改后=0  tests/_golden/entity-ui-wiring.bindagent-lockchain.zero-sut.golden.mjs
+同  改前=0  改后=0  tests/_golden/entity-ui-wiring.bindagent-replay.golden.mjs
+同  改前=1  改后=1  tests/_golden/entity-ui-wiring.searchopen.golden.mjs
+同  改前=0  改后=0  tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs
+同  改前=0  改后=0  tests/_golden/fixtures/admission-policy-facets/corpus.mjs
+同  改前=0  改后=0  tests/_golden/p3-compile-c5-fixture-isolation.zero-sut.golden.mjs
+同  改前=1  改后=1  tests/_golden/p3-compile.golden.mjs
+同  改前=0  改后=0  tests/_golden/teachin-admission-side-effect-policy.zero-sut.golden.mjs
+同  改前=0  改后=0  tests/_golden/teachin-entity-binding-sidecar-successor.zero-sut.golden.mjs
+同  改前=0  改后=0  tests/_golden/teachin-replayability-boundaries.static.golden.mjs
+同  改前=0  改后=0  tests/_golden/teachin-replayability-entity-verification.zero-sut.golden.mjs
+同  改前=0  改后=0  tests/_golden/teachin-semantic-lock-admission-authority.zero-sut.golden.mjs
+同  改前=0  改后=0  tests/_golden/teachin-semantic-lock-presign-bypass.zero-sut.golden.mjs
+
+合计 25 项，退出码漂移 1 项。
+HEAD 既有红（非本契约引入，不修，如实挂账）：
+  1 entity-destructive-continuity-guard.compile-admission —— loop/prd-tc_compile_destadmit.json 这个临时 prd 被提交进仓，金牌以 wx 独占创建同名文件时 EEXIST，3 例全红；
+  1 entity-destructive-continuity-guard.round3 —— bin/replay.mjs 缺守卫 abort 的 unroute 收口与 pageerror 因果排除（R4a/R5c 静态断言）；
+  1 entity-destructive-continuity-guard.wiring —— bin/replay.mjs 与 lib/compile-atoms.mjs 未 import 出站拦截接线模块；
+  1 entity-ui-wiring.searchopen —— lib/compile-atoms.mjs 未 import ./agent-search-gate.mjs（A3-compile-import）；
+  1 p3-compile —— C8 多匹配拒动作应 exit 65 实得 1，C6/C7 因前置未产 events 连带红。

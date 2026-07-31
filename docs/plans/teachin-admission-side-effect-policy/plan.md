@@ -9,6 +9,7 @@
 ## 2. 冻结策略与默认方向
 
 - 本契约冻结 `entity-admission-policy.frozen.json`，每项声明 `{atom,effect,requiredRoles}`；`effect` 只允许 `read`、`mutation`、`relation`。
+  - **待签换签（admission-policy-facets 契约提请，`signedBy: PENDING_STEVEN`）**：该件升 `schemaVersion:2`，每项另带 `facets`（结构性变更 / 身份钉定角色 / 非实体持久副作用）并补 `unknownFacets`；`effect`/`requiredRoles`/`unknownEffect` 原封保留为派生兼容字段，本节以下条款逐条继续成立。见 `docs/plans/admission-policy-facets/plan.md` 与本 prd 的 `checksumAmendments`。
 - 显式 `read` allowlist（只读允许表）才可走只读通道；未知 atom/action 一律按 mutation 阻断，不得猜只读。
 - `workflow.addNode`、`workflow.setNodeField`、`workflow.setSwitch`、`workflow.addNodeInputVar`、`agent.removeToolByName` 五个真实写原子必须判 mutation。
 - 调用者在 step/event 上填写 `mutation`、`destructive`、`relationWrite` 或增删 `entityBindings`，均不能改变冻结策略的 effect。
