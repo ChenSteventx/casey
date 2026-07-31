@@ -1,5 +1,6 @@
 {
   "schemaVersion": 2,
+  "contractKind": "registry",
   "caseId": "tc_agent_id_readback_real_uat_v1",
   "task": "agent-id-readback 真机 UAT 见证用例（uatDefinition 四步；契约 real-uat-attestation，GRILL 三分岔 Steven 全 A）：测试智能体 atl_同名对抗0722 一件两放——全场唯一时全链 PASS；预置精确同名第二件后回放同一冻结件必 AMBIGUOUS 不点击（NEEDS_HUMAN·AMBIGUOUS_ACTION 为预期正确行为）。用后即删+归零证据。【run-1 冻结件 2026-07-23 人工审计归档（cases/.../archive/run1-20260723/，绑已删 X 实例的 platformId；prd 陈旧账同步摘除）；run-2 按 codex R1 修单整链重跑（录屏+全附件+视觉复核）。】",
   "testChecksums": {

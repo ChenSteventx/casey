@@ -1,5 +1,6 @@
 {
   "schemaVersion": 1,
+  "contractKind": "registry",
   "task": "tc_compile_audience 接线夹具注册（admission-trust-root-separation）：production 受众 execute-authority，供接线金牌证 compile --execute 受众门在浏览器前拦。",
   "specPath": "docs/plans/admission-trust-root-separation/plan.md",
   "testChecksums": {

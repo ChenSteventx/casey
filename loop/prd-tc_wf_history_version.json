@@ -1,5 +1,6 @@
 {
   "schemaVersion": 2,
+  "contractKind": "registry",
   "caseId": "tc_wf_history_version",
   "task": "tc_wf_history_version 人签断言契约（扁平每用例 prd；2026-07-07 真机合并行程首签，sign 写 expectedFrozenPath + checksum）",
   "testChecksums": {

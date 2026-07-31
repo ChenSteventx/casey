@@ -1,5 +1,6 @@
 {
   "schemaVersion": 2,
+  "contractKind": "registry",
   "caseId": "tc_catalog_wf_crud",
   "task": "tc_catalog_wf_crud 人签断言契约（2026-07-15 真机重签，新增 cleanup countChange equals 0）",
   "testChecksums": {

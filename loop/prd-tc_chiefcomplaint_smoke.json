@@ -1,5 +1,6 @@
 {
   "schemaVersion": 2,
+  "contractKind": "registry",
   "caseId": "tc_chiefcomplaint_smoke",
   "task": "tc_chiefcomplaint_smoke 人签断言契约 + v1 实体锁（2026-07-31 补签；Steven 甲案裁定后 chat.sendAndWait 落 entity-lock 档，本例由此可锁）",
   "testChecksums": {},
