@@ -36,7 +36,11 @@ await check('p3-compile-unit-c1', () => {
   const snapshot = JSON.parse(readFileSync(SNAPSHOT, 'utf8'));
   if (!snapshot.snapshotOf?.repo || !snapshot.snapshotOf?.copiedAt) throw new Error('缺 snapshotOf 溯源（repo/copiedAt）');
   const atoms = snapshot.atoms || {};
-  if (Object.keys(atoms).length !== 60) throw new Error(`原子须整表 60，实际 ${Object.keys(atoms).length}`);
+  // 61 = 60 + workflow.bindAgent（entity-ui-wiring 入表涟漪）。本 unit 后继原钉 60，是 2026-07-20
+  // 生命周期重裁冻结时的旧值；活祖先 tests/_golden/p3-compile.golden.mjs 的 C1 已在 2026-07-22
+  // stale-red-admission-refit 同批重钉 61，后继漏跟成陈旧钉。此处只跟数，被证义务（整表溯源 +
+  // catalog_wf_crud 所用原子在册 + create/deleteByName 的 entityNameParam/destructive）零弱化。
+  if (Object.keys(atoms).length !== 61) throw new Error(`原子须整表 61，实际 ${Object.keys(atoms).length}`);
   for (const id of ['login', 'workflow.deleteByName', 'workflow.create', 'assert.onPage', 'workflow.save', 'assert.noErrorToast']) {
     if (!atoms[id]) throw new Error(`catalog_wf_crud 所用原子 ${id} 不在册`);
   }

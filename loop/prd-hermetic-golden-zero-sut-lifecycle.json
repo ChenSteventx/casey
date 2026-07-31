@@ -43,7 +43,7 @@
     "tests/_golden/units/e2e-chain-unit.zero-sut.golden.mjs": "d1befcd611bf7430c7ba7bc9aa84128447384867d20ebbae0aae30f83d49b4c9",
     "tests/_golden/units/kinds-harden-unit.zero-sut.golden.mjs": "c67e8b0fe7489bc3974def3fb6a2a736e1fb7c3d8648042b643b6b0e52cef703",
     "tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs": "6da40a695dcf69b8f27549c3ef72f7b8f6230f9ddda3d3b0b0af08a21abf2ff6",
-    "tests/_golden/units/p3-compile-unit.zero-sut.golden.mjs": "035f0b9d39d930627bd1863087f494674d9933759259bfb557735973b0a41499",
+    "tests/_golden/units/p3-compile-unit.zero-sut.golden.mjs": "623a5890a24b4574eb232779d36dfecb29ba3d8235bd938e31ee6da6cd3d4120",
     "tests/_golden/units/plan-debt-sweep-unit.zero-sut.golden.mjs": "2c20f90737da68705ddb707778224b19434cdc6328ab7bde1f1323eec4d3d7f2",
     "tests/_golden/units/regress-promptset-unit.zero-sut.golden.mjs": "e1693963ab3b77b67fd3bf23a4ace481141f4620001490e8319f0c36b930ff13",
     "tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs": "bed6bb6d6c0f614b00231e3570e05df4d83a65a288d3f2ec6607641c6634d75a",
@@ -59,6 +59,22 @@
     "tests/_golden/units/wf-select-node-dropdown-compile-registration-unit.zero-sut.golden.mjs": "c55649c3449daa1d37117a7e998ffc24a24cbd4557e666113981e0ebd8b91e74",
     "tests/_golden/units/wf-set-node-field-compile-registration-unit.zero-sut.golden.mjs": "951ed3576cbd73f16571ad48b2bca39ddf769e4dc01f52183670186ebd3327b1"
   },
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-07-31",
+      "round": "陈旧钉修单（admission-stale-green-triage 调查顺手收口）",
+      "files": [
+        "tests/_golden/units/p3-compile-unit.zero-sut.golden.mjs"
+      ],
+      "shaBefore": "035f0b9d39d930627bd1863087f494674d9933759259bfb557735973b0a41499",
+      "shaAfter": "623a5890a24b4574eb232779d36dfecb29ba3d8235bd938e31ee6da6cd3d4120",
+      "archive": "tests/_golden/units/p3-compile-unit.zero-sut.golden.mjs.pre-atom-count-61-amendment.archive.gz",
+      "contract": "admission-stale-green-triage (lane=direct)",
+      "reason": "为什么改：s3 的 acceptance（hermetic-golden-surviving-units.zero-sut.golden.mjs）实测 exit 1，红在本 unit 后继 exit=1，红因是 c1 检查把原子注册表钉在整表 60，而 lib/atoms-registry.snapshot.json 现为 61。61 = 60 + workflow.bindAgent（entity-ui-wiring 入表涟漪）。活祖先 tests/_golden/p3-compile.golden.mjs 的 C1 已在 2026-07-22 stale-red-admission-refit 同批重钉 61 并写进该 prd 的 s2 desc，本 unit 后继漏跟，成 2026-07-20 冻结时的陈旧钉。改法：只把 60 跟到 61 并留注释交代来历，c1 其余被证义务（snapshotOf 溯源必在、catalog_wf_crud 所用六原子在册、workflow.create 的 entityNameParam=name 且 destructive、workflow.deleteByName 的 entityNameParam=name）逐字未动，零弱化、不删检查。实测：本 unit 修前 exit 1（3 过 1 败）、修后 exit 0（4/4）；全部 21 枚 units 除本枚外修前即全绿，故 s3 acceptance 由 exit 1 翻 exit 0。原件 gzip 存档并回验 sha 与原冻结值 035f0b9d… 逐字节相同。注意本笔只修 s3 一条；同 prd 的 s1（hermetic-golden-sut-census，闭集 27→30 漂移）与 s4（hermetic-golden-prd-reverse-closure，三条隔离 live executable 仍留在活 acceptance）实测仍红，属须人裁的生命周期重裁事项，本笔不碰、不遮。",
+      "signedBy": "PENDING_STEVEN",
+      "signedAt": null
+    }
+  ],
   "observability": [
     {
       "dimension": "D9 只做 44 条分层抽样；全量原子化 obligations 在冻结前仍须逐项人工复核 source span、覆盖关系与生命周期，禁止由模型自产自签。",
@@ -85,8 +101,8 @@
       "acceptance": [
         "node tests/_golden/hermetic-golden-sut-census.zero-sut.golden.mjs"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-20T06:25:06.651Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     },
     {
       "id": "s2-atomized-lifecycle-closure",
@@ -96,7 +112,7 @@
         "node tests/_golden/hermetic-golden-lifecycle-closure.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-20T06:25:11.236Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-31T04:25:27.207Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-surviving-zero-sut-units",
@@ -106,7 +122,7 @@
         "node tests/_golden/hermetic-golden-surviving-units.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-20T06:25:17.502Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-31T04:26:07.949Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-retirement-and-prd-closure",
@@ -116,8 +132,8 @@
         "node tests/_golden/hermetic-golden-retirement-meta.zero-sut.golden.mjs",
         "node tests/_golden/hermetic-golden-prd-reverse-closure.zero-sut.golden.mjs"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-20T06:25:43.487Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     },
     {
       "id": "s5-case-defect-regression",
@@ -127,7 +143,7 @@
         "node tests/_golden/p2-verdict-case-defect.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-20T06:25:21.976Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-31T04:26:12.961Z 全部 acceptance exit 0"
     },
     {
       "id": "s6-output-seal-b5-prelaunch",
@@ -137,7 +153,7 @@
         "node tests/_golden/output-seal-b5-prelaunch.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-20T06:25:30.951Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-31T04:26:18.980Z 全部 acceptance exit 0"
     }
   ]
 }
