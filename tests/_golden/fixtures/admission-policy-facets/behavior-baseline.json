@@ -1,0 +1,5763 @@
+[
+  {
+    "id": "A/flow/nav.workflowManagement",
+    "out": false
+  },
+  {
+    "id": "A/events/nav.workflowManagement",
+    "out": false
+  },
+  {
+    "id": "A/flow-flags/nav.workflowManagement",
+    "out": false
+  },
+  {
+    "id": "A/events-flags/nav.workflowManagement",
+    "out": false
+  },
+  {
+    "id": "A/flow-nobind/nav.workflowManagement",
+    "out": []
+  },
+  {
+    "id": "A/events-nobind/nav.workflowManagement",
+    "out": []
+  },
+  {
+    "id": "B/flow/nav.workflowManagement/none",
+    "out": []
+  },
+  {
+    "id": "B/events/nav.workflowManagement/none",
+    "out": []
+  },
+  {
+    "id": "C/draft/nav.workflowManagement/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_SOURCE_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/nav.workflowManagement/subject",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/nav.workflowManagement/subject",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/nav.workflowManagement/subject",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/nav.workflowManagement/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/nav.workflowManagement/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/nav.workflowManagement/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/nav.workflowManagement/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/nav.workflowManagement/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/nav.workflowManagement/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/nav.workflowManagement/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/nav.workflowManagement/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/nav.workflowManagement/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/nav.workflowManagement/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/nav.workflowManagement/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/nav.workflowManagement/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/nav.workflowManagement/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/nav.workflowManagement/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/nav.workflowManagement/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_PROVENANCE_INVALID"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/nav/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_TARGET_INVALID",
+      "nextAction": "USE_FIXED_READ_ROUTE_OR_ROUTE_HUMAN_FOR_SIGNED_ZERO_BINDING_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/nav/nourl/docurl",
+    "out": {
+      "ok": true,
+      "allowBrowserLaunch": true,
+      "reason": null,
+      "nextAction": null,
+      "authorityKind": "deterministic-read-only-policy"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/nav/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_TARGET_INVALID",
+      "nextAction": "USE_FIXED_READ_ROUTE_OR_ROUTE_HUMAN_FOR_SIGNED_ZERO_BINDING_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/nav/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": true,
+      "allowBrowserLaunch": true,
+      "reason": null,
+      "nextAction": null,
+      "authorityKind": "deterministic-read-only-policy"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/nav/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_TARGET_INVALID",
+      "nextAction": "USE_FIXED_READ_ROUTE_OR_ROUTE_HUMAN_FOR_SIGNED_ZERO_BINDING_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/nav/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_TARGET_INVALID",
+      "nextAction": "USE_FIXED_READ_ROUTE_OR_ROUTE_HUMAN_FOR_SIGNED_ZERO_BINDING_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/nav/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_TARGET_INVALID",
+      "nextAction": "USE_FIXED_READ_ROUTE_OR_ROUTE_HUMAN_FOR_SIGNED_ZERO_BINDING_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/nav/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_TARGET_INVALID",
+      "nextAction": "USE_FIXED_READ_ROUTE_OR_ROUTE_HUMAN_FOR_SIGNED_ZERO_BINDING_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/assert/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/assert/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/assert/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/assert/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/assert/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/assert/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/assert/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/assert/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/click/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/click/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/click/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/click/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/click/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/click/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/click/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/nav.workflowManagement/click/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay-text/nav.workflowManagement",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "E/compile/nav.workflowManagement",
+    "out": {
+      "ok": true,
+      "allowBrowserLaunch": true,
+      "reason": null,
+      "nextAction": null,
+      "authorityKind": "deterministic-read-only-policy"
+    }
+  },
+  {
+    "id": "E/compile-nobind/nav.workflowManagement",
+    "out": {
+      "ok": true,
+      "allowBrowserLaunch": true,
+      "reason": null,
+      "nextAction": null,
+      "authorityKind": "deterministic-read-only-policy"
+    }
+  },
+  {
+    "id": "A/flow/assert.textVisible",
+    "out": false
+  },
+  {
+    "id": "A/events/assert.textVisible",
+    "out": false
+  },
+  {
+    "id": "A/flow-flags/assert.textVisible",
+    "out": false
+  },
+  {
+    "id": "A/events-flags/assert.textVisible",
+    "out": false
+  },
+  {
+    "id": "A/flow-nobind/assert.textVisible",
+    "out": []
+  },
+  {
+    "id": "A/events-nobind/assert.textVisible",
+    "out": []
+  },
+  {
+    "id": "B/flow/assert.textVisible/none",
+    "out": []
+  },
+  {
+    "id": "B/events/assert.textVisible/none",
+    "out": []
+  },
+  {
+    "id": "C/draft/assert.textVisible/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_SOURCE_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/assert.textVisible/subject",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/assert.textVisible/subject",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/assert.textVisible/subject",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/assert.textVisible/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/assert.textVisible/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/assert.textVisible/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/assert.textVisible/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/assert.textVisible/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/assert.textVisible/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/assert.textVisible/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/assert.textVisible/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/assert.textVisible/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/assert.textVisible/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/assert.textVisible/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/assert.textVisible/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/assert.textVisible/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/assert.textVisible/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/assert.textVisible/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_PROVENANCE_INVALID"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/nav/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/nav/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/nav/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/nav/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/nav/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/nav/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/nav/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/nav/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/assert/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_TARGET_INVALID",
+      "nextAction": "USE_FIXED_READ_ROUTE_OR_ROUTE_HUMAN_FOR_SIGNED_ZERO_BINDING_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/assert/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_TARGET_INVALID",
+      "nextAction": "USE_FIXED_READ_ROUTE_OR_ROUTE_HUMAN_FOR_SIGNED_ZERO_BINDING_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/assert/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_TARGET_INVALID",
+      "nextAction": "USE_FIXED_READ_ROUTE_OR_ROUTE_HUMAN_FOR_SIGNED_ZERO_BINDING_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/assert/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_TARGET_INVALID",
+      "nextAction": "USE_FIXED_READ_ROUTE_OR_ROUTE_HUMAN_FOR_SIGNED_ZERO_BINDING_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/assert/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_TARGET_INVALID",
+      "nextAction": "USE_FIXED_READ_ROUTE_OR_ROUTE_HUMAN_FOR_SIGNED_ZERO_BINDING_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/assert/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_TARGET_INVALID",
+      "nextAction": "USE_FIXED_READ_ROUTE_OR_ROUTE_HUMAN_FOR_SIGNED_ZERO_BINDING_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/assert/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_TARGET_INVALID",
+      "nextAction": "USE_FIXED_READ_ROUTE_OR_ROUTE_HUMAN_FOR_SIGNED_ZERO_BINDING_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/assert/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_TARGET_INVALID",
+      "nextAction": "USE_FIXED_READ_ROUTE_OR_ROUTE_HUMAN_FOR_SIGNED_ZERO_BINDING_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/click/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/click/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/click/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/click/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/click/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/click/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/click/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay/assert.textVisible/click/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "REPLAY_READ_EVENT_ACTION_INVALID",
+      "nextAction": "RESTORE_COMPILER_AUTHORED_READ_EVENT_ACTION"
+    }
+  },
+  {
+    "id": "D/replay-text/assert.textVisible",
+    "out": {
+      "ok": true,
+      "allowBrowserLaunch": true,
+      "reason": null,
+      "nextAction": null,
+      "authorityKind": "deterministic-read-only-policy"
+    }
+  },
+  {
+    "id": "E/compile/assert.textVisible",
+    "out": {
+      "ok": true,
+      "allowBrowserLaunch": true,
+      "reason": null,
+      "nextAction": null,
+      "authorityKind": "deterministic-read-only-policy"
+    }
+  },
+  {
+    "id": "E/compile-nobind/assert.textVisible",
+    "out": {
+      "ok": true,
+      "allowBrowserLaunch": true,
+      "reason": null,
+      "nextAction": null,
+      "authorityKind": "deterministic-read-only-policy"
+    }
+  },
+  {
+    "id": "A/flow/workflow.create",
+    "out": true
+  },
+  {
+    "id": "A/events/workflow.create",
+    "out": true
+  },
+  {
+    "id": "A/flow-flags/workflow.create",
+    "out": true
+  },
+  {
+    "id": "A/events-flags/workflow.create",
+    "out": true
+  },
+  {
+    "id": "A/flow-nobind/workflow.create",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "A/events-nobind/workflow.create",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.create/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.create/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.create/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_SOURCE_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.create/subject",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "B/events/workflow.create/subject",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "workflow.create",
+        "role": "subject",
+        "candidateId": "cand-subject",
+        "lockId": "lock-subject",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/workflow.create/subject",
+    "out": {
+      "ok": true,
+      "valid": true,
+      "draft": {
+        "schemaVersion": 1,
+        "artifactKind": "entity-bindings-draft",
+        "caseId": "tc-facets",
+        "signed": false,
+        "replayReady": false,
+        "eventsSha256": "sha256:33da2d282fa2e1229f9b1ad001a5d0e3b3c76fdeb84aa5dbebdb6428ec03fcff",
+        "bindings": [
+          {
+            "stepId": "atstep_1",
+            "intentId": "intent_1",
+            "atom": "workflow.create",
+            "sourceIntentId": "source_1",
+            "candidateId": "cand-subject",
+            "role": "subject"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "B/flow/workflow.create/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.create/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.create/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.create/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.create/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.create/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.create/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.create/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.create/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.create/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.create/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.create/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.create/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.create/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.create/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_PROVENANCE_INVALID"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/nav/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/nav/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/nav/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/nav/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/nav/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/nav/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/nav/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/nav/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/assert/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/assert/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/assert/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/assert/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/assert/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/assert/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/assert/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/assert/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/click/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/click/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/click/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/click/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/click/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/click/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/click/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.create/click/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay-text/workflow.create",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile/workflow.create",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile-nobind/workflow.create",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "A/flow/workflow.addNode",
+    "out": true
+  },
+  {
+    "id": "A/events/workflow.addNode",
+    "out": true
+  },
+  {
+    "id": "A/flow-flags/workflow.addNode",
+    "out": true
+  },
+  {
+    "id": "A/events-flags/workflow.addNode",
+    "out": true
+  },
+  {
+    "id": "A/flow-nobind/workflow.addNode",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "A/events-nobind/workflow.addNode",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.addNode/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.addNode/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.addNode/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_SOURCE_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.addNode/subject",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "B/events/workflow.addNode/subject",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "workflow.addNode",
+        "role": "subject",
+        "candidateId": "cand-subject",
+        "lockId": "lock-subject",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/workflow.addNode/subject",
+    "out": {
+      "ok": true,
+      "valid": true,
+      "draft": {
+        "schemaVersion": 1,
+        "artifactKind": "entity-bindings-draft",
+        "caseId": "tc-facets",
+        "signed": false,
+        "replayReady": false,
+        "eventsSha256": "sha256:fab649a53528d4d3eff9f053bae7682ac1b650b12326214e35198ab6fe519795",
+        "bindings": [
+          {
+            "stepId": "atstep_1",
+            "intentId": "intent_1",
+            "atom": "workflow.addNode",
+            "sourceIntentId": "source_1",
+            "candidateId": "cand-subject",
+            "role": "subject"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "B/flow/workflow.addNode/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.addNode/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.addNode/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.addNode/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.addNode/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.addNode/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.addNode/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.addNode/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.addNode/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.addNode/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.addNode/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.addNode/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.addNode/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.addNode/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.addNode/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_PROVENANCE_INVALID"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/nav/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/nav/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/nav/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/nav/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/nav/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/nav/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/nav/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/nav/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/assert/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/assert/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/assert/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/assert/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/assert/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/assert/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/assert/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/assert/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/click/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/click/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/click/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/click/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/click/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/click/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/click/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNode/click/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay-text/workflow.addNode",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile/workflow.addNode",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile-nobind/workflow.addNode",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "A/flow/workflow.setNodeField",
+    "out": true
+  },
+  {
+    "id": "A/events/workflow.setNodeField",
+    "out": true
+  },
+  {
+    "id": "A/flow-flags/workflow.setNodeField",
+    "out": true
+  },
+  {
+    "id": "A/events-flags/workflow.setNodeField",
+    "out": true
+  },
+  {
+    "id": "A/flow-nobind/workflow.setNodeField",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "A/events-nobind/workflow.setNodeField",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.setNodeField/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.setNodeField/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.setNodeField/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_SOURCE_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.setNodeField/subject",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "B/events/workflow.setNodeField/subject",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "workflow.setNodeField",
+        "role": "subject",
+        "candidateId": "cand-subject",
+        "lockId": "lock-subject",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/workflow.setNodeField/subject",
+    "out": {
+      "ok": true,
+      "valid": true,
+      "draft": {
+        "schemaVersion": 1,
+        "artifactKind": "entity-bindings-draft",
+        "caseId": "tc-facets",
+        "signed": false,
+        "replayReady": false,
+        "eventsSha256": "sha256:16260c76934dc6d43d6e6875e749a3272b0411e95ac0480105f2b5d895eabaee",
+        "bindings": [
+          {
+            "stepId": "atstep_1",
+            "intentId": "intent_1",
+            "atom": "workflow.setNodeField",
+            "sourceIntentId": "source_1",
+            "candidateId": "cand-subject",
+            "role": "subject"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "B/flow/workflow.setNodeField/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.setNodeField/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.setNodeField/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.setNodeField/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.setNodeField/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.setNodeField/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.setNodeField/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.setNodeField/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.setNodeField/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.setNodeField/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.setNodeField/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.setNodeField/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.setNodeField/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.setNodeField/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.setNodeField/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_PROVENANCE_INVALID"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/nav/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/nav/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/nav/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/nav/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/nav/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/nav/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/nav/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/nav/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/assert/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/assert/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/assert/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/assert/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/assert/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/assert/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/assert/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/assert/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/click/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/click/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/click/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/click/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/click/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/click/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/click/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setNodeField/click/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay-text/workflow.setNodeField",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile/workflow.setNodeField",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile-nobind/workflow.setNodeField",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "A/flow/workflow.setSwitch",
+    "out": true
+  },
+  {
+    "id": "A/events/workflow.setSwitch",
+    "out": true
+  },
+  {
+    "id": "A/flow-flags/workflow.setSwitch",
+    "out": true
+  },
+  {
+    "id": "A/events-flags/workflow.setSwitch",
+    "out": true
+  },
+  {
+    "id": "A/flow-nobind/workflow.setSwitch",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "A/events-nobind/workflow.setSwitch",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.setSwitch/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.setSwitch/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.setSwitch/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_SOURCE_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.setSwitch/subject",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "B/events/workflow.setSwitch/subject",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "workflow.setSwitch",
+        "role": "subject",
+        "candidateId": "cand-subject",
+        "lockId": "lock-subject",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/workflow.setSwitch/subject",
+    "out": {
+      "ok": true,
+      "valid": true,
+      "draft": {
+        "schemaVersion": 1,
+        "artifactKind": "entity-bindings-draft",
+        "caseId": "tc-facets",
+        "signed": false,
+        "replayReady": false,
+        "eventsSha256": "sha256:3e96aa69d45657a6f78c98b4616e3f0eb49aafd492f0d0f834578ac25fb0a6e0",
+        "bindings": [
+          {
+            "stepId": "atstep_1",
+            "intentId": "intent_1",
+            "atom": "workflow.setSwitch",
+            "sourceIntentId": "source_1",
+            "candidateId": "cand-subject",
+            "role": "subject"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "B/flow/workflow.setSwitch/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.setSwitch/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.setSwitch/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.setSwitch/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.setSwitch/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.setSwitch/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.setSwitch/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.setSwitch/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.setSwitch/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.setSwitch/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.setSwitch/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.setSwitch/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.setSwitch/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.setSwitch/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.setSwitch/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_PROVENANCE_INVALID"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/nav/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/nav/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/nav/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/nav/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/nav/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/nav/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/nav/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/nav/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/assert/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/assert/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/assert/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/assert/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/assert/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/assert/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/assert/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/assert/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/click/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/click/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/click/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/click/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/click/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/click/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/click/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.setSwitch/click/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay-text/workflow.setSwitch",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile/workflow.setSwitch",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile-nobind/workflow.setSwitch",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "A/flow/workflow.addNodeInputVar",
+    "out": true
+  },
+  {
+    "id": "A/events/workflow.addNodeInputVar",
+    "out": true
+  },
+  {
+    "id": "A/flow-flags/workflow.addNodeInputVar",
+    "out": true
+  },
+  {
+    "id": "A/events-flags/workflow.addNodeInputVar",
+    "out": true
+  },
+  {
+    "id": "A/flow-nobind/workflow.addNodeInputVar",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "A/events-nobind/workflow.addNodeInputVar",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.addNodeInputVar/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.addNodeInputVar/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.addNodeInputVar/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_SOURCE_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.addNodeInputVar/subject",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "B/events/workflow.addNodeInputVar/subject",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "workflow.addNodeInputVar",
+        "role": "subject",
+        "candidateId": "cand-subject",
+        "lockId": "lock-subject",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/workflow.addNodeInputVar/subject",
+    "out": {
+      "ok": true,
+      "valid": true,
+      "draft": {
+        "schemaVersion": 1,
+        "artifactKind": "entity-bindings-draft",
+        "caseId": "tc-facets",
+        "signed": false,
+        "replayReady": false,
+        "eventsSha256": "sha256:0ec9b4095221d9b4205bb42fc4e025cdb1c85682c3c2fd9bdaf580e21609fee4",
+        "bindings": [
+          {
+            "stepId": "atstep_1",
+            "intentId": "intent_1",
+            "atom": "workflow.addNodeInputVar",
+            "sourceIntentId": "source_1",
+            "candidateId": "cand-subject",
+            "role": "subject"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "B/flow/workflow.addNodeInputVar/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.addNodeInputVar/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.addNodeInputVar/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.addNodeInputVar/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.addNodeInputVar/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.addNodeInputVar/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.addNodeInputVar/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.addNodeInputVar/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.addNodeInputVar/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.addNodeInputVar/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.addNodeInputVar/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.addNodeInputVar/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.addNodeInputVar/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.addNodeInputVar/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.addNodeInputVar/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_PROVENANCE_INVALID"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/nav/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/nav/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/nav/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/nav/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/nav/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/nav/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/nav/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/nav/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/assert/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/assert/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/assert/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/assert/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/assert/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/assert/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/assert/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/assert/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/click/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/click/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/click/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/click/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/click/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/click/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/click/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.addNodeInputVar/click/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay-text/workflow.addNodeInputVar",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile/workflow.addNodeInputVar",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile-nobind/workflow.addNodeInputVar",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "A/flow/agent.removeToolByName",
+    "out": true
+  },
+  {
+    "id": "A/events/agent.removeToolByName",
+    "out": true
+  },
+  {
+    "id": "A/flow-flags/agent.removeToolByName",
+    "out": true
+  },
+  {
+    "id": "A/events-flags/agent.removeToolByName",
+    "out": true
+  },
+  {
+    "id": "A/flow-nobind/agent.removeToolByName",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "A/events-nobind/agent.removeToolByName",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/agent.removeToolByName/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/agent.removeToolByName/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/agent.removeToolByName/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_SOURCE_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/agent.removeToolByName/subject",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "B/events/agent.removeToolByName/subject",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "agent.removeToolByName",
+        "role": "subject",
+        "candidateId": "cand-subject",
+        "lockId": "lock-subject",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/agent.removeToolByName/subject",
+    "out": {
+      "ok": true,
+      "valid": true,
+      "draft": {
+        "schemaVersion": 1,
+        "artifactKind": "entity-bindings-draft",
+        "caseId": "tc-facets",
+        "signed": false,
+        "replayReady": false,
+        "eventsSha256": "sha256:04073b3bd921d8246d42c4dbeca2062a6d3b191e3a1b5f48f1b7d94eb1e056bf",
+        "bindings": [
+          {
+            "stepId": "atstep_1",
+            "intentId": "intent_1",
+            "atom": "agent.removeToolByName",
+            "sourceIntentId": "source_1",
+            "candidateId": "cand-subject",
+            "role": "subject"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "B/flow/agent.removeToolByName/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/agent.removeToolByName/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/agent.removeToolByName/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/agent.removeToolByName/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/agent.removeToolByName/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/agent.removeToolByName/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/agent.removeToolByName/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/agent.removeToolByName/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/agent.removeToolByName/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/agent.removeToolByName/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/agent.removeToolByName/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/agent.removeToolByName/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/agent.removeToolByName/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/agent.removeToolByName/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/agent.removeToolByName/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_PROVENANCE_INVALID"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/nav/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/nav/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/nav/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/nav/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/nav/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/nav/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/nav/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/nav/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/assert/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/assert/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/assert/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/assert/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/assert/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/assert/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/assert/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/assert/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/click/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/click/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/click/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/click/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/click/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/click/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/click/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.removeToolByName/click/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay-text/agent.removeToolByName",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile/agent.removeToolByName",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile-nobind/agent.removeToolByName",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "A/flow/workflow.bindAgent",
+    "out": true
+  },
+  {
+    "id": "A/events/workflow.bindAgent",
+    "out": true
+  },
+  {
+    "id": "A/flow-flags/workflow.bindAgent",
+    "out": true
+  },
+  {
+    "id": "A/events-flags/workflow.bindAgent",
+    "out": true
+  },
+  {
+    "id": "A/flow-nobind/workflow.bindAgent",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "A/events-nobind/workflow.bindAgent",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.bindAgent/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.bindAgent/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.bindAgent/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_SOURCE_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.bindAgent/subject",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.bindAgent/subject",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.bindAgent/subject",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.bindAgent/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.bindAgent/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.bindAgent/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.bindAgent/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.bindAgent/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.bindAgent/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.bindAgent/source+target",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-source",
+        "role": "source"
+      },
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-target",
+        "role": "target"
+      }
+    ]
+  },
+  {
+    "id": "B/events/workflow.bindAgent/source+target",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "workflow.bindAgent",
+        "role": "source",
+        "candidateId": "cand-source",
+        "lockId": "lock-source",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      },
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "workflow.bindAgent",
+        "role": "target",
+        "candidateId": "cand-target",
+        "lockId": "lock-target",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/workflow.bindAgent/source+target",
+    "out": {
+      "ok": true,
+      "valid": true,
+      "draft": {
+        "schemaVersion": 1,
+        "artifactKind": "entity-bindings-draft",
+        "caseId": "tc-facets",
+        "signed": false,
+        "replayReady": false,
+        "eventsSha256": "sha256:b3782a608e24aa2dc916ec4b930635b9adb2b6fe7f11fe1bd15a46a2729866ab",
+        "bindings": [
+          {
+            "stepId": "atstep_1",
+            "intentId": "intent_1",
+            "atom": "workflow.bindAgent",
+            "sourceIntentId": "source_1",
+            "candidateId": "cand-source",
+            "role": "source"
+          },
+          {
+            "stepId": "atstep_1",
+            "intentId": "intent_1",
+            "atom": "workflow.bindAgent",
+            "sourceIntentId": "source_1",
+            "candidateId": "cand-target",
+            "role": "target"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "B/flow/workflow.bindAgent/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.bindAgent/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.bindAgent/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/workflow.bindAgent/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/workflow.bindAgent/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/workflow.bindAgent/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_PROVENANCE_INVALID"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/nav/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/nav/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/nav/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/nav/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/nav/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/nav/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/nav/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/nav/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/assert/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/assert/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/assert/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/assert/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/assert/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/assert/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/assert/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/assert/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/click/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/click/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/click/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/click/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/click/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/click/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/click/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/workflow.bindAgent/click/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay-text/workflow.bindAgent",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile/workflow.bindAgent",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile-nobind/workflow.bindAgent",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "A/flow/future.unknownAtom",
+    "out": true
+  },
+  {
+    "id": "A/events/future.unknownAtom",
+    "out": true
+  },
+  {
+    "id": "A/flow-flags/future.unknownAtom",
+    "out": true
+  },
+  {
+    "id": "A/events-flags/future.unknownAtom",
+    "out": true
+  },
+  {
+    "id": "A/flow-nobind/future.unknownAtom",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "A/events-nobind/future.unknownAtom",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/future.unknownAtom/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/future.unknownAtom/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/future.unknownAtom/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_SOURCE_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/future.unknownAtom/subject",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "B/events/future.unknownAtom/subject",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "future.unknownAtom",
+        "role": "subject",
+        "candidateId": "cand-subject",
+        "lockId": "lock-subject",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/future.unknownAtom/subject",
+    "out": {
+      "ok": true,
+      "valid": true,
+      "draft": {
+        "schemaVersion": 1,
+        "artifactKind": "entity-bindings-draft",
+        "caseId": "tc-facets",
+        "signed": false,
+        "replayReady": false,
+        "eventsSha256": "sha256:16bad56f3af0ab5edd4b1a402f8efcb1b19a8ad9f83ec93b744ad56b681af1ec",
+        "bindings": [
+          {
+            "stepId": "atstep_1",
+            "intentId": "intent_1",
+            "atom": "future.unknownAtom",
+            "sourceIntentId": "source_1",
+            "candidateId": "cand-subject",
+            "role": "subject"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "B/flow/future.unknownAtom/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/future.unknownAtom/source",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "future.unknownAtom",
+        "role": "source",
+        "candidateId": "cand-source",
+        "lockId": "lock-source",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/future.unknownAtom/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/future.unknownAtom/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/future.unknownAtom/target",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "future.unknownAtom",
+        "role": "target",
+        "candidateId": "cand-target",
+        "lockId": "lock-target",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/future.unknownAtom/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/future.unknownAtom/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/future.unknownAtom/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/future.unknownAtom/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/future.unknownAtom/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/future.unknownAtom/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/future.unknownAtom/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/future.unknownAtom/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/future.unknownAtom/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/future.unknownAtom/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_PROVENANCE_INVALID"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/nav/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/nav/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/nav/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/nav/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/nav/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/nav/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/nav/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/nav/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/assert/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/assert/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/assert/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/assert/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/assert/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/assert/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/assert/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/assert/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/click/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/click/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/click/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/click/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/click/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/click/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/click/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/future.unknownAtom/click/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay-text/future.unknownAtom",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile/future.unknownAtom",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile-nobind/future.unknownAtom",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "A/flow/chat.sendAndWait",
+    "out": true
+  },
+  {
+    "id": "A/events/chat.sendAndWait",
+    "out": true
+  },
+  {
+    "id": "A/flow-flags/chat.sendAndWait",
+    "out": true
+  },
+  {
+    "id": "A/events-flags/chat.sendAndWait",
+    "out": true
+  },
+  {
+    "id": "A/flow-nobind/chat.sendAndWait",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "A/events-nobind/chat.sendAndWait",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/chat.sendAndWait/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/chat.sendAndWait/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/chat.sendAndWait/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_SOURCE_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/chat.sendAndWait/subject",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "B/events/chat.sendAndWait/subject",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "chat.sendAndWait",
+        "role": "subject",
+        "candidateId": "cand-subject",
+        "lockId": "lock-subject",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/chat.sendAndWait/subject",
+    "out": {
+      "ok": true,
+      "valid": true,
+      "draft": {
+        "schemaVersion": 1,
+        "artifactKind": "entity-bindings-draft",
+        "caseId": "tc-facets",
+        "signed": false,
+        "replayReady": false,
+        "eventsSha256": "sha256:82ae8ac30fc5005d13b339cfaecd7e4c34441cfb0b4ca46797ff6105badb777d",
+        "bindings": [
+          {
+            "stepId": "atstep_1",
+            "intentId": "intent_1",
+            "atom": "chat.sendAndWait",
+            "sourceIntentId": "source_1",
+            "candidateId": "cand-subject",
+            "role": "subject"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "B/flow/chat.sendAndWait/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/chat.sendAndWait/source",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "chat.sendAndWait",
+        "role": "source",
+        "candidateId": "cand-source",
+        "lockId": "lock-source",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/chat.sendAndWait/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/chat.sendAndWait/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/chat.sendAndWait/target",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "chat.sendAndWait",
+        "role": "target",
+        "candidateId": "cand-target",
+        "lockId": "lock-target",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/chat.sendAndWait/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/chat.sendAndWait/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/chat.sendAndWait/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/chat.sendAndWait/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/chat.sendAndWait/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/chat.sendAndWait/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/chat.sendAndWait/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/chat.sendAndWait/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/chat.sendAndWait/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/chat.sendAndWait/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_PROVENANCE_INVALID"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/nav/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/nav/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/nav/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/nav/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/nav/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/nav/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/nav/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/nav/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/assert/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/assert/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/assert/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/assert/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/assert/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/assert/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/assert/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/assert/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/click/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/click/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/click/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/click/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/click/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/click/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/click/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/chat.sendAndWait/click/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay-text/chat.sendAndWait",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile/chat.sendAndWait",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile-nobind/chat.sendAndWait",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "A/flow/agent.searchOpen",
+    "out": true
+  },
+  {
+    "id": "A/events/agent.searchOpen",
+    "out": true
+  },
+  {
+    "id": "A/flow-flags/agent.searchOpen",
+    "out": true
+  },
+  {
+    "id": "A/events-flags/agent.searchOpen",
+    "out": true
+  },
+  {
+    "id": "A/flow-nobind/agent.searchOpen",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "A/events-nobind/agent.searchOpen",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/agent.searchOpen/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/agent.searchOpen/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/agent.searchOpen/none",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_SOURCE_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/agent.searchOpen/subject",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "B/events/agent.searchOpen/subject",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "agent.searchOpen",
+        "role": "subject",
+        "candidateId": "cand-subject",
+        "lockId": "lock-subject",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/agent.searchOpen/subject",
+    "out": {
+      "ok": true,
+      "valid": true,
+      "draft": {
+        "schemaVersion": 1,
+        "artifactKind": "entity-bindings-draft",
+        "caseId": "tc-facets",
+        "signed": false,
+        "replayReady": false,
+        "eventsSha256": "sha256:6f12fa78cb6a6d6415e95c524633351e699bf2ebc1f5007b98082e33ccea0458",
+        "bindings": [
+          {
+            "stepId": "atstep_1",
+            "intentId": "intent_1",
+            "atom": "agent.searchOpen",
+            "sourceIntentId": "source_1",
+            "candidateId": "cand-subject",
+            "role": "subject"
+          }
+        ]
+      }
+    }
+  },
+  {
+    "id": "B/flow/agent.searchOpen/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/agent.searchOpen/source",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "agent.searchOpen",
+        "role": "source",
+        "candidateId": "cand-source",
+        "lockId": "lock-source",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/agent.searchOpen/source",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/agent.searchOpen/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/agent.searchOpen/target",
+    "out": [
+      {
+        "stepId": "atstep_1",
+        "intentId": "intent_1",
+        "atom": "agent.searchOpen",
+        "role": "target",
+        "candidateId": "cand-target",
+        "lockId": "lock-target",
+        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+      }
+    ]
+  },
+  {
+    "id": "C/draft/agent.searchOpen/target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/agent.searchOpen/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/agent.searchOpen/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/agent.searchOpen/source+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/agent.searchOpen/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/agent.searchOpen/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/agent.searchOpen/subject+target",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/flow/agent.searchOpen/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "B/events/agent.searchOpen/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "C/draft/agent.searchOpen/mystery",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_DRAFT_PROVENANCE_INVALID"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/nav/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/nav/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/nav/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/nav/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/nav/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/nav/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/nav/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/nav/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/assert/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/assert/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/assert/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/assert/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/assert/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/assert/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/assert/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/assert/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/click/nourl/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/click/nourl/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/click/{{baseUrl}}/ai-manager/process/list/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/click/{{baseUrl}}/ai-manager/process/list/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/click/{{baseUrl}}/workflow/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/click/{{baseUrl}}/workflow/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/click/{{baseUrl}}/evil/route/nodocurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay/agent.searchOpen/click/{{baseUrl}}/evil/route/docurl",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "D/replay-text/agent.searchOpen",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile/agent.searchOpen",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "E/compile-nobind/agent.searchOpen",
+    "out": {
+      "ok": false,
+      "allowBrowserLaunch": false,
+      "reason": "PRE_EXECUTION_IDENTITY_AUTHORITY_MISSING_OR_INVALID",
+      "nextAction": "LOAD_FIXED_OR_HUMAN_SIGNED_EXECUTE_AUTHORITY"
+    }
+  },
+  {
+    "id": "F/mixed-flow/nav.workflowManagement",
+    "out": false
+  },
+  {
+    "id": "F/mixed-bindings/nav.workflowManagement",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "F/mixed-flow/assert.textVisible",
+    "out": false
+  },
+  {
+    "id": "F/mixed-bindings/assert.textVisible",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "F/mixed-flow/workflow.create",
+    "out": true
+  },
+  {
+    "id": "F/mixed-bindings/workflow.create",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "F/mixed-flow/workflow.addNode",
+    "out": true
+  },
+  {
+    "id": "F/mixed-bindings/workflow.addNode",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "F/mixed-flow/workflow.setNodeField",
+    "out": true
+  },
+  {
+    "id": "F/mixed-bindings/workflow.setNodeField",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "F/mixed-flow/workflow.setSwitch",
+    "out": true
+  },
+  {
+    "id": "F/mixed-bindings/workflow.setSwitch",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "F/mixed-flow/workflow.addNodeInputVar",
+    "out": true
+  },
+  {
+    "id": "F/mixed-bindings/workflow.addNodeInputVar",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "F/mixed-flow/agent.removeToolByName",
+    "out": true
+  },
+  {
+    "id": "F/mixed-bindings/agent.removeToolByName",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "F/mixed-flow/workflow.bindAgent",
+    "out": true
+  },
+  {
+    "id": "F/mixed-bindings/workflow.bindAgent",
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
+  },
+  {
+    "id": "F/mixed-flow/future.unknownAtom",
+    "out": true
+  },
+  {
+    "id": "F/mixed-bindings/future.unknownAtom",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "F/mixed-flow/chat.sendAndWait",
+    "out": true
+  },
+  {
+    "id": "F/mixed-bindings/chat.sendAndWait",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  },
+  {
+    "id": "F/mixed-flow/agent.searchOpen",
+    "out": true
+  },
+  {
+    "id": "F/mixed-bindings/agent.searchOpen",
+    "out": [
+      {
+        "sourceIntentId": "source_1",
+        "candidateId": "cand-subject",
+        "role": "subject"
+      }
+    ]
+  }
+]

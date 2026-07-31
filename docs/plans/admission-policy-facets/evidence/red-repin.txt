@@ -1,0 +1,7 @@
+改后 sha = e96c5f27a46da34cf390a00cf2438449d1acee3d582471dea963c2172c4b12b1
+ok   Q1 行为语料条数与基线一致（语料被删空不能算等价）
+ok   Q2 672 条准入行为逐条逐字节等价（现役行为零改变）
+ok   Q3 基线本身有判别力（覆盖放行/拒绝/绑定投影三类结局，不是一片同值）
+HEAD 版金牌退出码 = 1
+RED  admission-policy-facets/all: 3 过 / 20 红
+还原 sha = e96c5f27a46da34cf390a00cf2438449d1acee3d582471dea963c2172c4b12b1 一致 = true

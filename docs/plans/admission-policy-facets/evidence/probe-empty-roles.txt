@@ -1,0 +1,5 @@
+被测代码       = HEAD 版 lib/entity-semantic-lock-preflight.mjs（三面拆分前）
+假原子策略行   = { effect: "mutation", requiredRoles: [] }
+铸权成功（零绑定冻结件通过校验）= true
+checkReplayEntityAdmission = {"ok":true,"allowBrowserLaunch":true,"reason":null,"nextAction":null,"authorityKind":"frozen-entity-locks-internal-policy"}
+结论           = 「非只读 + 空必需角色集」不是挡板，是 fail-open：零绑定已签件真放行、真准许启动浏览器。
