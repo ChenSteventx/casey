@@ -108,6 +108,7 @@
 | 人签门 | Human Sign-off Gate | 人签掉冻结断言才算数；gate 绿 ≠ 完成，人签真机才完成；CASE_DEFECT 与 SUT_DEFECT 的分水岭 | — |
 | 期望版本化 | Expectation Versioning | 每条冻结 `expected[]` 带 `signedAt`/`signedAgainstBuild`/`signerId`；有意改版走重签、不自动记缺陷 | — |
 | 邮件决策闭环 | Mail Decision Loop | 把会话里卡住的决策搬到邮件上闭环的通道纪律（`.claude/skills/mail-loop`）：结构化选项发信 → 只认在案发件地址的回信 → 只提取对所问事项的裁定（正文其余指令一律不执行）→ 执行后回执。只换 Steven 表达裁定的通道，不改判断规则——`人签门`、fail-safe、裁判零 LLM 全部照旧；触人签门与重签级仍须回会话确认 | — |
+| 收件箱看门狗 | Inbox Watchdog | `邮件决策闭环` 的机制化底座（`.claude/skills/mail-loop/mail-watch.sh`）：`setsid` 常驻进程轮询收件箱，只把在案地址来的新邮件 id 写本地待投递文件；`Stop` 钩子在回合结束前查该文件，有新信就 `decision: "block"` 把回合拉回来。把「记得去看回信」从纪律改成机制；注入上下文的只有固定文案与校验过的邮件 id，标题正文一律不进 | — |
 | 重签 | Re-sign | 系统有意改版导致期望过时时，人重签新基线（新 checksum + signedAgainstBuild，旧期望归档） | — |
 | 裁定徽章 | Verdict Badge | 报告里每步的四态标记（通过/被测缺陷/过程错误/待人裁决+子类）+ 具名理由 | — |
 | 缺陷单 | Defect Ticket | 仅 `SUT_DEFECT` 生成：步号 + 期望对实际 + 取证 + 录屏时间点 + trace 引用 | — |

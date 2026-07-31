@@ -14,6 +14,24 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/bin/review-provider-context-hook.mjs\"",
             "timeout": 10,
             "statusMessage": "评审供应方内联认证纪律"
+          },
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/skills/mail-loop/mail-watch.sh\" hook-prompt",
+            "timeout": 20,
+            "statusMessage": "mail-loop 收件箱看门狗（待投递新回信注入）"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/skills/mail-loop/mail-watch.sh\" hook-session-start",
+            "timeout": 20,
+            "statusMessage": "mail-loop 收件箱看门狗（拉起常驻轮询 + 补投未处理回信）"
           }
         ]
       }
@@ -45,6 +63,16 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/bin/term-guard-hook.mjs\"",
             "timeout": 30,
             "statusMessage": "term-guard 甲扫回合输出（warn-only 观察期）"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/skills/mail-loop/mail-watch.sh\" hook-stop",
+            "timeout": 20,
+            "statusMessage": "mail-loop 收件箱看门狗（有新回信就把回合拉回来）"
           }
         ]
       }
