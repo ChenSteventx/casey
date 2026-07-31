@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "task": "report-badge-four-state-coverage（light）：D5 起草时实测发现 bootstrap 计划那句「4 态徽章全覆盖」不成立——四态分类证据齐（p2-verdict 夹具四态全），但四态徽章渲染只覆盖 PASS 与 SUT_DEFECT：p7-report 的夹具只有两步，HARNESS_ERROR 与 NEEDS_HUMAN 在夹具里只作汇总计数且值为 0，全仓无金牌真渲染并断言过这两态的徽章。Steven 2026-07-31 裁定择甲（补齐夹具，不走如实降级口径的乙案）。修法：给 tests/_golden/fixtures/seams/report-model.fixture.json 加两步——atstep_2 workflow.deleteByName 落 HARNESS_ERROR（定位落空 resolution:none、取证干净，照 p2 夹具 harness_error 形制）、atstep_3 assert.onPage 落 NEEDS_HUMAN/SUT_DEFECT_OR_STALE（纯断言步、硬断言失败、取证干净，正是 publish 真机常落的那一态）；verdictSummary 由 0,0 变 1,1。渲染器一行未改（lib/report.mjs 的 VERDICT_ZH/VERDICT_CLS 四态齐全、四个徽章 CSS 类都在、badge() 直接查表），p7-report 金牌也未改（按 model.steps 通用遍历、无硬编码步数与步 id）。意外收获：p7-report 里那条 NEEDS_HUMAN + reason 的断言早就写着但因夹具从不携带该态而一直是死码，加步后才被激活。",
+  "specPath": "docs/plans/report-badge-four-state-coverage/plan.md",
+  "testChecksums": {},
+  "observability": [
+    {
+      "dimension": "本 prd 刻意不设 testChecksums（route:human）：被改的 tests/_golden/fixtures/seams/report-model.fixture.json 已由 loop/prd-p7-report.json 与 loop/prd-seams-freeze.json 双份冻结（同 sha），本轮换签也落在那两份里。此处再冻一次会形成三重锁——同一文件被三份 prd 冻、全仓漂移扫三处都校验、此后每改必三次人签，正是 cycle-evidence GRILL D4 点名要避免的双锁反模式。故本 prd 只记验收命令与账，不重复冻结面。",
+      "route": "human"
+    },
+    {
+      "dimension": "未闭合的判别力缺口（route:human，本契约不修，已同步记进两份 amendment）：变异验证 6 中 4 红。把 lib/report.mjs 的 VERDICT_CLS 里 HARNESS_ERROR 与 NEEDS_HUMAN 的 CSS 类改成 pass，金牌仍绿——p7-report 只钉了中文态名、没钉徽章 CSS 类，故这两态的徽章颜色语义仍无判别力：报告可以把「待人裁决」渲成通过绿而门禁全绿。闭它要改冻结金牌本体（另一片换签面），未擅动。casey-demo 确实钉了 class=badge pass，但只覆盖 PASS，且它本身是既有陈旧红。",
+      "route": "human"
+    },
+    {
+      "dimension": "换签人签（ADR-0004，route:human）：loop/prd-p7-report.json 与 loop/prd-seams-freeze.json 各一笔 checksumAmendment，均 PENDING_STEVEN；夹具 sha 1a9e0887… → a9ef3ee1…，原件 gzip 存档回验与原冻结值一致。schema report-model.schema.json 不必改（新步合它现行约束）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-four-state-badge-rendered",
+      "title": "S1 四态徽章真被渲染并断言：夹具补 HARNESS_ERROR 与 NEEDS_HUMAN 两步后，p7-report 逐步核「该步态名必须在其片段内出现」天然覆盖四态，四个徽章 CSS 类各渲染恰一次。变异验证：态名被改坏、理由子类块被删、badge() 退化成常量通过——四次均真红",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/p7-report.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-31T02:04:48.771Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacent-zero-regression",
+      "title": "S2 邻接零回归（护栏 #19）：该夹具是共享件，11 个消费者退出码与结论行前后逐字一致。既有陈旧红三枚（replay-video / layer3-wiring / casey-demo，前两枚死在语义锁准入门、第三枚被真 SUT 专用策略停用）改动前已红、非本契约引入，不进本清单",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/report-cleanup-evidence.golden.mjs",
+        "node tests/_golden/report-nl-atomic.golden.mjs",
+        "node tests/_golden/report-video-block.golden.mjs",
+        "node tests/_golden/report-workflow-structure.golden.mjs",
+        "node tests/_golden/output-seal.golden.mjs",
+        "node tests/_golden/checksum-drift-closure.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-07-31T02:05:42.917Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-repo-drift-and-terms",
+      "title": "S3 全仓冻结件零漂移 + 术语表完整性",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry"
+      ],
+      "evidence": "gate@2026-07-31T02:06:06.053Z 全部 acceptance exit 0"
+    }
+  ]
+}
