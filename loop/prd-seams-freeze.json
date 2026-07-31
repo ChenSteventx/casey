@@ -31,7 +31,7 @@
       "reason": "为什么改：见 loop/prd-p7-report.json 同日同笔换签——夹具原只有两步、步级 verdict 取值集合 = {PASS, SUT_DEFECT}，导致 P9 验收点声称的「4 态徽章全覆盖」不成立。本 prd 侧的关切是接缝形状而非渲染：新增 atstep_2（HARNESS_ERROR）与 atstep_3（NEEDS_HUMAN + reason=SUT_DEFECT_OR_STALE）后，tests/_golden/schemas/report-model.schema.json 未改（仍冻在 4068ff97），两步经 draft-07 子集校验全过（含各层 additionalProperties:false 与 reasonEnum 闭集），seams-freeze 金牌的两条 report-model 不变量（verdict 只认已知四态、defectTicket 仅 SUT_DEFECT 步）继续成立且新增两步 defectTicket 均为 null。verdictSummary 的 HARNESS_ERROR/NEEDS_HUMAN 由 0 同步改为 1，与步级数据自洽。",
       "mutationVerification": "见 loop/prd-p7-report.json 同笔：隔离副本四组变异（两态中文态名、理由子类整段、badge() 查表退化）均使 p7-report 变红 exit 1，主树 lib/report.mjs sha256 前后一致零污染；残留缺口如实挂账——徽章 CSS 类（harness/human）改坏仍绿，未修。",
       "adjacencyRegression": "见 loop/prd-p7-report.json 同笔：11 个消费者改前改后退出码逐条一致；seams-freeze 本身改前改后均 exit 0。既有陈旧红 replay-video / layer3-wiring / casey-demo 三枚为改前即红，非本轮引入。",
-      "signedBy": "PENDING_STEVEN"
+      "signedBy": "Steven（2026-07-31 会话内明签。**本字段由 Claude 代填**，凭据即下列会话原话，非 Steven 本人书写；如对措辞或范围有异议以他后续更正为准）：同 prd-p7-report 第一笔（同日同笔换签的共享夹具侧）：先答「甲：补齐夹具」，后答「同意的」+「对，三笔都签」。"
     }
   ],
   "observability": [

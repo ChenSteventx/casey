@@ -71,7 +71,7 @@
       "archive": "tests/_golden/units/p3-compile-unit.zero-sut.golden.mjs.pre-atom-count-61-amendment.archive.gz",
       "contract": "admission-stale-green-triage (lane=direct)",
       "reason": "为什么改：s3 的 acceptance（hermetic-golden-surviving-units.zero-sut.golden.mjs）实测 exit 1，红在本 unit 后继 exit=1，红因是 c1 检查把原子注册表钉在整表 60，而 lib/atoms-registry.snapshot.json 现为 61。61 = 60 + workflow.bindAgent（entity-ui-wiring 入表涟漪）。活祖先 tests/_golden/p3-compile.golden.mjs 的 C1 已在 2026-07-22 stale-red-admission-refit 同批重钉 61 并写进该 prd 的 s2 desc，本 unit 后继漏跟，成 2026-07-20 冻结时的陈旧钉。改法：只把 60 跟到 61 并留注释交代来历，c1 其余被证义务（snapshotOf 溯源必在、catalog_wf_crud 所用六原子在册、workflow.create 的 entityNameParam=name 且 destructive、workflow.deleteByName 的 entityNameParam=name）逐字未动，零弱化、不删检查。实测：本 unit 修前 exit 1（3 过 1 败）、修后 exit 0（4/4）；全部 21 枚 units 除本枚外修前即全绿，故 s3 acceptance 由 exit 1 翻 exit 0。原件 gzip 存档并回验 sha 与原冻结值 035f0b9d… 逐字节相同。注意本笔只修 s3 一条；同 prd 的 s1（hermetic-golden-sut-census，闭集 27→30 漂移）与 s4（hermetic-golden-prd-reverse-closure，三条隔离 live executable 仍留在活 acceptance）实测仍红，属须人裁的生命周期重裁事项，本笔不碰、不遮。",
-      "signedBy": "PENDING_STEVEN",
+      "signedBy": "Steven（2026-07-31 会话内明签。**本字段由 Claude 代填**，凭据即下列会话原话，非 Steven 本人书写；如对措辞或范围有异议以他后续更正为准）：他答「同意的」，经我追问确认范围后再答「对，三笔都签」——签的是本笔陈旧钉换签（原子表 60→61）整体，不含逐条断言的人工复核。",
       "signedAt": null
     }
   ],
