@@ -4753,17 +4753,11 @@
   },
   {
     "id": "B/events/chat.sendAndWait/source",
-    "out": [
-      {
-        "stepId": "atstep_1",
-        "intentId": "intent_1",
-        "atom": "chat.sendAndWait",
-        "role": "source",
-        "candidateId": "cand-source",
-        "lockId": "lock-source",
-        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
-      }
-    ]
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
   },
   {
     "id": "C/draft/chat.sendAndWait/source",
@@ -4783,17 +4777,11 @@
   },
   {
     "id": "B/events/chat.sendAndWait/target",
-    "out": [
-      {
-        "stepId": "atstep_1",
-        "intentId": "intent_1",
-        "atom": "chat.sendAndWait",
-        "role": "target",
-        "candidateId": "cand-target",
-        "lockId": "lock-target",
-        "receiptHash": "sha256:dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
-      }
-    ]
+    "out": {
+      "ok": false,
+      "valid": false,
+      "reason": "ENTITY_BINDING_REQUIRED_ROLES_INVALID"
+    }
   },
   {
     "id": "C/draft/chat.sendAndWait/target",

@@ -45,19 +45,11 @@ const EXPECTED_FACETS = new Map([
   ['workflow.addNodeInputVar', { entityChange: 'entity', identityBindingRoles: ['subject'], nonEntityEffect: 'none' }],
   ['agent.removeToolByName', { entityChange: 'entity', identityBindingRoles: ['subject'], nonEntityEffect: 'none' }],
   ['workflow.bindAgent', { entityChange: 'relation', identityBindingRoles: ['source', 'target'], nonEntityEffect: 'none' }],
-  // 第 10 枚：Steven 2026-07-31 裁定甲案登记（chiefcomplaint-sendandwait-admission 契约请签）。
-  // 被测智能体即 subject（身份可钉），真发消息故第三面 persistent；派生 entity-lock + mutation + ['subject']。
-  ['chat.sendAndWait', { entityChange: 'none', identityBindingRoles: ['subject'], nonEntityEffect: 'persistent' }],
 ]);
 const EXPECTED_UNREGISTERED_FACETS = { entityChange: 'entity', identityBindingRoles: ['subject'], nonEntityEffect: 'unknown' };
 
 // 本次要能被如实描述的两个具体原子（本契约只证「表达得出」，不登记进人签冻结表）。
-// 注：下面这条【假想面组合】原名 SEND_AND_WAIT_FACETS。2026-07-31 Steven 裁定甲案后，
-// chat.sendAndWait 的真实登记是 identityBindingRoles: ['subject']（被测智能体即 subject，落 entity-lock 档），
-// 已进 EXPECTED_FACETS 由 F1 逐字段钉住。这条常量改名后仍然保留、仍然被 F3/F5 消费——
-// 它钉的是「有持久副作用但【无身份可钉】必须落 unsupported、绝不许退回 mutation + [] 那个实测过的 fail-open」，
-// 是一条与任何具体原子无关的档位护栏，不是对 chat.sendAndWait 的描述。
-const PERSISTENT_NO_IDENTITY_FACETS = { entityChange: 'none', identityBindingRoles: [], nonEntityEffect: 'persistent' };
+const SEND_AND_WAIT_FACETS = { entityChange: 'none', identityBindingRoles: [], nonEntityEffect: 'persistent' };
 const SEARCH_OPEN_FACETS = { entityChange: 'none', identityBindingRoles: ['subject'], nonEntityEffect: 'none' };
 
 // ── equivalence：行为基线逐字节复现 ──────────────────────────────────────────
@@ -97,7 +89,7 @@ test('facets', 'F0 三面表达面已导出（admissionFacetsForAtom / deriveAdm
   }
 });
 
-test('facets', 'F1 十个已登记原子的三面逐条如实（结构性变更 / 身份钉定角色 / 非实体持久副作用）', () => {
+test('facets', 'F1 九个已登记原子的三面逐条如实（结构性变更 / 身份钉定角色 / 非实体持久副作用）', () => {
   for (const [atom, expected] of EXPECTED_FACETS) {
     const actual = facetsOf(atom);
     assert(actual, `${atom} 无三面`);
@@ -138,9 +130,9 @@ test('facets', 'F2b 第四面（目标身份连续性）与身份钉定角色可
     'agent.searchOpen 是身份敏感读取但非破坏原子，不得被索要连续性');
 });
 
-test('facets', 'F3 「不改业务实体 + 无身份可钉 + 有非实体持久副作用」可如实描述且落 unsupported', () => {
-  const rule = ruleOf(PERSISTENT_NO_IDENTITY_FACETS);
-  assert(rule, '该面组合表达不出来（deriveAdmissionRule 拒收）');
+test('facets', 'F3 chat.sendAndWait 可如实描述：不改业务实体 + 无身份可钉 + 有非实体持久副作用', () => {
+  const rule = ruleOf(SEND_AND_WAIT_FACETS);
+  assert(rule, 'chat.sendAndWait 的三面表达不出来（deriveAdmissionRule 拒收）');
   assert(rule.effect !== 'read', '有持久副作用却派生成只读，等于零绑定放行——fail-open');
   assert(rule.admissionClass === 'unsupported', '「有持久副作用但无身份可钉」必须落 unsupported 档（现无合法通道）');
   assert(rule.effect === null, 'unsupported 行不得有旧 effect 投影（否则退回实测过的 mutation + [] fail-open）');
@@ -177,8 +169,8 @@ test('facets', 'F4 agent.searchOpen 可如实描述：不改业务实体 + 身�
   assert(rule.effect !== 'read', '身份敏感读取仍走零绑定只读通道 = 身份不被钉');
   assert(rule.admissionClass === 'entity-lock', '身份敏感读取应落实体锁档');
   assert(json([...rule.requiredRoles]) === json(['subject']), '身份敏感读取须钉 subject 身份');
-  assert(SEARCH_OPEN_FACETS.entityChange === 'none' && PERSISTENT_NO_IDENTITY_FACETS.entityChange === 'none',
-    '两条面行都不改业务实体，这一面必须与「要不要绑定」分开表达');
+  assert(SEARCH_OPEN_FACETS.entityChange === 'none' && SEND_AND_WAIT_FACETS.entityChange === 'none',
+    '两个原子都不改业务实体，这一面必须与「要不要绑定」分开表达');
 });
 
 test('facets', 'F5 旧 effect 字段是有损投影：语义不同的两行塌成同一个旧读法，还有旧三值全描述不了的第三种', () => {
@@ -192,28 +184,17 @@ test('facets', 'F5 旧 effect 字段是有损投影：语义不同的两行塌�
     '三面必须能区分「身份敏感读取」与「真改业务实体」——否则拆分没发生');
   // ② 旧三值全错的第三种：有持久副作用但无身份可钉。read = 零绑定放行（fail-open）；
   //    非只读 + 空角色集 = 实测过的同一个 fail-open；索要 subject = 虚构绑定。三面才描述得了。
-  const persistentNoIdentity = ruleOf(PERSISTENT_NO_IDENTITY_FACETS);
-  assert(!['read', 'mutation', 'relation'].includes(persistentNoIdentity.effect),
-    `旧三值之一被用来描述「有持久副作用但无身份可钉」：${persistentNoIdentity.effect}`);
-  assert(persistentNoIdentity.admissionClass === 'unsupported', '第三种情形未落独立档，等于又被塞回旧三值');
-  assert(PERSISTENT_NO_IDENTITY_FACETS.nonEntityEffect !== EXPECTED_FACETS.get('workflow.create').nonEntityEffect
-    && PERSISTENT_NO_IDENTITY_FACETS.entityChange !== EXPECTED_FACETS.get('workflow.create').entityChange,
+  const sendAndWait = ruleOf(SEND_AND_WAIT_FACETS);
+  assert(!['read', 'mutation', 'relation'].includes(sendAndWait.effect),
+    `旧三值之一被用来描述「有持久副作用但无身份可钉」：${sendAndWait.effect}`);
+  assert(sendAndWait.admissionClass === 'unsupported', '第三种情形未落独立档，等于又被塞回旧三值');
+  assert(SEND_AND_WAIT_FACETS.nonEntityEffect !== EXPECTED_FACETS.get('workflow.create').nonEntityEffect
+    && SEND_AND_WAIT_FACETS.entityChange !== EXPECTED_FACETS.get('workflow.create').entityChange,
   '三面必须能区分「真改业务实体」与「只有持久副作用」——否则拆分没发生');
-  // ③ 第三面独立可动的实证（甲案登记后新增）：chat.sendAndWait 与 workflow.create 的旧投影逐字节相同
-  //    （mutation + ['subject']），但第三面一个 persistent 一个 none——旧读法看不见「会真发消息」这件事。
-  const sendAndWait = ruleOf(EXPECTED_FACETS.get('chat.sendAndWait'));
-  assert(json({ effect: sendAndWait.effect, requiredRoles: [...sendAndWait.requiredRoles] })
-    === json({ effect: create.effect, requiredRoles: [...create.requiredRoles] }),
-  '前提失效：chat.sendAndWait 甲案登记的旧投影本应与 workflow.create 逐字节相同');
-  assert(EXPECTED_FACETS.get('chat.sendAndWait').nonEntityEffect === 'persistent'
-    && EXPECTED_FACETS.get('workflow.create').nonEntityEffect === 'none',
-  '第三面塌了：旧读法相同的两行，非实体持久副作用必须仍能分开');
 });
 
 test('facets', 'F6 未登记原子的默认三面保守，且派生回拆分前的逐字节默认', () => {
-  // chat.sendAndWait 已按甲案登记（2026-07-31），不再是「未登记原子」的样本；换成
-  // chiefcomplaint 用例里明确判「不登记」的 chat.closeTestPanel——顺带把那条判断也钉住。
-  for (const atom of ['future.unknownAtom', 'chat.closeTestPanel', 'agent.searchOpen', 'x.y']) {
+  for (const atom of ['future.unknownAtom', 'chat.sendAndWait', 'agent.searchOpen', 'x.y']) {
     const facets = facetsOf(atom);
     assert(facets, `${atom} 无默认三面`);
     assert(facets.entityChange === EXPECTED_UNREGISTERED_FACETS.entityChange
@@ -258,7 +239,7 @@ test('facets', 'F8 三面记录与派生结果均冻结（消费方改不动策�
 
 // ── authority：镜像 ≡ 人签冻结权威源 ────────────────────────────────────────
 test('authority', 'A1 三面派生的 { effect, requiredRoles } 与人签冻结策略件逐字节相等', () => {
-  assert(Array.isArray(frozenPolicy.atoms) && frozenPolicy.atoms.length === 10, '冻结策略件形态变了');
+  assert(Array.isArray(frozenPolicy.atoms) && frozenPolicy.atoms.length === 9, '冻结策略件形态变了');
   for (const row of frozenPolicy.atoms) {
     const rule = ruleOf(facetsOf(row.atom));
     assert(rule, `${row.atom} 派生不出准入规则`);

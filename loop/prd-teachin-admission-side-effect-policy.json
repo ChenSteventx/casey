@@ -4,7 +4,7 @@
   "specPath": "docs/plans/teachin-admission-side-effect-policy/plan.md",
   "testChecksums": {
     "tests/_golden/teachin-admission-side-effect-policy.zero-sut.golden.mjs": "d3aa9b9d94aaaeaf4b422e064fae829c370bb8132e1cfe97703d0cc2af37d7ed",
-    "tests/_golden/fixtures/teachin-admission-side-effect-policy/entity-admission-policy.frozen.json": "1cec5a3b52c5364872760c5ff96752d62191425a93652437493eae631f94f5db"
+    "tests/_golden/fixtures/teachin-admission-side-effect-policy/entity-admission-policy.frozen.json": "3c99741478c200d5c150d96f7dabfed6c8cb23bb22a9c7683a93759badeaea3b"
   },
   "checksumAmendments": [
     {
@@ -15,6 +15,15 @@
       "signedBy": "PENDING_STEVEN",
       "amendedBy": "admission-policy-facets 契约（实现者只提请、不自签）",
       "reason": "准入策略三面拆分（ADR-0004 人签冻结件再签，route:human）：权威源升 schemaVersion 2，逐行加 facets = { entityChange 结构性变更 / identityBindingRoles 身份钉定角色 / nonEntityEffect 非实体持久副作用 (+ 只读行的 allowedActions) }，并补未登记原子的默认三面 unknownFacets。语义零变更：每行的 effect / requiredRoles 与 unknownEffect 逐字节保留为派生兼容字段，且生成时逐条断言「三面派生结果 === 原权威值」，不一致即拒绝换签。为什么权威源必须一并改而不是只改生产镜像：只改镜像会让**未签**的第三面（有没有持久副作用）去决定要不要走零绑定只读短路，权威源与实际放行规则就此永久分裂。原件 gzip 存档 docs/plans/admission-policy-facets/archive/entity-admission-policy.frozen.v1.json.gz，解压回验 sha 与原冻结值 17a7c6fa 三者一致。被冻结的消费金牌 teachin-admission-side-effect-policy.zero-sut.golden.mjs 一字未改、换签后仍 17/17 exit 0（它按 row.effect 读，兼容字段在原位）。策略内容本身零增减：仍是同样 9 个原子，chat.sendAndWait / agent.searchOpen 均**未**登记（登记会改行为，另行请签）。"
+    },
+    {
+      "file": "tests/_golden/fixtures/teachin-admission-side-effect-policy/entity-admission-policy.frozen.json",
+      "oldSha": "1cec5a3b52c5364872760c5ff96752d62191425a93652437493eae631f94f5db",
+      "newSha": "3c99741478c200d5c150d96f7dabfed6c8cb23bb22a9c7683a93759badeaea3b",
+      "amendedAt": "2026-07-31",
+      "signedBy": "PENDING_STEVEN",
+      "amendedBy": "chiefcomplaint-sendandwait-admission 契约（实现者只提请、不自签；字段由 Claude 代填，非 Steven 本人书写）",
+      "reason": "按甲案登记第 10 枚原子 chat.sendAndWait（ADR-0004 人签冻结件再签，route:human）。凭据出处：Steven 2026-07-31 在本次会话的决策岔口作出的裁定——问的是「chat.sendAndWait 的准入档定成哪一档」，他选「甲：登记为可锁」，即 entityChange: none / identityBindingRoles: ['subject']（被测智能体即 subject）/ nonEntityEffect: persistent，落 entity-lock 档、可由签名满足；明确不取「乙：守住 unsupported」，理由是乙会让 tc_chiefcomplaint_smoke 永久不可跑、tier-2 流式面归零。签的范围仅此一行，其余 9 行逐字节未动。新行：{\"atom\":\"chat.sendAndWait\",\"effect\":\"mutation\",\"requiredRoles\":[\"subject\"],\"facets\":{\"entityChange\":\"none\",\"identityBindingRoles\":[\"subject\"],\"nonEntityEffect\":\"persistent\"}}。自证纪律沿用前一笔换签：写盘前先证「解析→再序列化」逐字节复原原件（roundtripIdentical=true，防序列化风格漂移改到无关字节），再断言「三面派生结果 === 本行兼容字段」（entity-lock / mutation / ['subject']），不一致即拒写。行为位移如实枚举：主策略通道零位移（policyForAtom 登记前后都是 mutation + ['subject']，与未登记保守默认逐字节相同）；唯一位移在遗留 event 投影，由 requiredRoles: null（三角色任一且恰一个）收紧成精确 ['subject']，方向是收紧，落在 prd-admission-policy-facets 的 behavior-baseline 上恰 2 条（672 条语料里 source/target 两条，subject 那条不变）。为什么权威源必须一并改而不是只改生产镜像：镜像≡权威是 admission-policy-facets 金牌 A2 的硬断言，只改镜像会让权威源与实际放行规则分裂（该断言已在本次实测里如期转红，加行后复绿）。persistent 只如实记录「这枚原子真会给被测智能体发消息、在对方会话里留痕」，本行【不】承载「允许执行几次」的授权——「有非实体持久副作用」的独立授权档仍未开，如实挂账。另四枚原子（nav.agentManagement / agent.searchOpen / agent.openTestPanel / chat.closeTestPanel）本次【不】登记：它们吃保守默认已落 entity-lock 档、可由签名满足，不构成阻塞；登记要么是放松（如实登记成只读会走进零绑定通道，且 safeUnboundReadEvent 信封白名单不收它们，白担风险），要么是零收益的收紧（多一次人签），判据逐条见 docs/plans/chiefcomplaint-sendandwait-admission/GRILL.md。原件 gzip 存档 docs/plans/chiefcomplaint-sendandwait-admission/archive/entity-admission-policy.frozen.pre-sendandwait.json.gz，解压回验 sha 与原冻结值 1cec5a3b 一致。被冻结的消费金牌 teachin-admission-side-effect-policy.zero-sut.golden.mjs 一字未改、加行后仍 exit 0。"
     }
   ],
   "observability": [

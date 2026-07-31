@@ -3,9 +3,9 @@
   "task": "admission-policy-facets（full，worktree）：准入策略把「结构性变更 / 身份钉定角色 / 非实体持久副作用」三件本质不同的事从一个 effect 字段里拆开表达，第四面（目标身份连续性）由既有纯守卫 requiresTargetContinuityRef 外联不重复登记；旧 { effect, requiredRoles } 降为纯函数派生的兼容投影。硬底线 = 现役行为逐字节等价（672 条行为语料改写前采基线、改写后逐条比对）。不往策略表加登记任何原子（ADR-0004 人签事件）、不开「有持久副作用」的合法授权档。",
   "specPath": "docs/plans/admission-policy-facets/plan.md",
   "testChecksums": {
-    "tests/_golden/admission-policy-facets.zero-sut.golden.mjs": "a445cbded49c76cfd6608b885182505c0aa76882fd595d740aca491e6e095d0e",
+    "tests/_golden/admission-policy-facets.zero-sut.golden.mjs": "a0de05562a17863af54f0e1a40fb6205af8447f69cf8eace417ae76951570d2d",
     "tests/_golden/fixtures/admission-policy-facets/corpus.mjs": "c4c6bd657ef49283a9b2045e0235893ad6dddb632d7cbd6c967162424632002c",
-    "tests/_golden/fixtures/admission-policy-facets/behavior-baseline.json": "e44e2d5fbc503b44c15b8ad88a829305a4a6e3020bf7de66eac3852bdc6a8481"
+    "tests/_golden/fixtures/admission-policy-facets/behavior-baseline.json": "277e9dcd2640bd01551515d9b23cca4079d028f8213032b39f2bc3fa6f0f03e4"
   },
   "checksumAmendments": [
     {
@@ -14,6 +14,24 @@
       "newSha": "a445cbded49c76cfd6608b885182505c0aa76882fd595d740aca491e6e095d0e",
       "amendedAt": "2026-07-31",
       "reason": "两处断言前提被 gpt-5.6-sol max 异构复核 + 实测推翻，改后只增不减。① F5 原写「chat.sendAndWait 与 workflow.create 共享同一个旧 effect 字符串」——该前提建立在「有持久副作用的原子派生成 mutation + 空角色集、因而不可满足」之上，实测证伪：零绑定的已签冻结件真放行（inspectBindings 收空集 + expectedRoles 精确匹配零角色 + checkReplayEntityAdmission 成功出口，对 HEAD 版模块实录 ok:true/allowBrowserLaunch:true，见 docs/plans/admission-policy-facets/evidence/probe-empty-roles.txt）。改后 F5 保留「身份敏感读取 vs 真改业务实体 塌成同一旧读法」的塌缩证明，另加「旧三值全描述不了第三种情形」的不可表达证明，判别力增强。② W3 原按 `effect: 'literal'` 形状定位投影点，实现里投影值是三元表达式赋给 const，正则找不到锚点（且注释里的说明字串与 === 比较都会误命中）。改后按花括号配平定位派生函数体、剥行注释、只把「对象字面量/赋值/return」算产出（=== / !== 不算），并要求三个取值齐现于派生函数内——比原版更精确也更严。改后金牌对 HEAD 版模块重钉红：3 过 / 20 红（docs/plans/admission-policy-facets/evidence/red-repin.txt）；变异验证 7/7 真红且逐条命中对应断言。"
+    },
+    {
+      "file": "tests/_golden/admission-policy-facets.zero-sut.golden.mjs",
+      "oldSha": "a445cbded49c76cfd6608b885182505c0aa76882fd595d740aca491e6e095d0e",
+      "newSha": "a0de05562a17863af54f0e1a40fb6205af8447f69cf8eace417ae76951570d2d",
+      "amendedAt": "2026-07-31",
+      "signedBy": "PENDING_STEVEN",
+      "amendedBy": "chiefcomplaint-sendandwait-admission 契约（实现者只提请、不自签；字段由 Claude 代填，非 Steven 本人书写）",
+      "reason": "甲案落地的断言重钉（ADR-0004 人签事件，route:human）。凭据出处：Steven 2026-07-31 在本次会话的决策岔口选「甲：登记为可锁」（none / ['subject'] / persistent，被测智能体即 subject），明确不取「乙：守住 unsupported」（理由：乙会让 tc_chiefcomplaint_smoke 永久不可跑、tier-2 流式面归零）。四处改动逐条：① A1 的冻结策略件行数 9 → 10（权威源加了甲案那一行，行数是形态哨兵，必须随之重钉）；② EXPECTED_FACETS 加 chat.sendAndWait 的三面人工期望值，交给 F1 逐字段钉住——这是【加】判别力，登记值日后漂移会被 F1 逮红；③ 常量 SEND_AND_WAIT_FACETS 改名 PERSISTENT_NO_IDENTITY_FACETS，F3 标题由「chat.sendAndWait 可如实描述」改为描述面组合本身。断言体一字未减：它钉的仍是「有持久副作用但无身份可钉必须落 unsupported、绝不许退回实测过的 mutation + [] 那个 fail-open」，只是不再冒充对 chat.sendAndWait 的描述（甲案后该原子有身份可钉，旧标题已成假话，留着就是陈旧绿地雷）；F5 另加两条新断言，钉「chat.sendAndWait 与 workflow.create 旧投影逐字节相同、第三面仍分得开」，判别力净增；④ F6 的未登记样本把 chat.sendAndWait 换成 chat.closeTestPanel——前者已登记、不再是未登记样本，后者是本次明确判「不登记」的四枚之一，换过去顺带把那条判断也钉住，样本数仍是 4。改后四段全绿（equivalence/facets/authority/wiring 退出码 0/0/0/0），corpus 一字未改、语料仍 672 条。原件 git 存档 docs/plans/chiefcomplaint-sendandwait-admission/archive/admission-policy-facets.zero-sut.golden.pre-sendandwait.mjs，sha 与原冻结值 a445cbde 一致。"
+    },
+    {
+      "file": "tests/_golden/fixtures/admission-policy-facets/behavior-baseline.json",
+      "oldSha": "e44e2d5fbc503b44c15b8ad88a829305a4a6e3020bf7de66eac3852bdc6a8481",
+      "newSha": "277e9dcd2640bd01551515d9b23cca4079d028f8213032b39f2bc3fa6f0f03e4",
+      "amendedAt": "2026-07-31",
+      "signedBy": "PENDING_STEVEN",
+      "amendedBy": "chiefcomplaint-sendandwait-admission 契约（实现者只提请、不自签；字段由 Claude 代填，非 Steven 本人书写）",
+      "reason": "甲案登记造成的行为位移，672 条里恰 2 条（ADR-0004 人签事件，route:human）。位移的两条：B/events/chat.sendAndWait/source 与 B/events/chat.sendAndWait/target，由「收下该绑定」变成 ENTITY_BINDING_REQUIRED_ROLES_INVALID。机理：登记前 chat.sendAndWait 走未登记默认，遗留 event 投影 legacyEventProjectionPolicyForAtom 返 requiredRoles: null =「三角色任一且恰一个」；登记后返精确 ['subject']。方向是【收紧】不是放松——subject 那条（B/events/chat.sendAndWait/subject）逐字节不变，仍被收下。主策略通道零位移：policyForAtom 的 { effect, requiredRoles } 登记前后都是 mutation + ['subject']（改前改后探针逐字段对比，仅 registeredAtoms 集合 +1 与 chat.sendAndWait 的 entityChange/nonEntityEffect 两个面值变化，rule 块逐字节相同）。手法纪律：只手改这 2 行，【没有】重跑语料整份覆盖基线——重新生成会把别处未察觉的漂移一起洗进基线（假绿）。「恰 2 条」是实证不是断言：改完 equivalence 段（逐条比对全部 672 条）退出码 0，若还有第三条漂移它会立刻红。语料条数仍 672、corpus.mjs 一字未改。原件 gzip 存档 docs/plans/chiefcomplaint-sendandwait-admission/archive/behavior-baseline.pre-sendandwait.json.gz，解压回验 sha 与原冻结值 e44e2d5f 一致。"
     }
   ],
   "observability": [

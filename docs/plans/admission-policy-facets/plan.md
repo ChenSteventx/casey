@@ -46,8 +46,31 @@ requiredRoles(f)         = f.identityBindingRoles
 
 | 原子 | `entityChange` | `identityBindingRoles` | `nonEntityEffect` | `targetContinuity` | 派生档 |
 | --- | --- | --- | --- | --- | --- |
-| `chat.sendAndWait` | `none` | `[]` | `persistent` | `none` | `unsupported`（无合法档，全面 fail-closed） |
+| `chat.sendAndWait` | `none` | `['subject']` | `persistent` | `none` | `entity-lock`，`mutation + ['subject']`——与今天的未登记默认逐字节相同 |
 | `agent.searchOpen` | `none` | `['subject']` | `none` | `none` | `entity-lock`，`mutation + ['subject']`——与今天的未登记默认逐字节相同 |
+
+#### 2.1.1 `chat.sendAndWait` 由 `unsupported` 改判 `entity-lock`（2026-07-31，Steven 裁）
+
+本行原写 `none` / `[]` / `persistent` → `unsupported`。**2026-07-31 由 Steven 在决策岔口改判**，
+现行值是上表的 `none` / `['subject']` / `persistent` → `entity-lock`。
+
+裁定原话：选「甲：登记为可锁」，被测智能体即 subject，落 `entity-lock` 档、可由签名满足；
+明确不取「乙：守住 `unsupported`」，因为那会让 `tc_chiefcomplaint_smoke` 永久不可跑、tier-2 流式面归零。
+
+改判的机械依据（实测，不是推断）：
+
+1. 甲案三面的派生投影 = `{ admissionClass: 'entity-lock', effect: 'mutation', requiredRoles: ['subject'] }`，
+   与「未登记保守默认」的派生投影**逐字节相同**——主策略通道零行为位移。
+2. 唯一位移在遗留 event 投影：未登记时 `requiredRoles: null`（三角色任一且恰一个），
+   登记后收紧成「恰 `subject`」。方向是收紧。
+3. 若照原案（乙）签，拒付理由会从「缺锁」变成 `REPLAY_EVENT_POLICY_INVALID`，
+   没有任何锁文件能满足——`policyForAtom` 对 `unsupported` 返 `null`，四个消费点的 `!policy` 分支各自判死。
+
+甲案**不**等于开了「有非实体持久副作用」的授权档：`nonEntityEffect: 'persistent'` 如实记录
+「这枚原子真会给被测智能体发消息、在对方会话里留痕」这件事实，但承载它的是既有 `entity-lock` 档的
+一条 `subject` 绑定（钉住「被测智能体是谁」），**不承载**「允许执行几次」。§2.3 末尾那条缺口仍然挂账。
+
+落地契约：`chiefcomplaint-sendandwait-admission`（见 `docs/plans/chiefcomplaint-sendandwait-admission/`）。
 
 ### 2.2 `unsupported` 档为什么必须显式存在
 
@@ -60,11 +83,17 @@ checkReplayEntityAdmission = {"ok":true,"allowBrowserLaunch":true,"authorityKind
 
 `inspectBindings([])` 返回合法空集、`expectedRoles` 遇 `requiredRoles: []` 精确匹配零绑定成功（`entity-semantic-lock-preflight.mjs:626`、`:884`），于是零绑定的已签冻结件**真放行、真启动浏览器**。所以 `mutation + []` 是 fail-open，不是 fail-closed。
 
-结论：`admissionClass === 'unsupported'` 的原子，`policyForAtom` 一律返 `null`，四个消费点（副作用分类 / 逐操作绑定 / 草稿期 / 回放准入）各自的既有 `!policy` 分支把它判死。今天没有任何原子落进这一档（已登记 9 个 + 未登记默认都不落），所以是零行为变更的纯扩展。
+结论：`admissionClass === 'unsupported'` 的原子，`policyForAtom` 一律返 `null`，四个消费点（副作用分类 / 逐操作绑定 / 草稿期 / 回放准入）各自的既有 `!policy` 分支把它判死。今天没有任何原子落进这一档（本契约交付时已登记 9 个 + 未登记默认都不落；`chiefcomplaint-sendandwait-admission`
+按甲案加登记第 10 枚 `chat.sendAndWait` 后仍然一枚都不落），所以是零行为变更的纯扩展。
 
 ### 2.3 本契约不做的登记
 
-**只交付表达能力，不登记这两个原子**：往人签冻结策略表里加行是策略判断，属 ADR-0004 人签事件，`signedBy: PENDING_STEVEN`，实现者不签。且登记本身会改行为——`chat.sendAndWait` 现在默认 `mutation + ['subject']`，登记成 `unsupported` 会把它从「索要一个虚构 subject 绑定」变成「直接拒」；`agent.searchOpen` 登记后遗留 event 投影会从「三角色任一」收紧成「恰 subject」。两项都要人签。
+**只交付表达能力，不登记这两个原子**：往人签冻结策略表里加行是策略判断，属 ADR-0004 人签事件，`signedBy: PENDING_STEVEN`，实现者不签。且登记本身会改行为——`agent.searchOpen` 登记后遗留 event 投影会从「三角色任一」收紧成「恰 subject」，要人签。
+
+**待签内容的现状（2026-07-31 更新）**：`chat.sendAndWait` 那一笔已被 Steven 在决策岔口改判甲案（§2.1.1），
+由后继契约 `chiefcomplaint-sendandwait-admission` 备好请签包，`signedBy` 仍是 `PENDING_STEVEN`——
+**待签的是甲案（`none` / `['subject']` / `persistent` → `entity-lock`），不是本节原写的 `unsupported`**。
+`agent.searchOpen` 那一笔照旧不登记、照旧待决。
 
 「有非实体持久副作用但无身份可钉」的合法授权档（谁签字承认「本次跑会真发消息」、绑哪段事件字节、允许执行几次）本契约**不开**，挂人签待决。
 
