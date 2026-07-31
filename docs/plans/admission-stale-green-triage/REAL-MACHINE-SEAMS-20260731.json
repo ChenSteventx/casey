@@ -1,0 +1,86 @@
+{
+  "_note": "从 runs/_tier2/residue-cleanup-receipt-20260731.json 提取的工程知识（runs/ 全仓 gitignore，故转到跟踪面留存）。删除明细与归零证据仍在原回执。",
+  "extractedAt": "2026-07-31",
+  "realMachineSeams": [
+    {
+      "id": "seam-1-search-enter-no-longer-filters",
+      "severity": "影响「把被拆掉的清理链装回去」那件活",
+      "finding": "工作流列表的搜索框按 Enter 在今天的真机上【不过滤】。",
+      "sampling": "填入完整工作流名后按 Enter，逐秒采样 15 秒，.agent-card 计数恒为 22 纹丝不动；改用逐字符输入（pressSequentially）再按 Enter，同样 12 秒恒 22。搜索框 inputValue 长度正常（确认值确实填进去了）。",
+      "correctTrigger": ".hr-input__suffix .search-icon（输入框后缀里的搜索图标，svg.hr-icon.hr-icon-search.search-icon）",
+      "measuredAfterFix": "点图标后逐秒采样 8 秒，卡片数立刻收敛到 1 并保持。本轮 17 条删除的删前删后复验全部走这条通道，34 次搜索无一失手。",
+      "impact": "归档件 cases/tc_catalog_wf_crud/archive/events.pre-b2-20260729.json 里那条七步删除流（atstep_10 fill → atstep_11 press Enter → atstep_12 click 删除 → atstep_13 click 确定 → atstep_14/15 重搜复验）照今天的真机跑不通：press Enter 这一步不产生过滤，后续按名定位会落到未过滤的全量列表上。当前 cases/tc_catalog_wf_crud/events.json 已缩到 9 步不含删除，所以没炸到金牌。",
+      "notTouched": "本轮没有改任何 cases/ 冻结件，只记录发现。"
+    },
+    {
+      "id": "seam-2-confirm-button-renamed",
+      "severity": "同上，与 seam-1 是同一条删除流上的相邻两步",
+      "finding": "删除确认弹窗的确认按钮是「确认」，不是冻结流 atstep_13 里的「确定」。",
+      "evidence": "点菜单「删除」后弹出 .hr-dialog.hr-dialog__modal-warning，文案「删除后不可恢复，请谨慎操作。」，页脚 .hr-dialog__footer 里两个可见按钮：取消 / 确认。全页可见按钮共 3 个：新增工作流 / 取消 / 确认，无「确定」。",
+      "caveat": "新建工作流抽屉 .dialog-concent 里另有一个不可见的同名「确认」按钮，按名取控件要收作用域到可见的 .hr-dialog__footer，否则有歧义。",
+      "probeOut": "runs/_tier2/residue-confirm-diag.json（该探针开弹窗读完结构后走「取消」关闭，未确认；复验目标卡片仍在）"
+    },
+    {
+      "id": "seam-3-menu-identical-across-publish-states",
+      "finding": "已发布态工作流【不需要】先退版本或下架才能删。已发布与未发布卡片的「更多操作」菜单完全一致，固定四项：编辑 / 复制 / 删除 / 停用。",
+      "evidence": "17 条里 15 条已发布、2 条未发布，menuLabels 全部读到同一组四项（见各条 entry 的 menuLabels 字段）。"
+    }
+  ],
+  "incidentLog": [
+    {
+      "at": "2026-07-31T04:19:25.833Z",
+      "what": "第一次真删首条 atl_vf0731a 即在确认环停手：冻结流用的 role=button name=确定 在真机命中 0，脚本按 fail-safe 中止未确认。",
+      "verification": "随后跑只读全量盘点复验（runs/_tier2/residue-inventory-postabort.json）：工作流总数 22、atl_ 前缀 17 条，一条没少，确认无误删。",
+      "resolution": "开确认弹窗读结构定案（见 realMachineSeams 第 2 条），改用可见 .hr-dialog__footer 里的「确认」后 17 条全部一次成功。"
+    }
+  ],
+  "humanAdjudicatedException": {
+    "name": "atl_pg_20260707_154321",
+    "state": "未发布",
+    "originalClassification": "第②类（atl_ 前缀但对不上任何 run）——机器规则判定为不动",
+    "originalReasonVerbatim": "对不上 runs/tc_wf_publish_states、runs/tc_wf_history_version、runs/tc_catalog_wf_crud 三个目录下任何一个 run 的令牌。仓内只在 cases/tc_wf_list_smoke/observed-tc_wf_list_smoke.json 与 runs/teachin-uat 的示教抓取里作为【被观察到的既有页面内容】出现，不是本仓这三条链某轮跑造的。描述文案是「自动化测试临时工作流」，与 Casey 三条链固定用的「Casey 编译期冒烟固定描述（非易变，可冻字面量）」不同，来源另有其人。按「宁可少删、不可误删」归第②类不动。",
+    "adjudication": "Steven 2026-07-31 会话内明示「也删掉」。上面归②的理由已原样呈报，他知悉后仍判删。",
+    "provenanceOfDecision": "人裁例外，不是机器按规则清的。将来翻这份回执请以本段为准。",
+    "rigorApplied": "与前 16 条同等：先单独 --dry-run 验链路每环唯一（按名精确搜索命中 1、卡片命中 1、更多操作命中 1、菜单删除项命中 1），演练绿后才真删。",
+    "dryRunEntry": {
+      "name": "atl_pg_20260707_154321",
+      "startedAt": "2026-07-31T04:16:31.588Z",
+      "mode": "dry-run",
+      "hitsBefore": 1,
+      "cardsBeforeInFilteredView": 1,
+      "deleteItemCount": 1,
+      "menuLabels": [
+        "编辑",
+        "复制",
+        "删除",
+        "停用"
+      ],
+      "status": "DRY_RUN_OK",
+      "reason": "定位链路全部唯一；未点击删除"
+    },
+    "unpublishedVsPublishedPathDiff": "无差异。未发布态与已发布态的更多操作菜单完全一致，均为 编辑/复制/删除/停用 四项，删除入口同样直接可用，确认弹窗同为 取消/确认。第①类里的 atl_b2r1_0730_catalog_wf_crud 同为未发布态，走同一条路径同样一次成功。",
+    "entry": {
+      "name": "atl_pg_20260707_154321",
+      "provenance": "无 run 可对上（人裁例外）",
+      "hitsBefore": 1,
+      "hitsAfter": 0,
+      "startedAt": "2026-07-31T04:30:53.087Z",
+      "finishedAt": "2026-07-31T04:31:05.802Z",
+      "status": "DELETED",
+      "reason": "删后按精确名搜索命中归零",
+      "locatorChain": {
+        "cardExact": 1,
+        "moreButton": 1,
+        "deleteMenuItem": 1,
+        "confirmButton": 1
+      },
+      "menuLabels": [
+        "编辑",
+        "复制",
+        "删除",
+        "停用"
+      ],
+      "dialogWarning": "是否删除此工作流？ 删除后不可恢复，请谨慎操作。 取消 确认"
+    }
+  }
+}
