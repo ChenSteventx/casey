@@ -10,6 +10,14 @@
     {
       "dimension": "历史落盘泄露洗盘（catalog 时代 6 件含 doLogin 带值 query，git 清白本地 only）+ 平台侧缺陷上报（doLogin GET 凭据进 URL/服务端日志 + 智能体回复会话异常）——待 Steven 拍板",
       "route": "human"
+    },
+    {
+      "dimension": "s1 验收面重配（Steven 2026-07-31 裁定二之③，契约 isolated-golden-acceptance-revocation）：2026-07-20 人签重裁把 s1 的 acceptance 由 [replay-login-bootstrap.golden.mjs, chiefcomplaint-smoke.golden.mjs, selftest --tier1] 搬空成只剩 [selftest --tier1]。selftest --tier1 只查术语表、熔断器、门禁与裁判纯度，与本 story 的登录期流量切断、axes 剥 host、blob 与自嵌与协议相对三缝脱敏诸义务毫无关系，拿它当验收是空心。本轮改为 node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs（既有形制），passes 交 gate 按实翻。",
+      "route": "machine"
+    },
+    {
+      "dimension": "s1 无机器验收面（新增 route:human 挂账，且属护栏 #7 真泄露向量）：本 story 的两枚义务件（本 prd testChecksums 冻结的 replay-login-bootstrap.golden.mjs 与 chiefcomplaint-smoke.golden.mjs）双双于 2026-07-20 判入隔离态，隔离账内两件义务（8 条 + 7 条）全部 coverageRelation=uncertain 且 partialSuccessors 为空，无已落盘后继接管，配不出零 SUT 后继。故本 story 现无机器验收面，其义务是否满足只能由人工复现裁定；历史 passes=true 系清单搬空后门禁照章所翻，不作数。风险口径须点名：本 story 关的是凭据泄露向量（护栏 #7），失去机器回归网意味着该修复的防回退保护现在只靠人工，优先级建议高于其他隔离项——但本轮不代 Steven 定优先级，只如实挂账。",
+      "route": "human"
     }
   ],
   "stories": [
@@ -18,10 +26,10 @@
       "desc": "登录期切断 + 剥 host + blob/自嵌/协议相对三缝：login golden 8/8（C3 补钉红先行）+ chiefcomplaint 12/12（I1 两轮收紧 + blob 考场红先行）+ tier1。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node bin/casey.mjs selftest --tier1"
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-03T05:41:26.170Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     }
   ]
 }

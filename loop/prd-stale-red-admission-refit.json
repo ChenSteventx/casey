@@ -13,6 +13,18 @@
     {
       "dimension": "owner prd gate 复跑（prd-report-diagnostics / prd-p3-compile）exit 0 由本契约 evidence 记录；passes 仅 gate 有权写。",
       "route": "machine"
+    },
+    {
+      "dimension": "非法验收撤销（Steven 2026-07-31 裁定一，契约 isolated-golden-acceptance-revocation）：s1 撤 `node tests/_golden/report-diagnostics.golden.mjs`、s2 撤 `node tests/_golden/p3-compile.golden.mjs`。撤因——这两枚金牌已被 2026-07-20 人签重裁（prd-hermetic-golden-zero-sut-lifecycle，commit b3bee6b + 95bb6bb）判入隔离态：agentExecution=forbidden、coverageRelation=uncertain、partialSuccessors 空、route=human；本契约 2026-07-22 在该裁定之后把它们重新塞回活验收，与人签裁定直接冲突，hermetic-golden-prd-reverse-closure 一直在报此警。撤后两条 story 的验收面：均改为既有形制的 node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs（静态读隔离账、零执行任何旧金牌与 SUT，以非零退出保持 story 非绿），即两条 story 现在都没有能验证自身义务的机器验收面。注意不能改成空 acceptance 数组——gate.mjs 对空数组的 storyGreen 恒真、会把 story 写成 passes=true，那正是本轮要治的空心绿。",
+      "route": "human"
+    },
+    {
+      "dimension": "新增 route:human 挂账（本次撤销直接产生）：s1「E1 夹具改只读白名单信封」与 s2「p3-compile 选择性铸权」两组被证义务，其唯一验证手段是执行对应的隔离金牌，而隔离裁定禁止代理执行。故这两条 story 的义务是否真被满足，只能由人工复现与目检裁定，机器侧不再背书。不得为让它们转绿而给隔离件补锁跑绿——Steven 2026-07-19 已裁原执行路径（重跑 fake-sut + 注入测试锁锁绿）作废。",
+      "route": "human"
+    },
+    {
+      "dimension": "隔离账摘要漂移（本轮实测新证，须人裁，代理不回填）：本契约 2026-07-22 直接改了两枚已被 07-20 判入隔离的金牌字节，导致隔离账 isolated-browser-obligations.json 里冻结的 originalFileSha256 与现文件不符——tests/_golden/p3-compile.golden.mjs 账内 4f56c276… 实际 b955b67a…；tests/_golden/report-diagnostics.golden.mjs 账内 2b12caab… 实际 78e2b5e3…。后果：hermetic-golden-isolation-pending 由设计上的 exit 78（保持旧 story 非绿）跌成 exit 65 的失败即关闭态。隔离账是人签件，把摘要回填成改后值等于替违规洗白，故本契约只记账不改账。",
+      "route": "human"
     }
   ],
   "stories": [
@@ -21,20 +33,20 @@
       "desc": "E1 夹具改只读白名单信封（sol 甲案收敛版）：单 nav.workflowManagement 事件、顶层 url 与事件 url 逐字 {{baseUrl}}/ai-manager/process/list、无 pre、零实体锁走 deterministic-read-only-policy；已签断言文本改「工作流列表」；atstep_0/intent_1/诊断块标题/runId 断言原样保留（被证义务=诊断栏目端到端嵌入，零弱化）。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/report-diagnostics.golden.mjs"
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-22T02:57:58.194Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     },
     {
       "id": "s2-p3-compile-refit",
       "desc": "p3-compile 选择性修形：flow 步补 sourceIntentId+恰一 subject 绑定（TESTCASE 补可区分来源意图）；C4 e2/C5/C8 铸 audience=test 预执行权威（confirm 终写盘后精确字节、临时 prd wx+finally）；C4 e1/C4d 不铸权保原红因；C8 断言收紧唯一目标行（workflow.save click ambiguous candidateCount=2 acted=false + 本轮零产物）；C6/C7/C7b 经 sign CLI 铸冻结锁（eventsA/手编 events 精确字节）；C1 钉数 61。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p3-compile.golden.mjs"
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-22T03:00:00.158Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     },
     {
       "id": "s3-regression-locks",
@@ -47,7 +59,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-22T03:00:52.811Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-31T05:53:32.113Z 全部 acceptance exit 0"
     }
   ]
 }

@@ -10,10 +10,16 @@ const DETECTOR = join(GOLDEN_DIR, 'support', 'sut-startup-closure.mjs');
 const FIXTURE_ROOT = join(GOLDEN_DIR, 'fixtures', 'hermetic-golden-sut-census');
 
 const EXPECTED_REPO_CLOSURE = [
+  // 2026-07-31 闭集 27 → 30（Steven 裁定二之①，契约 isolated-golden-acceptance-revocation）：
+  // 下列三枚 2026-07-22 新落的启夹具 SUT 金牌未进 2026-07-20 重裁，本次只把扫描事实钉进闭集，
+  // 不代表它们已被判入隔离态——三枚补进隔离义务账一节须人裁（见本 prd observability）。
+  'tests/_golden/agent-id-readback.chat-sut.golden.mjs',
   'tests/_golden/btn-enable-ops.golden.mjs',
   'tests/_golden/chiefcomplaint-smoke.golden.mjs',
   'tests/_golden/drawer-lock-hardening.golden.mjs',
   'tests/_golden/e2e-chain.golden.mjs',
+  'tests/_golden/entity-ui-wiring.bindagent-replay.golden.mjs',
+  'tests/_golden/entity-ui-wiring.searchopen.golden.mjs',
   'tests/_golden/kinds-harden.golden.mjs',
   'tests/_golden/layer3-wiring.golden.mjs',
   'tests/_golden/p2-sign.golden.mjs',
@@ -119,7 +125,7 @@ async function scan(args) {
 }
 
 let repoEntries = null;
-await check('C2 当前仓全部 golden 的 SUT 启动/连接文件闭集恰为 27', async () => {
+await check('C2 当前仓全部 golden 的 SUT 启动/连接文件闭集恰为 30', async () => {
   const entries = readdirSync(GOLDEN_DIR)
     .filter((name) => name.endsWith('.golden.mjs'))
     .map((name) => join(GOLDEN_DIR, name));

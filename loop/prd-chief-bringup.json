@@ -9,6 +9,14 @@
     {
       "dimension": "凭据兜底门 token 路由名处置（源头打码 vs 形状豁免）待 Steven 拍板后，真机编译四件套落盘复跑",
       "route": "human"
+    },
+    {
+      "dimension": "s1 验收面重配（Steven 2026-07-31 裁定二之③，契约 isolated-golden-acceptance-revocation）：2026-07-20 人签重裁把 s1 的 acceptance 由 [chiefcomplaint-smoke.golden.mjs, selftest --tier1] 搬空成只剩 [selftest --tier1]。selftest --tier1 只查术语表、熔断器、门禁与裁判纯度，与本 story 的四修义务（routes.agentList 路由导航优先、失败步不堆等、消息框 exact:false、openTestPanel networkidle 有界前置 + 点空重点采集自愈）毫无关系，拿它当验收是空心。本轮改为 node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs（既有形制），passes 交 gate 按实翻。",
+      "route": "machine"
+    },
+    {
+      "dimension": "s1 无机器验收面（新增 route:human 挂账）：本 story 的唯一义务件 tests/_golden/chiefcomplaint-smoke.golden.mjs（本 prd testChecksums 冻结的那枚）已于 2026-07-20 判入隔离态，隔离账内该件 7 条义务全部 coverageRelation=uncertain 且 partialSuccessors 为空，无已落盘后继接管；四修全是真机浏览器行为义务，配不出零 SUT 后继。故本 story 现无机器验收面，其义务是否满足只能由人工复现与目检裁定；历史 passes=true 系清单搬空后门禁照章所翻，不作数。不拿 tier1 充数，也不得给隔离件补锁跑绿。",
+      "route": "human"
     }
   ],
   "stories": [
@@ -17,10 +25,10 @@
       "desc": "四修验收：chiefcomplaint golden 11/11（含 C2 路由 nav 断言）+ tier1 回归。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node bin/casey.mjs selftest --tier1"
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-03T05:35:12.372Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     }
   ]
 }

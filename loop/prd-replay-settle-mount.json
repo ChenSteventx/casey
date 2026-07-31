@@ -19,6 +19,14 @@
     {
       "dimension": "「响应结束→UI 延迟提交」形态：判据 A 在 loadingFinished 即归零，提交延迟超过稳定对约两拍缓冲（约 240ms）则在占位上放行——失败方向假红非假绿，已确证真机形态（应答即提交）I1 已覆盖，判据侧扩展会假定「应答必改 DOM」恶化最坏走时，本轮不做（GRILL D3 残余）",
       "route": "human"
+    },
+    {
+      "dimension": "s2-regression-and-resign 验收面修正（Steven 2026-07-31 裁定二之②，契约 isolated-golden-acceptance-revocation）：2026-07-20 人签重裁把 s2 的 acceptance 由 8 枚金牌 + selftest --tier1 搬空——移除的 7 枚（p5-replay、wf-publish-states、wf-open-smoke、kinds-harden、run-history、replay-nth-visible-hardening、e2e-chain）全是隔离件——只剩 [p5-replay-coverage.golden.mjs, selftest --tier1] 并刻意留 passes=false；2026-07-22 commit 4ebe2ed 的一次 gate@2026-07-21T18:26:34 把它翻成 true。该翻转判无效：本 story 的被证义务是「受影响 fake-sut 消费金牌族逐个原样绿」的影响面复验，八分之七的复验面已进隔离账，剩下的一枚加 tier1 撑不起该义务。本轮补 node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs 如实反映这七枚的缺口，passes 交 gate 按实翻。",
+      "route": "machine"
+    },
+    {
+      "dimension": "s2-regression-and-resign 残余验收面与新增 route:human 挂账：撤后 s2 仍留 node tests/_golden/p5-replay-coverage.golden.mjs（非隔离、真跑得动，覆盖 fail-safe 不变量）与 selftest --tier1，故本 story 并非完全无机器面，但其「八枚金牌族影响面零行为差」的义务只剩八分之一可机器复验；另七枚的行为复验（静默点每代表步约 +0.5s 后各金牌是否仍原样绿）随隔离裁定转 route:human，须人工复现裁定，机器侧不再背书。",
+      "route": "human"
     }
   ],
   "stories": [
@@ -38,10 +46,11 @@
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs",
         "node bin/casey.mjs selftest --tier1"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-21T18:27:11.898Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     }
   ],
   "resignLog": [

@@ -22,6 +22,14 @@
     {
       "dimension": "CDP initiator（发起方）栈分类在真 Heren 流量下的可靠度（ADR-0007 推翻条件：不可靠则退 denylist + 活动步窗 + 仍证不出归 null）",
       "route": "human"
+    },
+    {
+      "dimension": "s1-replay 验收面修正（Steven 2026-07-31 裁定二之②，契约 isolated-golden-acceptance-revocation）：2026-07-20 人签重裁把 s1 的 acceptance 由 [p5-replay.golden.mjs, selftest --tier1] 搬空成只剩 [selftest --tier1]，并刻意留 passes=false；2026-07-22 commit 4ebe2ed 的一次 gate@2026-07-21T18:26:34 把它翻成 true。该翻转判无效——selftest --tier1 只查术语表、熔断器、门禁与裁判纯度，与本 story 的回放 runner、StepAxes 产出、CDP 发起方归因、只读漂移探针诸义务毫无关系，拿它当验收是空心。本轮把验收面改成 node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs（既有形制，静态读隔离账、零执行旧金牌与 SUT，以非零退出保持 story 非绿），passes 交 gate 按实翻。",
+      "route": "machine"
+    },
+    {
+      "dimension": "s1-replay 无机器验收面（新增 route:human 挂账）：本 story 的原义务件 tests/_golden/p5-replay.golden.mjs 已于 2026-07-20 判入隔离态（agentExecution=forbidden、route=human），隔离账内该件 17 条义务全部 coverageRelation=uncertain 且 partialSuccessors 为空，即无任何已落盘后继接管。故 s1 现无能验证自身义务的机器面，其义务是否满足只能由人工复现裁定；历史上的 passes=true 系清单搬空后门禁照章所翻，不作数。不得为转绿给隔离件补锁跑绿（Steven 2026-07-19 已裁原执行路径作废）。",
+      "route": "human"
     }
   ],
   "stories": [
@@ -30,10 +38,10 @@
       "desc": "回放 runner + watchNetworkForensics + StepAxes 产出 + 只读漂移探针。bin/replay.mjs 真回放假 SUT，按 intentId 聚合事件依序回放、过点击身份门出动作轴、CDP 真发起方归因出取证轴（背景 401 归 null 不背书）、按 expected 评估出断言轴，三轴写 axes.json 喂已冻 verdict.mjs。漂移探针只读查同稳定签名 count===1、不点不改 spec。runner 是 verdict.mjs 的上游产出者，绝不在回放进程内做裁定（护栏 #15）。 生命周期重裁：本 story 仅保留非隔离 acceptance 所证义务；移除的历史行为进入隔离账，agentExecution=forbidden、route:human。",
       "lane": "implementation",
       "acceptance": [
-        "node bin/casey.mjs selftest --tier1"
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
       ],
-      "passes": true,
-      "evidence": "gate@2026-07-21T18:26:34.700Z 全部 acceptance exit 0"
+      "passes": false,
+      "evidence": ""
     },
     {
       "id": "s2-failsafe-coverage",
@@ -43,7 +51,7 @@
         "node tests/_golden/p5-replay-coverage.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-21T18:26:35.628Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-07-31T05:53:56.363Z 全部 acceptance exit 0"
     }
   ],
   "resignLog": [
