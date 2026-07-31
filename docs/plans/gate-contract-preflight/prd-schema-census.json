@@ -1,0 +1,840 @@
+{
+  "generatedBy": "gate-contract-preflight 契约（Claude Opus 5）独立复算",
+  "judgedAgainst": "docs/plans/seams-freeze/proposed/5-prd-schema-v2.schema.json（冻结件）",
+  "generatedAt": "2026-07-31T09:39:51.657Z",
+  "repoState": {
+    "head": "59a0d31",
+    "branch": "dev"
+  },
+  "totals": {
+    "prdScanned": 151,
+    "nonCompliant": 48,
+    "blockedByPreflightThisRound": 9
+  },
+  "reconciliation": "顾问 gpt-5.6-sol 在 151 份基数上报 48 份不合规；本轮独立复算一致——删掉误提交的 prd-tc_compile_destadmit 后 150 份里 47 份，加回该份即 48。其后另一 agent 新增 prd-tc_chiefcomplaint_smoke（空 stories 的真机人签登记账），故当前 151 份里 48 份。",
+  "violationCodeCounts": {
+    "OBSERVABILITY_SHAPE": 23,
+    "STORY_FIELD_MISSING": 54,
+    "ACCEPTANCE_EMPTY": 2,
+    "SV2_FIELD_MISSING": 9,
+    "LANE_INVALID": 9,
+    "STORIES_EMPTY": 8
+  },
+  "blockedList": [
+    "prd-cli-mcp-face.json",
+    "prd-replay-admission-hermetic-migration.json",
+    "prd-tc_agent_id_readback_real_uat_v1.json",
+    "prd-tc_audience_wiring.json",
+    "prd-tc_catalog_wf_crud.json",
+    "prd-tc_chiefcomplaint_smoke.json",
+    "prd-tc_compile_audience.json",
+    "prd-tc_wf_history_version.json",
+    "prd-tc_wf_publish_states.json"
+  ],
+  "scopeNote": "blockedByPreflightThisRound 才是本轮前置闸真正阻断的面；其余判据（lane / observability / desc / passes / sv2 字段）本轮只记账不阻断，完整性校验归 ratchet verify。",
+  "rows": [
+    {
+      "prd": "prd-agent-id-readback.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[2] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-assert-visibility-semantics.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s1-visibility-semantics-golden)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s1-visibility-semantics-golden)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s2-adjacent-zero-regression)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s2-adjacent-zero-regression)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s3-repo-drift-and-terms)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s3-repo-drift-and-terms)",
+          "field": "lane"
+        }
+      ]
+    },
+    {
+      "prd": "prd-casey-demo.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[2] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-chief-bringup.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[1] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-cli-authority-wiring-fill.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[1] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-cli-mcp-face.json",
+      "blockedByPreflightThisRound": true,
+      "violations": [
+        {
+          "code": "ACCEPTANCE_EMPTY",
+          "scope": "stories[0](id=s1-face-align)"
+        },
+        {
+          "code": "ACCEPTANCE_EMPTY",
+          "scope": "stories[1](id=s2-ripple-locks)"
+        }
+      ]
+    },
+    {
+      "prd": "prd-delete-confirm-causal-binding.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "SV2_FIELD_MISSING",
+          "scope": "prd",
+          "field": "caseId"
+        },
+        {
+          "code": "SV2_FIELD_MISSING",
+          "scope": "prd",
+          "field": "intents"
+        }
+      ]
+    },
+    {
+      "prd": "prd-entity-identity-spine.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[1] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-entity-ui-wiring.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "LANE_INVALID",
+          "scope": "stories[3](id=s4-guards-and-terms)",
+          "value": "guard"
+        }
+      ]
+    },
+    {
+      "prd": "prd-entity-workflow-source-readback.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "LANE_INVALID",
+          "scope": "stories[3](id=s4-completeness-poison-regression)",
+          "value": "guard"
+        },
+        {
+          "code": "LANE_INVALID",
+          "scope": "stories[4](id=s5-round2-wiring-failclosed)",
+          "value": "guard"
+        },
+        {
+          "code": "LANE_INVALID",
+          "scope": "stories[5](id=s6-round3-reverse-cardinality)",
+          "value": "guard"
+        }
+      ]
+    },
+    {
+      "prd": "prd-ingest-scaffold.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[1] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-intent-plan-known-atom-foundation.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "LANE_INVALID",
+          "scope": "stories[3](id=s4-adjacent-regressions-hold)",
+          "value": "regression"
+        }
+      ]
+    },
+    {
+      "prd": "prd-login-traffic-drop.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[1] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-loop-kit-extract.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[2] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-obs-cases-isolation.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "LANE_INVALID",
+          "scope": "stories[2](id=s3-adjacent-observation-zero-regression)",
+          "value": "regression"
+        },
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[0] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-output-seal.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[0] not object"
+        }
+      ]
+    },
+    {
+      "prd": "prd-p5-replay.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[3] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-p6-heal.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s0-hotpath-evidence)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s0-hotpath-evidence)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s1-admission)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s1-admission)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s2s3-proposal-ledger)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s2s3-proposal-ledger)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[3](id=s4s5-apply-promote)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[3](id=s4s5-apply-promote)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[4](id=s6-reverify-rollback)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[4](id=s6-reverify-rollback)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[5](id=s7-breaker)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[5](id=s7-breaker)",
+          "field": "lane"
+        }
+      ]
+    },
+    {
+      "prd": "prd-p9-tier2-live-smoke.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s1-tier2-selftest-golden)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s1-tier2-selftest-golden)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s2-adjacent-zero-regression)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s2-adjacent-zero-regression)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s3-repo-drift-and-terms)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s3-repo-drift-and-terms)",
+          "field": "lane"
+        }
+      ]
+    },
+    {
+      "prd": "prd-record-capture.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[1] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-record-distill.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[1] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-record-intake.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[1] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-replay-admission-hermetic-migration.json",
+      "blockedByPreflightThisRound": true,
+      "violations": [
+        {
+          "code": "STORIES_EMPTY",
+          "scope": "prd"
+        }
+      ]
+    },
+    {
+      "prd": "prd-replay-settle-mount.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[3] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-report-badge-four-state-coverage.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s1-four-state-badge-rendered)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s1-four-state-badge-rendered)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s2-adjacent-zero-regression)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s2-adjacent-zero-regression)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s3-repo-drift-and-terms)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s3-repo-drift-and-terms)",
+          "field": "lane"
+        }
+      ]
+    },
+    {
+      "prd": "prd-report-cleanup-evidence.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[0] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-report-nl-atomic.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[1] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-report-video-block.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[0] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-report-workflow-structure.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[0] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-semantic-lock-cert-closure.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "LANE_INVALID",
+          "scope": "stories[1](id=s2-adjacent-greens-hold)",
+          "value": "regression"
+        }
+      ]
+    },
+    {
+      "prd": "prd-semantic-unit-discrimination.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "LANE_INVALID",
+          "scope": "stories[1](id=s2-adjacent-greens-hold)",
+          "value": "regression"
+        }
+      ]
+    },
+    {
+      "prd": "prd-stale-red-admission-refit.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[1] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-tc_agent_id_readback_real_uat_v1.json",
+      "blockedByPreflightThisRound": true,
+      "violations": [
+        {
+          "code": "STORIES_EMPTY",
+          "scope": "prd"
+        },
+        {
+          "code": "SV2_FIELD_MISSING",
+          "scope": "prd",
+          "field": "intents"
+        }
+      ]
+    },
+    {
+      "prd": "prd-tc_audience_wiring.json",
+      "blockedByPreflightThisRound": true,
+      "violations": [
+        {
+          "code": "STORIES_EMPTY",
+          "scope": "prd"
+        }
+      ]
+    },
+    {
+      "prd": "prd-tc_catalog_wf_crud.json",
+      "blockedByPreflightThisRound": true,
+      "violations": [
+        {
+          "code": "STORIES_EMPTY",
+          "scope": "prd"
+        },
+        {
+          "code": "SV2_FIELD_MISSING",
+          "scope": "prd",
+          "field": "intents"
+        }
+      ]
+    },
+    {
+      "prd": "prd-tc_chiefcomplaint_smoke.json",
+      "blockedByPreflightThisRound": true,
+      "violations": [
+        {
+          "code": "STORIES_EMPTY",
+          "scope": "prd"
+        },
+        {
+          "code": "SV2_FIELD_MISSING",
+          "scope": "prd",
+          "field": "intents"
+        }
+      ]
+    },
+    {
+      "prd": "prd-tc_compile_audience.json",
+      "blockedByPreflightThisRound": true,
+      "violations": [
+        {
+          "code": "STORIES_EMPTY",
+          "scope": "prd"
+        }
+      ]
+    },
+    {
+      "prd": "prd-tc_wf_history_version.json",
+      "blockedByPreflightThisRound": true,
+      "violations": [
+        {
+          "code": "STORIES_EMPTY",
+          "scope": "prd"
+        },
+        {
+          "code": "SV2_FIELD_MISSING",
+          "scope": "prd",
+          "field": "intents"
+        }
+      ]
+    },
+    {
+      "prd": "prd-tc_wf_publish_states.json",
+      "blockedByPreflightThisRound": true,
+      "violations": [
+        {
+          "code": "STORIES_EMPTY",
+          "scope": "prd"
+        },
+        {
+          "code": "SV2_FIELD_MISSING",
+          "scope": "prd",
+          "field": "intents"
+        }
+      ]
+    },
+    {
+      "prd": "prd-teachin-clear-fill-admission.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s1-clear-fill-semantics)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s1-clear-fill-semantics)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s2-adjacent-zero-regression)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s2-adjacent-zero-regression)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s3-full-matrix-and-terms)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s3-full-matrix-and-terms)",
+          "field": "lane"
+        }
+      ]
+    },
+    {
+      "prd": "prd-teachin-cycle-evidence.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s1-evidence-sidecar-golden)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s1-evidence-sidecar-golden)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s2-adjacent-zero-regression)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s2-adjacent-zero-regression)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s3-repo-drift-and-terms)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s3-repo-drift-and-terms)",
+          "field": "lane"
+        }
+      ]
+    },
+    {
+      "prd": "prd-teachin-nav-expansion-recipe.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s1-nav-expansion-recipe)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s1-nav-expansion-recipe)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s2-adjacent-zero-regression)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s2-adjacent-zero-regression)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s3-repo-drift-and-terms)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s3-repo-drift-and-terms)",
+          "field": "lane"
+        }
+      ]
+    },
+    {
+      "prd": "prd-teachin-observation-sidecar.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[2] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-teachin-raw-actionability-closure.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s1-seam-fix-golden)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[0](id=s1-seam-fix-golden)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s2-adjacent-zero-regression)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[1](id=s2-adjacent-zero-regression)",
+          "field": "lane"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s3-repo-drift-and-terms)",
+          "field": "desc"
+        },
+        {
+          "code": "STORY_FIELD_MISSING",
+          "scope": "stories[2](id=s3-repo-drift-and-terms)",
+          "field": "lane"
+        }
+      ]
+    },
+    {
+      "prd": "prd-teachin-semantic-lock-runtime-discrimination-successor.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "LANE_INVALID",
+          "scope": "stories[0](id=s1-runtime-discrimination-forward-spec)",
+          "value": "forward-spec"
+        }
+      ]
+    },
+    {
+      "prd": "prd-teachin-semantic-lock.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[2] route=machine"
+        }
+      ]
+    },
+    {
+      "prd": "prd-workflow-delete-by-name-hardening.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "SV2_FIELD_MISSING",
+          "scope": "prd",
+          "field": "caseId"
+        },
+        {
+          "code": "SV2_FIELD_MISSING",
+          "scope": "prd",
+          "field": "intents"
+        }
+      ]
+    },
+    {
+      "prd": "prd-worktree-baton.json",
+      "blockedByPreflightThisRound": false,
+      "violations": [
+        {
+          "code": "OBSERVABILITY_SHAPE",
+          "scope": "prd",
+          "detail": "item[2] route=machine"
+        }
+      ]
+    }
+  ]
+}
