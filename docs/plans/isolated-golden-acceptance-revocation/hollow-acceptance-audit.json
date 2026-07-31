@@ -1,0 +1,3625 @@
+{
+  "schemaVersion": 1,
+  "title": "空心验收审计清单（b3bee6b 隔离重裁影响面冻结件）",
+  "frozenAt": "2026-07-31",
+  "contract": "hollow-acceptance-audit-and-gate-nails",
+  "step": "顾问推荐顺序第一步：只冻结事实，零处置",
+  "provenance": {
+    "baseline": "b3bee6b^",
+    "head": "HEAD（工作树当前值）",
+    "method": "git show b3bee6b^:loop/prd-*.json 与工作树逐 story 比对；隔离件闭集取 source-obligations.json 的 sourceGolden 去重",
+    "isolatedExecutableClosure": 27,
+    "obligationLedger": "tests/_golden/fixtures/hermetic-golden-retired/source-obligations.json",
+    "isolationLedger": "tests/_golden/fixtures/hermetic-golden-retired/isolated-browser-obligations.json",
+    "note": "本清单每一格由本代理自 git 与账本取值，未抄顾问结论；与顾问不一致处见各行 note 与配套 md。"
+  },
+  "countsVerifiedIndependently": {
+    "b3bee6b^ -> b3bee6b 影响 story 数": 63,
+    "b3bee6b^ -> b3bee6b 删除的隔离件验收引用数": 168,
+    "b3bee6b^ -> b3bee6b 新增的隔离件验收引用数": 0,
+    "b3bee6b -> HEAD 两端同在 story 的隔离件引用净变化": 0,
+    "当前 passes 为真": 51,
+    "当前 passes 为假": 12,
+    "合法 tier1 白名单（未被 b3bee6b 触碰）": 13,
+    "原子义务总数": 349,
+    "retain-isolated": 239,
+    "survive-unit": 99,
+    "superseded": 11,
+    "retire": 0,
+    "隔离账 coverageRelation=uncertain": 233,
+    "隔离账 coverageRelation=partial": 6,
+    "27 枚源件中同时含 retain-isolated 与 survive-unit 的": 21
+  },
+  "categoryLegend": {
+    "tier1-hollow": "被 b3bee6b 删过隔离件，且当前验收只剩 node bin/casey.mjs selftest --tier1 一条。tier1 只查统一语言注册表、弃用别名、熔断器、门禁翻绿、裁判纯度五件事，与这些 story 的义务无关。",
+    "flow-bridge-insufficient": "被 b3bee6b 删过隔离件，当前验收除 tier1 外只剩 flow-bridge.golden.mjs。生命周期计划自己写明 flow-bridge 不能替代 compile 到 events 或浏览器因果链，故相关但远不足以支撑整条 story 为真。",
+    "mixed": "被 b3bee6b 删过隔离件，同时保有至少一条表面相关的其它残余验收。残余覆盖的充足性本步未核实（未执行任何残余测试）。",
+    "legitimate-tier1": "白名单：b3bee6b 未触碰其验收，前后逐字节相同，义务本就是「新增门面不得破坏确定性内核」。将来加 tier1-only 判据时须显式豁免，否则误伤。"
+  },
+  "disclaimers": [
+    "本步未执行任何 story 的残余验收命令，故 mixed 类的覆盖充足性一律未核实，不得据本清单断言其「没问题」。",
+    "27 枚隔离件在任何后续处置中都不得被写回任何验收面（Steven 2026-07-19 裁定）。",
+    "hermetic-golden-surviving-units 的聚合命令不得挂给本清单任何 story；partial 后继不得当 full 后继。",
+    "obligationMix 的 partialOfRetainIsolated 是 retain-isolated 的子计数，不与之相加。"
+  ],
+  "rows": [
+    {
+      "prd": "loop/prd-drawer-lock-hardening.json",
+      "storyId": "s1-drawer-lock-hardening-e2e",
+      "category": "flow-bridge-insufficient",
+      "acceptanceBefore": [
+        "DLH_GOLDEN_PART=base node tests/_golden/drawer-lock-hardening.golden.mjs",
+        "DLH_GOLDEN_PART=review node tests/_golden/drawer-lock-hardening.golden.mjs",
+        "node tests/_golden/wf-set-node-field.golden.mjs",
+        "node tests/_golden/wf-select-node-dropdown.golden.mjs",
+        "node tests/_golden/replay-nth-visible-hardening.golden.mjs",
+        "node tests/_golden/wf-open-node.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/flow-bridge.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "DLH_GOLDEN_PART=base node tests/_golden/drawer-lock-hardening.golden.mjs",
+        "DLH_GOLDEN_PART=review node tests/_golden/drawer-lock-hardening.golden.mjs",
+        "node tests/_golden/wf-set-node-field.golden.mjs",
+        "node tests/_golden/wf-select-node-dropdown.golden.mjs",
+        "node tests/_golden/replay-nth-visible-hardening.golden.mjs",
+        "node tests/_golden/wf-open-node.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T18:26:22.900Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/drawer-lock-hardening.golden.mjs",
+          "tests/_golden/replay-nth-visible-hardening.golden.mjs",
+          "tests/_golden/wf-add-node.golden.mjs",
+          "tests/_golden/wf-connect-nodes.golden.mjs",
+          "tests/_golden/wf-open-node.golden.mjs",
+          "tests/_golden/wf-open-smoke.golden.mjs",
+          "tests/_golden/wf-select-node-dropdown.golden.mjs",
+          "tests/_golden/wf-set-node-field.golden.mjs"
+        ],
+        "survive-unit": 16,
+        "retain-isolated": 94,
+        "superseded": 11,
+        "partialOfRetainIsolated": 6,
+        "total": 121,
+        "byGolden": {
+          "tests/_golden/drawer-lock-hardening.golden.mjs": {
+            "survive-unit": 6,
+            "retain-isolated": 39,
+            "superseded": 0,
+            "partial": 6
+          },
+          "tests/_golden/replay-nth-visible-hardening.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 4,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-add-node.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 9,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-connect-nodes.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 7,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-open-node.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 8,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-open-smoke.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 1,
+            "partial": 0
+          },
+          "tests/_golden/wf-select-node-dropdown.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 11,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-set-node-field.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 12,
+            "superseded": 2,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-ingest.json",
+      "storyId": "s2-ripple-locks",
+      "category": "flow-bridge-insufficient",
+      "acceptanceBefore": [
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/flow-bridge.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:50:02.623Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs",
+          "tests/_golden/wf-history-version.golden.mjs",
+          "tests/_golden/wf-publish-states.golden.mjs"
+        ],
+        "survive-unit": 12,
+        "retain-isolated": 29,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 41,
+        "byGolden": {
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs": {
+            "survive-unit": 5,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-history-version.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 11,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-publish-states.golden.mjs": {
+            "survive-unit": 6,
+            "retain-isolated": 11,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": "分歧：顾问把本条归入 mixed（26 条名单内），但按残余验收面机械判据（除 tier1 外只剩 flow-bridge.golden.mjs）它与顾问自己的 flow-bridge-insufficient 六条同形。顾问的六条用的是「story 描述明确承诺浏览器 E2E」这一语义判据，非机械判据。"
+    },
+    {
+      "prd": "loop/prd-replay-nth-visible-hardening.json",
+      "storyId": "s2-resign-and-regression",
+      "category": "flow-bridge-insufficient",
+      "acceptanceBefore": [
+        "node tests/_golden/wf-select-node-dropdown.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/wf-open-node.golden.mjs",
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/wf-select-node-dropdown.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/wf-open-node.golden.mjs",
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T18:27:04.320Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/e2e-chain.golden.mjs",
+          "tests/_golden/p3-compile.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs",
+          "tests/_golden/wf-add-node.golden.mjs",
+          "tests/_golden/wf-connect-nodes.golden.mjs",
+          "tests/_golden/wf-open-node.golden.mjs",
+          "tests/_golden/wf-open-smoke.golden.mjs",
+          "tests/_golden/wf-select-node-dropdown.golden.mjs"
+        ],
+        "survive-unit": 13,
+        "retain-isolated": 73,
+        "superseded": 9,
+        "partialOfRetainIsolated": 0,
+        "total": 95,
+        "byGolden": {
+          "tests/_golden/e2e-chain.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p3-compile.golden.mjs": {
+            "survive-unit": 4,
+            "retain-isolated": 10,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-add-node.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 9,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-connect-nodes.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 7,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-open-node.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 8,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-open-smoke.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 1,
+            "partial": 0
+          },
+          "tests/_golden/wf-select-node-dropdown.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 11,
+            "superseded": 2,
+            "partial": 0
+          }
+        }
+      },
+      "note": "分歧：顾问把本条归入 mixed（26 条名单内），但按残余验收面机械判据（除 tier1 外只剩 flow-bridge.golden.mjs）它与顾问自己的 flow-bridge-insufficient 六条同形。顾问的六条用的是「story 描述明确承诺浏览器 E2E」这一语义判据，非机械判据。"
+    },
+    {
+      "prd": "loop/prd-wf-add-node.json",
+      "storyId": "s1-atom-and-flip",
+      "category": "flow-bridge-insufficient",
+      "acceptanceBefore": [
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/flow-bridge.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:55:46.084Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/wf-add-node.golden.mjs",
+          "tests/_golden/wf-open-smoke.golden.mjs"
+        ],
+        "survive-unit": 3,
+        "retain-isolated": 13,
+        "superseded": 3,
+        "partialOfRetainIsolated": 0,
+        "total": 19,
+        "byGolden": {
+          "tests/_golden/wf-add-node.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 9,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-open-smoke.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 1,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-wf-connect-nodes.json",
+      "storyId": "s1-connect-atom-and-coverage",
+      "category": "flow-bridge-insufficient",
+      "acceptanceBefore": [
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/flow-bridge.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:56:12.180Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/wf-add-node.golden.mjs",
+          "tests/_golden/wf-connect-nodes.golden.mjs",
+          "tests/_golden/wf-open-smoke.golden.mjs"
+        ],
+        "survive-unit": 5,
+        "retain-isolated": 20,
+        "superseded": 5,
+        "partialOfRetainIsolated": 0,
+        "total": 30,
+        "byGolden": {
+          "tests/_golden/wf-add-node.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 9,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-connect-nodes.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 7,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-open-smoke.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 1,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-wf-open-node.json",
+      "storyId": "s1-opennode-atom-e2e",
+      "category": "flow-bridge-insufficient",
+      "acceptanceBefore": [
+        "node tests/_golden/wf-open-node.golden.mjs",
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/flow-bridge.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/wf-open-node.golden.mjs",
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:56:36.586Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/wf-add-node.golden.mjs",
+          "tests/_golden/wf-connect-nodes.golden.mjs",
+          "tests/_golden/wf-open-node.golden.mjs",
+          "tests/_golden/wf-open-smoke.golden.mjs"
+        ],
+        "survive-unit": 6,
+        "retain-isolated": 28,
+        "superseded": 7,
+        "partialOfRetainIsolated": 0,
+        "total": 41,
+        "byGolden": {
+          "tests/_golden/wf-add-node.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 9,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-connect-nodes.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 7,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-open-node.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 8,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-open-smoke.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 1,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-wf-open-smoke.json",
+      "storyId": "s2-ripple-flip-and-locks",
+      "category": "flow-bridge-insufficient",
+      "acceptanceBefore": [
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/flow-bridge.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:57:06.882Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/e2e-chain.golden.mjs",
+          "tests/_golden/p3-compile.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs"
+        ],
+        "survive-unit": 5,
+        "retain-isolated": 34,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 39,
+        "byGolden": {
+          "tests/_golden/e2e-chain.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p3-compile.golden.mjs": {
+            "survive-unit": 4,
+            "retain-isolated": 10,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": "分歧：顾问把本条归入 mixed（26 条名单内），但按残余验收面机械判据（除 tier1 外只剩 flow-bridge.golden.mjs）它与顾问自己的 flow-bridge-insufficient 六条同形。顾问的六条用的是「story 描述明确承诺浏览器 E2E」这一语义判据，非机械判据。"
+    },
+    {
+      "prd": "loop/prd-wf-select-node-dropdown.json",
+      "storyId": "s1-selectnodedropdown-atom-e2e",
+      "category": "flow-bridge-insufficient",
+      "acceptanceBefore": [
+        "node tests/_golden/wf-select-node-dropdown.golden.mjs",
+        "node tests/_golden/wf-open-node.golden.mjs",
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/flow-bridge.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/wf-select-node-dropdown.golden.mjs",
+        "node tests/_golden/wf-open-node.golden.mjs",
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:57:26.091Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/wf-add-node.golden.mjs",
+          "tests/_golden/wf-connect-nodes.golden.mjs",
+          "tests/_golden/wf-open-node.golden.mjs",
+          "tests/_golden/wf-open-smoke.golden.mjs",
+          "tests/_golden/wf-select-node-dropdown.golden.mjs"
+        ],
+        "survive-unit": 8,
+        "retain-isolated": 39,
+        "superseded": 9,
+        "partialOfRetainIsolated": 0,
+        "total": 56,
+        "byGolden": {
+          "tests/_golden/wf-add-node.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 9,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-connect-nodes.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 7,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-open-node.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 8,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-open-smoke.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 1,
+            "partial": 0
+          },
+          "tests/_golden/wf-select-node-dropdown.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 11,
+            "superseded": 2,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-wf-set-node-field.json",
+      "storyId": "s1-setnodefield-atom-e2e",
+      "category": "flow-bridge-insufficient",
+      "acceptanceBefore": [
+        "node tests/_golden/wf-set-node-field.golden.mjs",
+        "node tests/_golden/wf-select-node-dropdown.golden.mjs",
+        "node tests/_golden/wf-open-node.golden.mjs",
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/flow-bridge.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/wf-set-node-field.golden.mjs",
+        "node tests/_golden/wf-select-node-dropdown.golden.mjs",
+        "node tests/_golden/wf-open-node.golden.mjs",
+        "node tests/_golden/wf-connect-nodes.golden.mjs",
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:57:52.261Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/wf-add-node.golden.mjs",
+          "tests/_golden/wf-connect-nodes.golden.mjs",
+          "tests/_golden/wf-open-node.golden.mjs",
+          "tests/_golden/wf-open-smoke.golden.mjs",
+          "tests/_golden/wf-select-node-dropdown.golden.mjs",
+          "tests/_golden/wf-set-node-field.golden.mjs"
+        ],
+        "survive-unit": 10,
+        "retain-isolated": 51,
+        "superseded": 11,
+        "partialOfRetainIsolated": 0,
+        "total": 72,
+        "byGolden": {
+          "tests/_golden/wf-add-node.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 9,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-connect-nodes.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 7,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-open-node.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 8,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-open-smoke.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 1,
+            "partial": 0
+          },
+          "tests/_golden/wf-select-node-dropdown.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 11,
+            "superseded": 2,
+            "partial": 0
+          },
+          "tests/_golden/wf-set-node-field.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 12,
+            "superseded": 2,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-casey-demo.json",
+      "storyId": "s2-tier1-regression",
+      "category": "legitimate-tier1",
+      "acceptanceBefore": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-09T09:54:12.961Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "不适用（本 story 未被删任何隔离件）"
+      },
+      "note": "白名单：b3bee6b 未动其 acceptance（removedAll 为空、前后逐字节相同），义务本就是「新增门面不得破坏确定性内核」。将来加 tier1-only 判据时须显式豁免，否则误伤。"
+    },
+    {
+      "prd": "loop/prd-gen-prompts.json",
+      "storyId": "s2-tier1-regression",
+      "category": "legitimate-tier1",
+      "acceptanceBefore": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-14T02:26:06.915Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "不适用（本 story 未被删任何隔离件）"
+      },
+      "note": "白名单：b3bee6b 未动其 acceptance（removedAll 为空、前后逐字节相同），义务本就是「新增门面不得破坏确定性内核」。将来加 tier1-only 判据时须显式豁免，否则误伤。"
+    },
+    {
+      "prd": "loop/prd-ingest-scaffold.json",
+      "storyId": "s2-tier1-regression",
+      "category": "legitimate-tier1",
+      "acceptanceBefore": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-09T09:50:06.507Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "不适用（本 story 未被删任何隔离件）"
+      },
+      "note": "白名单：b3bee6b 未动其 acceptance（removedAll 为空、前后逐字节相同），义务本就是「新增门面不得破坏确定性内核」。将来加 tier1-only 判据时须显式豁免，否则误伤。"
+    },
+    {
+      "prd": "loop/prd-loop-kit-extract.json",
+      "storyId": "s5-tier1-regression",
+      "category": "legitimate-tier1",
+      "acceptanceBefore": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-13T20:11:39.069Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "不适用（本 story 未被删任何隔离件）"
+      },
+      "note": "白名单：b3bee6b 未动其 acceptance（removedAll 为空、前后逐字节相同），义务本就是「新增门面不得破坏确定性内核」。将来加 tier1-only 判据时须显式豁免，否则误伤。"
+    },
+    {
+      "prd": "loop/prd-ratchet-reverse-index.json",
+      "storyId": "s2-regression",
+      "category": "legitimate-tier1",
+      "acceptanceBefore": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-13T06:34:47.566Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "不适用（本 story 未被删任何隔离件）"
+      },
+      "note": "白名单：b3bee6b 未动其 acceptance（removedAll 为空、前后逐字节相同），义务本就是「新增门面不得破坏确定性内核」。将来加 tier1-only 判据时须显式豁免，否则误伤。"
+    },
+    {
+      "prd": "loop/prd-record-capture.json",
+      "storyId": "s2-tier1-regression",
+      "category": "legitimate-tier1",
+      "acceptanceBefore": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-08T11:07:04.640Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "不适用（本 story 未被删任何隔离件）"
+      },
+      "note": "白名单：b3bee6b 未动其 acceptance（removedAll 为空、前后逐字节相同），义务本就是「新增门面不得破坏确定性内核」。将来加 tier1-only 判据时须显式豁免，否则误伤。"
+    },
+    {
+      "prd": "loop/prd-record-distill.json",
+      "storyId": "s2-tier1-regression",
+      "category": "legitimate-tier1",
+      "acceptanceBefore": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:52:40.625Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "不适用（本 story 未被删任何隔离件）"
+      },
+      "note": "白名单：b3bee6b 未动其 acceptance（removedAll 为空、前后逐字节相同），义务本就是「新增门面不得破坏确定性内核」。将来加 tier1-only 判据时须显式豁免，否则误伤。"
+    },
+    {
+      "prd": "loop/prd-record-intake.json",
+      "storyId": "s2-tier1-regression",
+      "category": "legitimate-tier1",
+      "acceptanceBefore": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-18T04:42:56.155Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "不适用（本 story 未被删任何隔离件）"
+      },
+      "note": "白名单：b3bee6b 未动其 acceptance（removedAll 为空、前后逐字节相同），义务本就是「新增门面不得破坏确定性内核」。将来加 tier1-only 判据时须显式豁免，否则误伤。"
+    },
+    {
+      "prd": "loop/prd-report-cleanup-evidence.json",
+      "storyId": "s2-tier1-regression",
+      "category": "legitimate-tier1",
+      "acceptanceBefore": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-08T12:41:07.609Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "不适用（本 story 未被删任何隔离件）"
+      },
+      "note": "白名单：b3bee6b 未动其 acceptance（removedAll 为空、前后逐字节相同），义务本就是「新增门面不得破坏确定性内核」。将来加 tier1-only 判据时须显式豁免，否则误伤。"
+    },
+    {
+      "prd": "loop/prd-report-nl-atomic.json",
+      "storyId": "s2-tier1-regression",
+      "category": "legitimate-tier1",
+      "acceptanceBefore": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-08T11:55:35.253Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "不适用（本 story 未被删任何隔离件）"
+      },
+      "note": "白名单：b3bee6b 未动其 acceptance（removedAll 为空、前后逐字节相同），义务本就是「新增门面不得破坏确定性内核」。将来加 tier1-only 判据时须显式豁免，否则误伤。"
+    },
+    {
+      "prd": "loop/prd-report-video-block.json",
+      "storyId": "s2-tier1-regression",
+      "category": "legitimate-tier1",
+      "acceptanceBefore": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-08T12:25:11.298Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "不适用（本 story 未被删任何隔离件）"
+      },
+      "note": "白名单：b3bee6b 未动其 acceptance（removedAll 为空、前后逐字节相同），义务本就是「新增门面不得破坏确定性内核」。将来加 tier1-only 判据时须显式豁免，否则误伤。"
+    },
+    {
+      "prd": "loop/prd-report-workflow-structure.json",
+      "storyId": "s2-tier1-regression",
+      "category": "legitimate-tier1",
+      "acceptanceBefore": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-08T13:54:34.216Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "不适用（本 story 未被删任何隔离件）"
+      },
+      "note": "白名单：b3bee6b 未动其 acceptance（removedAll 为空、前后逐字节相同），义务本就是「新增门面不得破坏确定性内核」。将来加 tier1-only 判据时须显式豁免，否则误伤。"
+    },
+    {
+      "prd": "loop/prd-worktree-baton.json",
+      "storyId": "s2-tier1-regression",
+      "category": "legitimate-tier1",
+      "acceptanceBefore": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-09T05:38:26.967Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "不适用（本 story 未被删任何隔离件）"
+      },
+      "note": "白名单：b3bee6b 未动其 acceptance（removedAll 为空、前后逐字节相同），义务本就是「新增门面不得破坏确定性内核」。将来加 tier1-only 判据时须显式豁免，否则误伤。"
+    },
+    {
+      "prd": "loop/prd-btn-enable-ops.json",
+      "storyId": "s2-ripple-flip-and-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs",
+        "node tests/_golden/p4-drafter.golden.mjs",
+        "node tests/_golden/p2-check-vocab.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p4-drafter.golden.mjs",
+        "node tests/_golden/p2-check-vocab.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-06T18:06:28.094Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/e2e-chain.golden.mjs",
+          "tests/_golden/kinds-harden.golden.mjs",
+          "tests/_golden/wf-history-version.golden.mjs",
+          "tests/_golden/wf-publish-states.golden.mjs"
+        ],
+        "survive-unit": 11,
+        "retain-isolated": 31,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 42,
+        "byGolden": {
+          "tests/_golden/e2e-chain.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/kinds-harden.golden.mjs": {
+            "survive-unit": 3,
+            "retain-isolated": 2,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-history-version.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 11,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-publish-states.golden.mjs": {
+            "survive-unit": 6,
+            "retain-isolated": 11,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-caseid-echo-mask.json",
+      "storyId": "s2-ripple-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/draft-cli.golden.mjs",
+        "node tests/_golden/compile-caseid-shape.golden.mjs",
+        "node tests/_golden/p2-sign.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/draft-cli.golden.mjs",
+        "node tests/_golden/compile-caseid-shape.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p2-sign.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:45:29.636Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/p2-sign.golden.mjs",
+          "tests/_golden/p3-compile.golden.mjs"
+        ],
+        "survive-unit": 25,
+        "retain-isolated": 12,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 37,
+        "byGolden": {
+          "tests/_golden/p2-sign.golden.mjs": {
+            "survive-unit": 21,
+            "retain-isolated": 2,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p3-compile.golden.mjs": {
+            "survive-unit": 4,
+            "retain-isolated": 10,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-chief-bringup.json",
+      "storyId": "s1-bringup-four-fixes",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs"
+      ],
+      "currentPasses": false,
+      "evidence": "",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs"
+        ],
+        "survive-unit": 5,
+        "retain-isolated": 7,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 12,
+        "byGolden": {
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs": {
+            "survive-unit": 5,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": "当前 passes=false，不在 51 条内，收进清单仅为闭合 63 条影响面。"
+    },
+    {
+      "prd": "loop/prd-chiefcomplaint-smoke.json",
+      "storyId": "s2-ripple-and-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T18:26:00.664Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/kinds-harden.golden.mjs",
+          "tests/_golden/layer3-wiring.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs",
+          "tests/_golden/run-history.golden.mjs"
+        ],
+        "survive-unit": 4,
+        "retain-isolated": 45,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 49,
+        "byGolden": {
+          "tests/_golden/kinds-harden.golden.mjs": {
+            "survive-unit": 3,
+            "retain-isolated": 2,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/layer3-wiring.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 22,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/run-history.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-compile-caseid-shape.json",
+      "storyId": "s2-regression-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/p2-verdict.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p2-verdict.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-03T02:57:18.287Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs",
+          "tests/_golden/p3-compile.golden.mjs"
+        ],
+        "survive-unit": 9,
+        "retain-isolated": 17,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 26,
+        "byGolden": {
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs": {
+            "survive-unit": 5,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p3-compile.golden.mjs": {
+            "survive-unit": 4,
+            "retain-isolated": 10,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-cred-route-mask.json",
+      "storyId": "s1-mask-at-source",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/cred-route-mask.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/cred-route-mask.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-03T05:20:48.836Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs"
+        ],
+        "survive-unit": 5,
+        "retain-isolated": 7,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 12,
+        "byGolden": {
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs": {
+            "survive-unit": 5,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-drawer-lock-hardening.json",
+      "storyId": "s2-regression-and-selftest",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/report-workflow-structure.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/report-workflow-structure.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T18:26:28.912Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/e2e-chain.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs"
+        ],
+        "survive-unit": 1,
+        "retain-isolated": 24,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 25,
+        "byGolden": {
+          "tests/_golden/e2e-chain.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-flow-bridge.json",
+      "storyId": "s2-ripple-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs"
+      ],
+      "currentPasses": false,
+      "evidence": "",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs",
+          "tests/_golden/p3-compile.golden.mjs",
+          "tests/_golden/wf-history-version.golden.mjs",
+          "tests/_golden/wf-publish-states.golden.mjs"
+        ],
+        "survive-unit": 16,
+        "retain-isolated": 39,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 55,
+        "byGolden": {
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs": {
+            "survive-unit": 5,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p3-compile.golden.mjs": {
+            "survive-unit": 4,
+            "retain-isolated": 10,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-history-version.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 11,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-publish-states.golden.mjs": {
+            "survive-unit": 6,
+            "retain-isolated": 11,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": "当前 passes=false，不在 51 条内，收进清单仅为闭合 63 条影响面。"
+    },
+    {
+      "prd": "loop/prd-kinds-harden.json",
+      "storyId": "s2-ripple-and-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p4-drafter.golden.mjs",
+        "node tests/_golden/draft-cli.golden.mjs",
+        "node tests/_golden/report-fidelity.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p4-drafter.golden.mjs",
+        "node tests/_golden/draft-cli.golden.mjs",
+        "node tests/_golden/report-fidelity.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-03T07:15:39.002Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/p5-replay.golden.mjs"
+        ],
+        "survive-unit": 0,
+        "retain-isolated": 17,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 17,
+        "byGolden": {
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-layer3-wiring.json",
+      "storyId": "s1-layer3-wiring",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/layer3-wiring.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/layer3-wiring.golden.mjs"
+      ],
+      "currentPasses": false,
+      "evidence": "",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/layer3-wiring.golden.mjs"
+        ],
+        "survive-unit": 0,
+        "retain-isolated": 22,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 22,
+        "byGolden": {
+          "tests/_golden/layer3-wiring.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 22,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": "当前 passes=false，不在 51 条内，收进清单仅为闭合 63 条影响面。"
+    },
+    {
+      "prd": "loop/prd-login-traffic-drop.json",
+      "storyId": "s1-login-drop-and-host-strip",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/replay-login-bootstrap.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/replay-login-bootstrap.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs"
+      ],
+      "currentPasses": false,
+      "evidence": "",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs",
+          "tests/_golden/replay-login-bootstrap.golden.mjs"
+        ],
+        "survive-unit": 5,
+        "retain-isolated": 15,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 20,
+        "byGolden": {
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs": {
+            "survive-unit": 5,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/replay-login-bootstrap.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 8,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": "当前 passes=false，不在 51 条内，收进清单仅为闭合 63 条影响面。"
+    },
+    {
+      "prd": "loop/prd-noerrenv-absence.json",
+      "storyId": "s1-absence-semantics",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-09T10:24:31.070Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/p5-replay.golden.mjs"
+        ],
+        "survive-unit": 0,
+        "retain-isolated": 17,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 17,
+        "byGolden": {
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-noerrenv-absence.json",
+      "storyId": "s2-regression-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p4-drafter.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p4-drafter.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p3-compile.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-09T10:25:50.738Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/p3-compile.golden.mjs"
+        ],
+        "survive-unit": 4,
+        "retain-isolated": 10,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 14,
+        "byGolden": {
+          "tests/_golden/p3-compile.golden.mjs": {
+            "survive-unit": 4,
+            "retain-isolated": 10,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-output-seal.json",
+      "storyId": "s1-output-seal",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/output-seal.golden.mjs",
+        "node bin/casey.mjs selftest --tier1",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/p2-sign.golden.mjs",
+        "node tests/_golden/draft-cli.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/caseid-echo-mask.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/output-seal.golden.mjs",
+        "node bin/casey.mjs selftest --tier1",
+        "node tests/_golden/draft-cli.golden.mjs",
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/caseid-echo-mask.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/p2-sign.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-07T07:52:59.417Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/e2e-chain.golden.mjs",
+          "tests/_golden/p2-sign.golden.mjs",
+          "tests/_golden/p3-compile.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs"
+        ],
+        "survive-unit": 26,
+        "retain-isolated": 36,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 62,
+        "byGolden": {
+          "tests/_golden/e2e-chain.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p2-sign.golden.mjs": {
+            "survive-unit": 21,
+            "retain-isolated": 2,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p3-compile.golden.mjs": {
+            "survive-unit": 4,
+            "retain-isolated": 10,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-p3-compile.json",
+      "storyId": "s2-regression-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p7-credgate-coverage.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p7-credgate-coverage.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-24T03:25:16.148Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/p5-replay.golden.mjs"
+        ],
+        "survive-unit": 0,
+        "retain-isolated": 17,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 17,
+        "byGolden": {
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-p4-drafter.json",
+      "storyId": "s2-regression-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-03T07:16:22.321Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/p5-replay.golden.mjs"
+        ],
+        "survive-unit": 0,
+        "retain-isolated": 17,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 17,
+        "byGolden": {
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-p5-replay.json",
+      "storyId": "s1-replay",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs"
+      ],
+      "currentPasses": false,
+      "evidence": "",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/p5-replay.golden.mjs"
+        ],
+        "survive-unit": 0,
+        "retain-isolated": 17,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 17,
+        "byGolden": {
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": "当前 passes=false，不在 51 条内，收进清单仅为闭合 63 条影响面。"
+    },
+    {
+      "prd": "loop/prd-plan-debt-sweep.json",
+      "storyId": "s2-ripple-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/p2-sign.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p2-sign.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-06T18:49:51.933Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/e2e-chain.golden.mjs",
+          "tests/_golden/p2-sign.golden.mjs",
+          "tests/_golden/p3-compile.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs"
+        ],
+        "survive-unit": 26,
+        "retain-isolated": 36,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 62,
+        "byGolden": {
+          "tests/_golden/e2e-chain.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p2-sign.golden.mjs": {
+            "survive-unit": 21,
+            "retain-isolated": 2,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p3-compile.golden.mjs": {
+            "survive-unit": 4,
+            "retain-isolated": 10,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-regress-promptset.json",
+      "storyId": "s2-regression-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/report-fidelity.golden.mjs",
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/p2-verdict.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/report-fidelity.golden.mjs",
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/p2-verdict.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-14T02:34:06.195Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs"
+        ],
+        "survive-unit": 5,
+        "retain-isolated": 24,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 29,
+        "byGolden": {
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs": {
+            "survive-unit": 5,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-replay-login-bootstrap.json",
+      "storyId": "s2-regression-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-06T06:43:55.450Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/p3-compile.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs"
+        ],
+        "survive-unit": 4,
+        "retain-isolated": 27,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 31,
+        "byGolden": {
+          "tests/_golden/p3-compile.golden.mjs": {
+            "survive-unit": 4,
+            "retain-isolated": 10,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-replay-nth-visible-hardening.json",
+      "storyId": "s1-three-fixes-red-golden",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/replay-nth-visible-hardening.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/replay-nth-visible-hardening.golden.mjs"
+      ],
+      "currentPasses": false,
+      "evidence": "",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/replay-nth-visible-hardening.golden.mjs"
+        ],
+        "survive-unit": 0,
+        "retain-isolated": 4,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 4,
+        "byGolden": {
+          "tests/_golden/replay-nth-visible-hardening.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 4,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": "当前 passes=false，不在 51 条内，收进清单仅为闭合 63 条影响面。"
+    },
+    {
+      "prd": "loop/prd-replay-settle-mount.json",
+      "storyId": "s1-settle-red-golden",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/replay-settle-mount.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/replay-settle-mount.golden.mjs"
+      ],
+      "currentPasses": false,
+      "evidence": "",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/replay-settle-mount.golden.mjs"
+        ],
+        "survive-unit": 9,
+        "retain-isolated": 7,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 16,
+        "byGolden": {
+          "tests/_golden/replay-settle-mount.golden.mjs": {
+            "survive-unit": 9,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": "当前 passes=false，不在 51 条内，收进清单仅为闭合 63 条影响面。"
+    },
+    {
+      "prd": "loop/prd-replay-settle-mount.json",
+      "storyId": "s2-regression-and-resign",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/replay-nth-visible-hardening.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/wf-open-smoke.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/replay-nth-visible-hardening.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs"
+      ],
+      "currentPasses": false,
+      "evidence": "",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/e2e-chain.golden.mjs",
+          "tests/_golden/kinds-harden.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs",
+          "tests/_golden/replay-nth-visible-hardening.golden.mjs",
+          "tests/_golden/run-history.golden.mjs",
+          "tests/_golden/wf-open-smoke.golden.mjs",
+          "tests/_golden/wf-publish-states.golden.mjs"
+        ],
+        "survive-unit": 12,
+        "retain-isolated": 49,
+        "superseded": 1,
+        "partialOfRetainIsolated": 0,
+        "total": 62,
+        "byGolden": {
+          "tests/_golden/e2e-chain.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/kinds-harden.golden.mjs": {
+            "survive-unit": 3,
+            "retain-isolated": 2,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/replay-nth-visible-hardening.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 4,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/run-history.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-open-smoke.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 1,
+            "partial": 0
+          },
+          "tests/_golden/wf-publish-states.golden.mjs": {
+            "survive-unit": 6,
+            "retain-isolated": 11,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": "当前 passes=false，不在 51 条内，收进清单仅为闭合 63 条影响面。"
+    },
+    {
+      "prd": "loop/prd-replay-video.json",
+      "storyId": "s2-ripple-and-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs",
+        "node tests/_golden/layer3-wiring-coverage.golden.mjs",
+        "node tests/_golden/replay-login-bootstrap.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/report-diagnostics.golden.mjs",
+        "node tests/_golden/report-fidelity.golden.mjs",
+        "node tests/_golden/cred-route-mask.golden.mjs",
+        "node tests/_golden/p7-credgate-coverage.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/layer3-wiring-coverage.golden.mjs",
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/report-fidelity.golden.mjs",
+        "node tests/_golden/cred-route-mask.golden.mjs",
+        "node tests/_golden/p7-credgate-coverage.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs",
+        "node tests/_golden/replay-login-bootstrap.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/report-diagnostics.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-03T11:44:10.986Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs",
+          "tests/_golden/layer3-wiring.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs",
+          "tests/_golden/replay-login-bootstrap.golden.mjs",
+          "tests/_golden/report-diagnostics.golden.mjs",
+          "tests/_golden/run-history.golden.mjs",
+          "tests/_golden/wf-history-version.golden.mjs",
+          "tests/_golden/wf-publish-states.golden.mjs"
+        ],
+        "survive-unit": 24,
+        "retain-isolated": 81,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 105,
+        "byGolden": {
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs": {
+            "survive-unit": 5,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/layer3-wiring.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 22,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/replay-login-bootstrap.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 8,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/report-diagnostics.golden.mjs": {
+            "survive-unit": 11,
+            "retain-isolated": 1,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/run-history.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-history-version.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 11,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-publish-states.golden.mjs": {
+            "survive-unit": 6,
+            "retain-isolated": 11,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-report-diagnostics.json",
+      "storyId": "s2-regression-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/report-fidelity.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/report-fidelity.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-22T02:44:53.097Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs",
+          "tests/_golden/layer3-wiring.golden.mjs",
+          "tests/_golden/run-history.golden.mjs",
+          "tests/_golden/wf-publish-states.golden.mjs"
+        ],
+        "survive-unit": 12,
+        "retain-isolated": 44,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 56,
+        "byGolden": {
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs": {
+            "survive-unit": 5,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/layer3-wiring.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 22,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/run-history.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-publish-states.golden.mjs": {
+            "survive-unit": 6,
+            "retain-isolated": 11,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-report-fidelity.json",
+      "storyId": "s2-regression-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/layer3-wiring-coverage.golden.mjs",
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/layer3-wiring-coverage.golden.mjs",
+        "node tests/_golden/p7-report.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-02T15:38:06.106Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/p5-replay.golden.mjs"
+        ],
+        "survive-unit": 0,
+        "retain-isolated": 17,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 17,
+        "byGolden": {
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-run-history.json",
+      "storyId": "s2-regression-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-03T01:27:34.250Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/kinds-harden.golden.mjs",
+          "tests/_golden/layer3-wiring.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs"
+        ],
+        "survive-unit": 3,
+        "retain-isolated": 41,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 44,
+        "byGolden": {
+          "tests/_golden/kinds-harden.golden.mjs": {
+            "survive-unit": 3,
+            "retain-isolated": 2,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/layer3-wiring.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 22,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-sign.json",
+      "storyId": "s2-ripple-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/replay-video.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/report-diagnostics.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/replay-video.golden.mjs",
+        "node tests/_golden/wf-history-version.golden.mjs",
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/report-diagnostics.golden.mjs"
+      ],
+      "currentPasses": false,
+      "evidence": "",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs",
+          "tests/_golden/kinds-harden.golden.mjs",
+          "tests/_golden/layer3-wiring.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs",
+          "tests/_golden/replay-video.golden.mjs",
+          "tests/_golden/report-diagnostics.golden.mjs",
+          "tests/_golden/run-history.golden.mjs",
+          "tests/_golden/wf-history-version.golden.mjs",
+          "tests/_golden/wf-publish-states.golden.mjs"
+        ],
+        "survive-unit": 28,
+        "retain-isolated": 88,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 116,
+        "byGolden": {
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs": {
+            "survive-unit": 5,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/kinds-harden.golden.mjs": {
+            "survive-unit": 3,
+            "retain-isolated": 2,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/layer3-wiring.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 22,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/replay-video.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 13,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/report-diagnostics.golden.mjs": {
+            "survive-unit": 11,
+            "retain-isolated": 1,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/run-history.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-history-version.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 11,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-publish-states.golden.mjs": {
+            "survive-unit": 6,
+            "retain-isolated": 11,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": "当前 passes=false，不在 51 条内，收进清单仅为闭合 63 条影响面。"
+    },
+    {
+      "prd": "loop/prd-video-login-carry.json",
+      "storyId": "s2-ripple-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/replay-login-bootstrap.golden.mjs",
+        "node tests/_golden/replay-video.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/hermetic-golden-isolation-pending.zero-sut.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/replay-login-bootstrap.golden.mjs",
+        "node tests/_golden/replay-video.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs"
+      ],
+      "currentPasses": false,
+      "evidence": "",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/kinds-harden.golden.mjs",
+          "tests/_golden/replay-login-bootstrap.golden.mjs",
+          "tests/_golden/replay-video.golden.mjs",
+          "tests/_golden/run-history.golden.mjs"
+        ],
+        "survive-unit": 5,
+        "retain-isolated": 27,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 32,
+        "byGolden": {
+          "tests/_golden/kinds-harden.golden.mjs": {
+            "survive-unit": 3,
+            "retain-isolated": 2,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/replay-login-bootstrap.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 8,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/replay-video.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 13,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/run-history.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": "当前 passes=false，不在 51 条内，收进清单仅为闭合 63 条影响面。"
+    },
+    {
+      "prd": "loop/prd-wf-add-node.json",
+      "storyId": "s2-dragto-seams",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/seams-freeze-v2.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/seams-freeze-v2.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:55:47.081Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/p3-compile.golden.mjs",
+          "tests/_golden/run-history.golden.mjs",
+          "tests/_golden/wf-add-node.golden.mjs"
+        ],
+        "survive-unit": 7,
+        "retain-isolated": 23,
+        "superseded": 2,
+        "partialOfRetainIsolated": 0,
+        "total": 32,
+        "byGolden": {
+          "tests/_golden/p3-compile.golden.mjs": {
+            "survive-unit": 4,
+            "retain-isolated": 10,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/run-history.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-add-node.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 9,
+            "superseded": 2,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-wf-history-version.json",
+      "storyId": "s2-regression-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/p4-drafter.golden.mjs",
+        "node tests/_golden/report-diagnostics.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p4-drafter.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/report-diagnostics.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-06T17:49:31.205Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs",
+          "tests/_golden/kinds-harden.golden.mjs",
+          "tests/_golden/report-diagnostics.golden.mjs",
+          "tests/_golden/wf-publish-states.golden.mjs"
+        ],
+        "survive-unit": 25,
+        "retain-isolated": 21,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 46,
+        "byGolden": {
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs": {
+            "survive-unit": 5,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/kinds-harden.golden.mjs": {
+            "survive-unit": 3,
+            "retain-isolated": 2,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/report-diagnostics.golden.mjs": {
+            "survive-unit": 11,
+            "retain-isolated": 1,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-publish-states.golden.mjs": {
+            "survive-unit": 6,
+            "retain-isolated": 11,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-wf-publish-states.json",
+      "storyId": "s2-ripple-and-locks",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/p4-drafter.golden.mjs",
+        "node tests/_golden/report-fidelity.golden.mjs",
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/seams-freeze-v2.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p4-drafter.golden.mjs",
+        "node tests/_golden/report-fidelity.golden.mjs",
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/seams-freeze-v2.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/layer3-wiring.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs"
+      ],
+      "currentPasses": false,
+      "evidence": "",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs",
+          "tests/_golden/kinds-harden.golden.mjs",
+          "tests/_golden/layer3-wiring.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs",
+          "tests/_golden/run-history.golden.mjs"
+        ],
+        "survive-unit": 9,
+        "retain-isolated": 52,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 61,
+        "byGolden": {
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs": {
+            "survive-unit": 5,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/kinds-harden.golden.mjs": {
+            "survive-unit": 3,
+            "retain-isolated": 2,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/layer3-wiring.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 22,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/run-history.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": "当前 passes=false，不在 51 条内，收进清单仅为闭合 63 条影响面。"
+    },
+    {
+      "prd": "loop/prd-wf-select-node-dropdown.json",
+      "storyId": "s2-resign-and-regression",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/seams-freeze-v2.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/seams-freeze-v2.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:57:31.623Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/e2e-chain.golden.mjs",
+          "tests/_golden/p3-compile.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs",
+          "tests/_golden/run-history.golden.mjs"
+        ],
+        "survive-unit": 6,
+        "retain-isolated": 38,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 44,
+        "byGolden": {
+          "tests/_golden/e2e-chain.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p3-compile.golden.mjs": {
+            "survive-unit": 4,
+            "retain-isolated": 10,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/run-history.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-wf-set-node-field.json",
+      "storyId": "s2-resign-and-regression",
+      "category": "mixed",
+      "acceptanceBefore": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs",
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/seams-freeze-v2.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node tests/_golden/p5-replay-coverage.golden.mjs",
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/seams-freeze-v2.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node tests/_golden/run-history.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:57:58.380Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/e2e-chain.golden.mjs",
+          "tests/_golden/p3-compile.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs",
+          "tests/_golden/run-history.golden.mjs"
+        ],
+        "survive-unit": 6,
+        "retain-isolated": 38,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 44,
+        "byGolden": {
+          "tests/_golden/e2e-chain.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p3-compile.golden.mjs": {
+            "survive-unit": 4,
+            "retain-isolated": 10,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/run-history.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-btn-enable-ops.json",
+      "storyId": "s1-enable-ops",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/btn-enable-ops.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/btn-enable-ops.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-06T18:04:26.839Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/btn-enable-ops.golden.mjs"
+        ],
+        "survive-unit": 3,
+        "retain-isolated": 5,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 8,
+        "byGolden": {
+          "tests/_golden/btn-enable-ops.golden.mjs": {
+            "survive-unit": 3,
+            "retain-isolated": 5,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-chiefcomplaint-smoke.json",
+      "storyId": "s1-kinds-and-replay",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/chiefcomplaint-smoke.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T18:25:59.645Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs"
+        ],
+        "survive-unit": 5,
+        "retain-isolated": 7,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 12,
+        "byGolden": {
+          "tests/_golden/chiefcomplaint-smoke.golden.mjs": {
+            "survive-unit": 5,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-e2e-chain.json",
+      "storyId": "s1-chain",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/e2e-chain.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-06T14:04:03.023Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/e2e-chain.golden.mjs"
+        ],
+        "survive-unit": 1,
+        "retain-isolated": 7,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 8,
+        "byGolden": {
+          "tests/_golden/e2e-chain.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-kinds-harden.json",
+      "storyId": "s1-harden-two-kinds",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/kinds-harden.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/kinds-harden.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-03T07:14:52.449Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/kinds-harden.golden.mjs"
+        ],
+        "survive-unit": 3,
+        "retain-isolated": 2,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 5,
+        "byGolden": {
+          "tests/_golden/kinds-harden.golden.mjs": {
+            "survive-unit": 3,
+            "retain-isolated": 2,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-p3-compile.json",
+      "storyId": "s1-compile-pipeline",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p3-compile.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-24T03:25:13.453Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/p3-compile.golden.mjs"
+        ],
+        "survive-unit": 4,
+        "retain-isolated": 10,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 14,
+        "byGolden": {
+          "tests/_golden/p3-compile.golden.mjs": {
+            "survive-unit": 4,
+            "retain-isolated": 10,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-plan-debt-sweep.json",
+      "storyId": "s1-debt-sweep",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/plan-debt-sweep.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/plan-debt-sweep.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-06T18:46:49.203Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/plan-debt-sweep.golden.mjs"
+        ],
+        "survive-unit": 2,
+        "retain-isolated": 2,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 4,
+        "byGolden": {
+          "tests/_golden/plan-debt-sweep.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 2,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-regress-promptset.json",
+      "storyId": "s1-promptset-overlay-aggregate",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/regress-promptset.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/regress-promptset.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-14T02:32:06.424Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/regress-promptset.golden.mjs"
+        ],
+        "survive-unit": 15,
+        "retain-isolated": 2,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 17,
+        "byGolden": {
+          "tests/_golden/regress-promptset.golden.mjs": {
+            "survive-unit": 15,
+            "retain-isolated": 2,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-replay-login-bootstrap.json",
+      "storyId": "s1-login-bootstrap-optin",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/replay-login-bootstrap.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/replay-login-bootstrap.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-06T06:42:23.172Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/replay-login-bootstrap.golden.mjs"
+        ],
+        "survive-unit": 0,
+        "retain-isolated": 8,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 8,
+        "byGolden": {
+          "tests/_golden/replay-login-bootstrap.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 8,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-replay-video.json",
+      "storyId": "s1-video-record-and-report",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/replay-video.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/replay-video.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-03T11:39:18.821Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/replay-video.golden.mjs"
+        ],
+        "survive-unit": 1,
+        "retain-isolated": 13,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 14,
+        "byGolden": {
+          "tests/_golden/replay-video.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 13,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-report-diagnostics.json",
+      "storyId": "s1-diagnostics-render-and-wiring",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/report-diagnostics.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/report-diagnostics.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-22T02:44:51.149Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/report-diagnostics.golden.mjs"
+        ],
+        "survive-unit": 11,
+        "retain-isolated": 1,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 12,
+        "byGolden": {
+          "tests/_golden/report-diagnostics.golden.mjs": {
+            "survive-unit": 11,
+            "retain-isolated": 1,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-run-convention.json",
+      "storyId": "s1-run-convention",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/run-convention.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/run-convention.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-09T10:22:41.055Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/run-convention.golden.mjs"
+        ],
+        "survive-unit": 0,
+        "retain-isolated": 9,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 9,
+        "byGolden": {
+          "tests/_golden/run-convention.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 9,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-run-history.json",
+      "storyId": "s1-produce-and-wire",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/run-history.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/run-history.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-03T01:26:34.421Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/run-history.golden.mjs"
+        ],
+        "survive-unit": 1,
+        "retain-isolated": 4,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 5,
+        "byGolden": {
+          "tests/_golden/run-history.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-sign.json",
+      "storyId": "s1-sign-and-replay-gate",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/p2-sign.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p2-sign.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-06T09:25:03.379Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/p2-sign.golden.mjs"
+        ],
+        "survive-unit": 21,
+        "retain-isolated": 2,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 23,
+        "byGolden": {
+          "tests/_golden/p2-sign.golden.mjs": {
+            "survive-unit": 21,
+            "retain-isolated": 2,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-video-login-carry.json",
+      "storyId": "s1-carry-fix-and-hygiene",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/video-login-carry.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/video-login-carry.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-06T06:40:24.873Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/video-login-carry.golden.mjs"
+        ],
+        "survive-unit": 0,
+        "retain-isolated": 5,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 5,
+        "byGolden": {
+          "tests/_golden/video-login-carry.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 5,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-wf-add-node.json",
+      "storyId": "s3-fixture-and-chain",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/wf-add-node.golden.mjs",
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:55:50.780Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/e2e-chain.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs",
+          "tests/_golden/wf-add-node.golden.mjs"
+        ],
+        "survive-unit": 3,
+        "retain-isolated": 33,
+        "superseded": 2,
+        "partialOfRetainIsolated": 0,
+        "total": 38,
+        "byGolden": {
+          "tests/_golden/e2e-chain.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/wf-add-node.golden.mjs": {
+            "survive-unit": 2,
+            "retain-isolated": 9,
+            "superseded": 2,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-wf-connect-nodes.json",
+      "storyId": "s2-resign-and-regression",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:56:15.661Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/e2e-chain.golden.mjs",
+          "tests/_golden/p3-compile.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs"
+        ],
+        "survive-unit": 5,
+        "retain-isolated": 34,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 39,
+        "byGolden": {
+          "tests/_golden/e2e-chain.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p3-compile.golden.mjs": {
+            "survive-unit": 4,
+            "retain-isolated": 10,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-wf-history-version.json",
+      "storyId": "s1-two-atoms-and-dialog",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/wf-history-version.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/wf-history-version.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-06T17:47:00.376Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/wf-history-version.golden.mjs"
+        ],
+        "survive-unit": 1,
+        "retain-isolated": 11,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 12,
+        "byGolden": {
+          "tests/_golden/wf-history-version.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 11,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-wf-open-node.json",
+      "storyId": "s2-resign-and-regression",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/p5-replay.golden.mjs",
+        "node tests/_golden/e2e-chain.golden.mjs",
+        "node tests/_golden/p3-compile.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:56:40.147Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/e2e-chain.golden.mjs",
+          "tests/_golden/p3-compile.golden.mjs",
+          "tests/_golden/p5-replay.golden.mjs"
+        ],
+        "survive-unit": 5,
+        "retain-isolated": 34,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 39,
+        "byGolden": {
+          "tests/_golden/e2e-chain.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 7,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p3-compile.golden.mjs": {
+            "survive-unit": 4,
+            "retain-isolated": 10,
+            "superseded": 0,
+            "partial": 0
+          },
+          "tests/_golden/p5-replay.golden.mjs": {
+            "survive-unit": 0,
+            "retain-isolated": 17,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-wf-open-smoke.json",
+      "storyId": "s1-open-atoms",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/wf-open-smoke.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/wf-open-smoke.golden.mjs"
+      ],
+      "currentPasses": true,
+      "evidence": "gate@2026-07-21T02:56:45.135Z 全部 acceptance exit 0",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/wf-open-smoke.golden.mjs"
+        ],
+        "survive-unit": 1,
+        "retain-isolated": 4,
+        "superseded": 1,
+        "partialOfRetainIsolated": 0,
+        "total": 6,
+        "byGolden": {
+          "tests/_golden/wf-open-smoke.golden.mjs": {
+            "survive-unit": 1,
+            "retain-isolated": 4,
+            "superseded": 1,
+            "partial": 0
+          }
+        }
+      },
+      "note": ""
+    },
+    {
+      "prd": "loop/prd-wf-publish-states.json",
+      "storyId": "s1-buttonstate-kind-and-capture",
+      "category": "tier1-hollow",
+      "acceptanceBefore": [
+        "node tests/_golden/wf-publish-states.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "acceptanceNow": [
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "removedByIsolation": [
+        "node tests/_golden/wf-publish-states.golden.mjs"
+      ],
+      "currentPasses": false,
+      "evidence": "",
+      "obligationMix": {
+        "status": "已按账取真值",
+        "sources": [
+          "tests/_golden/wf-publish-states.golden.mjs"
+        ],
+        "survive-unit": 6,
+        "retain-isolated": 11,
+        "superseded": 0,
+        "partialOfRetainIsolated": 0,
+        "total": 17,
+        "byGolden": {
+          "tests/_golden/wf-publish-states.golden.mjs": {
+            "survive-unit": 6,
+            "retain-isolated": 11,
+            "superseded": 0,
+            "partial": 0
+          }
+        }
+      },
+      "note": "当前 passes=false，不在 51 条内，收进清单仅为闭合 63 条影响面。"
+    }
+  ]
+}
