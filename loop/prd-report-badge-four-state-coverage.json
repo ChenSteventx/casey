@@ -9,11 +9,11 @@
       "route": "human"
     },
     {
-      "dimension": "未闭合的判别力缺口（route:human，本契约不修，已同步记进两份 amendment）：变异验证 6 中 4 红。把 lib/report.mjs 的 VERDICT_CLS 里 HARNESS_ERROR 与 NEEDS_HUMAN 的 CSS 类改成 pass，金牌仍绿——p7-report 只钉了中文态名、没钉徽章 CSS 类，故这两态的徽章颜色语义仍无判别力：报告可以把「待人裁决」渲成通过绿而门禁全绿。闭它要改冻结金牌本体（另一片换签面），未擅动。casey-demo 确实钉了 class=badge pass，但只覆盖 PASS，且它本身是既有陈旧红。",
+      "dimension": "未闭合的判别力缺口（route:human，本契约不修，已同步记进两份 amendment）：变异验证 6 中 4 红。把 lib/report.mjs 的 VERDICT_CLS 里 HARNESS_ERROR 与 NEEDS_HUMAN 的 CSS 类改成 pass，金牌仍绿——p7-report 只钉了中文态名、没钉徽章 CSS 类，故这两态的徽章颜色语义仍无判别力：报告可以把「待人裁决」渲成通过绿而门禁全绿。闭它要改冻结金牌本体（另一片换签面），未擅动。casey-demo 确实钉了 class=badge pass，但只覆盖 PASS，且它本身是既有陈旧红。【后续收口，2026-07-31 追记】本缺口已由后继契约 report-badge-css-class-discrimination 闭合（提交 4c4bca3，走 prd-p7-report.json 第二笔 checksumAmendment 换签）：p7-report 金牌现加钉徽章 CSS 类与四态色值。独立复核（隔离副本变异，判红判绿只信退出码）：把 VERDICT_CLS 的 HARNESS_ERROR 与 NEEDS_HUMAN 各串成 pass，两次都 exit 1（本条描述的假绿已不复现）。",
       "route": "human"
     },
     {
-      "dimension": "换签人签（ADR-0004，route:human）：loop/prd-p7-report.json 与 loop/prd-seams-freeze.json 各一笔 checksumAmendment，均 PENDING_STEVEN；夹具 sha 1a9e0887… → a9ef3ee1…，原件 gzip 存档回验与原冻结值一致。schema report-model.schema.json 不必改（新步合它现行约束）。",
+      "dimension": "换签人签（ADR-0004，route:human）：loop/prd-p7-report.json 与 loop/prd-seams-freeze.json 各一笔 checksumAmendment，均 PENDING_STEVEN；夹具 sha 1a9e0887… → a9ef3ee1…，原件 gzip 存档回验与原冻结值一致。schema report-model.schema.json 不必改（新步合它现行约束）。【后续收口，2026-07-31 追记】两笔均已落签（提交 5e99862），signedBy 字段如实标注「本字段由 Claude 代填、凭据为会话原话、非 Steven 本人书写」，本条「均 PENDING_STEVEN」的说法已过时。",
       "route": "human"
     }
   ],
