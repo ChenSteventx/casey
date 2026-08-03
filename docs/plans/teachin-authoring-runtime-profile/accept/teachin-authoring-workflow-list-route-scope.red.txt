@@ -1,0 +1,9 @@
+command: node tests/_golden/teachin-authoring-workflow-list-route-scope.zero-sut.golden.mjs
+baseline-production-head: 62bcf46
+test-parent-head: 4c51966
+exit-code: 1
+
+RED  teachin-authoring-workflow-list-route-scope: R1 正确 pathname + scoped agent-card 可见须联合通过: page.url 采样次数=0
+RED  teachin-authoring-workflow-list-route-scope: R2 同源错误 pathname 即使 scoped agent-card 可见也须 blocker: 错误 pathname blocker 数=0
+RED  teachin-authoring-workflow-list-route-scope: R3 page.url 采样异常须 blocker 而非抛穿: page.url 异常通道采样次数=0
+teachin-authoring-workflow-list-route-scope: 0 过 / 3 败
