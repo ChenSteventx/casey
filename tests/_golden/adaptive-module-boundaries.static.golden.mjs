@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // S1/S2 自适应执行核心的静态边界门：零 browser/server/SUT。
 // 计划内核心文件缺失即 RED；逐文件不得超过 600 行；依赖图不得成环或让纯模块反向依赖执行面。
-import { existsSync, readFileSync, readdirSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { dirname, extname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -74,13 +74,32 @@ function discoverZeroShotCore() {
     .map((name) => `lib/zero-shot/${name}`);
 }
 
-function zeroShotSubdirectories() {
+// 「不得有子目录」这道钉只看 Dirent.isDirectory() 会被整条绕过：对指向目录的符号链接，
+// isDirectory() 恒为假、isSymbolicLink() 才为真，于是链接既不进本钉、平铺发现也扫不进链接目录里的模块
+// （异构评审 R13 实测反例：ln -sfn <仓外目录> lib/zero-shot/smuggle-dir 后金牌仍 5/5 exit 0）。
+// 故对符号链接解引用一次；解不开时（dangling / 权限 / 环）证不出「它不是目录」，
+// 按护栏 #14 的 fail-safe 姿态一律计入违规——证不出就红，不默认放行。
+function zeroShotDirectoryLikeEntries() {
   const dir = resolve(ROOT, 'lib/zero-shot');
   if (!existsSync(dir)) return [];
-  return readdirSync(dir, { withFileTypes: true })
-    .filter((entry) => entry.isDirectory())
-    .map((entry) => `lib/zero-shot/${entry.name}`)
-    .sort();
+  const found = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const rel = `lib/zero-shot/${entry.name}`;
+    if (entry.isDirectory()) {
+      found.push(rel);
+      continue;
+    }
+    if (!entry.isSymbolicLink()) continue;
+    let target = null;
+    try {
+      target = statSync(join(dir, entry.name));
+    } catch {
+      found.push(`${rel}（符号链接解引用失败，证不出不是目录）`);
+      continue;
+    }
+    if (target.isDirectory()) found.push(`${rel}（指向目录的符号链接）`);
+  }
+  return found.sort();
 }
 
 function s2Files() {
@@ -175,8 +194,9 @@ check('adaptive-module-boundaries-d1', '计划内 S2 核心与 S1 receipt/suppor
   for (const rel of S2_CORE) {
     assert(discoveredCore.includes(rel), `S2 核心未被目录发现：${rel}`);
   }
-  const nested = zeroShotSubdirectories();
-  assert(nested.length === 0, `lib/zero-shot 下不得有子目录（平铺扫描看不见）：${nested.join(', ')}`);
+  const nested = zeroShotDirectoryLikeEntries();
+  assert(nested.length === 0,
+    `lib/zero-shot 下不得有子目录或指向目录的符号链接（平铺扫描看不见）：${nested.join(', ')}`);
 });
 
 // sourceObligationId:zs-boundary-d2 unitCheckId:adaptive-module-boundaries-d2

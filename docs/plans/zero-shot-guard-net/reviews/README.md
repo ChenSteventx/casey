@@ -36,7 +36,30 @@
 | `CONTEXT.md` 文案 + `term-lint` | 无发现 | 提案整行按 `|` 切分为 4 列、第四列仍为 `—`；`parseRegistry` 对提案注册表 `registryErrors=0`、`resolution` 行 `scanText` `errors=0`；无新增繁体、无加粗英文术语；若 `container-out` 进第四列则 `agent-search-gate.mjs`、`prd-entity-ui-wiring.json`、`entity-ui-wiring.searchopen.golden.mjs` 三处均 ERROR（与草案一致） |
 | 红证据成色 | 无发现，姿态合格 | 认可分工：范围 1 对现状零行为差、常驻金牌造不出「洞在」的红，变异 transcript（P1 绿 / P2 五红）证明的是「网缺席」而非「接口未出现」；范围 2 的 N1/N10 是标准 ATDD 接口红，真 fail-open 由 P4 与 `unsupported-scope-fanout.red.txt` 承担。评审方给出的标准与草案一致：洞 = 可构造合法输入使现役门放行、修补后应收紧；接口缺席红只能证「还没写」，必须另附洞的变异/行为 transcript |
 
-## 未闭项（如实挂账）
+## R1（代码级异构评审，实现后）
 
-本轮是**前提审**，覆盖计划与前提，**不覆盖实现代码**。实现落地后的代码级异构评审属 review 阶段，
-尚未进行——本收据不能替代它。
+| 项 | 值 |
+|---|---|
+| 被审快照 | `e6e7ea1..24e0508`（三个提交，评审期间作者零改动） |
+| 作者家族 | Claude（Opus 5） |
+| 评审家族 | 非 Claude —— 满足异构冗余（护栏 #9） |
+| 评审方 | `grok-4.5`，reasoning-effort high |
+| 风险清单 | 八项：并集严格度与 H1 落点 / d3 反转 / 夹具透传 / R12 checksum 字节核 / `CONTEXT.md` 词条 / 元钉三路变异 / 提交卫生 / 边界门发现与断言 |
+| 结论 | `CHANGES_REQUIRED`，七项无发现且全部取证通过，**一条 Medium finding** |
+
+### R1 的 finding 与处置
+
+| 编号 | 级别 | 内容 | 作者独立复现 | 处置 |
+|---|---|---|---|---|
+| F1 | Medium | 「无子目录」钉被指向目录的符号链接绕过。`zeroShotDirectoryLikeEntries` 的前身只用 `Dirent.isDirectory()`；对 symlink-to-dir 它恒为假、`isSymbolicLink()` 才为真，于是链接既不进本钉、`discoverZeroShotCore` 的平铺发现也扫不进链接目录里的模块 | 已在工作树复现：`ln -sfn <仓外目录> lib/zero-shot/smuggle-dir` 后金牌 `5/5 passed` `EXIT=0`；`Dirent` 判据实测 `isDirectory()=false, isSymbolicLink()=true` | R13 修：符号链接解引用一次（`statSync`），指向目录即红；解引用失败按 fail-closed 一律红。补第四份 red-proof `subdirectory-symlink-bypass.red.txt` |
+
+评审方另核过的对照组（作者已复核一致）：真子目录红 d1；文件符号链接 `.mjs` 红 d1 与 d3；
+dangling symlink 红多网。本轮选定的 dangling 目录链接口径是**一律红**，理由写在
+`plan.md` §3 与 red-proof 尾注：`statSync` 抛错时门证不出「它不是目录」，
+按护栏 #14 证不出就红、不默认放行。
+
+### 未闭项（如实挂账）
+
+R1 判 `CHANGES_REQUIRED`，本轮已按 F1 修完并补齐证据，但**修复后的复审尚未进行**——
+按「评审修正要复审」纪律，合并前须由非实现家族对 R13 这一处修复 hunk 再看一轮。
+本收据不替代它。

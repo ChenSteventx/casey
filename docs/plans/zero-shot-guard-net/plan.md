@@ -68,7 +68,13 @@
 
 - `discoverZeroShotCore()`：平铺 `readdirSync('lib/zero-shot')` + 只过滤 `.mjs` + 排序；
 - d1 加双向相等：发现集每一项必须在 `S2_CORE` 里（未登记即红），`S2_CORE` 每一项必须被目录发现（缺文件即红）；
-- d1 加「`lib/zero-shot/` 下不得有子目录」断言：平铺扫描看不见子目录，此钉把「要建子目录」逼成一次显式裁决；
+- d1 加「`lib/zero-shot/` 下不得有子目录或指向目录的符号链接」断言：平铺扫描看不见目录，
+  此钉把「要建子目录」逼成一次显式裁决。**符号链接口径（R13 经异构评审逼出，见下）**：
+  只看 `Dirent.isDirectory()` 会被整条绕过——对指向目录的符号链接它恒为假、`isSymbolicLink()` 才为真，
+  于是链接既不进本钉、平铺发现也扫不进链接目录里的模块。故对符号链接解引用一次（`statSync`），
+  指向目录即红；解引用失败（dangling / 权限 / 环）时门**证不出**「它不是目录」，
+  按护栏 #14 的 fail-safe 姿态一律计入违规——证不出就红、不默认放行，与本契约「方向只许加严」一致。
+  `discoverZeroShotCore` 本身保持平铺、不递归、不解引用：完整性由本钉承担，两者分工不重叠；
 - d2 / d4 / d5 的受检集合改吃 `S2_CORE ∪ 发现集`；
 - d3 的 `pureFiles` 反转成执行面白名单：`pureFiles = (S2_CORE ∪ 发现集) − S2_EXECUTION_FACING`，
   `S2_EXECUTION_FACING` 显式登记七个执行面模块（`playwright-page-driver` / `page-observer` /
@@ -190,10 +196,18 @@ d1 立刻红，直到把它登记进 `S2_CORE`。故**范围 2 的提交必然�
 | `accept/red-proofs/module-boundary-blindspot.red.txt` | 工作树临时副本内注入 704 行 + `playwright` + `node:fs` + 互引成环的 zero-shot 模块，跑边界金牌 → `5/5 passed` `EXIT=0`（洞的证明）；套用补丁后 → `0 passed, 5 failed` `EXIT=1`（补丁有效）；删流氓模块后 → `5/5` `EXIT=0`（零行为差） |
 | `accept/red-proofs/unsupported-scope-fanout.red.txt` | 临时副本内给 `scopesOf` 与夹具各加第四键，跑完整链 → after 面 `progressed`（真 fail-open）、admission 拒因漂成 `RESOLUTION_AUTHORITY_INVALID`；同一探针换成已知键 `containerOnly` 作对照组 → 四点全 `UNSUPPORTED_SCOPE` + `PROGRESS_UNSUPPORTED_SCOPE` |
 | `accept/red-proofs/zero-shot-guard-net.red.txt` | 新元钉金牌在未实现时的整份 transcript（真实 `EXIT=1`） |
+| `accept/red-proofs/subdirectory-symlink-bypass.red.txt` | R13 补：把仓外目录软链进 `lib/zero-shot`、目录里藏一个未登记 `.mjs`，修前金牌 `5/5 passed` `EXIT=0`（钉被绕过）；修后 `4 passed, 1 failed` `EXIT=1`；删链接后回 `5/5` `EXIT=0`；另附 dangling 目录链接一路（同样红，fail-closed 口径） |
 
-三份 transcript 全部在本工作树重新实跑采集，不复制历史数字。
+四份 transcript 全部在本工作树重新实跑采集，不复制历史数字（含评审方给的反例形状——形状复用、数字自采）。
 边界那份另附一路本轮新增的独立变异：在副本里建 `lib/zero-shot/container/smuggled.mjs`，
 改后金牌 `4 passed, 1 failed` `EXIT=1`（改前根本没有这张网），删目录后回 `5/5` `EXIT=0`。
+
+**R13 如实记账**：首版的「无子目录」钉只看 `Dirent.isDirectory()`，被指向目录的符号链接整条绕过——
+这是实现落地后的代码级异构评审（`grok-4.5` high，对 `e6e7ea1..24e0508`）逮到的唯一 finding（Medium，
+`CHANGES_REQUIRED`），八项风险清单其余七项均判无发现并取证通过。作者已独立复现（`isDirectory()=false`、
+`isSymbolicLink()=true`，修前 `5/5` `EXIT=0`），按上述口径修并补第四份 red-proof。
+断言零弱化、只加严：修前放行的两类形状（目录符号链接、dangling 目录链接）修后一律红，
+干净树上零行为差（`5/5` `EXIT=0` 不变）。
 
 ## 7. 复跑面（护栏 #19）
 

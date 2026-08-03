@@ -9,7 +9,7 @@
     "tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs": "d764641542c3bd5a8d339d8abba501d808982db4e6a63de32528e487bb7329eb",
     "tests/_golden/playwright-page-driver-hardening.zero-sut.golden.mjs": "8c0d86547d0e1ae5568c0a1509b7a509fecfda1474496920ea68984e74322ee9",
     "tests/_golden/public-observation-redaction.zero-sut.golden.mjs": "45adf83cb4ad80a63e98df2fc9e3949201b0bb798da18cdf62f2f72027230a8f",
-    "tests/_golden/adaptive-module-boundaries.static.golden.mjs": "10ef6c97062e5dbd699cfadd71206454e2b3973464210adc726b1ea9de02e228",
+    "tests/_golden/adaptive-module-boundaries.static.golden.mjs": "b56eaf741f3cdce29e2ecf4913db8a2eb3eb0e3ffffa261fe7fce84f26cd989d",
     "tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs": "6b2083915359d337e2809cb5007154d03f4fa1eac851447387374f1b496bc00e",
     "tests/_golden/intent-plan-known-atom.zero-sut.golden.mjs": "cebd2e02a5525b8610e7f17cc61564b74eadfbba8852eb65ff2ddcab084fbc12",
     "tests/_golden/intent-state-trace.zero-sut.golden.mjs": "84f4a2010c52d2a0c32593da805ba69dc9224d6008639095325a49fee544378b",
@@ -130,6 +130,14 @@
         "tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs"
       ],
       "reason": "zero-shot-guard-net 契约（门禁加固，非 kernel）改两件冻结件，断言零弱化、只加严。边界金牌：S2_CORE 由硬编码 14 项改为「冻结清单 + 平铺目录自动发现 + 双向相等 + lib/zero-shot 无子目录」，d2/d4/d5 的受检集合改吃发现集，d3 的纯模块清单反转成执行面白名单（pureFiles = 发现集减去显式登记的 S2_EXECUTION_FACING 七项），新模块默认按纯模块最严口径受检、要豁免必须显式登记一次。改动的必要性由变异实测证明而非推理：P1 往 lib/zero-shot 放 rogue-a.mjs（704 行、import playwright、import node:fs、与 rogue-b.mjs 互引成环），改前金牌仍 5/5 passed EXIT=0——五张网全不响；P2 同一批流氓模块在改后金牌下 0 passed 5 failed EXIT=1，d1 报未纳入冻结清单、d2 报 704 行、d3 报 -> playwright 与 -> node:fs、d4 报 -> playwright、d5 报 cycle:rogue-a -> rogue-b -> rogue-a；P3 删掉流氓模块、补丁保留，回 5/5 passed EXIT=0，即对现状零行为差（发现集恰等于原硬编码 14 项）。子目录断言另有独立变异：副本内建 lib/zero-shot/container/smuggled.mjs 后 4 passed 1 failed EXIT=1，删目录后回 5/5。本轮另把新落地的纯叶模块 lib/zero-shot/unsupported-scopes.mjs 登记进 S2_CORE——这是双向相等断言的必然结果（新模块不登记即 d1 红），设计使然。夹具 adapter-double.mjs：copyUnsupported 由 iframe/shadow/containerOnly 三键白名单改为通用透传（如实转交调用方给的每个自有键、按 === true 归一、不做键过滤），消除「夹具静默吞键」这一假绿源——白名单在夹具里不提供任何保护（生产 page-observer 才是归一化闸），只提供一次吞键机会。注意：不是字节等价。旧实现恒吐三键，通用透传的输出键集会变窄（{iframe:true} 旧吐三键、新吐一键；{} 与 [] 旧吐三键全假、新吐空记录）；正确表述是「经生产 scopesOf 归一后行为等价」。回归面已实测：只改夹具、生产件一字不动的状态下跑 5 枚直接依赖夹具的金牌全部 EXIT=0（page-observer-main-frame 8/8、deterministic-resolver-step-contract 16/16、zero-shot-action-progress 12/12、zero-shot-authority-runner 11/11、zero-shot-typed-progress-predicate 24/24），其余邻接按护栏 #19 全量复跑。两件改动的红证据与复跑面见 loop/prd-zero-shot-guard-net.json 与 docs/plans/zero-shot-guard-net/。"
+    },
+    {
+      "amendedAt": "2026-08-04",
+      "round": "R13 异构评审加严（grok-4.5 high 判 CHANGES_REQUIRED）：子目录钉堵符号链接绕过",
+      "files": [
+        "tests/_golden/adaptive-module-boundaries.static.golden.mjs"
+      ],
+      "reason": "实现落地后的代码级异构评审（grok-4.5 high，对 e6e7ea1..24e0508）逮到唯一 finding（Medium，判 CHANGES_REQUIRED，其余七项风险项均判无发现并取证通过）：R12 新加的「lib/zero-shot 下不得有子目录」钉只用 Dirent.isDirectory()，被指向目录的符号链接整条绕过——对 symlink-to-dir，isDirectory() 恒为假、isSymbolicLink() 才为真，于是链接既不进该钉、discoverZeroShotCore 的平铺发现也扫不进链接目录里的模块。作者已在工作树独立复现，不是照抄评审方结论：ln -sfn <仓外目录> lib/zero-shot/smuggle-dir（目录里藏一个未登记的 .mjs）后，修前金牌仍 5/5 passed EXIT=0；Dirent 判据实测 isDirectory()=false、isSymbolicLink()=true。修法：zeroShotSubdirectories 改名 zeroShotDirectoryLikeEntries，对符号链接解引用一次（statSync），指向目录即计入违规；解引用失败（dangling / 权限 / 环）时门证不出「它不是目录」，按护栏 #14 的 fail-safe 姿态一律计入——证不出就红、不默认放行。discoverZeroShotCore 保持平铺、不递归、不解引用：完整性由这道钉承担，两者分工不重叠。断言零弱化、只加严：修前放行的两类形状修后一律红（目录符号链接 4 passed 1 failed EXIT=1；dangling 目录链接同样 4 passed 1 failed EXIT=1），删掉链接后回 5/5 EXIT=0，干净树上零行为差（5/5 passed EXIT=0 不变）。变异复核：符号链接注入 → 红，还原后 sha256 字节全同、重跑 exit 0。transcript 见 docs/plans/zero-shot-guard-net/accept/red-proofs/subdirectory-symlink-bypass.red.txt，评审收据与处置记录见 docs/plans/zero-shot-guard-net/reviews/README.md 的 R1 段。"
     }
   ],
   "observability": [
