@@ -9,6 +9,7 @@
     "docs/plans/teachin-authoring-runtime-profile/accept/list-anchor-red-baseline.txt": "a6a8092fbbd48f1a0d8e4cd157f422e98de6588dae7d548f4c87ac1a9a1288bf",
     "docs/plans/teachin-authoring-runtime-profile/accept/profile-authority-red-baseline.txt": "c4ff3badd16271bbdadd58834cce51d853a4a39ae041ac411d9d5aa5b13e683e",
     "docs/plans/teachin-authoring-runtime-profile/accept/teachin-authoring-source-plan-identity.red.txt": "7981bed89b08a310f6dfbc86719e673053badb0510ae9109b738e347a61e693c",
+    "docs/plans/teachin-authoring-runtime-profile/accept/teachin-authoring-profile-route-authority.red.txt": "ce2990fb083092fbe591b35e6eb72a3fb80b094c677c10cf70a653d7148f2795",
     "docs/plans/teachin-authoring-runtime-profile/accept/teachin-distilled-events-envelope.red.txt": "3dbdc059948cb26d80056942f3e4def8185a6f60c7bef9ab579e084609ec478b",
     "docs/plans/teachin-authoring-runtime-profile/accept/teachin-authoring-workflow-list-container.red.txt": "455ba12a7bcd6c52c5f83d4326cea42531fd233eb1c10d1eff35b48725b676df",
     "docs/plans/teachin-authoring-runtime-profile/accept/teachin-authoring-workflow-list-route-scope.red.txt": "39652e11a9290650fa92449197a58a247f628d8750870f2f6d1b12ef6d476eec",
@@ -16,6 +17,7 @@
     "tests/_golden/teachin-authoring-list-anchor.zero-sut.golden.mjs": "4423b639757a1d7e7006c25199ac541cbf59bce17f9c20e81c205e08250597db",
     "tests/_golden/teachin-authoring-profile-authority.zero-sut.golden.mjs": "e1b20de110ffa9abe688201184bc8b13d6ad06c98d20ffacb990cd33052d0a13",
     "tests/_golden/teachin-authoring-source-plan-identity.zero-sut.golden.mjs": "b2731a15b42031cf4f7ef2f85a81003a8789b245996b05ed51a21cd4a8d28c36",
+    "tests/_golden/teachin-authoring-profile-route-authority.zero-sut.golden.mjs": "b0757da6a528669c33254faaa677199dcde1389e86eaf5c38f722bf9a414aa2d",
     "tests/_golden/teachin-distilled-events-envelope.zero-sut.golden.mjs": "49f0c87b09969401ca56592b4d831d57304997663d73bcdf5e7b0516bcad30ac",
     "tests/_golden/teachin-authoring-workflow-list-container.zero-sut.golden.mjs": "0ca5659737a67c347782e595420291120b9c7438a7fe461db73883f68424e381",
     "tests/_golden/teachin-authoring-workflow-list-route-scope.zero-sut.golden.mjs": "8cba87603d754d34b7c83f763265e0864299a32275d251d484aacd288861eb0c"
@@ -40,11 +42,12 @@
         "node tests/_golden/teachin-authoring-list-anchor.zero-sut.golden.mjs",
         "node tests/_golden/teachin-authoring-profile-authority.zero-sut.golden.mjs",
         "node tests/_golden/teachin-authoring-source-plan-identity.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-authoring-profile-route-authority.zero-sut.golden.mjs",
         "node tests/_golden/teachin-distilled-events-envelope.zero-sut.golden.mjs",
         "node tests/_golden/teachin-authoring-workflow-list-container.zero-sut.golden.mjs",
         "node tests/_golden/teachin-authoring-workflow-list-route-scope.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-08-03T06:02:20.046Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T06:23:32.705Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-teachin-adjacent-zero-regression",
@@ -57,7 +60,7 @@
         "node tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs",
         "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-08-03T06:02:51.543Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T06:24:06.892Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-repo-drift-and-terms",
@@ -67,9 +70,9 @@
         "node tests/_golden/support/prd-drift-scan.mjs",
         "node loop-kit/bin/term-lint.mjs --registry"
       ],
-      "evidence": "gate@2026-08-03T06:03:07.940Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T06:24:23.798Z 全部 acceptance exit 0"
     }
   ],
-  "notes": "首枚金牌实现前真实 0 过 / 3 败，exit 1；三红分别对应 runtime hydration、profile route 贯穿、same-capture exact profile bytes。A4 独立金牌在基线 62bcf46 真实 0 过 / 2 败，exit 1；分别钉列表后置锚 blocker 与 authoring 发布门。profile authority 独立金牌在同基线真实 1 过 / 1 败，exit 1；正控因 extra profile bytes 未被 source authority 接受而红，负控保持拒绝。R2 审计后新增 source-plan/identity 边界金牌，在同基线真实 0 过 / 4 败、exit 1；钉 identity listApi/malformed pre-open 拒绝、genuine 全链与真实非默认路由、claim 拒后 owner dispose、同标签 distinct source-plan 防换绑。真机后继暴露 workflow 列表现役容器为 .agent-card：container 金牌在生产基线真实 1 过 / 3 败、exit 1；route-scope 金牌真实 0 过 / 3 败、exit 1，联合钉 exact pathname、scoped card、异常 fail-closed 与 legacy 布局兼容。锚修复后的真机后继进一步暴露 distilled events 裸数组根：events-envelope 金牌在生产基线真实 0 过 / 2 败、exit 1；钉 canonical verifier 准入与 pair receipt 绑定 verifier 所见 exact document bytes。",
+  "notes": "首枚金牌实现前真实 0 过 / 3 败，exit 1；三红分别对应 runtime hydration、profile route 贯穿、same-capture exact profile bytes。A4 独立金牌在基线 62bcf46 真实 0 过 / 2 败，exit 1；分别钉列表后置锚 blocker 与 authoring 发布门。profile authority 独立金牌在同基线真实 1 过 / 1 败，exit 1；正控因 extra profile bytes 未被 source authority 接受而红，负控保持拒绝。R2 审计后新增 source-plan/identity 边界金牌，在同基线真实 0 过 / 4 败、exit 1；钉 identity listApi/malformed pre-open 拒绝、genuine 全链与真实非默认路由、claim 拒后 owner dispose、同标签 distinct source-plan 防换绑。真机后继暴露 workflow 列表现役容器为 .agent-card：container 金牌在生产基线真实 1 过 / 3 败、exit 1；route-scope 金牌真实 0 过 / 3 败、exit 1，联合钉 exact pathname、scoped card、异常 fail-closed 与 legacy 布局兼容。锚修复后的真机后继进一步暴露 distilled events 裸数组根：events-envelope 金牌在生产基线真实 0 过 / 2 败、exit 1；钉 canonical verifier 准入与 pair receipt 绑定 verifier 所见 exact document bytes。信封修复后的真机后继暴露 profile custom route 被 legacy fixed URL gate 转为 ENTITY_LOCK_RUNTIME_AUTHORITY_REQUIRED：profile-route-authority 金牌在生产基线真实 0 过 / 2 败、exit 1；钉 genuine source-plan/profile/compiler-events/closure 私有链正控与 self-report/clone/foreign/mismatch 负控，失败探针不得消费 genuine closure。",
   "openIssues": []
 }
