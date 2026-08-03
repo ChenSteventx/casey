@@ -1,0 +1,8 @@
+command: node tests/_golden/teachin-authoring-profile-route-authority.zero-sut.golden.mjs
+baseline-production-head: 42b8046
+test-parent-head: 42b8046
+exit-code: 1
+
+RED  teachin-authoring-profile-route-authority: P1 exact profile→baseline→compile→genuine closure 使 custom route 走 not-required 并可 seal: genuine profile route 未获 no-entity authority：{"ok":false,"reason":"ENTITY_LOCK_RUNTIME_AUTHORITY_REQUIRED"}
+RED  teachin-authoring-profile-route-authority: P2 self-report/clone/foreign/mismatch 不豁免且拒绝不消费 genuine closure: 拒绝路径错误消费 genuine closure：{"ok":false,"reason":"ENTITY_LOCK_RUNTIME_AUTHORITY_REQUIRED"}
+teachin-authoring-profile-route-authority: 0 过 / 2 败
