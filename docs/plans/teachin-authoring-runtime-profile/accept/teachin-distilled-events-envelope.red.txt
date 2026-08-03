@@ -1,0 +1,8 @@
+command: node tests/_golden/teachin-distilled-events-envelope.zero-sut.golden.mjs
+baseline-production-head: 27d747c
+test-parent-head: 27d747c
+exit-code: 1
+
+RED  teachin-distilled-events-envelope: E1 canonical entity verifier 必须收到可准入的 formal events document: canonical formal events envelope 应成功：{"ok":false,"reason":"REPLAY_EVENTS_INVALID"}
+RED  teachin-distilled-events-envelope: E2 pair seal 必须绑定 verifier 所见 exact envelope bytes，而非裸 event 数组: observed formal events envelope 应成功：{"ok":false,"reason":"ENTITY_LOCK_AUTHORITY_INVALID"}
+teachin-distilled-events-envelope: 0 过 / 2 败
