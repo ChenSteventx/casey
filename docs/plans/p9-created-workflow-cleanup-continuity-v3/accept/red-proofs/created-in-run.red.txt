@@ -1,0 +1,11 @@
+command: node tests/_golden/p9-created-workflow-continuity-v3.created-in-run.zero-sut.golden.mjs
+exit: 1
+FAIL C1 完整 listApi 唯一读回铸当轮字符串 platformId observation: 缺生产导出 issueCreatedWorkflowRuntimeObservation（ERR_MODULE_NOT_FOUND）
+FAIL C2 同名多条、分页不全、ID 数值化逐项 fail-closed: 缺生产导出 issueCreatedWorkflowRuntimeObservation（ERR_MODULE_NOT_FOUND）
+FAIL C3 v3 结构锁不携 runtime ID，机械连接 create/subject→delete/subject: 缺生产导出 issueCreatedWorkflowRuntimeObservation（ERR_MODULE_NOT_FOUND）
+FAIL C4 跨 run observation、旧 v2 锁、锁内固定 ID 均不得铸 ref: 缺生产导出 issueCreatedWorkflowRuntimeObservation（ERR_MODULE_NOT_FOUND）
+FAIL C5 URL/body 目标 ID 等于当轮 ref 才在 guard 后放行一次: 缺生产导出 issueCreatedWorkflowRuntimeObservation（ERR_MODULE_NOT_FOUND）
+FAIL C6 adapter/method/path/ID location 漂移、多 ID、错 ID均发送前中止: 缺生产导出 issueCreatedWorkflowRuntimeObservation（ERR_MODULE_NOT_FOUND）
+FAIL C7 数值 ID 即使字符串化后碰巧相等也拒绝，禁止 19 位精度丢失: 缺生产导出 issueCreatedWorkflowRuntimeObservation（ERR_MODULE_NOT_FOUND）
+FAIL C8 同一 ref 只能消费一次，第二次 mutation 零放行: 缺生产导出 issueCreatedWorkflowRuntimeObservation（ERR_MODULE_NOT_FOUND）
+RED  p9-created-workflow-continuity-v3.created-in-run: 0 过 / 8 红

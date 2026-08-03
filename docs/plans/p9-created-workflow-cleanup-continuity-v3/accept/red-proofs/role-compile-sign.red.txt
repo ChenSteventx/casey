@@ -1,0 +1,12 @@
+command: node tests/_golden/p9-created-workflow-continuity-v3.role-compile-sign.zero-sut.golden.mjs
+exit: 1
+ok   R1 side-effect policy 的 workflow.create 精确保持 subject
+FAIL R2 observation registry 的 workflow.create 调和为 subject，workflow.open 不顺带改: workflow.create registry 未调和：{"boundKind":"workflow","requiredRoles":["source"],"issuer":{"sourceKind":"compile-envelope","atom":"workflow.create"},"allowedBindingModes":["existing","created-in-run"],"provenanceByBindingMode":{"existing":"user-confirmed","created-in-run":"platform-readback"}}
+FAIL R3 create/subject 观察行通过 compile observation admission: create/subject observation 未过 compile 准入：{"ok":false,"rejectCode":"OBSERVATION_ROLE_COUNT_MISMATCH"}
+FAIL R4 production v3 author→sign→reader→preflight 正控冻结 ownershipEdges: 缺 production v3 导出 authorCreatedWorkflowOwnershipDraft（ERR_MODULE_NOT_FOUND）
+FAIL R5 v1/v2 冒充与 events/flow/TestCase/profile 任一精确字节漂移均拒: 缺 production v3 导出 authorCreatedWorkflowOwnershipDraft（ERR_MODULE_NOT_FOUND）
+ok   R6 flow→draft→现役 sign 纯层的 create/delete subject 正控可达
+ok   R7 create/source、漏 subject、双角色均被现役 flow policy 拒绝
+ok   R8 workflow.bindAgent 的 source+target 双锁正控保持
+ok   R9 workflow.bindAgent 缺 source 或 target 任一均继续 fail-closed
+RED  p9-created-workflow-continuity-v3.role-compile-sign: 5 过 / 4 红

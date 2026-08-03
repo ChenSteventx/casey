@@ -1,0 +1,11 @@
+command: node tests/_golden/p9-created-workflow-continuity-v3.stable-absence.zero-sut.golden.mjs
+exit: 1
+FAIL A1 三个完整样本跨足 3000ms 且同 ID 均缺席才 cleanupSatisfied: 缺生产导出 evaluateStableTargetAbsence
+FAIL A2 样本不足三个一律不成立: 缺生产导出 evaluateStableTargetAbsence
+FAIL A3 三样本但窗口不足 3000ms 一律不成立: 缺生产导出 evaluateStableTargetAbsence
+FAIL A4 时间不单调或重复时间不能冒充稳定窗口: 缺生产导出 evaluateStableTargetAbsence
+FAIL A5 任一样本扫描不完整或不可关联均不成立: 缺生产导出 evaluateStableTargetAbsence
+FAIL A6 同一 ID 在任一样本重现即不成立: 缺生产导出 evaluateStableTargetAbsence
+FAIL A7 只有 nameCount=0、没有逐样本 platform IDs 时不成立: 缺生产导出 evaluateStableTargetAbsence
+FAIL A8 target platformId 缺失或非字符串时不成立: 缺生产导出 evaluateStableTargetAbsence
+RED  p9-created-workflow-continuity-v3.stable-absence: 0 过 / 8 红

@@ -1,0 +1,133 @@
+{
+  "schemaVersion": 1,
+  "slug": "p9-created-workflow-cleanup-continuity-v3",
+  "task": "P9 三条 created-in-run workflow 用例的 v3 清理连续性 successor：只签 create/subject→delete/subject 结构授权边与精确 mutation adapter，不预签运行时 platformId；每轮 create 后完整 listApi 读回当轮字符串 ID，delete 请求在发出前按已签 method/path/唯一 ID location 核对，删除后同 ID 在至少 3000ms、至少 3 个完整样本中稳定缺席。结果深消费进 projectReplayAxes→verdict→report 与 Tier2 独立 cleanupSatisfied 门。每批生成 fresh batchToken，并派生三枚两两不同的 per-case uniqueNameToken。旧 v1/v2 与固定-ID R5 保持 fail-closed，不冒充真机闭环。acceptance-gate 红基线：created-in-run 0/8、stable-absence 0/8、tier2-cleanup 0/6、role-compile-sign 5/4，四枚均 exit 1；语法检查均 exit 0。",
+  "specPath": "docs/plans/p9-created-workflow-cleanup-continuity-v3/plan.md",
+  "testChecksums": {
+    "docs/plans/p9-created-workflow-cleanup-continuity-v3/plan.md": "cc2fff73fb15fb9c983e31cf79d4b0b1f87925903282427de5f13ac3d4dc955c",
+    "tests/_golden/p9-created-workflow-continuity-v3.created-in-run.zero-sut.golden.mjs": "6af703a8f00c28f19a23f34eb39d142666430040eaa97c5a41cab1cf56f6d1b3",
+    "tests/_golden/p9-created-workflow-continuity-v3.stable-absence.zero-sut.golden.mjs": "b50eff0e6aa5bebf2b9b516976d9f66c773e435841e3b021ea467b16fdc3bbb1",
+    "tests/_golden/p9-created-workflow-continuity-v3.tier2-cleanup.zero-sut.golden.mjs": "02c44b44d2e658ca400b5fd82e978c899185b4528643e65a887df31ff6f4ee0c",
+    "tests/_golden/p9-created-workflow-continuity-v3.role-compile-sign.zero-sut.golden.mjs": "6a1cc1658144614e537b42f4ecea80aee3bcc53e93af9dc2139e7ca73214dbde",
+    "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/created-in-run.red.txt": "b95d3ec54f5b74b6f612343e1469239c146764f7e3cb30deae3375d2be226da3",
+    "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/stable-absence.red.txt": "e14fe736716cb5763011eae378cf134d301c274180f2f864697e98a55a574979",
+    "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/tier2-cleanup.red.txt": "0b122fd37a437f7b27a428d847ced3f0fb308ecc0cd88b0ada815c58555641a8",
+    "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/role-compile-sign.red.txt": "3a8af4b239cf8ab32f48d7c745b3b9b0e3fe3a169fe3dd51c1b037aad1b71248",
+    "tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs": "66d80917c5c21d09f57785fe7b54d2fca6367a7437d3e4a8398a215d1f1924ab",
+    "tests/_golden/destructive-continuity-ref-rebuild.red-acceptance.golden.mjs": "238215d021c4b9ec3ca2f7f2dca52a14cbb517c3cd93df056404a25d8375e88e",
+    "tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs": "d25f3721a7f81c497480150565f2ec5fe2ba77e12089feeb665a39edabf70478",
+    "tests/_golden/entity-workflow-source-readback.cardinality-reverse.zero-sut.golden.mjs": "0c8ea9fe79a81ab0153ad38630dd436fc66aef25e1103321bb6dfd007c16ea2f",
+    "tests/_golden/admission-policy-facets.zero-sut.golden.mjs": "a0de05562a17863af54f0e1a40fb6205af8447f69cf8eace417ae76951570d2d",
+    "tests/_golden/entity-ui-wiring.bindagent-lockchain.zero-sut.golden.mjs": "4adffa20309664e526e2aecca39cd599756361d6946a03d63bc42e8974c7b01f",
+    "tests/_golden/teachin-semantic-lock-flow-provenance.zero-sut.golden.mjs": "7e06487f4fbb521d55db0f2df75ab4c604eaf7c74bf657478a980d5aab68d1b9",
+    "tests/_golden/intent-event-fold.zero-sut.golden.mjs": "7d8550025aff3c1664eddb299328e271daa941afe99191e7c28061f340fc032a",
+    "tests/_golden/p2-verdict.golden.mjs": "2daecc6b000c8bba168b944028b4ed4ae3e6b8e5e2808b2ec35e2a5d13735ea1",
+    "tests/_golden/p0-p2-report-delete.zero-sut.golden.mjs": "dc2d195a2069b5f9c4867f44e68819960454b2cda36fc4718f12192defd401a1",
+    "tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs": "f6e6a5a1ee05d476f17c29b85b070248740a30fbbf98c265db221a9d21ae936c",
+    "tests/_golden/p9-tier2-final-batch.zero-sut.golden.mjs": "442f3cc412a5376fb706fb33584225ac6a82b4808fc57a0685ebda2f5aa016df",
+    "tests/_golden/support/prd-drift-scan.mjs": "e38696f9ac78b1a6a9e7ed43a472f7842dc2075c4f3a40ba6a5c46dfbfc79f06"
+  },
+  "observability": [
+    {
+      "dimension": "三条变更型用例各一次 fresh compile-execute 授权：逐次绑定当时精确 TestCase/flow 字节，只授权该次 compile，不授权正式 replay、重复 mutation 或其它 case。",
+      "route": "human",
+      "note": "由 Steven 逐次签署；三次 compile 必须各用新的 batchToken/per-case uniqueNameToken，并各自完成 create→完整读回→guard→delete→稳定缺席。"
+    },
+    {
+      "dimension": "v3 entity locks、三例 expected 与 fresh Tier2 suite manifest 的人签真实性。",
+      "route": "human",
+      "note": "v3 锁只签结构授权边与 adapter，不签 runtime platformId；三份锁、expected、manifest 均须由 Steven 过目签署并绑定精确字节。"
+    },
+    {
+      "dimension": "真机同 ID 稳定缺席：删除后至少 3000ms、至少 3 个完整 listApi 样本均不含当轮 platformId。",
+      "route": "human",
+      "note": "hermetic ATDD 只冻结判据；三次 compile 与正式 replay 都须在真实浏览器/真实列表信封上留脱敏样本证据。"
+    },
+    {
+      "dimension": "fresh 五成员同批 Tier2 真机运行、逐成员录像与报告过目。",
+      "route": "human",
+      "note": "要求同一 batch/invocation、真实 exit 0；三条 mutation receipt 均 cleanupSatisfied:true，batchToken 一致，per-case uniqueNameToken 两两不同。"
+    },
+    {
+      "dimension": "正式 batch 后残留扫描与录像复核。",
+      "route": "human",
+      "note": "按同 ID 缺席证据与安全测试前缀复核三例零活跃残留；查看三例 cleanup 段录像，不能只信 toast、删除响应或名称计数。"
+    },
+    {
+      "dimension": "最终 P9 UAT signoff。",
+      "route": "human",
+      "note": "签认书绑定三次 compile、fresh 五成员 batch、axes/verdict/report/receipt/video/残留扫描的 run 路径与 sha256；任一 open/pending 保持 P9 open。"
+    },
+    {
+      "dimension": "输出脱敏与真实目标/凭据边界。",
+      "route": "human",
+      "note": "录像、报告、观察件与请求 guard 证据不得包含真实目标地址、身份值或凭据；SUT 入口仍只接受回环基址。"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-created-in-run-authority-and-outbound-guard",
+      "desc": "实现 production v3 author→sign→reader→preflight 与 runtime observation/ref/guard：v3 authority 精确绑定 events/flow/TestCase/profile 字节、create/subject→delete/subject ownershipEdges、listApi scope、method/path/唯一 ID location adapter 与单次消费；不携 runtime platformId。create 后完整列表唯一读回字符串 ID，跨 run/旧 v1-v2/固定 ID/错步拒；mutation wrong method/path/location、多 ID、错 ID、数值 ID 均在发送前零放行。红基线 0/8。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p9-created-workflow-continuity-v3.created-in-run.zero-sut.golden.mjs"
+      ],
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "s2-stable-target-id-absence",
+      "desc": "实现同一 target platformId 稳定缺席判据：至少 3000ms、至少 3 个时间单调且完整可关联的 listApi 样本；任一重现、不完整、窗口短、样本少或仅 nameCount=0 均 cleanupSatisfied:false。红基线 0/8。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p9-created-workflow-continuity-v3.stable-absence.zero-sut.golden.mjs"
+      ],
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "s3-tier2-cleanup-independent-gate",
+      "desc": "实现并由 runTier2 深消费 cleanup judge：三条 mutation receipt 全部 cleanupSatisfied:true 才使环境清洁面绿；合法 SUT_DEFECT/NEEDS_HUMAN 不误杀管线面但不能洗绿 cleanup。每 fresh batch 使用新 batchToken，三例 per-case uniqueNameToken 与派生名两两不同并闭合 receipt lineage。红基线 0/6。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p9-created-workflow-continuity-v3.tier2-cleanup.zero-sut.golden.mjs"
+      ],
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "s4-role-authoring-sign-reader-preflight",
+      "desc": "最小调和 workflow.create role：side-effect policy/draft/sign 保持 subject，只把 observation registry 的 workflow.create 从 source 改为 subject；workflow.open 不越界改。v3 author/sign/reader/preflight 正控冻结 create/subject→delete/subject 与 adapter，拒 v1/v2 冒充及 events/flow/TestCase/profile 任一字节漂移；workflow.bindAgent source+target 双锁正反控保持。红基线 5/4。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p9-created-workflow-continuity-v3.role-compile-sign.zero-sut.golden.mjs"
+      ],
+      "passes": false,
+      "evidence": ""
+    },
+    {
+      "id": "s5-adjacent-regression-and-deep-consumption",
+      "desc": "独立邻接回归 story：C3 纯守卫、既有 ref rebuild、C2 source readback/cardinality、admission facets、bindAgent 双锁与 flow provenance 不弱化；v3 证据沿 axes→verdict→report 深消费；Tier2 selftest 与 fresh final-batch token/cleanup 门一致；term registry、全 PRD 漂移扫、tier1 保绿。acceptance-gate 时现役结果：除 ref-rebuild（写入侧未实现，4 红）与 p9-tier2-selftest（Chief artifact 缺席，1 红）外，其余命令均 exit 0；两红必须由对应真实缺口闭合，不能删验收。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs",
+        "node tests/_golden/destructive-continuity-ref-rebuild.red-acceptance.golden.mjs",
+        "node tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs",
+        "node tests/_golden/entity-workflow-source-readback.cardinality-reverse.zero-sut.golden.mjs",
+        "node tests/_golden/admission-policy-facets.zero-sut.golden.mjs",
+        "node tests/_golden/entity-ui-wiring.bindagent-lockchain.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-semantic-lock-flow-provenance.zero-sut.golden.mjs",
+        "node tests/_golden/intent-event-fold.zero-sut.golden.mjs",
+        "node tests/_golden/p2-verdict.golden.mjs",
+        "node tests/_golden/p0-p2-report-delete.zero-sut.golden.mjs",
+        "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs",
+        "node tests/_golden/p9-tier2-final-batch.zero-sut.golden.mjs",
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": false,
+      "evidence": ""
+    }
+  ]
+}

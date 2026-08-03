@@ -1,0 +1,9 @@
+command: node tests/_golden/p9-created-workflow-continuity-v3.tier2-cleanup.zero-sut.golden.mjs
+exit: 1
+FAIL T1 三条 mutation receipt cleanupSatisfied 全真且 batch lineage 闭合才绿: 缺生产导出 judgeTier2CleanupObligations
+FAIL T2 合法 SUT_DEFECT/NEEDS_HUMAN 不误红，但不能替代 cleanupSatisfied: 缺生产导出 judgeTier2CleanupObligations
+FAIL T3 三例缺一、多一、重复或 caseId 换线均红: 缺生产导出 judgeTier2CleanupObligations
+FAIL T4 每个 fresh batch 使用新 batchToken，三例 per-case uniqueNameToken 两两不同且由它派生: 缺生产导出 judgeTier2CleanupObligations
+FAIL T5 三例由 batch token 派生的实体名必须非空且互不冲突: 缺生产导出 judgeTier2CleanupObligations
+FAIL T6 runTier2 必须深消费 cleanup judge，不能只产孤立 helper: cleanup judge 未定义并由 runTier2 调用，实得调用形 0 处
+RED  p9-created-workflow-continuity-v3.tier2-cleanup: 0 过 / 6 红

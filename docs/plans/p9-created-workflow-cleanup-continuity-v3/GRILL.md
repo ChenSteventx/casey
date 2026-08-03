@@ -21,7 +21,7 @@
 ### D1. v3 锁签 runtime platformId 吗？
 
 不签。签署发生时，新一轮对象尚不存在；预签 ID 只能是旧 ID 或猜测。v3 只签精确字节下的
-create/subject → delete/subject **结构授权边**、身份通道、名称模板与一次消费约束。当轮 ID 必须在
+create/subject → delete/subject **结构授权边**、身份通道、mutation adapter、名称模板与一次消费约束。当轮 ID 必须在
 create 后从完整 listApi 读回，并只在同 run 内消费。
 
 否决：把 compile 读到的 ID 冻结给 replay；把旧 frozen ID 写进 manifest；按名称临时补 ref。
@@ -46,9 +46,9 @@ ID 为字符串且候选唯一时才能铸 observation。DOM 名称负责关联�
 
 ### D4. 删除请求何时校验？
 
-在 mutation 真正发出前暂停，解析已签 adapter 允许的 URL/body ID 位置，并与当轮 observation 逐字
-相等后才放行。响应后检查太晚，不能防误删。URL/body 冲突、缺 ID、多 ID、数值精度损失或无法
-唯一关联时零放行。
+在 mutation 真正发出前暂停，先核已签 adapter 的 method/path/唯一 ID location，再把该位置的 ID 与
+当轮 observation 逐字相等后才放行。响应后检查太晚，不能防误删。任一未签 URL/query/body 位置
+多带 ID（即使同值）、adapter 漂移、缺 ID、错 ID、数值精度损失或无法唯一关联时零放行。
 
 ### D5. 什么算删除完成？
 
@@ -72,8 +72,9 @@ compile 各自完成「建→读→guard→删→稳定缺席」；正式 replay
 
 ### D8. uniqueNameToken 的粒度？
 
-每个 fresh batch 一个全新 token，再确定性派生三例互不冲突的名称；compile 批次与正式 replay batch
-不共用 token。禁止固定 `r1`、上批复用或只有散文时间戳而无 lineage。
+每个 fresh batch 一个全新 `batchToken`，再确定性派生三枚两两不同的 per-case `uniqueNameToken` 与
+实体名；receipt 同时绑定 batchToken 和 per-case token。compile 批次与正式 replay batch 不共用 token。
+禁止固定 `r1`、上批复用或只有散文时间戳而无 lineage。
 
 ### D9. 旧 v1/v2 与 R5 怎么处理？
 
@@ -90,10 +91,10 @@ compile 各自完成「建→读→guard→删→稳定缺席」；正式 replay
 - create 使用 source、双角色、缺 subject 或候选交换；relation 原子缺 source/target 任一或交换角色；
 - 旧 fixed ID、compile ID 被 replay 复用、跨 run/case ref、ref 重复消费；
 - 同名两条、分页不全、ID 被 Number 化、profile/scope/request correlation 漂移；
-- mutation URL 与 body ID 不同、缺 ID、多个 ID、错 ID，均须证明请求零放行；
+- mutation adapter/method/path/唯一 ID location 漂移、缺 ID、多个 URL/body ID、错 ID，均须证明请求零放行；
 - 3 个样本不足 3000ms、3000ms 但少于 3 样本、任一样本不完整、同 ID 中途重现、仅名称归零；
 - verdict 合法非 PASS 但 cleanup 缺失/false，Tier2 必非零；
-- 上批 token 复用、三例名称碰撞、manifest/receipt lineage 断裂。
+- 上批 batch/per-case token 复用、三例 per-case token 或名称碰撞、manifest/receipt lineage 断裂。
 
 ## 四、换签与真机边界
 
