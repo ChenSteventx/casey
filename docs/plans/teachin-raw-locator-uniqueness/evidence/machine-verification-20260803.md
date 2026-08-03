@@ -31,8 +31,9 @@
 9. `node loop-kit/bin/gate.mjs --prd loop/prd-teachin-raw-locator-uniqueness.json`
    - exit 0，ratchet/term 通过，story 3/3 GREEN。
 
-提交后还须在精确 Wave 2 commit 上重复运行新真实浏览器金牌、gate 与 git diff/status
-检查；该结果以最终交付报告中的 bound commit 为准。
+提交后已在精确 Wave 2 commit `a981be10138ee034228028a3aeac6efbb39bbfc8` 上重复运行
+新真实浏览器金牌与 gate，均 exit 0；`git diff --check HEAD^ HEAD` exit 0。相同补丁随后
+由用户要求落入本地 `dev@d89879d`，未 push。
 
 ## 边界
 

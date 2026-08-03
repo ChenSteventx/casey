@@ -3,6 +3,31 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
+## 2026-08-03：Codex 停点交接——Wave 1/2 已提交本地 dev（最新覆盖层）
+
+1. 用户要求在 Wave 2 后停止。本轮从 `dev@d77dfb5` 建 Windows 独立工作树
+   `D:\ctx\heren\casey-p9-waves`，完成后把两笔已验证纵向提交落回本地 `dev`：
+   - `9272d97 feat(p9): wire created-workflow continuity v3`；
+   - `d89879d fix(teachin): require raw locator uniqueness`。
+2. Wave 1 的 P9 v3 动态字符串 ID、单次 ref、删除前 exact request guard、至少 3000ms/
+   3 完整样本稳定缺席和 axes→零 LLM verdict→report→Tier2 深消费已机器闭合。真实 SUT
+   仅由 Windows 原生 Chromium 完成只读列表/DOM/字符串 ID 探测，明确
+   `mutationSent:false`；不得写成真实 P9 通过。
+3. Wave 2 在 Windows 原生 Chromium、每案 fresh BrowserContext 的 hermetic fixture 上
+   红先行 5/3、修后 8/8；提交后绑定 `a981be1` 的真实浏览器金牌与 PRD gate 均 exit 0。
+   同一补丁已摘入 `dev@d89879d`；初始双候选、1→2 漂移、节点替换、disabled、遮挡和
+   pointer-inert 均零点击拒绝，唯一正控真实点击恰一次。
+4. 当前状态：`MACHINE_PASSED=true` 仅指 Wave 1/2 已列机器验收；
+   `REAL_SUT_PASSED=false`，`HUMAN_SIGNED=false`，P9 仍 open。签署版 Tier2 manifest、
+   exact mutation 授权、三次 fresh compile、三条真实 create→ID→delete→稳定缺席、五成员
+   同批 Tier2、录像/报告/残留扫描与最终 UAT signoff 均未完成。
+5. Wave 3 的 `agent-loop-harness` 控制面迁移尚未开始；观测包、多模态 proposal、typed
+   progress predicate 与 promotion gate 也未开始。下一任先从当前真实 `dev` 新建独立
+   worktree，复核本节两笔提交和工作树状态，再按 Wave 3 红先行；不得把旧 `loop-kit`
+   与新 harness 同时保留为两个有状态控制器。
+6. 原 `dev` 工作树在本轮开始就存在的非 Wave 改动仍保留为未提交状态，未被暂存、覆盖、
+   删除或代提交。全程未 push、未 merge、未 rebase，远端仍未变化。
+
 ## 2026-08-03：raw Playwright 原始定位器唯一性闭环（最新覆盖层）
 
 1. Windows 独立工作树 `casey-p9-waves` 的 canonical raw 驱动已移除
