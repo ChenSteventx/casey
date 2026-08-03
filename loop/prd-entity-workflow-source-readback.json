@@ -4,11 +4,11 @@
   "task": "entity-workflow-source-readback（C2，full，worktree）：工作流对象「名称+编号联合定位」的 source 侧对称落地——注册 workflow 观察 kind（workflow.create/open→workflow/[source]）+ ENTITY_KIND_COMPILE_CHANNELS 加 workflow→workflows 通道注入 + compileWorkflowCreate/Open 武装 source 读回（created-in-run→platform-readback）+ sign 白名单泛化落地（闭集）。红先行 accept：4 金牌红先行冻结 + workflow-sut hermetic fixture。⚠ C0 邻接：C2 注册 workflow.create 后 C0 spine 金牌 entity-identity-spine.admission-registry 的 r0 反断言翻假，loop/收口须复跑并 amend prd-entity-identity-spine（护栏 #19，见 observability）。真字段名/抽屉类名/双锁真机 UAT = route:human（先采不猜，ADR-0009）；不碰 v2 字节 b7b5a47e。",
   "specPath": "docs/plans/entity-workflow-source-readback/plan.md",
   "testChecksums": {
-    "tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs": "d25f3721a7f81c497480150565f2ec5fe2ba77e12089feeb665a39edabf70478",
+    "tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs": "0aa085c8fa3d76b2acbb51f77f225089250226c7d08fe4b4a3373e853650646a",
     "tests/_golden/entity-workflow-source-readback.compile-channel.zero-sut.golden.mjs": "c73cce8c184f853ee408d4d8e7242af7888245f68fcd170e2ec7608026105968",
     "tests/_golden/entity-workflow-source-readback.arming.static.golden.mjs": "2f9fc7ce448bbc0cf2217ad81307bdc2f476676ab4676f42a81a1500659e7871",
     "tests/_golden/entity-workflow-source-readback.completeness.zero-sut.golden.mjs": "f8af0c69c1336b2a5977baece400d04d7e955b2f12ce65256ccba3f72fc190a2",
-    "tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs": "005cfe8225f632e587e65d2458325d2a97dfff79c6d1b02f42ccdc3a57f32432",
+    "tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs": "ad132dae032080c4ffd395cb5557ba6e47949abd2e5f407335fc33b8bda60011",
     "tests/_golden/entity-workflow-source-readback.cardinality-reverse.zero-sut.golden.mjs": "0c8ea9fe79a81ab0153ad38630dd436fc66aef25e1103321bb6dfd007c16ea2f"
   },
   "observability": [
@@ -113,6 +113,14 @@
         "tests/_golden/entity-workflow-source-readback.cardinality-reverse.zero-sut.golden.mjs"
       ],
       "reason": "round-4 收口 codex round-3 High「终端锚定 fail-open」（须 Steven 复核 + codex 异构复审，route:human）：round-3 的基数门按 intent 折叠（只数「(intentId,atom) 组有几条观察」），从不认定哪个 click 是终端——codex round-3 亲验 workflow.create 新增/分类/确认 三 click 观察锚任意一个均 ok:true、两同 intent agent click 仅一观察（锚首个非终端）亦 ok:true。修法：checkIdentityObservationCardinality 显式认定每 (intentId,atom) 组的终端 = 组内 events 顺序最后一个 click（严等 compile 武装 run.events[len-1] 口径，见 lib/compile-atoms.mjs compileWorkflowCreate/compileAgentSearchOpen/compileWorkflowOpen），观察 evidenceStepId 必须锚终端、锚非终端脚手架步 → 拒 OBSERVATION_EVIDENCE_ANCHORS_NON_TERMINAL_CLICK（新增具名码）。金牌相应更新：新增终端锚定红先后绿两案（TA-1 workflow.create 锚新增/分类拒、锚确认 ok；TA-2 两同 intent agent 锚首个拒、锚末个 ok）、RC-5 改测真·越供（两观察锚同一终端 stepId → OBSERVATION_EVIDENCE_STEP_DUPLICATE）、RC-4 软化过强证据表述（坐实基数门函数 fail-closed，进程级 exit 65 端到端真证仍 route:human/observability 项1）。红先行实证：old code 对 TA-1a/1b/2a 三案返 ok:true（本轮亲验），修法后 fail-closed。冻结 wiring 金牌 H1b（观察锚 w_confirm 终端 click）零回归 18/18、admission 15/15 不受影响（只改 checkIdentityObservationCardinality，validateObservationAdmission 未动）。金牌 18/18 exit 0，新 sha 0c8ea9fe79a81ab0153ad38630dd436fc66aef25e1103321bb6dfd007c16ea2f。旧 sha 659819cd642d0bd7478d3c422670a9d998b48294b6b1cbd29ed995c469d87d27"
+    },
+    {
+      "amendedAt": "2026-08-03",
+      "files": [
+        "tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs",
+        "tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs"
+      ],
+      "reason": "P9 created-workflow cleanup continuity v3 successor 调和单实体 ownership 角色：现役 side-effect policy、flow、draft 与 sign 一直要求 workflow.create=[subject]，故只把 observation registry 的 workflow.create 从 source 改为 subject；workflow.open 保持 source，workflow.bindAgent 的 source+target 双锁保持。owner 金牌相应从『两门不可同时满足』改为 create/subject 两门同过且 create/source 继续 fail-closed；admission 15/15、wiring 18/18、新 successor role 9/9 实跑全绿。admission 旧 sha d25f3721a7f81c497480150565f2ec5fe2ba77e12089feeb665a39edabf70478，新 sha 0aa085c8fa3d76b2acbb51f77f225089250226c7d08fe4b4a3373e853650646a；wiring 旧 sha 005cfe8225f632e587e65d2458325d2a97dfff79c6d1b02f42ccdc3a57f32432，新 sha ad132dae032080c4ffd395cb5557ba6e47949abd2e5f407335fc33b8bda60011。"
     }
   ]
 }

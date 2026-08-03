@@ -79,6 +79,9 @@ function runPipeline(pos, opts) {
     profile: safeCaseId ? `cases/${safeCaseId}/profile.json` : 'cases/<caseId>/profile.json',
     observed: safeCaseId ? `cases/${safeCaseId}/observed-${safeCaseId}.json` : 'cases/<caseId>/observed-<caseId>.json',
     caseMeta: safeCaseId ? `cases/${safeCaseId}/testcase.json` : 'cases/<caseId>/testcase.json',
+    flow: safeCaseId ? `cases/${safeCaseId}/flow.confirmed.json` : 'cases/<caseId>/flow.confirmed.json',
+    compileProvenance: safeCaseId ? `cases/${safeCaseId}/compile-provenance.json` : 'cases/<caseId>/compile-provenance.json',
+    createdWorkflowAuthority: safeCaseId ? `cases/${safeCaseId}/created-workflow-authority.frozen.json` : 'cases/<caseId>/created-workflow-authority.frozen.json',
   };
   const missing = [];
   const warnings = [];
@@ -103,12 +106,22 @@ function runPipeline(pos, opts) {
   const profilePath = cp ? resolveInput('profile', 'profile', cp.profile, conventionRel.profile, true) : null;
   const observedPath = cp ? resolveInput('observed', 'observed', cp.observed, conventionRel.observed, false) : null;
   const caseMetaPath = cp ? resolveInput('case-meta', 'case-meta', cp.caseMeta, conventionRel.caseMeta, false) : null;
+  const v3Requested = cp && (typeof opts['created-workflow-authority'] === 'string'
+    || existsFile(path.join(cp.dir, 'created-workflow-authority.frozen.json')));
+  const flowPath = v3Requested ? resolveInput('flow', 'flow', path.join(cp.dir, 'flow.confirmed.json'), conventionRel.flow, true) : null;
+  const compileProvenancePath = v3Requested ? resolveInput('compile-provenance', 'compile-provenance', path.join(cp.dir, 'compile-provenance.json'), conventionRel.compileProvenance, true) : null;
+  const createdWorkflowAuthorityPath = v3Requested ? resolveInput('created-workflow-authority', 'created-workflow-authority', path.join(cp.dir, 'created-workflow-authority.frozen.json'), conventionRel.createdWorkflowAuthority, true) : null;
   const sut = (typeof opts.sut === 'string' && opts.sut.length > 0) ? opts.sut : null;
   if (!caseId) missing.unshift('<caseId>');
   if (invalidCaseId) missing.unshift('caseId 不安全：仅允许单段目录名，不得含 /、\\、.. 或绝对路径');
   if (!sut) missing.push('--sut');
+  if (v3Requested && (typeof opts['batch-token'] !== 'string' || !opts['batch-token'])) missing.push('--batch-token');
+  if (v3Requested && (typeof opts['unique-name'] !== 'string' || !opts['unique-name'])) missing.push('--unique-name');
   // 确定性尾段已实现：缺必填参 = 用参错误 → exit 64（非 notImplemented 的 3）。相0-2 LLM 前段未建、route:human。
-  if (!caseId || invalidCaseId || !eventsPath || !expectedPath || !profilePath || !sut) {
+  if (!caseId || invalidCaseId || !eventsPath || !expectedPath || !profilePath || !sut
+    || (v3Requested && (!flowPath || !caseMetaPath || !compileProvenancePath
+      || !createdWorkflowAuthorityPath || typeof opts['batch-token'] !== 'string'
+      || typeof opts['unique-name'] !== 'string'))) {
     console.error(col(C.red, '[run] 缺必填参 → 用参错误(64)'));
     if (missing.length) {
       console.error('缺失项：');
@@ -148,6 +161,13 @@ function runPipeline(pos, opts) {
   // （登录期不入镜由 replay 双 page 舞步结构保证）。仅诊断附件，绝不进相4 裁定（M7）。
   stage('相3 replay 回放', bin('replay.mjs'), ['--events', eventsPath, '--sut', sut, '--expected', expectedPath, '--profile', profilePath, '--out', axesOut,
     ...(entityLocksPath ? ['--entity-locks', entityLocksPath] : []),
+    ...(createdWorkflowAuthorityPath ? [
+      '--created-workflow-authority', createdWorkflowAuthorityPath,
+      '--flow', flowPath,
+      '--case-meta', caseMetaPath,
+      '--compile-provenance', compileProvenancePath,
+      '--batch-token', opts['batch-token'],
+    ] : []),
     '--run-history', path.join(runDir, 'run-history.jsonl'), '--run-metrics', path.join(runDir, 'run-metrics.json'), '--run-id', path.basename(runDir),
     ...(typeof opts['unique-name'] === 'string' ? ['--unique-name', opts['unique-name']] : []),
     ...(opts['login-bootstrap'] ? ['--login-bootstrap'] : []),
@@ -281,6 +301,8 @@ ${col(C.cyan, '生命周期分步')}（LLM 只在 ingest/compile/draft/sign-辅�
                                           相2 断言草拟：骨架+补缝合并+闸 → expected.draft（未签）
   casey sign    <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--events <f> --entity-bindings-draft <f> --entity-confirmations <f> --entity-locks-out <f> --audience <test|production>] [--signed-at <iso> --verdict-baseline <f> --resign --resign-entity-locks --force --archive-dir <d>]
                                           相2 人签门：草稿→冻结签署（未签契约会被回放前置闸拒）
+  casey entity-authority <execute-draft|execute-freeze|created-workflow-draft|created-workflow-freeze> <caseId> ...
+                                          P9 精确字节授权：草稿与冻结分离；冻结时重读并核对精确源文件
   casey record  <caseId> --sut <本地基址> --out-dir <d> (--login-bootstrap|--no-login) [--from-events <f>] [--cycle-plan <f> | --testcase <f> --expected <f> --entity-lock <f> --profile <f> --sut-build-digest <sha256:...>] [--headless --max-ms <ms>]
                                           示教采集：人工操作→teach-in-capture.json（只作蒸馏语料，不签署、不直通回放）
   casey teachin-plan <caseId> --capture <f> --testcase <f> --expected <f> --entity-lock <f> --profile <f> --sut-build-digest <sha256:...> --out <f>
@@ -361,6 +383,7 @@ function main() {
     case 'draft': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'draft.mjs'), rest); process.exit(r.code); }
     case 'flow-bridge': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'flow-bridge.mjs'), rest); process.exit(r.code); }
     case 'sign': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'sign.mjs'), rest); process.exit(r.code); }
+    case 'entity-authority': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'entity-authority.mjs'), rest); process.exit(r.code); }
     case 'record': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'record.mjs'), rest); process.exit(r.code); }
     case 'teachin-plan': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'teachin-plan.mjs'), rest); process.exit(r.code); }
     case 'teachin-cycle': { const r = runNode(path.join(PROJECT_ROOT, 'bin', 'teachin-cycle.mjs'), rest); process.exit(r.code); }

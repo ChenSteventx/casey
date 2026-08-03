@@ -1,0 +1,22 @@
+Scope note: this is the actually captured red output of the broader predecessor test. The frozen
+successor was narrowed afterward to ID readback, exact deletion, stable absence, axes/verdict/report.
+No new red run is fabricated after implementation.
+
+command: node tests/_golden/p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs
+exit: 1
+
+RED  p9-created-workflow-continuity-v3.replay-evidence: E1 prepare 只接 reader handle，now 仅允许 deps 第二参，controller 保持 opaque: 缺 production 导出 prepareCreatedWorkflowReplayContinuity
+RED  p9-created-workflow-continuity-v3.replay-evidence: E2 runner/controller 必须共享同一 opaque authority handle，等字节另一 handle 零 dispatch: 缺 production 导出 prepareCreatedWorkflowReplayContinuity
+RED  p9-created-workflow-continuity-v3.replay-evidence: E3 raw Page/forensics → runner opaque receipt → axes 完整投影，pending 样本不入稳定窗: 缺 production 导出 prepareCreatedWorkflowReplayContinuity
+RED  p9-created-workflow-continuity-v3.replay-evidence: E4 pre-delete/pending/重复 correlation/伪时间任一不足均 NEEDS_HUMAN: 缺 production 导出 prepareCreatedWorkflowReplayContinuity
+RED  p9-created-workflow-continuity-v3.replay-evidence: E5 projectReplayAxes 不信 caller 伪造 final evidence: caller 伪造 evidence 被投影为真：undefined
+RED  p9-created-workflow-continuity-v3.replay-evidence: E6 cleanup PASS 不改写前序 SUT_DEFECT: 缺 production 导出 prepareCreatedWorkflowReplayContinuity
+RED  p9-created-workflow-continuity-v3.replay-evidence: E7 report-model/schema/CLI 深消费 continuity 且全隐私 sentinel 缺席: 缺 production 导出 prepareCreatedWorkflowReplayContinuity
+RED  p9-created-workflow-continuity-v3.replay-evidence: 0 过 / 7 红
+  - E1 prepare 只接 reader handle，now 仅允许 deps 第二参，controller 保持 opaque: 缺 production 导出 prepareCreatedWorkflowReplayContinuity
+  - E2 runner/controller 必须共享同一 opaque authority handle，等字节另一 handle 零 dispatch: 缺 production 导出 prepareCreatedWorkflowReplayContinuity
+  - E3 raw Page/forensics → runner opaque receipt → axes 完整投影，pending 样本不入稳定窗: 缺 production 导出 prepareCreatedWorkflowReplayContinuity
+  - E4 pre-delete/pending/重复 correlation/伪时间任一不足均 NEEDS_HUMAN: 缺 production 导出 prepareCreatedWorkflowReplayContinuity
+  - E5 projectReplayAxes 不信 caller 伪造 final evidence: caller 伪造 evidence 被投影为真：undefined
+  - E6 cleanup PASS 不改写前序 SUT_DEFECT: 缺 production 导出 prepareCreatedWorkflowReplayContinuity
+  - E7 report-model/schema/CLI 深消费 continuity 且全隐私 sentinel 缺席: 缺 production 导出 prepareCreatedWorkflowReplayContinuity

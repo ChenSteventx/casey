@@ -9,13 +9,20 @@
     "tests/_golden/p9-created-workflow-continuity-v3.stable-absence.zero-sut.golden.mjs": "b50eff0e6aa5bebf2b9b516976d9f66c773e435841e3b021ea467b16fdc3bbb1",
     "tests/_golden/p9-created-workflow-continuity-v3.tier2-cleanup.zero-sut.golden.mjs": "02c44b44d2e658ca400b5fd82e978c899185b4528643e65a887df31ff6f4ee0c",
     "tests/_golden/p9-created-workflow-continuity-v3.role-compile-sign.zero-sut.golden.mjs": "6a1cc1658144614e537b42f4ecea80aee3bcc53e93af9dc2139e7ca73214dbde",
+    "tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs": "5014bf0047c8447b4a6b0c76a907e911370909bbfae08200d5d9f60e6c123db5",
+    "tests/_golden/p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs": "b81bf6d74a5c783c4284bc71438a4342ebf42818613ddae2cf456014de9924a9",
+    "tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs": "5063fb8dc0a110a6ee4ea68e0fc833c331bdab6e2fbb7907a8a7af3076c61dd8",
+    "tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs": "770878382c7b1dbf14adfce6e1cb1bd779b9aecf1cb925ba547b2f2feb463e10",
     "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/created-in-run.red.txt": "b95d3ec54f5b74b6f612343e1469239c146764f7e3cb30deae3375d2be226da3",
     "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/stable-absence.red.txt": "e14fe736716cb5763011eae378cf134d301c274180f2f864697e98a55a574979",
     "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/tier2-cleanup.red.txt": "0b122fd37a437f7b27a428d847ced3f0fb308ecc0cd88b0ada815c58555641a8",
     "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/role-compile-sign.red.txt": "3a8af4b239cf8ab32f48d7c745b3b9b0e3fe3a169fe3dd51c1b037aad1b71248",
+    "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/authority-cli.red.txt": "51e77d7bacd34157f9584dd02b14dfb588f9d7b18e5c87d8bd0735a8c569b0d5",
+    "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/replay-evidence.red.txt": "6c71b8f13ee1865cbe4f1d98538c03bf8c20e9c14ea6c0c952b0af1641415675",
+    "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/tier2-production.red.txt": "80225d7efb109dcbed615485ea82a767c6a49ff1b09411332bc60dc949cea78f",
+    "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/legacy-fixed-id-supersession.zero-sut.red.txt": "89f7b8ae8f7094b8c54859a814edffc4a885f574a96778f4fbd5955153a868bb",
     "tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs": "66d80917c5c21d09f57785fe7b54d2fca6367a7437d3e4a8398a215d1f1924ab",
     "tests/_golden/destructive-continuity-ref-rebuild.red-acceptance.golden.mjs": "238215d021c4b9ec3ca2f7f2dca52a14cbb517c3cd93df056404a25d8375e88e",
-    "tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs": "d25f3721a7f81c497480150565f2ec5fe2ba77e12089feeb665a39edabf70478",
     "tests/_golden/entity-workflow-source-readback.cardinality-reverse.zero-sut.golden.mjs": "0c8ea9fe79a81ab0153ad38630dd436fc66aef25e1103321bb6dfd007c16ea2f",
     "tests/_golden/admission-policy-facets.zero-sut.golden.mjs": "a0de05562a17863af54f0e1a40fb6205af8447f69cf8eace417ae76951570d2d",
     "tests/_golden/entity-ui-wiring.bindagent-lockchain.zero-sut.golden.mjs": "4adffa20309664e526e2aecca39cd599756361d6946a03d63bc42e8974c7b01f",
@@ -70,7 +77,9 @@
       "desc": "实现 production v3 author→sign→reader→preflight 与 runtime observation/ref/guard：v3 authority 精确绑定 events/flow/TestCase/profile 字节、create/subject→delete/subject ownershipEdges、listApi scope、method/path/唯一 ID location adapter 与单次消费；不携 runtime platformId。create 后完整列表唯一读回字符串 ID，跨 run/旧 v1-v2/固定 ID/错步拒；mutation wrong method/path/location、多 ID、错 ID、数值 ID 均在发送前零放行。红基线 0/8。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p9-created-workflow-continuity-v3.created-in-run.zero-sut.golden.mjs"
+        "node tests/_golden/p9-created-workflow-continuity-v3.created-in-run.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs"
       ],
       "passes": false,
       "evidence": ""
@@ -90,7 +99,8 @@
       "desc": "实现并由 runTier2 深消费 cleanup judge：三条 mutation receipt 全部 cleanupSatisfied:true 才使环境清洁面绿；合法 SUT_DEFECT/NEEDS_HUMAN 不误杀管线面但不能洗绿 cleanup。每 fresh batch 使用新 batchToken，三例 per-case uniqueNameToken 与派生名两两不同并闭合 receipt lineage。红基线 0/6。",
       "lane": "implementation",
       "acceptance": [
-        "node tests/_golden/p9-created-workflow-continuity-v3.tier2-cleanup.zero-sut.golden.mjs"
+        "node tests/_golden/p9-created-workflow-continuity-v3.tier2-cleanup.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs"
       ],
       "passes": false,
       "evidence": ""
@@ -110,6 +120,7 @@
       "desc": "独立邻接回归 story：C3 纯守卫、既有 ref rebuild、C2 source readback/cardinality、admission facets、bindAgent 双锁与 flow provenance 不弱化；v3 证据沿 axes→verdict→report 深消费；Tier2 selftest 与 fresh final-batch token/cleanup 门一致；term registry、全 PRD 漂移扫、tier1 保绿。acceptance-gate 时现役结果：除 ref-rebuild（写入侧未实现，4 红）与 p9-tier2-selftest（Chief artifact 缺席，1 红）外，其余命令均 exit 0；两红必须由对应真实缺口闭合，不能删验收。",
       "lane": "implementation",
       "acceptance": [
+        "node tests/_golden/p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs",
         "node tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs",
         "node tests/_golden/destructive-continuity-ref-rebuild.red-acceptance.golden.mjs",
         "node tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs",

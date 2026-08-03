@@ -22,7 +22,7 @@ import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { COMPILE_KNOWN_ATOMS, createCompileRun, compileFlow, projectObserved, ROUTE_LIST } from '../lib/compile-atoms.mjs';
 import { createLoginBootstrapFailure, projectCompileExecutionFailureReport } from '../lib/compile-execution-failure.mjs';
 import { ENTITY_KIND_COMPILE_CHANNELS, checkIdentityObservationCardinality, deriveObservationIssuerAtom } from '../lib/entity-observation-registry.mjs';
-import { calculateLegacyIdentityProfileDigest, parseAgentIdentityProfile } from '../lib/agent-identity-profile.mjs';
+import { parseAgentIdentityProfile } from '../lib/agent-identity-profile.mjs';
 import { admitCompileDestructiveContinuity } from '../lib/entity-destructive-continuity.mjs';
 import {
   buildEntityBindingsDraft,
@@ -37,6 +37,7 @@ import { PROJECT_ROOT } from '../lib/paths.mjs';
 import { playwrightLaunchOptions, resolveCliExecutionTarget } from '../lib/execution-target/wiring.mjs';
 import { navigateExecutionTargetPage } from '../lib/execution-target/runtime.mjs';
 import { emitCompileCliFailure, emitExecutionTargetCliFailure } from '../lib/execution-target/cli-boundary.mjs';
+import { issueCreatedWorkflowCompileProvenance } from '../lib/entity-created-workflow-continuity-v3.mjs';
 
 const { chromium } = pw;
 const SNAPSHOT_FILE = join(PROJECT_ROOT, 'lib', 'atoms-registry.snapshot.json');
@@ -213,6 +214,7 @@ async function executeMode(caseId, args) {
   rmSync(join(outDir, 'identity-observations.compile.json'), { force: true });
   rmSync(join(outDir, `observed-${caseId}.json`), { force: true });
   rmSync(join(outDir, 'compile-report.json'), { force: true });
+  rmSync(join(outDir, 'compile-provenance.json'), { force: true });
   const profile = readJson(args.profile, '通道剖面');
   // 剖面路由在启动前做路径形状校验。
   let listRoute = null;
@@ -235,34 +237,10 @@ async function executeMode(caseId, args) {
     const aOk = a && typeof a === 'object' && !Array.isArray(a);
     if (!aOk) { console.error(`compile: 通道剖面 ${channelSpec.profileKey} 形状非法，拒跑（fail-closed）`); process.exit(65); }
     if (a.listApi !== undefined && a.listApi !== null) {
-      if (channelSpec.profileKey === 'agents') {
-        const parsed = parseAgentIdentityProfile(a);
-        if (!parsed.ok) { console.error(`compile: 通道剖面 ${channelSpec.profileKey} 身份模式或物理卡片面非法（${parsed.reason}），拒跑（fail-closed）`); process.exit(65); }
-        identityChannelsByKind.set(kind, parsed.channel);
-        identityDigestsByKind.set(kind, parsed.digest);
-        continue;
-      }
-      const l = a.listApi;
-      const s = (v) => typeof v === 'string' && v.trim() !== '';
-      const shapeOk = l && typeof l === 'object' && !Array.isArray(l)
-        && s(l.pathname) && l.pathname.startsWith('/') && s(l.method)
-        && s(l.recordsPath) && s(l.totalPath) && s(l.queryParam)
-        && (l.hasNextPath === null || l.hasNextPath === undefined || s(l.hasNextPath))
-        && l.fields && typeof l.fields === 'object' && !Array.isArray(l.fields)
-        && s(l.fields.id) && s(l.fields.code) && s(l.fields.name);
-      if (!shapeOk) { console.error(`compile: 通道剖面 ${channelSpec.profileKey}.listApi 形状非法（身份通道声明不完整，含 queryParam），拒跑（fail-closed）`); process.exit(65); }
-      // DOM 身份证据必须从声明的同一物理卡片读取。
-      const cardOk = s(a.itemContainer)
-        && a.cardFields && typeof a.cardFields === 'object' && !Array.isArray(a.cardFields)
-        && s(a.cardFields.name) && s(a.cardFields.code);
-      if (!cardOk) { console.error(`compile: 身份通道声明缺物理卡片面（${channelSpec.profileKey}.itemContainer + ${channelSpec.profileKey}.cardFields.name/code），拒跑（fail-closed）`); process.exit(65); }
-      identityChannelsByKind.set(kind, {
-        pathname: l.pathname, method: l.method, recordsPath: l.recordsPath, totalPath: l.totalPath,
-        queryParam: l.queryParam,
-        hasNextPath: l.hasNextPath ?? null,
-        fields: { id: l.fields.id, code: l.fields.code, name: l.fields.name },
-      });
-      identityDigestsByKind.set(kind, calculateLegacyIdentityProfileDigest(identityChannelsByKind.get(kind)));
+      const parsed = parseAgentIdentityProfile(a);
+      if (!parsed.ok) { console.error(`compile: 通道剖面 ${channelSpec.profileKey} 身份模式或物理卡片面非法（${parsed.reason}），拒跑（fail-closed）`); process.exit(65); }
+      identityChannelsByKind.set(kind, parsed.channel);
+      identityDigestsByKind.set(kind, parsed.digest);
     }
   }
   // 下游仍是单通道；多 kind 不得静默择一。
@@ -289,15 +267,7 @@ async function executeMode(caseId, args) {
   const watchdog = setTimeout(() => { console.error('compile 看门狗：超时强制退出'); process.exit(1); }, 120000);
 
   // 破坏性原子必须在浏览器前证明目标 kind 有良构身份通道。
-  const wellFormedListChannel = (cp) => {
-    if (!cp || typeof cp !== 'object' || Array.isArray(cp)) return false;
-    const l = cp.listApi;
-    const s = (v) => typeof v === 'string' && v.trim() !== '';
-    if (!l || typeof l !== 'object' || Array.isArray(l)) return false;
-    if (!(s(l.pathname) && l.pathname.startsWith('/') && s(l.method) && s(l.recordsPath) && s(l.totalPath) && s(l.queryParam))) return false;
-    if (!(l.fields && typeof l.fields === 'object' && !Array.isArray(l.fields) && s(l.fields.id) && s(l.fields.code) && s(l.fields.name))) return false;
-    return s(cp.itemContainer) && cp.cardFields && typeof cp.cardFields === 'object' && !Array.isArray(cp.cardFields) && s(cp.cardFields.name) && s(cp.cardFields.code);
-  };
+  const wellFormedListChannel = (cp) => parseAgentIdentityProfile(cp).ok === true;
   const certifiableDestructiveKinds = new Set(identityChannelsByKind.keys()); // agent（若良构）已在内
   if (wellFormedListChannel(profile.workflows)) certifiableDestructiveKinds.add('workflow');
   {
@@ -426,6 +396,23 @@ async function executeMode(caseId, args) {
         events: run.events,
       };
       const eventsText = JSON.stringify(eventsDoc, null, 2) + '\n';
+      const hasCreatedWorkflowPair = run.events.some((event) => event.atom === 'workflow.create')
+        && run.events.some((event) => event.atom === 'workflow.deleteByName');
+      let compileProvenanceText = null;
+      if (hasCreatedWorkflowPair) {
+        const issued = issueCreatedWorkflowCompileProvenance({
+          caseId,
+          eventsBytes: Buffer.from(eventsText),
+          confirmedFlowBytes: readFileSync(flowFile),
+        });
+        if (!issued.ok) {
+          gatedWrite({ [join(outDir, 'compile-report.json')]: JSON.stringify(reportDoc, null, 2) + '\n' });
+          console.error(`compile: created-workflow provenance 未闭合（${issued.reason}），不产成功件`);
+          exitCode = 65;
+        } else {
+          compileProvenanceText = JSON.stringify(issued.provenance, null, 2) + '\n';
+        }
+      }
       // 身份观察基数强校验（codex R1-C1 封缝 + C2 High-1 kind-无关泛化）：声明身份通道时，每条已归档观察行须
       // 锚定唯一真实终端 click（evidenceStepId ∈ 已发 click stepId 集、互不重复）——多/少/错位/重复都不产成功产物，
       // 绝不静默降级出可按 v1 签署的编译件。旧实现只数 agent.searchOpen click（workflow-only 流 0≠1 误 exit 65）；
@@ -518,6 +505,7 @@ async function executeMode(caseId, args) {
         [join(outDir, 'events.json')]: eventsText,
         ...(entityBindingsDraftText ? { [join(outDir, 'entity-bindings.draft.json')]: entityBindingsDraftText } : {}),
         ...(identityObservationsText ? { [join(outDir, 'identity-observations.compile.json')]: identityObservationsText } : {}),
+        ...(compileProvenanceText ? { [join(outDir, 'compile-provenance.json')]: compileProvenanceText } : {}),
         [join(outDir, `observed-${caseId}.json`)]: JSON.stringify(observedDoc, null, 2) + '\n',
         [join(outDir, 'compile-report.json')]: JSON.stringify(reportDoc, null, 2) + '\n',
       });

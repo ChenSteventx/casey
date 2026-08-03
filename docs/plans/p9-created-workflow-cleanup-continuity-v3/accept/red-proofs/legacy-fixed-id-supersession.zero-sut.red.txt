@@ -1,0 +1,17 @@
+Scope note: this is the actually captured red output of the broader predecessor test. The frozen
+successor deliberately drops the Windows inode/old-PRD-reader positive prerequisite and keeps the
+functional rule: v2/fixed ID cannot authorize v3 deletion; the current-run list ID can.
+
+command: node tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs
+exit: 1
+baseline: 2026-08-03 before production controller/provenance implementation
+
+FAIL S1 旧 reader 真接受 v2 fixed-ID 件，新 controller 具名 superseded 且 launch/send=0: 缺 replay production export createCreatedWorkflowReplayContinuityController
+FAIL S2 另一 controller 的 opaque receipt 不得跨 run 绑定，send=0: 缺 replay production export issueCreatedWorkflowCompileProvenance
+FAIL S3 same-run raw receipt 与出站 ID 不一致时 send=0: 缺 replay production export issueCreatedWorkflowCompileProvenance
+FAIL S4 cross-kind deletion 在 launch 前拒绝，send=0: 缺 replay production export issueCreatedWorkflowCompileProvenance
+FAIL S5 wrong-step deletion 在 launch 前拒绝，send=0: 缺 replay production export issueCreatedWorkflowCompileProvenance
+FAIL S6 动态结构 authority + same-run raw envelope + guard 只放行一次: 缺 replay production export issueCreatedWorkflowCompileProvenance
+RED  p9-created-workflow-continuity-v3.legacy-fixed-id-supersession: 0 过 / 6 红
+
+test-sha256: 5fa6bcca30a77b4f0367ed55d1fde8c445fc25e595bb6d67f792e411a116d50a

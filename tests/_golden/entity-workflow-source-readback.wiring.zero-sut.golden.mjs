@@ -14,13 +14,10 @@
 //       读回不齐同源）后 step2 零 event（对照：无阻断的双步 flow 两步全跑，证中止是【条件性】的、不误杀成功路径）。
 //   arming（Medium）：workflow.open 武装/容器归属闸行为经真实 compileFlow 执行触达（非源码串 grep）。
 //
-// ── route:human 边界（不在本金牌闭合，诚实标注，codex Critical）──
-//   角色契约调和不可满足：观察注册表要 workflow.create/open→[source]，生产准入策略（ADR-0004 人签冻结件
-//   tests/_golden/fixtures/teachin-admission-side-effect-policy/entity-admission-policy.frozen.json）要 [subject]。
-//   同一 binding role 无法同时过两门 → workflow happy path 不存在。调和方向（按 plan 应改冻结策略到 source）触
-//   ADR-0004 已签冻结面 → route:human（Steven 再签），本轮绝不擅改。本金牌只 hermetic 证【当前 fail-CLOSED】：
-//   role=source 被生产准入门拒（不启浏览器）、role=subject 被观察准入门拒（不签观察）——两错向皆 fail-closed 不 fail-open。
-//   【本节是 route:human 触发线】：若冻结策略被再签调和到 source，本节断言须随之复核更新。
+// ── successor amendment（P9 v3 ownership）──
+//   workflow.create 的观察注册表与生产准入/flow/draft/sign 统一为 [subject]；workflow.open 保持 [source]，
+//   workflow.bindAgent 的 source+target 双锁不变。本金牌钉 create/source 继续被生产门拒，而
+//   create/subject 同时通过生产准入与观察准入，happy path 结构可达。
 
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -144,27 +141,26 @@ const wfOpenStep = (openName) => ({
     `H2d 正控·无阻断双步 flow 两步全跑（blockers 空、两 workflow.open click）→ 中止不误杀成功路径；实得 blockers=${brief(posRun.blockers)} clicks=${posOpenEvents.length}`);
 }
 
-// ════════════════ Critical：角色契约不可满足 = 当前 fail-CLOSED（route:human 触发线）════════════════
+// ════════════════ Critical successor：create/subject 两门同过，source 仍 fail-closed ════════════════
 {
-  // 同一 workflow.create binding role 无法同时过生产准入门 + 观察准入门（codex Critical）。本节钉【当前 fail-CLOSED】：
-  //   两错向皆拒、无 fail-open。调和方向（改冻结策略到 source）触 ADR-0004 人签面 = route:human，再签后本节须复核。
+  // workflow.create 是单实体 created-in-run ownership：subject 是唯一合法角色；source 仍被生产门拒。
   const srcFlow = { id: 'f', steps: [{ atom: 'workflow.create', sourceIntentId: 's', entityBindings: [{ candidateId: 'wf', role: 'source' }] }] };
   const srcPre = requiredFlowEntityBindings(srcFlow);
   assert(srcPre && srcPre.ok === false && srcPre.reason === 'ENTITY_BINDING_REQUIRED_ROLES_INVALID',
-    `C-fc1 role=source（观察门要的角色）→ 生产准入门拒 ENTITY_BINDING_REQUIRED_ROLES_INVALID（不启浏览器，fail-closed）；实得 ${brief(srcPre)}`);
+    `C-fc1 role=source → 生产准入门拒 ENTITY_BINDING_REQUIRED_ROLES_INVALID（不启浏览器，fail-closed）；实得 ${brief(srcPre)}`);
 
   const subFlow = { id: 'f', steps: [{ atom: 'workflow.create', sourceIntentId: 's', entityBindings: [{ candidateId: 'wf', role: 'subject' }] }] };
   const subPre = requiredFlowEntityBindings(subFlow);
   assert(Array.isArray(subPre) && subPre.length === 1 && subPre[0].role === 'subject',
-    `C-fc2 role=subject（生产策略要的角色）→ 生产准入门过（旁证冲突真实存在）；实得 ${brief(subPre)}`);
+    `C-fc2 role=subject → 生产准入门过；实得 ${brief(subPre)}`);
 
   const evs = [{ stepId: 'w', intentId: 'i', atom: 'workflow.create', action: 'click' }];
   const subBind = [{ stepId: 'w', intentId: 'i', atom: 'workflow.create', sourceIntentId: 's', candidateId: 'wf', role: 'subject', bindingMode: 'created-in-run' }];
   const subObs = { source: { kind: 'compile-envelope', atom: 'workflow.create' }, observations: [{ kind: 'workflow', name: 'wf', code: 'W', platformId: '1234567890123456789', sourceIntentId: 's', candidateId: 'wf', role: 'subject', atom: 'workflow.create', evidenceStepId: 'w', sourcePath: '/wf', bindingMode: 'created-in-run', provenance: 'platform-readback' }] };
   const subAdm = validateObservationAdmission({ events: evs, bindings: subBind, observation: subObs });
-  assert(subAdm && subAdm.ok === false && subAdm.rejectCode === 'OBSERVATION_ROLE_COUNT_MISMATCH',
-    `C-fc3 role=subject 的观察行 → 观察准入门拒 OBSERVATION_ROLE_COUNT_MISMATCH（不签观察，fail-closed）；实得 ${brief(subAdm)}`);
-  // 合起来：source 过观察门却被生产门拒、subject 过生产门却被观察门拒 → 无 role 同过两门 → happy path 不存在（route:human）。
+  assert(subAdm && subAdm.ok === true && subAdm.rejectCode == null,
+    `C-fc3 role=subject 的观察行 → 观察准入门须通过；实得 ${brief(subAdm)}`);
+  // 合起来：subject 两门同过；source 仍由生产门 fail-closed，角色语义精确而非「任一角色」。
 }
 
 if (failures.length) {
@@ -172,4 +168,4 @@ if (failures.length) {
   console.error(`RED  entity-workflow-source-readback.wiring: ${passed} 过 / ${failures.length} 红`);
   process.exit(1);
 }
-console.log(`ok   entity-workflow-source-readback.wiring: ${passed}/${passed} 全过（真实 compileFlow + 泛化纯函数直驱，H1/H2/arming + Critical fail-closed 触发线，零 SUT）`);
+console.log(`ok   entity-workflow-source-readback.wiring: ${passed}/${passed} 全过（真实 compileFlow + 泛化纯函数直驱，H1/H2/arming + Critical successor 角色闭合，零 SUT）`);

@@ -1,0 +1,56 @@
+Scope note: this is the actually captured red output of the broader predecessor test. The frozen
+successor was narrowed afterward to P9 production wiring only; it does not claim this predecessor's
+opaque/physical-boundary requirements. Kept as historical evidence of the missing production seam.
+
+P9 v3 created-workflow authority CLI · zero-SUT red baseline
+Date: 2026-08-03
+
+Syntax check:
+  node --check tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs
+  exit 0
+
+Acceptance run:
+  node tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs
+  exit 1
+
+Observed summary:
+  RED  p9-v3-authority-cli: 0 过 / 11 红
+
+Earliest observed production gaps:
+  A0 production issueCreatedWorkflowCompileProvenance is missing, so bin/compile cannot emit the
+     checksum-frozen compile-provenance.json and the fifth exact authority binding cannot be made.
+  A1/A2/A4-A9 production prepareCreatedWorkflowOwnershipDraft is missing, so no test or production
+     audience v3 authority can be minted by the production prepare -> freeze path.
+  A3 the missing-authority CLI probe ran and exited 65 before browser launch, but the existing old
+     entity-lock gate rejected first with FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID instead of the
+     required CREATED_WORKFLOW_AUTHORITY_REQUIRED classification.
+  A10 cannot obtain the compiler-issued two-edge provenance while the production issuer is missing.
+
+Acceptance contract covered by the eleven axes:
+  A0 confirmed-flow wrapper compatibility, no fake flow stepId, one atom expanding to multiple
+     events, production compiler issuer/output wiring, and compileProvenanceSha256 exact binding.
+  A1 replay positive path through PRD checksum, five exact source bytes, batch lineage, test audience,
+     structural preflight, and CASEY_LAUNCH_SENTINEL.
+  A2 run forwarding of v3 authority, flow, TestCase, provenance, batch token, and unique-name token.
+  A3 missing authority, invalid authority path, and wrong run caseId named prelaunch refusals.
+  A4 PRD checksum drift plus authority signature invalidity after refreshing the PRD checksum.
+  A5 exact-byte drift for events, flow, TestCase, profile, and compile provenance.
+  A6 explicit batchToken/per-case uniqueNameToken required and lineage checked; no r1 default.
+  A7 workflow.bindAgent still requires the old entity-lock authority; v3 cannot bypass that gate.
+  A8 production v3 authority is rejected in credential-free test context.
+  A9 old and v3 authority audiences compose as AND, including a synthetic-credential production
+     positive path that may only reach the launch sentinel.
+  A10 signing only the first of two compiler-proven ownership edges rejects the second edge during
+      structural preflight.
+
+One CLI subprocess was reached in this red run (A3's first probe). It used a dead loopback address,
+exited 65, and did not write CASEY_LAUNCH_SENTINEL. All other axes failed before spawning because the
+named production issuer/prepare seams are absent. Therefore no browser was launched and no SUT was
+contacted.
+
+All temporary artifacts lived below a repository-local mkdtemp directory protected by a random owner
+marker; the temporary PRD was likewise owner-tagged. Cleanup left neither artifact behind. Old
+entity-lock artifacts were produced through the production draft/freeze/receipt APIs. The v3 test
+does not copy or calculate an authority signature or terminal endpoint; terminal ownership must come
+from the production compile provenance issuer. createHash is used only for temporary PRD checksums
+and assertions over exact source bytes.

@@ -42,6 +42,11 @@ import {
   installReplaySessionSeedBeforeNavigation,
   openReplayTopology,
 } from '../lib/page-topology/replay-session.mjs';
+import {
+  createCreatedWorkflowReplayContinuityController,
+  issueCreatedWorkflowCompileProvenance,
+  readCreatedWorkflowOwnershipAuthority,
+} from '../lib/entity-created-workflow-continuity-v3.mjs';
 
 const { chromium } = pw;
 
@@ -61,6 +66,10 @@ async function main() {
   const args = parseReplayArgs(process.argv.slice(2));
   for (const k of ['events', 'sut', 'expected', 'profile', 'out']) {
     if (typeof args[k] !== 'string' || !args[k]) { console.error(`replay: 缺 --${k}`); process.exit(64); }
+  }
+  if (args.createdWorkflowAuthority && (args.uniqueName == null || args.batchToken == null)) {
+    console.error('replay: v3 created-workflow 回放须显式提供 --batch-token 与 --unique-name，禁止默认 r1');
+    process.exit(64);
   }
   const uniqueName = args.uniqueName == null ? 'r1' : String(args.uniqueName);
   if (!/^[a-z0-9][a-z0-9_-]{0,63}$/i.test(uniqueName)) {
@@ -129,6 +138,73 @@ async function main() {
     process.exit(65);
   }
   const caseId = eventsDoc.caseId || expectedDoc.caseId || 'unknown';
+  let createdWorkflowController = null;
+  let createdWorkflowAuthorityAudience = null;
+  let createdWorkflowCovered = new Set();
+  if (args.createdWorkflowAuthority) {
+    for (const key of ['flow', 'testcase', 'compileProvenance']) {
+      if (typeof args[key] !== 'string' || !args[key]) {
+        console.error(`replay: v3 created-workflow 回放缺 --${key === 'compileProvenance' ? 'compile-provenance' : key}`);
+        process.exit(64);
+      }
+    }
+    let authorityBytes;
+    let eventsBytes;
+    let flowBytes;
+    let testcaseBytes;
+    let profileBytes;
+    let provenanceBytes;
+    try {
+      authorityBytes = readFileSync(args.createdWorkflowAuthority);
+      eventsBytes = readFileSync(args.events);
+      flowBytes = readFileSync(args.flow);
+      testcaseBytes = readFileSync(args.testcase);
+      profileBytes = readFileSync(args.profile);
+      provenanceBytes = readFileSync(args.compileProvenance);
+    } catch {
+      console.error('replay: v3 created-workflow 授权或绑定源不可读（内容不回显）');
+      process.exit(65);
+    }
+    const issued = issueCreatedWorkflowCompileProvenance({
+      caseId,
+      eventsBytes,
+      confirmedFlowBytes: flowBytes,
+    });
+    let suppliedProvenance = null;
+    try { suppliedProvenance = JSON.parse(provenanceBytes.toString('utf8')); } catch { suppliedProvenance = null; }
+    if (!issued.ok || JSON.stringify(issued.provenance) !== JSON.stringify(suppliedProvenance)) {
+      console.error('replay: compile provenance 与真实 events/flow 不一致，未启动浏览器');
+      process.exit(65);
+    }
+    const authorityRead = readCreatedWorkflowOwnershipAuthority({
+      caseId,
+      authorityBytes,
+      eventsBytes,
+      flowBytes,
+      testcaseBytes,
+      profileBytes,
+    });
+    if (!authorityRead.ok) {
+      console.error(`replay: v3 created-workflow 授权未过（${authorityRead.reason}），未启动浏览器`);
+      process.exit(65);
+    }
+    const opened = createCreatedWorkflowReplayContinuityController({
+      caseId,
+      runId: typeof args.runId === 'string' && args.runId ? args.runId : `${caseId}-${args.batchToken}`,
+      batchToken: String(args.batchToken),
+      uniqueNameToken: uniqueName,
+      authority: authorityRead.handle,
+      profile,
+    });
+    if (!opened.ok) {
+      console.error(`replay: v3 created-workflow 控制器未过（${opened.reason}），未启动浏览器`);
+      process.exit(65);
+    }
+    createdWorkflowController = opened.controller;
+    createdWorkflowAuthorityAudience = authorityRead.audience;
+    createdWorkflowCovered = new Set(opened.controller.coveredIntentAtoms()
+      .map((row) => `${row.intentId}\u0000${row.atom}`));
+  }
   // frozen locks 必须绑定本次 events 原始字节与全部显式对象角色；该准入早于登录、浏览器启动和任何业务动作。
   const entityLocksSupplied = typeof args.entityLocks === 'string' && Boolean(args.entityLocks);
   const frozenArtifactKey = entityLocksSupplied
@@ -142,12 +218,18 @@ async function main() {
     })
     : null;
   const frozenLockAuthority = frozenAuthorityRead?.ok === true ? frozenAuthorityRead.authority : null;
-  const identityAdmission = checkCompileIdentityAdmission({
-    caseId,
-    eventsBytes: readFileSync(args.events),
-    eventsDocument: eventsDoc,
-    ...(entityLocksSupplied ? { frozenLockAuthority } : {}),
+  const needsLegacyIdentityAdmission = !createdWorkflowController || events.some((event) => {
+    const covered = createdWorkflowCovered.has(`${event.intentId}\u0000${event.atom}`);
+    return !covered && !['nav.workflowManagement', 'assert.textVisible'].includes(event.atom);
   });
+  const identityAdmission = needsLegacyIdentityAdmission
+    ? checkCompileIdentityAdmission({
+      caseId,
+      eventsBytes: readFileSync(args.events),
+      eventsDocument: eventsDoc,
+      ...(entityLocksSupplied ? { frozenLockAuthority } : {}),
+    })
+    : { ok: true };
   if (!identityAdmission.ok) {
     console.error(`replay: frozen identity locks 未过（${identityAdmission.reason}），未启动浏览器；下一步 ${identityAdmission.nextAction}`);
     process.exit(65);
@@ -187,7 +269,10 @@ async function main() {
   const destructiveContinuityByStep = new Map(); // per-step 已认证 ref；route:human 采集补齐前恒空（v1 锁永空）
   const lockKindLabel = (frozenIdentityRows && frozenIdentityRows.length) ? 'v2 身份锁' : 'v1 锁（无身份通道、结构上不可核实目标连续性）';
   if (frozenLockAuthority) {
-    const destructiveAdmission = admitDestructiveTargetContinuity({ events, resolvedRefByStep: destructiveContinuityByStep });
+    const destructiveEvents = createdWorkflowController
+      ? events.filter((event) => !createdWorkflowCovered.has(`${event.intentId}\u0000${event.atom}`))
+      : events;
+    const destructiveAdmission = admitDestructiveTargetContinuity({ events: destructiveEvents, resolvedRefByStep: destructiveContinuityByStep });
     if (!destructiveAdmission.ok) {
       const a = destructiveAdmission.atom ? `, atom=${destructiveAdmission.atom}` : '';
       console.error(`replay: 破坏性目标连续性 ref 缺失（${destructiveAdmission.reason}${a}），${lockKindLabel}在力却无法证同一目标，未启动浏览器（fail-closed，护栏 #14）`);
@@ -251,6 +336,7 @@ async function main() {
     // 出站拦截路径对破坏步不可达；proceed（有合法 ref 放行破坏动作）路径待真机破坏链采集激活（route:human），
     // 当前生产不可达（诚实挂账，非「非 always-refuse」宣称——codex round-2 Medium 收口）。
     destructiveContinuityByStep,
+    ...(createdWorkflowController ? { createdWorkflowController } : {}),
     admitReplayActionOrigin: createReplayOriginAdmission(execution.authority),
   };
 
@@ -273,6 +359,17 @@ async function main() {
     const audienceGate = checkCredentialAudienceGate({ audience: frozenAuthorityRead.audience, credentialContext });
     if (!audienceGate.ok) {
       console.error(`replay: 准入受众与凭据上下文不符（${audienceGate.reason}：受众=${frozenAuthorityRead.audience} 上下文=${credentialContext}），未启动浏览器；下一步 ${audienceGate.nextAction}`);
+      process.exit(65);
+    }
+  }
+  if (createdWorkflowAuthorityAudience != null) {
+    const credentialContext = loginPrep ? 'production' : 'test';
+    const audienceGate = checkCredentialAudienceGate({
+      audience: createdWorkflowAuthorityAudience,
+      credentialContext,
+    });
+    if (!audienceGate.ok) {
+      console.error(`replay: v3 created-workflow 授权受众与凭据上下文不符（${audienceGate.reason}），未启动浏览器`);
       process.exit(65);
     }
   }

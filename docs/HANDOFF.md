@@ -3,6 +3,14 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
+## 2026-08-03：P9 created-workflow continuity v3 机器实现就绪（最新覆盖层）
+
+1. 在 Windows 独立工作树 `casey-p9-waves`、分支 `codex/p9-waves` 上完成 P9 v3 机器纵向链：结构授权 draft/freeze/read/preflight、当轮完整列表字符串 ID 读回、单次 ref、删除前 method/path/唯一 ID location 守卫、至少 3 样本且至少 3000ms 的同 ID 稳定缺席，以及 replay→三轴→零 LLM 裁定→报告→Tier2 清洁门深消费。
+2. 四枚冻结红基线由 5/4、0/8、0/8、0/6 转为 9/9、8/8、8/8、6/6；四枚 successor 分别 6/6、4/4、5/5、4/4。Windows `tier-1`、术语检查和 PRD ratchet dry gate 均 exit 0。C2 三枚邻接与 bindAgent 双锁在 WSL 同一工作树补充交叉执行全绿，未放宽 relation 原子双锁。
+3. Windows 原生 Chromium 对真实 SUT 的只读探针 exit 0：真实列表 2xx、完整扫描精确命中 1 条、ID 保持 string、DOM 容器确认 `article.agent-card`；全程 `mutationSent:false`。当前没有 delete-capable 记录，真实删除请求形状仍未确认。
+4. 状态口径：只能称 `P9 v3 machine implementation ready`。旧固定 ID ref-rebuild 历史红件、签署版 Tier2 manifest、人签 mutation 授权、三次 fresh compile、三条真实清理、五成员同批 Tier2、录像/报告/残留扫描和最终 UAT signoff 均未闭合；`REAL_SUT_PASSED=false`、`HUMAN_SIGNED=false`。
+5. 证据索引：`docs/plans/p9-created-workflow-cleanup-continuity-v3/evidence/wave1-machine-implementation-20260803.md`。未 push、未 merge、未 rebase；原 `dev` 脏工作树未改写。
+
 ## 2026-07-31 凌晨：publish 阻断点定性纠偏 + P9 推到只剩人签（最新覆盖层）
 
 > Steven 睡前授权自行判断推进，总目标 P9 完成、顺带起接口交互。本层记的是

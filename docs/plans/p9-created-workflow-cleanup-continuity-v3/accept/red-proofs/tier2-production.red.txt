@@ -1,0 +1,25 @@
+# Scope note: this is the actually captured red output of the broader predecessor test. The frozen
+# successor was narrowed afterward to fresh batch context, v3 artifact admission, cleanup projection,
+# and runTier2 deep consumption. No opaque ten-attachment framework is carried into the P9 gate.
+
+# red proof: p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs
+# command: node tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs
+# captured: 2026-08-03（异构 review 修订后、production collector 实现前）
+# exit code: 1
+# distribution: 0 passed / 10 red
+# test sha256: d71e40354a8200a109820dcb5133b29c5493351611fea96a35c6caa95d0ef7c9
+# red cause: production 尚无 batch/project/read/finalize 四接缝与 execute deps 注入面；
+# projector 还不能从真实附件字节铸 opaque evidence，finalizer 也未形成只验不补的双门。
+
+RED  p9-created-workflow-continuity-v3.tier2-production: T0 生产导出 batch/project/read/finalize 四接缝与显式 execute deps 面: 缺 production 导出 createP9Tier2BatchContext
+RED  p9-created-workflow-continuity-v3.tier2-production: T1 乱序输入规范化为 canonical 五员；v2 manifest 在生成时即带完整 lineage: 缺 production 导出 createP9Tier2BatchContext
+RED  p9-created-workflow-continuity-v3.tier2-production: T2 五员集合精确但来序不授权；缺/重/越界红，历史 batchToken 重放红: 缺 production 导出 createP9Tier2BatchContext
+RED  p9-created-workflow-continuity-v3.tier2-production: T3 projector 从真实 10 附件+receipt 铸 opaque evidence；plain/clone/spread 均拒: 缺 production 导出 createP9Tier2BatchContext
+RED  p9-created-workflow-continuity-v3.tier2-production: T4 evidence 铸后任一附件或 receipt 删除/改单字节，reader 都必须红: 缺 production 导出 createP9Tier2BatchContext
+RED  p9-created-workflow-continuity-v3.tier2-production: T5 finalizer 只读五枚 opaque evidence，双门绿且必传 cleanupObligations: 缺 production 导出 createP9Tier2BatchContext
+RED  p9-created-workflow-continuity-v3.tier2-production: T6 receipt true 但 mutation report cleanupEvidence 缺失或 false，projector 必拒: 缺 production 导出 createP9Tier2BatchContext
+RED  p9-created-workflow-continuity-v3.tier2-production: T7 旧批、缺 lineage、把旧证据顶层重贴新批都不得铸证: 缺 production 导出 createP9Tier2BatchContext
+RED  p9-created-workflow-continuity-v3.tier2-production: T8 finalizer 不得给缺 lineage manifest 补字段，也不得吃 receipt/report plain 自证: 缺 production 导出 createP9Tier2BatchContext
+RED  p9-created-workflow-continuity-v3.tier2-production: T9 executeTier2 deps 动态五例：canonical context → runOneCase opaque evidence → finalizer 一次: 缺 production 导出 createP9Tier2BatchContext
+p9-created-workflow-continuity-v3.tier2-production: 0/10
+p9-created-workflow-continuity-v3.tier2-production: RED (10 failed)

@@ -7,9 +7,8 @@
 // C0 已把 sign/compile 的「哪个原子产身份观察、绑什么 kind」泛化成按对象种类查的闭集注册表
 //   ENTITY_OBSERVATION_REGISTRY（lib/entity-observation-registry.mjs），agent.searchOpen→agent/subject 已注册。
 // C0 边界明写「不注册 workflow 观察原子（观察通道泛化=C2）」——C2 往注册表加 workflow 条目（数据驱动、C0 已备形状）：
-//   workflow.create / workflow.open → boundKind:'workflow'、requiredRoles:['source']（母规格 point 3「join 到 source
-//   binding」）、issuer:{compile-envelope, <该原子>}、provenanceByBindingMode 锚收据内核不变量（existing→user-confirmed、
-//   created-in-run→platform-readback，GRILL D5「workflow source existing 走 user-approval、created-in-run 必 platform-readback」）。
+//   successor amendment：workflow.create 是 created-in-run 单实体 ownership，requiredRoles:['subject']；
+//   workflow.open 仍为既有对象 source 读回，requiredRoles:['source']。issuer/provenance 闭集不变。
 // codex Q3 铁律（GRILL D3）：闭集——不能改成「任何 kind:'workflow' 的观察行都接受」。伪造一条 kind 对、但
 //   角色/来源/关联/provenance 其一不匹配的 workflow 观察行，必须被具名 rejectCode fail-closed 拒。
 //
@@ -99,16 +98,16 @@ const EVENTS_CREATE = [
   { stepId: 'atstep_1', intentId: 'intent_1', atom: 'workflow.create', action: 'fill', value: WF_NAME },
   { stepId: 'atstep_2', intentId: 'intent_1', atom: 'workflow.create', action: 'click', text: '确定' },
 ];
-// source binding（母规格 point 3：workflow 创建即绑为 source，读回 join 到 source binding）。
+// created-in-run workflow.create 与生产准入/flow/draft/sign 统一使用 subject binding。
 const BINDINGS_CREATE = [{
   stepId: 'atstep_2', intentId: 'intent_1', atom: 'workflow.create',
-  sourceIntentId: 'source_wf_1', candidateId: 'candidate-wf-main', role: 'source',
+  sourceIntentId: 'source_wf_1', candidateId: 'candidate-wf-main', role: 'subject',
   bindingMode: 'created-in-run',
 }];
 function wfRow(overrides = {}) {
   return {
     kind: 'workflow', name: WF_NAME, code: WF_CODE, platformId: WF_PLATFORM_ID,
-    sourceIntentId: 'source_wf_1', candidateId: 'candidate-wf-main', role: 'source',
+    sourceIntentId: 'source_wf_1', candidateId: 'candidate-wf-main', role: 'subject',
     atom: 'workflow.create', evidenceStepId: 'atstep_2', sourcePath: WF_SOURCE_PATH,
     bindingMode: 'created-in-run', provenance: 'platform-readback',
     ...overrides,
@@ -140,6 +139,7 @@ function wfOpenInput(over = {}) {
     events: EVENTS_OPEN.map((e) => ({ ...e })),
     observation: wfObservationWith([wfRow({
       sourceIntentId: 'source_wf_2', candidateId: 'candidate-wf-open',
+      role: 'source',
       atom: 'workflow.open', evidenceStepId: 'opstep_1',
     })], { kind: 'compile-envelope', atom: 'workflow.open' }),
     bindings: BINDINGS_OPEN.map((b) => ({ ...b })),
@@ -175,14 +175,14 @@ function agentInput() {
 }
 
 // ── r0 结构：注册表已加 workflow.create / workflow.open 条目（形状锚 C0 agent 条目）─────
-test('r0', 'r0 ENTITY_OBSERVATION_REGISTRY 加 workflow.create/workflow.open→workflow/[source]、issuer/provenance 锚收据内核', () => {
+test('r0', 'r0 workflow.create→workflow/[subject]、workflow.open→workflow/[source]，issuer/provenance 闭集保持', () => {
   assert(ENTITY_OBSERVATION_REGISTRY instanceof Map, 'ENTITY_OBSERVATION_REGISTRY 须为 Map');
   for (const atom of ['workflow.create', 'workflow.open']) {
     const entry = ENTITY_OBSERVATION_REGISTRY.get(atom);
-    assert(entry && typeof entry === 'object', `${atom} 必须在观察注册表内（C2 注册 workflow source 读回原子）`);
+    assert(entry && typeof entry === 'object', `${atom} 必须在观察注册表内`);
     assert(entry.boundKind === 'workflow', `${atom} boundKind 须 'workflow'；实得 ${brief(entry.boundKind)}`);
-    deepStrictEqual([...entry.requiredRoles], ['source'],
-      `${atom} requiredRoles 须恰 [source]（母规格 point 3：workflow 读回 join 到 source binding）；实得 ${brief(entry.requiredRoles)}`);
+    deepStrictEqual([...entry.requiredRoles], [atom === 'workflow.create' ? 'subject' : 'source'],
+      `${atom} requiredRoles successor 角色不符；实得 ${brief(entry.requiredRoles)}`);
     assert(entry.issuer && entry.issuer.sourceKind === 'compile-envelope' && entry.issuer.atom === atom,
       `${atom} issuer 须 {compile-envelope, ${atom}}；实得 ${brief(entry.issuer)}`);
     assert(entry.provenanceByBindingMode
@@ -213,14 +213,14 @@ test('p2', "p2 数量恰好但 kind='chatflow'（不在 SUPPORTED_ENTITY_KINDS �
     'OBSERVATION_KIND_UNSUPPORTED', "p2 kind 词表外");
 });
 
-// ── p3 角色数量不匹配（多于 / 少于 requiredRoles=[source]）→ 拒 ───────────────────
-test('p3', 'p3a 角色多于（同终端 click 双观察行、均 role=source，基数 2≠requiredRoles 1）→ OBSERVATION_ROLE_COUNT_MISMATCH', () => {
-  // 两行逐字合法（kind=workflow、同锚 atstep_2、五元 join 各命中同一 source binding、provenance 合法），
+// ── p3 角色数量不匹配（多于 / 少于 requiredRoles=[subject]）→ 拒 ───────────────────
+test('p3', 'p3a 角色多于（同终端 click 双观察行、均 role=subject，基数 2≠requiredRoles 1）→ OBSERVATION_ROLE_COUNT_MISMATCH', () => {
+  // 两行逐字合法（kind=workflow、同锚 atstep_2、五元 join 各命中同一 subject binding、provenance 合法），
   // 唯一越界 = 同终端 click 观察基数 2≠1（sign.mjs join 基数口径）。
   expectReject(wfInput({ observation: wfObservationWith([wfRow(), wfRow()]) }),
     'OBSERVATION_ROLE_COUNT_MISMATCH', 'p3a 角色多于（基数越界）');
 });
-test('p3', 'p3b 角色少于（观察行空、但事件含终端 click 需 1 source 观察）→ OBSERVATION_ROLE_COUNT_MISMATCH', () => {
+test('p3', 'p3b 角色少于（观察行空、但事件含终端 click 需 1 subject 观察）→ OBSERVATION_ROLE_COUNT_MISMATCH', () => {
   expectReject(wfInput({ observation: wfObservationWith([]) }),
     'OBSERVATION_ROLE_COUNT_MISMATCH', 'p3b 角色少于');
 });
