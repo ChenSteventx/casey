@@ -1,0 +1,37 @@
+# red baseline @ a3a9a284dbc7b8eec28245af8b85b063ea8c4320 / 2026-08-03T19:41:19+08:00
+$ node tests/_golden/zero-shot-typed-progress-predicate.zero-sut.golden.mjs
+RED  zero-shot-typed-progress-predicate: P1 roleVisible/roleHidden 合法项可进闭集并冻结: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+ok   zero-shot-typed-progress-predicate: P2 role 类 predicate 的形状违例逐条拒付
+ok   zero-shot-typed-progress-predicate: P3 urlPathname 现役形状与全部旧拒因一字不变（回归钉）
+RED  zero-shot-typed-progress-predicate: P4 roleVisible 正控：动作前不可见、动作后唯一可见 → progressed: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+RED  zero-shot-typed-progress-predicate: P5 同名两命中时 roleVisible 不成立（复用 count===1 纪律）: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+RED  zero-shot-typed-progress-predicate: P6 动作前已可见 → EXPECTED_PROGRESS_NOT_CAUSED: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+RED  zero-shot-typed-progress-predicate: P7 roleHidden 正控：动作前可见、动作后不可见 → progressed: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+RED  zero-shot-typed-progress-predicate: P8 roleHidden 反控：动作后仍可见 → EXPECTED_PROGRESS_NOT_PROVED: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+RED  zero-shot-typed-progress-predicate: P9 纯否定 expected 动作前后均成立 → 守卫不得冒充进展: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+RED  zero-shot-typed-progress-predicate: P10 挂载但不可见即算 roleHidden 成立（可见性口径，非未挂载口径）: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+RED  zero-shot-typed-progress-predicate: P11 切片 1 复合语义：进管理页 + 详情抽屉未开 + URL 到位: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+RED  zero-shot-typed-progress-predicate: P12 含 roleHidden 且 after 目录截断 → PROGRESS_CATALOG_TRUNCATED: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+RED  zero-shot-typed-progress-predicate: P13 含 roleHidden 且 after 有未支持作用域 → PROGRESS_UNSUPPORTED_SCOPE: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+ok   zero-shot-typed-progress-predicate: P14 纯存在性 expected 在 after 截断下不被误拒（防无谓收紧）
+ok   zero-shot-typed-progress-predicate: P15 上游封堵回归钉：截断的 before 在 resolver 与 admission 两处均拒且零动作
+RED  zero-shot-typed-progress-predicate: P16 progressReceipt 恒降权、无裁定字样、conditionKinds 反映实际判据种类: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+RED  zero-shot-typed-progress-predicate: P17 现役授权链拒因在新 predicate 下逐条保持不变: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+RED  zero-shot-typed-progress-predicate: P18 after 未静默时新 predicate 一律不判进展: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+
+not ok zero-shot-typed-progress-predicate: 4/18 通过，14 条红
+  - P1 roleVisible/roleHidden 合法项可进闭集并冻结: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+  - P4 roleVisible 正控：动作前不可见、动作后唯一可见 → progressed: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+  - P5 同名两命中时 roleVisible 不成立（复用 count===1 纪律）: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+  - P6 动作前已可见 → EXPECTED_PROGRESS_NOT_CAUSED: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+  - P7 roleHidden 正控：动作前可见、动作后不可见 → progressed: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+  - P8 roleHidden 反控：动作后仍可见 → EXPECTED_PROGRESS_NOT_PROVED: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+  - P9 纯否定 expected 动作前后均成立 → 守卫不得冒充进展: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+  - P10 挂载但不可见即算 roleHidden 成立（可见性口径，非未挂载口径）: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+  - P11 切片 1 复合语义：进管理页 + 详情抽屉未开 + URL 到位: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+  - P12 含 roleHidden 且 after 目录截断 → PROGRESS_CATALOG_TRUNCATED: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+  - P13 含 roleHidden 且 after 有未支持作用域 → PROGRESS_UNSUPPORTED_SCOPE: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+  - P16 progressReceipt 恒降权、无裁定字样、conditionKinds 反映实际判据种类: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+  - P17 现役授权链拒因在新 predicate 下逐条保持不变: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+  - P18 after 未静默时新 predicate 一律不判进展: step contract 应冻结成功：{"ok":false,"reason":"EXPECTED_PROGRESS_NOT_ALLOWED","contract":null}
+EXIT=1
