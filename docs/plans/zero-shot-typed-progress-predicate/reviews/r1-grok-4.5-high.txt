@@ -1,0 +1,398 @@
+┃node -e '
+┃  const {verifyStepProgress} = require("./lib/zero-shot/progress-verifier.mjs");
+┃  const obs = {
+┃    affordances: [{role:"dialog",visible:false,redactionSuppressed 0}],
+┃    pageCount:1
+┃  };
+┃  verifyStepProgress(obs, {roleHidden:true}, {roleHidden:true}); // true
+┃'
+┃suggest: 在  verifyStepProgress 前 显 式 检 查  before.
+◆ Search "conditionKind|progressReceipt|inspectProgressReceipt" in *.{mjs,js} (21 matches in 5 files)  [hooks: 2]
+◆ Task started: Prove pageCount trunc gap; verify no dirty tree
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (672ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (611ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (6ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (704ms)
+◆ Task completed in 2.6s: Prove pageCount trunc gap; verify no dirty tree
+┃◆ Thought for 1.0s
+┃
+┃Let me wait for the command to finish.
+┃◆ Thought for 22.6s
+┃
+┃Good - implementation correctly returns EXPECTED_PROGRESS_NOT_PROVED when pageCount=2 under truncation. Golden P5 doesn't nail the pageCount leg specifically (mutation of dropping pageCount stays
+┃gree...Critical
+┃file: lib/zero-shot/progress-verifier.mjs:142
+┃why: pageCount leg of roleVisible uniqueness is not nailed in golden; mutation dropping pageCount still passes → false green
+┃repro:
+┃
+┃cd /mnt/d/ctx/heren/casey-zero-shot-typed-progress-p predicate
+┃node -e '
+┃const {verifyStepProgress} = require("./tests/_golden/zero-shot-typed-progress-predicate.zero-sut.golden.mjs");
+┃const obs = {pageCount:2, matched:[{role:"dialog",visible:true}], affordances:[]};
+┃console.log(verifyStepProgress(obs, { // before with pageCount=2
+┃  before: {pageCount:1, matched:[], affordances:[]},
+┃  after: obs,
+┃  expected: {roleVisible:"dialog"}
+┃}));
+┃'
+┃suggest: add pageCount:1 to before in golden or tighten predicate to require pageCount===1 when 1 match
+┃
+┃Medium
+┃file: lib/zero-shot/progress-verifier.mjs:178
+┃why: redactionSuppressed asymmetry lets before-redacted element become visible after without action creating it
+┃repro:
+┃
+┃node -e '
+┃const {verifyStepProgress} = require(".
+发 现 一 个 可 能 的  before 面 脱 敏 假 进 展 洞 ， 正 在 复 现 取 证 。
+◆ Run Reproduce roleVisible false progress via before redaction
+$ cd /mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate && node --input-type=module <<'EOF'
+  import { readFileSync } from 'node:fs';
+  import { freezeZeroShotStepContract } from './lib/zero-shot/step-contract.mjs';
+  import { verifyStepProgress } from './lib/zero-shot/progress-verifier.mjs';
+  import { observePage } from './lib/zero-shot/page-observer.mjs';
+  import { resolveDeterministicAction } from './lib/zero-shot/deterministic-resolver.mjs';
+  import { admitZeroShotAction } from './lib/zero-shot/action-admission.mjs';
+  import { executeAdmittedAction } from './lib/zero-shot/step-executor.mjs';
+  import { buildIntentPlan } from './lib/intent-plan.mjs';
+  import { createPageDriverDouble } from './tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs';
+  const REGISTRY = JSON.parse(readFileSync('./lib/atoms-registry.snapshot.json','utf8'));
+  const CASE_ID = 'tc_zero_shot_typed_progress';
+  const INTENT_ID = 'intent_1';
+  const NAV_NAME = '进 入 工 作 流 管 理 ';
+  const PAGE_HEADING = '工 作 流 管 理 ';
+  const OPAQUE = 'QQ1yZmM0YTIxYjhkNGU0ZjZhOWMwZDNlN2I1YTgyYzRk';
+  const testcase = Object.freeze({
+    schemaVersion: 1, caseId: CASE_ID, source: { kind: 'freetext', raw: 'x' }, preconditions: [],
+    steps: [{ intentId: INTENT_ID, intent: 'x', actionHint: 'click',
+      expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/workflow' }] }],
+    globalAssertions: [], uniquePrefix: 'atl_',
+  });
+  // BEFORE: heading already on page but redaction-suppressed (text has opaque id)
+  // AFTER: same heading clean, visible — action did not create it; redaction noise flipped predicate
+  const page = createPageDriverDouble({
+    snapshots: [
+      { revision: 'r1', url: 'https://x.invalid/home', title: 't', affordances: [
+        { handleId: 'nav', role: 'link', accessibleName: NAV_NAME, text: NAV_NAME, visible: true, enabled: true, actionSpace: ['click'] },
+        { handleId: 'h', role: 'heading', accessibleName: PAGE_HEADING, text: `${PAGE_HEADING} ${OPAQUE}`, visible: true, enabled: true, actionSpace: [] },
+      ]},
+      { revision: 'r2', url: 'https://x.invalid/home', title: 't', affordances: [
+        // stay on same path — only "progress" is roleVisible of heading that was always there
+        { handleId: 'nav2', role: 'link', accessibleName: NAV_NAME, text: NAV_NAME, visible: true, enabled: true, actionSpace: ['click'] },
+        { handleId: 'h', role: 'heading', accessibleName: PAGE_HEADING, text: PAGE_HEADING, visible: true, enabled: true, actionSpace: [] },
+      ]},
+    ],
+    revalidate: { connected: true, sameNode: true, pageCount: 1, visible: true, enabled: true },
+  });
+  const stepContract = freezeZeroShotStepContract({
+    testcase, intentPlan: buildIntentPlan({ testcase, registry: REGISTRY }),
+    intentId: INTENT_ID, action: 'click',
+    target: { kind: 'role', role: 'link', name: NAV_NAME, exact: true },
+    effect: 'read',
+    expectedProgress: [{ kind: 'roleVisible', role: 'heading', name: PAGE_HEADING }],
+    userConfirmed: true,
+  }).contract;
+  const before = await observePage({ driver: page.driver, intentId: INTENT_ID, maxCandidates: 20 });
+  console.log('BEFORE', {
+    rs: before.observation.redactionSuppressed,
+    names: before.observation.affordances.map(a => a.semantic),
+  });
+  const resolution = resolveDeterministicAction({ stepContract, observation: before.observation });
+  const admitted = await admitZeroShotAction({
+    stepContract, observation: before.observation, observationAuthority: before.authority, resolution,
+  });
+  console.log('resolve/admit', resolution.status, admitted.ok, admitted.reason, 'perform-pre', page.control.calls.perform);
+  const executed = await executeAdmittedAction({ admission: admitted.admission });
+  const after = await observePage({ driver: page.driver, intentId: INTENT_ID, maxCandidates: 20 });
+  console.log('AFTER', {
+    rs: after.observation.redactionSuppressed,
+    names: after.observation.affordances.map(a => a.semantic),
+  });
+  const progress = verifyStepProgress({
+    stepContract,
+    beforeObservation: before.observation,
+    actionReceipt: executed.actionReceipt,
+    afterObservation: after.observation,
+    afterObservationAuthority: after.authority,
+  });
+  console.log('FALSE PROGRESS via before-redaction?', progress.status, progress.reason);
+  console.log('perform count', page.control.calls.perform);
+  EOF
+BEFORE {
+  rs: 1,
+… +9 lines
+}
+FALSE PROGRESS via before-redaction? progressed null
+perform count 1
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (842ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (480ms)
+┃◆ Thought for 26.6s
+┃
+┃This is a confirmed fail-open for roleVisible via before-side redaction incompleteness. The plan says:Critical
+┃file: lib/zero-shot/progress-verifier.mjs:142
+┃why: before-side redaction incompleteness can make roleVisible false-positive (matched.length===1 && pageCount===1 && visible) when sensitive content is redacted on before but not after, violating
+┃existence predicate completeness.
+┃repro 1:
+┃
+┃node -e '
+┃const {verifyStepProgress} = require("./lib/zero-shot/progress-verifier.mjs");
+┃const obs = {
+┃  affordances: [{role:"visible",urlPathname:"/foo",visible:true}],
+┃  redactionSuppressed:0
+┃};
+┃const before = {aff :[],redactionSuppressed:1};
+┃const after = {aff:[{role:"visible",urlPathname:"/foo",visible:true}],redactionSuppressed:0};
+┃console.log(verifyStepProgress(before,after,obs));
+┃'
+┃suggestion: require before.
+◆ Read exploration-trace.mjs (1-53)  [hooks: 2]
+◆ Run Confirm receipt shape and clean worktree
+$ cd /mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate && node --input-type=module <<'EOF'
+  // Confirm action-progress happy path receipt shape after conditionKinds rename
+  import { readFileSync } from 'node:fs';
+  // Just re-run and check one receipt via internal - use typed golden style quickly
+  import { freezeZeroShotStepContract } from './lib/zero-shot/step-contract.mjs';
+  import { verifyStepProgress } from './lib/zero-shot/progress-verifier.mjs';
+  import { observePage } from './lib/zero-shot/page-observer.mjs';
+  import { resolveDeterministicAction } from './lib/zero-shot/deterministic-resolver.mjs';
+  import { admitZeroShotAction } from './lib/zero-shot/action-admission.mjs';
+  import { executeAdmittedAction } from './lib/zero-shot/step-executor.mjs';
+  import { buildIntentPlan } from './lib/intent-plan.mjs';
+  import { createPageDriverDouble } from './tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs';
+  const REGISTRY = JSON.parse(readFileSync('./lib/atoms-registry.snapshot.json','utf8'));
+  const CASE_ID = 'tc_zero_shot_typed_progress';
+  const INTENT_ID = 'intent_1';
+  const NAV_NAME = '进 入 工 作 流 管 理 ';
+  const testcase = Object.freeze({
+    schemaVersion: 1, caseId: CASE_ID, source: { kind: 'freetext', raw: 'x' }, preconditions: [],
+    steps: [{ intentId: INTENT_ID, intent: 'x', actionHint: 'click',
+      expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/workflow' }] }],
+    globalAssertions: [], uniquePrefix: 'atl_',
+  });
+  const page = createPageDriverDouble({
+    snapshots: [
+      { revision: 'r1', url: 'https://x.invalid/home', title: 't', affordances: [
+        { handleId: 'nav', role: 'link', accessibleName: NAV_NAME, text: NAV_NAME, visible: true, enabled: true, actionSpace: ['click'] },
+      ]},
+      { revision: 'r2', url: 'https://x.invalid/workflow/list', title: 't', affordances: [
+        { handleId: 'h', role: 'heading', accessibleName: '工 作 流 管 理 ', text: '工 作 流 管 理 ', visible: true, enabled: true, actionSpace: [] },
+      ]},
+    ],
+    revalidate: { connected: true, sameNode: true, pageCount: 1, visible: true, enabled: true },
+  });
+  const stepContract = freezeZeroShotStepContract({
+    testcase, intentPlan: buildIntentPlan({ testcase, registry: REGISTRY }),
+    intentId: INTENT_ID, action: 'click',
+    target: { kind: 'role', role: 'link', name: NAV_NAME, exact: true },
+    effect: 'read',
+    expectedProgress: [{ kind: 'urlPathname', op: 'startsWith', value: '/workflow' }],
+    userConfirmed: true,
+  }).contract;
+  const before = await observePage({ driver: page.driver, intentId: INTENT_ID });
+  const resolution = resolveDeterministicAction({ stepContract, observation: before.observation });
+  const admitted = await admitZeroShotAction({ stepContract, observation: before.observation, observationAuthority: before.authority, resolution });
+  const executed = await executeAdmittedAction({ admission: admitted.admission });
+  const after = await observePage({ driver: page.driver, intentId: INTENT_ID });
+  const progress = verifyStepProgress({
+    stepContract, beforeObservation: before.observation, actionReceipt: executed.actionReceipt,
+    afterObservation: after.observation, afterObservationAuthority: after.authority,
+  });
+  console.log(progress.progressReceipt);
+  // grep verdict paths
+  import { readdirSync } from 'node:fs';
+  console.log('bin files sample', readdirSync('bin').filter(f => /verdict|check|replay|report/.test(f)));
+  EOF
+  # ensure no dirty production files
+  git status --short lib/ tests/
+{
+  schemaVersion: 1,
+… +15 lines
+  'verdict-purity-guard.mjs',
+  'verdict.mjs'
+]
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (728ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (586ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (868ms)
+┃◆ Thought for 9.8s
+┃
+┃I have enough for a solid review. Let me also quickly check if there's a similar before-truncation path - blocked by admission. Good. Critical
+┃file: lib/zero-shot/progress-verifier.mjs:142
+┃why: roleVisible 的 唯 一 性 判 据  `matched.
+◆ Run Final verify worktree clean vs HEAD blobs
+$ git status --short && git hash-object lib/zero-shot/progress-verifier.mjs lib/zero-shot/step-contract.mjs lib/zero-shot/affordance-catalog.mjs lib/zero-shot/page-observer.mjs &&
+  git rev-parse HEAD:lib/zero-shot/progress-verifier.mjs HEAD:lib/zero-shot/step-contract.mjs HEAD:lib/zero-shot/affordance-catalog.mjs HEAD:lib/zero-shot/page-observer.mjs
+?? node_modules
+4e8a42476ff283c94ba0ba084b1778583cc3c5c8
+… +4 lines
+118d7abed37c20ce13e0e4ff6a1957108e22db0e
+9f4d5402aa27273088bcb51c9980f3431ac01ede
+4ec86437ef46037f8df53621639e0dda1d3113b8
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (721ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (563ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (742ms)
+┃◆ Thought for 0.2s
+┃
+┃Worktree is clean (only untracked node_modules). All production files match HEAD. Ready to write the full review.
+代 码 评 审 ： zero-shot typed progress predicate 闭 集 扩 展
+范 围 ： a3a9a28..446881b（ HEAD=446881b）
+工 作 树 ： 评 审 过 程 中 变 异 测 试 后 已 还 原 ； 生 产  4 件  blob 与  HEAD 一 致 。 仅  ?? node_modules 未 跟 踪 。
+自 跑 验 收 （ 只 信 退 出 码 ）
+┌────────────────────────────────────────────────────────┬────────────┐
+│ 命 令                                                    │ exit       │
+├────────────────────────────────────────────────────────┼────────────┤
+│ zero-shot-typed-progress-predicate.zero-sut.golden.mjs │ 0（ 20/20）  │
+├────────────────────────────────────────────────────────┼────────────┤
+│ zero-shot-action-progress...                           │ 0          │
+├────────────────────────────────────────────────────────┼────────────┤
+│ zero-shot-authority-runner...                          │ 0          │
+├────────────────────────────────────────────────────────┼────────────┤
+│ deterministic-resolver-step-contract...                │ 0          │
+├────────────────────────────────────────────────────────┼────────────┤
+│ page-observer-main-frame...                            │ 0          │
+├────────────────────────────────────────────────────────┼────────────┤
+│ public-observation-redaction...                        │ 0          │
+├────────────────────────────────────────────────────────┼────────────┤
+│ adaptive-module-boundaries.static...                   │ 0          │
+├────────────────────────────────────────────────────────┼────────────┤
+│ term-lint.mjs --registry                               │ 0          │
+└────────────────────────────────────────────────────────┴────────────┘
+───
+Findings
+High-1： roleVisible 可 因  before 面 脱 敏 抑 制 而 假 进 展
+位 置 ： lib/zero-shot/progress-verifier.mjs:98-103（ 完 整 性 前 置 只 作 用 于  after + 缺 席 类 ） ； lib/zero-shot/action-admission.mjs 的  observationBlocker 不 查  redactionSuppressed。
+为 什 么 是 问 题
+plan §4 / R1 正 确 堵 住 了  after + roleHidden 的 脱 敏 假 绿 ， 但 论 证 「 存 在 性 断 言 不 受 完 整 性 约 束 ， 因 为 截 断 只 丢 不 造 候 选 」 对  脱 敏  不 成 立 ： 脱 敏 可 以 让 本 来 就 在
+而 把 「 观 测 噪 声 」 读 成  roleVisible 进 展 。
+before 的  truncated / unsupportedScopes 会 被  admission 拦 住 ； before 的  redactionSuppressed>0 不 会 ， 因 此 这 条 路 径 真 实 可 达 。
+可 复 现 最 小 反 例 （ 未 改 仓 库 ， 仅 探 针 ） ：
+before: nav(link) + heading「 工 作 流 管 理 」 (visible， 但  text 含  32+ 不 透 明 标 识  → redactionSuppressed=1， heading 不 进 目 录 )
+after:  同  path 或 任 意 ； heading 干 净 可 见 ， redactionSuppressed=0
+expectedProgress: [{ kind:'roleVisible', role:'heading', name:'工 作 流 管 理 ' }]
+→ admission 通 过 、 perform=1、 verifyStepProgress → status:'progressed'
+实 测 ： progressed， reason=null。 动 作 并 未 「 造 出 」 标 题 ， 只 是  before 被 脱 敏 吞 掉 。
+建 议 修 法
+凡  expectedProgress 含  roleVisible（ 或 更 宽 ： 任 何 依 赖  affordance 存 在 性 的 判 据 ） ， 对  beforeObservation 同 样 要 求  Number.isInteger(redactionSuppressed) && redactionSuppressed === 0
+PROGRESS_REDACTION_SUPPRESSED。
+（ after 侧 对  roleVisible 缺 完 整 性 只 会 变 成  NOT_PROVED， 已 是  fail-closed； 危 险 方 向 是  before。 ）
+补 钉 ： P19 对 称 的 「 before 脱 敏  + roleVisible → 拒 」 场 景 。
+───
+Medium-1： 金 牌  P5 钉 不 住  pageCount===1 腿 （ 变 异 假 绿 ）
+位 置 ： tests/_golden/zero-shot-typed-progress-predicate.zero-sut.golden.mjs P5（ 约  296–305 行 ） ； 实 现  progress-verifier.mjs:39-40。
+为 什 么 是 问 题
+P5 构 造 的 是 目 录 内 两 条 同 名 命 中 （ matched.length===2 且  pageCount===2） 。 删 掉 实 现 里 的  pageCount === 1 后 ， matched.length === 1 && visible 仍 足 以 让  P5 失 败 路 径 成 立 ——整
+可 复 现
+临 时 把
+matched.length === 1 && matched[0].pageCount === 1 && matched[0].visible === true
+改 成
+matched.length === 1 && matched[0].visible === true
+→ 金 牌 仍  exit 0； 还 原 后  sha 与  HEAD 一 致 。
+对 照 ： 实 现 本 身 在 截 断 场 景 是 对 的 （ 探 针 ） ：
+after: 两 同 名  heading， maxCandidates=1 → truncated=true， catalog 仅  1 条 ， pageCount=2
+roleVisible → pending EXPECTED_PROGRESS_NOT_PROVED  ✓
+plan 宣 称 「 pageCount 在 截 断 前 全 集 上 算 出 」 有 实 现 支 撑 ， 但 金 牌 没 有 钉 住 「 仅 靠  pageCount、 matched.length===1」 这 条 腿 。
+建 议 修 法
+新 增 钉 子 ： before 正 常  resolved； after maxCandidates 截 成  1 条 但  pageCount===2； 断 言  EXPECTED_PROGRESS_NOT_PROVED（ 且 可 选 ： 对 「 去 掉  pageCount 检 查 」 的 变 异 必 须 由 绿 转 红
+───
+风 险 清 单 逐 条 结 论
+1. 闭 集 是 否 真 闭  — 无 发 现 （ 绕 不 过  validProgressItem）
+探 针 覆 盖 ： Object.create(null) 合 法 项 可 过 ； JSON/enumerable __proto__、 数 组 项 、 数 字 键 、 原 型 继 承  extra、 kind 仅 在 原 型 、 未 知  kind、 多 余 键  → 一 律  EXPECTED_PROGRESS_NOT
+Symbol 键 被  Object.keys 忽 略 ， 不 扩 大  kind 闭 集 （ 冻 结 时  structuredClone 丢  Symbol） 。
+urlPathname 旧 拒 因 （ contains、 无 前 导  /、 //、 ?/#/://、 缺 键 、 多 余 键 ） 仍 拒 。
+合 法 边 界 ： role 长  64 过 、 65 拒 ； unicode role 拒 。
+2. 缺 席 类  fail-open — after 三 源 已 堵 ； 存 在 性  before 脱 敏 见  High-1
+┌─────────────────────┬───────────────────────────────┬─────────────────────────────────────┐
+│ 不 完 整 来 源           │ after + roleHidden            │ 证 据                                 │
+├─────────────────────┼───────────────────────────────┼─────────────────────────────────────┤
+│ truncated           │ PROGRESS_CATALOG_TRUNCATED    │ P12 + 变 异 删 完 整 性  → P12/P13/P19 红  │
+├─────────────────────┼───────────────────────────────┼─────────────────────────────────────┤
+│ unsupportedScopes   │ PROGRESS_UNSUPPORTED_SCOPE    │ P13                                 │
+├─────────────────────┼───────────────────────────────┼─────────────────────────────────────┤
+│ redactionSuppressed │ PROGRESS_REDACTION_SUPPRESSED │ P19； 删 红 action 闸  → 仅  P19 红       │
+└─────────────────────┴───────────────────────────────┴─────────────────────────────────────┘
+第 四 种 「 真 可 见 却 不 进  affordances」 （ 相 对  role+name 匹 配 ） ：
+• 非 候 选 （ 无  role/非  native） 本 就 不 进  snapshot——断 言 语 义 是  ARIA role， 不 记 缺 陷 。
+• sourceTruncated： 真  driver 写 入  snapshot， catalog 并 入  truncated（ playwright-page-driver.mjs:311 + affordance-catalog.mjs:141-142） 。 adapter double 不 转 发  sourceTruncated（ 夹 具 限 制
+• 投 影 成  kind:label|text（ role 有 效 但  accessibleName 空 、 仅  label/text） ： 元 素 仍 在 目 录 ， 但  roleHidden 只 认  kind:'role'。 真  Playwright factsFor 用  textContent 填  accessibleNam
+finding。
+• 无 名 丢 弃 不 计 抑 制 ： P20 覆 盖 ， 符 合 设 计 。
+3. roleVisible 唯 一 性  — 实 现 正 确 ； 金 牌 不 完 整 （ Medium-1）
+• matched.length===1 && pageCount===1 && visible： 截 断 下  pageCount 仍 按 投 影 全 集 计 （ catalog 实 测  pageCount=2） 。
+• 存 在 性 不 受  after 完 整 性 约 束 ： P14 与 探 针  H 行 为 与  plan 一 致 。
+• 反 例 （ 金 牌 缺 口 ） ： 见  Medium-1； 截 断  + pageCount=2 实 现 拒 、 P5 钉 不 住  pageCount 腿 。
+4. 因 果 性  — 合 取 级 规 则 本 身 无 洞 ； 纯 否 定 不 能 冒 充 进 展
+┌────────────────────────────┬───────────────────────────────────────┐
+│ 场 景                        │ 结 果                                   │
+├────────────────────────────┼───────────────────────────────────────┤
+│ 纯  roleHidden 前 后 皆 真      │ EXPECTED_PROGRESS_NOT_CAUSED（ P9）     │
+├────────────────────────────┼───────────────────────────────────────┤
+│ 混 合  URL 翻 转  + HID 始 终 真  │ progressed（ 守 卫 不 单 独 冒 充 ， 符 合  G6）  │
+├────────────────────────────┼───────────────────────────────────────┤
+│ 前 后 全 真 （ VIS+HID）         │ NOT_CAUSED                            │
+├────────────────────────────┼───────────────────────────────────────┤
+│ after 仍 可 见                │ NOT_PROVED（ P8）                       │
+├────────────────────────────┼───────────────────────────────────────┤
+│ 删 因 果 、 强 制  afterMatched  │ P5/P6/P8/P9 红                         │
+└────────────────────────────┴───────────────────────────────────────┘
+不 能 构 造 「 动 作 零 语 义 变 化 却 仅 靠 合 取 规 则 假  progressed」 的 纯 逻 辑 洞 ； High-1 是 观 测 不 完 整 导 致 的 假  before 否 定 ， 不 是 合 取 式 本 身 的 漏 洞 。
+5. 授 权 链  — 无 发 现
+• redactionSuppressed 进  catalogDigest（ affordance-catalog.mjs:97-99,177-181） ， 经  observePage 冻 结 进  observation。
+• 伪 造  {...obs, redactionSuppressed:0} / structuredClone 篡 改  → OBSERVATION_AUTHORITY_MISMATCH（ WeakMap 身 份  + digest 绑 定 ） 。
+• P17 覆 盖  receipt/observation 换 体 拒 付 。
+6. 护 栏 合 规  — 无 发 现
+• 收 据 恒  signed:false / replayReady:false（ P16 + 探 针 ） 。
+• 全 仓  conditionKind（ 单 数 ） 消 费 者 ： 无 ； 仅  conditionKinds 与 本 金 牌  P16。 邻 接  action-progress 不 读 该 字 段 ， exit 0。
+• bin/ 无  verifyStepProgress / roleHidden 引 用 ； exploration-trace 只 认  WeakMap 权 威 与  progress:'progressed' 字 面 ， 不 进  verdict/三 轴 /report。
+• 裁 判 零  LLM / 断 言 种 类 不 可 知 ： 本 改 动 未 碰  check.mjs / verdict.mjs。
+7. 金 牌 质 量  — 1 处 假 绿 腿 （ Medium-1） ； 其 余 抽 检 扎 实
+┌──────────────────────────┬───────────────────────┐
+│ 变 异                      │ 金 牌                   │
+├──────────────────────────┼───────────────────────┤
+│ 删 完 整 性 前 置              │ 17/20， P12/P13/P19 红  │
+├──────────────────────────┼───────────────────────┤
+│ 只 删  redaction 闸         │ 19/20， P19 红          │
+├──────────────────────────┼───────────────────────┤
+│ roleHidden 改 未 挂 载 口 径   │ P10 红                 │
+├──────────────────────────┼───────────────────────┤
+│ roleVisible 改  any-match │ P5 红                  │
+├──────────────────────────┼───────────────────────┤
+│ 放 宽  role 字 符 集          │ P2 红                  │
+├──────────────────────────┼───────────────────────┤
+│ 去 掉  pageCount===1       │ 仍  20/20 ← 假 绿        │
+├──────────────────────────┼───────────────────────┤
+│ 跳 过 因 果                  │ P5/P6/P8/P9 红         │
+└──────────────────────────┴───────────────────────┘
+8. before 完 整 性 不 可 达 主 张  — 对  truncated/scopes 成 立 ； 对  redaction 不 成 立 （ 归 入  High-1）
+• 截 断  before： resolve → blocked/CATALOG_TRUNCATED， admit → denied=CATALOG_TRUNCATED， perform=0（ P15 + 复 测 ） 。 到 不 了  verifyStepProgress 的 合 法  actionReceipt 路 径 。
+• 因 此 「 before 不 再 查  truncated」 不 是 死 代 码 误 判 。
+• redaction 的  before 面 可 达 ， 且 对  roleVisible 可 假 进 展  → High-1， 不 是  Critical 的 「 截 断  before 可 达 」 。
+───
+总 评
+核 心  after 缺 席  fail-open（ 截 断  / 未 支 持 作 用 域  / 脱 敏 ） 与 闭 集 扩 展 、 因 果 、 授 权 、 降 权 、 邻 接 回 归 均 站 得 住 ； 但  roleVisible 在  before 脱 敏 下 可 假  progressed 与
+钉 住  pageCount 在 截 断 唯 一 性 上 的 贡 献 。
+VERDICT: CHANGES_REQUIRED
+Worked for 16m38s                                                                                                                                                                       stop  [hooks: 5]
+      ✓ global/settings:stop[0].hooks[0] (7ms)
+      ✓ global/settings:stop[1].hooks[0] (682ms)
+      ✓ project/settings:stop[0].hooks[0] (590ms)
+      ✓ project/settings:stop[0].hooks[1] (575ms)
+      ✓ project/settings:stop[1].hooks[0] (75ms)
+minimal · /help
+❯
+Grok 4.5 (high) · always-approve · 106K / 500K (21%) · ctrl+o transcript

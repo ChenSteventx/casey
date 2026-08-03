@@ -3,7 +3,53 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-03：Codex 停点交接——Wave 1/2 已提交本地 dev（最新覆盖层）
+## 2026-08-03：Wave 4→6 首片——typed progress predicate 闭集扩展（最新覆盖层）
+
+1. **起点核对**：会话开始时 `dev@d77dfb5`，摸底期间另一写入方把 Wave 1/2 落到 `dev@a3a9a28`
+   （`9272d97` + cherry-pick `d89879d` + 交接层 `a3a9a28`）。Wave 1 四枚冻结金牌在 dev 上实跑
+   全 exit 0（9/9、8/8、8/8、6/6），确认已落地、无需重做。Steven 确认写权独占后从 `a3a9a28`
+   起独立工作树 `casey-zero-shot-typed-progress-predicate`（分支同名）。
+2. **本层做了什么**：把 zero-shot typed progress predicate 闭集从单一 `urlPathname` 扩到
+   `roleVisible` / `roleHidden`，使 P9 纵向切片 1「点击工作流管理」的三条**否定式**验收点
+   （没自动打开具体工作流、没进测试会话、没进消息页面）第一次可被表达。判定是
+   `PageObservation` 已有事实的纯函数投影——零新增采集、零驱动改动、零持久状态，
+   不碰正式回放链、不进 `verdict.mjs`、三轴与 report。
+3. **真正的价值不在扩枚举，在堵 fail-open**。缺席类断言只有目录完整才证得出来，而现役
+   `progress-verifier` 对 after observation 既不查 `truncated` 也不查 `unsupportedScopes`
+   （`affordance-authority.mjs` 的 `blockReason` 只在 `revalidateAffordance` 被查、
+   `inspectAffordanceAuthority` 不看它）。三轮共堵四种不完整来源：目录截断、未支持作用域、
+   **脱敏抑制**（自查探针逮到）、**空目录**（评审逮到）。
+4. **三次收敛，每次都是实测推翻推理**：
+   - 首版按「肯定/否定」划线，只对缺席类查 after。
+   - R1 自查：`semanticOf` 在三个名称来源任一命中敏感规则时整条丢弃候选且不计入 `truncated`；
+     可见的详情抽屉只因正文含 32 字符以上不透明标识就整条消失，`roleHidden` 误判成立
+     并判 `progressed`——**真实假绿**。修法把「脱敏抑制」与「无可用名称」分开计数
+     （无名候选没有名称、永远匹配不上 `role+name` 判据，丢弃无害）。
+   - R2 异构评审：`pi` 逮到 driver 层截断（`playwright-page-driver.mjs:71-72` 在候选数达
+     `MAX_DISCOVERED` 时直接不收元素，`pageCount` 在幸存集上低估成 1，`roleVisible` 同样假绿），
+     证伪首版豁免理由；`grok` 逮到 before 侧脱敏抑制可达（`observationBlocker` 不查
+     `redactionSuppressed`），判据由假翻真、因果闸放行未发生的进展。**收敛成一条更简单也更
+     正确的规则：按「是否读目录」划线，而不是按「肯定/否定」划线。**
+5. **证据**：金牌 `zero-shot-typed-progress-predicate.zero-sut.golden.mjs` 红基线 4/18
+   （红因 `EXPECTED_PROGRESS_NOT_ALLOWED` = 实现缺席，非 marker 假红）→ 24/24；十二路变异
+   十一路由绿转红，每次还原后 sha256 字节全同；邻接 11 项全 exit 0；`gate` GREEN 5/5。
+   三个本地提交 `15721ff` / `446881b` / `981b4a3`，均在功能分支，**未 push、未 merge、
+   未 rebase**，主树未提交内容一字未动。
+6. **开口项（如实挂账，勿当已覆盖）**：
+   - 删 `pageCount === 1` 金牌仍不红——收敛后该状态经生产路径不可达（由 P21 钉住），
+     属已知**测试不可达面**；
+   - 两类可见元素进不了 `role+name` 匹配面：无 role 属性的裸容器（driver 候选过滤直接排除、
+     不带完整性标志），以及有 role 但可访问名为空被投影成 `label`/`text` 的元素。
+     zero-SUT 夹具无枚举边界，证不出，须真机只读探查由人确认；
+   - 工作树跑 `prd-drift-scan` 必须软链主树 `cases/` 与 `runs/`（两者 gitignored、冻结件只在
+     主树），否则报缺件假红；该门本质是**主树**检查。
+   - 合并回 `dev` 需 Steven 单独授权；合并后须按护栏 #19 在主树复验受影响面。
+7. **下一步**：Wave 4 的观测包（页面内容器作用域，与浏览器拓扑严格分离）、Wave 6 的
+   promotion gate、Wave 3 的 `agent-loop-harness` 迁移（触 hooks/gate/package scripts，
+   属 kernel 车道，须双设计审 + 人签）均未开工。P9 真机与人签仍全部未闭：
+   `REAL_SUT_PASSED=false`、`HUMAN_SIGNED=false`。
+
+## 2026-08-03：Codex 停点交接——Wave 1/2 已提交本地 dev（历史覆盖层）
 
 1. 用户要求在 Wave 2 后停止。本轮从 `dev@d77dfb5` 建 Windows 独立工作树
    `D:\ctx\heren\casey-p9-waves`，完成后把两笔已验证纵向提交落回本地 `dev`：
