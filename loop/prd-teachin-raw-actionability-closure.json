@@ -23,12 +23,12 @@
       "acceptance": [
         "node tests/_golden/teachin-raw-actionability.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-07-31T01:21:33.618Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T02:16:37.553Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-adjacent-zero-regression",
       "title": "S2 邻接面零回归（护栏 #19）：换签两金牌新件 + 闭环全链 + 结构门 + 前序契约金牌复跑绿",
-      "passes": false,
+      "passes": true,
       "acceptance": [
         "node tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs",
         "node tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs",
@@ -43,7 +43,7 @@
         "node tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs",
         "node tests/_golden/teachin-nav-expansion-recipe.zero-sut.golden.mjs"
       ],
-      "evidence": ""
+      "evidence": "gate@2026-08-03T02:17:27.682Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-repo-drift-and-terms",
@@ -53,7 +53,7 @@
         "node tests/_golden/support/prd-drift-scan.mjs",
         "node loop-kit/bin/term-lint.mjs --registry"
       ],
-      "evidence": "gate@2026-07-31T01:22:53.979Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T02:17:45.178Z 全部 acceptance exit 0"
     }
   ],
   "checksumAmendments": [

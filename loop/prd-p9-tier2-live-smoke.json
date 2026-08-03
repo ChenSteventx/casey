@@ -33,7 +33,7 @@
       "acceptance": [
         "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-07-30T09:01:08.735Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T02:05:08.014Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-adjacent-zero-regression",
@@ -49,7 +49,7 @@
         "node tests/_golden/teachin-nav-expansion-recipe.zero-sut.golden.mjs",
         "node tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-07-30T09:11:07.218Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T02:07:13.139Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-repo-drift-and-terms",
@@ -59,7 +59,7 @@
         "node tests/_golden/support/prd-drift-scan.mjs",
         "node loop-kit/bin/term-lint.mjs --registry"
       ],
-      "evidence": "gate@2026-07-30T09:12:37.685Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T02:07:32.759Z 全部 acceptance exit 0"
     }
   ],
   "checksumAmendments": [

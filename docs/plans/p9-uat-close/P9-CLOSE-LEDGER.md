@@ -269,3 +269,58 @@ Steven 2026-07-31 会话内三问三答落定最后三关：
 `loop/prd-p7-report.json` 与 `loop/prd-seams-freeze.json` 各一笔
 （徽章夹具补两态），均 `PENDING_STEVEN`。注意：`testChecksums` 已同步更新，
 **机制面是绿的，欠账只剩一个不被强制的字符串**——没有任何机器会拦它。
+
+## 2026-08-03：重启后最终主树重验证
+
+本节不改写 2026-07-31 已签关账口径；它记录后继红先行修复落主树后，按 Steven
+要求重新取得的机器与真机证据。
+
+### 修复、评审与机器门禁
+
+- `cycle-evidence-inner-reason` 已按 Git 原生方式从隔离 worktree 集成到 dev，
+  主树提交为 `5e4af27`；实现新增 `raw-axes.projection-denied`，业务拒付返回与
+  外层控制流不变。
+- Grok 4.5 与 pi.dev `deepseek-v4-flash` 均开放完整 worktree/仓库只读能力后终判
+  `PASS`；无 Critical、High、Medium。完整结论见
+  `docs/plans/cycle-evidence-inner-reason/review.md`。
+- 主金牌 `teachin-cycle-evidence`：89/89，exit 0；其 owner gate：3/3 GREEN。
+- `selftest --tier1` 连续两次 exit 0；P9 机制金牌：111/111，exit 0；P9 owner
+  gate：3/3 GREEN，s2 由 gate 从 false 翻回 true。
+- 曾被同一红先行金牌连带拉红的 `teachin-raw-actionability-closure` 也已复跑为
+  3/3 GREEN，s2 由 gate 从 false 翻回 true。漂移扫描与术语检查均 exit 0。
+
+### Tier2 真实目标只读复跑
+
+- `doctor` exit 0；回环到真实目标 HTTP 200；Windows fresh-challenge 探针
+  HTTP 200；带外账户回执在窗内。
+- 预置只读核验为 `ALREADY_PRESENT_EXACTLY_ONE`，没有创建或清理实体。
+- 本轮运行目录：
+  `runs/tc_agent_id_readback_real_uat_v1/run_tier2_20260803T020936042Z_8f3d85/`。
+  receipt 为 `pipeline_complete_with_verdict`、`ran=true`、`timedOut=false`、
+  `classificationProblems=[]`，十项正式附件齐全；状态计数为 1 PASS、
+  1 NEEDS_HUMAN、0 SUT_DEFECT、0 HARNESS_ERROR。
+- Tier2 总 exit 2 的唯一开口仍是已签口径中的流式面空；17 项 readiness 全绿，
+  取证面非空、裁判通道 SUT_DEFECT 面成立。裁判通道证据为
+  `runs/_tier2/judge-smoke_20260803T020935613Z_f64167/tier2-judge-smoke.json`。
+- `video.webm` 非空（142930 bytes）；首、中、末关键帧人工复核可见启动、智能体
+  列表与精确搜索后恰一目标卡片，未见空白页或异常跳转。
+
+### A4 两击真机复录
+
+全新目录：
+`runs/teachin-uat/tc_wf_list_smoke_cycle_20260803T021410Z/`。人工只做
+「智能应用 → 工作流管理 → 完成录制」，capture 记 2 条点击事件；record exit 1
+仍是计划内的闭环拒付，不冒充通过。
+
+新边车
+`cycle-evidence.d1f294fe719abce056fbaa42ff07471757b958b834a5f939ccf36f0930c3a9ea.json`
+按顺序给出：
+
+1. 两条 `raw-runner.event` 均为 `resolution=unique`、`candidateCount=1`、
+   `performOk=true`；
+2. 新内层 `raw-axes.projection-denied` 为闭合六码中的
+   `RAW_AXES_PROJECTION_FAILED`，不是 `OTHER_REASON`；
+3. 随后既有外层与编排边界均为 `SOURCE_SEMANTIC_COMPLETION_INVALID`。
+
+因此 A4 的目标已经满足：真机首次把内层真实拒付原因稳定带出，同时证明外层统一码
+与控制流未被本次取证改造改写。P9 在最终主树上的重验证完成。
