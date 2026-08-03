@@ -96,3 +96,16 @@ grok 不加轮，如实记账）。
 - R2 字符串逃逸=凭据面事故（D3 四层闸+E4 五类反例）；
 - R3 误放/残留旧档冒充（D4 收窄口径的绑定单判 + E7；协调双改在界外）；
 - R4 异步扩散：`safeEmit` 同步契约、不 await、不进 Promise 链（E6 钉）。
+
+## 5. 后继轮：内层归因下沉（2026-07-30 已批准，2026-08-03 重开 owner）
+
+本 owner 契约按 `docs/plans/cycle-evidence-inner-reason/{GRILL.md,plan.md}`
+重开 full 流程，处理已签红先行验收 E10：`raw-axes-adapter.mjs` 的 15 个
+拒付位必须先经生产者局部六码归一器同步通报到新归因点
+`raw-axes.projection-denied`，再保持原返回值与控制流不变。
+
+验收继续由本 owner 的单一冻结件
+`tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs` 承担；其现役摘要已在
+`loop/prd-teachin-cycle-evidence.json` 经 Steven 2026-07-31 明签。不得新建
+第二份冻结锁，也不得改验收字节。本轮完成条件是该 owner gate 由当前 s1 红恢复
+3/3 GREEN，并完成既有后继 plan 规定的邻接复跑、异构实现评审与诚实留账。
