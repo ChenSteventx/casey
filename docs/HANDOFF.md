@@ -3,6 +3,25 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
+## 2026-08-03：raw Playwright 原始定位器唯一性闭环（最新覆盖层）
+
+1. Windows 独立工作树 `casey-p9-waves` 的 canonical raw 驱动已移除
+   `locator(...).first().count()`：等待任意候选与权威 locator 分离；resolve 和动作窗口
+   revalidate 均重新对原始集合计数，恰一后才取 handle。active page、owner、connected、
+   same node、origin 与 one-shot action authority 仍为合取条件。
+2. Windows 原生 Playwright Chromium、每案 fresh BrowserContext 的 hermetic 金牌红先行
+   `5/3`，修后 `8/8`。初始双候选出 `ambiguous` 且无 authority；1→2 漂移与 clone
+   替换均 `ACTION_FAILED`；disabled、遮挡、pointer-inert 全部页面点击计数 0；唯一正控
+   真实点击恰一次。
+3. 现役 raw action authority/actionability/clear-fill/runner 邻接金牌、Tier 1、term-lint
+   与本契约 gate 均 exit 0。全仓审计未发现另一处“先 first/nth 再 count”后据此铸
+   action authority 的同类错误；只读历史/意图观测和“先原始 count、后取唯一候选”
+   路径未扩修。
+4. 本层只证明真实浏览器的 hermetic 动作路径，不能替代生产 SUT P9；
+   `REAL_SUT_PASSED=false`、`HUMAN_SIGNED=false`。冻结测试精确字节的人签仍待取得。
+5. 证据索引：`docs/plans/teachin-raw-locator-uniqueness/evidence/`。未 push、未 merge、
+   未 rebase；原 `dev` 脏工作树仍未改写。
+
 ## 2026-08-03：P9 created-workflow continuity v3 机器实现就绪（最新覆盖层）
 
 1. 在 Windows 独立工作树 `casey-p9-waves`、分支 `codex/p9-waves` 上完成 P9 v3 机器纵向链：结构授权 draft/freeze/read/preflight、当轮完整列表字符串 ID 读回、单次 ref、删除前 method/path/唯一 ID location 守卫、至少 3 样本且至少 3000ms 的同 ID 稳定缺席，以及 replay→三轴→零 LLM 裁定→报告→Tier2 清洁门深消费。

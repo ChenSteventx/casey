@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "task": "Wave 2：修复 canonical raw Playwright 权威动作路径先 first 再 count 导致的歧义绕过；只对原始 locator 计数，resolve 与动作窗口重验均须恰一，保留 active page/owner/connected/same node/origin/action authority 合取。",
+  "specPath": "docs/plans/teachin-raw-locator-uniqueness/plan.md",
+  "testChecksums": {
+    "tests/_golden/teachin-raw-locator-uniqueness.browser.golden.mjs": "9cdd4beddd91c41670c89ea2e21ed44df3934336ea32120d25161b728064eed9"
+  },
+  "observability": [
+    {
+      "dimension": "冻结测试精确字节的人签尚未取得；机器 checksum ratchet 生效，但不得冒充人签。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实 Chromium hermetic fixture 只证明浏览器动作路径，不是生产 SUT P9 通过。",
+      "route": "machine"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-real-browser-uniqueness",
+      "title": "真实 Chromium：双候选、1→2、节点替换与不可操作元素全部零动作拒绝，唯一正控恰一次",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/teachin-raw-locator-uniqueness.browser.golden.mjs"
+      ],
+      "evidence": "gate@2026-08-03T10:59:44.333Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacent-regression",
+      "title": "既有 canonical raw action authority、actionability、clear-fill 与 runner 零回归",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-raw-actionability.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-raw-runner.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-08-03T10:59:46.784Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-machine-gates",
+      "title": "语法、Tier 1 与术语门通过",
+      "passes": true,
+      "acceptance": [
+        "node --check lib/teachin/raw-playwright-driver.mjs",
+        "node bin/casey.mjs selftest --tier1",
+        "node loop-kit/bin/term-lint.mjs --registry"
+      ],
+      "evidence": "gate@2026-08-03T10:59:50.733Z 全部 acceptance exit 0"
+    }
+  ]
+}
