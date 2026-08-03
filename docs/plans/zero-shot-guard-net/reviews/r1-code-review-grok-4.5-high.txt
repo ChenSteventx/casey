@@ -1,0 +1,875 @@
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (822ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (621ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (784ms)
+┃◆ Thought for 8.6s
+┃
+┃The escape probe script exited early due to set -e when subdirectory test failed (exit 1). I need to continue the remaining probes. Also rg is not available - use grep. Critical: tests/_golden/zero-
+┃shot-unsupported-scope-fanout.zero-sut.golden.mjs:12
+┃Command: `node -e 'require("fs").writeFileSync("/tmp/rogue.cjs","console.
+逃 逸 探 针 因  set -e 在 子 目 录 红 处 中 断 ； 继 续 补 跑 其 余 探 针 ， 并 完 成  checksum 与 基 线 对 照 。
+◆ Run Continue escape probes in /tmp
+$ set +e
+  TMP=$(ls -d /tmp/guard-net-escape-* 2>/dev/null | tail -1)
+  REPO=/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net
+  if [ -z "$TMP" ] || [ ! -d "$TMP/lib/zero-shot" ]; then
+    TMP=/tmp/guard-net-escape-$$
+    mkdir -p "$TMP/lib/zero-shot" "$TMP/tests/_golden" "$TMP/lib/adaptive-execution"
+    cp "$REPO/tests/_golden/adaptive-module-boundaries.static.golden.mjs" "$TMP/tests/_golden/"
+    cp -a "$REPO/lib/zero-shot/." "$TMP/lib/zero-shot/"
+    cp -a "$REPO/lib/adaptive-execution/." "$TMP/lib/adaptive-execution/" 2>/dev/null
+    cp "$REPO/lib/intent-plan.mjs" "$TMP/lib/" 2>/dev/null || touch "$TMP/lib/intent-plan.mjs"
+    for f in setup-flow.mjs setup-receipt.mjs setup-barrier.mjs setup-main-admission.mjs setup-receipt-shape.mjs; do
+      [ -f "$TMP/lib/adaptive-execution/$f" ] || echo '// stub' > "$TMP/lib/adaptive-execution/$f"
+    done
+  fi
+  # clean any leftover probes
+  rm -rf "$TMP/lib/zero-shot/container" "$TMP/lib/zero-shot/smuggle-dir" 2>/dev/null
+  rm -f "$TMP"/lib/zero-shot/rogue* "$TMP"/lib/zero-shot/Rogue* "$TMP"/lib/zero-shot/linked* "$TMP"/lib/zero-shot/evil* 2>/dev/null
+  cd "$TMP"
+  echo "TMP=$TMP"
+  echo '=== clean baseline ==='
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo EXIT:$?
+  echo '=== P3a: Rogue.mjs (new unregistered .mjs, case mix) ==='
+  echo 'export const x=1' > lib/zero-shot/Rogue.mjs
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo EXIT_Rogue:$?
+  rm -f lib/zero-shot/Rogue.mjs
+  echo '=== P3b: .MJS extension (extname is case-sensitive) ==='
+  echo 'export const x=1' > lib/zero-shot/rogue.MJS
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo EXIT_MJS:$?
+  # also check what extname returns
+  node -e "import {extname} from 'node:path'; console.log('extname .MJS=', JSON.stringify(extname('rogue.MJS'))); console.log('extname .mjs=', JSON.stringify(extname('rogue.mjs')));"
+  rm -f lib/zero-shot/rogue.MJS
+  echo '=== P4a: symlink file .mjs to outside ==='
+  echo 'import fs from "node:fs"; export const x=1;' > /tmp/outside-rogue-probe.mjs
+  ln -sf /tmp/outside-rogue-probe.mjs lib/zero-shot/linked-rogue.mjs
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo EXIT_symlink_file:$?
+  rm -f lib/zero-shot/linked-rogue.mjs /tmp/outside-rogue-probe.mjs
+  echo '=== P4b: symlink directory under zero-shot ==='
+  mkdir -p /tmp/outside-zs-probe
+  echo 'export const y=1' > /tmp/outside-zs-probe/hidden.mjs
+  ln -sfn /tmp/outside-zs-probe lib/zero-shot/smuggle-dir
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo EXIT_symlink_dir:$?
+  # isDirectory on symlink?
+  node -e "
+  import {readdirSync} from 'node:fs';
+  const e=readdirSync('lib/zero-shot',{withFileTypes:true}).find(x=>x.name==='smuggle-dir');
+  console.log('entry', e && {name:e.name, isDirectory:e.isDirectory(), isSymbolicLink:e.isSymbolicLink?.()});
+  "
+  rm -f lib/zero-shot/smuggle-dir
+  rm -rf /tmp/outside-zs-probe
+  echo '=== P4c: dangling symlink .mjs ==='
+  ln -sfn /tmp/does-not-exist-$$.mjs lib/zero-shot/dangling.mjs
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo EXIT_dangling:$?
+  rm -f lib/zero-shot/dangling.mjs
+  echo '=== P5: unregistered .mjs ==='
+  echo 'export const z=1' > lib/zero-shot/rogue-a.mjs
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo EXIT_unreg:$?
+  rm -f lib/zero-shot/rogue-a.mjs
+  echo '=== P6: registered pure with node:fs (d3 should red) ==='
+  python3 - <<'PY'
+  from pathlib import Path
+  p = Path('tests/_golden/adaptive-module-boundaries.static.golden.mjs')
+  t = p.read_text()
+  old = "const S2_CORE = [\n  'lib/zero-shot/unsupported-scopes.mjs',"
+  new = "const S2_CORE = [\n  'lib/zero-shot/evil-pure.mjs',\n  'lib/zero-shot/unsupported-scopes.mjs',"
+  assert old in t, 'anchor missing'
+  p.write_text(t.replace(old, new, 1))
+  Path('lib/zero-shot/evil-pure.mjs').write_text("import fs from 'node:fs';\nexport const x=1;\n")
+  print('ok inject')
+  PY
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo EXIT_evil_pure:$?
+  rm -f lib/zero-shot/evil-pure.mjs
+  cp "$REPO/tests/_golden/adaptive-module-boundaries.static.golden.mjs" tests/_golden/
+  echo '=== P7: .cjs still green (confirm residual) ==='
+  echo 'import fs from "node:fs"' > lib/zero-shot/rogue.cjs
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo EXIT_cjs:$?
+  rm -f lib/zero-shot/rogue.cjs
+  echo '=== P8: zeroShotSubdirectories uses isDirectory - what about file named like dir? ==='
+  # already covered
+  echo DONE
+TMP=/tmp/guard-net-escape-465001
+=== clean baseline ===
+… +83 lines
+EXIT_cjs:0
+=== P8: zeroShotSubdirectories uses isDirectory - what about file named like dir? ===
+DONE
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (808ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (642ms)
+◆ Run Checksum verify, baseline consumers, CONTEXT
+$ cd /mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net && \
+  python3 - <<'PY'
+  import json, hashlib, pathlib, re
+  root = pathlib.Path('.')
+  prd = json.loads((root/'loop/prd-zero-shot-observe-admit-step.json').read_text())
+  print('top keys:', sorted(prd.keys()))
+  cs = prd.get('testChecksums')
+  print('testChecksums type', type(cs).__name__)
+  if isinstance(cs, dict):
+      items = cs.items()
+  elif isinstance(cs, list):
+      items = []
+      for item in cs:
+          path = item.get('path') or item.get('file') or item.get('name')
+          want = item.get('sha256') or item.get('checksum') or item.get('hash')
+          items.append((path, want, item))
+  else:
+      items = []
+      print(repr(cs)[:500])
+  targets = []
+  if isinstance(cs, dict):
+      for path, want in cs.items():
+          if path and ('adaptive-module' in path or 'adapter-double' in path):
+              targets.append((path, want))
+  elif isinstance(cs, list):
+      for path, want, item in items:
+          if path and ('adaptive-module' in path or 'adapter-double' in path):
+              targets.append((path, want))
+              print('item keys', item.keys())
+  print('matched targets', len(targets))
+  for path, want in targets:
+      p = root/path
+      got = hashlib.sha256(p.read_bytes()).hexdigest() if p.exists() else 'MISSING'
+      # want might be dict
+      if isinstance(want, dict):
+          want_h = want.get('sha256') or want.get('checksum') or want
+      else:
+          want_h = want
+      print(f'FILE {path}')
+      print(f'  want={want_h}')
+      print(f'  got ={got}')
+      print(f'  MATCH={got==want_h}')
+  am = prd.get('checksumAmendments') or []
+  print('amendments', len(am))
+  if am:
+      last = am[-1]
+      print('R12 round?', last.get('round') or last.get('id') or last.get('n'))
+      print(json.dumps(last, ensure_ascii=False, indent=2)[:4000])
+  # also guard-net prd checksums
+  prd2 = json.loads((root/'loop/prd-zero-shot-guard-net.json').read_text())
+  cs2 = prd2.get('testChecksums') or {}
+  print('guard-net testChecksums', type(cs2).__name__, len(cs2) if hasattr(cs2,'__len__') else None)
+  if isinstance(cs2, dict):
+      for path, want in cs2.items():
+          p = root/path
+          got = hashlib.sha256(p.read_bytes()).hexdigest() if p.exists() else 'MISSING'
+          wh = want if isinstance(want,str) else (want.get('sha256') if isinstance(want,dict) else want)
+          ok = got==wh
+          print(('OK' if ok else 'BAD'), path, 'got', got[:12], 'want', str(wh)[:12])
+  elif isinstance(cs2, list):
+      for item in cs2:
+          path = item.get('path') or item.get('file')
+          want = item.get('sha256') or item.get('checksum')
+          p = root/path if path else None
+          got = hashlib.sha256(p.read_bytes()).hexdigest() if p and p.exists() else 'MISSING'
+          print(('OK' if got==want else 'BAD'), path, got[:16] if isinstance(got,str) else got, want[:16] if isinstance(want,str) else want)
+  PY
+  # baseline consumer implementations
+  echo '=== e6e7ea1 page-observer scopesOf/blockReason ==='
+  git show e6e7ea1:lib/zero-shot/page-observer.mjs | grep -n -A15 -E 'scopesOf|blockReason|unsupported'
+  echo '=== e6e7ea1 deterministic-resolver ==='
+  git show e6e7ea1:lib/zero-shot/deterministic-resolver.mjs | grep -n -A20 -E 'function unsupported|unsupported\('
+  echo '=== e6e7ea1 action-admission ==='
+  git show e6e7ea1:lib/zero-shot/action-admission.mjs | grep -n -A15 -E 'observationBlocker|unsupported'
+  echo '=== e6e7ea1 progress-verifier ==='
+  git show e6e7ea1:lib/zero-shot/progress-verifier.mjs | grep -n -A15 -E 'completenessBlocker|unsupported'
+  echo '=== e6e7ea1 copyUnsupported ==='
+  git show e6e7ea1:tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs | sed -n '1,25p'
+  echo '=== CONTEXT resolution line ==='
+  grep -n '| resolution' CONTEXT.md
+  # premise proposal text
+  grep -n 'container-out' docs/plans/zero-shot-guard-net/plan.md | head
+  grep -n 'container-out' docs/plans/zero-shot-guard-net/GRILL.md | head
+  # compare with premise review if exact text
+  python3 - <<'PY'
+  from pathlib import Path
+  line = [l for l in Path('CONTEXT.md').read_text().splitlines() if l.startswith('| resolution')]
+  print('CURRENT resolution row:')
+  print(line[0] if line else 'MISSING')
+  # count columns
+  if line:
+      cols = line[0].split('|')
+      # markdown table: empty, c1, c2, c3, c4, empty
+      print('pipe-split len', len(cols))
+      for i,c in enumerate(cols):
+          print(i, repr(c[:120]))
+  baseline = None
+  import subprocess
+  b = subprocess.check_output(['git','show','e6e7ea1:CONTEXT.md'], text=True)
+  bline = [l for l in b.splitlines() if l.startswith('| resolution')]
+  print('BASELINE:')
+  print(bline[0] if bline else 'MISSING')
+  # extract proposed text from plan §5
+  plan = Path('docs/plans/zero-shot-guard-net/plan.md').read_text()
+  # reviews README might have exact
+  readme = Path('docs/plans/zero-shot-guard-net/reviews/README.md').read_text()
+  print('--- premise input snippet ---')
+  inp = Path('docs/plans/zero-shot-guard-net/reviews/premise-review-input.md').read_text()
+  for i,l in enumerate(inp.splitlines(),1):
+      if 'container' in l or 'resolution' in l:
+          print(f'{i}:{l}')
+  PY
+top keys: ['checksumAmendments', 'notes', 'observability', 'schemaVersion', 'specPath', 'stories', 'task', 'testChecksums']
+testChecksums type dict
+… +271 lines
+23:8. `CONTEXT.md:97` 单 行 追 加  `container-out` 门 内 态 说 明 ， 不 开 新 词 条 、 不 进 弃 用 别 名 列 。
+24:9. 三 处  `container-out` 防 御 性 死 代 码 挂 账 不 动 。
+40:   （ 繁 体 /加 粗 英 文 /列 切 坏 ） ； 核  `container-out` 进 第 四 列 会 不 会 真 的 红 三 处 在 用 代 码 。
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (810ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (666ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (869ms)
+┃◆ Thought for 24.4s
+┃
+┃Important findings so far: Critical: tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs:12
+┃Command: mkdir -p /tmp/smuggle-dir && touch /tmp/smuggle-dir/escape.mjs && ln -s /tmp/smuggle-dir /tmp/lib/zero-shot/smuggle-dir && node - (run discoverZeroShotCore on /tmp/lib/zero-shot/smuggle-dir)
+┃Suggestion: Add explicit isSymbolicLink() guard in discoverZeroShotCore before isDirectory() check; symlink-dir bypasses both flat scan and subdirectory assertion.
+┃
+┃Medium: tests/_golden/zero-shot-unsupported-scope-fanout.zero # (same file)
+┃Command: node -e 'console.log(require("/tmp/smuggle-dir/escape.mjs"))' after symlink setup
+┃Suggestion: Extend unsupported-scope test to include symlink-dir case; current golden only covers top-level unregistered .mjs.
+┃
+┃High: tests/_golden/zero-shot-typed-progress-predicate (and adaptive-module-boundaries)
+┃Command: node tests/_golden/zero-shot-typed-progress-predicate.zero-sut.golden.mjs --inspect and mutate pureFiles = discoverZeroShotCore(...) to include symlink-dir path
+┃Suggestion: Add transitive import check in d3; symlink-dir re-export of playwright evades forbidden 7-item whitelist.
+┃
+┃Medium: tests/_golden/page-observer-main-frame.zero-sut.golden.mjs:42
+┃Command: node -e '{probeScope: "yes"}' | node loop-kit/bin/term-lint.
+发 现 符 号 链 接 目 录 可 绕 过 「 无 子 目 录 」 钉 。 继 续 核  CONTEXT、 夹 具 依 赖 、 d1–d5 弱 化 对 照 与 元 钉 变 异 。
+◆ Run Read CONTEXT resolution line vs plan
+$ cd /mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net && \
+  sed -n '90,105p' CONTEXT.md && \
+  echo '---' && \
+  # find resolution row with line numbers
+  grep -n 'resolution' CONTEXT.md | head -20 && \
+  echo '---' && \
+  # proposed text from plan §5 and GRILL G7
+  sed -n '143,160p' docs/plans/zero-shot-guard-net/plan.md && \
+  echo '---GRILL---' && \
+  sed -n '166,200p' docs/plans/zero-shot-guard-net/GRILL.md && \
+  echo '=== baseline CONTEXT resolution ===' && \
+  git show e6e7ea1:CONTEXT.md | grep -n 'resolution' | head -10 && \
+  git show e6e7ea1:CONTEXT.md | sed -n '90,105p'
+| 关 系 原 子  | Relation Atom | 动 作 效 果 为 建 立 两 个 业 务 对 象 间 关 系 的 原 子 （ 首 例  `workflow.bindAgent`： 把 智 能 体 绑 进 工 作 流 节 点 ） ； 准 入 策 略  `effect=relation`， 必 须
+| 准 入 三 面 策 略  | Three-Facet Admission Policy | 人 签 冻 结 准 入 策 略 表 对 每 个 原 子 分 开 表 达 三 件 互 不 蕴 含 的 事 ， 不 再 压 进 一 个  `effect` 字 段 ： `entityChange` **结 构 性 变
+… +93 lines
+| 三 轴  | Three-Axis | 回 放 期 每 个 原 子 步 吐 的 三 组 事 实 ——动 作 （ 过 点 击 身 份 门 判  true/ambiguous/false） / 逐 条 断 言 （ typed kind 各 一 条 ， 断 言 续 跑 、 不 首 错 即 停 ） / 取
+| 自 愈  | Self-heal | 相 5： 仅 对 确 证  `HARNESS_ERROR` 的 有 界 重 锚 ； 是 裁 定 的 下 游 消 费 者 ， 绝 不 反 向 进 入 裁 判 进 程  | — |
+| 自 愈 准 入 门  | Self-heal Admission Gate | 护 栏 ： 自 愈 只 对 确 证  `HARNESS_ERROR` 开 闸 ； `SUT_DEFECT`/`NEEDS_HUMAN` 一 律 拒 绝 自 愈  | — |
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (811ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (640ms)
+◆ Run Fixture deps and pure leaf import check
+$ cd /mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net && \
+  # Who depends on DEFAULT_UNSUPPORTED or three-key shape from fixture?
+  grep -rn 'unsupportedScopes\|DEFAULT_UNSUPPORTED\|copyUnsupported\|iframe.*shadow.*containerOnly' tests/_golden --include='*.mjs' | head -80
+  echo '==='
+  # direct assertions on observation.unsupportedScopes keys count/shape
+  grep -rn 'unsupportedScopes' tests/_golden --include='*.mjs' | grep -E 'keys|Object\.keys|JSON\.stringify|iframe|shadow|containerOnly|length' | head -40
+  echo '=== production consumers current ==='
+  sed -n '1,50p' lib/zero-shot/page-observer.mjs
+  sed -n '1,35p' lib/zero-shot/action-admission.mjs
+  sed -n '1,40p' lib/zero-shot/progress-verifier.mjs
+  sed -n '1,100p' lib/zero-shot/deterministic-resolver.mjs | head -100
+  # imports of unsupported-scopes pure leaf
+  grep -n 'import' lib/zero-shot/unsupported-scopes.mjs || echo 'zero imports confirmed empty of import keyword beyond comment'
+  # count import statements
+  python3 - <<'PY'
+  from pathlib import Path
+  t=Path('lib/zero-shot/unsupported-scopes.mjs').read_text()
+  import re
+  # real import lines
+  for i,l in enumerate(t.splitlines(),1):
+      if re.match(r'^\s*import\s', l):
+          print('IMPORT', i, l)
+  print('import count', len(re.findall(r'^\s*import\s', t, re.M)))
+  PY
+tests/_golden/deterministic-resolver-step-contract.zero-sut.golden.mjs:153:  unsupportedScopes = { iframe: false, shadow: false, containerOnly: false },
+tests/_golden/deterministic-resolver-step-contract.zero-sut.golden.mjs:176:    unsupportedScopes,
+… +260 lines
+      reason: 'AFFORDANCE_NOT_FOUND',
+1:// 未 支 持 作 用 域 键 清 单 的 唯 一 事 实 源 ： 纯 叶 模 块 ， 零  import。
+import count 0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (836ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (591ms)
+◆ Run Compare d1-d5 assertion logic old vs new
+$ cd /mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net && \
+  # d1-d5 weakening: structural diff of assertion logic e6e7ea1 vs HEAD
+  python3 - <<'PY'
+  import subprocess, re
+  from pathlib import Path
+  old = subprocess.check_output(['git','show','e6e7ea1:tests/_golden/adaptive-module-boundaries.static.golden.mjs'], text=True)
+  new = Path('tests/_golden/adaptive-module-boundaries.static.golden.mjs').read_text()
+  def extract_checks(src):
+      # split by check('adaptive...
+      parts = re.split(r"\ncheck\(", src)
+      out = {}
+      for p in parts[1:]:
+          m = re.match(r"'([^']+)'", p)
+          if not m: continue
+          body = p
+          # until next \n}); before if failures or next check - rough
+          out[m.group(1)] = body[:2000]
+      return out
+  o, n = extract_checks(old), extract_checks(new)
+  print('old checks', list(o))
+  print('new checks', list(n))
+  for k in sorted(set(o)|set(n)):
+      print('\n====', k, '====')
+      if k not in o: print('ADDED only in new'); continue
+      if k not in n: print('REMOVED from new'); continue
+      # key structural markers
+      for label, body in [('OLD', o[k]), ('NEW', n[k])]:
+          markers = {
+              'S2_CORE alone loop': 'for (const rel of S2_CORE)' in body or 'for (const rel of S2_CORE)' in body,
+              's2Files()': 's2Files()' in body,
+              'discoveredCore': 'discoveredCore' in body,
+              'S2_EXECUTION_FACING': 'S2_EXECUTION_FACING' in body,
+              'pureFiles hardcode list': "pureFiles = [" in body.replace(' ',''),
+              'pureFiles filter': 'S2_EXECUTION_FACING.has' in body,
+              'zeroShotSubdirectories/nested': 'nested' in body or 'zeroShotSubdirectories' in body,
+              'line limit 600': '600' in body,
+              'forbiddenFragments': 'forbiddenFragments' in body,
+              'playwright package check': 'importsPlaywrightPackage' in body,
+              'cycle find': 'findCycle' in body,
+              'observer->authority': 'page-observer -> affordance-authority' in body,
+          }
+          print(label, markers)
+  # Compare pure set equality
+  old_pure = [
+    'lib/zero-shot/step-contract.mjs',
+    'lib/zero-shot/deterministic-resolver.mjs',
+    'lib/zero-shot/action-proposal.mjs',
+    'lib/zero-shot/read-safe-target.mjs',
+    'lib/zero-shot/public-observation-redaction.mjs',
+    'lib/zero-shot/progress-verifier.mjs',
+    'lib/zero-shot/exploration-trace.mjs',
+  ]
+  old_core = [
+    'lib/zero-shot/step-contract.mjs',
+    'lib/zero-shot/playwright-page-driver.mjs',
+    'lib/zero-shot/affordance-authority.mjs',
+    'lib/zero-shot/affordance-catalog.mjs',
+    'lib/zero-shot/page-observer.mjs',
+    'lib/zero-shot/deterministic-resolver.mjs',
+    'lib/zero-shot/action-proposal.mjs',
+    'lib/zero-shot/read-safe-target.mjs',
+    'lib/zero-shot/public-observation-redaction.mjs',
+    'lib/zero-shot/action-admission.mjs',
+    'lib/zero-shot/step-executor.mjs',
+    'lib/zero-shot/progress-verifier.mjs',
+    'lib/zero-shot/exploration-trace.mjs',
+    'lib/zero-shot/single-step-runner.mjs',
+  ]
+  old_exec = sorted(set(old_core)-set(old_pure))
+  new_exec = [
+    'lib/zero-shot/playwright-page-driver.mjs',
+    'lib/zero-shot/page-observer.mjs',
+    'lib/zero-shot/affordance-catalog.mjs',
+    'lib/zero-shot/affordance-authority.mjs',
+    'lib/zero-shot/action-admission.mjs',
+    'lib/zero-shot/step-executor.mjs',
+    'lib/zero-shot/single-step-runner.mjs',
+  ]
+  print('\nOLD EXEC (core-pure):', old_exec)
+  print('NEW EXEC:', sorted(new_exec))
+  print('EXEC SET EQUAL:', set(old_exec)==set(new_exec))
+  print('forbiddenFragments identical?',
+    re.search(r'forbiddenFragments = \[([^\]]+)\]', old, re.S).group(1).strip() ==
+    re.search(r'forbiddenFragments = \[([^\]]+)\]', new, re.S).group(1).strip()
+  )
+  # d2 still 600?
+  assert '600' in old and '600' in new
+  print('d2 threshold still 600: yes')
+  PY
+old checks ['adaptive-module-boundaries-d1', 'adaptive-module-boundaries-d2', 'adaptive-module-boundaries-d3', 'adaptive-module-boundaries-d4', 'adaptive-module-boundaries-d5']
+new checks ['adaptive-module-boundaries-d1', 'adaptive-module-boundaries-d2', 'adaptive-module-boundaries-d3', 'adaptive-module-boundaries-d4', 'adaptive-module-boundaries-d5']
+… +35 lines
+EXEC SET EQUAL: True
+forbiddenFragments identical? True
+d2 threshold still 600: yes
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (854ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (631ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (808ms)
+┃◆ Thought for 35.2s
+┃
+┃Interesting - zero-shot-action-progress and zero-shot-authority-runner use unsupportedScopes: [] (empty array) as default. Old copyUnsupported would convert arrays to DEFAULT three-key false. New
+┃co...Critical: tests/_golden/zero-shot-action-progress.zero-sut.golden.
+◆ Run Meta-nail mutation verification in /tmp
+$ # Mutation tests in /tmp copy of full needed pieces for fanout + boundaries
+  set +e
+  REPO=/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net
+  TMP=/tmp/guard-net-mutate-$$
+  mkdir -p "$TMP"
+  # copy only what fanout needs: lib/zero-shot, lib/intent-plan, lib/atoms, fixtures, goldens, etc.
+  # Faster: rsync selected
+  cd "$REPO"
+  rsync -a \
+    lib/zero-shot/ \
+    lib/intent-plan.mjs \
+    lib/atoms-registry.snapshot.json \
+    lib/cred-gate.mjs \
+    tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs \
+    tests/_golden/adaptive-module-boundaries.static.golden.mjs \
+    tests/_golden/fixtures/zero-shot-observe-admit-step/ \
+    "$TMP/" 2>/dev/null
+  # Build proper tree
+  rm -rf "$TMP"
+  mkdir -p "$TMP"
+  # copy whole repo is heavy; selective:
+  mkdir -p "$TMP/lib/zero-shot" "$TMP/tests/_golden/fixtures/zero-shot-observe-admit-step" "$TMP/lib"
+  cp -a "$REPO/lib/zero-shot/." "$TMP/lib/zero-shot/"
+  cp "$REPO/lib/intent-plan.mjs" "$TMP/lib/"
+  cp "$REPO/lib/atoms-registry.snapshot.json" "$TMP/lib/"
+  cp "$REPO/lib/cred-gate.mjs" "$TMP/lib/"
+  # public-observation may import more - fanout imports page-observer chain
+  # Also need any deps of those modules
+  # Find imports recursively
+  python3 - <<'PY'
+  import os, re, shutil
+  from pathlib import Path
+  repo = Path('/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net')
+  tmp = Path('/tmp/guard-net-mutate-' + str(os.getpid()))
+  # wait, we already set TMP via shell
+  print('use shell TMP')
+  PY
+  # redo with known TMP
+  TMP=/tmp/guard-net-mutate-$$
+  mkdir -p "$TMP"
+  # simplest reliable: copy needed trees with cp -a for lib and the two goldens + fixture
+  cp -a "$REPO/lib" "$TMP/lib"
+  mkdir -p "$TMP/tests/_golden/fixtures"
+  cp -a "$REPO/tests/_golden/fixtures/zero-shot-observe-admit-step" "$TMP/tests/_golden/fixtures/"
+  cp "$REPO/tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs" "$TMP/tests/_golden/"
+  cp "$REPO/tests/_golden/adaptive-module-boundaries.static.golden.mjs" "$TMP/tests/_golden/"
+  # adaptive needs adaptive-execution stubs or real
+  cp -a "$REPO/lib/adaptive-execution" "$TMP/lib/" 2>/dev/null || true
+  cd "$TMP"
+  echo "TMP=$TMP"
+  echo '=== baseline fanout ==='
+  node tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs; echo EXIT:$?
+  echo '=== MUT1: anyUnsupportedScope only known keys (should N11 red) ==='
+  cp lib/zero-shot/unsupported-scopes.mjs lib/zero-shot/unsupported-scopes.mjs.bak
+  python3 - <<'PY'
+  from pathlib import Path
+  p=Path('lib/zero-shot/unsupported-scopes.mjs')
+  t=p.read_text()
+  old='''export function anyUnsupportedScope(value) {
+    if (Array.isArray(value)) return value.length > 0;
+    if (!isRecordLike(value)) return false;
+    return Object.values(value).some((flag) => flag === true);
+  }'''
+  new='''export function anyUnsupportedScope(value) {
+    if (Array.isArray(value)) return value.length > 0;
+    if (!isRecordLike(value)) return false;
+    // MUTATION: only known keys (relaxed)
+    return UNSUPPORTED_SCOPE_KEYS.some((key) => value[key] === true);
+  }'''
+  assert old in t
+  p.write_text(t.replace(old,new))
+  print('mutated anyUnsupportedScope')
+  PY
+  node tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs; echo EXIT_mut1:$?
+  mv lib/zero-shot/unsupported-scopes.mjs.bak lib/zero-shot/unsupported-scopes.mjs
+  echo '=== MUT2: remove shadow from keys (should N2 red) ==='
+  cp lib/zero-shot/unsupported-scopes.mjs lib/zero-shot/unsupported-scopes.mjs.bak
+  python3 - <<'PY'
+  from pathlib import Path
+  p=Path('lib/zero-shot/unsupported-scopes.mjs')
+  t=p.read_text()
+  t2=t.replace("Object.freeze(['iframe', 'shadow', 'containerOnly'])", "Object.freeze(['iframe', 'containerOnly'])")
+  assert t2!=t
+  p.write_text(t2)
+  print('removed shadow')
+  PY
+  node tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs; echo EXIT_mut2:$?
+  mv lib/zero-shot/unsupported-scopes.mjs.bak lib/zero-shot/unsupported-scopes.mjs
+  echo '=== MUT3: progress-verifier inline three keys (should N10 red) ==='
+  cp lib/zero-shot/progress-verifier.mjs lib/zero-shot/progress-verifier.mjs.bak
+  python3 - <<'PY'
+  from pathlib import Path
+  p=Path('lib/zero-shot/progress-verifier.mjs')
+  t=p.read_text()
+  t=t.replace("import { anyUnsupportedScope } from './unsupported-scopes.mjs';\n", "")
+  old="if (anyUnsupportedScope(observation?.unsupportedScopes)) return 'PROGRESS_UNSUPPORTED_SCOPE';"
+  new='''const scopes = observation?.unsupportedScopes;
+    if (scopes?.iframe === true || scopes?.shadow === true || scopes?.containerOnly === true) {
+      return 'PROGRESS_UNSUPPORTED_SCOPE';
+    }'''
+  assert old in t
+  p.write_text(t.replace(old,new))
+  print('mutated progress-verifier')
+  PY
+  node tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs; echo EXIT_mut3:$?
+  mv lib/zero-shot/progress-verifier.mjs.bak lib/zero-shot/progress-verifier.mjs
+  echo '=== restore verify green ==='
+  node tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs; echo EXIT_restore:$?
+  # verify sha of originals match repo (we only mutated copies)
+  echo '=== sha compare with repo (should match for production files) ==='
+  sha256sum lib/zero-shot/unsupported-scopes.mjs "$REPO/lib/zero-shot/unsupported-scopes.mjs"
+  sha256sum lib/zero-shot/progress-verifier.mjs "$REPO/lib/zero-shot/progress-verifier.mjs"
+use shell TMP
+TMP=/tmp/guard-net-mutate-467465
+… +20 lines
+4b3ffb8a474b7a11ba2bcb3964e02a6a49ec7f5d8f05a38d0944f7e8d0fcff28  /mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net/lib/zero-shot/unsupported-scopes.mjs
+65906007559d3e1e14c1959ffeb67994c03ce6e53f0f160640f4bb20a9c3a0a6  lib/zero-shot/progress-verifier.mjs
+65906007559d3e1e14c1959ffeb67994c03ce6e53f0f160640f4bb20a9c3a0a6  /mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net/lib/zero-shot/progress-verifier.mjs
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (866ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (656ms)
+◆ Run CONTEXT exactness and fixture normalize equivalence
+$ cd /mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net && \
+  # CONTEXT exact prefix equality + append only
+  python3 - <<'PY'
+  import subprocess
+  from pathlib import Path
+  old = subprocess.check_output(['git','show','e6e7ea1:CONTEXT.md'], text=True)
+  new = Path('CONTEXT.md').read_text()
+  def res_line(text):
+      for i,l in enumerate(text.splitlines(),1):
+          if l.startswith('| `resolution`'):
+              return i,l
+      return None,None
+  oi,ol = res_line(old)
+  ni,nl = res_line(new)
+  print('old line', oi)
+  print('new line', ni)
+  # split columns
+  def cols(line):
+      parts=line.split('|')
+      # | c1 | c2 | c3 | c4 |
+      return [p.strip() for p in parts[1:-1]]
+  oc, nc = cols(ol), cols(nl)
+  print('old ncols', len(oc), 'new ncols', len(nc))
+  print('col1 equal', oc[0]==nc[0])
+  print('col2 equal', oc[1]==nc[1])
+  print('col4 equal', oc[3]==nc[3], repr(nc[3]))
+  print('col3 old ends...', oc[2][-80:])
+  print('col3 new ends...', nc[2][-120:])
+  # prefix: new col3 should start with old col3
+  print('col3 is old prefix + append?', nc[2].startswith(oc[2]))
+  if nc[2].startswith(oc[2]):
+      print('APPENDED:', nc[2][len(oc[2]):])
+  else:
+      # find common prefix length
+      i=0
+      while i<len(oc[2]) and i<len(nc[2]) and oc[2][i]==nc[2][i]:
+          i+=1
+      print('common prefix len', i)
+      print('old diverge', oc[2][i:i+40])
+      print('new diverge', nc[2][i:i+40])
+  # no extra pipes in col3
+  print('| count in col3 new', nc[2].count('|'))
+  print('bold ** in col3?', '**' in nc[2])
+  # traditional chinese rough check for 门 内  etc - skip
+  PY
+  # action-progress default [] equivalence through pipeline
+  node --input-type=module -e '
+  import { createPageDriverDouble } from "./tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs";
+  import { observePage } from "./lib/zero-shot/page-observer.mjs";
+  import { anyUnsupportedScope, normalizeUnsupportedScopes } from "./lib/zero-shot/unsupported-scopes.mjs";
+  // Simulate old vs new copyUnsupported
+  function oldCopy(value) {
+    const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+    return { iframe: source.iframe === true, shadow: source.shadow === true, containerOnly: source.containerOnly === true };
+  }
+  function newCopy(value) {
+    const source = value && typeof value === "object" && !Array.isArray(value) ? value : {};
+    const copied = {};
+    for (const key of Object.keys(source)) copied[key] = source[key] === true;
+    return copied;
+  }
+  const inputs = [undefined, {}, [], null, {iframe:true}, {iframe:true, shadow:false, containerOnly:false}, {probeScope:true}, {iframe:1}, {iframe:true, extra:true}];
+  for (const input of inputs) {
+    const o = oldCopy(input);
+    const n = newCopy(input);
+    const no = normalizeUnsupportedScopes(o);
+    const nn = normalizeUnsupportedScopes(n);
+    const same = JSON.stringify(no)===JSON.stringify(nn);
+    const anyo = anyUnsupportedScope(no);
+    const anyn = anyUnsupportedScope(nn);
+    console.log(JSON.stringify(input), "raw keys old", Object.keys(o).join(","), "new", Object.keys(n).join(",")||"(empty)", "normEqual", same, "any", anyo, anyn, anyo===anyn?"OK":"DIFF");
+  }
+  // Live observe with default empty array as action-progress does
+  const page = createPageDriverDouble({
+    snapshots: [{ revision: "r1", url: "https://example.invalid/home", title: "t", settled: true, unsupportedScopes: [], affordances: [{handleId:"h1", role:"link", accessibleName:"进 入 工 作 流 管 理
+  text:"进 入 工 作 流 管 理 ", visible:true, enabled:true, actionSpace:["click"]}] }],
+  });
+  const observed = await observePage({ driver: page.driver, intentId: "intent_1", maxCandidates: 20 });
+  console.log("observe from [] scopes", observed.observation.unsupportedScopes, "block?", anyUnsupportedScope(observed.observation.unsupportedScopes));
+  '
+old line 97
+new line 97
+… +19 lines
+{"iframe":1} raw keys old iframe,shadow,containerOnly new iframe normEqual true any false false OK
+{"iframe":true,"extra":true} raw keys old iframe,shadow,containerOnly new iframe,extra normEqual true any true true OK
+observe from [] scopes { iframe: false, shadow: false, containerOnly: false } block? false
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (840ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (600ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (858ms)
+┃◆ Thought for 3.4s
+┃
+┃The mutation test failed because incomplete copy of lib. Better approach: mutate in /tmp by copying just the two modules and running with NODE_PATH or by doing mutations in a full copy of lib via
+┃syml...
+变 异 副 本 缺 依 赖 ； 改 用 完 整  lib 树 再 跑 变 异 。
+◆ Task started: Full /tmp mutation of N11 and N2 nails
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (915ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (624ms)
+◆ Run Final production details and array edge
+$ cd /mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net && \
+  # verify scopesOf uses normalize
+  grep -n 'normalizeUnsupportedScopes\|scopesOf\|anyUnsupported' lib/zero-shot/page-observer.mjs && \
+  # confirm 83a8c98 has zero reference to unsupported-scopes module path
+  git show 83a8c98 | grep -c 'unsupported-scopes' || true
+  git show 83a8c98 --stat
+  # DEFAULT_UNSUPPORTED fully removed?
+  grep -n 'DEFAULT_UNSUPPORTED' tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs || echo 'DEFAULT_UNSUPPORTED absent OK'
+  # four nets covering unsupported-scopes: d1 via S2_CORE, d2 linecount, d3 pure, d4/d5 via s2Files
+  python3 - <<'PY'
+  from pathlib import Path
+  # unsupported-scopes imports
+  src=Path('lib/zero-shot/unsupported-scopes.mjs').read_text()
+  print('lines', len(src.splitlines()))
+  print('bytes', len(src.encode()))
+  # who is covered as pure: not in EXEC
+  exec_set={
+    'lib/zero-shot/playwright-page-driver.mjs',
+    'lib/zero-shot/page-observer.mjs',
+    'lib/zero-shot/affordance-catalog.mjs',
+    'lib/zero-shot/affordance-authority.mjs',
+    'lib/zero-shot/action-admission.mjs',
+    'lib/zero-shot/step-executor.mjs',
+    'lib/zero-shot/single-step-runner.mjs',
+  }
+  print('unsupported in pure?', 'lib/zero-shot/unsupported-scopes.mjs' not in exec_set)
+  # d4/d5 use s2Files which includes discover - yes
+  # Is there a 4th net? plan says 四 张 网  - d1 registration, d2 size, d3 pure, d4 playwright, d5 cycle - that's 5. Plan said "被 四 张 网 覆 盖 " for pure module - maybe d2/d3/d4/d5 with d1 as regis
+  PY
+  # double-check: Boolean vs ===true micro-diff for union
+  # old page-observer blockReason: some(Boolean) on ALREADY normalized scopes - equivalent
+  # old resolver: ===true - matches
+  # old admission: three keys ===true - subset of new (stricter union)
+  # Is there relaxation on array with only falsy? anyUnsupportedScope(['']) - length>0 true
+  # old resolver same. Good.
+  # sparse array? [,] length 1 in JS? empty hole - Array length 1, some...
+  node -e 'console.log([,].length, any?); function f(v){if(Array.isArray(v))return v.length>0}; console.log(f([,]), f([undefined]), f([false]))'
+14:  anyUnsupportedScope,
+15:  normalizeUnsupportedScopes,
+… +52 lines
+    at node:internal/main/eval_string:71:3
+Node.js v24.18.0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (800ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (574ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (785ms)
+◆ Task completed in 1.3s: Full /tmp mutation of N11 and N2 nails
+┃◆ Thought for 4.9s
+┃
+┃rsync of full tests might be huge. Let me wait or try a lighter approach - symlink the repo and only copy the two files to mutate.
+◆ Run Lite /tmp tree for fanout mutation
+$ # Lighter mutation: cp -al hardlink tree or symlink-based overlay
+  set +e
+  REPO=/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net
+  TMP=/tmp/guard-net-mut-lite-$$
+  mkdir -p "$TMP"
+  # hardlink copy of just lib/zero-shot + tests paths we need, rest via symlink
+  cp -a "$REPO/lib" "$TMP/lib"
+  mkdir -p "$TMP/tests/_golden/fixtures"
+  cp -a "$REPO/tests/_golden/fixtures/zero-shot-observe-admit-step" "$TMP/tests/_golden/fixtures/"
+  cp "$REPO/tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs" "$TMP/tests/_golden/"
+  # ensure package type module if needed
+  [ -f "$REPO/package.json" ] && cp "$REPO/package.json" "$TMP/"
+  cd "$TMP"
+  # try baseline
+  node tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs 2>&1 | tail -8
+  echo EXIT:$?
+ok   zero-shot-unsupported-scope-fanout: N6 每 个 键 都 让  resolveDeterministicAction 出  route:human / UNSUPPORTED_SCOPE
+ok   zero-shot-unsupported-scope-fanout: N7 每 个 键 都 让  admitZeroShotAction 拒 且 拒 因 恰 为  UNSUPPORTED_SCOPE
+… +4 lines
+ok   zero-shot-unsupported-scope-fanout: N12 本 金 牌 涉 及 的 全 部 产 物 恒 降 权 、 无 裁 定 字 样
+ok   zero-shot-unsupported-scope-fanout: 12/12 全 过
+EXIT:0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (704ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (729ms)
+┃◆ Thought for 23.4s
+┃
+┃Interesting: EXIT_mut1:0 even though N11 failed? Looking at the golden:Critical: tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs:42 + node tests/_golden/zero-shot-unsupported-
+┃scope-fanout.zero-sut.golden.mjs (run with node -r esm to disable cache) + symlink-dir escape in zero ShotSubdirectories (Dirent.isDirectory() false for symlink-to-dir) reopens d1 hole; Medium:
+┃unsupported-scopes.mjs import coverage.
+┃
+┃High: none
+┃
+┃Medium: tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs:42 + node -r esm tests 2>&1 | grep -A5 EXIT_mut1 + symlink-dir bypass (EXIT 0 when should RED); Medium: unsupported-
+┃scopes.mjs import coverage.
+┃
+┃VERDICT: CHANGES_REQUIRED
+┃
+┃The symlink-dir bypass is a real regression on the "no subdirectories" assertion, and the golden test still passes because 12/12 is green only for the primary path.
+必 跑 取 证
+┌────────────────────────────────────┬──────────────┐
+│ 命 令                                │ 结 果          │
+├────────────────────────────────────┼──────────────┤
+│ zero-shot-unsupported-scope-fanout │ 12/12 exit 0 │
+├────────────────────────────────────┼──────────────┤
+│ adaptive-module-boundaries         │ 5/5 exit 0   │
+├────────────────────────────────────┼──────────────┤
+│ zero-shot-typed-progress-predicate │ 24/24 exit 0 │
+├────────────────────────────────────┼──────────────┤
+│ zero-shot-action-progress          │ 12/12 exit 0 │
+├────────────────────────────────────┼──────────────┤
+│ zero-shot-authority-runner         │ 11/11 exit 0 │
+├────────────────────────────────────┼──────────────┤
+│ page-observer-main-frame           │ 8/8 exit 0   │
+├────────────────────────────────────┼──────────────┤
+│ term-lint --registry               │ 通 过  exit 0  │
+└────────────────────────────────────┴──────────────┘
+工 作 树  HEAD=24e0508， 与 被 审  tip 一 致 ； 三 提 交  83a8c98 → d1f83a2 → 24e0508。
+───
+Findings
+Medium · 子 目 录 钉 被 「 目 录 符 号 链 接 」 绕 过
+• 位 置 ： tests/_golden/adaptive-module-boundaries.static.golden.mjs:78-84（ zeroShotSubdirectories） 、 68-75（ discoverZeroShotCore）
+• 问 题 ： readdirSync(..., { withFileTypes: true }) 后 只 用  entry.isDirectory()。 对  指 向 目 录 的  symlink， Node 的  Dirent.isDirectory() 为  false、 isSymbolicLink() 为  true， 因 此 ：
+  1. 不 进 「 不 得 有 子 目 录 」 断 言 ；
+  2. 平 铺  .mjs 发 现 也 扫 不 到  symlink 目 录 内 的 模 块 。
+• 反 例 （ /tmp 副 本 ， 工 作 树 未 改 ） ：
+# 基 线  5/5 EXIT=0 后 ：
+mkdir -p /tmp/outside-zs-probe
+echo 'export const y=1' > /tmp/outside-zs-probe/hidden.mjs
+ln -sfn /tmp/outside-zs-probe lib/zero-shot/smuggle-dir
+node tests/_golden/adaptive-module-boundaries.static.golden.mjs
+# → 5/5 passed EXIT=0   ← 应 红 却 绿
+# entry: { isDirectory:false, isSymbolicLink:true }
+对 照 ： 真 子 目 录  lib/zero-shot/container/ → d1 红 （ 4 passed, 1 failed） ； 顶 层 未 登 记  .mjs / 文 件  symlink .mjs → 红 。
+• 建 议 ： 子 目 录 钉 改 为 「 目 录  或  指 向 目 录 的  symlink」 一 律 红 ， 例 如  entry.isDirectory() || (entry.isSymbolicLink() && statSync(...).isDirectory())， 或 统 一  lstat/stat 语 义 写
+symlink-dir 变 异 。
+───
+重 点 风 险 结 论 （ 无 问 题 的 写 验 法 ）
+1. 自 动 发 现 逃 逸 面
+┌──────────────────────────────────┬───────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 形 状                              │ 结 果               │ 说 明                                                                                                      │
+├──────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 真 子 目 录                          │ 红  d1             │ 有 「 无 子 目 录 」 断 言 且 生 效                                                                                  │
+├──────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 未 登 记 顶 层  .mjs / Rogue.mjs      │ 红  d1             │ 双 向 相 等 有 效                                                                                              │
+├──────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 文 件  symlink linked-rogue.mjs    │ 红  d1+d3          │ 发 现  + 纯 模 块 禁 令 有 效                                                                                     │
+├──────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ dangling .mjs symlink            │ 红  多 网            │ fail-closed                                                                                              │
+├──────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 登 记 进  S2_CORE 的  pure + node:fs │ 红  d3             │ 执 行 面 白 名 单 反 转 有 效                                                                                      │
+├──────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 目 录  symlink                     │ 绿 （ 上 条  Medium）  │ 绕 过 子 目 录 钉                                                                                              │
+├──────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ .cjs / .js / .ts / 无 扩 展 名       │ 绿                 │ 与  plan「 只 过 滤  .mjs」 及  discoverSetupSupport 先 例 一 致 ； 本 仓  zero-shot 导 入 约 定 为  .mjs， 不 升 格 为  finding │
+├──────────────────────────────────┼───────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ .MJS（ extname === '.MJS'）        │ 绿                 │ 大 小 写 敏 感  FS 上 的 扩 展 名 残 差 ， 同 「 只 认  .mjs」 约 定                                                         │
+└──────────────────────────────────┴───────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+除 目 录  symlink 外 ， 主 威 胁 模 型 （ 顶 层 新  .mjs 模 块 ） 已 钉 死 。
+2. 并 集 严 格 度 （ H1 落 点 ）
+• 实 现  lib/zero-shot/unsupported-scopes.mjs:27-30： Array 非 空  → 真 ； 记 录  Object.values(...).some(flag === true)（ 含 未 知 键 ） ； 其 余 假 。
+• 对 照  e6e7ea1：
+  • resolver： array.length>0 或  ===true（ 含 未 知 键 ） → 并 入
+  • admission/progress： 仅 三 键  ===true → 新 实 现 为 超 集 （ 只 加 严 ）
+  • observer blockReason： 归 一 化 后  some(Boolean) ≡ 布 尔 上 的  ===true； 生 产 路 径 现 经  normalizeUnsupportedScopes（ page-observer.mjs:87）
+• N11（ zero-shot-unsupported-scope-fanout...:418-436） ： 直 接 调  anyUnsupportedScope({probeScope:true}) / (['x'])， 不 经  normalize/observe 链 。
+• 无 发 现 放 松 ； /tmp 变 异 「 只 认  UNSUPPORTED_SCOPE_KEYS」 → 仅  N11 红 。
+3. d3 反 转 完 备 性
+• 改 前  pure 7 项  ↔ 改 前  S2_CORE \ pure 恰 为  7 项 执 行 面 。
+• 现  S2_EXECUTION_FACING（ :92-100） 与 该  7 项  集 合 相 等 （ 逐 字 路 径 一 致 ， 仅 序 不 同 ） 。
+• forbiddenFragments 与  e6e7ea1 字 节 级 相 同 ； 阈 值 仍  600。
+• unsupported-scopes.mjs： 0 条  import； 在  pure 集 （ 不 在 执 行 面 ） → d1 登 记  + d2 行 数  + d3 禁 令  + d4/d5 经  s2Files() 覆 盖 。
+• 无 发 现 。
+4. 夹 具 透 传 回 归
+• DEFAULT_UNSUPPORTED 已 删 ； copyUnsupported 通 用 透 传 （ adapter-double.mjs:10-15） 。
+• 旧 /新  raw 键 集 可 不 等 ， 经  normalizeUnsupportedScopes 后 ： undefined/{}/[]/null/{iframe:true}/{probeScope:true}/... 归 一 结 果 与  any 全 同 。
+• 现 役  unsupportedScopes: []（ action-progress / authority-runner） → observe 得 三 键 全 假 。
+• 邻 接 金 牌 全 绿 ； 无 发 现 三 键 缺 省 形 状 隐 性 依 赖 反 例 。
+5. checksum amendment（ R12）
+┌──────────────────────────────────────────────┬───────────────┬─────────────┐
+│ 冻 结 件                                        │ prd sha256    │ 实 物  sha256 │
+├──────────────────────────────────────────────┼───────────────┼─────────────┤
+│ adaptive-module-boundaries.static.golden.mjs │ 10ef6c97…e228 │ MATCH       │
+├──────────────────────────────────────────────┼───────────────┼─────────────┤
+│ adapter-double.mjs                           │ 6b208391…c00e │ MATCH       │
+└──────────────────────────────────────────────┴───────────────┴─────────────┘
+prd-zero-shot-guard-net.json 6 条  testChecksums 亦 全 部  MATCH。
+d1–d5： 只 加 严 （ 发 现 双 向  + 子 目 录  + pure 反 转  + 受 检 集 扩 发 现 ） ， 无 阈 值 放 宽 、 无 禁 令 删 除 。 无 发 现 弱 化 。
+6. CONTEXT.md :97
+• 第  97 行  resolution 四 列 完 好 ； 1/2/4 列 与  e6e7ea1 逐 字 相 同 ； 第  3 列  = 旧 文  前 缀  + 追 加 ：
+  ； 另 有 门 内 第 六 态  \container-out\`（ \`lib/agent-search-gate.mjs:25\`： …） …verdict.mjs 从 不 见 到 该 字 面 量 `
+• 第  3 列 无 额 外  |、 无  **； term-lint --registry exit 0。 无 发 现 。
+7. 元 钉 抗 变 异 （ /tmp 全 量  lib+tests 副 本 ）
+┌───────────────────────────────────────────────┬──────┬───────────────────────────────┐
+│ 变 异                                           │ 红 钉  │ 还 原                           │
+├───────────────────────────────────────────────┼──────┼───────────────────────────────┤
+│ anyUnsupportedScope 只 遍 历 已 知 键               │ N11  │ 12/12 绿 ； sha256 与 工 作 树 一 致  │
+├───────────────────────────────────────────────┼──────┼───────────────────────────────┤
+│ 键 清 单 删  shadow                               │ N2   │ 同 上                           │
+├───────────────────────────────────────────────┼──────┼───────────────────────────────┤
+│ progress-verifier 改 回 三 键 字 面 量 并 去 掉  import │ N10  │ 同 上                           │
+└───────────────────────────────────────────────┴──────┴───────────────────────────────┘
+无 发 现 （ 钉 有 效 ） 。
+8. 提 交 卫 生
+┌─────────┬───────────────────────────────────────────────────────────────────────────┬──────────────┐
+│ 提 交     │ 范 围                                                                       │ 卫 生          │
+├─────────┼───────────────────────────────────────────────────────────────────────────┼──────────────┤
+│ 83a8c98 │ 仅  adaptive-module-boundaries...； S2_CORE 仍  14 项 、 无  unsupported-scopes │ 干 净          │
+├─────────┼───────────────────────────────────────────────────────────────────────────┼──────────────┤
+│ d1f83a2 │ 共 享 叶  + 四 消 费 点  + 夹 具  + 元 钉  + S2_CORE 登 记 新 模 块                       │ 与  plan 一 致  │
+├─────────┼───────────────────────────────────────────────────────────────────────────┼──────────────┤
+│ 24e0508 │ CONTEXT + plan/GRILL/reviews/red-proofs + 两  PRD                          │ 无 生 产 逻 辑    │
+└─────────┴───────────────────────────────────────────────────────────────────────────┴──────────────┘
+git diff --name-only e6e7ea1..24e0508 19 文 件  ⊆ plan §2.1 面 （ 含  reviews 收 据 ） 。 无 发 现 计 划 外 混 入 。
+───
+总 判
+一 条  Medium： 新 建 的 「 无 子 目 录 」 网 对  目 录 符 号 链 接  假 绿 ， 与 本 契 约 「 封 发 现 盲 区 」 目 标 直 接 相 关 ， 应 用 小 补 丁 钉 死 。
+其 余  2–8 与 承 重  H1/并 集 /d3/checksum/CONTEXT/元 钉 /提 交 边 界 均 取 证 通 过 。
+VERDICT: CHANGES_REQUIRED
+Worked for 7m21s                                                                                                                                                                        stop  [hooks: 5]
+      ✓ global/settings:stop[0].hooks[0] (8ms)
+      ✓ global/settings:stop[1].hooks[0] (814ms)
+      ✓ project/settings:stop[0].hooks[0] (638ms)
+      ✓ project/settings:stop[0].hooks[1] (607ms)
+      ✓ project/settings:stop[1].hooks[0] (100ms)
+minimal · /help
+❯
+Grok 4.5 (high) · always-approve · 106K / 500K (21%) · ctrl+o transcript

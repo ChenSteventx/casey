@@ -63,3 +63,15 @@ dangling symlink 红多网。本轮选定的 dangling 目录链接口径是**一
 R1 判 `CHANGES_REQUIRED`，本轮已按 F1 修完并补齐证据，但**修复后的复审尚未进行**——
 按「评审修正要复审」纪律，合并前须由非实现家族对 R13 这一处修复 hunk 再看一轮。
 本收据不替代它。
+
+## R1 代码评审 + R13 修复 + 聚焦复核（异构闭环）
+
+| 项 | 值 |
+|---|---|
+| 被审快照 | `e6e7ea1..24e0508`（三提交，不可变） |
+| 评审方 | `grok-4.5` high，tmux 真 TTY 多轮（作者家族 Claude opus，异构门成立） |
+| R1 结论 | `CHANGES_REQUIRED`——八项风险七项「无发现」并取证（并集严格度/d3 反转/夹具透传/R12 字节核/词条/元钉三路变异/提交卫生）；唯一 finding：Medium，「无子目录」钉被 symlink-to-dir 绕过（可复现） |
+| 修复 | `e19ccdb`：目录或指向目录的符号链接一律红；dangling 取 fail-safe（证不出即红）；新增第四份 red-proof；R13（observe-admit-step）与 R1（guard-net）双 amendment，断言零弱化 |
+| fable 独立复现 | symlink-dir 注入 → 边界金牌 exit 1；删除还原 → exit 0 |
+| 聚焦复核 | `grok-4.5` high 对 `24e0508..e19ccdb`：反例复现被堵、既有行为不变、分工自洽、amendment 与 sha256 实物一致——终局 `APPROVE` |
+| 收据 | `r1-code-review-*.txt/md`、`r13-recheck-*.txt/md` |
