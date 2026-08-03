@@ -1,0 +1,480 @@
+      ✓ global/settings:pre_tool_use[1].hooks[0] (684ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (632ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (697ms)
+┃◆ Thought for 0.2s
+┃
+┃Interesting - the PRD amendments field might have a different structure. Let me check the full PRD structure - maybe amendments are under a different key.
+PRD 的  amendment 字 段 结 构 与 预 期 不 符 ， 我 先 核 对 完 整  JSON 再 跑  /tmp 变 异 。
+◆ Run Inspect PRD JSON structure for amendments
+$ cd /mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net && \
+  node -e '
+  const g = JSON.parse(require("fs").readFileSync("loop/prd-zero-shot-observe-admit-step.json","utf8"));
+  const n = JSON.parse(require("fs").readFileSync("loop/prd-zero-shot-guard-net.json","utf8"));
+  console.log("observe keys:", Object.keys(g));
+  console.log("guard keys:", Object.keys(n));
+  for (const [name, obj] of [["observe", g], ["guard", n]]) {
+    for (const k of Object.keys(obj)) {
+      if (/amend|change|history|note/i.test(k)) console.log(name, k, typeof obj[k], Array.isArray(obj[k])?obj[k].length:"");
+    }
+  }
+  // show structure around amendedAt
+  const og = JSON.stringify(g).includes("R13");
+  const ng = JSON.stringify(n).includes("R13");
+  console.log("observe has R13 string:", og);
+  console.log("guard has R13 string:", ng);
+  ' && \
+  python3 - <<'PY'
+  import json
+  for path in ["loop/prd-zero-shot-observe-admit-step.json","loop/prd-zero-shot-guard-net.json"]:
+      with open(path) as f: d=json.load(f)
+      print("==", path)
+      print("top keys", list(d.keys()))
+      for k,v in d.items():
+          if isinstance(v, list) and v and isinstance(v[0], dict):
+              sample = v[0]
+              if any("amend" in str(x).lower() or "round" in str(x).lower() for x in sample):
+                  print(" list", k, "len", len(v), "sample keys", sample.keys())
+                  for item in v:
+                      if "R13" in json.dumps(item, ensure_ascii=False) or "符 号 链 接 " in json.dumps(item, ensure_ascii=False) or "amendedAt" in item:
+                          print("  item:", {kk:item.get(kk) for kk in item if kk!="reason"})
+                          print("  reason head:", (item.get("reason") or "")[:120])
+  PY
+observe keys: [
+  'schemaVersion',
+… +65 lines
+  item: {'amendedAt': '2026-08-04', 'round': 'R13 异 构 评 审 加 严 ： 子 目 录 钉 堵 符 号 链 接 绕 过 （ plan 口 径 落 字  + 第 四 份  red-proof） ', 'files': ['docs/plans/zero-shot-guard-net/plan.m
+shot-guard-net/accept/red-proofs/subdirectory-symlink-bypass.red.txt']}
+  reason head: 代 码 级 异 构 评 审 （ grok-4.5 high） 唯 一  finding： 边 界 门 的 「 无 子 目 录 」 钉 被 指 向 目 录 的 符 号 链 接 绕 过 （ 详 见  prd-zero-shot-observe-admit-step.json 的  R13 条
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (801ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (664ms)
+◆ Run Create /tmp sandbox and run clean baseline
+$ # Setup /tmp sandbox copy for mutation tests
+  REPO=/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net
+  SCRATCH=/tmp/guard-net-r13-review-$$
+  mkdir -p "$SCRATCH"
+  # minimal copy: golden + needed libs
+  mkdir -p "$SCRATCH/tests/_golden" "$SCRATCH/lib" "$SCRATCH/outside-target"
+  cp -a "$REPO/tests/_golden/adaptive-module-boundaries.static.golden.mjs" "$SCRATCH/tests/_golden/"
+  cp -a "$REPO/lib/zero-shot" "$SCRATCH/lib/"
+  cp -a "$REPO/lib/adaptive-execution" "$SCRATCH/lib/"
+  cp -a "$REPO/lib/intent-plan.mjs" "$SCRATCH/lib/"
+  # also need any imports that pure modules might pull? golden only reads source text of those files
+  ls "$SCRATCH/lib/zero-shot" | head
+  echo "scratch=$SCRATCH"
+  # Clean baseline
+  cd "$SCRATCH" && node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo "CLEAN_EXIT=$?"
+action-admission.mjs
+action-proposal.mjs
+… +14 lines
+adaptive-module-boundaries: 5/5 passed
+CLEAN_EXIT=0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (796ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (638ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (801ms)
+┃◆ Thought for 24.8s
+┃
+┃Good progress. Now I need to:
+◆ Run Reproduce symlink mutations in /tmp sandbox
+$ SCRATCH=/tmp/guard-net-r13-review-479506
+  REPO=/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net
+  cd "$SCRATCH"
+  echo "===== 1a. symlink-to-dir smuggle (POST-FIX, expect RED) ====="
+  mkdir -p outside-target
+  echo 'export const y = 1;' > outside-target/hidden.mjs
+  ln -sfn "$SCRATCH/outside-target" lib/zero-shot/smuggle-dir
+  ls -l lib/zero-shot/smuggle-dir
+  node -e '
+  import { readdirSync } from "node:fs";
+  const e = readdirSync("lib/zero-shot", { withFileTypes: true }).find(x => x.name === "smuggle-dir");
+  console.log("Dirent isDirectory="+e.isDirectory()+" isSymbolicLink="+e.isSymbolicLink()+" isFile="+e.isFile());
+  '
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo "SMUGGLE_DIR_EXIT=$?"
+  rm -f lib/zero-shot/smuggle-dir
+  echo "===== 1b. dangling dir symlink (POST-FIX, expect RED) ====="
+  ln -sfn "$SCRATCH/no-such-target" lib/zero-shot/dangling-dir
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo "DANGLING_EXIT=$?"
+  rm -f lib/zero-shot/dangling-dir
+  echo "===== 1c. real subdirectory (expect RED) ====="
+  mkdir -p lib/zero-shot/container
+  echo 'export const x=1;' > lib/zero-shot/container/smuggled.mjs
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo "REAL_SUBDIR_EXIT=$?"
+  rm -rf lib/zero-shot/container
+  echo "===== 2a. file-level symlink to .mjs (expect still RED via d1 registration, not dir nail) ====="
+  echo 'export const z=1;' > outside-target/file-mod.mjs
+  ln -sfn "$SCRATCH/outside-target/file-mod.mjs" lib/zero-shot/smuggle-file.mjs
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo "FILE_SYMLINK_EXIT=$?"
+  # capture which check fails
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs 2>&1 | head -20
+  rm -f lib/zero-shot/smuggle-file.mjs
+  echo "===== 2b. file symlink to non-.mjs (should not trip directory nail; discover ignores non-mjs) ====="
+  echo 'hello' > outside-target/note.txt
+  ln -sfn "$SCRATCH/outside-target/note.txt" lib/zero-shot/note.txt
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo "NON_MJS_FILE_SYMLINK_EXIT=$?"
+  rm -f lib/zero-shot/note.txt
+  echo "===== 2c. clean again ====="
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo "CLEAN2_EXIT=$?"
+  echo "===== 1d. PRE-FIX behavior: only isDirectory() would miss symlink-to-dir ====="
+  # restore smuggle-dir, run old logic inline
+  ln -sfn "$SCRATCH/outside-target" lib/zero-shot/smuggle-dir
+  node -e '
+  import { readdirSync, existsSync, statSync } from "node:fs";
+  import { join, resolve } from "node:path";
+  const dir = resolve("lib/zero-shot");
+  const old = readdirSync(dir, { withFileTypes: true }).filter(e => e.isDirectory()).map(e => e.name);
+  console.log("OLD zeroShotSubdirectories:", JSON.stringify(old));
+  // new logic
+  const found = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory()) { found.push(entry.name); continue; }
+    if (!entry.isSymbolicLink()) continue;
+    try {
+      const t = statSync(join(dir, entry.name));
+      if (t.isDirectory()) found.push(entry.name + " (symlink-to-dir)");
+    } catch {
+      found.push(entry.name + " (dangling)");
+    }
+  }
+  console.log("NEW zeroShotDirectoryLikeEntries:", JSON.stringify(found));
+  // also: does discover see hidden.mjs?
+  const discovered = readdirSync(dir).filter(n => n.endsWith(".mjs"));
+  console.log("discover flat .mjs count:", discovered.length, "includes smuggle?", discovered.includes("smuggle-dir"));
+  console.log("hidden.mjs visible in flat discover?", discovered.includes("hidden.mjs"));
+  '
+  rm -f lib/zero-shot/smuggle-dir
+  echo "===== edge: symlink to file that isDirectory false should pass dir nail ====="
+  # already tested with note.txt
+  echo "===== edge: relative dangling ====="
+  ln -sfn "./missing-relative-target" lib/zero-shot/dangling-rel
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo "DANGLING_REL_EXIT=$?"
+  rm -f lib/zero-shot/dangling-rel
+  echo "===== edge: symlink to file (regular file via ln -s) with .mjs name that resolves to file ====="
+  # already tested smuggle-file.mjs — that hits d1 unregistered
+  echo "===== edge: broken symlink with .mjs name ====="
+  ln -sfn "$SCRATCH/no-such.mjs" lib/zero-shot/ghost.mjs
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo "GHOST_MJS_EXIT=$?"
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs 2>&1 | rg -n "FAIL|ok|ghost|解 引 用 |未 纳 入 |缺 失 " || true
+  rm -f lib/zero-shot/ghost.mjs
+  echo "===== FINAL CLEAN ====="
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo "FINAL_CLEAN=$?"
+===== 1a. symlink-to-dir smuggle (POST-FIX, expect RED) =====
+lrwxrwxrwx 1 test test 47 Aug  4 00:47 lib/zero-shot/smuggle-dir -> /tmp/guard-net-r13-review-479506/outside-target
+… +96 lines
+adaptive-module-boundaries: 5/5 passed
+FINAL_CLEAN=0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (796ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (641ms)
+◆ Run Verify PRD checksums and assertion non-weakening
+$ REPO=/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net
+  cd "$REPO"
+  echo "=== guard-net testChecksums keys containing boundary/plan/red ==="
+  node -e '
+  const n=JSON.parse(require("fs").readFileSync("loop/prd-zero-shot-guard-net.json","utf8"));
+  for (const [k,v] of Object.entries(n.testChecksums)) {
+    if (/boundary|plan|red|symlink|adaptive/i.test(k)) console.log(k, v);
+  }
+  console.log("--- all keys ---");
+  Object.keys(n.testChecksums).forEach(k=>console.log(k));
+  '
+  echo "=== observe R13 checksum match ==="
+  SHA=$(sha256sum tests/_golden/adaptive-module-boundaries.static.golden.mjs | awk "{print \$1}")
+  PRD=$(node -e
+  'console.log(JSON.parse(require("fs").readFileSync("loop/prd-zero-shot-observe-admit-step.json","utf8")).testChecksums["tests/_golden/adaptive-module-boundaries.static.golden.mjs"])')
+  echo "file=$SHA"
+  echo "prd =$PRD"
+  echo "match=$([ "$SHA" = "$PRD" ] && echo YES || echo NO)"
+  echo "=== guard R13 plan + red-proof match ==="
+  for f in docs/plans/zero-shot-guard-net/plan.md docs/plans/zero-shot-guard-net/accept/red-proofs/subdirectory-symlink-bypass.red.txt; do
+    SHA=$(sha256sum "$f" | awk "{print \$1}")
+    PRD=$(node -e "console.log(JSON.parse(require('fs').readFileSync('loop/prd-zero-shot-guard-net.json','utf8')).testChecksums['$f'])")
+    echo "$f"
+    echo "  file=$SHA"
+    echo "  prd =$PRD"
+    echo "  match=$([ "$SHA" = "$PRD" ] && echo YES || echo NO)"
+  done
+  echo "=== assertion zero-weakening: compare pre/post d1 logic via git show ==="
+  git show 24e0508:tests/_golden/adaptive-module-boundaries.static.golden.mjs | rg -n "zeroShot|Subdirector|DirectoryLike|nested|isDirectory|isSymbolicLink|discoverZeroShot"
+  echo "--- post ---"
+  rg -n "zeroShot|Subdirector|DirectoryLike|nested|isDirectory|isSymbolicLink|discoverZeroShot" tests/_golden/adaptive-module-boundaries.static.golden.mjs
+=== guard-net testChecksums keys containing boundary/plan/red ===
+docs/plans/zero-shot-guard-net/plan.md c85e2c9b0ad826862d7b5aea789109f4b33101dd07c3dae35f087c540cd57b08
+… +27 lines
+--: line 32: rg: command not found
+--- post ---
+--: line 34: rg: command not found
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (10ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (764ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (683ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (723ms)
+┃◆ Thought for 30.2s
+┃
+┃Interesting finding on non-.mjs file symlink: it passes with EXIT=0. That means a file symlink to note.txt is allowed. That was pre-existing behavior for non-mjs files (discover only looks at .mjs).
+┃T...1. 修 法 干 净 堵 住 反 例 ： /tmp 外 造 目 录  + ln -sfn 注 入 后 ， dangling 目 录 链 接 口 径 （ 选 定 一 律 红 ） 确 实  fail-safe 证 不 出 即 红 ， 理 由 合 理 且 红 。  2. 无 过 度 收 紧 ：
+┃discover 只 看  .mjs， 目 录 钉 只 管 目 录 /目 录  symlink。  3. discoverZeroShotCore 不 解 引 用 不 递 归 、 完 整 性 由 子 目 录 钉 承 担 的 分 工 自 洽 ， 无 缝 隙 （ FIFO 等 边 缘 形 状 被 目 录
+┃一 致 ， 断 言 零 弱 化 。  5. 边 界 金 牌 与 元 钉 金 牌 退 出 码 正 常 。
+┃
+┃VERDICT: APPROVE
+┃
+┃The fix cleanly addresses the symlink-to-dir bypass while preserving existing behavior for non-.
+◆ Run Compare assertions and run gold medals
+$ REPO=/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net
+  cd "$REPO"
+  # zero-weakening: extract pre/post assertion surfaces without rg
+  echo "=== pre-fix nested assertion ==="
+  git show 24e0508:tests/_golden/adaptive-module-boundaries.static.golden.mjs | grep -n -E 'zeroShot|Subdirector|DirectoryLike|nested|isDirectory|isSymbolicLink|discoverZeroShot|不 得 有 '
+  echo "=== post-fix nested assertion ==="
+  grep -n -E 'zeroShot|Subdirector|DirectoryLike|nested|isDirectory|isSymbolicLink|discoverZeroShot|不 得 有 ' tests/_golden/adaptive-module-boundaries.static.golden.mjs
+  echo "=== R12 vs R13 checksum for adaptive golden ==="
+  node -e '
+  const g=JSON.parse(require("fs").readFileSync("loop/prd-zero-shot-observe-admit-step.json","utf8"));
+  const path="tests/_golden/adaptive-module-boundaries.static.golden.mjs";
+  console.log("current frozen", g.testChecksums[path]);
+  const r12=g.checksumAmendments.find(a=>a.round&&a.round.includes("R12"));
+  const r13=g.checksumAmendments.find(a=>a.round&&a.round.includes("R13"));
+  console.log("R12 files", r12.files);
+  console.log("R13 files", r13.files);
+  console.log("R13 reason has 零 弱 化 ", r13.reason.includes("零 弱 化 "));
+  console.log("R13 reason has 只 加 严 ", r13.reason.includes("只 加 严 "));
+  // old checksum from git at 24e0508
+  const {execSync}=require("child_process");
+  const old=execSync("git show 24e0508:tests/_golden/adaptive-module-boundaries.static.golden.mjs | sha256sum").toString().trim().split(/\s+/)[0];
+  const neu=execSync("sha256sum tests/_golden/adaptive-module-boundaries.static.golden.mjs").toString().trim().split(/\s+/)[0];
+  console.log("old@24e0508", old);
+  console.log("new@HEAD  ", neu);
+  console.log("changed", old!==neu);
+  // show that old checksum is NOT still in freeze as current (we upgraded)
+  console.log("prd current matches new", g.testChecksums[path]===neu);
+  '
+  echo "=== RUN goldens (exit codes only matter) ==="
+  set +e
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs >/tmp/boundary-golden.out 2>&1
+  B=$?
+  echo "boundary EXIT=$B"
+  tail -3 /tmp/boundary-golden.out
+  node tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs >/tmp/meta-golden.out 2>&1
+  M=$?
+  echo "meta-fanout EXIT=$M"
+  tail -5 /tmp/meta-golden.out
+  # Also check if there is a dedicated meta-nail golden name
+  ls tests/_golden/*guard* tests/_golden/*unsupported* 2>/dev/null
+=== pre-fix nested assertion ===
+67:// 子 目 录 看 不 见 是 有 意 的 ——d1 另 有 一 条 「 不 得 有 子 目 录 」 断 言 把 形 状 变 更 逼 成 一 次 显 式 裁 决 。
+… +56 lines
+tests/_golden/model-lane-guard.golden.mjs
+tests/_golden/term-guard.golden.mjs
+tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (11ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (930ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (653ms)
+┃◆ Thought for 1.0s
+┃
+┃I should also verify the PRE-fix would actually pass with symlink-to-dir by running the old golden against a mutated tree. I already demonstrated with inline node that old logic returns empty. Let
+┃me ...
+再 跑 一 遍 修 前 金 牌 对 同 一  symlink 注 入 的 对 照 ， 确 认 原 先 确 实 会 绿 。
+◆ Run Pre/post golden contrast on symlink shapes
+$ SCRATCH=/tmp/guard-net-r13-review-479506
+  REPO=/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net
+  cd "$SCRATCH"
+  # PRE-FIX golden vs same symlink inject
+  git -C "$REPO" show 24e0508:tests/_golden/adaptive-module-boundaries.static.golden.mjs > /tmp/prefix.golden.mjs
+  ln -sfn "$SCRATCH/outside-target" lib/zero-shot/smuggle-dir
+  node /tmp/prefix.golden.mjs >/tmp/pre-smuggle.out 2>&1; echo "PRE_SMUGGLE_EXIT=$?"
+  tail -3 /tmp/pre-smuggle.out
+  # POST already proven EXIT=1
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs >/tmp/post-smuggle.out 2>&1; echo "POST_SMUGGLE_EXIT=$?"
+  grep FAIL /tmp/post-smuggle.out || true
+  tail -2 /tmp/post-smuggle.out
+  rm -f lib/zero-shot/smuggle-dir
+  # PRE-FIX on dangling: would pass (old only isDirectory)
+  ln -sfn "$SCRATCH/no-such-target" lib/zero-shot/dangling-dir
+  node /tmp/prefix.golden.mjs >/tmp/pre-dangling.out 2>&1; echo "PRE_DANGLING_EXIT=$?"
+  tail -2 /tmp/pre-dangling.out
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs >/tmp/post-dangling.out 2>&1; echo "POST_DANGLING_EXIT=$?"
+  grep FAIL /tmp/post-dangling.out || true
+  rm -f lib/zero-shot/dangling-dir
+  # PRE-FIX file symlink .mjs still red via unregistered
+  ln -sfn "$SCRATCH/outside-target/file-mod.mjs" lib/zero-shot/smuggle-file.mjs
+  node /tmp/prefix.golden.mjs >/tmp/pre-filesym.out 2>&1; echo "PRE_FILE_SYMLINK_EXIT=$?"
+  grep FAIL /tmp/pre-filesym.out || true
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs >/tmp/post-filesym.out 2>&1; echo "POST_FILE_SYMLINK_EXIT=$?"
+  grep FAIL /tmp/post-filesym.out || true
+  rm -f lib/zero-shot/smuggle-file.mjs
+  # clean post
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs >/dev/null; echo "POST_CLEAN=$?"
+  # Note: non-.mjs file symlink passes both - pre-existing
+  ln -sfn "$SCRATCH/outside-target/note.txt" lib/zero-shot/note.txt
+  node /tmp/prefix.golden.mjs >/dev/null; echo "PRE_NOTE_SYMLINK=$?"
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs >/dev/null; echo "POST_NOTE_SYMLINK=$?"
+  rm -f lib/zero-shot/note.txt
+  # Division gap probe: symlink-to-dir with .mjs name? unusual but
+  ln -sfn "$SCRATCH/outside-target" lib/zero-shot/weird.mjs
+  # discover includes weird.mjs by name; directory nail also reds (symlink-to-dir)
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs >/tmp/weird.out 2>&1; echo "WEIRD_DIR_NAMED_MJS_EXIT=$?"
+  grep FAIL /tmp/weird.out || true
+  rm -f lib/zero-shot/weird.mjs
+  # self-symlink loop?
+  ln -sfn lib/zero-shot/loop-dir lib/zero-shot/loop-dir
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs >/tmp/loop.out 2>&1; echo "LOOP_EXIT=$?"
+  grep FAIL /tmp/loop.out || true
+  rm -f lib/zero-shot/loop-dir
+PRE_SMUGGLE_EXIT=1
+FAIL adaptive-module-boundaries-d5 S2 模 块 内 部 依 赖 图 无 环 且  observer 不 越 过  catalog 直 连  authority: S2 核 心 缺 失 ： lib/zero-shot/unsupported-scopes.mjs
+… +53 lines
+LOOP_EXIT=1
+FAIL adaptive-module-boundaries-d1 计 划 内  S2 核 心 与  S1 receipt/support 文 件 完 整 在 场 : lib/zero-shot 下 不 得 有 子 目 录 或 指 向 目 录 的 符 号 链 接 （ 平 铺 扫 描 看 不 见 ） ： lib/zero
+败 ， 证 不 出 不 是 目 录 ）
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (719ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (652ms)
+┃◆ Thought for 1.0s
+┃
+┃Interesting - the pre-fix golden failed because ROOT resolution uses import.meta.url of the golden file location. When I ran prefix.golden.mjs from /tmp/prefix.golden.mjs, ROOT became /tmp/../..
+┃which...
+修 前 金 牌 刚 才 因 路 径 解 析 落 在  /tmp 而 假 红 ； 我 把 它 放 进  scratch 树 里 再 对 照 。
+◆ Run Proper pre/post golden contrast in scratch tree
+$ SCRATCH=/tmp/guard-net-r13-review-479506
+  REPO=/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate-zero-shot-guard-net
+  cd "$SCRATCH"
+  # Place pre-fix golden inside scratch so ROOT resolves to scratch
+  git -C "$REPO" show 24e0508:tests/_golden/adaptive-module-boundaries.static.golden.mjs > tests/_golden/prefix.golden.mjs
+  # Ensure clean
+  rm -f lib/zero-shot/smuggle-dir lib/zero-shot/dangling-dir lib/zero-shot/smuggle-file.mjs lib/zero-shot/note.txt lib/zero-shot/weird.mjs lib/zero-shot/loop-dir lib/zero-shot/ghost.mjs 2>/dev/null
+  echo "===== PRE clean ====="
+  node tests/_golden/prefix.golden.mjs >/tmp/pre-clean.out 2>&1; echo "PRE_CLEAN_EXIT=$?"
+  tail -2 /tmp/pre-clean.out
+  echo "===== POST clean ====="
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs >/tmp/post-clean.out 2>&1; echo "POST_CLEAN_EXIT=$?"
+  tail -2 /tmp/post-clean.out
+  echo "===== PRE smuggle-dir (expect GREEN - the hole) ====="
+  ln -sfn "$SCRATCH/outside-target" lib/zero-shot/smuggle-dir
+  node -e
+  'import{readdirSync}from"fs";const e=readdirSync("lib/zero-shot",{withFileTypes:true}).find(x=>x.name==="smuggle-dir");console.log("isDirectory",e.isDirectory(),"isSymbolicLink",e.isSymbolicLink())'
+  node tests/_golden/prefix.golden.mjs >/tmp/pre-s.out 2>&1; echo "PRE_SMUGGLE_EXIT=$?"
+  tail -3 /tmp/pre-s.out
+  echo "===== POST smuggle-dir (expect RED d1 dir nail) ====="
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs >/tmp/post-s.out 2>&1; echo "POST_SMUGGLE_EXIT=$?"
+  grep FAIL /tmp/post-s.out
+  tail -2 /tmp/post-s.out
+  rm -f lib/zero-shot/smuggle-dir
+  echo "===== PRE dangling (expect GREEN under old isDirectory-only) ====="
+  ln -sfn "$SCRATCH/no-such-target" lib/zero-shot/dangling-dir
+  node tests/_golden/prefix.golden.mjs >/tmp/pre-d.out 2>&1; echo "PRE_DANGLING_EXIT=$?"
+  tail -2 /tmp/pre-d.out
+  echo "===== POST dangling (expect RED fail-closed) ====="
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs >/tmp/post-d.out 2>&1; echo "POST_DANGLING_EXIT=$?"
+  grep FAIL /tmp/post-d.out
+  rm -f lib/zero-shot/dangling-dir
+  echo "===== PRE/POST file-level .mjs symlink (both RED unregistered) ====="
+  echo 'export const z=1;' > outside-target/file-mod.mjs
+  ln -sfn "$SCRATCH/outside-target/file-mod.mjs" lib/zero-shot/smuggle-file.mjs
+  node tests/_golden/prefix.golden.mjs >/tmp/pre-f.out 2>&1; echo "PRE_FILE_EXIT=$?"
+  grep FAIL /tmp/pre-f.out | head -1
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs >/tmp/post-f.out 2>&1; echo "POST_FILE_EXIT=$?"
+  grep FAIL /tmp/post-f.out | head -1
+  rm -f lib/zero-shot/smuggle-file.mjs
+  echo "===== PRE/POST non-mjs file symlink (both GREEN - out of module scope) ====="
+  echo hello > outside-target/note.txt
+  ln -sfn "$SCRATCH/outside-target/note.txt" lib/zero-shot/note.txt
+  node tests/_golden/prefix.golden.mjs >/dev/null; echo "PRE_NOTE_EXIT=$?"
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs >/dev/null; echo "POST_NOTE_EXIT=$?"
+  rm -f lib/zero-shot/note.txt
+  echo "===== PRE/POST real subdir ====="
+  mkdir -p lib/zero-shot/container && echo 'export const x=1' > lib/zero-shot/container/x.mjs
+  node tests/_golden/prefix.golden.mjs >/tmp/pre-sub.out 2>&1; echo "PRE_SUBDIR_EXIT=$?"
+  grep FAIL /tmp/pre-sub.out | head -1
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs >/tmp/post-sub.out 2>&1; echo "POST_SUBDIR_EXIT=$?"
+  grep FAIL /tmp/post-sub.out | head -1
+  rm -rf lib/zero-shot/container
+  echo "===== registered file symlink unchanged: symlink a real core file name to itself path ====="
+  # replace one registered module with symlink to outside copy of same content - should still pass d1 registration
+  # Actually replacing would change inode but name stays; d2 reads content. Legitimate if content same.
+  # Safer: leave tree alone - already shown file symlink unregistered reds, clean green.
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs >/dev/null; echo "FINAL=$?"
+===== PRE clean =====
+PRE_CLEAN_EXIT=0
+… +38 lines
+FAIL adaptive-module-boundaries-d1 计 划 内  S2 核 心 与  S1 receipt/support 文 件 完 整 在 场 : lib/zero-shot 下 不 得 有 子 目 录 或 指 向 目 录 的 符 号 链 接 （ 平 铺 扫 描 看 不 见 ） ： lib/zero
+===== registered file symlink unchanged: symlink a real core file name to itself path =====
+FINAL=0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (853ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (660ms)
+┃◆ Thought for 7.1s
+┃
+┃I have complete evidence. Let me also quickly check one more edge: symlink to a regular file with a name that doesn't end in .mjs - both green. Good. 1.
+聚 焦 复 核 结 论 （ R13： 24e0508..e19ccdb）
+1. 反 例 是 否 堵 住  / dangling 口 径
+堵 住 了 。  在  /tmp 副 本 自 造 ：
+┌─────────────────────────────────────────────────────────────────┬──────────────────────────┬─────────────────────────────────────────────────────┐
+│ 形 状                                                             │ 修 前 金 牌 （ 24e0508 字 节 ）  │ 修 后 金 牌 （ 当 前 ）                                     │
+├─────────────────────────────────────────────────────────────────┼──────────────────────────┼─────────────────────────────────────────────────────┤
+│ 干 净 树                                                           │ EXIT=0                   │ EXIT=0                                              │
+├─────────────────────────────────────────────────────────────────┼──────────────────────────┼─────────────────────────────────────────────────────┤
+│ ln -sfn <仓 外 目 录 > lib/zero-shot/smuggle-dir（ 内 藏  hidden.mjs）  │ EXIT=0（ 洞 ）              │ EXIT=1， d1： …smuggle-dir（ 指 向 目 录 的 符 号 链 接 ）       │
+├─────────────────────────────────────────────────────────────────┼──────────────────────────┼─────────────────────────────────────────────────────┤
+│ ln -sfn …/no-such-target lib/zero-shot/dangling-dir             │ EXIT=0                   │ EXIT=1， d1： …（ 符 号 链 接 解 引 用 失 败 ， 证 不 出 不 是 目 录 ）  │
+├─────────────────────────────────────────────────────────────────┼──────────────────────────┼─────────────────────────────────────────────────────┤
+│ 真 子 目 录  lib/zero-shot/container/                               │ EXIT=1                   │ EXIT=1                                              │
+└─────────────────────────────────────────────────────────────────┴──────────────────────────┴─────────────────────────────────────────────────────┘
+Dirent 实 测 ： isDirectory()=false、 isSymbolicLink()=true； 旧 逻 辑  filter(isDirectory) 得  []， 平 铺  discover 也 扫 不 到  hidden.mjs。 修 法 对  symlink 做 一 次  statSync， 目 录 即 红 ； 解
+理 且 实 测 真 红 （ 环 链 接  loop-dir 同 为  EXIT=1） 。
+2. 是 否 过 度 收 紧
+没 有 伤 到 合 法 平 铺 与 文 件 级  symlink 既 有 行 为 。
+• 干 净 树 ： 修 前 /修 后 皆  5/5、 EXIT=0
+• 未 登 记  .mjs 文 件  symlink： 修 前 /修 后 皆  d1「 未 纳 入 冻 结 清 单 」 红 （ 行 为 不 变 ）
+• 非  .mjs 文 件  symlink（ note.txt） ： 修 前 /修 后 皆 绿 （ 模 块 发 现 范 围 外 ， 本 钉 本 就 不 扫 ）
+• 真 子 目 录 ： 仍 红 ， 只 加 严 文 案
+收 紧 面 仅 ： 修 前 绿 的 「 目 录  symlink / dangling」 → 修 后 红 。
+3. 分 工 是 否 自 洽
+自 洽 ， 无 与 本  finding 相 关 的 双 边 缝 隙 。
+• discoverZeroShotCore： 平 铺 、 只 收  .mjs、 不 递 归 、 不 解 引 用 进 目 录
+• zeroShotDirectoryLikeEntries： 真 目 录  + 指 向 目 录 的  symlink + 解 引 用 失 败
+走 私 路 径 「 目 录  symlink 藏 模 块 」 ： 发 现 看 不 见 内 容 ， 目 录 钉 红 外 壳 。 文 件 级  .mjs symlink： 发 现 进 双 向 相 等 （ 未 登 记 红 ） 。 两 边 都 不 当 模 块 管 的 非  .mjs 杂 物
+4. 两 条  amendment 与  sha256 / 断 言 弱 化
+一 致 ； 断 言 零 弱 化 、 只 加 严 。  自 跑 ：
+┌───────────────────────────────────────────────────────────────────────────────────────────────┬──────────────────┬───────────────────┐
+│ 冻 结 件                                                                                         │ 实 物  sha256      │ PRD testChecksums │
+├───────────────────────────────────────────────────────────────────────────────────────────────┼──────────────────┼───────────────────┤
+│ tests/_golden/adaptive-module-boundaries.static.golden.mjs（ observe-admit-step R13 第  13 条 ）  │ b56eaf74…cd989d  │ 同                 │
+├───────────────────────────────────────────────────────────────────────────────────────────────┼──────────────────┼───────────────────┤
+│ docs/plans/zero-shot-guard-net/plan.md（ guard-net R13 第  1 条 ）                                │ c85e2c9b…d57b08  │ 同                 │
+├───────────────────────────────────────────────────────────────────────────────────────────────┼──────────────────┼───────────────────┤
+│ …/subdirectory-symlink-bypass.red.txt                                                         │ 6d305b54…dbad047 │ 同                 │
+└───────────────────────────────────────────────────────────────────────────────────────────────┴──────────────────┴───────────────────┘
+nested.length === 0 谓 词 从 「 仅  isDirectory」 扩 到 「 目 录  ∨ 指 向 目 录 的  symlink ∨ 解 引 用 失 败 」 ； 无 任 何 原 红 形 状 变 绿 。
+5. 金 牌 退 出 码 （ 只 信  exit）
+• 边 界 金 牌  adaptive-module-boundaries.static.golden.mjs → EXIT=0
+• 元 钉 金 牌  zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs → EXIT=0
+───
+VERDICT: APPROVE
+Worked for 4m54s                                                                                                                                                                        stop  [hooks: 5]
+      ✓ global/settings:stop[0].hooks[0] (7ms)
+      ✓ global/settings:stop[1].hooks[0] (904ms)
+      ✓ project/settings:stop[0].hooks[0] (625ms)
+      ✓ project/settings:stop[0].hooks[1] (674ms)
+      ✓ project/settings:stop[1].hooks[0] (81ms)
+minimal · /help
+❯
+Grok 4.5 (high) · always-approve · 62K / 500K (12%) · ctrl+o transcript

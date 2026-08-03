@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "task": "zero-shot-guard-net（full）：门禁加固，非 kernel。治三个已实证的门禁盲区。其一，模块边界门的 S2_CORE 是硬编码清单，新建 zero-shot 模块不进清单就不受五张网中的任何一张——实测往 lib/zero-shot 放一个 704 行、直连 playwright 与 node:fs、且与另一模块互引成环的流氓模块，边界金牌仍 5/5 绿；改为目录自动发现 + 双向相等 + 无子目录断言，并把 d3 的纯模块清单反转成执行面白名单（新模块默认按最严口径受检）。其二，unsupportedScopes 的判据在四个消费点各写各的，其中两处逐字列举三个键名——实测加第四个 scope 键时 progress 面判 progressed（真 fail-open，一次动作根本没造成的进展被判成进展且零告警），准入面自身闸失效、拒因漂成 RESOLUTION_AUTHORITY_INVALID；收敛成纯叶模块 lib/zero-shot/unsupported-scopes.mjs 的单一事实源（键清单 + 归一化 + 并集严格度判据），并加一枚元钉金牌钉住「键清单与消费点的同步关系」。其三，共享门 agent-search-gate 的第六态 container-out 在统一语言注册表里没落字，补进 resolution 词条的枚举说明。全程零新增采集、零驱动改动、零持久状态；产物恒 signed:false/replayReady:false，不进 verdict/三轴/report。",
+  "specPath": "docs/plans/zero-shot-guard-net/plan.md",
+  "testChecksums": {
+    "tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs": "dda88521d23433f56676ab701627c1edb6cbad9e7ded7b57f9b67469d86e591c",
+    "docs/plans/zero-shot-guard-net/plan.md": "c85e2c9b0ad826862d7b5aea789109f4b33101dd07c3dae35f087c540cd57b08",
+    "docs/plans/zero-shot-guard-net/GRILL.md": "b8cb11264ffa45c446cd3976940d9c4dd702a936cb5336c35f0537083358a7c6",
+    "docs/plans/zero-shot-guard-net/accept/red-proofs/module-boundary-blindspot.red.txt": "8bd07f6a1c491490810700f9de5431592b336d21a917212451a696bca35dd556",
+    "docs/plans/zero-shot-guard-net/accept/red-proofs/unsupported-scope-fanout.red.txt": "eba2954fdcc46d8aff4e6b42bf669cf1769383a36d1f631c84679dc9e0d33f9c",
+    "docs/plans/zero-shot-guard-net/accept/red-proofs/zero-shot-guard-net.red.txt": "cc3abe40bdd7ba3b6f99164894f9ccb8b751ff78caf23e8ac79a1bfb4e3f4326",
+    "docs/plans/zero-shot-guard-net/accept/red-proofs/subdirectory-symlink-bypass.red.txt": "6d305b546c4357482eff598caeaa31d68c7be39e40ec7e9dc3574c031dbad047"
+  },
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-08-04",
+      "round": "R13 异构评审加严：子目录钉堵符号链接绕过（plan 口径落字 + 第四份 red-proof）",
+      "files": [
+        "docs/plans/zero-shot-guard-net/plan.md",
+        "docs/plans/zero-shot-guard-net/accept/red-proofs/subdirectory-symlink-bypass.red.txt"
+      ],
+      "reason": "代码级异构评审（grok-4.5 high）唯一 finding：边界门的「无子目录」钉被指向目录的符号链接绕过（详见 prd-zero-shot-observe-admit-step.json 的 R13 条）。本 PRD 侧的改动是两件：plan.md §3 把符号链接口径落字（解引用一次、指向目录即红；解不开时 fail-closed 一律红，理由是门证不出「它不是目录」，护栏 #14 姿态；discoverZeroShotCore 保持平铺不递归不解引用，完整性由该钉承担），§6.2 补第四份 red-proof 并把「三份 transcript」改成「四份」，另加 R13 记账段；新增 accept/red-proofs/subdirectory-symlink-bypass.red.txt（修前绿 → 修后红 → 删链接恢复绿 → dangling 口径一路），全部在本工作树实跑采集，评审方给的只是反例形状、数字自采。计划口径零弱化、只加严：新增的是一条更严的判据与一份新证据，既有验收点与复跑面一字未减。"
+    }
+  ],
+  "observability": [
+    {
+      "dimension": "d3 的执行面豁免名单（S2_EXECUTION_FACING 七项）本身是硬编码、没有门在盯——没人能证明这七项确实都该豁免 Playwright/IO/网络禁令。新模块要豁免须显式登记一次，那是有意的人类动作（正是本契约要的闸），但名单本身的正确性只能由人定期复核。",
+      "route": "human"
+    },
+    {
+      "dimension": "anyUnsupportedScope 对畸形形状（null/undefined/字符串/数字）保持返回假，与收敛前三处判据一致，不 fail-closed。这是有意保留的现役行为，不在本契约改；改它属新行为、须自带红证据与自己的钉。",
+      "route": "human"
+    },
+    {
+      "dimension": "三处 container-out 防御性死代码（compile-atoms-agent.mjs、compile-atoms-workflow-nav.mjs、replay-actions/agent-search.mjs）——resolveAgentCardTarget 从不返回该值。只挂账不删：删死代码属行为改动、要另走红证据，且它今天不造成任何错误结论。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实 SUT 上是否存在第四类未支持作用域（如页面内容器作用域）。本契约只保证「加键时四个消费点会被逼着一起改」，不预判该不该加键；加键本身须人裁。zero-SUT 夹具只证明控制流，不能替代真机。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-module-boundary-auto-discovery",
+      "desc": "模块边界门由硬编码 S2_CORE 改为「冻结清单 + 平铺目录自动发现 + 双向相等 + 无子目录」；d2/d4/d5 吃发现集；d3 的纯模块清单反转成执行面白名单，新模块默认按最严口径受检。对现状零行为差（实测），保护面由 red-proof 的变异实验作证。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/adaptive-module-boundaries.static.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-03T16:31:56.696Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-unsupported-scope-single-source",
+      "desc": "未支持作用域键清单收敛成纯叶模块 lib/zero-shot/unsupported-scopes.mjs 的单一事实源，四个消费点全部改用共享判据（并集严格度：记录型任一自有值恰为 true 即真含未知键、数组型非空即真、其余形状返回假）；夹具 copyUnsupported 改通用透传。元钉金牌遍历键清单钉住扇出关系，另有结构钉与未知键对照钉。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/zero-shot-unsupported-scope-fanout.zero-sut.golden.mjs",
+        "node tests/_golden/page-observer-main-frame.zero-sut.golden.mjs",
+        "node tests/_golden/deterministic-resolver-step-contract.zero-sut.golden.mjs",
+        "node tests/_golden/zero-shot-action-progress.zero-sut.golden.mjs",
+        "node tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs",
+        "node tests/_golden/zero-shot-typed-progress-predicate.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-03T16:32:06.718Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-context-registry-entry",
+      "desc": "CONTEXT.md 的 resolution 词条整行替换，补进门内第六态 container-out 的说明（只活在共享门返回值里、不落动作轴：编译侧硬阻断零产事件、回放侧投影成 none、verdict.mjs 从不见到该字面量）。不进第四列弃用别名、不新增词条。统一语言检查零回归。",
+      "lane": "implementation",
+      "acceptance": [
+        "node loop-kit/bin/term-lint.mjs --registry"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-03T16:32:07.295Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4-adjacent-zero-regression",
+      "desc": "两个共享冻结面（模块边界门 + zero-shot 观测与判定链）的全部邻接零回归：prd-zero-shot-observe-admit-step 六 story 的 17 条 acceptance / 16 个唯一命令路径（setup-runtime-barrier 在 s5 与 s6 双挂），加 prd-teachin-cycle-evidence 的 s2 整支——该支把边界金牌列进 acceptance 但未锁 checksum，最容易被整支漏掉。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/public-observation-redaction.zero-sut.golden.mjs",
+        "node tests/_golden/playwright-page-driver-hardening.zero-sut.golden.mjs",
+        "node tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs",
+        "node tests/_golden/setup-receipt-identity.zero-sut.golden.mjs",
+        "node tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs",
+        "node tests/_golden/intent-plan-known-atom.zero-sut.golden.mjs",
+        "node tests/_golden/intent-state-trace.zero-sut.golden.mjs",
+        "node tests/_golden/flow-bridge.golden.mjs",
+        "node tests/_golden/p2-compile-gate.golden.mjs",
+        "node tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs",
+        "node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-raw-runner.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-raw-event-observation.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-prepared-run.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-core.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-completion.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-production-boundary.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-orchestrator-wiring.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-runtime-cycle-adapter.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-boundaries.static.golden.mjs",
+        "node tests/_golden/teachin-clear-fill-admission.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-nav-expansion-recipe.zero-sut.golden.mjs",
+        "node tests/_golden/record-capture.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-03T16:37:40.301Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s5-repo-drift-and-selftest",
+      "desc": "全仓 PRD 漂移扫描与确定性内核自检零回归。分层 tier1 绿一律不算数（护栏 #19），它只是本契约复跑面的最后一环、不是替代品。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-03T16:38:10.067Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "acceptance-gate 于 2026-08-03 冻结。红基线真实 exit 1（0/12 通过，12 条红，红因均为共享模块 lib/zero-shot/unsupported-scopes.mjs 缺席，与 plan §6.1 逐条相符，既不多红也不少红），transcript 见 accept/red-proofs/zero-shot-guard-net.red.txt。红先行成色如实标注：范围 1 对现状零行为差（P3 实测发现集恰等于硬编码 14 项，改前改后都是 5/5），常驻金牌造不出「洞在」的红，其保护面由 red-proof 的变异实验作证——P1 流氓模块 + 改前金牌 5/5 EXIT=0（五张网全不响）、P2 改后 0 passed 5 failed EXIT=1（d1 未登记 / d2 704 行 / d3 playwright+node:fs / d4 playwright / d5 环）、P3 删流氓后回 5/5 EXIT=0；另有子目录变异一路 4 passed 1 failed。范围 2 的真 fail-open 由 unsupported-scope-fanout.red.txt 承担：第四个 scope 键下 after 面判 progressed、准入拒因漂成 RESOLUTION_AUTHORITY_INVALID，对照组已知键 containerOnly 四点全 UNSUPPORTED_SCOPE + PROGRESS_UNSUPPORTED_SCOPE。元钉里 N5-N9 对现役三键今天本来就绿，它们钉的是键清单与消费点的同步关系，价值在将来加键时兑现。落地序强制 范围 1 → 范围 2 → 范围 3；范围 2 的提交必然携带一处边界金牌改动（把新模块登记进 S2_CORE），设计使然。工作树跑 prd-drift-scan 与 gate 需从主树补 cases/ 与 runs/ 的缺件（两者被 .gitignore 忽略，冻结件只存在于主树），否则报缺件假红。补法必须是复制真文件，不能软链整个目录：本轮实测软链 cases/ 会让 entity-binding-operability-successor 的 O1 红（sign 的物理项目边界核按设计拒 symlink/reparse 路径，那正是该金牌 O3 钉住的行为），是工装假红不是回归；复制真文件后 drift-scan 零漂移且该金牌 7/7 全过。另有 teachin-nav-expansion-recipe 的 N5 需要 cases/tc_wf_list_smoke/ 下的非冻结件，同样按复制补齐。前提审收据见 docs/plans/zero-shot-guard-net/reviews/（grok-4.5 high，PLAN_CHANGES_REQUIRED，无 Critical，三条 finding 全部采纳）；实现落地后的代码级异构评审属 review 阶段，尚未进行。zero-SUT 绿不能替代真实 Playwright 与真机 UAT。passes 只由 gate 写入。"
+}

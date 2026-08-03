@@ -1,0 +1,37 @@
+# red proof · 未支持作用域判据四处分叉 @ e6e7ea12db383e1af28905f58b48959dafb87320 / 2026-08-03T22:35:57+08:00
+# 全部在工作树临时副本内实跑（scratchpad/redproof-scope），真工作树零改动。
+# 做法：给副本的 page-observer.scopesOf 与夹具 copyUnsupported 各加第四键 probeScope，
+#       其余四个消费点一字不改——模拟「有人加了新键但漏改消费点」。
+
+$ grep -n "probeScope" lib/zero-shot/page-observer.mjs tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs
+tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs:20:    probeScope: source.probeScope === true,
+lib/zero-shot/page-observer.mjs:44:    probeScope: source.probeScope === true,
+
+=== 洞的证明：第四个键 probeScope（消费点未同步）===
+$ node tests/_golden/probe-scope-fanout.mjs
+[A] after.unsupportedScopes = {"iframe":false,"shadow":false,"containerOnly":false,"probeScope":true}
+[A] progress = {"status":"progressed","reason":null}
+[A] 期望（若同步）= pending/PROGRESS_UNSUPPORTED_SCOPE
+[B] before.unsupportedScopes = {"iframe":false,"shadow":false,"containerOnly":false,"probeScope":true}
+[B] observer blockReason 面 revalidateAffordance = {"ok":false,"reason":"UNSUPPORTED_SCOPE"}
+[B] resolver = {"status":"route:human","reason":"UNSUPPORTED_SCOPE"}
+[B] admission = {"ok":false,"reason":"RESOLUTION_AUTHORITY_INVALID"}
+[B] proposal = {"ok":false,"reason":"UNSUPPORTED_SCOPE"}
+EXIT=0
+
+=== 对照组：已知键 containerOnly（同一副本、同一探针链路）===
+$ node tests/_golden/probe-scope-known.mjs
+[A] after.unsupportedScopes = {"iframe":false,"shadow":false,"containerOnly":true,"probeScope":false}
+[A] progress = {"status":"pending","reason":"PROGRESS_UNSUPPORTED_SCOPE"}
+[A] 期望（若同步）= pending/PROGRESS_UNSUPPORTED_SCOPE
+[B] before.unsupportedScopes = {"iframe":false,"shadow":false,"containerOnly":true,"probeScope":false}
+[B] observer blockReason 面 revalidateAffordance = {"ok":false,"reason":"UNSUPPORTED_SCOPE"}
+[B] resolver = {"status":"route:human","reason":"UNSUPPORTED_SCOPE"}
+[B] admission = {"ok":false,"reason":"UNSUPPORTED_SCOPE"}
+[B] proposal = {"ok":false,"reason":"UNSUPPORTED_SCOPE"}
+EXIT=0
+
+# 结论（逐消费点对照）：
+#   revalidateAffordance / resolveDeterministicAction / createActionProposal —— 通用判据，新键自动跟进，仍拒 UNSUPPORTED_SCOPE。
+#   admitZeroShotAction —— 自身闸失效，拒付被上游 selectedAuthority 兜住，拒因漂成 RESOLUTION_AUTHORITY_INVALID（拒因错位、纵深失效，不是放行）。
+#   verifyStepProgress —— 判 progressed，真 fail-open：一次动作根本没造成的进展被判成进展，且零告警。

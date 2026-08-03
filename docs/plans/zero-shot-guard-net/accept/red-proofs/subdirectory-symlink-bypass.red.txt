@@ -1,0 +1,62 @@
+# red proof · 「无子目录」钉被指向目录的符号链接绕过 @ 24e0508e3638445a82efacdef5f17a93df8e9044 / 2026-08-04T00:28:40+08:00
+# 来源：异构代码评审（grok-4.5 high，对 e6e7ea1..24e0508）唯一 finding，级别 Medium，判 CHANGES_REQUIRED。
+# 全部在工作树临时副本内实跑（scratchpad/redproof-symlink），真工作树零改动。
+# 副本内容：lib/zero-shot + lib/adaptive-execution + lib/intent-plan.mjs + 边界金牌两份（修前 prefix / 修后）。
+# 反例形状复用评审方给的：把一个仓外目录软链进 lib/zero-shot，目录里藏一个未登记的 .mjs。
+
+$ mkdir -p outside-target && echo "export const y = 1;" > outside-target/hidden.mjs
+$ ln -sfn "$PWD/outside-target" lib/zero-shot/smuggle-dir
+$ ls -l lib/zero-shot/smuggle-dir
+lrwxrwxrwx 1 test test 119 Aug  4 00:28 lib/zero-shot/smuggle-dir -> <sandbox>/outside-target
+
+$ node -e "readdirSync(withFileTypes).find(smuggle-dir) 的类型判据"
+Dirent smuggle-dir isDirectory()= false isSymbolicLink()= true
+# 根因：只用 entry.isDirectory() 时，指向目录的符号链接恒判假——既不进「不得有子目录」断言，
+#       平铺发现也扫不进链接目录里的模块，整条钉被绕过。
+
+=== 洞的证明：修前金牌 + 目录符号链接 ===
+$ node tests/_golden/prefix.golden.mjs
+ok   adaptive-module-boundaries-d1 计划内 S2 核心与 S1 receipt/support 文件完整在场
+ok   adaptive-module-boundaries-d2 全部 S2 核心与 S1 被修改核心逐文件不超过 600 行
+ok   adaptive-module-boundaries-d3 纯模块不直接依赖 Playwright、IO、网络或正式 replay/verdict 执行面
+ok   adaptive-module-boundaries-d4 浏览器包只准出现在生产 Playwright driver，S2 不反向导入旧 replay 内核
+ok   adaptive-module-boundaries-d5 S2 模块内部依赖图无环且 observer 不越过 catalog 直连 authority
+
+adaptive-module-boundaries: 5/5 passed
+EXIT=0
+
+=== 修后金牌 + 同一个符号链接（应红）===
+$ node tests/_golden/adaptive-module-boundaries.static.golden.mjs
+ok   adaptive-module-boundaries-d2 全部 S2 核心与 S1 被修改核心逐文件不超过 600 行
+ok   adaptive-module-boundaries-d3 纯模块不直接依赖 Playwright、IO、网络或正式 replay/verdict 执行面
+ok   adaptive-module-boundaries-d4 浏览器包只准出现在生产 Playwright driver，S2 不反向导入旧 replay 内核
+ok   adaptive-module-boundaries-d5 S2 模块内部依赖图无环且 observer 不越过 catalog 直连 authority
+FAIL adaptive-module-boundaries-d1 计划内 S2 核心与 S1 receipt/support 文件完整在场: lib/zero-shot 下不得有子目录或指向目录的符号链接（平铺扫描看不见）：lib/zero-shot/smuggle-dir（指向目录的符号链接）
+
+adaptive-module-boundaries: 4 passed, 1 failed
+EXIT=1
+
+=== 删掉符号链接后恢复（修后金牌，零行为差）===
+$ rm -f lib/zero-shot/smuggle-dir && node tests/_golden/adaptive-module-boundaries.static.golden.mjs
+ok   adaptive-module-boundaries-d1 计划内 S2 核心与 S1 receipt/support 文件完整在场
+ok   adaptive-module-boundaries-d2 全部 S2 核心与 S1 被修改核心逐文件不超过 600 行
+ok   adaptive-module-boundaries-d3 纯模块不直接依赖 Playwright、IO、网络或正式 replay/verdict 执行面
+ok   adaptive-module-boundaries-d4 浏览器包只准出现在生产 Playwright driver，S2 不反向导入旧 replay 内核
+ok   adaptive-module-boundaries-d5 S2 模块内部依赖图无环且 observer 不越过 catalog 直连 authority
+
+adaptive-module-boundaries: 5/5 passed
+EXIT=0
+
+=== dangling 目录链接的口径（fail-closed，本轮选定）===
+$ ln -sfn "$PWD/no-such-target" lib/zero-shot/dangling-dir && node tests/_golden/adaptive-module-boundaries.static.golden.mjs
+FAIL adaptive-module-boundaries-d1 计划内 S2 核心与 S1 receipt/support 文件完整在场: lib/zero-shot 下不得有子目录或指向目录的符号链接（平铺扫描看不见）：lib/zero-shot/dangling-dir（符号链接解引用失败，证不出不是目录）
+adaptive-module-boundaries: 4 passed, 1 failed
+EXIT=1
+# 口径理由：statSync 对 dangling 链接抛错，此时门证不出「它不是目录」。
+#           按护栏 #14 的 fail-safe 姿态，证不出就红、不默认放行；这与本契约「方向只许加严」一致。
+
+=== 对照组：干净树上零行为差（修后金牌）===
+$ node tests/_golden/adaptive-module-boundaries.static.golden.mjs
+
+adaptive-module-boundaries: 5/5 passed
+EXIT=0

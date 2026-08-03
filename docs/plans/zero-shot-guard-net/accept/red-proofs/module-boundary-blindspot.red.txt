@@ -1,0 +1,62 @@
+# red proof · 模块边界门清单逃逸 @ e6e7ea12db383e1af28905f58b48959dafb87320 / 2026-08-03T22:34:36+08:00
+# 全部在工作树临时副本内实跑（scratchpad/redproof-boundary），真工作树零改动。
+# 副本内容：lib/zero-shot + lib/adaptive-execution + lib/intent-plan.mjs + 边界金牌两份（改前 / 改后）。
+# 流氓模块：rogue-a.mjs 704 行 + import playwright + import node:fs + 与 rogue-b.mjs 互引成环。
+
+$ wc -l lib/zero-shot/rogue-a.mjs lib/zero-shot/rogue-b.mjs
+  704 lib/zero-shot/rogue-a.mjs
+    5 lib/zero-shot/rogue-b.mjs
+  709 total
+
+=== P1 洞的证明：改前的边界金牌 + 流氓模块 ===
+$ node tests/_golden/unpatched.golden.mjs
+ok   adaptive-module-boundaries-d1 计划内 S2 核心与 S1 receipt/support 文件完整在场
+ok   adaptive-module-boundaries-d2 全部 S2 核心与 S1 被修改核心逐文件不超过 600 行
+ok   adaptive-module-boundaries-d3 纯模块不直接依赖 Playwright、IO、网络或正式 replay/verdict 执行面
+ok   adaptive-module-boundaries-d4 浏览器包只准出现在生产 Playwright driver，S2 不反向导入旧 replay 内核
+ok   adaptive-module-boundaries-d5 S2 模块内部依赖图无环且 observer 不越过 catalog 直连 authority
+
+adaptive-module-boundaries: 5/5 passed
+EXIT=0
+
+=== P2 补丁有效：改后的边界金牌 + 同一批流氓模块 ===
+$ node tests/_golden/adaptive-module-boundaries.static.golden.mjs
+FAIL adaptive-module-boundaries-d1 计划内 S2 核心与 S1 receipt/support 文件完整在场: 出现未纳入冻结清单的 S2 核心：lib/zero-shot/rogue-a.mjs
+FAIL adaptive-module-boundaries-d2 全部 S2 核心与 S1 被修改核心逐文件不超过 600 行: 核心文件超过 600 行：lib/zero-shot/rogue-a.mjs=704
+FAIL adaptive-module-boundaries-d3 纯模块不直接依赖 Playwright、IO、网络或正式 replay/verdict 执行面: 纯模块越层依赖：lib/zero-shot/rogue-a.mjs -> playwright, lib/zero-shot/rogue-a.mjs -> node:fs
+FAIL adaptive-module-boundaries-d4 浏览器包只准出现在生产 Playwright driver，S2 不反向导入旧 replay 内核: S2 浏览器/旧内核依赖越界：lib/zero-shot/rogue-a.mjs -> playwright
+FAIL adaptive-module-boundaries-d5 S2 模块内部依赖图无环且 observer 不越过 catalog 直连 authority: S2 依赖方向违规：cycle:lib/zero-shot/rogue-a.mjs -> lib/zero-shot/rogue-b.mjs -> lib/zero-shot/rogue-a.mjs
+
+adaptive-module-boundaries: 0 passed, 5 failed
+EXIT=1
+
+=== P3 对现状零行为差：删掉流氓模块、补丁保留 ===
+$ node tests/_golden/adaptive-module-boundaries.static.golden.mjs
+ok   adaptive-module-boundaries-d1 计划内 S2 核心与 S1 receipt/support 文件完整在场
+ok   adaptive-module-boundaries-d2 全部 S2 核心与 S1 被修改核心逐文件不超过 600 行
+ok   adaptive-module-boundaries-d3 纯模块不直接依赖 Playwright、IO、网络或正式 replay/verdict 执行面
+ok   adaptive-module-boundaries-d4 浏览器包只准出现在生产 Playwright driver，S2 不反向导入旧 replay 内核
+ok   adaptive-module-boundaries-d5 S2 模块内部依赖图无环且 observer 不越过 catalog 直连 authority
+
+adaptive-module-boundaries: 5/5 passed
+EXIT=0
+
+=== 子目录断言的独立变异（新增网，改前根本没有这张网）===
+$ mkdir lib/zero-shot/container && cp ... && node tests/_golden/adaptive-module-boundaries.static.golden.mjs
+ok   adaptive-module-boundaries-d2 全部 S2 核心与 S1 被修改核心逐文件不超过 600 行
+ok   adaptive-module-boundaries-d3 纯模块不直接依赖 Playwright、IO、网络或正式 replay/verdict 执行面
+ok   adaptive-module-boundaries-d4 浏览器包只准出现在生产 Playwright driver，S2 不反向导入旧 replay 内核
+ok   adaptive-module-boundaries-d5 S2 模块内部依赖图无环且 observer 不越过 catalog 直连 authority
+FAIL adaptive-module-boundaries-d1 计划内 S2 核心与 S1 receipt/support 文件完整在场: lib/zero-shot 下不得有子目录（平铺扫描看不见）：lib/zero-shot/container
+
+adaptive-module-boundaries: 4 passed, 1 failed
+EXIT=1
+$ rm -rf lib/zero-shot/container && node tests/_golden/adaptive-module-boundaries.static.golden.mjs
+ok   adaptive-module-boundaries-d1 计划内 S2 核心与 S1 receipt/support 文件完整在场
+ok   adaptive-module-boundaries-d2 全部 S2 核心与 S1 被修改核心逐文件不超过 600 行
+ok   adaptive-module-boundaries-d3 纯模块不直接依赖 Playwright、IO、网络或正式 replay/verdict 执行面
+ok   adaptive-module-boundaries-d4 浏览器包只准出现在生产 Playwright driver，S2 不反向导入旧 replay 内核
+ok   adaptive-module-boundaries-d5 S2 模块内部依赖图无环且 observer 不越过 catalog 直连 authority
+
+adaptive-module-boundaries: 5/5 passed
+EXIT=0
