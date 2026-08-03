@@ -282,14 +282,14 @@ function compiledEvents() {
   return [
     {
       stepId: 'atstep_1',
-      intentId: 'atintent_1',
+      intentId: 'i1',
       atom: 'nav.workflowManagement',
       action: 'nav',
       url: '{{baseUrl}}/ai-manager/process/list',
     },
     {
       stepId: 'atstep_2',
-      intentId: 'atintent_2',
+      intentId: 'i2',
       atom: 'nav.workflowManagement',
       action: 'nav',
       url: '{{baseUrl}}/ai-manager/process/list',
