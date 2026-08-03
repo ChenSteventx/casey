@@ -113,11 +113,12 @@ function roleAffordance({
   handleId,
   role,
   name,
+  text = name,
   visible = true,
   enabled = true,
   actionSpace = [],
 } = {}) {
-  return { handleId, role, accessibleName: name, label: null, text: name, visible, enabled, actionSpace };
+  return { handleId, role, accessibleName: name, label: null, text, visible, enabled, actionSpace };
 }
 
 const navLink = (visible = true) => roleAffordance({
@@ -397,6 +398,41 @@ await check('P13 含 roleHidden 且 after 有未支持作用域 → PROGRESS_UNS
       && run.progress.reason === 'PROGRESS_UNSUPPORTED_SCOPE',
     `${scope} 下缺席不可证，必须 fail-closed：${JSON.stringify(run.progress)}`);
   }
+});
+
+await check('P19 可见元素因脱敏被整体抑制时 → PROGRESS_REDACTION_SUPPRESSED', async () => {
+  // 详情抽屉真的可见、可访问名恰是断言里的名字，但正文含 32 字符以上不透明标识，
+  // 于是整条候选被 semanticOf 丢弃且不计入 truncated——目录里再无痕迹可反证。
+  const leaky = detailDialog({
+    text: `${DETAIL_DIALOG} 关联凭证 QQ1yZmM0YTIxYjhkNGU0ZjZhOWMwZDNlN2I1YTgyYzRk`,
+  });
+  const run = await runScenario({
+    expectedProgress: [URL_WORKFLOW, HIDDEN_DIALOG],
+    beforeAffordances: [navLink()],
+    afterAffordances: [heading(), leaky],
+  });
+  assert(run.after.observation.truncated === false,
+    '前置：本场景不得靠截断触发，必须是脱敏抑制');
+  assert(run.after.observation.redactionSuppressed === 1,
+    `前置须真的抑制一条：${JSON.stringify(run.after.observation.redactionSuppressed)}`);
+  assert(!run.after.observation.affordances.some((item) => item.semantic?.name === DETAIL_DIALOG),
+    '前置：被抑制的抽屉不得出现在目录里');
+  assert(run.progress?.status === 'pending'
+    && run.progress.reason === 'PROGRESS_REDACTION_SUPPRESSED',
+  `脱敏抑制下缺席不可证，必须 fail-closed：${JSON.stringify(run.progress)}`);
+});
+
+await check('P20 无可用名称的候选被丢弃不阻断缺席判定（只抑制才阻断）', async () => {
+  const nameless = { handleId: 'noise', role: 'generic', accessibleName: null, label: null, text: null, visible: true, enabled: true, actionSpace: [] };
+  const run = await runScenario({
+    expectedProgress: [URL_WORKFLOW, HIDDEN_DIALOG],
+    beforeAffordances: [navLink()],
+    afterAffordances: [heading(), nameless],
+  });
+  assert(run.after.observation.redactionSuppressed === 0,
+    `无名候选不得计入脱敏抑制：${JSON.stringify(run.after.observation.redactionSuppressed)}`);
+  assert(run.progress?.status === 'progressed',
+    `无名候选永远匹配不上 role+name 判据，不应阻断：${JSON.stringify(run.progress)}`);
 });
 
 await check('P14 纯存在性 expected 在 after 截断下不被误拒（防无谓收紧）', async () => {
