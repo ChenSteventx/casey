@@ -25,7 +25,7 @@
       "acceptance": [
         "node tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-08-03T03:55:32.654Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T04:01:48.676Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-cycle-adjacent-zero-regression",
@@ -37,7 +37,7 @@
         "node tests/_golden/teachin-replayability-adjacent.zero-sut.golden.mjs",
         "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-08-03T03:55:45.499Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T04:02:23.303Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-repo-drift-and-terms",
@@ -47,7 +47,7 @@
         "node tests/_golden/support/prd-drift-scan.mjs",
         "node loop-kit/bin/term-lint.mjs --registry"
       ],
-      "evidence": "gate@2026-08-03T03:55:46.140Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T04:02:39.769Z 全部 acceptance exit 0"
     }
   ],
   "notes": "A9 红基线已在 f7c83358 实跑：8 过 / 1 败，exit 1；唯一失败为 canonical verdict 返回 VERDICT_EXECUTION_FAILED。实际 owner 金牌 checksum 只在 replayability owner PRD 维护。",
