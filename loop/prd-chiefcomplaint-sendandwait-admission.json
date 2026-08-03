@@ -1,0 +1,95 @@
+{
+  "schemaVersion": 2,
+  "contractKind": "executable",
+  "task": "chiefcomplaint-sendandwait-admission v2 后继：在不复用旧 v1 草稿或旧只读收据的前提下，闭合 network-code-dom-name-v1 身份通道、绑定最终 flow/testcase 的预执行权威、fresh compile 身份观察、v2 entity lock 签发与回放消费，以及 tier-2 mutation 逐次授权。机器 story 仅含零 SUT/静态验收；真机、真实身份值、持久消息与人签全部 route:human。",
+  "specPath": "docs/plans/chiefcomplaint-sendandwait-admission/plan.md",
+  "testChecksums": {
+    "docs/plans/chiefcomplaint-sendandwait-admission/plan.md": "15f68deb7e0f5bc2c7b87670b1e7407b9cf0c61fb899625c259eb2b6a4df4b21",
+    "docs/plans/chiefcomplaint-sendandwait-admission/GRILL.md": "3fcc70561ed9ded17c1a9849f6368f83c1ba6a5c2c62a8b3fdbda5e7e82226cd",
+    "docs/plans/chiefcomplaint-sendandwait-admission/accept/red-baseline.txt": "e0ffd91ef6c7e932c31bf0b3bebede66f2ae630cd146d9461f4da267390cc5de",
+    "tests/_golden/chiefcomplaint-v2-successor.zero-sut.golden.mjs": "81cec8886084d23cc4c94d9c667cbbd9d6baff4ab853ce2ceade65386701fd13",
+    "tests/_golden/agent-network-code-identity.zero-sut.golden.mjs": "14f562175eb30100a65096587e322c161eebf7d2b3442c9668245c770327c463",
+    "tests/_golden/agent-network-code-identity-page-context.zero-sut.golden.mjs": "f323c32d6c641918cb249c4ac74e378793f1310c83877abefda416ef0475369d",
+    "tests/_golden/agent-id-sign-observation.zero-sut.golden.mjs": "269e54c31442a8527208a9a92546f02d3b674eb2ddd9bd8d82aae1efb5f14cd8",
+    "tests/_golden/admission-policy-facets.zero-sut.golden.mjs": "a0de05562a17863af54f0e1a40fb6205af8447f69cf8eace417ae76951570d2d",
+    "tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs": "f6e6a5a1ee05d476f17c29b85b070248740a30fbbf98c265db221a9d21ae936c",
+    "tests/_golden/support/prd-drift-scan.mjs": "e38696f9ac78b1a6a9e7ed43a472f7842dc2075c4f3a40ba6a5c46dfbfc79f06"
+  },
+  "observability": [
+    {
+      "dimension": "真实身份通道：Steven 只读确认网络信封字段、DOM 名称选择器及目标恰一；真实编号、平台标识和目标地址不得进入计划、日志或报告。",
+      "route": "human"
+    },
+    {
+      "dimension": "预执行授权：Steven 对最终 flow/testcase 原始字节 hash、production 受众和全部 mutation 步签 entity-pre-execution-authority；代理不得代签。",
+      "route": "human"
+    },
+    {
+      "dimension": "fresh compile 身份观察：人在场见证观察来自本轮真实页面与完整网络信封；旧只读收据和旧 v1 草稿不得升级为签署输入。",
+      "route": "human"
+    },
+    {
+      "dimension": "v2 冻结签发：Steven 审阅 expected、确认件、观察件与 v2 草稿后执行 sign，签署 build 与实际目标 build 精确相等。",
+      "route": "human"
+    },
+    {
+      "dimension": "持久消息副作用：本例按 mutation 管理；每次真机 run 单独取得当次明确授权，本契约不铸造或复用授权。",
+      "route": "human"
+    },
+    {
+      "dimension": "真机流式与视觉复核：Steven 复核录屏中的目标智能体、发送动作和流式完成态；四态结论只来自确定性 verdict.json。",
+      "route": "human"
+    },
+    {
+      "dimension": "清单换签：Steven 对 manifest 的 effect、perRunApproval、artifact 集和 hash 变化签字，owner PRD checksum 修正案绑定旧新摘要与归档件。",
+      "route": "human"
+    },
+    {
+      "dimension": "真机完成闸：fresh tier-2 batch receipt、流式覆盖、正式附件、录屏和持久消息副作用均须现场复核；零 SUT story 不冒充 A14/A16 完成。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-chief-v2-successor",
+      "desc": "A5-A8/A11-A13/A15 的 case 专项最小正负控；实现前真实红基线为 13 过 / 3 失败，目标态必须由生产与 fresh 人签件迎合测试转绿。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/chiefcomplaint-v2-successor.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s2-identity-v2-regressions",
+      "desc": "network-code 身份剖面、页面上下文与 sign-observation v2 接缝回归互相独立；任一退出码非零即红。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/agent-network-code-identity.zero-sut.golden.mjs",
+        "node tests/_golden/agent-network-code-identity-page-context.zero-sut.golden.mjs",
+        "node tests/_golden/agent-id-sign-observation.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s3-policy-tier2-regressions",
+      "desc": "甲案三面策略与 tier-2 准入/逐次授权现役零 SUT 回归；不启动真实 SUT。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/admission-policy-facets.zero-sut.golden.mjs",
+        "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs"
+      ],
+      "passes": false
+    },
+    {
+      "id": "s4-repository-integrity",
+      "desc": "冻结 PRD 漂移、统一语言注册表与 tier-1 自检保持绿色；三项各自以退出码裁定。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": false
+    }
+  ]
+}

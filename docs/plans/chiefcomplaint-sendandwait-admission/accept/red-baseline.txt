@@ -1,0 +1,29 @@
+command: node tests/_golden/chiefcomplaint-v2-successor.zero-sut.golden.mjs
+captured: 2026-08-03
+environment: zero-SUT / pure Node; no browser, network, fake SUT, or real-machine execution
+expected phase: RED before successor implementation and fresh human-signed artifacts
+
+ok   A5 flow subject bindings complete
+ok   A5 missing binding is rejected
+ok   A6 current event atoms do not require destructive continuity
+ok   A6 destructive negative control is rejected
+ok   A7 missing execute authority is rejected before execution
+ok   A7 checksum-published execute authority admits exact bytes
+ok   A8/A12/A13 sign-observation control c1
+ok   A8/A12/A13 sign-observation control c2
+ok   A8/A12/A13 sign-observation control c3
+ok   A8/A12/A13 sign-observation control c4
+ok   A11 network-code DOM-name profile positive and negative controls
+FAIL A11 target profile has the v2 identity channel: 目标 profile.agents 尚未闭合 network-code-dom-name-v1
+ok   A13 replay identity mismatch controls release zero target
+FAIL A12/A13 target fresh observation and signed v2 artifacts are closed: cases/tc_chiefcomplaint_smoke/entity-bindings.draft.json 不在场
+ok   A15 desired manifest shape and per-run authorization controls
+FAIL A15 target manifest member is mutation, per-run, and hash-closed: 目标成员 effect 尚非 mutation
+
+chiefcomplaint v2 successor: 13 passed, 3 failed
+RED: v2 successor target state is not yet complete
+- A11 target profile has the v2 identity channel: 目标 profile.agents 尚未闭合 network-code-dom-name-v1
+- A12/A13 target fresh observation and signed v2 artifacts are closed: cases/tc_chiefcomplaint_smoke/entity-bindings.draft.json 不在场
+- A15 target manifest member is mutation, per-run, and hash-closed: 目标成员 effect 尚非 mutation
+
+exitCode: 1
