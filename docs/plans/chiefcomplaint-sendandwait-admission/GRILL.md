@@ -52,3 +52,16 @@ tier-2 流式面归零。
 - 破坏性三例（`tc_catalog_wf_crud` / `tc_wf_publish_states` / `tc_wf_history_version`）的
   `DESTRUCTIVE_ADMISSION_NO_SIGNED_CONTINUITY_REF` 与本裁定无关，见
   `docs/plans/p9-uat-close/resign-runbooks.md` 第三节。
+
+## v2 后继对授权口径的纠正
+
+2026-07-31 的 v2 裁定不改变上面的甲案，也没有创造新的授权类型，但它纠正了两个后继执行口径：
+
+1. v1 实体锁不能让已签编号和平台标识进入点击前双证，故离线 v1 包不得签发或回放；正式路径必须是
+   人签预执行权威 → fresh 真机编译身份观察 → v2 实体锁人签 → 真机流式回放。
+2. `chat.sendAndWait` 会在真实会话留下持久消息，tier-2 manifest 的 `effect` 必须如实记为
+   `mutation`，并使用现役 `perRunApproval:true` 逐次授权门。这个门只回答「本次是否允许执行一次变更型
+   用例」，不替代 subject 身份锁，也不等同于本节明确未新建的“非实体持久副作用专用授权档”。
+
+因此，旧清单里的 `effect:'read'` 和“只差最后签”都不是裁定后的合法完成状态。manifest effect、
+profile、v2 实体锁 artifacts 及 owner PRD checksum 的变化须作为同一 successor 换签包交 Steven 明签。
