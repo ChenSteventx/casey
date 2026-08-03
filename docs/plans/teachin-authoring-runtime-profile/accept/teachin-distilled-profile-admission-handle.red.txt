@@ -1,0 +1,8 @@
+command: node tests/_golden/teachin-distilled-profile-admission-handle.zero-sut.golden.mjs
+baseline-production-head: e2693cf
+test-parent-head: e2693cf
+exit-code: 1
+
+RED  teachin-distilled-profile-admission-handle: H1 exact profile admission handle 必须贯穿 finalized pair 到 distilled canonical preflight: exact profile admission handle 未到 preflight：{"ok":false,"reason":"REPLAY_ENTITY_ADMISSION_INVALID"}
+ok   teachin-distilled-profile-admission-handle: H2 exact events 换绑或 clone handle 必须拒，且不得消费 genuine seal path
+teachin-distilled-profile-admission-handle: 1 过 / 1 败
