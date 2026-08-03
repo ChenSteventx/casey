@@ -21,6 +21,7 @@ import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstra
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
 import { createCompileRun, compileFlow, projectObserved, ROUTE_LIST } from '../lib/compile-atoms.mjs';
 import { ENTITY_KIND_COMPILE_CHANNELS, checkIdentityObservationCardinality, deriveObservationIssuerAtom } from '../lib/entity-observation-registry.mjs';
+import { calculateLegacyIdentityProfileDigest, parseAgentIdentityProfile } from '../lib/agent-identity-profile.mjs';
 import { admitCompileDestructiveContinuity } from '../lib/entity-destructive-continuity.mjs';
 import {
   buildEntityBindingsDraft,
@@ -224,6 +225,7 @@ async function executeMode(caseId, args) {
   }
   // 已登记实体 kind 各自校验通道；声明畸形即 fail-closed。
   const identityChannelsByKind = new Map();
+  const identityDigestsByKind = new Map();
   for (const [kind, channelSpec] of ENTITY_KIND_COMPILE_CHANNELS) {
     const channelProfile = profile[channelSpec.profileKey];
     if (channelProfile === undefined || channelProfile === null) continue;
@@ -231,6 +233,13 @@ async function executeMode(caseId, args) {
     const aOk = a && typeof a === 'object' && !Array.isArray(a);
     if (!aOk) { console.error(`compile: 通道剖面 ${channelSpec.profileKey} 形状非法，拒跑（fail-closed）`); process.exit(65); }
     if (a.listApi !== undefined && a.listApi !== null) {
+      if (channelSpec.profileKey === 'agents') {
+        const parsed = parseAgentIdentityProfile(a);
+        if (!parsed.ok) { console.error(`compile: 通道剖面 ${channelSpec.profileKey} 身份模式或物理卡片面非法（${parsed.reason}），拒跑（fail-closed）`); process.exit(65); }
+        identityChannelsByKind.set(kind, parsed.channel);
+        identityDigestsByKind.set(kind, parsed.digest);
+        continue;
+      }
       const l = a.listApi;
       const s = (v) => typeof v === 'string' && v.trim() !== '';
       const shapeOk = l && typeof l === 'object' && !Array.isArray(l)
@@ -251,6 +260,7 @@ async function executeMode(caseId, args) {
         hasNextPath: l.hasNextPath ?? null,
         fields: { id: l.fields.id, code: l.fields.code, name: l.fields.name },
       });
+      identityDigestsByKind.set(kind, calculateLegacyIdentityProfileDigest(identityChannelsByKind.get(kind)));
     }
   }
   // 下游仍是单通道；多 kind 不得静默择一。
@@ -258,13 +268,11 @@ async function executeMode(caseId, args) {
     console.error('compile: 剖面声明多身份观察通道 kind，per-kind 下游注入尚未支持（C2），拒跑（fail-closed）'); process.exit(65);
   }
   let identityChannelCfg = null;
-  for (const cfg of identityChannelsByKind.values()) identityChannelCfg = cfg;
-  // 身份通道指纹启动前计算，观察件与破坏性 ref 复用同值。
-  const canonicalSortKeys = (v) => (Array.isArray(v) ? v.map(canonicalSortKeys)
-    : (v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, canonicalSortKeys(v[k])])) : v));
-  const identityProfileDigest = identityChannelCfg
-    ? `sha256:${createHash('sha256').update(JSON.stringify(canonicalSortKeys(identityChannelCfg))).digest('hex')}`
-    : null;
+  let identityProfileDigest = null;
+  for (const [kind, cfg] of identityChannelsByKind.entries()) {
+    identityChannelCfg = cfg;
+    identityProfileDigest = identityDigestsByKind.get(kind) || null;
+  }
   const identityLedger = identityChannelCfg
     ? (await import('../lib/agent-identity-observation.mjs')).createIdentityObservationLedger({ channel: identityChannelCfg })
     : null;

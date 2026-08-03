@@ -22,7 +22,7 @@ import {
   readFrozenIdentityObservations,
 } from '../lib/entity-semantic-lock-preflight.mjs';
 import { admitDestructiveTargetContinuity } from '../lib/entity-destructive-continuity.mjs';
-import { createHash } from 'node:crypto';
+import { parseAgentIdentityProfile } from '../lib/agent-identity-profile.mjs';
 import { PROJECT_ROOT } from '../lib/paths.mjs';
 import { playwrightLaunchOptions, resolveCliExecutionTarget } from '../lib/execution-target/wiring.mjs';
 import { emitExecutionTargetCliFailure } from '../lib/execution-target/cli-boundary.mjs';
@@ -108,29 +108,15 @@ async function main() {
   }
   // 身份通道剖面（agent-id-readback；与 compile 同律：未声明零行为差、声明则形状非法浏览器前拒）。
   let identityChannelCfg = null;
+  let identityProfileDigest = null;
   if (profile && profile.agents !== undefined && profile.agents !== null) {
     const a = profile.agents;
     if (!a || typeof a !== 'object' || Array.isArray(a)) { console.error('replay: 通道剖面 agents 形状非法，浏览器启动前拒绝'); process.exit(65); }
     if (a.listApi !== undefined && a.listApi !== null) {
-      const l = a.listApi;
-      const s = (v) => typeof v === 'string' && v.trim() !== '';
-      const shapeOk = l && typeof l === 'object' && !Array.isArray(l)
-        && s(l.pathname) && l.pathname.startsWith('/') && s(l.method)
-        && s(l.recordsPath) && s(l.totalPath) && s(l.queryParam)
-        && (l.hasNextPath === null || l.hasNextPath === undefined || s(l.hasNextPath))
-        && l.fields && typeof l.fields === 'object' && !Array.isArray(l.fields)
-        && s(l.fields.id) && s(l.fields.code) && s(l.fields.name);
-      if (!shapeOk) { console.error('replay: 通道剖面 agents.listApi 形状非法（身份通道声明不完整，含 queryParam），浏览器启动前拒绝'); process.exit(65); }
-      const cardOk = s(a.itemContainer)
-        && a.cardFields && typeof a.cardFields === 'object' && !Array.isArray(a.cardFields)
-        && s(a.cardFields.name) && s(a.cardFields.code);
-      if (!cardOk) { console.error('replay: 身份通道声明缺物理卡片面（agents.itemContainer + agents.cardFields.name/code），浏览器启动前拒绝'); process.exit(65); }
-      identityChannelCfg = {
-        pathname: l.pathname, method: l.method, recordsPath: l.recordsPath, totalPath: l.totalPath,
-        queryParam: l.queryParam,
-        hasNextPath: l.hasNextPath ?? null,
-        fields: { id: l.fields.id, code: l.fields.code, name: l.fields.name },
-      };
+      const parsed = parseAgentIdentityProfile(a);
+      if (!parsed.ok) { console.error(`replay: 通道剖面 agents 身份模式或物理卡片面非法（${parsed.reason}），浏览器启动前拒绝`); process.exit(65); }
+      identityChannelCfg = parsed.channel;
+      identityProfileDigest = parsed.digest;
     }
   }
   const events = eventsDoc.events || [];
@@ -175,9 +161,7 @@ async function main() {
       console.error('replay: v2 冻结锁携身份观察但通道剖面未声明 agents.listApi（剖面只是适配器、不得降级），未启动浏览器');
       process.exit(65);
     }
-    const sortKeys = (v) => (Array.isArray(v) ? v.map(sortKeys)
-      : (v && typeof v === 'object' ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, sortKeys(v[k])])) : v));
-    const liveDigest = `sha256:${createHash('sha256').update(JSON.stringify(sortKeys(identityChannelCfg))).digest('hex')}`;
+    const liveDigest = identityProfileDigest;
     let lockDigest = null;
     try { lockDigest = JSON.parse(readFileSync(resolve(PROJECT_ROOT, String(args.entityLocks)), 'utf8')).identityProfileDigest ?? null; } catch { lockDigest = null; }
     if (lockDigest !== liveDigest) {

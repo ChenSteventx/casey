@@ -1,0 +1,15 @@
+agent-network-code-identity 红先行基线
+baseline: dev@f7c8335
+command: node tests/_golden/agent-network-code-identity.zero-sut.golden.mjs
+exit: 1
+summary: 2 passed, 6 failed
+
+失败面：
+1. 共享剖面模块缺席，legacy 指纹守恒、新模式闭集校验与新模式指纹覆盖均无法执行；
+2. 新模式合法双证仍被现役门以 dom-code-missing 拒绝；
+3. 新模式合法同句柄点击仍因缺 DOM code 返回 false；
+4. compile/replay 尚未消费共享剖面解析与指纹。
+
+回归保护已绿：
+- 新模式歧义与签署错配在现役严格门下仍被拒；
+- legacy 同卡名称加编号重验仍成立。

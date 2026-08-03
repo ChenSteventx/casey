@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "task": "agent-network-code-identity（full）：为智能体卡片新增闭集 network-code-dom-name-v1 身份模式。DOM 只证精确唯一名称与同一物理点击句柄，完整网络信封证编号与平台标识；已签三元组仍逐项全等。未声明模式的 legacy 行为与 identityProfileDigest 字节必须不变。",
+  "specPath": "docs/plans/agent-network-code-identity/plan.md",
+  "testChecksums": {
+    "docs/plans/agent-network-code-identity/GRILL.md": "ca246851d30c4650ebe68857cc1ab8dff4c28bed779373203251c8a37fc6e1f4",
+    "docs/plans/agent-network-code-identity/plan.md": "3447ffd15b7a645fb89bed3fe2fbbb7a51d800e4161f39029c5bb0e560d67e50",
+    "docs/plans/agent-network-code-identity/accept/red-baseline.txt": "22793667b4b8a775dd6fb8d0d59dad95d7158759c1501cb43dfd3b4e1f547017",
+    "tests/_golden/agent-network-code-identity.zero-sut.golden.mjs": "14f562175eb30100a65096587e322c161eebf7d2b3442c9668245c770327c463",
+    "tests/_golden/agent-network-code-identity-page-context.zero-sut.golden.mjs": "f323c32d6c641918cb249c4ac74e378793f1310c83877abefda416ef0475369d"
+  },
+  "observability": [
+    {
+      "dimension": "真实页面名称选择器、网络字段、同名敌意样本与点击后页面须由主线只读真机侦察和 UAT 证明；本契约不启动或连接任何 SUT。",
+      "route": "human"
+    },
+    {
+      "dimension": "真实用例剖面、冻结件和 tier-2 清单的摘要变更需要 Steven 明签；本分支不代签。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-profile-and-gates",
+      "desc": "共享智能体身份剖面、网络编号双证判定与同一物理句柄点击门红先行翻绿；旧模式摘要与行为逐字守恒。红基线 dev@f7c8335：exit 1，2 passed / 6 failed。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/agent-network-code-identity.zero-sut.golden.mjs",
+        "node tests/_golden/agent-network-code-identity-page-context.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-03T04:00:33.973Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-agent-identity-regression",
+      "desc": "既有身份事务、双证判定与 tier-1 确定性内核保持绿色。agent-id-regression-diff 的 R13 在基线 dev@f7c8335 已独立实跑为陈旧红（仅该项红），不拿本契约冒充修复。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/agent-id-observation.zero-sut.golden.mjs",
+        "node tests/_golden/agent-id-gate.zero-sut.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-03T04:00:36.022Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-static-and-terms",
+      "desc": "生产文件语法、冻结件漂移与统一语言检查全部通过。",
+      "lane": "implementation",
+      "acceptance": [
+        "node --check lib/agent-identity-profile.mjs",
+        "node --check lib/agent-identity-gate.mjs",
+        "node --check lib/agent-search-gate.mjs",
+        "node --check bin/compile.mjs",
+        "node --check bin/replay.mjs",
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-03T04:00:36.832Z 全部 acceptance exit 0"
+    }
+  ],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-08-03",
+      "files": [
+        "tests/_golden/agent-network-code-identity-page-context.zero-sut.golden.mjs"
+      ],
+      "reason": "Grok 4.5 实现评审 R1 Critical+Medium 修单，只加严不放松：新增函数序列化隔离域，钉死 page.evaluate 回调不得捕获 Node 模块自由变量；同时钉显式 identityMode:null 在启动前 fail-closed。修前实跑 0/3、exit 1。"
+    }
+  ],
+  "notes": "验收测试冻结后实现者只读；passes 仅由 gate.mjs 写。完成闸仍是真机 UAT 与人签。",
+  "openIssues": [
+    "基线 dev@f7c8335 的 tests/_golden/agent-id-regression-diff.zero-sut.golden.mjs 现役为 20/21，唯一 R13 sign-v1-cli.json 字节漂移（基线 bf163a09…，现行 6011ee69…）；主树同样复现，非本契约引入，须由 owner 另案查账，不能在本契约改冻结基线。"
+  ]
+}
