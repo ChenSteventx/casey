@@ -435,6 +435,70 @@ await check('P20 无可用名称的候选被丢弃不阻断缺席判定（只抑
     `无名候选永远匹配不上 role+name 判据，不应阻断：${JSON.stringify(run.progress)}`);
 });
 
+await check('P21 roleVisible 也吃完整性前置：after 截断 → PROGRESS_CATALOG_TRUNCATED', async () => {
+  // 存在性断言同样依赖目录完整：driver 层枚举上限会在目录计数之前丢掉同名第二实例，
+  // 使 pageCount 低估成 1，「唯一可见」于是假成立。
+  const run = await runScenario({
+    expectedProgress: [VISIBLE_HEADING],
+    beforeAffordances: [navLink()],
+    afterAffordances: [heading(), heading({ handleId: 'h2', name: '甲区' }),
+      heading({ handleId: 'h3', name: '乙区' })],
+    maxCandidates: 2,
+  });
+  assert(run.after.observation.truncated === true, '前置须真的截断');
+  assert(run.progress?.status === 'pending' && run.progress.reason === 'PROGRESS_CATALOG_TRUNCATED',
+    `目录截断时唯一性证不出，必须 fail-closed：${JSON.stringify(run.progress)}`);
+});
+
+await check('P22 before 侧脱敏抑制破坏因果 → PROGRESS_REDACTION_SUPPRESSED', async () => {
+  // 目标元素动作前就已可见，只因正文含不透明标识而被抑制、不进 before 目录；
+  // 动作后正文干净、元素出现。若只查 after，判据由假翻真，因果闸会放行一次
+  // 动作根本没造成的「进展」。上游 observationBlocker 不查脱敏抑制，故此路可达。
+  const run = await runScenario({
+    expectedProgress: [VISIBLE_HEADING],
+    beforeAffordances: [
+      navLink(),
+      heading({ text: `${PAGE_HEADING} 关联凭证 QQ1yZmM0YTIxYjhkNGU0ZjZhOWMwZDNlN2I1YTgyYzRk` }),
+    ],
+    afterAffordances: [heading()],
+  });
+  assert(run.before.observation.redactionSuppressed === 1,
+    `前置须真的在 before 抑制一条：${JSON.stringify(run.before.observation.redactionSuppressed)}`);
+  assert(run.after.observation.redactionSuppressed === 0, '前置：after 侧必须干净');
+  assert(run.progress?.status === 'pending'
+    && run.progress.reason === 'PROGRESS_REDACTION_SUPPRESSED',
+  `before 不完整时不得判进展：${JSON.stringify(run.progress)}`);
+});
+
+await check('P23 roleVisible 唯一命中但不可见 → EXPECTED_PROGRESS_NOT_PROVED', async () => {
+  const run = await runScenario({
+    expectedProgress: [URL_WORKFLOW, VISIBLE_HEADING],
+    beforeAffordances: [navLink()],
+    afterAffordances: [heading({ visible: false })],
+  });
+  const matched = run.after.observation.affordances
+    .filter((item) => item.semantic?.name === PAGE_HEADING);
+  assert(matched.length === 1 && matched[0].pageCount === 1 && matched[0].visible === false,
+    `前置须唯一命中且不可见：${JSON.stringify(matched)}`);
+  assert(run.progress?.status === 'pending' && run.progress.reason === 'EXPECTED_PROGRESS_NOT_PROVED',
+    `不可见不得算 roleVisible 成立：${JSON.stringify(run.progress)}`);
+});
+
+await check('P24 缺席类判据遇空目录 → PROGRESS_CATALOG_EMPTY', async () => {
+  // 动作后整页无候选（跳登录页、渲染失败、整页替换）时，「没看见」与「不存在」分不开。
+  const run = await runScenario({
+    expectedProgress: [URL_WORKFLOW, HIDDEN_DIALOG],
+    beforeAffordances: [navLink(), detailDialog()],
+    afterAffordances: [],
+  });
+  assert(run.after.observation.affordances.length === 0, '前置：after 目录须真的为空');
+  assert(run.after.observation.truncated === false
+    && run.after.observation.redactionSuppressed === 0,
+  '前置：空目录场景不得靠截断或抑制触发');
+  assert(run.progress?.status === 'pending' && run.progress.reason === 'PROGRESS_CATALOG_EMPTY',
+    `空目录下缺席不可证：${JSON.stringify(run.progress)}`);
+});
+
 await check('P14 纯存在性 expected 在 after 截断下不被误拒（防无谓收紧）', async () => {
   const run = await runScenario({
     expectedProgress: [URL_WORKFLOW],

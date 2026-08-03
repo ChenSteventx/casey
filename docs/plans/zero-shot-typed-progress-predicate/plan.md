@@ -55,17 +55,50 @@ P9 纵向切片 1「点击工作流管理」的验收点里有三条否定式要
 判据，丢弃无害；被抑制的候选却可能正是缺席断言要找的那一个。故目录新增 `redactionSuppressed`
 计数（并入 `catalogDigest`），`PageObservation` 原样公开。
 
-故：凡 `expectedProgress` 含任一缺席类 predicate（当前即 `roleHidden`），`afterObservation` 必须
+**R2 收敛后的统一规则（异构评审逼出来的，首版分法是错的）：凡读目录的判据，前后两份观测都必须完整。**
+
+判据分两类，按「结论是否取决于 affordance 目录」划线，而不是按「肯定/否定」划线：
+
+- 读目录的判据 = `roleVisible` + `roleHidden`；
+- 不读目录的判据 = `urlPathname`（只看 `observation.urlPathname`，与目录完整性无关，继续豁免）。
+
+首版只让缺席类吃完整性前置，理由是「存在性断言的 `pageCount` 在截断前全集上算出、不受截断影响」。
+异构评审证伪了这条理由——它只对 **catalog 层截断**（`maxCandidates`）成立。真实路径上还有一道
+**driver 层截断**：`playwright-page-driver.mjs:71-72` 在 `nodes.length >= MAX_DISCOVERED`（1000）时
+直接不收该元素、只置 `sourceTruncated`，候选**根本没进 `projected`**，于是 `pageCount` 在幸存集上
+低估成 1。页面上真有两个同名可见元素时，`roleVisible` 会判「唯一可见」而成立——存在性断言同样假绿。
+
+同理，首版「before 面不必查」也只对截断成立。`action-admission.mjs:83` 的 `observationBlocker` 只查
+settled / truncated / unsupportedScopes，**不查 `redactionSuppressed`**，所以 before 侧的脱敏抑制
+可达：目标元素动作前就已可见、只因正文含不透明标识而不进 before 目录，动作后正文干净、元素出现，
+判据由假翻真，因果闸放行一次动作根本没造成的「进展」。
+
+故：凡 `expectedProgress` 含任一读目录判据，`beforeObservation` 与 `afterObservation` **两份**都必须
 
 - `truncated !== true`，否则 `PROGRESS_CATALOG_TRUNCATED`；
 - `unsupportedScopes` 的 `iframe`/`shadow`/`containerOnly` 全为非真，否则 `PROGRESS_UNSUPPORTED_SCOPE`；
 - `redactionSuppressed` 为整数且等于 0，否则 `PROGRESS_REDACTION_SUPPRESSED`（缺字段或非整数同样拒付）。
 
-**before —— 上游已封死，不加不可达的死代码。** 实测：截断的 before 被
-`resolveDeterministicAction` 判 `blocked/CATALOG_TRUNCATED`、被 `admitZeroShotAction` 判
-`denied=CATALOG_TRUNCATED`，`perform` 调用数 0（`action-admission.mjs:83` 的 `observationBlocker`
-三项全查）。故 before 截断到不了进展校验。改为**钉住上游封堵**：新增回归钉断言这两处拒付与零动作，
-将来谁重构掉 `observationBlocker`，钉子当场红，而不是等进展面悄悄放行。
+缺席类判据**另外**要求 `afterObservation.affordances` 非空，否则 `PROGRESS_CATALOG_EMPTY`：动作后整页
+无候选（跳登录页、渲染失败、整页替换）时，「没看见」与「不存在」分不开。
+
+**上游封堵仍单独钉住。** 截断的 before 被 `resolveDeterministicAction` 判 `blocked/CATALOG_TRUNCATED`、
+被 `admitZeroShotAction` 判 `denied=CATALOG_TRUNCATED`、`perform` 为 0，这条上游不变量由回归钉守住；
+进展面现在也自查 before，两层不互相替代。
+
+**`pageCount === 1` 的可测性（如实挂账）。** 收敛后 `matched.length === 1 && pageCount > 1` 蕴含目录
+截断，而截断已对 `roleVisible` fail-closed，故该状态经生产路径不可达：单独删掉 `pageCount === 1` 不会
+让金牌转红。保留它是直接表达 §3 的唯一性不变量、并防止将来改动使该状态重新可达；不可达性本身由
+「截断 + `roleVisible` → `PROGRESS_CATALOG_TRUNCATED`」这枚钉子守住。这是已知的测试不可达面，不是已覆盖面。
+
+**已知不完整来源不宣称穷尽（route:human）。** 除上述四种（截断 / 未支持作用域 / 脱敏抑制 / 空目录）
+外，还有两类元素真实可见却进不了 `role+name` 匹配面，属 driver 枚举与投影策略、不在本契约修复范围：
+
+- `playwright-page-driver.mjs` 的候选过滤只收 native 交互元素与显式 `role` 元素，无 role 属性的可见
+  容器（裸 `div` 抽屉等）从不进目录，且不带任何完整性标志；
+- 有 role 但可访问名为空的元素被投影成 `kind:'label'`/`kind:'text'`，而 role 类判据只认 `kind:'role'`。
+
+两者都必须在真机验收里由人确认，zero-SUT 夹具证不出。
 
 存在性断言（`urlPathname`、`roleVisible`）不加此约束：截断只丢候选不造候选，且 `pageCount` 在截断前
 全集上算出、不受截断影响。无谓收紧会破现役已签行为。
@@ -117,7 +150,11 @@ P9 纵向切片 1「点击工作流管理」的验收点里有三条否定式要
     误拒（防无谓收紧现役已签行为）；
 15. 含 `roleHidden` 且 after 有可见候选因脱敏被整体抑制（非截断触发）→
     `PROGRESS_REDACTION_SUPPRESSED`；
-16. 无可用名称而被丢弃的候选**不**计入抑制、**不**阻断缺席判定（只抑制才阻断）。
+16. 无可用名称而被丢弃的候选**不**计入抑制、**不**阻断缺席判定（只抑制才阻断）；
+17. `roleVisible` 同样吃完整性前置：after 截断 → `PROGRESS_CATALOG_TRUNCATED`；
+18. before 侧脱敏抑制 → `PROGRESS_REDACTION_SUPPRESSED`（钉住因果不被前侧不完整绕过）；
+19. `roleVisible` 唯一命中但不可见 → `EXPECTED_PROGRESS_NOT_PROVED`；
+20. 缺席类判据遇 after 空目录 → `PROGRESS_CATALOG_EMPTY`。
 
 **降权与授权链**
 15. `progressReceipt` 恒 `signed:false`/`replayReady:false`、无 verdict 字样；
