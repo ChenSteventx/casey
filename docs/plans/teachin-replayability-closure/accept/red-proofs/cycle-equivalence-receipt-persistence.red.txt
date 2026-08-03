@@ -1,0 +1,23 @@
+teachin cycle 成功等价收据持久化 —— ATDD 红基线
+recordedAt: 2026-08-03T15:40:00+08:00
+
+command:
+  node tests/_golden/teachin-cycle-equivalence-receipt.zero-sut.golden.mjs
+
+exitCode:
+  1
+
+testSha256:
+  6c119f4274695dda70456a1f55ebb5c0ae5e0898716d71274b67f851fdef532a
+
+stdout/stderr:
+  RED  teachin-cycle-equivalence-receipt: E1 仅成功闭环落安全 receipt，逐字绑定 capture 摘要、两份 receipt 摘要与六维: 缺生产 API persistTeachinCycleEquivalenceReceipt：ERR_MODULE_NOT_FOUND
+  RED  teachin-cycle-equivalence-receipt: E2 cycle 非成功或候选旗标换形一律零落盘: 缺生产 API persistTeachinCycleEquivalenceReceipt：ERR_MODULE_NOT_FOUND
+  RED  teachin-cycle-equivalence-receipt: E3 等价收据畸形、摘要换形、维度缺失/乱序/增员一律零落盘: 缺生产 API persistTeachinCycleEquivalenceReceipt：ERR_MODULE_NOT_FOUND
+  RED  teachin-cycle-equivalence-receipt: E4 写失败返回固定失败且不遗留临时件: 缺生产 API persistTeachinCycleEquivalenceReceipt：ERR_MODULE_NOT_FOUND
+  RED  teachin-cycle-equivalence-receipt: E5 record 生产入口只在 cycle 后持久化，失败必须设置 CLI 非零: record 须接入成功等价收据持久化 API
+  teachin-cycle-equivalence-receipt: 0 过 / 5 败
+
+redMeaning:
+  当前生产模块与 record 接线均不存在；五个验收组全部真实判红，未把既有行为冒充新功能通过。
+  本金牌只使用合成 capture、合成摘要、隔离根合成凭据与临时目录；零 SUT、零浏览器、零网络、零 LLM。
