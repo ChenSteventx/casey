@@ -1,0 +1,20 @@
+# red proof: p9-tier2-final-batch.zero-sut.golden.mjs
+# command: node tests/_golden/p9-tier2-final-batch.zero-sut.golden.mjs
+# captured: 2026-08-03（实现前）
+# exit code: 1
+# distribution: 0 passed / 11 red
+# red cause: production verifier lib/p9-tier2-final-batch.mjs is not implemented.
+
+RED  p9-tier2-final-batch: T0 导出面与固定五成员/三清理成员/10 附件清单精确: 最终批次 verifier 尚未实现：Cannot find module '/mnt/d/ctx/heren/casey/lib/p9-tier2-final-batch.mjs' imported from /mnt/d/ctx/heren/casey/tests/_golden/p9-tier2-final-batch.zero-sut.golden.mjs
+RED  p9-tier2-final-batch: T1 五成员同批、全 PASS、三清理闭合、Chief 逐轮获准才绿: 最终批次 verifier 尚未实现：Cannot find module '/mnt/d/ctx/heren/casey/lib/p9-tier2-final-batch.mjs' imported from /mnt/d/ctx/heren/casey/tests/_golden/p9-tier2-final-batch.zero-sut.golden.mjs
+RED  p9-tier2-final-batch: T2 manifest 缺一或重复都拒绝: 最终批次 verifier 尚未实现：Cannot find module '/mnt/d/ctx/heren/casey/lib/p9-tier2-final-batch.mjs' imported from /mnt/d/ctx/heren/casey/tests/_golden/p9-tier2-final-batch.zero-sut.golden.mjs
+RED  p9-tier2-final-batch: T3 receipt/report 缺一、重复或越界成员都拒绝: 最终批次 verifier 尚未实现：Cannot find module '/mnt/d/ctx/heren/casey/lib/p9-tier2-final-batch.mjs' imported from /mnt/d/ctx/heren/casey/tests/_golden/p9-tier2-final-batch.zero-sut.golden.mjs
+RED  p9-tier2-final-batch: T4 batchId/invocationId 任一不一致都拒绝: 最终批次 verifier 尚未实现：Cannot find module '/mnt/d/ctx/heren/casey/lib/p9-tier2-final-batch.mjs' imported from /mnt/d/ctx/heren/casey/tests/_golden/p9-tier2-final-batch.zero-sut.golden.mjs
+RED  p9-tier2-final-batch: T5 旧批产物即使名字相同也拒绝: 最终批次 verifier 尚未实现：Cannot find module '/mnt/d/ctx/heren/casey/lib/p9-tier2-final-batch.mjs' imported from /mnt/d/ctx/heren/casey/tests/_golden/p9-tier2-final-batch.zero-sut.golden.mjs
+RED  p9-tier2-final-batch: T6 receipt 必须为真实 exit 0 完成件且恰好 10 个附件全真: 最终批次 verifier 尚未实现：Cannot find module '/mnt/d/ctx/heren/casey/lib/p9-tier2-final-batch.mjs' imported from /mnt/d/ctx/heren/casey/tests/_golden/p9-tier2-final-batch.zero-sut.golden.mjs
+RED  p9-tier2-final-batch: T7 exit 0 但 receipt 四态非全 PASS 仍拒绝: 最终批次 verifier 尚未实现：Cannot find module '/mnt/d/ctx/heren/casey/lib/p9-tier2-final-batch.mjs' imported from /mnt/d/ctx/heren/casey/tests/_golden/p9-tier2-final-batch.zero-sut.golden.mjs
+RED  p9-tier2-final-batch: T8 report 须 PASS>0、其余三态为零且逐步全 PASS: 最终批次 verifier 尚未实现：Cannot find module '/mnt/d/ctx/heren/casey/lib/p9-tier2-final-batch.mjs' imported from /mnt/d/ctx/heren/casey/tests/_golden/p9-tier2-final-batch.zero-sut.golden.mjs
+RED  p9-tier2-final-batch: T9 三条 cleanup 必须显式 true 且 uniqueNameToken 当批两两不同: 最终批次 verifier 尚未实现：Cannot find module '/mnt/d/ctx/heren/casey/lib/p9-tier2-final-batch.mjs' imported from /mnt/d/ctx/heren/casey/tests/_golden/p9-tier2-final-batch.zero-sut.golden.mjs
+RED  p9-tier2-final-batch: T10 Chief 必须在 manifest 为 mutation/perRun，且本轮 receipt 已逐次获准: 最终批次 verifier 尚未实现：Cannot find module '/mnt/d/ctx/heren/casey/lib/p9-tier2-final-batch.mjs' imported from /mnt/d/ctx/heren/casey/tests/_golden/p9-tier2-final-batch.zero-sut.golden.mjs
+p9-tier2-final-batch: 0/11
+p9-tier2-final-batch: RED (11 failed)
