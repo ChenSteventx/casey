@@ -1,0 +1,15 @@
+entity-lock-resign-revocation RED baseline
+base: dev@f7c8335
+command: node tests/_golden/entity-lock-resign-revocation.zero-sut.golden.mjs
+exit: 1
+result: 0 passed / 6 failed
+
+R1: direct CLI 未登记 --resign-entity-locks，MCP 面也无 resignEntityLocks。
+R2: 专用旗标被当未知参数，缺 --resign 的预期具名拒绝尚不存在。
+R3: 旧 PRD checksum 缺失/畸形/失配尚未进入实体锁换签校验。
+R4: 合法双显式旗标仍 exit 64，旧锁 archive、撤销 journal 与新 PRD 未生成。
+R5: 第一代换签不能完成，无法验证 journal 追加与畸形拒绝。
+R6: 第一代换签不能完成，无法构造并验证 PRD-last 恢复。
+
+该红由真实 bin/sign.mjs 子进程产生；测试只操作项目内临时 case/PRD 并在 finally 清理，
+未启动 SUT、浏览器、server、隧道或网络，未读取凭据。

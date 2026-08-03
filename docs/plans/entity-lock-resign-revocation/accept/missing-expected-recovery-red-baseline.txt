@@ -1,0 +1,10 @@
+Command:
+  node tests/_golden/entity-lock-resign-missing-expected-recovery.zero-sut.golden.mjs
+
+Observed before the recovery-mode fix:
+  exit 1
+  Error: 无旧 expected late-interrupt 同输入恢复失败 65:
+  sign: 输出路径碰撞（archive/frozen/pending/prd 须两两互异），拒
+
+The failure reproduces the final-audit finding: the entity-lock archive was
+misclassified as an expected archive and entered the publication write set twice.

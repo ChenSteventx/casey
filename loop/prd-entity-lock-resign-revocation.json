@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "task": "entity-lock-resign-revocation（full）：为既存 entity-locks.frozen.json 增加独立显式换签旗标、旧锁完整 hash 归档、append-only 撤销 journal、旧 PRD checksum anti-clobber 与现役 PRD-last publication 恢复接线；不实现 destructive continuity v3。",
+  "specPath": "docs/plans/entity-lock-resign-revocation/plan.md",
+  "testChecksums": {
+    "docs/plans/entity-lock-resign-revocation/GRILL.md": "850fdc342d72d8ad834b20d35f2eadfbb159d3b783d4531d2231152708d7f75f",
+    "docs/plans/entity-lock-resign-revocation/plan.md": "2efd4577b35bca37a5a24e9f9d901584f4deba8ff55c4e03be1ab01e92c3c601",
+    "docs/plans/entity-lock-resign-revocation/accept/red-baseline.txt": "84ea5e1945beb18b7601dd109b15986660eee6f6820ceaddbdb4655f73b0f4ea",
+    "tests/_golden/entity-lock-resign-revocation.zero-sut.golden.mjs": "6957250982ec61f0ed54a3e0821d0d10823041b5ac0c8423d3f1011f39102d3b",
+    "tests/_golden/entity-lock-resign-revocation-hardening.zero-sut.golden.mjs": "daf7ef7087331ac516fff3a73f9774ce90c5a88ecada700aad1b93eab117ad1e",
+    "docs/plans/entity-lock-resign-revocation/accept/missing-expected-recovery-red-baseline.txt": "fc8e951905e07c869dfd1fe2cf6f2432228d92d608c3bca7f0158809a85dc470",
+    "tests/_golden/entity-lock-resign-missing-expected-recovery.zero-sut.golden.mjs": "88cf7c8515c33dccb94aace8feb22961b02b11362bd8b5fadd33b08927a27eb6"
+  },
+  "observability": [
+    {
+      "dimension": "三条现有 destructive 用例的真实实体锁换签与 Steven 人签；机器状态仅 PENDING_STEVEN，本契约不改现有 case 冻结件。",
+      "route": "human"
+    },
+    {
+      "dimension": "Windows reparse point、掉电持久性与跨目录 rename 的真实文件系统行为。",
+      "route": "human"
+    },
+    {
+      "dimension": "destructive continuity v3 与逐破坏步目标连续性；明确由独立后继契约承接。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-entity-lock-resign",
+      "desc": "真实 sign 子进程验证显式换签、anti-clobber、旧锁归档、撤销 journal 和中断恢复。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-lock-resign-revocation.zero-sut.golden.mjs",
+        "node tests/_golden/entity-lock-resign-revocation-hardening.zero-sut.golden.mjs",
+        "node tests/_golden/entity-lock-resign-missing-expected-recovery.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-03T04:29:06.755Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-sign-adjacent-regression",
+      "desc": "现役 sign publication、operability、签署与实体锁准入邻接面零回归。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/sign-publication-recovery.zero-sut.golden.mjs",
+        "node tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs",
+        "node tests/_golden/entity-binding-operability-review-successor.zero-sut.golden.mjs",
+        "node tests/_golden/units/p2-sign-unit.zero-sut.golden.mjs",
+        "node tests/_golden/agent-id-sign-observation.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-semantic-lock-admission-authority.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-semantic-lock-package-integrity.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-03T04:29:10.572Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-repo-integrity",
+      "desc": "tier-1、全仓冻结 checksum 与统一语言零回归。",
+      "lane": "implementation",
+      "acceptance": [
+        "node bin/casey.mjs selftest --tier1",
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-03T04:29:13.196Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "acceptance-gate 红基线：dev@f7c8335，目标金牌 exit 1、0 过/6 红。邻接清单在 loop 前基线复核时把现役已知红 p2-sign 集成金牌替换为同域 21/21 unit 金牌，并把 SECURITY_REVOKED 的 semantic-lock-cli-wiring 墓碑替换为活体 package-integrity；未修改任何既有冻结测试。Grok R1 CHANGES_REQUIRED 后新增独立 regression hardening 金牌（冻结时即绿）钉入口矩阵、同旧 hash fork/duplicate 与内容寻址 archive 同名异字节零落盘拒绝；原红先行金牌字节及 checksum 保持不变。Grok R2 批准后的 final audit 又实证旧 expected 缺失模式把 entity archive 误判为 expected archive，新增独立红先行 recovery 金牌（exit 1）而不改两枚已冻结测试。测试只运行本地文件事务，零 SUT/浏览器/server/网络/凭据。passes 只由 gate 写。",
+  "openIssues": []
+}

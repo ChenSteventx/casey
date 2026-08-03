@@ -11,7 +11,7 @@
 // fail-closed 纪律（codex R1-F3）：全部读+校验+cred-gate 在任何授权产物写盘之前完成；普通签发走 staged
 // rename；含实体锁的多文件发布走 journal 可恢复事务且 PRD 最后落位（不声称多文件 OS 原子）。退出码：
 // 0 成功；64 缺参；65 输入坏/闸拒；1 凭据兜底门拦截（护栏 #7）。
-import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync } from 'node:fs';
+import { readFileSync, writeFileSync, existsSync, mkdirSync, renameSync, rmSync, statSync } from 'node:fs';
 import { createHash } from 'node:crypto';
 import { resolve, relative, dirname, join, basename, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -21,6 +21,10 @@ import { freezeEntityBindingsDraft, hashIdentityAdmissionBytes } from '../lib/en
 import { ENTITY_OBSERVATION_REGISTRY, validateObservationAdmission } from '../lib/entity-observation-registry.mjs';
 import { publishSignPublication } from '../lib/sign-publication.mjs';
 import { parseSignArgs } from '../lib/sign-cli-args.mjs';
+import { prepareEntityLockResign } from '../lib/entity-lock-resign.mjs';
+import { recoverEntityLockResignPlans } from '../lib/entity-lock-resign-recovery.mjs';
+import { classifySignRecoveryJournalTargets, resolveSignResignSurface } from '../lib/sign-resign-surface.mjs';
+import { recoverJournalBoundArtifact } from '../lib/sign-resign-recovery.mjs';
 import {
   checkProjectOutputBoundary,
   readPhysicalFileBytes,
@@ -118,7 +122,7 @@ if (args.invalidFlags.length || args.duplicateFlags.length || args.pos.length !=
   die(64, '参数面未闭合（未知/重复旗标或多余位置参数）；请按 casey help 的 sign 真接口重试');
 }
 if (!caseId || !args.draft || !args.prd || !args['frozen-out'] || !args.signer || !args['against-build']) {
-  die(64, '用法: casey sign <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--events <f> --entity-bindings-draft <f> --entity-confirmations <f> --entity-locks-out <f> --audience <test|production> [--entity-observations <f>]] [--signed-at <iso>] [--verdict-baseline <f>] [--resign] [--force] [--archive-dir <d>]');
+  die(64, '用法: casey sign <caseId> --draft <f> --prd <f> --frozen-out <f> --signer <id> --against-build <id> [--events <f> --entity-bindings-draft <f> --entity-confirmations <f> --entity-locks-out <f> --audience <test|production> [--entity-observations <f>]] [--signed-at <iso>] [--verdict-baseline <f>] [--resign] [--resign-entity-locks] [--force] [--archive-dir <d>]');
 }
 // caseId / 授权输入 / 产物路径安全（codex R1-F2；caseId 同 draft.mjs:40）。
 // 报错不回显原值——CLI 参数在凭据门扫描面外（ingest 契约 codex R2-F2 同族封缝，镜像 bin/ingest.mjs:29）。
@@ -129,6 +133,7 @@ if (!SAFE_ID.test(signer)) die(65, 'signer 含非法字符（仅限 [A-Za-z0-9._
 if (!SAFE_ID.test(build)) die(65, 'against-build 含非法字符（仅限 [A-Za-z0-9._@-]；原值不回显）');
 const frozenOut = String(args['frozen-out']);
 const frozenBase = basename(frozenOut);
+const archiveDir = args['archive-dir'] ? String(args['archive-dir']) : join(dirname(frozenOut), 'archive');
 // frozen-out 只许 .json 断言旁车形态，拒 events-/spec- 形态（testChecksums 只冻断言文件，护栏 #5 + codex R1-F2）。
 if (!frozenBase.endsWith('.json') || /^(events|spec)[-.]/.test(frozenBase)) die(65, `frozen-out 须为 .json 断言旁车、非 events/spec 形态：${frozenBase}`);
 const entityLockArgs = ['events', 'entity-bindings-draft', 'entity-confirmations', 'entity-locks-out'];
@@ -137,6 +142,7 @@ if (entityLockArgCount !== 0 && entityLockArgCount !== entityLockArgs.length) {
   die(64, '--events / --entity-bindings-draft / --entity-confirmations / --entity-locks-out 必须成组提供');
 }
 const entityLocksOut = entityLockArgCount ? String(args['entity-locks-out']) : null;
+const entityLocksResign = Boolean(args['resign-entity-locks']);
 // 准入受众（ADR-0010）：产实体锁时必填，枚举 test|production，签进冻结件自哈希。真机生产签发用 production、
 // 测试夹具用 test；读侧凭据上下文门据此拒「测试锁改真 SUT」。缺/非法一律 fail-closed。
 const entityAudience = entityLocksOut ? String(args.audience || '') : null;
@@ -146,11 +152,13 @@ if (entityLocksOut && entityAudience !== 'test' && entityAudience !== 'productio
 let entityLocksProjectKey = null;
 let publicationJournal = null;
 let recoveryJournal = null;
+let entityRevocationsPath = null;
 if (entityLocksOut) {
   if (basename(entityLocksOut) !== 'entity-locks.frozen.json') die(65, 'entity-locks-out 文件名须为 entity-locks.frozen.json');
   const rel = relative(ROOT, resolve(entityLocksOut));
   if (!rel || rel === '..' || rel.startsWith(`..${sep}`)) die(65, 'entity-locks-out 必须位于 Casey 项目内，供固定 PRD checksum authority 读取');
   entityLocksProjectKey = rel.split(sep).join('/');
+  entityRevocationsPath = join(archiveDir, 'entity-locks.revocations.jsonl');
   const outputBoundary = checkProjectOutputBoundary({ projectRoot: ROOT, targetPath: entityLocksOut });
   if (!outputBoundary.ok) die(65, `entity-locks-out 物理项目边界未过（${outputBoundary.reason}），拒绝 symlink/reparse 路径`);
   publicationJournal = `${resolve(entityLocksOut)}.publish.json`;
@@ -172,7 +180,40 @@ if (entityLocksOut) {
       die(65, '--signed-at 与未完成 publication journal 不一致；须使用原输入恢复');
     }
   }
-  if (existsSync(entityLocksOut) && !recoveryJournal) die(65, 'entity-locks.frozen.json 已存在；身份锁重签须另走显式撤销/归档流程');
+}
+const recoveryTargetSurface = recoveryJournal
+  ? classifySignRecoveryJournalTargets({
+    entries: recoveryJournal.entries,
+    frozenTargetHash: digest(resolve(frozenOut)),
+    entityRevocationTargetHash: digest(resolve(entityRevocationsPath)),
+  })
+  : null;
+if (recoveryTargetSurface && !recoveryTargetSurface.ok) {
+  die(65, 'sign publication journal 目标顺序/集合非法，拒绝猜测重签模式');
+}
+const journalHasExpectedArchive = recoveryTargetSurface?.journalHasExpectedArchive || false;
+const journalHasEntityRevocation = recoveryTargetSurface?.journalHasEntityRevocation || false;
+const resignSurface = resolveSignResignSurface({
+  resign: Boolean(args.resign),
+  resignEntityLocks: entityLocksResign,
+  hasEntityLocksBundle: Boolean(entityLocksOut),
+  entityLocksExist: Boolean(entityLocksOut && existsSync(entityLocksOut)),
+  frozenExists: existsSync(frozenOut),
+  hasRecoveryJournal: Boolean(recoveryJournal),
+  journalHasExpectedArchive,
+  journalHasEntityRevocation,
+});
+if (!resignSurface.ok) {
+  const messages = {
+    ENTITY_LOCK_RESIGN_REQUIRES_BUNDLE: '--resign-entity-locks 只随完整实体锁四件套使用',
+    ENTITY_LOCK_RESIGN_REQUIRES_EXPECTED_RESIGN: '实体锁换签须同时显式 --resign 与 --resign-entity-locks',
+    EXPECTED_RESIGN_RECOVERY_MODE_MISMATCH: 'publication journal 的 expected archive 目标集合与 --resign 不一致，拒绝恢复',
+    ENTITY_LOCK_RESIGN_RECOVERY_MODE_MISMATCH: 'publication journal 的实体锁撤销目标集合与 --resign-entity-locks 不一致，拒绝恢复',
+    ENTITY_LOCK_RESIGN_EXPLICIT_FLAG_REQUIRED: 'entity-locks.frozen.json 已存在；身份锁换签须显式 --resign-entity-locks',
+    ENTITY_LOCK_RESIGN_OLD_LOCK_MISSING: '实体锁首次发布/旧锁不存在时禁止 --resign-entity-locks',
+    EXPECTED_RESIGN_EXPLICIT_FLAG_REQUIRED: `frozen 已存在（${frozenOut}）——重签须显式 --resign（anti-clobber 防误覆写）`,
+  };
+  die(resignSurface.exitCode, messages[resignSurface.reason] || `重签入口拒绝（${resignSurface.reason}）`);
 }
 
 // ── 全部读 + 严校（任何写盘之前，codex R1-F3）──
@@ -211,7 +252,7 @@ if (!prd || typeof prd !== 'object' || Array.isArray(prd)) die(65, 'prd 非对�
 if (prd.caseId !== caseId) die(65, `prd.caseId 不一致（命令行 ${caseId}；prd 侧值不符或缺，原值不回显——output-seal A5），拒签`);
 // 首次发布前不得已有同路径 checksum：否则 locks 在 PRD 最后提交前可能被旧 checksum 提前铸成 authority。
 // 只有 journal 证明这是本次未完成发布的恢复，才允许 PRD 已处于新/旧任一阶段，并由 exact journal 收口。
-if (entityLocksProjectKey && !recoveryJournal
+if (entityLocksProjectKey && !recoveryJournal && !entityLocksResign
   && Object.prototype.hasOwnProperty.call(prd.testChecksums || {}, entityLocksProjectKey)) {
   die(65, 'PRD 已含 entity-locks checksum 但无 publication journal；拒绝猜测残留状态，须人工审计');
 }
@@ -394,7 +435,6 @@ const sc = assertSignedContract(frozen);
 if (!sc.ok) die(65, `frozen 自守未过 assertSignedContract：${sc.problems.slice(0, 3).join('；')}`);
 
 // 重签 / anti-clobber（D4）：frozen 已存在——无 --resign 拒覆写；有 --resign 备好归档（写盘留到最后）。
-const archiveDir = args['archive-dir'] ? String(args['archive-dir']) : join(dirname(frozenOut), 'archive');
 let archivePlan = null;
 function archivePlanFromFrozenText(rawText) {
   let old;
@@ -407,48 +447,26 @@ function archivePlanFromFrozenText(rawText) {
   const oldHash = createHash('sha256').update(oldText).digest('hex').slice(0, 12);
   return { path: join(archiveDir, `expected.frozen.${caseId}.${safeBuild}.${oldHash}.json`), text: oldText };
 }
-const journalNeedsArchive = recoveryJournal
-  ? recoveryJournal.entries[0].targetHash !== digest(resolve(frozenOut))
-  : false;
 if (!recoveryJournal && existsSync(frozenOut)) {
-  if (!args.resign) die(65, `frozen 已存在（${frozenOut}）——重签须显式 --resign（anti-clobber 防误覆写）`);
   archivePlan = archivePlanFromFrozenText(readFileSync(frozenOut, 'utf8'));
   if (!archivePlan) die(65, '旧 frozen 非法，拒绝生成重签 archive');
 } else if (recoveryJournal) {
-  if (journalNeedsArchive !== Boolean(args.resign)) {
-    die(65, 'publication journal 的 archive 目标集合与本次 --resign 不一致，拒绝恢复');
-  }
-  if (journalNeedsArchive) {
-    const first = recoveryJournal.entries[0];
-    const candidates = [];
+  if (journalHasExpectedArchive) {
+    const currentCandidates = [];
     // journal 刚建立、archive 尚未 staged 时，当前 frozen 仍是旧字节，可直接重建确定性归档计划。
     if (existsSync(frozenOut)) {
       const fromCurrent = archivePlanFromFrozenText(readFileSync(frozenOut, 'utf8'));
-      if (fromCurrent && digest(resolve(fromCurrent.path)) === first.targetHash && digest(fromCurrent.text) === first.contentHash) {
-        candidates.push(fromCurrent);
-      }
+      if (fromCurrent) currentCandidates.push(fromCurrent);
     }
-    // archive 已 staged/committed 后当前 frozen 可能已是新字节；在同一 archiveDir 内按 journal 路径摘要找回。
-    if (existsSync(archiveDir)) {
-      let names = [];
-      try { names = readdirSync(archiveDir); } catch { die(65, '重签恢复无法读取 archive-dir，拒绝猜测'); }
-      if (names.length > 1000) die(65, 'archive-dir 条目过多，拒绝无界恢复扫描');
-      for (const name of names) {
-        const storedPath = join(archiveDir, name);
-        const targetPath = name.endsWith('.tmp') ? storedPath.slice(0, -4) : storedPath;
-        if (digest(resolve(targetPath)) !== first.targetHash) continue;
-        let text;
-        try {
-          const physical = readPhysicalFileBytes({ targetPath: storedPath });
-          if (!physical.ok) continue;
-          text = physical.bytes.toString('utf8');
-        } catch { continue; }
-        if (digest(text) === first.contentHash) candidates.push({ path: targetPath, text });
-      }
-    }
-    const unique = new Map(candidates.map((candidate) => [`${resolve(candidate.path)}\u0000${digest(candidate.text)}`, candidate]));
-    if (unique.size !== 1) die(65, '无法从当前 frozen/archive staged target 唯一重建 --resign journal，须人工审计');
-    archivePlan = [...unique.values()][0];
+    const recovered = recoverJournalBoundArtifact({
+      journal: recoveryJournal,
+      archiveDir,
+      currentCandidates,
+      requiredEntry: recoveryJournal.entries[0],
+      mapArchiveName: (name) => ({ targetName: name.endsWith('.tmp') ? name.slice(0, -4) : name }),
+    });
+    if (!recovered.ok) die(65, '无法从当前 frozen/archive staged target 唯一重建 --resign journal，须人工审计');
+    archivePlan = recovered.plan;
   }
 }
 
@@ -460,6 +478,50 @@ const sha = createHash('sha256').update(frozenText).digest('hex');
 const entityLocksText = frozenEntityLocks ? JSON.stringify(frozenEntityLocks, null, 2) + '\n' : null;
 const entityLocksKey = entityLocksProjectKey;
 const entityLocksSha = entityLocksText ? createHash('sha256').update(entityLocksText).digest('hex') : null;
+let entityLockArchivePlan = null;
+let entityRevocationPlan = null;
+if (entityLocksResign) {
+  let lockResignPlan;
+  if (recoveryJournal) {
+    lockResignPlan = recoverEntityLockResignPlans({
+      caseId, archiveDir, newLocksText: entityLocksText,
+      signedAt, signedAgainstBuild: build, signerId: signer, recoveryJournal,
+    });
+  } else {
+    const oldLocks = readProjectArtifactBytes({ projectRoot: ROOT, targetPath: entityLocksOut });
+    if (!oldLocks.ok) die(65, `旧实体锁物理读取失败（${oldLocks.reason}）`);
+    let revocationsText = '';
+    if (existsSync(entityRevocationsPath)) {
+      const revocations = readPhysicalFileBytes({ targetPath: entityRevocationsPath });
+      if (!revocations.ok) die(65, `实体锁撤销 journal 物理读取失败（${revocations.reason}）`);
+      revocationsText = revocations.bytes.toString('utf8');
+    }
+    lockResignPlan = prepareEntityLockResign({
+      caseId,
+      oldLocksText: oldLocks.bytes.toString('utf8'),
+      newLocksText: entityLocksText,
+      prd,
+      entityLocksKey,
+      archiveDir,
+      signedAt,
+      signedAgainstBuild: build,
+      signerId: signer,
+      revocationsText,
+    });
+    if (!lockResignPlan.ok && lockResignPlan.reason === 'ENTITY_LOCK_RESIGN_OLD_PRD_CHECKSUM_INVALID') {
+      die(65, '旧 PRD 的 entity-locks checksum 缺失、畸形或与旧锁原始字节不符');
+    }
+  }
+  if (!lockResignPlan?.ok) die(65, `实体锁撤销 journal/归档计划拒绝（${lockResignPlan?.reason || 'UNKNOWN'}）`);
+  entityLockArchivePlan = lockResignPlan.archivePlan;
+  entityRevocationPlan = lockResignPlan.revocationPlan;
+  if (!recoveryJournal && existsSync(entityLockArchivePlan.path)) {
+    const existingArchive = readPhysicalFileBytes({ targetPath: entityLockArchivePlan.path });
+    if (!existingArchive.ok || existingArchive.bytes.toString('utf8') !== entityLockArchivePlan.text) {
+      die(65, '旧实体锁内容寻址 archive 已存在但字节不一致，拒绝覆盖审计件');
+    }
+  }
+}
 const newPrd = {
   ...prd,
   schemaVersion: 2,
@@ -486,19 +548,23 @@ const gateInputs = { [frozenOut]: frozenText, [prdPath]: prdText };
 if (entityLocksOut) gateInputs[entityLocksOut] = entityLocksText;
 if (pendingSidecar) gateInputs[pendingSidecar] = pendingText;
 if (archivePlan) gateInputs[archivePlan.path] = archivePlan.text;
+if (entityLockArchivePlan) gateInputs[entityLockArchivePlan.path] = entityLockArchivePlan.text;
+if (entityRevocationPlan) gateInputs[entityRevocationPlan.path] = entityRevocationPlan.text;
 const cg = credentialGate(gateInputs);
 if (!cg.ok) die(1, `凭据兜底门拦截（护栏 #7）：${cg.hit}；拒绝落盘`);
 
 // ── 全部校验通过，方落盘。实体锁发布由 journal 恢复且 PRD 最后落位；不是多文件 OS 原子。──
 const writes = [];
 if (archivePlan) writes.push([archivePlan.path, archivePlan.text]);
+if (entityLockArchivePlan) writes.push([entityLockArchivePlan.path, entityLockArchivePlan.text]);
+if (entityRevocationPlan) writes.push([entityRevocationPlan.path, entityRevocationPlan.text]);
 writes.push([frozenOut, frozenText]);
 if (entityLocksOut) writes.push([entityLocksOut, entityLocksText]);
 if (pendingSidecar) writes.push([pendingSidecar, pendingText]);
 writes.push([prdPath, prdText]);
 commitWrites(
   writes,
-  archivePlan ? [archiveDir] : [],
+  archivePlan || entityLockArchivePlan ? [archiveDir] : [],
   publicationJournal ? {
     journalPath: publicationJournal,
     signedAt,
@@ -508,10 +574,13 @@ commitWrites(
       if (!identity.ok) console.error(`sign: entity locks PRD-last 前物理身份复核未过（${identity.reason}）`);
       return identity.ok === true;
     },
-    ...(archivePlan ? { readExisting: (path) => {
+    ...(archivePlan || entityLockArchivePlan ? { readExisting: (path) => {
       const resolved = resolve(path);
-      const archiveTarget = resolve(archivePlan.path);
-      if (resolved !== archiveTarget && resolved !== `${archiveTarget}.tmp`) return readFileSync(resolved, 'utf8');
+      const durableTargets = [archivePlan, entityLockArchivePlan, entityRevocationPlan]
+        .filter(Boolean).map((plan) => resolve(plan.path));
+      if (!durableTargets.some((target) => resolved === target || resolved === `${target}.tmp`)) {
+        return readFileSync(resolved, 'utf8');
+      }
       const physical = readPhysicalFileBytes({ targetPath: resolved });
       if (!physical.ok) throw new Error(`archive physical boundary rejected: ${physical.reason}`);
       return physical.bytes.toString('utf8');
