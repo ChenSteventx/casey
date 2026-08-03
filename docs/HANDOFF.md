@@ -53,8 +53,10 @@
    - 两类可见元素进不了 `role+name` 匹配面：无 role 属性的裸容器（driver 候选过滤直接排除、
      不带完整性标志），以及有 role 但可访问名为空被投影成 `label`/`text` 的元素。
      zero-SUT 夹具无枚举边界，证不出，须真机只读探查由人确认；
-   - 工作树跑 `prd-drift-scan` 必须软链主树 `cases/` 与 `runs/`（两者 gitignored、冻结件只在
-     主树），否则报缺件假红；该门本质是**主树**检查。
+   - 工作树跑 `prd-drift-scan` 缺 `cases/` 与 `runs/` 冻结件时（两者 gitignored、只在主树），
+     须从主树**复制真文件**补齐；绝不软链——guard-net 契约实测软链会触 `sign` 物理项目边界核的
+     按设计拒付（`entity-binding-operability-successor` O1 假红，O3 恰钉此行为）；该门本质是
+     **主树**检查。
    - 合并回 `dev` 需 Steven 单独授权；合并后须按护栏 #19 在主树复验受影响面。
 7. **下一步**：Wave 4 的观测包（页面内容器作用域，与浏览器拓扑严格分离）、Wave 6 的
    promotion gate、Wave 3 的 `agent-loop-harness` 迁移（触 hooks/gate/package scripts，
