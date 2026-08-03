@@ -1,0 +1,10 @@
+command: node tests/_golden/teachin-authoring-workflow-list-container.zero-sut.golden.mjs
+baseline-production-head: 62bcf46
+test-parent-head: fc800ba
+exit-code: 1
+
+RED  teachin-authoring-workflow-list-container: A1 真机 .agent-card 可见须被实际命中且零 blocker: .agent-card 未被后置锚 selector 实际命中：[".hr-table-row, .hr-card.hr-card--bordered"]
+ok   teachin-authoring-workflow-list-container: A2 legacy .hr-table-row 与 .hr-card.hr-card--bordered 仍兼容
+RED  teachin-authoring-workflow-list-container: A3 所有列表记录容器缺席须形成唯一 blocker 且不泄漏采样异常: 完全缺席 blocker 数=0
+RED  teachin-authoring-workflow-list-container: A4 locator 采样异常须形成唯一 blocker 而非抛穿: locator 采样异常 抛穿，未转为 fail-closed blocker
+teachin-authoring-workflow-list-container: 1 过 / 3 败
