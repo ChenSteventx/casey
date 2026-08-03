@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-authoring-runtime-profile（full）：真机后继修单。由 execution-target authority 恢复 authoring compile runtime/base URL，并把与 channelProfileDigest 绑定的 exact profile bytes 经 pair-bound baseline grant 传播到 compile；同时封住工作流列表锚缺席假成功。",
+  "specPath": "docs/plans/teachin-authoring-runtime-profile/plan.md",
+  "testChecksums": {
+    "docs/plans/teachin-authoring-runtime-profile/GRILL.md": "6c463641dc5b58e58496ed57c2dbf4407d2e34afd1c2b0cf6a82ce4a436bff6d",
+    "docs/plans/teachin-authoring-runtime-profile/plan.md": "390e9b03073e72d2008537cff86a843dbcb0168d2c08a50b251722097a874f93",
+    "docs/plans/teachin-authoring-runtime-profile/accept/red-baseline.txt": "c00dc9be65b3ffe78515b08ae8ced6843c8ec4865d8275c9e44149aace91687b",
+    "docs/plans/teachin-authoring-runtime-profile/accept/list-anchor-red-baseline.txt": "a6a8092fbbd48f1a0d8e4cd157f422e98de6588dae7d548f4c87ac1a9a1288bf",
+    "docs/plans/teachin-authoring-runtime-profile/accept/profile-authority-red-baseline.txt": "c4ff3badd16271bbdadd58834cce51d853a4a39ae041ac411d9d5aa5b13e683e",
+    "docs/plans/teachin-authoring-runtime-profile/accept/teachin-authoring-source-plan-identity.red.txt": "7981bed89b08a310f6dfbc86719e673053badb0510ae9109b738e347a61e693c",
+    "tests/_golden/teachin-authoring-runtime-profile.zero-sut.golden.mjs": "cb67d6218e3f1a9db942504cd8793e885e4f1403d9fd8eccae1145b2b6e799de",
+    "tests/_golden/teachin-authoring-list-anchor.zero-sut.golden.mjs": "4423b639757a1d7e7006c25199ac541cbf59bce17f9c20e81c205e08250597db",
+    "tests/_golden/teachin-authoring-profile-authority.zero-sut.golden.mjs": "e1b20de110ffa9abe688201184bc8b13d6ad06c98d20ffacb990cd33052d0a13",
+    "tests/_golden/teachin-authoring-source-plan-identity.zero-sut.golden.mjs": "b2731a15b42031cf4f7ef2f85a81003a8789b245996b05ed51a21cd4a8d28c36"
+  },
+  "observability": [
+    {
+      "dimension": "最终主线必须由同一录制进程真机两击，cycle exit 0 且 capture/sidecar hash 一致；零 SUT 金牌不可替代。",
+      "route": "human"
+    },
+    {
+      "dimension": "既有 owner checksum amendment 与所有 PENDING_STEVEN 仍须 Steven 明签，机器不得代签。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-runtime-profile-authority-chain",
+      "title": "S1 authoring runtime 与 exact channel profile 单事实源链",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/teachin-authoring-runtime-profile.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-authoring-list-anchor.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-authoring-profile-authority.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-authoring-source-plan-identity.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-08-03T04:44:43.249Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-teachin-adjacent-zero-regression",
+      "title": "S2 teach-in compile/cycle 相邻接缝零回归",
+      "passes": false,
+      "acceptance": [
+        "node tests/_golden/teachin-replayability-compile-runtime-adapter.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-runtime-cycle-adapter.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs",
+        "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs"
+      ],
+      "evidence": ""
+    },
+    {
+      "id": "s3-repo-drift-and-terms",
+      "title": "S3 全仓冻结件零漂移与术语检查",
+      "passes": false,
+      "acceptance": [
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry"
+      ],
+      "evidence": ""
+    }
+  ],
+  "notes": "首枚金牌实现前真实 0 过 / 3 败，exit 1；三红分别对应 runtime hydration、profile route 贯穿、same-capture exact profile bytes。A4 独立金牌在基线 62bcf46 真实 0 过 / 2 败，exit 1；分别钉列表后置锚 blocker 与 authoring 发布门。profile authority 独立金牌在同基线真实 1 过 / 1 败，exit 1；正控因 extra profile bytes 未被 source authority 接受而红，负控保持拒绝。R2 审计后新增 source-plan/identity 边界金牌，在同基线真实 0 过 / 4 败、exit 1；钉 identity listApi/malformed pre-open 拒绝、genuine 全链与真实非默认路由、claim 拒后 owner dispose、同标签 distinct source-plan 防换绑。",
+  "openIssues": []
+}

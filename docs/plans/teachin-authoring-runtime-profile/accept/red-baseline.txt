@@ -1,0 +1,7 @@
+command: node tests/_golden/teachin-authoring-runtime-profile.zero-sut.golden.mjs
+exit: 1
+
+RED  teachin-authoring-runtime-profile: A1 genuine authority 恢复 runtime/base URL，不产生 undefined 第二事实源: 未从 genuine authority 投影 runtime
+RED  teachin-authoring-runtime-profile: A2 trusted exact profile route 贯穿 authoring adapter 到 compile run: exact profile 未传入 createCompileRun
+RED  teachin-authoring-runtime-profile: A3 same-capture cycle input 保留 exact channel profile bytes: sourcePlan 未携 exact profile bytes
+teachin-authoring-runtime-profile: 0 过 / 3 败

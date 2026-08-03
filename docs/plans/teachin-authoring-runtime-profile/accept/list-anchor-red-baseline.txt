@@ -1,0 +1,7 @@
+baseline: 62bcf46
+command: node tests/_golden/teachin-authoring-list-anchor.zero-sut.golden.mjs
+exit: 1
+
+RED  teachin-authoring-list-anchor: B1 列表后置锚缺席/异常必须写 blocker，成功锚零 blocker: 列表锚缺席未形成唯一 blocker
+RED  teachin-authoring-list-anchor: B2 blocker 或非 acted verification 均禁止发布 authoring candidate: blocker 未固定拒绝发布并返回 ok:true candidate
+teachin-authoring-list-anchor: 0 过 / 2 败

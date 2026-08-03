@@ -1,0 +1,7 @@
+baseline: 62bcf46
+command: node tests/_golden/teachin-authoring-profile-authority.zero-sut.golden.mjs
+exit: 1
+
+RED  teachin-authoring-profile-authority: P1 exact profile bytes 与 digest 绑定且 authority 内复制防后改: exact profile source plan 未铸成：{"ok":false,"reason":"SOURCE_REPLAY_PLAN_AUTHORITY_INVALID"}
+ok   teachin-authoring-profile-authority: P2 profile bytes 摘要不符/空值必须在 source authority 铸造前拒绝
+teachin-authoring-profile-authority: 1 过 / 1 败
