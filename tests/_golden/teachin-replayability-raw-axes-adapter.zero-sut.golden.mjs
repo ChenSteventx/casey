@@ -3,6 +3,7 @@
 // Pure authorities/maps/bytes; zero SUT/browser/network/LLM.
 
 import { readFileSync } from 'node:fs';
+import { projectReplayAxes as canonicalProjectReplayAxes } from '../../lib/replay-axes.mjs';
 
 const TAG = 'teachin-replayability-raw-axes-adapter';
 const failures = [];
@@ -194,6 +195,7 @@ function makeHarness({
   resolved = resolvedProjection(),
   projectFailure = null,
   verdictFailure = null,
+  projector = null,
 } = {}) {
   const rawObservationAuthority = token();
   const resolvedProjectionAuthority = token();
@@ -254,6 +256,7 @@ function makeHarness({
         throw new Error('PRIVATE_AXES_MARKER https://must-not-leak.invalid');
       }
       if (projectFailure === 'malformed') return undefined;
+      if (typeof projector === 'function') return projector(input);
       return axesText;
     },
     verdictAdapter: {
@@ -438,6 +441,36 @@ if (api && typeof api.createRawAxesAdapter === 'function') {
     'raw axes adapter 禁止复制 assertion/verdict judge');
     assert(!/(?:node:child_process|bin\/verdict\.mjs|execFile|spawn)\b/.test(source),
       'child process/judge path 只能存在 verdict-cli-adapter');
+  });
+
+  await check('A8 非空 firingStepId 经 adapter 真穿 canonical projector 并归因', async () => {
+    const raw = rawProjection();
+    raw.records = [{
+      type: 'response',
+      url: '/synthetic',
+      status: 200,
+      ts: 1,
+      initiator: 'fetch',
+      firingStepId: 'rawstep_1',
+      attributedStepId: 'rawstep_1',
+      errorEnvelope: null,
+      streamFinished: true,
+      streamStatus: 'complete',
+    }];
+    const built = makeHarness({ raw, projector: canonicalProjectReplayAxes });
+    const result = await built.adapter.projectAndVerify(runInput(built));
+    assert(built.calls.axesInput?.allStepIds instanceof Set,
+      'adapter 给 canonical projector 的 allStepIds 必须是 Set');
+    assert(result?.ok === true,
+      `canonical projector 接缝应成功：${JSON.stringify(result)}`);
+    assert(built.calls.axes === 1 && built.calls.verdict === 1,
+      `projector/verdict 均须恰一次：${JSON.stringify(built.calls)}`);
+    const axes = JSON.parse(result.axesBytes.toString('utf8'));
+    const network = axes.steps?.[0]?.forensics?.network;
+    assert(Array.isArray(network) && network.length === 1
+      && network[0].attributedStepId === 'rawstep_2'
+      && network[0].url === '/synthetic',
+    `网络记录必须归因到代表步：${JSON.stringify(network)}`);
   });
 }
 

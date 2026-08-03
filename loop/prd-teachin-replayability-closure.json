@@ -27,7 +27,7 @@
     "tests/_golden/teachin-replayability-review-hardening.zero-sut.golden.mjs": "cf40707a162b1f5d350d57add36e0ec8b8850e2a4496fd91b2e6ce1d143f0a47",
     "tests/_golden/teachin-replayability-prepared-run.zero-sut.golden.mjs": "6d09057c85cebc4bd623e55e407828693f6195a755a389f26ddc6477a594a23e",
     "tests/_golden/teachin-replayability-raw-actions.zero-sut.golden.mjs": "de5e164c5b97c8019d8c756761bada23c73eeb07200aa892e265536b9b9f70f6",
-    "tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs": "79f12524d9b5eb64962adeaadd093dc35a0ebeb12346a97bd9810961913c06b7",
+    "tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs": "b585e458e86b230d910a850fad3eed2d2d727189039691a1ee4d98a7ed5a6435",
     "tests/_golden/teachin-replayability-raw-event-observation.zero-sut.golden.mjs": "ceccded6c04ff49ecfba1a5587e8cababc5d63d08b90ccae4916e6af5836dc8f",
     "tests/_golden/teachin-replayability-raw-output-seal.zero-sut.golden.mjs": "be3d22521ff1c26853cfcfef79110f23359f25fe38c2ffdd6b86989abec3896f",
     "tests/_golden/teachin-replayability-raw-runner.zero-sut.golden.mjs": "360d4bc074a2aa9ace84cb31d3b0abf81bc2675348e707a0604e00e23c5e1e05",
@@ -190,6 +190,15 @@
       ],
       "reason": "金牌拓扑替身返回了真控制器（page-topology/controller.mjs performClick）从不返回的 value 键=夹具不保真，正是 raw 驱动 :119 value 判据 bug（click 恒败且物理点击已落地）藏匿多日的原因。保真化：替身丢弃回调返回值、吞异常入闭合拒付、成功返回体键集与真控制器逐键全等；新增夹具保真负控（替身回填 value 键即红）。修后 9 绿/1 红——A9 raw 正控之红即 seam 修复钉（判据未变、语义现真），随 seam 修复契约翻绿。原件 gzip 存档 .pre-actionability-amendment.archive.gz（回验 sha=298fa413… 与原冻结值一致）。",
       "signedBy": "Steven（2026-07-30 AskUserQuestion 签：seam 修复冻结签字包三件全认）"
+    },
+    {
+      "amendedAt": "2026-08-03",
+      "round": "teachin-cycle-axes-step-set 真机生产接缝红先行",
+      "files": [
+        "tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs"
+      ],
+      "reason": "2026-08-03 两击真机边车把失败推进并定位为 RAW_AXES_PROJECTION_FAILED。代码与独立纯内存探针证实 buildAxesInput 把 allStepIds 建成 Array，而 canonical projectReplayAxes 对非空 firingStepId 调 Set.has；既有金牌因 projector 替身或 firingStepId 空值短路而假绿。本次新增 A8：createRawAxesAdapter 真驱 canonical projector、提交非空 firingStepId 网络记录，并同时钉 Set 形状、网络归因、verdict 恰一次与 adapter ok:true。实现前 7/1 exit 1，红证见新契约 accept/red-baseline.txt；断言只加严不放松。",
+      "signedBy": "PENDING_STEVEN"
     }
   ],
   "observability": [
@@ -253,7 +262,7 @@
         "node tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-28T09:30:36.121Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T03:17:06.561Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-raw-source-replay",
@@ -268,7 +277,7 @@
         "node tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-28T09:30:39.287Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T03:17:07.154Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-resolved-atom-roundtrip",
@@ -280,7 +289,7 @@
         "node tests/_golden/teachin-replayability-atom-roundtrip.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-28T09:30:43.662Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T03:17:07.513Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-semantic-receipt-equivalence",
@@ -297,7 +306,7 @@
         "node tests/_golden/teachin-replayability-equivalence-evidence.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-28T09:31:27.350Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T03:17:24.626Z 全部 acceptance exit 0"
     },
     {
       "id": "s5-orchestration-boundary",
@@ -317,7 +326,7 @@
         "node tests/_golden/teachin-replayability-review-hardening.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-28T09:32:00.955Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T03:17:36.979Z 全部 acceptance exit 0"
     },
     {
       "id": "s6-adjacent-structure",
@@ -328,7 +337,7 @@
         "node tests/_golden/teachin-replayability-adjacent.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-07-28T09:32:15.730Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T03:17:37.143Z 全部 acceptance exit 0"
     }
   ],
   "notes": "acceptance 于 2026-07-28 初冻：30 枚新能力金牌实现前全部真实 exit 1（红因均为计划内生产模块缺席的行为级红，非 marker 假红；28 枚红证由上一轮采集，cycle-entry 与 entity-verification 两枚本轮补采），邻接金牌与 22 条现役零 SUT 命令保持绿（见 adjacent.green.txt 与 adjacent-full.green.txt）。红绿判定只信退出码。zero-SUT 绿只是必要条件：真实 AI 中台/医生站/Hi 小助 browser 生命周期、双回放独立 fresh runtime 与正式 draft/sign/replay/verdict/report 全部 route:human（见 observability），技术 CLEAN/REPRODUCED/EQUIVALENT 不冒充正式 PASS。passes 只由 gate 写入；冻结件后续变化必须走 checksumAmendments 修单路径与 ADR-0004 重签。",

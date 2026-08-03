@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-cycle-axes-step-set（full）：后继修单。修复 raw axes producer 把 allStepIds 组装为 Array、而 canonical projectReplayAxes 要求 Set 的生产接缝协议失配。真实 firingStepId 网络记录必须越过 axes 投影并进入 frozen verdict。现役 owner 金牌由 loop/prd-teachin-replayability-closure.json 唯一冻结；本 PRD 只冻结本后继修单的计划与红证，避免给同一金牌建立第二把 checksum 锁。",
+  "specPath": "docs/plans/teachin-cycle-axes-step-set/plan.md",
+  "testChecksums": {
+    "docs/plans/teachin-cycle-axes-step-set/GRILL.md": "9b93d07d175bfefdfb7215b963577b219df577554e3adf9ab7a10a643561b2c2",
+    "docs/plans/teachin-cycle-axes-step-set/plan.md": "001d00a77e6e1063b869296d98c83d11640f9fe5fee64ed16a98eebe88622eca",
+    "docs/plans/teachin-cycle-axes-step-set/accept/red-baseline.txt": "c02df34298a5813834a4d755a1e8513ddfa29497e3c98c4cf8c97aa72ff7160f"
+  },
+  "observability": [
+    {
+      "dimension": "owner 金牌 checksum amendment 人签；当前 loop/prd-teachin-replayability-closure.json 记 PENDING_STEVEN，签前不得宣称完成。",
+      "route": "human"
+    },
+    {
+      "dimension": "最终码上重跑 tc_wf_list_smoke 两击真实 cycle；只有 cycle exit 0 与同次证据成立才算技术闭环。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-canonical-axes-step-set",
+      "title": "S1 canonical raw-axes 接缝红先行翻绿",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-08-03T03:18:27.777Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacent-zero-regression",
+      "title": "S2 cycle 与相邻生产接缝零回归",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-adjacent.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-raw-actionability.zero-sut.golden.mjs",
+        "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-08-03T03:18:40.196Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-repo-drift-and-terms",
+      "title": "S3 全仓冻结件零漂移与术语检查",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry"
+      ],
+      "evidence": "gate@2026-08-03T03:18:41.034Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "A1 红基线已在 dev@51f2912 实跑：7 过 / 1 败，exit 1；唯一失败为 adapter 交给 canonical projector 的 allStepIds 不是 Set。实际验收金牌的 checksum 唯一归 owner PRD 管理，本 PRD 不重复冻结它。passes 只由 gate 写。",
+  "openIssues": []
+}

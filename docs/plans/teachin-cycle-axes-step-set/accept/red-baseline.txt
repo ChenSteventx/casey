@@ -1,0 +1,6 @@
+command: node tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs
+exit: 1
+result: 7 passed / 1 failed
+failure: A8 非空 firingStepId 经 adapter 真穿 canonical projector 并归因
+detail: adapter 给 canonical projector 的 allStepIds 必须是 Set
+baselineCommit: 51f29122e445fb1164d44afdba673dcd6fb8fbee
