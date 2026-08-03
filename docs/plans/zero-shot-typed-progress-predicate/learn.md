@@ -23,8 +23,22 @@
 
 ## 状态口径（Steven 2026-08-03 令：一定是实机跑过才算通过）
 
-本契约现状 = **机器门禁绿**（金牌 24/24、gate 5/5、异构评审 APPROVE）。
-「通过」待真机切片 1 实跑背书：`urlPathname` 判据正控 + `roleVisible`/`roleHidden` 在真机的
-实际行为记录（探针已证 `redactionSuppressed` 非零是真机常态，读目录判据将按设计拒付——
-按设计拒也是实测结论，如实入档）。真机运行纪律：autotest 账户、只读、`maxCandidates` 显式传
-500、凭据零泄漏、证据落 `runs/`。
+本契约现状 = **机器门禁绿**（金牌 24/24、gate 5/5、异构评审终局 `APPROVE`）。
+
+**真机切片 1 已实跑**（2026-08-03，autotest 只读、零 mutation，证据
+`runs/zero-shot-slice1-20260803/`）。实测结论：
+
+- 通到哪：eligibility（zero-hit 非 known-atom 压制）→ 契约冻结 → 真实观测
+  （`maxCandidates:500`、不截断）→ 确定性解析 `resolved` 全部真机通过；
+- 卡在哪：admission 拒 `ACTION_TARGET_NOT_READ_SAFE`——只读白名单要求链接名含只读标记，
+  三条路由的真机导航链接全是纯业务名词，可动作面为 0；`verifyStepProgress` 正向路径
+  **真机零覆盖**（fail-closed 实拒本身已实证两处）；
+- 判据本体真机成立：详情页 `matched 1 / pageCount 1 / visible true`、列表页 0 条——
+  真实因果差存在；`actionReceipt` 权威链不可绕（直调如设计拒 `ACTION_RECEIPT_AUTHORITY_INVALID`）。
+
+**订正一条先前错误断言**：此前记「探针已证 `redactionSuppressed` 非零是真机常态」——错。
+探针当时该字段不存在，2/4 是把脱敏抑制与无名丢弃混算的代用值；实跑真字段：两个业务页均为
+**0**（完整性闸放行），登录落地页为 1。凡引用旧值的推论均按此重估。
+
+**通过判定**：未达。正向进展链真机零覆盖，卡点是 `read-safe` 白名单范围——演进路线归
+Steven 裁（人签名单通道 / 接受挂账 / 先探更多路由）。

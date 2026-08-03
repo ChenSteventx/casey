@@ -39,9 +39,14 @@
    sha256 实物一致、复核方自跑 24/24 exit 0）。收据齐存 `reviews/`，audit.jsonl 有机读记录。
    五个本地提交 `15721ff` / `446881b` / `981b4a3` / `e6e7ea1` / `e752418`，按 Steven
    「APPROVE 后合入」授权合入**本地 dev**；未 push、未 rebase、主树未提交内容一字未动。
-   **状态口径（Steven 2026-08-03 令：一定是实机跑过才算通过）**：本契约 = 机器门禁绿；
-   「通过」待真机切片 1 实跑背书（真机探针已证 `redactionSuppressed` 非零是常态，
-   读目录判据将按设计拒付，如实入档不改口径）。
+   **状态口径（Steven 2026-08-03 令：一定是实机跑过才算通过）**：本契约 = 机器门禁绿。
+   **真机切片 1 已实跑**（autotest 只读零 mutation，证据 `runs/zero-shot-slice1-20260803/`）：
+   eligibility→契约冻结→观测（500 不截断）→确定性解析 `resolved` 真机全通，卡在 admission
+   拒 `ACTION_TARGET_NOT_READ_SAFE`——只读白名单在三条路由零可动作面（真机导航链接全是
+   纯业务名词），`verifyStepProgress` 正向路径真机零覆盖；判据本体真机成立（详情页
+   `matched 1/pageCount 1/visible true` 对列表页 0 的真实因果差）。**订正**：先前记
+   「`redactionSuppressed` 非零是真机常态」为误（探针代用值口径），实跑真字段两业务页均 0、
+   登录落地页 1。通过判定未达，卡点为 `read-safe` 白名单范围，演进路线待 Steven 裁。
 6. **开口项（如实挂账，勿当已覆盖）**：
    - 删 `pageCount === 1` 金牌仍不红——收敛后该状态经生产路径不可达（由 P21 钉住），
      属已知**测试不可达面**；
