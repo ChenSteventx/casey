@@ -8,7 +8,8 @@
 1. 现役三例没有可证明「本轮创建、本轮删除」的完整生产链；旧删除先例不能覆盖当前件。
 2. `destructiveContinuityByStep` 的既有 fail-closed 骨架不能凭空得到本轮 observation；缺 ref 时拒绝是
    正确行为，不能为了跑通而关门。
-3. `workflow.create` 当前存在 source 观察与 subject 准入角色冲突，happy path 结构不可达。
+3. `workflow.create` 当前存在 observation registry 的 source 与 side-effect policy/draft/sign 的
+   subject 冲突，happy path 结构不可达；现役人签策略明确且内部一致的是 subject。
 4. 三例周期运行若继续使用默认固定 `r1` 名称，会把上轮残留与本轮对象混在一起。
 5. Tier2 当前允许业务性非 PASS 作为「管线已完整运行」继续聚合；因此清理义务必须有独立
    `cleanupSatisfied` 门，不能从 verdict 类型推断。
@@ -20,19 +21,22 @@
 ### D1. v3 锁签 runtime platformId 吗？
 
 不签。签署发生时，新一轮对象尚不存在；预签 ID 只能是旧 ID 或猜测。v3 只签精确字节下的
-create/source → delete/subject **结构授权边**、身份通道、名称模板与一次消费约束。当轮 ID 必须在
+create/subject → delete/subject **结构授权边**、身份通道、名称模板与一次消费约束。当轮 ID 必须在
 create 后从完整 listApi 读回，并只在同 run 内消费。
 
 否决：把 compile 读到的 ID 冻结给 replay；把旧 frozen ID 写进 manifest；按名称临时补 ref。
 
 ### D2. workflow.create 的 source/subject 冲突怎么解？
 
-通过人签策略 amendment 把 `workflow.create.identityBindingRoles` 与派生 `requiredRoles` 精确改为
-`['source']`。delete 保持 `subject`，由 v3 边显式连接。不能使用 `['subject','source']`，也不能接受
-「任一角色」，否则同一候选可绕过精确角色语义。
+保持现役 side-effect policy、`requiredFlowEntityBindings`、draft/sign 权威的
+`workflow.create=['subject']` 不变；最小修改 observation registry，使 workflow.create 观察也精确要求
+`['subject']`。create 与 delete 的同一对象关系由 v3 ownership lineage（candidate/step/run + 当轮
+observation）表达，不需要把 create 角色命名为 source。
 
-换签前继续 fail-closed；不得由实现者代签。只处理本闭环需要的 `workflow.create`，不借机扩大
-`workflow.open` 或未知原子的权限。
+不能使用 `['subject','source']`，也不能接受「任一角色」。本次调和只适用于单实体 create/delete；
+`workflow.bindAgent` 等 relation 原子的 `source + target` 双锁保持原语义，缺任一角色或交换角色继续拒绝。
+`workflow.open` 与未知原子的策略不借机扩大。旧 C2 owner 金牌/checksum 通过 successor amendment
+重钉，不改 side-effect policy 的人签权威。
 
 ### D3. runtime ID 从哪里来？
 
@@ -83,7 +87,7 @@ compile 各自完成「建→读→guard→删→稳定缺席」；正式 replay
 
 ## 三、最小反例集
 
-- create/source 被换回 subject、双角色、缺角色或候选交换；
+- create 使用 source、双角色、缺 subject 或候选交换；relation 原子缺 source/target 任一或交换角色；
 - 旧 fixed ID、compile ID 被 replay 复用、跨 run/case ref、ref 重复消费；
 - 同名两条、分页不全、ID 被 Number 化、profile/scope/request correlation 漂移；
 - mutation URL 与 body ID 不同、缺 ID、多个 ID、错 ID，均须证明请求零放行；
@@ -95,11 +99,13 @@ compile 各自完成「建→读→guard→删→稳定缺席」；正式 replay
 
 必须由人完成的签署/见证：
 
-1. `workflow.create` source 角色策略 amendment；
-2. 三条精确 flow/TestCase 的一次性 compile-execute 授权；
-3. 三份 v3 locks、expected 与 fresh Tier2 manifest；
-4. fresh 五成员同批 Tier2 的录像、报告、三条 cleanup receipt 与残留扫描；
-5. 最终 P9 UAT signoff。
+1. 三条精确 flow/TestCase 的一次性 compile-execute 授权；
+2. 三份 v3 locks、expected 与 fresh Tier2 manifest；
+3. fresh 五成员同批 Tier2 的录像、报告、三条 cleanup receipt 与残留扫描；
+4. 最终 P9 UAT signoff。
+
+observation registry 的 subject 修正须经旧 C2 owner checksum amendment、四枚 successor ATDD 与异构
+评审核销；它不是 side-effect policy 的人签换面，后者保持原字节与原语义。
 
 人签前，机器只能做计划、ATDD 红证、纯函数实现与 fail-closed 验证；不能把旧签字挪用到新的 mutation
 边。所有留证脱敏，禁止落真实目标、身份值、URL 或凭据。
@@ -107,7 +113,7 @@ compile 各自完成「建→读→guard→删→稳定缺席」；正式 replay
 ## 五、完成口径
 
 successor 机器实现完成不等于 P9 完成。只有四枚最小 ATDD 绿、邻接与 gate 绿、异构评审通过、三次
-fresh compile 真闭合、策略/v3 locks/manifest 人签、fresh 五成员同批 Tier2 exit 0、三条
+fresh compile 真闭合、registry role 修正核销、v3 locks/manifest 人签、fresh 五成员同批 Tier2 exit 0、三条
 `cleanupSatisfied:true`、录像/报告/残留扫描和最终签认全部在册，才可宣布本闭环完成。
 
 任何 open/pending、人签缺席、同 ID 稳定缺席不足或仅有旧固定-ID R5 证据，P9 都保持 open。

@@ -27,7 +27,7 @@ P9 的三条变更型用例：
 v3 冻结锁只签**结构授权边**，绑定精确字节的 TestCase、flow、events、身份通道剖面与下列闭合关系：
 
 1. 哪一条 `workflow.create` 步骤获准创建本轮对象；
-2. create 的 `source` 候选与哪一条 `workflow.deleteByName` 的 `subject` 候选是同一条生命周期边；
+2. create 的 `subject` 候选与哪一条 `workflow.deleteByName` 的 `subject` 候选是同一条生命周期边；
 3. 哪个 `workflows.listApi` 通道获准在 create 后读回、delete 后验空；
 4. 哪个 delete 步骤获准消费该运行时观察，且只允许一次；
 5. 本轮 `uniqueNameToken` 的注入位置、名称模板与 lineage 字段必须来自已签结构，运行时只能填值，
@@ -49,18 +49,24 @@ observation、跨 run ref 或按名称补猜都拒绝。
 
 ## 3. workflow.create 角色冲突调和
 
-当前 happy path 不可达：C2 的 created-in-run 观察武装要求 `workflow.create` 为 `source`，而人签
-准入策略仍要求 `subject`。本契约通过**显式换签**调和，不接受「subject/source 任一」的松口：
+当前 happy path 不可达：C2 的 observation registry 要求 `workflow.create` 为 `source`，而现役
+side-effect policy、`requiredFlowEntityBindings`、draft 校验与人签权威均精确要求 `subject`。
+本契约采用最小且语义一致的调和：
 
-- 人签冻结策略中，`workflow.create.identityBindingRoles` 与派生 `requiredRoles` 精确改为
-  `['source']`；结构性变更仍为 entity mutation，非实体持久副作用语义不改；
-- flow bridge、compile draft 与 sign 冻结件对 create 精确使用一条 `source` 绑定；
-- delete 仍精确使用 `subject`；v3 结构边把 create/source 显式连到 delete/subject；
+- side-effect policy 中 `workflow.create.identityBindingRoles:['subject']` 及派生
+  `requiredRoles:['subject']` 保持不变；不换签、不放宽该权威；
+- 把 observation registry 的 `workflow.create.requiredRoles` 从 `['source']` 改为
+  `['subject']`，compile 观察行、flow bridge、draft 与 sign 全部精确使用一条 `subject` 绑定；
+- delete 仍精确使用 `subject`；v3 结构边通过 candidate/step/run ownership lineage 把
+  create/subject 连到 delete/subject，证明「删的是本轮由该 create 产生的对象」不依赖把角色命名为
+  source；
+- `workflow.bindAgent` 等 relation 原子的 `source + target` 双锁语义一字不动，不得把本次单实体
+  ownership 调和推广为关系原子的单 subject；
 - 不顺带修改 `workflow.open`，除非独立验收证明它是三例闭环的必要组成；未登记/旧件仍按现役
   fail-closed 规则处理。
 
-最小正控必须走真实生产纯层/CLI 接缝：三例 flow 的 create/source → compile 准入 → draft →
-sign v3 冻结成功；把 create 改回 subject、双角色、漏角色或交换候选必须逐一红。该正控只证明
+最小正控必须走真实生产纯层/CLI 接缝：三例 flow 的 create/subject → compile 准入 → draft →
+sign v3 冻结成功；把 create 改成 source、双角色、漏角色或交换候选必须逐一红。该正控只证明
 结构可签，不替代真机运行。
 
 ## 4. compile 面：每例本轮创建、本轮读回、本轮清理
@@ -159,8 +165,9 @@ receipt；恢复成功只清偿残留，不追认原 run 通过。
    - 合法 SUT_DEFECT/NEEDS_HUMAN 但 cleanup 缺失或 false 时 batch 必非零；
    - 新 batch token、三例派生唯一名、receipt→聚合 lineage 均须闭合。
 4. `tests/_golden/p9-created-workflow-continuity-v3.role-compile-sign.zero-sut.golden.mjs`
-   - 三例 create/source + delete/subject 的 v3 结构边可经 flow→compile→sign 正向冻结；
-   - subject/source 冲突、任一角色缺失、双角色、候选交换、events/profile 字节变更均 fail-closed；
+   - 三例 create/subject + delete/subject 的 v3 ownership 结构边可经 flow→compile→sign 正向冻结；
+   - create/source、任一角色缺失、双角色、候选交换、events/profile 字节变更均 fail-closed；
+   - `workflow.bindAgent` 的 source/target 双锁正控继续绿，交换/缺任一角色继续红；
    - v1/v2 旧锁不能冒充 v3 正控。
 
 四枚测试都须留下未实现基线的真实 exit 非零证据、sha256 冻结进 successor PRD；实现后由 gate
@@ -170,7 +177,8 @@ Tier2 selftest、term-lint、drift scan 与 tier1。
 ## 11. 交付顺序
 
 1. acceptance-gate：四枚 ATDD 红证、checksum、successor PRD、`gate --dry`；
-2. 角色换签包：策略权威源 amendment、旧字节归档、create/source 正控；Steven 人签后才实现消费；
+2. 角色调和：只修改 observation registry 与其 owner 冻结金牌/checksum amendment，增加
+   create/subject 正控；side-effect policy 人签权威保持原字节与原语义；
 3. v3 结构锁 + sign/reader/preflight，旧 v1/v2 reader 行为不放宽；
 4. compile 面：create 后完整读回、当轮 ref、出站 guard、稳定缺席；
 5. replay 面与 `projectReplayAxes → verdict → report` 深消费；
@@ -184,8 +192,8 @@ Tier2 selftest、term-lint、drift scan 与 tier1。
 
 - 三例各一次 fresh compile-execute 授权；每次授权只绑定精确 flow/TestCase 字节与本次 compile，
   不授权正式 replay 或重复 mutation；
-- Steven 对 workflow.create 的 source 角色策略 amendment、人签 v3 entity locks、三例 expected 与
-  Tier2 suite manifest；
+- Steven 人签 v3 entity locks、三例 expected 与 Tier2 suite manifest；observation registry 的
+  subject 角色修正及旧 owner checksum amendment 另按 acceptance/review 证据核销，不冒充人签策略换面；
 - 真机 compile 三轮与正式五成员同批 batch 的逐轮录像/报告过目；
 - 正式 batch 后按同 ID 证据与安全前缀做残留扫描，三例均须零活跃残留；
 - fresh 五成员同批 Tier2 exit 0，且三条变更型 receipt 的 `cleanupSatisfied:true` 逐项核对；
