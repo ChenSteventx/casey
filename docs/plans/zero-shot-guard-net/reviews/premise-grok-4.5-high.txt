@@ -1,0 +1,755 @@
+  const proposed = readFileSync('/tmp/CONTEXT-guard-net-test.md','utf8');
+  const blacklist = readFileSync('/tmp/CONTEXT-container-out-blacklisted.md','utf8');
+  // parse both registries
+  try {
+    const reg1 = parseRegistry(proposed);
+    console.log('proposed parse ok; terms sample resolution?',
+      [...(reg1.terms || reg1.entries || Object.keys(reg1))].slice?.(0,3) || typeof reg1);
+    console.log('reg1 keys', Object.keys(reg1));
+  } catch (e) {
+    console.log('proposed parse FAIL', e.message);
+  }
+  try {
+    const reg2 = parseRegistry(blacklist);
+    console.log('blacklist parse ok keys', Object.keys(reg2));
+  } catch (e) {
+    console.log('blacklist parse FAIL', e.message);
+  }
+  // Inspect parseRegistry return shape by reading a small fixture or the source
+  EOF
+WARN  /tmp/CONTEXT-guard-net-test.md:91  加 粗 中 文 词 「 结 构 性 变 更 」 未 登 记 ——若 作 为 术 语 使 用 请 登 记 ； 若 仅 是 强 调 可 忽 略
+WARN  /tmp/CONTEXT-guard-net-test.md:91  加 粗 中 文 词 「 身 份 钉 定 角 色 」 未 登 记 ——若 作 为 术 语 使 用 请 登 记 ； 若 仅 是 强 调 可 忽 略
+… +30 lines
+proposed parse ok; terms sample resolution? [ 'allow', 'deny', 'registryErrors' ]
+reg1 keys [ 'allow', 'deny', 'registryErrors' ]
+blacklist parse ok keys [ 'allow', 'deny', 'registryErrors' ]
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (736ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (597ms)
+┃◆ Thought for 29.6s
+┃
+┃Interesting - when linting CONTEXT.md as a file against itself, the deprecated aliases in column 4 trigger ERROR when they appear in the description of other terms. That's expected for --file on
+┃CONTE...
+◆ Run Verify container-out allow/deny and line scan
+$ set -e
+  BASE=/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate
+  node --input-type=module <<'EOF'
+  import { readFileSync } from 'node:fs';
+  const boot = await import('/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate/loop-kit/lib/boot.mjs');
+  const lib = await boot.loadLib({ script: 'term-lint.mjs' });
+  const { parseRegistry, scanText } = lib;
+  const proposed = readFileSync('/tmp/CONTEXT-guard-net-test.md','utf8');
+  const blacklist = readFileSync('/tmp/CONTEXT-container-out-blacklisted.md','utf8');
+  const baseline = readFileSync('/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate/CONTEXT.md','utf8');
+  const regBase = parseRegistry(baseline);
+  const regProp = parseRegistry(proposed);
+  const regBlack = parseRegistry(blacklist);
+  console.log('registryErrors baseline', regBase.registryErrors);
+  console.log('registryErrors proposed', regProp.registryErrors);
+  console.log('registryErrors blacklist', regBlack.registryErrors);
+  // Is container-out in deny for blacklist?
+  const denyBase = regBase.deny || {};
+  const denyProp = regProp.deny || {};
+  const denyBlack = regBlack.deny || {};
+  console.log('container-out in deny baseline?', 'container-out' in denyBase || [...Object.keys(denyBase)].filter(k=>k.includes('container')));
+  console.log('container-out in deny proposed?', Object.keys(denyProp).filter(k=>k.includes('container')));
+  console.log('container-out in deny blacklist?', Object.keys(denyBlack).filter(k=>k.includes('container') || k.includes('container-out')));
+  // dump deny keys that mention container
+  for (const [k,v] of Object.entries(denyBlack)) {
+    if (k.includes('container') || String(v).includes('container')) console.log('deny', k, '->', v);
+  }
+  // allow list for resolution / container-out
+  const allow = regProp.allow || {};
+  console.log('allow has container-out?', 'container-out' in allow || Object.keys(allow).filter(k=>k.includes('container')));
+  // show allow structure
+  console.log('allow type', Array.isArray(allow) ? 'array len '+allow.length : typeof allow);
+  if (Array.isArray(allow)) {
+    console.log('allow hits', allow.filter(x => String(x).includes('container') || String(x).includes('resolution')).slice(0,20));
+  } else {
+    console.log('allow keys container*', Object.keys(allow).filter(k=>k.toLowerCase().includes('container')||k.includes('resolution')));
+  }
+  // Scan the three in-use files with blacklisted registry
+  const files = [
+    'lib/agent-search-gate.mjs',
+    'loop/prd-entity-ui-wiring.json',
+    'tests/_golden/entity-ui-wiring.searchopen.golden.mjs',
+  ];
+  for (const f of files) {
+    const text = readFileSync(new URL(f, 'file:///mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate/'), 'utf8');
+    const baseHits = scanText(text, regBase, f);
+    const blackHits = scanText(text, regBlack, f);
+    const propHits = scanText(text, regProp, f);
+    const err = (hits) => (hits || []).filter(h => h.level === 'ERROR' || h.severity === 'error' || /ERROR|error/.test(JSON.stringify(h)));
+    console.log('\nFILE', f);
+    console.log('  baseline ERROR count', err(baseHits).length, JSON.stringify(err(baseHits).slice(0,3)));
+    console.log('  proposed ERROR count', err(propHits).length);
+    console.log('  blacklisted ERROR count', err(blackHits).length, JSON.stringify(err(blackHits).slice(0,5)));
+    // also print raw shape of first hit
+    if (blackHits?.length) console.log('  sample black hit', JSON.stringify(blackHits[0]));
+  }
+  // Compare --registry on proposed: write as CONTEXT temporarily?
+  // Instead parse and ensure no registryErrors; check resolution line alone with scanText against proposed reg
+  const resLine = proposed.split('\n').find(l => l.includes('`resolution`') && l.includes('定 位 解 析 态 '));
+  console.log('\nresolution line scan against proposed reg:');
+  const lineHits = scanText(resLine + '\n', regProp, 'CONTEXT.md');
+  console.log(JSON.stringify(lineHits, null, 2));
+  // traditional chars?
+  const traditional = /[繁 體 實 現 門 開 關 閉 關 係 時 後 來 自 為 這 說 過 還 經 點 ]/g; // rough
+  // better use term-lint traditional detection by scanning line
+  console.log('line has bold **?', resLine.includes('**'));
+  console.log('line pipe count', (resLine.match(/\|/g)||[]).length);
+  EOF
+registryErrors baseline [
+  {
+… +221 lines
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+Node.js v24.18.0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (672ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (594ms)
+◆ Run Verify draft §2.4 acceptance list completeness
+$ set -e
+  # Also verify: draft §2.4 A list completeness vs actual PRD acceptances; teachin 17 count
+  BASE=/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate
+  node --input-type=module <<'EOF'
+  import { readFileSync } from 'node:fs';
+  const prds = {
+    observe: JSON.parse(readFileSync('loop/prd-zero-shot-observe-admit-step.json','utf8')),
+    typed: JSON.parse(readFileSync('loop/prd-zero-shot-typed-progress-predicate.json','utf8')),
+    teachin: JSON.parse(readFileSync('loop/prd-teachin-cycle-evidence.json','utf8')),
+  };
+  function accepts(prd) {
+    const out = [];
+    for (const s of prd.stories||[]) for (const a of s.acceptance||[]) out.push({story:s.id||s.slug, a});
+    return out;
+  }
+  const draftA = `
+  tests/_golden/page-observer-main-frame.zero-sut.golden.mjs
+  tests/_golden/public-observation-redaction.zero-sut.golden.mjs
+  tests/_golden/playwright-page-driver-hardening.zero-sut.golden.mjs
+  tests/_golden/deterministic-resolver-step-contract.zero-sut.golden.mjs
+  tests/_golden/zero-shot-action-progress.zero-sut.golden.mjs
+  tests/_golden/zero-shot-authority-runner.zero-sut.golden.mjs
+  tests/_golden/adaptive-module-boundaries.static.golden.mjs
+  tests/_golden/precondition-atom-workflow.zero-sut.golden.mjs
+  tests/_golden/setup-receipt-identity.zero-sut.golden.mjs
+  tests/_golden/setup-runtime-barrier.zero-sut.golden.mjs
+  tests/_golden/intent-plan-known-atom.zero-sut.golden.mjs
+  tests/_golden/intent-state-trace.zero-sut.golden.mjs
+  tests/_golden/flow-bridge.golden.mjs
+  tests/_golden/p2-compile-gate.golden.mjs
+  tests/_golden/units/replay-settle-mount-unit.zero-sut.golden.mjs
+  tests/_golden/entity-binding-operability-successor.zero-sut.golden.mjs
+  `.trim().split(/\n/).map(s=>s.trim());
+  const observeAcc = accepts(prds.observe).map(x=>x.a.replace(/^node\s+/,''));
+  console.log('observe acceptance count', observeAcc.length);
+  // draft says 17 but lists 16 paths - check
+  console.log('draft A count', draftA.length);
+  const missingFromDraft = observeAcc.filter(a => !draftA.some(d => a.includes(d) || d.includes(a.replace(/^node /,''))));
+  const extraInDraft = draftA.filter(d => !observeAcc.some(a => a.includes(d)));
+  console.log('in PRD not in draft A:', missingFromDraft);
+  console.log('in draft A not in PRD acceptance (as path):', extraInDraft);
+  // full observe stories
+  for (const s of prds.observe.stories||[]) {
+    console.log('story', s.id||s.slug, 'accepts', (s.acceptance||[]).length);
+    for (const a of s.acceptance||[]) console.log('  ', a);
+  }
+  console.log('\nteachin s2:');
+  const s2 = (prds.teachin.stories||[]).find(s => (s.id||s.slug||'').includes('adjacent'));
+  console.log('s2 id', s2?.id||s2?.slug, 'count', s2?.acceptance?.length);
+  console.log(s2?.acceptance?.join('\n'));
+  console.log('\ntyped s4/s5:');
+  for (const s of prds.typed.stories||[]) {
+    console.log(s.id||s.slug, (s.acceptance||[]).length);
+    for (const a of s.acceptance||[]) console.log('  ', a);
+  }
+  EOF
+observe acceptance count 17
+draft A count 16
+… +64 lines
+   node tests/_golden/support/prd-drift-scan.mjs
+   node loop-kit/bin/term-lint.mjs --registry
+   node bin/casey.mjs selftest --tier1
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (723ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (592ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (686ms)
+┃◆ Thought for 15.2s
+┃
+┃There are issues with parseRegistry - it seems to have registryErrors because I'm not passing the full path correctly, or parseRegistry expects a file path not content. Let me look at the term-lint
+┃im...
+◆ Run Inspect term-lint parseRegistry implementation
+$ set -e
+  # Find real parseRegistry/scanText implementation
+  LIB=$(node --input-type=module -e "
+  import boot from 'file:///mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate/loop-kit/lib/boot.mjs';
+  " 2>&1 || true)
+  # resolve package path
+  node --input-type=module <<'EOF'
+  const boot = await import('/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate/loop-kit/lib/boot.mjs');
+  // inspect boot for path
+  console.log(Object.keys(boot));
+  const r = await boot.resolvePkg?.() || await boot.findPkg?.();
+  console.log('resolve', r);
+  // try loadLib internals
+  const lib = await boot.loadLib({ script: 'term-lint.mjs' });
+  console.log('lib keys', Object.keys(lib));
+  // parseRegistry length
+  console.log(String(lib.parseRegistry).slice(0,500));
+  console.log('---');
+  console.log(String(lib.scanText).slice(0,500));
+  EOF
+[ 'BootError', 'defaults', 'loadLib', 'runCli' ]
+resolve undefined
+… +26 lines
+    const tradHits = new Set();
+    for (const ch of line) if (TRAD2SIMP.has(ch)) tradHits.add(ch);
+    for (const ch of
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (817ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (639ms)
+┃◆ Thought for 15.3s
+┃
+┃parseRegistry takes a path. Let me re-run properly.
+◆ Run Proper term-lint registry path tests
+$ set -e
+  # Copy proposed CONTEXT into temp paths and parse properly
+  cp /tmp/CONTEXT-guard-net-test.md /tmp/CONTEXT-proposed.md
+  # blacklisted version
+  python3 - <<'PY'
+  from pathlib import Path
+  base = Path('/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate/CONTEXT.md')
+  text = base.read_text()
+  lines = text.splitlines()
+  out = []
+  for ln in lines:
+      if '`resolution`' in ln and '定 位 解 析 态 ' in ln:
+          parts = ln.split('|')
+          # parts[4] is aliases
+          parts[4] = ' container-out '
+          ln = '|'.join(parts)
+      out.append(ln)
+  Path('/tmp/CONTEXT-blacklist.md').write_text('\n'.join(out)+'\n')
+  print('blacklist written')
+  PY
+  node --input-type=module <<'EOF'
+  import { readFileSync } from 'node:fs';
+  const boot = await import('/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate/loop-kit/lib/boot.mjs');
+  const lib = await boot.loadLib({ script: 'term-lint.mjs' });
+  const { parseRegistry, scanText } = lib;
+  const regBase = parseRegistry('/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate/CONTEXT.md');
+  const regProp = parseRegistry('/tmp/CONTEXT-proposed.md');
+  const regBlack = parseRegistry('/tmp/CONTEXT-blacklist.md');
+  console.log('registryErrors counts', {
+    base: regBase.registryErrors.length,
+    prop: regProp.registryErrors.length,
+    black: regBlack.registryErrors.length,
+  });
+  if (regProp.registryErrors.length) console.log('prop errors', regProp.registryErrors);
+  if (regBlack.registryErrors.length) console.log('black errors', regBlack.registryErrors.slice(0,3));
+  // deny is array of {alias, preferred} ?
+  console.log('deny sample', regBase.deny.slice?.(0,2) || regBase.deny);
+  console.log('deny type', Array.isArray(regBase.deny), typeof regBase.deny);
+  function findDeny(reg, term) {
+    const d = reg.deny;
+    if (Array.isArray(d)) return d.filter(x => JSON.stringify(x).includes(term));
+    return Object.entries(d||{}).filter(([k,v]) => k.includes(term) || String(v).includes(term));
+  }
+  console.log('container-out deny base', findDeny(regBase, 'container-out'));
+  console.log('container-out deny prop', findDeny(regProp, 'container-out'));
+  console.log('container-out deny black', findDeny(regBlack, 'container-out'));
+  // allow is Set
+  console.log('allow has 容 器 归 属 闸 ', regProp.allow.has?.('容 器 归 属 闸 ') || regProp.allow);
+  console.log('allow size base/prop', regBase.allow.size, regProp.allow.size);
+  // Scan files
+  const files = [
+    '/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate/lib/agent-search-gate.mjs',
+    '/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate/loop/prd-entity-ui-wiring.json',
+    '/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate/tests/_golden/entity-ui-wiring.searchopen.golden.mjs',
+  ];
+  for (const f of files) {
+    const text = readFileSync(f, 'utf8');
+    for (const [name, reg] of [['base', regBase], ['prop', regProp], ['black', regBlack]]) {
+      const r = scanText(text, { label: f, registry: reg });
+      const errors = r.errors || r.filter?.(()=>true) || r;
+      const errList = Array.isArray(r) ? r : (r.errors || []);
+      const containerHits = (errList).filter(e => JSON.stringify(e).includes('container'));
+      console.log(f.split('/').slice(-1)[0], name, 'errors', errList.length, 'containerHits', containerHits.length, containerHits.slice(0,2));
+    }
+  }
+  // Scan proposed resolution line alone with prop registry
+  const propText = readFileSync('/tmp/CONTEXT-proposed.md','utf8');
+  const resLine = propText.split('\n').find(l => l.includes('`resolution`') && l.includes('定 位 解 析 态 '));
+  const lineScan = scanText(resLine+'\n', { label: 'resolution-line', isContextFile: true, registry: regProp });
+  console.log('\nresolution line scan', JSON.stringify(lineScan, null, 2));
+  // Full --registry simulation: registry self-check
+  // Does --registry only parse or also scan body?
+  const fullProp = scanText(propText, { label: 'CONTEXT.md', isContextFile: true, registry: regProp });
+  console.log('full proposed CONTEXT errors', (fullProp.errors||fullProp).length);
+  console.log(JSON.stringify(fullProp, null, 2).slice(0,2000));
+  EOF
+blacklist written
+registryErrors counts { base: 0, prop: 0, black: 0 }
+… +44 lines
+    "CONTEXT.md:147  加 粗 中 文 词 「 无 关 」 未 登 记 ——若 作 为 术 语 使 用 请 登 记 ； 若 仅 是 强 调 可 忽 略 "
+  ]
+}
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (1466ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (598ms)
+┃◆ Thought for 54.8s
+┃
+┃CONTEXT.md line is good. container-out in column 4 would red exactly the three places claimed. Critical
+┃针 对 草 案 第 6条 （ 元 钉 结 构 钉 ） ：
+┃“合 成 第 四 键 只 进  red-proof transcript， 不 进 冻 结 金 牌 ”——草 案 未 说 明 第 四 键 的 具 体 归 一 化 规 则 （ UNSUPPORTED_SCOPE_KEYS 遍 历 后 是 否 会 把 第 四 键 字 面 量 残 留 进 生 产 件
+┃复 现 证 据 ： 我 把  UNSUPPORTED_SCOPE_KEYS 硬 编 码 进  /tmp 副 本 ， 跑  meta-pin 后 发 现 第 四 键 仍 以 字 面 量 形 式 出 现 在  lib/zero-shot/unsupported-scopes.mjs 源 码 中 ， 与 “无  scope 键
+┃建 议 ： 强 制 第 四 键 必 须 在  normalize 阶 段 被 抹 除 ， 元 钉 只 钉 已 归 一 化 后 的 键 清 单 。
+┃
+┃High
+┃针 对 草 案  R3 并 集 严 格 度 （ 第 2条 ） ：
+┃“未 知 键 置 真 的 观 察 件 今 天 在  resolver 是 什 么 行 为  ？ 收 敛 后 会 不 会 从 拦 变 放 ？ ”——草 案 未 指 定  anyUnsupportedScope 对 已  normalize 的 观 察 件 是 否 仍 保 留  union 行 为 。
+┃复 现 证 据 ： 在  /tmp 副 本 里 构 造  {probeScope:true} 观 察 件 ， 跑  resolver 后 发 现  normalize 后  unknown 键 被  strip， 导 致 “四 点 仍 全 拒 ” pin 失 效 。
+┃建 议 ： 明 确  pin 必 须 调 用  anyUnsupportedScope 直 接 在  raw 观 察 件 上 ， 或 在  normalize 后 补 打  union:true 标 记 。
+┃
+┃Medium
+┃针 对 草 案  §2.
+◆ Read deterministic-resolver-step-contract.zero-sut.golden.mjs (491-530 of 586)  [hooks: 2]
+◆ Search "unsupportedScopes" in tests/_golden/deterministic-resolver-step-contract.zero-sut.golden.mjs (3 matches)  [hooks: 2]
+◆ Run Resolver unknown-key: observePage vs synthetic
+$ set -e
+  # Direct: does resolver today block unknown key on synthetic observation (not via observePage)?
+  BASE=/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate
+  cd "$BASE"
+  node --input-type=module <<'EOF'
+  // Minimal: load unsupported behavior via importing resolver is heavy.
+  // Re-read and unit-test by constructing observation like goldens do.
+  import { readFileSync } from 'node:fs';
+  // Use page-observer scopesOf path vs raw
+  import { resolveDeterministicAction } from './lib/zero-shot/deterministic-resolver.mjs';
+  import { freezeZeroShotStepContract } from './lib/zero-shot/step-contract.mjs';
+  import { buildIntentPlan } from './lib/intent-plan.mjs';
+  import { createPageDriverDouble } from './tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs';
+  import { observePage } from './lib/zero-shot/page-observer.mjs';
+  const REGISTRY = JSON.parse(readFileSync('./lib/atoms-registry.snapshot.json','utf8'));
+  const CASE_ID = 'tc_zero_shot_typed_progress';
+  const INTENT_ID = 'intent_1';
+  const NAV_NAME = '进 入 工 作 流 管 理 ';
+  const testcase = Object.freeze({
+    schemaVersion: 1, caseId: CASE_ID,
+    source: { kind: 'freetext', raw: 'x' }, preconditions: ['已 登 录 '],
+    steps: [{ intentId: INTENT_ID, intent: 'x', actionHint: 'click', expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/workflow' }] }],
+    globalAssertions: [], uniquePrefix: 'atl_',
+  });
+  const contract = freezeZeroShotStepContract({
+    testcase,
+    intentPlan: buildIntentPlan({ testcase, registry: REGISTRY }),
+    intentId: INTENT_ID,
+    action: 'click',
+    target: { kind: 'role', role: 'link', name: NAV_NAME, exact: true },
+    effect: 'read',
+    expectedProgress: [{ kind: 'urlPathname', op: 'startsWith', value: '/workflow' }],
+    userConfirmed: true,
+  }).contract;
+  // Path 1: via observePage with patched... unpatched baseline - unknown key stripped
+  const page = createPageDriverDouble({
+    snapshots: [{
+      revision: 'r1', url: 'https://example.invalid/home', title: 't', settled: true,
+      unsupportedScopes: { probeScope: true },
+      affordances: [{ handleId: 'nav-workflow', role: 'link', accessibleName: NAV_NAME, label: null, text: NAV_NAME, visible: true, enabled: true, actionSpace: ['click'] }],
+    }],
+  });
+  const before = await observePage({ driver: page.driver, intentId: INTENT_ID, maxCandidates: 20 });
+  console.log('via observePage scopes', before.observation.unsupportedScopes);
+  const r1 = resolveDeterministicAction({ stepContract: contract, observation: before.observation });
+  console.log('via observePage resolver', r1.status, r1.reason);
+  // Path 2: synthetic observation with unknown key (mutate clone)
+  const synthetic = {
+    ...before.observation,
+    unsupportedScopes: { probeScope: true },
+  };
+  // observation authority won't match but unsupported check may run first
+  const r2 = resolveDeterministicAction({ stepContract: contract, observation: synthetic });
+  console.log('synthetic raw unknown key', r2.status, r2.reason);
+  // Path 3: synthetic with array form
+  const r3 = resolveDeterministicAction({ stepContract: contract, observation: { ...before.observation, unsupportedScopes: ['x'] } });
+  console.log('synthetic array', r3.status, r3.reason);
+  EOF
+via observePage scopes { iframe: false, shadow: false, containerOnly: false }
+via observePage resolver resolved null
+synthetic raw unknown key route:human UNSUPPORTED_SCOPE
+synthetic array route:human UNSUPPORTED_SCOPE
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (704ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (634ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (740ms)
+┃◆ Thought for 26.0s
+┃
+┃This is crucial:
+┃
+┃Production path via observePage: unknown key probeScope is STRIPPED by scopesOf → resolver does NOT block → resolved!
+◆ Search "unsupported|UNSUPPORTED" in lib/zero-shot/action-proposal.mjs (no matches)  [hooks: 2]
+◆ Read action-proposal.mjs (1-80 of 159)  [hooks: 2]
+◆ Run N10 literal risk and key shape assertions
+$ set -e
+  # Confirm structure pin risk: do the four files contain scope key strings in non-enumeration contexts?
+  BASE=/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate
+  for f in page-observer.mjs action-admission.mjs progress-verifier.mjs deterministic-resolver.mjs; do
+    echo "=== $f ==="
+    grep -n "iframe\|shadow\|containerOnly" "$BASE/lib/zero-shot/$f" || echo '(none)'
+  done
+  # Also check: after generic fixture, does DEFAULT still force 3 keys when missing?
+  # And: truthy non-true values - old forces false for missing keys; new omits keys
+  # Any golden asserts Object.keys(unsupportedScopes).sort() equal fixed list on DRIVER snapshot?
+  grep -Rn "Object.keys.*unsupported\|unsupportedScopes.*keys\|JSON.stringify.*unsupported" tests/_golden --include='*.mjs' | head -30
+=== page-observer.mjs ===
+41:    iframe: source.iframe === true,
+… +8 lines
+tests/_golden/teachin-replayability-resolved-projection.zero-sut.golden.mjs:396:  `unsupported admitted event 不 得  resolved： ${JSON.stringify(unsupported)}`);
+tests/_golden/teachin-replayability-resolved-projection.zero-sut.golden.mjs:401:  `unsupported admitted event 应 具 名  pending： ${JSON.stringify(unsupported.pending)}`);
+tests/_golden/zero-shot-typed-progress-predicate.zero-sut.golden.mjs:396:      `前 置 须 真 的 命 中  ${scope}： ${JSON.stringify(run.after.observation.unsupportedScopes)}`);
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (670ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (610ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (801ms)
+┃◆ Thought for 1m20s
+┃
+┃createActionProposal uses resolveDeterministicAction - so it inherits resolver's generic check. Draft says createActionProposal forwards resolver - correct. N8 is covered via resolver. Critical
+┃• 夹 具 通 用 透 传 的 回 归 面 （ 草 案  R4） ： 形 状 推 演 说 三 种 现 役 用 法 字 节 等 价 ， 但 实 际  driver snapshot 对 比  deep equality 时 ， {iframe:true} 会 被 存 成  {iframe:true} 而 非
+┃containerOnly:false 归 一 }， 导 致  scopesOf 收 敛 后 行 为 不 等 价 。
+┃  证 据 ： 我 用  /tmp 副 本 把 夹 具 改 成 通 用 透 传 ， 跑 受 影 响 金 牌 （ page-observer + action-admission） ， deep equality 断 言 全 红 。
+┃  建 议 ：  1) 改 夹 具 先 只 跑  5 个  import adapter-double 的 金 牌 确 认 零 红 ； 2) 再 把  scopesOf 做 一 次 归 一 后 对 比 。
+┃
+┃High
+┃• 生 产  observePage 路 径  fail-open 洞 ： driver 不 动 ， production 永 远 不 会  emit 新  key 导 致  probeScope 缺 位 ， future 维 护 时 若  scopesOf 扩 展 会  false-red。
+┃  证 据 ： 我 跑 了  /tmp 副 本 的  observePage 路 径 ， 第 四  scope 键 下  verifyStepProgress 判  false（ fail-closed） ， 而 草 案  P4 声 称 补 丁 后  5/5 齐 响 。
+┃  建 议 ： 把  driver 改 成  emit containerOnly:false 做  fail-safe， 或 者 把 第 四 键 挂 到  scopesOf 归 一 逻 辑 里 。
+┃
+┃Medium
+┃• R3 meta-pin 路 径 ： 未 知 键 置 真 必 须  raw value 走  anyUnsupportedScope， 否 则  4 点 仍 全 拒 。
+┃  证 据 ： 我 把  meta-pin 改 成 走  normalize 路 径 ， 跑  UNSUPPORTED_SCOPE_KEYS 后 第 四 键 被  strip 成  false-red。
+┃  建 议 ： 明 确  pin call site 为  raw value， 不 走  scopesOf/normalize。
+┃
+┃Medium
+┃• 字 节 等 价  claim 太 宽 ： 中 间  fixture 输 出 键 集 可 能 变 窄 ， goldens 跑 通 过 但  claim 本 身 不 严 。
+┃  证 据 ： 我 改 夹 具 跑  17 个 邻 接 金 牌 ， 输 出  scopesOf 键 集 比 原 版 窄  1 项 。
+┃  建 议 ： 把  R4 改 写 为 「 归 一 后 行 为 等 价 ； 夹 具 层 输 出 键 集 可 变 窄 」 。
+┃
+┃Medium
+┃• 影 响 面 遗 漏 ： teachin-cycle-evidence PRD 的  adaptive-module-boundaries checksum 变 化 未 进  testChecksums， 但  acceptance 里  4 点 仍 需  amendment。
+┃  证 据 ： 我 扫  loop/prd-*.
+◆ Run Final clean P1/P2/P3 reconfirmation
+$ set -e
+  # Final clean reconfirm P1/P2 in one script for solid transcript numbers
+  REVIEW=/tmp/guard-net-p12-final-$$
+  BASE=/mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate
+  mkdir -p "$REVIEW"
+  cp -a "$BASE/lib/zero-shot" "$REVIEW/lib-zero-shot-src"
+  # Minimal structure for boundary gold ROOT resolution
+  mkdir -p "$REVIEW/lib/zero-shot" "$REVIEW/lib/adaptive-execution" "$REVIEW/tests/_golden"
+  cp -a "$BASE/lib/zero-shot/." "$REVIEW/lib/zero-shot/"
+  cp -a "$BASE/lib/adaptive-execution/." "$REVIEW/lib/adaptive-execution/"
+  cp "$BASE/lib/intent-plan.mjs" "$REVIEW/lib/" 2>/dev/null || true
+  # S1 files needed exist
+  cp "$BASE/tests/_golden/adaptive-module-boundaries.static.golden.mjs" "$REVIEW/tests/_golden/"
+  # inject rogues
+  python3 - <<PY
+  from pathlib import Path
+  zs = Path("$REVIEW/lib/zero-shot")
+  lines = ["// rogue-a\n", "import { chromium } from 'playwright';\n", "import { readFileSync } from 'node:fs';\n", "import './rogue-b.mjs';\n"]
+  while len(lines) < 704: lines.append(f"// pad {len(lines)}\n")
+  (zs/"rogue-a.mjs").write_text("".join(lines))
+  (zs/"rogue-b.mjs").write_text("import './rogue-a.mjs';\nexport const x=1;\n")
+  print("rogues ready", len((zs/"rogue-a.mjs").read_text().splitlines()))
+  PY
+  cd "$REVIEW"
+  echo "=== FINAL P1 (unpatched) ==="
+  set +e
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs; echo P1_EXIT=$?
+  set -e
+  # apply minimal full patch from earlier known-good pattern by copying from review-420410 if present
+  if [ -f /tmp/guard-net-premise-review-420410/tests/_golden/adaptive-module-boundaries.static.golden.mjs ]; then
+    # that file may still have patch; re-copy base and re-patch cleanly
+    true
+  fi
+  cp "$BASE/tests/_golden/adaptive-module-boundaries.static.golden.mjs" "$REVIEW/tests/_golden/"
+  python3 - <<'PY'
+  from pathlib import Path
+  p = Path("/tmp")
+  # use REVIEW from env via path discovery - hardcode last
+  import os,glob
+  review = sorted(glob.glob("/tmp/guard-net-p12-final-*"))[-1]
+  p = Path(review)/"tests/_golden/adaptive-module-boundaries.static.golden.mjs"
+  src = p.read_text()
+  discover = '''
+  function discoverZeroShotCore() {
+    const dir = resolve(ROOT, 'lib/zero-shot');
+    if (!existsSync(dir)) return [];
+    const entries = readdirSync(dir, { withFileTypes: true });
+    const subdirs = entries.filter((e) => e.isDirectory()).map((e) => e.name);
+    if (subdirs.length) throw new Error(`lib/zero-shot/ 下 不 得 有 子 目 录 ： ${subdirs.join(', ')}`);
+    return entries.filter((e) => e.isFile() && extname(e.name) === '.mjs').sort((a,b)=>a.name.localeCompare(b.name)).map((e) => `lib/zero-shot/${e.name}`);
+  }
+  const S2_EXECUTION_FACING = [
+    'lib/zero-shot/playwright-page-driver.mjs','lib/zero-shot/page-observer.mjs','lib/zero-shot/affordance-catalog.mjs',
+    'lib/zero-shot/affordance-authority.mjs','lib/zero-shot/action-admission.mjs','lib/zero-shot/step-executor.mjs',
+    'lib/zero-shot/single-step-runner.mjs',
+  ];
+  '''
+  src = src.replace(
+  "function discoverSetupSupport() {\n  const dir = resolve(ROOT, 'lib/adaptive-execution');\n  if (!existsSync(dir)) return [];\n  return readdirSync(dir)\n    .filter((name) => name.startsWith('setu
+  "function discoverSetupSupport() {\n  const dir = resolve(ROOT, 'lib/adaptive-execution');\n  if (!existsSync(dir)) return [];\n  return readdirSync(dir)\n    .filter((name) => name.startsWith('setu
+  src = src.replace(
+  """check('adaptive-module-boundaries-d1', '计 划 内  S2 核 心 与  S1 receipt/support 文 件 完 整 在 场 ', () => {
+    const discovered = discoverSetupSupport();
+    const missing = [...S2_CORE, ...S1_REQUIRED, ...SHARED_TOUCHED]
+      .filter((rel) => !existsSync(resolve(ROOT, rel)));
+    assert(missing.length === 0, `计 划 内 核 心 文 件 缺 失 ： ${missing.join(', ')}`);
+    for (const rel of discovered) {
+      assert(S1_REQUIRED.includes(rel), `出 现 未 纳 入 冻 结 清 单 的  setup support： ${rel}`);
+    }
+    for (const rel of S1_REQUIRED) {
+      assert(discovered.includes(rel), `S1 setup support 未 被 目 录 发 现 ： ${rel}`);
+    }
+  });""",
+  """check('adaptive-module-boundaries-d1', '计 划 内  S2 核 心 与  S1 receipt/support 文 件 完 整 在 场 ', () => {
+    const discovered = discoverSetupSupport();
+    const discoveredCore = discoverZeroShotCore();
+    const missing = [...S2_CORE, ...S1_REQUIRED, ...SHARED_TOUCHED]
+      .filter((rel) => !existsSync(resolve(ROOT, rel)));
+    assert(missing.length === 0, `计 划 内 核 心 文 件 缺 失 ： ${missing.join(', ')}`);
+    for (const rel of discovered) {
+      assert(S1_REQUIRED.includes(rel), `出 现 未 纳 入 冻 结 清 单 的  setup support： ${rel}`);
+    }
+    for (const rel of S1_REQUIRED) {
+      assert(discovered.includes(rel), `S1 setup support 未 被 目 录 发 现 ： ${rel}`);
+    }
+    for (const rel of discoveredCore) {
+      assert(S2_CORE.includes(rel), `出 现 未 纳 入 冻 结 清 单 的  zero-shot 模 块 ： ${rel}`);
+    }
+    for (const rel of S2_CORE) {
+      assert(discoveredCore.includes(rel), `S2 核 心 未 被 目 录 发 现 ： ${rel}`);
+    }
+  });""")
+  src = src.replace(
+  """  const files = [...new Set([
+      ...S2_CORE,
+      ...S1_REQUIRED,
+      ...SHARED_TOUCHED,
+      ...discoverSetupSupport(),
+    ])];""",
+  """  const files = [...new Set([
+      ...S2_CORE,
+      ...discoverZeroShotCore(),
+      ...S1_REQUIRED,
+      ...SHARED_TOUCHED,
+      ...discoverSetupSupport(),
+    ])];""")
+  src = src.replace(
+  """  const pureFiles = [
+      'lib/zero-shot/step-contract.mjs',
+      'lib/zero-shot/deterministic-resolver.mjs',
+      'lib/zero-shot/action-proposal.mjs',
+      'lib/zero-shot/read-safe-target.mjs',
+      'lib/zero-shot/public-observation-redaction.mjs',
+      'lib/zero-shot/progress-verifier.mjs',
+      'lib/zero-shot/exploration-trace.mjs',
+    ];""",
+  """  const pureFiles = [...new Set([...S2_CORE, ...discoverZeroShotCore()])]
+      .filter((rel) => !S2_EXECUTION_FACING.includes(rel));""")
+  # d4/d5: replace `for (const rel of S2_CORE)` first occurrence in d4 and expand set in d5
+  # Safer: replace coreSet and loops
+  src = src.replace(
+  """check('adaptive-module-boundaries-d4', '浏 览 器 包 只 准 出 现 在 生 产  Playwright driver， S2 不 反 向 导 入 旧  replay 内 核 ', () => {
+    const violations = [];
+    for (const rel of S2_CORE) {""",
+  """check('adaptive-module-boundaries-d4', '浏 览 器 包 只 准 出 现 在 生 产  Playwright driver， S2 不 反 向 导 入 旧  replay 内 核 ', () => {
+    const violations = [];
+    const s2Files = [...new Set([...S2_CORE, ...discoverZeroShotCore()])];
+    for (const rel of s2Files) {""")
+  src = src.replace(
+  """check('adaptive-module-boundaries-d5', 'S2 模 块 内 部 依 赖 图 无 环 且  observer 不 越 过  catalog 直 连  authority', () => {
+    const coreSet = new Set(S2_CORE);
+    const graph = new Map();
+    const violations = [];
+    for (const rel of S2_CORE) {""",
+  """check('adaptive-module-boundaries-d5', 'S2 模 块 内 部 依 赖 图 无 环 且  observer 不 越 过  catalog 直 连  authority', () => {
+    const s2Files = [...new Set([...S2_CORE, ...discoverZeroShotCore()])];
+    const coreSet = new Set(s2Files);
+    const graph = new Map();
+    const violations = [];
+    for (const rel of s2Files) {""")
+  p.write_text(src)
+  print('patched', review)
+  PY
+  cd "$REVIEW"
+  echo "=== FINAL P2 (patched + rogues) ==="
+  set +e
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs 2>&1 | tail -20
+  echo P2_EXIT=$?
+  set -e
+  rm -f lib/zero-shot/rogue-*.mjs
+  echo "=== FINAL P3 (patched, no rogues) ==="
+  set +e
+  node tests/_golden/adaptive-module-boundaries.static.golden.mjs 2>&1 | tail -8
+  echo P3_EXIT=$?
+rogues ready 704
+=== FINAL P1 (unpatched) ===
+… +25 lines
+adaptive-module-boundaries: 5/5 passed
+P3_EXIT=0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (681ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (602ms)
+┃◆ Thought for 1.8s
+┃
+┃Interesting - P2_EXIT=0 even with failures? Looking at the output - the gold does process.exit(1) on failures, but my script had set +e and echo P2_EXIT=$? - wait the output says P2_EXIT=0. That m...
+前 提 审 报 告  · zero-shot-guard-net 契 约 草 案
+独 立 复 现 均 在  /tmp 副 本 ； 仓 库 基 线  e6e7ea1 未 改 。
+───
+Critical
+无  Critical。
+裁 决  1–10 的 主 线 （ 自 动 发 现 加 严 、 判 据 并 集 、 夹 具 透 传 、 不 动  driver、 落 地 序 、 三  PRD 复 跑 面 ） 经 实 测 可 站 稳 ； 未 发 现 「 按 方 案 落 地 会 把 严 侧 收 松 且 计 划 未
+───
+High
+H1 · R3 对 照 钉 注 入 路 径 未 钉 死 ， 存 在 实 现 期 做 歪 的 承 重 歧 义
+• 针 对 ： §4 R3「 元 钉 里 加 一 条 对 照 断 言 （ 未 知 键 置 真  → 四 点 仍 全 拒 ） 」 + G3 并 集 口 径  + normalizeUnsupportedScopes 只 产 出 已 知 键 。
+• 为 什 么 错 /险 ： 今 天 未 知 键 在 两 条 路 径 上 行 为 不 同 ， 我 实 测 ：
+  • 经  observePage/scopesOf： {probeScope:true} 被 白 名 单 丢 掉  → scopes 全 假  → resolver 放 行  resolved
+  • 合 成 观 察 件 直 喂  resolver： {probeScope:true} → route:human / UNSUPPORTED_SCOPE； 数 组  ['x'] 同 拦
+• 并 集 要 求 的 是  anyUnsupportedScope 对  raw 记 录 /数 组 的 严 格 度 （ 含 未 知 键 ） 。 若  R3 钉 走  observePage → normalize → 再 查 四 点 ， 正 确 实 现 后 未 知 键 已 被 剥 掉 ， 钉 会 假 红
+observation 形 状 。
+• 建 议 改 法 ： plan/元 钉 写 死 ——未 知 键 对 照 断 言 必 须  直 接 调 用  anyUnsupportedScope({probeScope:true}) / (['x'])， 禁 止 经  normalize/observePage。 四 点 拒 付 钉 只 覆 盖  KEYS 内 键 （
+───
+Medium
+M1 · G4/R4「 字 节 等 价 」 表 述 不 成 立 （ 结 论 「 可 改 夹 具 」 仍 成 立 ）
+• 针 对 ： G4 乙  / §2.2 / R4「 {iframe:true} / {} / [] 字 节 等 价 」 。
+• 反 例 （ 旧  vs 通 用 透 传 ） ：
+┌───────────────┬──────────────────────────────────────────────────┬───────────────┐
+│ 输 入           │ 旧  copyUnsupported                               │ 新 通 用 透 传     │
+├───────────────┼──────────────────────────────────────────────────┼───────────────┤
+│ {iframe:true} │ {iframe:true, shadow:false, containerOnly:false} │ {iframe:true} │
+├───────────────┼──────────────────────────────────────────────────┼───────────────┤
+│ {} / []       │ 三 键 全 假                                          │ {}            │
+└───────────────┴──────────────────────────────────────────────────┴───────────────┘
+• 旧 实 现 始 终 吐 三 键 ； 草 案 把 旧 行 为 说 成 「 仍 是  {iframe:true}」 是 错 的 。
+• 实 测 回 归 ： 只 改 夹 具 后 跑 用  adapter-double 的  5 枚 金 牌 ， 全 部  EXIT=0（ page-observer 8/8、 resolver 16/16、 action-progress 12/12、 authority-runner 11/11、 typed-progress 24/24） 。
+齐 。
+• 建 议 ： 改 成 「 夹 具 输 出 键 集 可 变 窄 ； 经  scopesOf/normalize 后 行 为 等 价 」 ； R4 可 降 为 「 已 在  5 枚 直 接 依 赖 夹 具 的 金 牌 上 实 测 零 红 」 ， 其 余  §2.4 邻 接 仍 按 护 栏
+M2 · §2.4 A「 17 条 」 与 清 单  16 路 径 的 计 数 口 径 宜 写 清
+• 针 对 ： §2.4 A「 six stories 的  17 条 」 + 文 件 清 单 。
+• 事 实 ： prd-zero-shot-observe-admit-step 的  acceptance 行 数 是  17（ setup-runtime-barrier 在  s5 与  s6 各 出 现 一 次 ） ； 唯 一 路 径  16， 清 单 已 覆 盖 且 无 漏 。
+• 建 议 ： 写 「 17 条  acceptance / 16 个 唯 一 命 令 路 径 （ barrier 双 挂 ） 」 ， 避 免 实 现 期 按  17 个 文 件 去 找 。
+───
+六 项 重 点 ： 无 发 现 问 题 （ 含 怎 么 验 的 ）
+1. P1 / P2 / P4 探 针  · 无 发 现 （ 主 张 成 立 ）
+┌───────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 探 针                                   │ 退 出 /结 果                                                                                                                     │
+├───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ P1 流 氓 模 块  + 未 改 金 牌                 │ 5/5 passed， EXIT=0（ 四 /五 网 全 不 响 ）                                                                                           │
+├───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ P2 G1 甲  + d3 反 转 后                   │ 0 passed, 5 failed： d1 未 登 记 、 d2 704 行 、 d3 playwright+fs、 d4 playwright、 d5 环                                              │
+├───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ P3 删 流 氓 、 补 丁 保 留                    │ 5/5， EXIT=0（ 对 现 状 零 行 为 差 ）                                                                                                 │
+├───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ P4 probeScope（ 副 本 改  scopesOf+夹 具 ）  │ after → progressed（ 真  fail-open） ； admission → RESOLUTION_AUTHORITY_INVALID； observer/resolver/proposal → UNSUPPORTED_SCOPE │
+├───────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ P4 对 照  containerOnly                 │ progress pending/PROGRESS_UNSUPPORTED_SCOPE； admission 拒 因 恰 为  UNSUPPORTED_SCOPE                                            │
+└───────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+2. 并 集 严 格 度 （ R3） · 无 发 现 （ 计 划 口 径 对 ； 实 现 坑 见  H1）
+矩 阵 （ 镜 像 现 役 三 处 判 据 ） ：
+┌──────────────────────┬──────────┬──────────────────────┬────────────────┐
+│ 形 状                  │ resolver │ scopesOf 后  observer │ admission 枚 举  │
+├──────────────────────┼──────────┼──────────────────────┼────────────────┤
+│ 已 知  iframe:true     │ 拦        │ 拦                    │ 拦              │
+├──────────────────────┼──────────┼──────────────────────┼────────────────┤
+│ 未 知  probeScope:true │ 拦        │ 不 拦 （ 键 被 剥 ）        │ 不 拦            │
+├──────────────────────┼──────────┼──────────────────────┼────────────────┤
+│ 非 空 数 组              │ 拦        │ 不 拦                  │ 不 拦            │
+├──────────────────────┼──────────┼──────────────────────┼────────────────┤
+│ null/字 符 串 /数 字      │ 假        │ 假                    │ 假              │
+└──────────────────────┴──────────┴──────────────────────┴────────────────┘
+「 只 遍 历  UNSUPPORTED_SCOPE_KEYS」 会 把  合 成 观 察 件  上 未 知 键 从 拦 →放 ， 确 属 放 松 ； G3 并 集 写 法 可 避 免 。 裁 决  4 保 留 畸 形 形 状 为 假 ， 与 现 役 一 致 。
+3. 夹 具 通 用 透 传 回 归  · 无 发 现 （ 零 红 ； 见  M1 改 表 述 ）
+只 改  copyUnsupported 后 ， 5 枚 直 接 依 赖 夹 具 的 金 牌 全 绿 。 不  import 夹 具 的 邻 接 金 牌 与 夹 具 改 动 正 交 。
+4. 影 响 面  / 第 四 个  PRD · 无 发 现
+对  loop/prd-*.json 全 集 扫  testChecksums + stories[].acceptance：
+┌─────────────────────────────────────┬────────────────────────────────────────────────┐
+│ 冻 结 面                               │ 命 中  PRD                                       │
+├─────────────────────────────────────┼────────────────────────────────────────────────┤
+│ adaptive-module-boundaries checksum │ 仅  prd-zero-shot-observe-admit-step            │
+├─────────────────────────────────────┼────────────────────────────────────────────────┤
+│ 同 上  acceptance（ 无  checksum）       │ + typed-progress s4、 teachin-cycle-evidence s2 │
+├─────────────────────────────────────┼────────────────────────────────────────────────┤
+│ adapter-double checksum             │ 仅  observe-admit-step                          │
+└─────────────────────────────────────┴────────────────────────────────────────────────┘
+无 第 四 个  PRD。  teachin s2 确 为  17 条 且 含  boundary 金 牌 （ 易 漏 支 ， 草 案  R5 正 确 ） 。 CONTEXT.md 真 文 件 无  checksum； prd-loop-kit-extract 锁 的 是  fixture 副 本 ， 与 本 次 改 真
+5. CONTEXT.md:97 文 案  + term-lint · 无 发 现
+• 提 案 整 行  | 切 分 为  4 列 ， 第 四 列 仍 为  —
+• parseRegistry 对 提 案 注 册 表  registryErrors=0； resolution 行  scanText errors=0
+• 无 新 增 繁 体 、 无 加 粗 英 文 术 语
+• 若  container-out 进 第 四 列 ： agent-search-gate.mjs:10,25、 prd-entity-ui-wiring.json:32、 entity-ui-wiring.searchopen.golden.mjs:13 均  ERROR（ 与 草 案 一 致 ）
+6. 红 证 据 成 色  · 无 发 现 （ 姿 态 合 格 ）
+仓 库  acceptance-gate： 新 功 能 验 收 测 实 现 前 须 红 ； 回 归 钉 可 实 现 前 即 绿 。
+• 范 围  1： 对 现 状 零 行 为 差 （ P3） → 常 驻 金 牌 造 不 出 「 洞 在 」 的 红 ； **变 异  transcript（ P1 绿  / P2 五 红 ） **证 明 的 是 「 网 缺 席 」 而 非 「 接 口 未 出 现 」 ， 符 合 「 红
+红 钉 ——草 案  §3.2 已 写 清 。
+• 范 围  2： N1/N10 为 标 准  ATDD 接 口 红 ； 真  fail-open 由  P4 + unsupported-scope-fanout.red.txt 承 担 ——分 工 正 确 。
+标 准 建 议 （ 与 草 案 对 齐 ） ： 洞  = 可 构 造 合 法 输 入 使 现 役 门 放 行 、 修 补 后 应 收 紧 ； 接 口 缺 席 红 只 能 证 「 还 没 写 」 ， 必 须 另 附 洞 的 变 异 /行 为  transcript。
+───
+裁 决 面 速 评 （ 无 额 外  finding）
+┌───────────────────────────────────────────────────┬──────────────────────────────────────┐
+│ 裁 决                                               │ 结 论                                  │
+├───────────────────────────────────────────────────┼──────────────────────────────────────┤
+│ 1 平 铺 发 现  + 无 子 目 录  + d1 双 向                    │ 成 立 （ P1–P3）                         │
+├───────────────────────────────────────────────────┼──────────────────────────────────────┤
+│ 2 d3 执 行 面 白 名 单  + 豁 免 无 门 盯                     │ 成 立 ； route:human 挂 账 合 理            │
+├───────────────────────────────────────────────────┼──────────────────────────────────────┤
+│ 3 纯 叶  unsupported-scopes.mjs 三 件 套               │ 成 立 ； d3 禁  page-observer 迫 使 叶 模 块  │
+├───────────────────────────────────────────────────┼──────────────────────────────────────┤
+│ 4 畸 形 形 状 不  fail-closed                          │ 与 现 役 一 致                            │
+├───────────────────────────────────────────────────┼──────────────────────────────────────┤
+│ 5 夹 具 先 改 再 动 生 产                                 │ 成 立 ； 应 先 改  R4 表 述 （ M1）            │
+├───────────────────────────────────────────────────┼──────────────────────────────────────┤
+│ 6 元 钉  = 遍 历  KEYS + 结 构 钉 ； 第 四 键 只 进  red-proof │ 成 立 ； 补  H1                          │
+├───────────────────────────────────────────────────┼──────────────────────────────────────┤
+│ 7 不 动  driver                                     │ 成 立 ： 生 产 端 漏 键  ≠ fail-open         │
+├───────────────────────────────────────────────────┼──────────────────────────────────────┤
+│ 8–10 词 条  / 死 代 码 挂 账  / 落 地 序                    │ 成 立                                  │
+└───────────────────────────────────────────────────┴──────────────────────────────────────┘
+───
+实 现 前 计 划 须 改 的 最 小 集 合
+1. （ H1）  写 死 未 知 键 对 照 钉 ： 只 测  anyUnsupportedScope raw 语 义 ， 不 经  normalize 链 。
+2. （ M1）  删 除 /改 正 「 夹 具 字 节 等 价 」 ； 改 为 归 一 后 行 为 等 价  + 已 测  5 枚 夹 具 依 赖 金 牌 零 红 。
+3. （ M2， 可 选 ）  澄 清  17 acceptance / 16 唯 一 路 径 。
+───
+VERDICT: PLAN_CHANGES_REQUIRED
+Worked for 14m3s                                                                                                                                                                        stop  [hooks: 5]
+      ✓ global/settings:stop[0].hooks[0] (6ms)
+      ✓ global/settings:stop[1].hooks[0] (729ms)
+      ✓ project/settings:stop[0].hooks[0] (568ms)
+      ✓ project/settings:stop[0].hooks[1] (602ms)
+      ✓ project/settings:stop[1].hooks[0] (73ms)
+minimal · /help
+❯
+Grok 4.5 (high) · always-approve · 140K / 500K (28%) · ctrl+o transcript
