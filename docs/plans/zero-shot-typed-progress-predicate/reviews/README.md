@@ -55,6 +55,6 @@
 |---|---|
 | 订正提交 | `e752418`（删旧段并写明订正理由、#14 改纯 `urlPathname`、金牌 P14 标题同步；断言体零变化；amendment R3 入账） |
 | 复核方 | `grok-4.5` high，聚焦 `e6e7ea1..e752418` |
-| 结论 | **`APPROVE`**——Medium 干净收口、金牌 diff 仅 1 行标题、PRD 账本与 sha256 实物一致、复核方自跑金牌 24/24 exit 0 |
+| 结论 | 终局 `APPROVE`——Medium 干净收口、金牌 diff 仅 1 行标题、PRD 账本与 sha256 实物一致、复核方自跑金牌 24/24 exit 0 |
 | 产物 | `r3-recheck-grok-4.5-high.txt` / 输入 `r3-recheck-input.md` |
 | 遗留（注释级） | P14 断言体内失败文案仍有「存在性断言不受完整性前置约束」字样，复核方判不构成矛盾（场景仅 URL）；记 learn 不动字节 |

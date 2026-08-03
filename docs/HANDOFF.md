@@ -3,7 +3,41 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-03：Wave 4→6 首片——typed progress predicate 闭集扩展（最新覆盖层）
+## 2026-08-04：guard-net 收口合入 + 三轮真机实测 + read-safe 方向已签（最新覆盖层）
+
+1. **guard-net 契约全闭环合入 dev**（merge `4b80013`，分支四提交 `83a8c98`/`d1f83a2`/`24e0508`/
+   `e19ccdb` + 收口 `5e72f09`）：边界门目录自动发现 + d3 执行面白名单反转 + `unsupportedScopes`
+   单一事实源（纯叶 `lib/zero-shot/unsupported-scopes.mjs`）+ 元钉金牌 12 枚 + `container-out`
+   词条登记。评审闭环：前提审（grok）三条采纳 → R1 代码审唯一 Medium（symlink-to-dir 绕过
+   「无子目录」钉，可复现）→ R13 修复（dangling 取 fail-safe 一律红）→ 聚焦复核终局 `APPROVE`。
+   合并后主树复跑 24 项全 exit 0（含 teachin s2 易漏支、drift-scan、term-lint、tier1）。
+   状态口径：门禁基础设施契约 = 机器门禁绿。
+2. **三轮真机实测已入账**（全部 autotest 只读零 mutation）：探针（抽屉零 role、名称大面积重名、
+   默认候选上限必截断）→ 切片 1 实跑（链条通到确定性解析 `resolved`、卡在 admission 拒
+   `ACTION_TARGET_NOT_READ_SAFE`；订正「`redactionSuppressed` 非零常态」旧断言——实测两业务页
+   均 0、登录落地页 1）→ 路由普查（21 路由 697 候选，只读白名单命中 **0**；全站零 `a[href]`、
+   `role:link` 仅 3 条且全部只差名字标记一关；站点命名习惯「名词=去哪里、动词=做什么」）。
+3. **read-safe 白名单演进方向 Steven 已签：乙（人签名单）**——每目标人签一条（默认空、
+   fail-closed），正向动词保留为免签快速道；零翻已冻断言（纯加法）。配套裁决：「取消」补负筛表
+   先行（纯加严）；签署载体=冻结常量模块+复用 `isSigned` 三件套+Test Ratchet（不碰
+   `bin/sign.mjs`）；名单无自动过期（改动走 amendment）；改默认策略以多站证据为前置。
+   起草在 scratchpad `draft-read-safe-evolution.md`（含对 R11 威胁模型的逐条回应：正向动词闸
+   对蓄意注入者价值为零、买到的是良性页面意外面收敛）。
+4. **工装纠正**：工作树缺 `cases/`/`runs/` 冻结件用复制不用软链（软链触 `sign` 物理边界核
+   按设计拒付）；`hook-loop-guard` 对工作树 baton 盲（从主树 cwd 解析），工作树互锁实际由
+   本树 contract 台账保证——两条均已入 learn 与 PRD notes。
+5. **Wave 3（harness）环境**：podman 镜像已钉
+   `node@sha256:2356…b8e7`、隔离冒烟全过；真容器门 exit 1，唯一缺口 cgroup cpu 未对 rootless
+   委派——**待 Steven 人工终端三条 root 命令 + `wsl --shutdown` 重开**（见
+   scratchpad `harness-oci-setup.md`；勿用 `systemctl restart user@1000`）。三条 S0 发现：
+   doctor 是浅检查不可当就绪证据、`nr_inodes` 口径差、脏树基线问题。16 问裁决在
+   scratchpad `harness-migration-adjudication.md`。
+6. **下一步**：read-safe 乙实现（前提审 → acceptance-gate → 实现 → 你签名单首批 1-3 条）→
+   切片 1 真机正向链复跑（预期 `resolved→admitted→perform→progressed` 全链）→ typed-progress
+   达成「通过」→ 晋升门开工（完成定义含真机 3 轮）。P9 总闸不变：`REAL_SUT_PASSED=false`、
+   `HUMAN_SIGNED=false`。
+
+## 2026-08-03：Wave 4→6 首片——typed progress predicate 闭集扩展（历史覆盖层）
 
 1. **起点核对**：会话开始时 `dev@d77dfb5`，摸底期间另一写入方把 Wave 1/2 落到 `dev@a3a9a28`
    （`9272d97` + cherry-pick `d89879d` + 交接层 `a3a9a28`）。Wave 1 四枚冻结金牌在 dev 上实跑
@@ -35,7 +69,7 @@
    十一路由绿转红，每次还原后 sha256 字节全同；邻接 11 项全 exit 0；`gate` GREEN 5/5。
    评审全轨迹：R1 双路（grok-4.5 high + pi deepseek-v4-flash high）`CHANGES_REQUIRED` →
    R2 修复（`981b4a3`）→ R2 复审（pi 网络挂起换 grok）仅剩一条 Medium（plan 旧文与新规则
-   对撞）→ R3 订正（`e752418`）→ R3 聚焦复核 **`APPROVE`**（金牌 diff 仅 1 行标题、账本与
+   对撞）→ R3 订正（`e752418`）→ R3 聚焦复核终局 `APPROVE`（金牌 diff 仅 1 行标题、账本与
    sha256 实物一致、复核方自跑 24/24 exit 0）。收据齐存 `reviews/`，audit.jsonl 有机读记录。
    五个本地提交 `15721ff` / `446881b` / `981b4a3` / `e6e7ea1` / `e752418`，按 Steven
    「APPROVE 后合入」授权合入**本地 dev**；未 push、未 rebase、主树未提交内容一字未动。
