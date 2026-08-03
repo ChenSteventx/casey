@@ -19,7 +19,8 @@ import { validateDraft } from '../lib/compile-gate.mjs';
 import { credentialGate } from '../lib/cred-gate.mjs';
 import { loadSiteConfig, loadCreds, loginBootstrap } from '../lib/login-bootstrap.mjs';
 import { watchNetworkForensics } from '../lib/replay-forensics.mjs';
-import { createCompileRun, compileFlow, projectObserved, ROUTE_LIST } from '../lib/compile-atoms.mjs';
+import { COMPILE_KNOWN_ATOMS, createCompileRun, compileFlow, projectObserved, ROUTE_LIST } from '../lib/compile-atoms.mjs';
+import { createLoginBootstrapFailure, projectCompileExecutionFailureReport } from '../lib/compile-execution-failure.mjs';
 import { ENTITY_KIND_COMPILE_CHANNELS, checkIdentityObservationCardinality, deriveObservationIssuerAtom } from '../lib/entity-observation-registry.mjs';
 import { calculateLegacyIdentityProfileDigest, parseAgentIdentityProfile } from '../lib/agent-identity-profile.mjs';
 import { admitCompileDestructiveContinuity } from '../lib/entity-destructive-continuity.mjs';
@@ -211,6 +212,7 @@ async function executeMode(caseId, args) {
   rmSync(join(outDir, 'entity-bindings.draft.json'), { force: true });
   rmSync(join(outDir, 'identity-observations.compile.json'), { force: true });
   rmSync(join(outDir, `observed-${caseId}.json`), { force: true });
+  rmSync(join(outDir, 'compile-report.json'), { force: true });
   const profile = readJson(args.profile, '通道剖面');
   // 剖面路由在启动前做路径形状校验。
   let listRoute = null;
@@ -346,15 +348,16 @@ async function executeMode(caseId, args) {
   try {
     if (!args['skip-login']) {
       // execution-target authority 保持规范 origin；传输端点不参与页面 URL 拼接。
-      const creds = preloadedCreds; // 已在浏览器启动前加载（codex High-2 凭据上下文门），此处复用不重载
-      run.notes.push('凭据于浏览器启动前加载（凭据上下文门 fail-closed）');
-      const login = await loginBootstrap(page, { site, creds, startUrl: execution.runtime.browserVisibleStartUrl, executionTargetAuthority: execution.authority });
-      if (login?.ok === false) {
-        const error = new Error(login.reason);
-        error.code = login.reason;
-        throw error;
+      try {
+        const creds = preloadedCreds; // 已在浏览器启动前加载（codex High-2 凭据上下文门），此处复用不重载
+        run.notes.push('凭据于浏览器启动前加载（凭据上下文门 fail-closed）');
+        const login = await loginBootstrap(page, { site, creds, startUrl: execution.runtime.browserVisibleStartUrl, executionTargetAuthority: execution.authority });
+        if (login?.ok === false) throw new Error('LOGIN_BOOTSTRAP_REJECTED');
+        run.notes.push('登录预备动作完成（不产 event）');
+      } catch {
+        // 登录失败发生在 flow 前；原始 timeout/页面/目标细节不得穿过边界，也不得误报 atom failure。
+        throw createLoginBootstrapFailure();
       }
-      run.notes.push('登录预备动作完成（不产 event）');
     } else {
       const navigation = await navigateExecutionTargetPage({
         page,
@@ -370,7 +373,25 @@ async function executeMode(caseId, args) {
     }
     await compileFlow(run, flowDoc.flow);
   } catch (e) {
-    exitCode = emitCompileCliFailure({ failure: e, phase: 'execute' });
+    // 原始异常可能携 URL、DOM、参数或身份值；只落固定结构与计数。gatedWrite 对单文件执行
+    // 凭据扫描 + 同目录临时文件 rename，保证本轮诊断不会半写。
+    const failureReport = projectCompileExecutionFailureReport({
+      caseId,
+      failure: e,
+      run,
+      knownAtoms: COMPILE_KNOWN_ATOMS,
+      destructiveAtoms: new Set(Object.entries(registry.atoms || {})
+        .filter(([, definition]) => definition?.destructive === true)
+        .map(([atom]) => atom)),
+    });
+    gatedWrite({
+      [join(outDir, 'compile-report.json')]: JSON.stringify(failureReport, null, 2) + '\n',
+    });
+    exitCode = emitCompileCliFailure({
+      failure: e,
+      phase: 'execute',
+      knownAtoms: COMPILE_KNOWN_ATOMS,
+    });
   } finally {
     await forensics.awaitStreamsSettled(1500);
     await forensics.drain();
