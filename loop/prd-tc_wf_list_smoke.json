@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 2,
+  "contractKind": "registry",
+  "caseId": "tc_wf_list_smoke",
+  "task": "tc_wf_list_smoke teach-in cycle 三条只读断言人签契约（Steven 2026-08-03 当前会话明签）",
+  "testChecksums": {
+    "cases/tc_wf_list_smoke/cycle-expected.frozen.json": "27759e8427d2ac5fe42bfbfe7c15778fde358ab02af1e0b3ec7371123afb50f2"
+  },
+  "stories": [],
+  "expectedFrozenPath": "cases/tc_wf_list_smoke/cycle-expected.frozen.json"
+}
