@@ -1,0 +1,9 @@
+command: node tests/_golden/teachin-authoring-source-plan-identity.zero-sut.golden.mjs
+baseline-head: 62bcf46
+exit-code: 1
+
+RED  teachin-authoring-source-plan-identity: H1 identity listApi 声明与 malformed profile 均在物理 authoring open 前拒绝: profiled source plan 应成功：{"ok":false,"reason":"SOURCE_REPLAY_PLAN_AUTHORITY_INVALID"}
+RED  teachin-authoring-source-plan-identity: H2 genuine source→baseline→closure→authoring→真实 compile 固定 exact bytes 与 tenant route: profiled source plan 应成功：{"ok":false,"reason":"SOURCE_REPLAY_PLAN_AUTHORITY_INVALID"}
+RED  teachin-authoring-source-plan-identity: M1 preparation ns/target/adapter-owner 拒绝均不消费，随后 dispose 只关一次: namespace: reject 后 genuine owner 不可 dispose
+RED  teachin-authoring-source-plan-identity: M2 same-label distinct genuine source plan 的 baseline/closure 不可换绑且零 open: distinct plan 换绑未拒绝：{"ok":true,"authoringRuntimeAuthority":{},"page":{},"forensics":{},"state":{"currentStepId":null}}
+teachin-authoring-source-plan-identity: 0 过 / 4 败
