@@ -1,0 +1,7 @@
+command: node tests/_golden/teachin-source-terminal-settle-parity.zero-sut.golden.mjs
+exit: 1
+
+RED  teachin-source-terminal-settle-parity: S1 source terminal 先走 shared settle，再采异步挂载的 signed 文本: source terminal 抢采旧 DOM：text hit=0
+RED  teachin-source-terminal-settle-parity: S2 settle 观察失败仍有界且断言保持 unknown，绝不假 true: hostile path 未实际经过 shared in-flight observation
+RED  teachin-source-terminal-settle-parity: S3 production raw collector 真调用共享 settle helper，禁止 fixed sleep 替身: raw observation 未 import shared settleBeforeCapture
+teachin-source-terminal-settle-parity: 0 过 / 3 败
