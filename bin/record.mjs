@@ -31,6 +31,9 @@ import {
   buildCycleEvidenceDocument,
   writeCycleEvidenceSidecar,
 } from '../lib/teachin/cycle-evidence-output.mjs';
+import {
+  persistTeachinCycleEquivalenceReceipt,
+} from '../lib/teachin/cycle-equivalence-receipt-output.mjs';
 
 function parseArgs(argv) {
   const o = { pos: [] };
@@ -460,6 +463,17 @@ async function browserMode({ caseId, args, cycleMode }) {
       // 入口以 CYCLE_ENTRY_INPUT_INVALID 拒绝时，其前置校验发生在 lifecycle 收尾之前，
       // 按合同未接管录制归属；归属退回本层 finally，避免两侧都不关。
       if (cycle?.reason === 'CYCLE_ENTRY_INPUT_INVALID') recordingOwnerTransferred = false;
+      if (cycle?.ok === true) {
+        const persisted = persistTeachinCycleEquivalenceReceipt({
+          outDir: dirname(captureFile), captureBytes: exactCaptureBytes, cycle,
+        });
+        if (persisted?.ok === true) {
+          console.log(`record: 闭环成功等价收据已写入 → <capture-dir>/${persisted.fileName}`);
+        } else {
+          console.error(`record: 闭环成功等价收据未产出（reason=${persisted?.reason || 'CYCLE_EQUIVALENCE_RECEIPT_WRITE_FAILED'}；真实值不回显）`);
+          process.exitCode = 1;
+        }
+      }
       emitCycleOutcome(cycle);
       emitCycleEvidence({
         snapshot: evidenceSnapshot,
