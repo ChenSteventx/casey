@@ -380,9 +380,6 @@ async function executeMode(caseId, args) {
       failure: e,
       run,
       knownAtoms: COMPILE_KNOWN_ATOMS,
-      destructiveAtoms: new Set(Object.entries(registry.atoms || {})
-        .filter(([, definition]) => definition?.destructive === true)
-        .map(([atom]) => atom)),
     });
     gatedWrite({
       [join(outDir, 'compile-report.json')]: JSON.stringify(failureReport, null, 2) + '\n',

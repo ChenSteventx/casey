@@ -106,10 +106,16 @@ await check('C3 最小失败 report 只含指定计数与安全定位，不复�
       events: [{}, {}, {}],
       identityObservations: [{ platformId: SECRET_PARAM }, {}],
       blockers: [`blocker ${SECRET_ERROR}`],
+      persistentActionEvidence: {
+        atom: 'workflow.publish',
+        status: 'CONFIRMED',
+        stage: 'physical-action-succeeded',
+      },
     },
   });
   assert(JSON.stringify(Object.keys(report)) === JSON.stringify([
     'caseId', 'status', 'phase', 'stage', 'failedStepOrdinal', 'failedAtom', 'persistentActionAttempted',
+    'persistentActionStatus', 'persistentActionStage',
     'eventsEmitted', 'identityObservationsCaptured', 'blockerCount',
   ]), `report 字段必须最小闭集：${JSON.stringify(Object.keys(report))}`);
   assert(report.caseId === 'tc_safe_compile_failure' && report.status === 'failed' && report.phase === 'execute',
@@ -117,6 +123,9 @@ await check('C3 最小失败 report 只含指定计数与安全定位，不复�
   assert(report.stage === 'compile-flow', `atom 异常 stage 应为 compile-flow，实际 ${report.stage}`);
   assert(report.failedStepOrdinal === 2 && report.failedAtom === 'workflow.publish', 'report 安全定位不符');
   assert(report.persistentActionAttempted === true, '已进入破坏性失败 atom 时须保守标记持久化动作已尝试');
+  assert(report.persistentActionStatus === 'CONFIRMED'
+    && report.persistentActionStage === 'physical-action-succeeded',
+  '持久化动作必须给出证据状态与安全阶段，而非只给猜测布尔值');
   assert(report.eventsEmitted === 3 && report.identityObservationsCaptured === 2 && report.blockerCount === 1,
     'report 只应投影数组计数');
   const text = JSON.stringify(report);
@@ -186,6 +195,160 @@ await check('C6 loginBootstrap 失败独立密封：flow 前稳定码 + 空 atom
   const source = readFileSync(join(ROOT, 'bin', 'compile.mjs'), 'utf8');
   assert(/try\s*\{[\s\S]{0,800}loginBootstrap\s*\([\s\S]{0,500}catch\s*\{[\s\S]{0,300}createLoginBootstrapFailure\s*\(/u.test(source),
     'bin/compile 未在 loginBootstrap 本地边界先密封再交外层 report catch');
+});
+
+await check('C7 chat 持久副作用按物理 click 事实三态裁定，旧 9-event 缺口不得假报 false', () => {
+  const chatFailure = failureBoundary.createCompileAtomExecutionFailure({
+    stepOrdinal: 5,
+    atom: 'chat.sendAndWait',
+    knownAtoms: compile.COMPILE_KNOWN_ATOMS,
+  });
+  const historicalNineEvents = [
+    ...Array.from({ length: 6 }, (_, index) => ({
+      stepId: `atstep_${index}`,
+      atom: 'nav.workflowManagement',
+      action: 'nav',
+    })),
+    { stepId: 'atstep_6', atom: 'chat.sendAndWait', action: 'fill' },
+    { stepId: 'atstep_7', atom: 'chat.sendAndWait', action: 'press' },
+    { stepId: 'atstep_8', atom: 'chat.sendAndWait', action: 'press' },
+  ];
+  const historical = failureBoundary.projectCompileExecutionFailureReport({
+    caseId: 'tc_chiefcomplaint_smoke',
+    failure: chatFailure,
+    knownAtoms: compile.COMPILE_KNOWN_ATOMS,
+    run: { events: historicalNineEvents, verification: [], identityObservations: [], blockers: [] },
+  });
+  assert(historical.eventsEmitted === 9, '历史诊断复现必须保持 9 events');
+  assert(historical.persistentActionStatus === 'INDETERMINATE'
+    && historical.persistentActionAttempted === null,
+  `click event 未完成落盘时不得假报 false：${JSON.stringify(historical)}`);
+  assert(historical.persistentActionStage === 'click-event-not-recorded',
+    `历史证据缺口须具名定位：${historical.persistentActionStage}`);
+
+  const spoofedInferenceStage = {
+    events: historicalNineEvents,
+    verification: [], identityObservations: [], blockers: [],
+    persistentActionEvidence: {
+      atom: 'chat.sendAndWait', status: 'CONFIRMED', stage: 'recorded-action-succeeded',
+    },
+  };
+  const spoofed = failureBoundary.projectCompileExecutionFailureReport({
+    caseId: 'tc_chiefcomplaint_smoke', failure: chatFailure,
+    knownAtoms: compile.COMPILE_KNOWN_ATOMS, run: spoofedInferenceStage,
+  });
+  assert(spoofed.persistentActionStatus === 'INDETERMINATE'
+    && spoofed.persistentActionStage === 'click-event-not-recorded',
+  'fallback 推断阶段不得被 caller 塞回 run 冒充 CONFIRMED 强证据');
+
+  const cases = [
+    ['input-preparation', 'NOT_ATTEMPTED', false],
+    ['before-click-call', 'NOT_ATTEMPTED', false],
+    ['physical-click-invoked', 'INDETERMINATE', null],
+    ['physical-click-succeeded', 'CONFIRMED', true],
+    ['waiting-for-reply', 'CONFIRMED', true],
+  ];
+  for (const [stage, status, attempted] of cases) {
+    const run = { events: historicalNineEvents, verification: [], identityObservations: [], blockers: [] };
+    failureBoundary.recordPersistentActionEvidence(run, {
+      atom: 'chat.sendAndWait',
+      stage,
+      status,
+    });
+    const report = failureBoundary.projectCompileExecutionFailureReport({
+      caseId: 'tc_chiefcomplaint_smoke',
+      failure: chatFailure,
+      knownAtoms: compile.COMPILE_KNOWN_ATOMS,
+      run,
+    });
+    assert(report.persistentActionStage === stage
+      && report.persistentActionStatus === status
+      && report.persistentActionAttempted === attempted,
+    `阶段 ${stage} 三态投影错误：${JSON.stringify(report)}`);
+  }
+
+  const priorPersistent = {
+    events: [{ stepId: 'atstep_prior', atom: 'workflow.publish', action: 'click' }],
+    verification: [{ stepId: 'atstep_prior', acted: true }],
+    identityObservations: [], blockers: [],
+  };
+  failureBoundary.recordPersistentActionEvidence(priorPersistent, {
+    atom: 'chat.sendAndWait', status: 'NOT_ATTEMPTED', stage: 'input-preparation',
+  });
+  const priorReport = failureBoundary.projectCompileExecutionFailureReport({
+    caseId: 'tc_prior_persistent', failure: chatFailure,
+    knownAtoms: compile.COMPILE_KNOWN_ATOMS, run: priorPersistent,
+  });
+  assert(priorReport.persistentActionStatus === 'CONFIRMED'
+    && priorReport.persistentActionAttempted === true
+    && priorReport.persistentActionStage === 'recorded-action-succeeded',
+  '当前 chat 尚未 click 的 NOT_ATTEMPTED 不得抹掉本轮此前已确认的持久动作');
+
+  const atomSource = readFileSync(join(ROOT, 'lib', 'compile-atoms-agent.mjs'), 'utf8');
+  const runSource = readFileSync(join(ROOT, 'lib', 'compile-atoms-run.mjs'), 'utf8');
+  assert(atomSource.includes("stage: 'input-preparation'")
+    && atomSource.includes("stage: 'before-click-call'")
+    && atomSource.includes("stage: 'waiting-for-reply'"),
+  'chat compiler 未在输入前/click 调用前/等待期记录阶段');
+  assert(runSource.includes("stage: 'physical-click-invoked'")
+    && runSource.includes("stage: 'physical-click-succeeded'"),
+  'run.emit 未在物理 click 调用前后记录事实');
+});
+
+await check('C8 物理 click 成功后 quiet/capture 抛错：即使 click event 未落盘也保持 CONFIRMED', async () => {
+  const page = {
+    waitForResponse() { return Promise.resolve(null); },
+  };
+  const run = compile.createCompileRun({
+    page,
+    forensics: { records() { return []; } },
+    state: { currentStepId: null },
+    sut: 'http://127.0.0.1:1',
+    uniqueName: 'hermetic',
+    site: {},
+    profile: {},
+  });
+  run.admitPageOrigin = async () => true;
+  run.resolveTarget = async () => ({
+    count: 1,
+    locator: {
+      first() {
+        return {
+          async click() {
+            assert(run.persistentActionEvidence?.stage === 'physical-click-invoked'
+              && run.persistentActionEvidence?.status === 'INDETERMINATE',
+            '调用物理 click 的瞬间必须先记 INDETERMINATE');
+          },
+        };
+      },
+    },
+  });
+  run.quietPoint = async () => { throw new Error(SECRET_ERROR); };
+  let thrown = false;
+  try {
+    await run.emit({
+      intentId: 'intent_chat', atom: 'chat.sendAndWait', action: 'click', fallbackCss: '.safe',
+    }, undefined, { persistentActionBoundary: true });
+  } catch {
+    thrown = true;
+  }
+  assert(thrown, 'quietPoint 异常必须向 compileFlow 传播，才能落失败 report');
+  assert(run.events.length === 0, 'quietPoint 抛错发生于 click event 落盘前，复现证据缺口');
+  assert(run.persistentActionEvidence?.status === 'CONFIRMED'
+    && run.persistentActionEvidence?.stage === 'physical-click-succeeded',
+  `物理 click 成功事实不得被后续采证异常抹掉：${JSON.stringify(run.persistentActionEvidence)}`);
+
+  const chatFailure = failureBoundary.createCompileAtomExecutionFailure({
+    stepOrdinal: 5, atom: 'chat.sendAndWait', knownAtoms: compile.COMPILE_KNOWN_ATOMS,
+  });
+  const report = failureBoundary.projectCompileExecutionFailureReport({
+    caseId: 'tc_chiefcomplaint_smoke', failure: chatFailure,
+    knownAtoms: compile.COMPILE_KNOWN_ATOMS, run,
+  });
+  assert(report.persistentActionStatus === 'CONFIRMED'
+    && report.persistentActionAttempted === true
+    && report.persistentActionStage === 'physical-click-succeeded',
+  `无 click event 时仍须优先信任物理 click 成功事实：${JSON.stringify(report)}`);
 });
 
 if (failures.length) {
