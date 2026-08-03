@@ -39,3 +39,22 @@
 截断，而截断已对 `roleVisible` fail-closed，故该状态经生产路径不可达，无法用生产路径钉住。
 保留该判据是直接表达唯一性不变量并防止将来重新可达；不可达性由 P21 守住。
 **这是已知的测试不可达面，不是已覆盖面。**
+
+## R2 复审（修复 hunk 聚焦审）
+
+| 项 | 值 |
+|---|---|
+| 被审快照 | `446881b..981b4a3` |
+| 评审方 | `grok-4.5` high，tmux 真 TTY 多轮（pi `deepseek-v4-flash` 首跑网络挂起：1h43m 仅 1s CPU 零输出，按实际输出记 HARNESS_ERROR 后换跑方） |
+| 结论 | `CHANGES_REQUIRED`——F1/F2/F3 代码修复全部独立坐实、P21-P24 四路变异扎实、`pageCount` 生产路径不可达主张被第三方证实；唯一 finding 为 Medium：plan.md 残留 R1 旧段与 ATDD #14 旧措辞和 R2 统一规则对撞（修回风险） |
+| 产物 | `r2-rereview-grok-4.5-high.txt` / 输入 `r2-rereview-input.md` |
+
+## R3 订正 + 聚焦复核
+
+| 项 | 值 |
+|---|---|
+| 订正提交 | `e752418`（删旧段并写明订正理由、#14 改纯 `urlPathname`、金牌 P14 标题同步；断言体零变化；amendment R3 入账） |
+| 复核方 | `grok-4.5` high，聚焦 `e6e7ea1..e752418` |
+| 结论 | **`APPROVE`**——Medium 干净收口、金牌 diff 仅 1 行标题、PRD 账本与 sha256 实物一致、复核方自跑金牌 24/24 exit 0 |
+| 产物 | `r3-recheck-grok-4.5-high.txt` / 输入 `r3-recheck-input.md` |
+| 遗留（注释级） | P14 断言体内失败文案仍有「存在性断言不受完整性前置约束」字样，复核方判不构成矛盾（场景仅 URL）；记 learn 不动字节 |

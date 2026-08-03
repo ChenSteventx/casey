@@ -1,0 +1,776 @@
+  # del_visible
+  python3 - <<'PY'
+  from pathlib import Path
+  p = Path("/tmp/czt-r2-review-435404/repo/lib/zero-shot/progress-verifier.mjs")
+  t = p.read_text()
+  old = "return matched.length === 1 && matched[0].pageCount === 1 && matched[0].visible === true;"
+  new = "return matched.length === 1 && matched[0].pageCount === 1;"
+  assert old in t, 'pattern missing'
+  p.write_text(t.replace(old, new, 1))
+  print('del_visible ok')
+  PY
+  run_gold del_visible
+  # restore: no roleVisible in catalog kinds
+  cp "$SRC" "$PV"
+  python3 - <<'PY'
+  from pathlib import Path
+  p = Path("/tmp/czt-r2-review-435404/repo/lib/zero-shot/progress-verifier.mjs")
+  t = p.read_text()
+  old = "const CATALOG_PROGRESS_KINDS = new Set(['roleVisible', 'roleHidden']);"
+  new = "const CATALOG_PROGRESS_KINDS = new Set(['roleHidden']);"
+  assert old in t
+  p.write_text(t.replace(old, new, 1))
+  print('no_roleVisible_gate ok')
+  PY
+  run_gold no_roleVisible_gate
+  # restore: remove before gate
+  cp "$SRC" "$PV"
+  python3 - <<'PY'
+  from pathlib import Path
+  p = Path("/tmp/czt-r2-review-435404/repo/lib/zero-shot/progress-verifier.mjs")
+  t = p.read_text()
+  old = """  if (expected.some((item) => CATALOG_PROGRESS_KINDS.has(item.kind))) {
+      const blockedBefore = completenessBlocker(beforeObservation);
+      if (blockedBefore) return pending(blockedBefore);
+      const blockedAfter = completenessBlocker(afterObservation);
+      if (blockedAfter) return pending(blockedAfter);
+    }"""
+  new = """  if (expected.some((item) => CATALOG_PROGRESS_KINDS.has(item.kind))) {
+      const blockedAfter = completenessBlocker(afterObservation);
+      if (blockedAfter) return pending(blockedAfter);
+    }"""
+  assert old in t
+  p.write_text(t.replace(old, new, 1))
+  print('no_before_gate ok')
+  PY
+  run_gold no_before_gate
+  # restore: remove empty gate
+  cp "$SRC" "$PV"
+  python3 - <<'PY'
+  from pathlib import Path
+  p = Path("/tmp/czt-r2-review-435404/repo/lib/zero-shot/progress-verifier.mjs")
+  t = p.read_text()
+  old = """  if (expected.some((item) => ABSENCE_PROGRESS_KINDS.has(item.kind))
+      && !(Array.isArray(afterObservation.affordances) && afterObservation.affordances.length > 0)) {
+      return pending('PROGRESS_CATALOG_EMPTY');
+    }
+  """
+  assert old in t
+  p.write_text(t.replace(old, '', 1))
+  print('no_empty_gate ok')
+  PY
+  run_gold no_empty_gate
+  # restore: remove entire catalog completeness gate
+  cp "$SRC" "$PV"
+  python3 - <<'PY'
+  from pathlib import Path
+  p = Path("/tmp/czt-r2-review-435404/repo/lib/zero-shot/progress-verifier.mjs")
+  t = p.read_text()
+  import re
+  t2 = re.sub(r"  if \(expected\.some\(\(item\) => CATALOG_PROGRESS_KINDS\.has\(item\.kind\)\)\) \{\n    const blockedBefore = completenessBlocker\(beforeObservation\);\n    if \(blockedBefore\) retur
+  assert t2 != t
+  p.write_text(t2)
+  print('no_catalog_gate ok')
+  PY
+  run_gold no_catalog_gate
+  cp "$SRC" "$PV"
+  echo DONE_RESTORE
+del_visible ok
+=== MUT del_visible exit=1 ===
+… +133 lines
+  - P22 before 侧 脱 敏 抑 制 破 坏 因 果  → PROGRESS_REDACTION_SUPPRESSED: before 不 完 整 时 不 得 判 进 展 ： {"status":"progressed","reason":null,"progressReceipt":{"schemaVersion":1,"artifactKind
+progress-receipt","intentId":"intent_1","beforeObservationId":"obs_27","afterObservationId":"obs_28","conditionKinds":["roleVisible"],"status":"progressed","signed":false,"replayReady":false}}
+DONE_RESTORE
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (918ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (714ms)
+┃◆ Thought for 14.4s
+┃
+┃Key findings from mutations:1.
+Probing production-path reachability of matched===1 && pageCount>1 without truncation, and whether P21 actually covers the driver undercount case.
+◆ Run Probe pageCount reachability and over-tightening
+$ set -e
+  TMP=/tmp/czt-r2-review-435404/repo
+  cp /mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate/lib/zero-shot/progress-verifier.mjs "$TMP/lib/zero-shot/progress-verifier.mjs"
+  # Probe 1: catalog API — can matched=1 pageCount>1 exist without truncated?
+  node --input-type=module <<'EOF'
+  import { createAffordanceCatalog } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/affordance-catalog.mjs';
+  function raw(id, role, name, vis=true) {
+    return {
+      handle: { id, dispose() {} },
+      role, accessibleName: name, label: null, text: name,
+      visible: vis, enabled: true, actionSpace: ['click'],
+    };
+  }
+  // Case A: two same name, maxCandidates large
+  {
+    const cat = createAffordanceCatalog({
+      snapshot: { affordances: [raw('a','heading','X'), raw('b','heading','X')], truncated: false, sourceTruncated: false },
+      maxCandidates: 20,
+    });
+    console.log('A two-same full:', { truncated: cat.truncated, items: cat.affordances.map(i=>({name:i.semantic.name,pageCount:i.pageCount,vis:i.visible})) });
+  }
+  // Case B: two same name, maxCandidates=1 (catalog cut sibling)
+  {
+    const cat = createAffordanceCatalog({
+      snapshot: { affordances: [raw('a','heading','X'), raw('b','heading','X'), raw('c','heading','Y')], truncated: false },
+      maxCandidates: 1,
+    });
+    console.log('B maxCand=1:', { truncated: cat.truncated, items: cat.affordances.map(i=>({name:i.semantic.name,pageCount:i.pageCount})) });
+  }
+  // Case C: driver-like — only one X arrives, sourceTruncated true (lost sibling never projected)
+  {
+    const cat = createAffordanceCatalog({
+      snapshot: { affordances: [raw('a','heading','X'), raw('c','heading','Y')], sourceTruncated: true },
+      maxCandidates: 20,
+    });
+    console.log('C driver-trunc undercount:', { truncated: cat.truncated, items: cat.affordances.map(i=>({name:i.semantic.name,pageCount:i.pageCount})) });
+  }
+  // Case D: try to get matched=1 pageCount>1 truncated=false — is any config possible?
+  // Need: counts[X]>1 but only one X in bounded AND projected.length <= maxCandidates
+  // Impossible if both X in projected and projected.length <= maxCandidates (both retained, sorted adjacent)
+  // Unless different semanticKey but same matchesRole — check exact field variance (can't from semanticOf)
+  // Case E: hidden sibling still in projected
+  {
+    const cat = createAffordanceCatalog({
+      snapshot: { affordances: [raw('a','heading','X',true), raw('b','heading','X',false)], truncated: false },
+      maxCandidates: 20,
+    });
+    console.log('E visible+hidden same name:', { truncated: cat.truncated, items: cat.affordances.map(i=>({pageCount:i.pageCount,vis:i.visible})) });
+    // matched for roleVisible = 2, not 1
+  }
+  // Case F: redaction suppresses second X without truncated
+  {
+    const secret = '关 联 凭 证  QQ1yZmM0YTIxYjhkNGU0ZjZhOWMwZDNlN2I1YTgyYzRk';
+    const cat = createAffordanceCatalog({
+      snapshot: { affordances: [
+        raw('a','heading','X'),
+        { handle:{id:'b',dispose(){}}, role:'heading', accessibleName:'X', label:null, text:`X ${secret}`, visible:true, enabled:true, actionSpace:[] },
+      ], truncated:false },
+      maxCandidates: 20,
+    });
+    console.log('F redaction sibling:', { truncated: cat.truncated, redactionSuppressed: cat.redactionSuppressed,
+      items: cat.affordances.map(i=>({name:i.semantic.name,pageCount:i.pageCount})) });
+    // pageCount=1, redactionSuppressed=1 — uniqueness false green closed by redaction gate not pageCount
+  }
+  console.log('CONCLUSION: matched=1 && pageCount>1 requires catalog bound cut => truncated=true');
+  console.log('driver undercount gives pageCount=1 && truncated=true — pageCount check never sees undercount');
+  console.log('redaction undercount gives pageCount=1 && redactionSuppressed>0 — pageCount check never sees undercount');
+  EOF
+  # Probe 2: P14 still only urlPathname under truncation progresses; roleVisible alone under trunc blocked
+  node --input-type=module <<'EOF'
+  // Read golden P14 to confirm expectedProgress
+  import { readFileSync } from 'fs';
+  const g = readFileSync('/tmp/czt-r2-review-435404/repo/tests/_golden/zero-shot-typed-progress-predicate.zero-sut.golden.mjs','utf8');
+  const i = g.indexOf("P14 纯 存 在 性 ");
+  console.log(g.slice(i, i+500));
+  EOF
+  # Probe 3: over-tighten — unique roleVisible with unrelated catalog truncation
+  node --input-type=module <<'EOF'
+  import { createPageDriverDouble } from '/tmp/czt-r2-review-435404/repo/tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs';
+  import { freezeZeroShotStepContract } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/step-contract.mjs';
+  import { observePage } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/page-observer.mjs';
+  import { resolveDeterministicAction } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/deterministic-resolver.mjs';
+  import { admitZeroShotAction } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/action-admission.mjs';
+  import { executeAdmittedAction } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/step-executor.mjs';
+  import { verifyStepProgress } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/progress-verifier.mjs';
+  import { buildIntentPlan } from '/tmp/czt-r2-review-435404/repo/lib/intent-plan.mjs';
+  import { readFileSync } from 'fs';
+  const REGISTRY = JSON.parse(readFileSync('/tmp/czt-r2-review-435404/repo/lib/atoms-registry.snapshot.json','utf8'));
+  const CASE_ID = 'tc_zero_shot_typed_progress';
+  const INTENT_ID = 'intent_1';
+  const NAV_NAME = '进 入 工 作 流 管 理 ';
+  const PAGE_HEADING = '工 作 流 管 理 ';
+  const testcase = Object.freeze({
+    schemaVersion: 1, caseId: CASE_ID,
+    source: { kind: 'freetext', raw: '点 击 工 作 流 管 理 ' },
+    preconditions: ['已 登 录 '],
+    steps: [{ intentId: INTENT_ID, intent: '点 击 工 作 流 管 理 ', actionHint: 'click',
+      expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/workflow' }] }],
+    globalAssertions: [], uniquePrefix: 'atl_',
+  });
+  const expectedProgress = [{ kind: 'roleVisible', role: 'heading', name: PAGE_HEADING }];
+  const contract = freezeZeroShotStepContract({
+    testcase, intentPlan: buildIntentPlan({ testcase, registry: REGISTRY }),
+    intentId: INTENT_ID, action: 'click',
+    target: { kind: 'role', role: 'link', name: NAV_NAME, exact: true },
+    effect: 'read', expectedProgress, userConfirmed: true,
+  }).contract;
+  function role(handleId, role, name, actionSpace=[]) {
+    return { handleId, role, accessibleName: name, label: null, text: name, visible: true, enabled: true, actionSpace };
+  }
+  const nav = role('nav-workflow','link',NAV_NAME,['click']);
+  const head = role('heading-workflow','heading',PAGE_HEADING);
+  // 25 unique fillers so maxCandidates=20 truncates but heading is unique & first by sort?
+  // sort is semanticKey localeCompare - heading key vs fillers
+  const fillers = Array.from({length: 25}, (_,i) => role(`f${i}`,'button',`填 充 项 ${String(i).padStart(2,'0')}`));
+  // Put heading only in after; before just nav
+  const page = createPageDriverDouble({
+    snapshots: [
+      { revision:'r1', url:'https://example.invalid/home', title:'t', settled:true, unsupportedScopes:{}, affordances:[nav] },
+      { revision:'r2', url:'https://example.invalid/workflow/list', title:'t', settled:true, unsupportedScopes:{},
+        affordances:[head, ...fillers] },
+    ],
+    revalidate: { connected:true, sameNode:true, pageCount:1, visible:true, enabled:true },
+  });
+  const before = await observePage({ driver: page.driver, intentId: INTENT_ID, maxCandidates: 20 });
+  const resolution = resolveDeterministicAction({ stepContract: contract, observation: before.observation });
+  const admitted = await admitZeroShotAction({ stepContract: contract, observation: before.observation, observationAuthority: before.authority, resolution });
+  const executed = await executeAdmittedAction({ admission: admitted.admission });
+  const after = await observePage({ driver: page.driver, intentId: INTENT_ID, maxCandidates: 20 });
+  const progress = verifyStepProgress({
+    stepContract: contract,
+    beforeObservation: before.observation,
+    actionReceipt: executed.actionReceipt,
+    afterObservation: after.observation,
+    afterObservationAuthority: after.authority,
+  });
+  const matched = after.observation.affordances.filter(a => a.semantic?.name === PAGE_HEADING);
+  console.log('OVER_TIGHTEN unique heading + catalog trunc:', {
+    truncated: after.observation.truncated,
+    totalCandidates: after.observation.affordances?.length,
+    matched: matched.map(m=>({pageCount:m.pageCount,vis:m.visible,id:m.affordanceId})),
+    progress,
+  });
+  // Without completeness gate would this be progressed? Simulate by checking matchesPredicate logic
+  const uniqueOk = matched.length===1 && matched[0].pageCount===1 && matched[0].visible===true;
+  console.log('predicate would be true if gate skipped:', uniqueOk, 'status=', progress.status, progress.reason);
+  EOF
+A two-same full: {
+  truncated: false,
+… +44 lines
+  }
+}
+predicate would be true if gate skipped: false status= pending PROGRESS_CATALOG_TRUNCATED
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (975ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (754ms)
+┃◆ Thought for 0.7s
+┃
+┃Interesting - the over-tighten probe had matched=[] because heading was cut from the bounded catalog due to sort order! The fillers might sort before the heading. Let me fix the probe to ensure the
+┃un...
+Heading was dropped by sort order in that probe; re-running with the unique target retained under catalog truncation.
+◆ Run Probe over-tighten retained unique + short-circuit
+$ set -e
+  node --input-type=module <<'EOF'
+  import { createPageDriverDouble } from '/tmp/czt-r2-review-435404/repo/tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs';
+  import { freezeZeroShotStepContract } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/step-contract.mjs';
+  import { observePage } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/page-observer.mjs';
+  import { resolveDeterministicAction } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/deterministic-resolver.mjs';
+  import { admitZeroShotAction } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/action-admission.mjs';
+  import { executeAdmittedAction } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/step-executor.mjs';
+  import { verifyStepProgress } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/progress-verifier.mjs';
+  import { buildIntentPlan } from '/tmp/czt-r2-review-435404/repo/lib/intent-plan.mjs';
+  import { createAffordanceCatalog } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/affordance-catalog.mjs';
+  import { readFileSync } from 'fs';
+  const REGISTRY = JSON.parse(readFileSync('/tmp/czt-r2-review-435404/repo/lib/atoms-registry.snapshot.json','utf8'));
+  const INTENT_ID = 'intent_1';
+  const NAV_NAME = '进 入 工 作 流 管 理 ';
+  const PAGE_HEADING = '工 作 流 管 理 ';
+  const testcase = Object.freeze({
+    schemaVersion: 1, caseId: 'tc_zero_shot_typed_progress',
+    source: { kind: 'freetext', raw: 'x' }, preconditions: [],
+    steps: [{ intentId: INTENT_ID, intent: '点 击 工 作 流 管 理 ', actionHint: 'click',
+      expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/workflow' }] }],
+    globalAssertions: [], uniquePrefix: 'atl_',
+  });
+  const expectedProgress = [{ kind: 'roleVisible', role: 'heading', name: PAGE_HEADING }];
+  const contract = freezeZeroShotStepContract({
+    testcase, intentPlan: buildIntentPlan({ testcase, registry: REGISTRY }),
+    intentId: INTENT_ID, action: 'click',
+    target: { kind: 'role', role: 'link', name: NAV_NAME, exact: true },
+    effect: 'read', expectedProgress, userConfirmed: true,
+  }).contract;
+  function role(handleId, role, name, actionSpace=[]) {
+    return { handleId, role, accessibleName: name, label: null, text: name, visible: true, enabled: true, actionSpace };
+  }
+  const nav = role('nav-workflow','link',NAV_NAME,['click']);
+  const head = role('heading-workflow','heading',PAGE_HEADING);
+  // Use names that sort AFTER heading's semanticKey so heading is retained in first 20
+  // semantic of heading: kind role name 工 作 流 管 理
+  // Use zzz prefix buttons
+  const fillers = Array.from({length: 25}, (_,i) => role(`f${i}`,'button',`zzz填 充 ${String(i).padStart(2,'0')}`));
+  // First check catalog alone
+  const raws = [head, ...fillers].map((a,i)=>({
+    handle:{id:a.handleId,dispose(){}}, role:a.role, accessibleName:a.name||a.accessibleName,
+    label:null, text:a.text, visible:true, enabled:true, actionSpace:a.actionSpace||[]
+  }));
+  // fix accessibleName
+  for (const r of raws) { if (!r.accessibleName) r.accessibleName = r.text; }
+  const cat = createAffordanceCatalog({
+    snapshot: { affordances: raws.map((r,i)=>({...r, handle:{id:String(i),dispose(){}}, accessibleName: i===0?PAGE_HEADING:`zzz填 充 ${String(i-1).padStart(2,'0')}`, role:i===0?'heading':'button', tex
+    maxCandidates: 20,
+  });
+  console.log('catalog-only:', {
+    truncated: cat.truncated,
+    totalCandidates: cat.totalCandidates,
+    retained: cat.affordances.length,
+    heading: cat.affordances.filter(a=>a.semantic?.name===PAGE_HEADING).map(a=>({pageCount:a.pageCount,vis:a.visible})),
+  });
+  const page = createPageDriverDouble({
+    snapshots: [
+      { revision:'r1', url:'https://example.invalid/home', title:'t', settled:true, unsupportedScopes:{}, affordances:[nav] },
+      { revision:'r2', url:'https://example.invalid/workflow/list', title:'t', settled:true, unsupportedScopes:{},
+        affordances:[head, ...fillers] },
+    ],
+    revalidate: { connected:true, sameNode:true, pageCount:1, visible:true, enabled:true },
+  });
+  const before = await observePage({ driver: page.driver, intentId: INTENT_ID, maxCandidates: 20 });
+  const resolution = resolveDeterministicAction({ stepContract: contract, observation: before.observation });
+  const admitted = await admitZeroShotAction({ stepContract: contract, observation: before.observation, observationAuthority: before.authority, resolution });
+  const executed = await executeAdmittedAction({ admission: admitted.admission });
+  const after = await observePage({ driver: page.driver, intentId: INTENT_ID, maxCandidates: 20 });
+  const progress = verifyStepProgress({
+    stepContract: contract,
+    beforeObservation: before.observation,
+    actionReceipt: executed.actionReceipt,
+    afterObservation: after.observation,
+    afterObservationAuthority: after.authority,
+  });
+  const matched = after.observation.affordances.filter(a => a.semantic?.name === PAGE_HEADING && a.semantic?.role==='heading');
+  const uniqueOk = matched.length===1 && matched[0].pageCount===1 && matched[0].visible===true;
+  console.log('e2e unique retained under trunc:', {
+    truncated: after.observation.truncated,
+    retained: after.observation.affordances.length,
+    matched: matched.map(m=>({pageCount:m.pageCount,vis:m.visible})),
+    uniqueOk,
+    progressStatus: progress.status,
+    progressReason: progress.reason,
+  });
+  // If gate were only for driver truncation (sourceTruncated), this catalog-only trunc would still prove unique.
+  // Current code rejects. Is that over-tight? Yes vs F1 minimal fix; intentional per R2 "any incompleteness".
+  EOF
+  # Also verify: short-circuit masks reasons — before redaction + after truncated reports only before redaction
+  node --input-type=module <<'EOF'
+  import { createPageDriverDouble } from '/tmp/czt-r2-review-435404/repo/tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs';
+  import { freezeZeroShotStepContract } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/step-contract.mjs';
+  import { observePage } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/page-observer.mjs';
+  import { resolveDeterministicAction } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/deterministic-resolver.mjs';
+  import { admitZeroShotAction } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/action-admission.mjs';
+  import { executeAdmittedAction } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/step-executor.mjs';
+  import { verifyStepProgress } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/progress-verifier.mjs';
+  import { buildIntentPlan } from '/tmp/czt-r2-review-435404/repo/lib/intent-plan.mjs';
+  import { readFileSync } from 'fs';
+  const REGISTRY = JSON.parse(readFileSync('/tmp/czt-r2-review-435404/repo/lib/atoms-registry.snapshot.json','utf8'));
+  const INTENT_ID = 'intent_1';
+  const NAV_NAME = '进 入 工 作 流 管 理 ';
+  const PAGE_HEADING = '工 作 流 管 理 ';
+  const SECRET = '关 联 凭 证  QQ1yZmM0YTIxYjhkNGU0ZjZhOWMwZDNlN2I1YTgyYzRk';
+  const testcase = Object.freeze({
+    schemaVersion: 1, caseId: 'tc_zero_shot_typed_progress',
+    source: { kind: 'freetext', raw: 'x' }, preconditions: [],
+    steps: [{ intentId: INTENT_ID, intent: '点 击 工 作 流 管 理 ', actionHint: 'click',
+      expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/workflow' }] }],
+    globalAssertions: [], uniquePrefix: 'atl_',
+  });
+  const expectedProgress = [{ kind: 'roleVisible', role: 'heading', name: PAGE_HEADING }];
+  const contract = freezeZeroShotStepContract({
+    testcase, intentPlan: buildIntentPlan({ testcase, registry: REGISTRY }),
+    intentId: INTENT_ID, action: 'click',
+    target: { kind: 'role', role: 'link', name: NAV_NAME, exact: true },
+    effect: 'read', expectedProgress, userConfirmed: true,
+  }).contract;
+  const nav = { handleId:'nav-workflow', role:'link', accessibleName:NAV_NAME, label:null, text:NAV_NAME, visible:true, enabled:true, actionSpace:['click'] };
+  const head = { handleId:'h', role:'heading', accessibleName:PAGE_HEADING, label:null, text:PAGE_HEADING, visible:true, enabled:true, actionSpace:[] };
+  const sens = { handleId:'s', role:'heading', accessibleName:PAGE_HEADING, label:null, text:`${PAGE_HEADING} ${SECRET}`, visible:true, enabled:true, actionSpace:[] };
+  const fillers = Array.from({length:3}, (_,i)=>({ handleId:`f${i}`, role:'button', accessibleName:`甲 区 ${i}`, label:null, text:`甲 区 ${i}`, visible:true, enabled:true, actionSpace:[] }));
+  const page = createPageDriverDouble({
+    snapshots: [
+      { revision:'r1', url:'https://example.invalid/home', title:'t', settled:true, unsupportedScopes:{}, affordances:[nav, sens] },
+      { revision:'r2', url:'https://example.invalid/workflow/list', title:'t', settled:true, unsupportedScopes:{},
+        affordances:[head, ...fillers] },
+    ],
+    revalidate: { connected:true, sameNode:true, pageCount:1, visible:true, enabled:true },
+  });
+  const before = await observePage({ driver: page.driver, intentId: INTENT_ID, maxCandidates: 2 });
+  const resolution = resolveDeterministicAction({ stepContract: contract, observation: before.observation });
+  const admitted = await admitZeroShotAction({ stepContract: contract, observation: before.observation, observationAuthority: before.authority, resolution });
+  const executed = await executeAdmittedAction({ admission: admitted.admission });
+  const after = await observePage({ driver: page.driver, intentId: INTENT_ID, maxCandidates: 2 });
+  const progress = verifyStepProgress({
+    stepContract: contract,
+    beforeObservation: before.observation,
+    actionReceipt: executed.actionReceipt,
+    afterObservation: after.observation,
+    afterObservationAuthority: after.authority,
+  });
+  console.log('short-circuit dual incompleteness:', {
+    before: { redactionSuppressed: before.observation.redactionSuppressed, truncated: before.observation.truncated },
+    after: { redactionSuppressed: after.observation.redactionSuppressed, truncated: after.observation.truncated, n: after.observation.affordances.length },
+    progress,
+  });
+  EOF
+catalog-only: { truncated: true, totalCandidates: 26, retained: 20, heading: [] }
+e2e unique retained under trunc: {
+… +13 lines
+    progressReceipt: null
+  }
+}
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (929ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (756ms)
+┃◆ Thought for 22.1s
+┃
+┃The heading semantic key sorting - Chinese characters might sort after zzz? Let me check - heading was empty in retained. So 工 作 流 管 理  sorts after button names? Or the semantic key format cause
+┃different...
+◆ Run Retained unique roleVisible under catalog trunc
+$ set -e
+  node --input-type=module <<'EOF'
+  import { createPageDriverDouble } from '/tmp/czt-r2-review-435404/repo/tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs';
+  import { freezeZeroShotStepContract } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/step-contract.mjs';
+  import { observePage } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/page-observer.mjs';
+  import { resolveDeterministicAction } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/deterministic-resolver.mjs';
+  import { admitZeroShotAction } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/action-admission.mjs';
+  import { executeAdmittedAction } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/step-executor.mjs';
+  import { verifyStepProgress } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/progress-verifier.mjs';
+  import { buildIntentPlan } from '/tmp/czt-r2-review-435404/repo/lib/intent-plan.mjs';
+  import { createAffordanceCatalog } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/affordance-catalog.mjs';
+  import { readFileSync } from 'fs';
+  const REGISTRY = JSON.parse(readFileSync('/tmp/czt-r2-review-435404/repo/lib/atoms-registry.snapshot.json','utf8'));
+  const INTENT_ID = 'intent_1';
+  const NAV_NAME = '进 入 工 作 流 管 理 ';
+  const PAGE_HEADING = '工 作 流 管 理 ';
+  const testcase = Object.freeze({
+    schemaVersion: 1, caseId: 'tc_zero_shot_typed_progress',
+    source: { kind: 'freetext', raw: 'x' }, preconditions: [],
+    steps: [{ intentId: INTENT_ID, intent: '点 击 工 作 流 管 理 ', actionHint: 'click',
+      expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/workflow' }] }],
+    globalAssertions: [], uniquePrefix: 'atl_',
+  });
+  const expectedProgress = [{ kind: 'roleVisible', role: 'heading', name: PAGE_HEADING }];
+  const contract = freezeZeroShotStepContract({
+    testcase, intentPlan: buildIntentPlan({ testcase, registry: REGISTRY }),
+    intentId: INTENT_ID, action: 'click',
+    target: { kind: 'role', role: 'link', name: NAV_NAME, exact: true },
+    effect: 'read', expectedProgress, userConfirmed: true,
+  }).contract;
+  function role(handleId, r, name, actionSpace=[]) {
+    return { handleId, role:r, accessibleName: name, label:null, text:name, visible:true, enabled:true, actionSpace };
+  }
+  const nav = role('nav-workflow','link',NAV_NAME,['click']);
+  const head = role('heading-workflow','heading',PAGE_HEADING);
+  // ASCII names sort before CJK in semanticKey JSON ("name":"AAA..." vs "name":"工 作 ...")
+  // So use maxCandidates=2 with head + 3 CJK fillers that sort after head?
+  // Actually "name":"AAA" < "name":"工 作 " because A (0x41) < 工
+  // For head retained: need head among first maxCandidates after sort.
+  // Use 3 fillers with names starting with \u9fff (high CJK) so they sort after 工 作 流 管 理
+  const fillers = [
+    role('f1','button','\u9fff甲 '),
+    role('f2','button','\u9fff乙 '),
+    role('f3','button','\u9fff丙 '),
+  ];
+  const raws = [head, ...fillers].map((a,i)=>({
+    handle:{id:String(i),dispose(){}},
+    role:a.role, accessibleName:a.accessibleName, label:null, text:a.text,
+    visible:true, enabled:true, actionSpace:a.actionSpace||[],
+  }));
+  const cat = createAffordanceCatalog({ snapshot:{ affordances:raws, truncated:false }, maxCandidates:2 });
+  console.log('catalog-only retained under trunc:', {
+    truncated: cat.truncated, total: cat.totalCandidates,
+    items: cat.affordances.map(a=>({role:a.semantic.role,name:a.semantic.name,pageCount:a.pageCount})),
+  });
+  const page = createPageDriverDouble({
+    snapshots: [
+      { revision:'r1', url:'https://example.invalid/home', title:'t', settled:true, unsupportedScopes:{}, affordances:[nav] },
+      { revision:'r2', url:'https://example.invalid/workflow/list', title:'t', settled:true, unsupportedScopes:{},
+        affordances:[head, ...fillers] },
+    ],
+    revalidate: { connected:true, sameNode:true, pageCount:1, visible:true, enabled:true },
+  });
+  const before = await observePage({ driver: page.driver, intentId: INTENT_ID, maxCandidates: 2 });
+  const resolution = resolveDeterministicAction({ stepContract: contract, observation: before.observation });
+  const admitted = await admitZeroShotAction({ stepContract: contract, observation: before.observation, observationAuthority: before.authority, resolution });
+  console.log('admit', admitted.ok, admitted.reason);
+  const executed = await executeAdmittedAction({ admission: admitted.admission });
+  const after = await observePage({ driver: page.driver, intentId: INTENT_ID, maxCandidates: 2 });
+  const progress = verifyStepProgress({
+    stepContract: contract,
+    beforeObservation: before.observation,
+    actionReceipt: executed.actionReceipt,
+    afterObservation: after.observation,
+    afterObservationAuthority: after.authority,
+  });
+  const matched = after.observation.affordances.filter(a => a.semantic?.name === PAGE_HEADING && a.semantic?.role==='heading');
+  const uniqueOk = matched.length===1 && matched[0].pageCount===1 && matched[0].visible===true;
+  console.log('RESULT:', {
+    truncated: after.observation.truncated,
+    items: after.observation.affordances.map(a=>({role:a.semantic.role,name:a.semantic.name,pageCount:a.pageCount})),
+    uniqueOk,
+    progress: { status: progress.status, reason: progress.reason },
+  });
+  // Pre-R2 roleVisible would pass uniqueOk; R2 rejects due to truncated.
+  // This is over-tight relative to catalog-accurate pageCount, intentional fail-safe for driver trunc.
+  EOF
+catalog-only retained under trunc: {
+  truncated: true,
+… +13 lines
+  uniqueOk: true,
+  progress: { status: 'pending', reason: 'PROGRESS_CATALOG_TRUNCATED' }
+}
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (851ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (643ms)
+┃◆ Thought for 36.5s
+┃
+┃Confirmed: unique roleVisible with accurate pageCount under pure catalog truncation is now rejected. This is intentional over-tightening per R2. Medium: catalog truncation over-rejects unique
+┃roleVisible
+┃
+┃The fix does block F1/F2/F3 by gating on readDirectory and redactionSuppressed, but it also rejects legitimate cases where pageCount===1 and the target is the sole visible role element. This matches
+┃the author's intentional 20-candidate default tradeoff.
+┃
+┃No new false greens. P21-P24 remain green under mutation; the gate still catches undercount via sourceTruncated.
+┃
+┃pageCount===1 unreachability verified — production path never hits this state.
+┃
+┃VERDICT: CHANGES_REQUIRED (Medium over-tightening + stale acceptance text)
+┃
+┃The fix is directionally correct but needs a narrower gate or explicit exemption for unique-role cases to avoid product impact. P14 exemption for urlPathname is still correct. P21-P24 unchanged. F3
+┃empty-after logic holds. F2 before/after ordering is safe. 2/5 items need attention.
+┃
+┃VERDICT: CHANGES_REQUIRED (Medium)
+┃
+┃The over-tightening is real and documented in R2, but stale plan.md lines 103-104 still contradict the new rule.
+◆ Run Check if adapter can simulate driver truncation
+$ set -e
+  # Reproduce F1 classic: sourceTruncated + single same-name heading in catalog (sibling never projected)
+  node --input-type=module <<'EOF'
+  import { createPageDriverDouble } from '/tmp/czt-r2-review-435404/repo/tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs';
+  import { freezeZeroShotStepContract } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/step-contract.mjs';
+  import { observePage } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/page-observer.mjs';
+  import { resolveDeterministicAction } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/deterministic-resolver.mjs';
+  import { admitZeroShotAction } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/action-admission.mjs';
+  import { executeAdmittedAction } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/step-executor.mjs';
+  import { verifyStepProgress } from '/tmp/czt-r2-review-435404/repo/lib/zero-shot/progress-verifier.mjs';
+  import { buildIntentPlan } from '/tmp/czt-r2-review-435404/repo/lib/intent-plan.mjs';
+  import { readFileSync } from 'fs';
+  const REGISTRY = JSON.parse(readFileSync('/tmp/czt-r2-review-435404/repo/lib/atoms-registry.snapshot.json','utf8'));
+  const INTENT_ID = 'intent_1';
+  const NAV_NAME = '进 入 工 作 流 管 理 ';
+  const NAME = '工 作 流 详 情 ';
+  const testcase = Object.freeze({
+    schemaVersion: 1, caseId: 'tc_zero_shot_typed_progress',
+    source: { kind: 'freetext', raw: 'x' }, preconditions: [],
+    steps: [{ intentId: INTENT_ID, intent: '点 击 工 作 流 管 理 ', actionHint: 'click',
+      expected: [{ kind: 'urlPathname', op: 'startsWith', value: '/workflow' }] }],
+    globalAssertions: [], uniquePrefix: 'atl_',
+  });
+  const expectedProgress = [{ kind: 'roleVisible', role: 'dialog', name: NAME }];
+  const contract = freezeZeroShotStepContract({
+    testcase, intentPlan: buildIntentPlan({ testcase, registry: REGISTRY }),
+    intentId: INTENT_ID, action: 'click',
+    target: { kind: 'role', role: 'link', name: NAV_NAME, exact: true },
+    effect: 'read', expectedProgress, userConfirmed: true,
+  }).contract;
+  const nav = { handleId:'nav', role:'link', accessibleName:NAV_NAME, label:null, text:NAV_NAME, visible:true, enabled:true, actionSpace:['click'] };
+  const dialog = { handleId:'d1', role:'dialog', accessibleName:NAME, label:null, text:NAME, visible:true, enabled:true, actionSpace:[] };
+  // Driver double: need sourceTruncated on after snapshot
+  // Check if adapter supports sourceTruncated
+  const doubleSrc = readFileSync('/tmp/czt-r2-review-435404/repo/tests/_golden/fixtures/zero-shot-observe-admit-step/adapter-double.mjs','utf8');
+  console.log('adapter has sourceTruncated?', /sourceTruncated|truncated/.test(doubleSrc));
+  console.log(doubleSrc.match(/snapshotMainFrame[\s\S]{0,800}/)?.[0]?.slice(0,600));
+  EOF
+adapter has sourceTruncated? false
+snapshotMainFrame({ maxCandidates } = {}) {
+… +13 lines
+      history.revalidate.push({
+        handle,
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (904ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (621ms)
+┃◆ Thought for 10.3s
+┃
+┃The adapter doesn't set truncated/sourceTruncated from snapshots. How does P12/P21 get truncated? Via maxCandidates in createAffordanceCatalog path through observePage.
+◆ Run Confirm clean tree and PRD/plan consistency
+$ # Confirm original tree clean of our mutations
+  cd /mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate
+  git status -sb
+  git diff --stat HEAD -- lib/zero-shot/progress-verifier.mjs | head
+  # Show PRD entries for P21-24
+  python3 - <<'PY'
+  import json
+  p=json.load(open('loop/prd-zero-shot-typed-progress-predicate.json'))
+  # print structure keys
+  print(list(p.keys())[:20])
+  tests=p.get('tests') or p.get('acceptance') or p
+  if isinstance(p.get('checks'), list):
+    for c in p['checks']:
+      s=str(c)
+      if 'P21' in s or 'P22' in s or 'P23' in s or 'P24' in s or 'pageCount' in s or 'TRUNCATED' in s:
+        print(c)
+  # try nested
+  import pprint
+  # find strings with P21
+  def walk(o,path=''):
+    if isinstance(o,dict):
+      for k,v in o.items(): walk(v,f'{path}.{k}')
+    elif isinstance(o,list):
+      for i,v in enumerate(o): walk(v,f'{path}[{i}]')
+    elif isinstance(o,str) and any(x in o for x in ['P21','P22','P23','P24','pageCount','CATALOG_EMPTY','完 整 性 ']):
+      print(path, ':', o[:120])
+  walk(p)
+  PY
+  # plan stale lines around 103
+  sed -n '100,155p' docs/plans/zero-shot-typed-progress-predicate/plan.md
+## zero-shot-typed-progress-predicate
+?? node_modules
+… +66 lines
+16. 无 可 用 名 称 而 被 丢 弃 的 候 选 **不 **计 入 抑 制 、 **不 **阻 断 缺 席 判 定 （ 只 抑 制 才 阻 断 ） ；
+17. `roleVisible` 同 样 吃 完 整 性 前 置 ： after 截 断  → `PROGRESS_CATALOG_TRUNCATED`；
+18. before 侧 脱 敏 抑 制  → `PROGRESS_REDACTION_SUPPRESSED`（ 钉 住 因 果 不 被 前 侧 不 完 整 绕 过 ） ；
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (1624ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (595ms)
+┃◆ Thought for 25.2s
+┃
+┃There's a clear plan self-contradiction:1. F1/F2/F3 修 复 均 成 立 ， 无 反 例 。 F1 按 目 录 截 断 丢 弃 后 置  sourceTruncated， pageCount 低 估 导 致  roleVisible 假 绿 被 堵 ； F2 补 查  redactio
+┃空  目 录 后  roleHidden 平 凡 成 立 。
+┃
+┃2. 未 过 度 收 紧 。 urlPathname 豁 免 仍 正 确 （ P14 仍 绿 ） ， P14 因 删  visible===true 仍 绿 （ 生 产 不 可 达 ） 。
+┃
+┃3. 无 新 假 绿 。 before/after completenessBlocker 短 路  仅 报  redaction， 未 掩 盖  truncation 拒 因 （ 两 者 均 为  incompleteness， 非  false green） 。
+┃
+┃4. 不 可 达 。 生 产 路 径 下  pageCount===1 状 态 未 出 现 ， 删 后 仍 绿 。
+┃
+┃5. P21-P24 无 假 绿 。 断 言 过 松 但 实 现 削 弱 仍 绿  。
+┃
+┃Medium: plan.md ATDD #14 与  #17 及  R2 规 则 自 相 矛 盾 。
+┃
+┃VERDICT: CHANGES_REQUIRED
+┃
+┃The plan contradiction is Medium and should be cleaned before merge. Code is solid, but shipping contradictory acceptance criteria is a process defect.
+◆ Run Final golden reconfirm and plan contradiction lines
+$ # Final confirm goldens still green on original tree (read-only)
+  cd /mnt/d/ctx/heren/casey-zero-shot-typed-progress-predicate
+  node tests/_golden/zero-shot-typed-progress-predicate.zero-sut.golden.mjs >/tmp/czt-final-typed.out 2>&1; echo typed:$?
+  tail -1 /tmp/czt-final-typed.out
+  # quick grep plan contradiction
+  grep -n "urlPathname.*roleVisible\|roleVisible.*不 加 \|纯 存 在 性  expected" docs/plans/zero-shot-typed-progress-predicate/plan.md
+typed:0
+ok   zero-shot-typed-progress-predicate: 24/24 全 过
+103:存 在 性 断 言 （ `urlPathname`、 `roleVisible`） 不 加 此 约 束 ： 截 断 只 丢 候 选 不 造 候 选 ， 且  `pageCount` 在 截 断 前
+149:14. 纯 存 在 性  expected（ 只 有  `urlPathname`/`roleVisible`） 在  after `truncated:true` 下 **不 **被 本 约 束
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (761ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (682ms)
+┃◆ Thought for 6.4s
+┃
+┃I have enough for a thorough review report. Let me structure the final answer clearly covering all 5 questions, findings, mutations, and verdict. 1.
+复 审 报 告  · R2 fix 446881b..981b4a3
+范 围 ： 只 核  F1–F4 修 复 ； 原 树 只 读 ； 变 异 在  /tmp/czt-r2-review-435404。
+金 牌 （ 原 树 退 出 码 ） ： typed 24/24 exit 0； action 12/12 exit 0； authority 11/11 exit 0； page-observer 8/8 exit 0。
+───
+修 复 要 点 （ 代 码 ）
+progress-verifier.mjs：
+• CATALOG_PROGRESS_KINDS = {roleVisible, roleHidden} → before 与  after 都 过  completenessBlocker（ truncated / unsupportedScopes / redactionSuppressed） 。
+• ABSENCE_PROGRESS_KINDS = {roleHidden} → after 目 录 空  → PROGRESS_CATALOG_EMPTY。
+• urlPathname 不 进 上 述 集 合 （ 只 读  pathname） 。
+• roleVisible 仍 要 求  matched.length===1 && pageCount===1 && visible===true。
+───
+对 五 个 问 题 的 结 论
+1. 「 按 是 否 读 目 录 划 线 」 是 否 堵 住  F1/F2/F3？
+┌──────────────────────────────────────────┬──────────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ Finding                                  │ 是 否 堵 住  │ 依 据
+├──────────────────────────────────────────┼──────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ F1 driver 截 断  + pageCount 低 估  →        │ 是        │ driver 丢 候 选 时 必 置  sourceTruncated → observation.truncated===true → 读 目 录 判 据 先  PROGRESS_CATALOG_TRUNCATED， 到 不 了  matche
+│ roleVisible 假 绿                          │          │ 层 截 断 （ maxCandidates） 同 样  truncated， P21 钉 住 。
+├──────────────────────────────────────────┼──────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ F2 before redactionSuppressed 绕 因 果      │ 是        │ before 先 跑  completenessBlocker； P22 端 到 端 ： before 抑 制  1、 after 干 净  → PROGRESS_REDACTION_SUPPRESSED。 去 掉  before 闸 后  P2
+│                                          │          │ 变 异 证 实 钉 子 有 效 ） 。
+├──────────────────────────────────────────┼──────────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ F3 after 空 目 录  roleHidden 平 凡 成 立       │ 是        │ PROGRESS_CATALOG_EMPTY； P24 钉 住 。 去 掉 空 目 录 闸 后  P24 变  progressed。
+└──────────────────────────────────────────┴──────────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+可 复 现 反 例 （ 修 后 应 拒 ， 修 前 /削 弱 后 假 绿 ） ： 无 「 修 后 仍 假 绿 」 的 反 例 。
+F1 经 典 形 态 （ sourceTruncated + 幸 存 集  pageCount===1） 在  catalog 层 可 构 造 ： truncated:true 且  pageCount:1 → 现 役 直 接  PROGRESS_CATALOG_TRUNCATED。
+未 宣 称 穷 尽 的 洞 （ 计 划 已  route:human， 非 本 修 回 退 ） ： 无  role 的 可 见 容 器 从 不 进 目 录 且 无 完 整 性 标 志 ——R2 未 改  driver 过 滤 ， 仍 不 在  F1–F3 闭 环 内 。
+2. 是 否 过 度 收 紧 ？ urlPathname / P14 / P14 是 否 被 削 弱 ？
+┌────────────────────────────┬─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 项                          │ 结 论                                                                                                                                     │
+├────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ urlPathname 豁 免            │ 仍 正 确 。 不 进  CATALOG_PROGRESS_KINDS； P14 仅  [URL_WORKFLOW] + after 截 断  → progressed， exit 0。                                           │
+├────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ P14                        │ 未 被 削 弱 （ 按 现 金 牌 语 义 ： 纯  URL） 。                                                                                                       │
+├────────────────────────────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ roleVisible + catalog 截 断  │ 有 意 收 紧 。 catalog 层  pageCount 在  全  projected 上 计 数 ， 唯 一 且 仍 在  bound 内 的 目 标 在 截 断 下 本 可 证 唯 一 ， 现 一 律  PROGRESS_CATALOG_TRUNCATED
+└────────────────────────────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+可 复 现 （ 合 法 唯 一 仍 拒 ） （ /tmp 探 针 ） ： maxCandidates=2， after 含 唯 一  heading:工 作 流 管 理  + 3 个 排 序 更 靠 后 的  button → truncated:true、 matched.pageCount===1、 uniqueOk:true
+PROGRESS_CATALOG_TRUNCATED。
+这 是 相 对 「 只 拦  driver 截 断 、 豁 免  catalog 截 断 」 的 更 粗  fail-closed； R2 正 文 写 明 统 一 规 则 ， 不 是 新 假 绿 ， 但 是 对 忙 页  / 小  maxCandidates 的 误 拒 面 （ 计 划  observab
+小 修 法 偏 紧 ， 不 单 独 升  High。
+3. 新 假 绿  / 新 矛 盾 ？ before/after 短 路 ？
+• 无 新 假 绿 （ 在  F1–F3 攻 击 面 上 ） 。
+• 短 路 ： 先  before 再  after， 命 中 即  return。 双 不 完 整 时 只 暴 露  before 原 因 （ 探 针 ： before redactionSuppressed=1 + after truncated=true → 仅  PROGRESS_REDACTION_SUPPRESSED） 。 仍
+响 下 游 按  reason 路 由 ， 不 构 成 假 绿 。
+• 空 目 录 闸 在 完 整 性 之 后 ： after 截 断 且 空 时 先 报 截 断 ， 合 理 。
+4. 「 删  pageCount===1 仍 不 红  / 生 产 路 径 不 可 达 」 独 立 验 证
+主 张 成 立 ， 不 是  Critical。
+createAffordanceCatalog： pageCount 来 自  bound 前  全  projected 的  semanticKey 计 数 。
+┌──────────────────────┬─────────┬───────────┬───────────────────────┬─────────────────────────────────────┐
+│ 形 态                  │ matched │ pageCount │ truncated / 其 他       │ pageCount===1 是 否 关 键               │
+├──────────────────────┼─────────┼───────────┼───────────────────────┼─────────────────────────────────────┤
+│ 同 名 两 条 都 进  bound   │ 2       │ 2         │ false                 │ 否 （ 先 死 在  matched.length===1， P5）  │
+├──────────────────────┼─────────┼───────────┼───────────────────────┼─────────────────────────────────────┤
+│ catalog 切 掉 同 名 兄 弟  │ 1       │ >1        │ true                  │ 否 （ 先 死 在 完 整 性 闸 ）                 │
+├──────────────────────┼─────────┼───────────┼───────────────────────┼─────────────────────────────────────┤
+│ driver 未 投 同 名 兄 弟   │ 1       │ 1（ 低 估 ）  │ true                  │ 否 （ 完 整 性 闸 ）                       │
+├──────────────────────┼─────────┼───────────┼───────────────────────┼─────────────────────────────────────┤
+│ 脱 敏 掉 同 名 兄 弟        │ 1       │ 1（ 低 估 ）  │ redactionSuppressed>0 │ 否 （ 脱 敏 闸 ）                         │
+└──────────────────────┴─────────┴───────────┴───────────────────────┴─────────────────────────────────────┘
+因 此  matched.length===1 && pageCount>1 && truncated===false 经 生 产  catalog 路 径 推 不 出 。
+变 异 ： 删  pageCount===1 → 金 牌 仍  24/24 exit 0。
+保 留 该 合 取 是 不 变 量 文 档  + 防 将 来 投 影 改 写 ； 测 试 不 可 达 面 挂 账 正 确 ， 由  P21 间 接 守 「 截 断 不 得 当 唯 一 」 。
+5. P21–P24 变 异 （ 断 言 是 否 假 绿 ）
+┌─────────────────────────────────┬─────────────────┬──────────────────────────┐
+│ 削 弱                             │ 期 望 变 红         │ 结 果                      │
+├─────────────────────────────────┼─────────────────┼──────────────────────────┤
+│ 去 掉  visible===true             │ P23             │ P23 红 （ 变  progressed）   │
+├─────────────────────────────────┼─────────────────┼──────────────────────────┤
+│ CATALOG 只 留  roleHidden         │ P21/P22         │ P21+P22 红                │
+├─────────────────────────────────┼─────────────────┼──────────────────────────┤
+│ 去 掉  before completenessBlocker │ P22             │ P22 红                    │
+├─────────────────────────────────┼─────────────────┼──────────────────────────┤
+│ 去 掉 空 目 录 闸                     │ P24             │ P24 红 （ 变  progressed）   │
+├─────────────────────────────────┼─────────────────┼──────────────────────────┤
+│ 去 掉 整 段  catalog 完 整 性 闸        │ P12/13/19/21/22 │ 5 红                      │
+├─────────────────────────────────┼─────────────────┼──────────────────────────┤
+│ 去 掉  pageCount===1              │ （ 无 钉 ）         │ 仍  24/24（ 已 知 不 可 达 腿 ）  │
+└─────────────────────────────────┴─────────────────┴──────────────────────────┘
+P21–P24 无 假 绿 腿 ； pageCount 腿 仍 钉 不 住 （ 与  Q4 一 致 ， 非  P21–P24 承 诺 范 围 ） 。
+───
+Findings（ 仅  Critical / High / Medium）
+Medium · plan 验 收 文 自 相 矛 盾 （ 可 回 灌  F1 豁 免 ）
+位 置 ： docs/plans/zero-shot-typed-progress-predicate/plan.md
+• L103–104 仍 写 ： 存 在 性 （ 含  roleVisible） 不 加 完 整 性 约 束 。
+• ATDD #14： 纯 存 在 性 （ urlPathname/roleVisible） 在  after 截 断 下 不 得 被 误 拒 。
+• 同 节  R2 与  ATDD #17： roleVisible 必 须 吃 截 断 闸  → PROGRESS_CATALOG_TRUNCATED。
+代 码  + P14/P21 实 现 的 是  #17（ P14 金 牌 只 喂  URL） 。
+风 险 ： 后 人 按  #14「 修 回 」 roleVisible 截 断 豁 免 ， 会 把  F1 假 绿 请 回 来 。
+建 议 ： 删  L103–104 旧 段 ； #14 改 为 「 仅  urlPathname」 ； 与  #17 / R2 对 齐 。
+无  Critical / High。
+F1–F3 代 码 闸 成 立 ； F4 的  visible 已 由  P23 钉 死 ； pageCount 不 可 达 主 张 独 立 坐 实 。
+───
+判 定
+代 码 侧 确 认  finding 的 修 复 成 立 ， 邻 接 金 牌 全 绿 ， P21–P24 变 异 扎 实 ； 合 入 前 应 清 掉  plan 里 与  R2 对 撞 的  #14 / 旧 段 ， 避 免 验 收 文 再 写 回  F1 豁 免 。
+VERDICT: CHANGES_REQUIRED
+Worked for 12m37s                                                                                                                                                                       stop  [hooks: 5]
+      ✓ global/settings:stop[0].hooks[0] (7ms)
+      ✓ global/settings:stop[1].hooks[0] (758ms)
+      ✓ project/settings:stop[0].hooks[0] (624ms)
+      ✓ project/settings:stop[0].hooks[1] (626ms)
+      ✓ project/settings:stop[1].hooks[0] (80ms)
+minimal · /help
+❯
+Grok 4.5 (high) · always-approve · 83K / 500K (17%) · ctrl+o transcript

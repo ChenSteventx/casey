@@ -33,8 +33,15 @@
 5. **证据**：金牌 `zero-shot-typed-progress-predicate.zero-sut.golden.mjs` 红基线 4/18
    （红因 `EXPECTED_PROGRESS_NOT_ALLOWED` = 实现缺席，非 marker 假红）→ 24/24；十二路变异
    十一路由绿转红，每次还原后 sha256 字节全同；邻接 11 项全 exit 0；`gate` GREEN 5/5。
-   三个本地提交 `15721ff` / `446881b` / `981b4a3`，均在功能分支，**未 push、未 merge、
-   未 rebase**，主树未提交内容一字未动。
+   评审全轨迹：R1 双路（grok-4.5 high + pi deepseek-v4-flash high）`CHANGES_REQUIRED` →
+   R2 修复（`981b4a3`）→ R2 复审（pi 网络挂起换 grok）仅剩一条 Medium（plan 旧文与新规则
+   对撞）→ R3 订正（`e752418`）→ R3 聚焦复核 **`APPROVE`**（金牌 diff 仅 1 行标题、账本与
+   sha256 实物一致、复核方自跑 24/24 exit 0）。收据齐存 `reviews/`，audit.jsonl 有机读记录。
+   五个本地提交 `15721ff` / `446881b` / `981b4a3` / `e6e7ea1` / `e752418`，按 Steven
+   「APPROVE 后合入」授权合入**本地 dev**；未 push、未 rebase、主树未提交内容一字未动。
+   **状态口径（Steven 2026-08-03 令：一定是实机跑过才算通过）**：本契约 = 机器门禁绿；
+   「通过」待真机切片 1 实跑背书（真机探针已证 `redactionSuppressed` 非零是常态，
+   读目录判据将按设计拒付，如实入档不改口径）。
 6. **开口项（如实挂账，勿当已覆盖）**：
    - 删 `pageCount === 1` 金牌仍不红——收敛后该状态经生产路径不可达（由 P21 钉住），
      属已知**测试不可达面**；
