@@ -35,12 +35,12 @@
         "node tests/_golden/teachin-authoring-profile-authority.zero-sut.golden.mjs",
         "node tests/_golden/teachin-authoring-source-plan-identity.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-08-03T04:44:43.249Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T05:26:04.479Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-teachin-adjacent-zero-regression",
       "title": "S2 teach-in compile/cycle 相邻接缝零回归",
-      "passes": false,
+      "passes": true,
       "acceptance": [
         "node tests/_golden/teachin-replayability-compile-runtime-adapter.zero-sut.golden.mjs",
         "node tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs",
@@ -48,17 +48,17 @@
         "node tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs",
         "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs"
       ],
-      "evidence": ""
+      "evidence": "gate@2026-08-03T05:26:46.007Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-repo-drift-and-terms",
       "title": "S3 全仓冻结件零漂移与术语检查",
-      "passes": false,
+      "passes": true,
       "acceptance": [
         "node tests/_golden/support/prd-drift-scan.mjs",
         "node loop-kit/bin/term-lint.mjs --registry"
       ],
-      "evidence": ""
+      "evidence": "gate@2026-08-03T05:27:09.772Z 全部 acceptance exit 0"
     }
   ],
   "notes": "首枚金牌实现前真实 0 过 / 3 败，exit 1；三红分别对应 runtime hydration、profile route 贯穿、same-capture exact profile bytes。A4 独立金牌在基线 62bcf46 真实 0 过 / 2 败，exit 1；分别钉列表后置锚 blocker 与 authoring 发布门。profile authority 独立金牌在同基线真实 1 过 / 1 败，exit 1；正控因 extra profile bytes 未被 source authority 接受而红，负控保持拒绝。R2 审计后新增 source-plan/identity 边界金牌，在同基线真实 0 过 / 4 败、exit 1；钉 identity listApi/malformed pre-open 拒绝、genuine 全链与真实非默认路由、claim 拒后 owner dispose、同标签 distinct source-plan 防换绑。",
