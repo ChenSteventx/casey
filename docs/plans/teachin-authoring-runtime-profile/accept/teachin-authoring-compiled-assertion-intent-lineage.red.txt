@@ -1,0 +1,7 @@
+command: node tests/_golden/teachin-authoring-compiled-assertion-intent-lineage.zero-sut.golden.mjs
+baseline-production-head: eb9a89d
+test-parent-head: eb9a89d
+exit-code: 1
+
+RED  teachin-authoring-compiled-assertion-intent-lineage: A1 event 重绑后 lastIntentId 与随后 assert.* 必须保持 authored identity: event 已重绑但 assertion fold 仍泄漏 compiler-local identity：{"eventIntentId":"authored_workflow_nav","lastIntentId":"intent_0","assertionAtoms":[{"intentId":"intent_0","atom":"assert.textVisible","params":{"text":"工作流管理"}}]}
+teachin-authoring-compiled-assertion-intent-lineage: 0 过 / 1 败
