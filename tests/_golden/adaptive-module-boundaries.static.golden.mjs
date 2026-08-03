@@ -25,6 +25,7 @@ function assert(condition, message) {
 }
 
 const S2_CORE = [
+  'lib/zero-shot/unsupported-scopes.mjs',
   'lib/zero-shot/step-contract.mjs',
   'lib/zero-shot/playwright-page-driver.mjs',
   'lib/zero-shot/affordance-authority.mjs',

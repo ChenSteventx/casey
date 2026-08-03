@@ -5,19 +5,13 @@
 // - 不解释 TestCase，不实现 resolver/admission/progress；
 // - perform 成功后自动切到下一 snapshot，供 single-step runner 取得 fresh after observation。
 
-const DEFAULT_UNSUPPORTED = Object.freeze({
-  iframe: false,
-  shadow: false,
-  containerOnly: false,
-});
-
+// 通用透传：如实转交调用方给的每个自有键（按 === true 归一），不做键过滤。
+// 夹具不是归一化器——归一化由生产 page-observer 独占；白名单在这里只提供一次静默吞键的机会。
 function copyUnsupported(value) {
   const source = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
-  return {
-    iframe: source.iframe === true,
-    shadow: source.shadow === true,
-    containerOnly: source.containerOnly === true,
-  };
+  const copied = {};
+  for (const key of Object.keys(source)) copied[key] = source[key] === true;
+  return copied;
 }
 
 function copyAffordance(value, index, revision) {
@@ -52,7 +46,7 @@ function normalizeSnapshot(value, index) {
     title: typeof source.title === 'string' ? source.title : '',
     settled: source.settled !== false,
     waitedMs: Number.isFinite(source.waitedMs) && source.waitedMs >= 0 ? source.waitedMs : 0,
-    unsupportedScopes: copyUnsupported(source.unsupportedScopes || DEFAULT_UNSUPPORTED),
+    unsupportedScopes: copyUnsupported(source.unsupportedScopes),
     affordances: Array.isArray(source.affordances)
       ? source.affordances.map((item, itemIndex) => copyAffordance(item, itemIndex, revision))
       : [],
