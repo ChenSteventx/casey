@@ -3,8 +3,8 @@
   "task": "zero-shot-typed-progress-predicate（full）：后继于 zero-shot-observe-admit-step。把 typed progress predicate 闭集从单一 urlPathname 扩到 roleVisible/roleHidden，使 P9 纵向切片 1「点击工作流管理」的三条否定式验收点（没自动打开具体工作流、没进测试会话、没进消息页面）可被表达。roleVisible 复用点击身份门的 count===1 纪律；roleHidden 取可见性口径（缺席与挂载但不可见同算成立），与 assert-visibility-semantics 已签口径一致。核心是堵住缺席类断言的 fail-open：目录截断或存在未支持作用域时缺席根本证不出来，after observation 必须 fail-closed。判定为纯函数投影，零新增采集、零驱动改动、零持久状态；产物恒 signed:false/replayReady:false，不进 verdict/三轴/report。",
   "specPath": "docs/plans/zero-shot-typed-progress-predicate/plan.md",
   "testChecksums": {
-    "tests/_golden/zero-shot-typed-progress-predicate.zero-sut.golden.mjs": "b67b780d66e26744a973e2c03f28e713ce2510fc73d176f31828f37843f57cfa",
-    "docs/plans/zero-shot-typed-progress-predicate/plan.md": "89077a2e78a82dc4ecf709d2122bc8c16cb397f637388404a12a3475eabe872e",
+    "tests/_golden/zero-shot-typed-progress-predicate.zero-sut.golden.mjs": "f0fb5d01b703114ab02f7fe44d9346b3361f06d39969d420a04cc60433001eac",
+    "docs/plans/zero-shot-typed-progress-predicate/plan.md": "f0aedd9b331305d9962f35247f29349760d7958ed4c56e5f28069652853b4073",
     "docs/plans/zero-shot-typed-progress-predicate/GRILL.md": "df4b3fbe105f4ab4f5df9d5d7047942ec9241ee827ae6200f178a0b10ea650ea",
     "docs/plans/zero-shot-typed-progress-predicate/accept/red-proofs/typed-progress-predicate.red.txt": "5c170462b31cc0599273d07aac430cc6376dde785085788b8cd618cd2c8456bb"
   },
@@ -26,6 +26,15 @@
         "docs/plans/zero-shot-typed-progress-predicate/plan.md"
       ],
       "reason": "两路异构评审各自逮到首版分法的错误，且都给了可复现反例，作者已逐条独立复现。pi 逮 driver 层截断：playwright-page-driver.mjs:71-72 在 nodes.length>=MAX_DISCOVERED(1000) 时直接不收元素、只置 sourceTruncated，候选根本没进 projected，pageCount 在幸存集上低估成 1，于是 roleVisible 在真有两个同名可见元素时判「唯一可见」成立——存在性断言同样假绿，证伪了首版「pageCount 不受截断影响」的豁免理由（该理由只对 catalog 层 maxCandidates 成立）。grok 逮 before 侧脱敏抑制：observationBlocker 只查 settled/truncated/unsupportedScopes、不查 redactionSuppressed，故目标元素动作前已可见却被抑制、动作后干净出现时判据由假翻真，因果闸放行一次动作没造成的进展。两方共同逮到金牌两条假绿腿（删 visible===true 或 pageCount===1 仍 20/20）。pi 另逮空目录：动作后整页无候选时 roleHidden 平凡成立。修法把分法从「肯定/否定」改成「是否读目录」：roleVisible 与 roleHidden 同吃完整性前置且前后两份都查，urlPathname 不读目录继续豁免；缺席类另加 after 目录非空闸 PROGRESS_CATALOG_EMPTY。新增 P21-P24 四钉，20/20 转 24/24。五路新变异四路转红（删 visible 腿 / 完整性只查 after / 完整性退回只对缺席类 / 删空目录闸），还原后 sha256 字节全同。开口项如实挂账：删 pageCount===1 仍 0 红，因收敛后 matched===1 且 pageCount>1 蕴含目录截断而截断已 fail-closed，该状态经生产路径不可达，不可达性由 P21 钉住；这是已知测试不可达面，不是已覆盖面。另新增两条 route:human：无 role 属性的可见容器与「有 role 但可访问名为空被投影成 label/text」两类元素进不了 role+name 匹配面，属 driver 枚举与投影策略，zero-SUT 夹具证不出。断言零弱化。"
+    },
+    {
+      "amendedAt": "2026-08-03",
+      "round": "R3 复审 finding：清除与 R2 统一规则对撞的旧文",
+      "files": [
+        "docs/plans/zero-shot-typed-progress-predicate/plan.md",
+        "tests/_golden/zero-shot-typed-progress-predicate.zero-sut.golden.mjs"
+      ],
+      "reason": "grok-4.5 high 复审（对 446881b..981b4a3 修复 hunk）确认 F1-F3 代码修复全部成立、P21-P24 变异扎实、pageCount 不可达主张独立坐实，唯一 finding 为 Medium：plan.md 第 103-104 行残留 R1 时代旧段（存在性含 roleVisible 豁免完整性约束）与 ATDD 第 14 条旧措辞，与 R2 统一规则及第 17 条自相矛盾——后人照旧文修回豁免会把 F1 假绿请回来。本轮按复审建议逐字落实：删旧段并写明 R3 订正理由（唯一豁免者是不读目录的 urlPathname）；第 14 条改为纯 urlPathname；金牌 P14 标题同步订正（纯存在性→纯 urlPathname，断言体一字未动，仅标题措辞）。金牌重跑 24/24 exit 0，断言零弱化零增减。"
     }
   ],
   "observability": [
@@ -63,7 +72,7 @@
         "node tests/_golden/zero-shot-typed-progress-predicate.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-03T12:28:54.677Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T14:33:30.487Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-predicate-evaluation-and-causality",
@@ -73,7 +82,7 @@
         "node tests/_golden/zero-shot-typed-progress-predicate.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-03T12:28:56.520Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T14:33:32.425Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-absence-completeness-fail-closed",
@@ -83,7 +92,7 @@
         "node tests/_golden/zero-shot-typed-progress-predicate.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-03T12:28:58.366Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T14:33:34.377Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-adjacent-zero-regression",
@@ -101,7 +110,7 @@
         "node tests/_golden/intent-state-trace.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-03T12:29:07.511Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T14:33:43.950Z 全部 acceptance exit 0"
     },
     {
       "id": "s5-repo-drift-and-terms",
@@ -113,7 +122,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-03T12:29:37.784Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T14:34:14.001Z 全部 acceptance exit 0"
     }
   ],
   "notes": "acceptance-gate 于 2026-08-03 冻结。红基线真实 exit 1（4/18 通过，14 条红，红因 EXPECTED_PROGRESS_NOT_ALLOWED = 目标实现缺席，非 marker 假红），证据见 accept/red-proofs/typed-progress-predicate.red.txt。可达性两条路均由探针实测：before 截断被 resolveDeterministicAction 与 admitZeroShotAction 双拒且 perform=0（不可达，故不加死代码）；after 截断可带合法 actionReceipt 走完 verifyStepProgress 并判 progressed（真实可达的 fail-open，本契约堵住）。根因是 affordance-authority.mjs 的 blockReason 只在 revalidateAffordance 被查、inspectAffordanceAuthority 不看它。四路变异验证均由绿转红（删完整性前置 / roleVisible 去唯一性 / roleHidden 改未挂载口径 / role 字符集放宽），还原后 sha256 字节全同且重跑 exit 0。工作树跑 prd-drift-scan 需软链主树 cases/ 与 runs/（两者被 .gitignore 忽略，冻结件只存在于主树），否则报缺件假红。zero-SUT 绿不能替代真实 Playwright 与真机 UAT。passes 只由 gate 写入。"

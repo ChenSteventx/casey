@@ -499,7 +499,7 @@ await check('P24 缺席类判据遇空目录 → PROGRESS_CATALOG_EMPTY', async 
     `空目录下缺席不可证：${JSON.stringify(run.progress)}`);
 });
 
-await check('P14 纯存在性 expected 在 after 截断下不被误拒（防无谓收紧）', async () => {
+await check('P14 纯 urlPathname expected 在 after 截断下不被误拒（防无谓收紧）', async () => {
   const run = await runScenario({
     expectedProgress: [URL_WORKFLOW],
     beforeAffordances: [navLink()],

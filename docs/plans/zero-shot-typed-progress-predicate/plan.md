@@ -100,8 +100,9 @@ settled / truncated / unsupportedScopes，**不查 `redactionSuppressed`**，所
 
 两者都必须在真机验收里由人确认，zero-SUT 夹具证不出。
 
-存在性断言（`urlPathname`、`roleVisible`）不加此约束：截断只丢候选不造候选，且 `pageCount` 在截断前
-全集上算出、不受截断影响。无谓收紧会破现役已签行为。
+豁免完整性前置的**只有 `urlPathname`**：它只读 `observation.urlPathname`、完全不读目录，
+目录完整与否不影响其结论。（R3 订正：此处曾残留 R1 时代的旧段，把 `roleVisible` 也列为豁免——
+该说法已被 R2 的 driver 层截断反例证伪并被统一规则取代，旧段若被照办会把 F1 假绿请回来，故删。）
 
 ## 5. 因果性
 
@@ -146,8 +147,9 @@ settled / truncated / unsupportedScopes，**不查 `redactionSuppressed`**，所
     `PROGRESS_UNSUPPORTED_SCOPE`；
 13. 上游封堵回归钉：截断的 before 在 `resolveDeterministicAction` 判 `blocked/CATALOG_TRUNCATED`、
     在 `admitZeroShotAction` 判 `denied=CATALOG_TRUNCATED`，且 `perform` 调用数为 0；
-14. 纯存在性 expected（只有 `urlPathname`/`roleVisible`）在 after `truncated:true` 下**不**被本约束
-    误拒（防无谓收紧现役已签行为）；
+14. 纯 `urlPathname` expected 在 after `truncated:true` 下**不**被本约束误拒
+    （R3 订正：原文误含 `roleVisible`，与 R2 统一规则及第 17 条对撞——`roleVisible` 读目录，
+    必须吃完整性前置）；
 15. 含 `roleHidden` 且 after 有可见候选因脱敏被整体抑制（非截断触发）→
     `PROGRESS_REDACTION_SUPPRESSED`；
 16. 无可用名称而被丢弃的候选**不**计入抑制、**不**阻断缺席判定（只抑制才阻断）；
