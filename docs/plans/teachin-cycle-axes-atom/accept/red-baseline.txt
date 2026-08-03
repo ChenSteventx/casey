@@ -1,0 +1,6 @@
+command: node tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs
+exit: 1
+result: 8 passed / 1 failed
+failure: A9 resolved atom 真穿 canonical axes 与 frozen verdict identity
+detail: canonical verdict 接缝返回 VERDICT_EXECUTION_FAILED
+baselineCommit: f7c83358eb86d50a19bec6bb3c04fae541448655

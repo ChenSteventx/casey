@@ -4,6 +4,7 @@
 
 import { readFileSync } from 'node:fs';
 import { projectReplayAxes as canonicalProjectReplayAxes } from '../../lib/replay-axes.mjs';
+import { canonicalVerdictCliAdapter } from '../../lib/teachin/verdict-cli-adapter.mjs';
 
 const TAG = 'teachin-replayability-raw-axes-adapter';
 const failures = [];
@@ -196,6 +197,7 @@ function makeHarness({
   projectFailure = null,
   verdictFailure = null,
   projector = null,
+  verdictAdapter = null,
 } = {}) {
   const rawObservationAuthority = token();
   const resolvedProjectionAuthority = token();
@@ -259,7 +261,7 @@ function makeHarness({
       if (typeof projector === 'function') return projector(input);
       return axesText;
     },
-    verdictAdapter: {
+    verdictAdapter: verdictAdapter || {
       async runFrozenVerdict(input) {
         calls.verdict += 1;
         calls.verdictInput = input;
@@ -344,6 +346,8 @@ if (api && typeof api.createRawAxesAdapter === 'function') {
     assert(events.map((row) => `${row.stepId}:${row.action}`).join(',')
       === 'rawstep_1:click,rawstep_2:newpage',
     `newpage 必须挂到 trigger intent：${JSON.stringify(events)}`);
+    assert(events.every((row) => row.atom === 'nav.workflowManagement'),
+      `structural child 必须继承触发 mapping atom：${JSON.stringify(events)}`);
     assert(built.calls.axesInput.actionByStep.has('rawstep_2'),
       'structural step action/topology evidence 不得丢失');
   });
@@ -471,6 +475,63 @@ if (api && typeof api.createRawAxesAdapter === 'function') {
       && network[0].attributedStepId === 'rawstep_2'
       && network[0].url === '/synthetic',
     `网络记录必须归因到代表步：${JSON.stringify(network)}`);
+  });
+
+  await check('A9 resolved atom 真穿 canonical axes 与 frozen verdict identity', async () => {
+    let canonicalVerdictCalls = 0;
+    const built = makeHarness({
+      projector: canonicalProjectReplayAxes,
+      verdictAdapter: {
+        async runFrozenVerdict(input) {
+          canonicalVerdictCalls += 1;
+          return canonicalVerdictCliAdapter.runFrozenVerdict(input);
+        },
+      },
+    });
+    const result = await built.adapter.projectAndVerify(runInput(built));
+    assert(result?.ok === true,
+      `canonical verdict 接缝应成功：${JSON.stringify(result)}`);
+    assert(built.calls.axes === 1 && built.calls.verdict === 0
+      && canonicalVerdictCalls === 1,
+    'canonical projector/verdict 须各恰一次，fake verdict 不得调用');
+    const axes = JSON.parse(result.axesBytes.toString('utf8'));
+    const verdict = JSON.parse(result.verdictBytes.toString('utf8'));
+    assert(built.calls.axesInput.intentEvents.get('authored_i1')
+      .every((row) => row.atom === 'nav.workflowManagement')
+      && axes.steps?.[0]?.atom === 'nav.workflowManagement'
+      && verdict.steps?.[0]?.atom === 'nav.workflowManagement',
+    `axes/verdict atom 必须同源于 resolved mapping：${JSON.stringify({
+      axesAtom: axes.steps?.[0]?.atom,
+      verdictAtom: verdict.steps?.[0]?.atom,
+    })}`);
+    assert(verdict.steps?.[0]?.verdict === 'PASS',
+      `canonical verdict 应按完整硬断言判 PASS：${JSON.stringify(verdict.steps?.[0])}`);
+
+    for (const [label, atom, remove] of [
+      ['empty', '', false],
+      ['null', null, false],
+      ['number', 7, false],
+      ['missing', undefined, true],
+    ]) {
+      const malformedResolved = resolvedProjection();
+      if (remove) delete malformedResolved.resolved[0].atom;
+      else malformedResolved.resolved[0].atom = atom;
+      let malformedVerdictCalls = 0;
+      const malformed = makeHarness({
+        resolved: malformedResolved,
+        projector: canonicalProjectReplayAxes,
+        verdictAdapter: {
+          async runFrozenVerdict(input) {
+            malformedVerdictCalls += 1;
+            return canonicalVerdictCliAdapter.runFrozenVerdict(input);
+          },
+        },
+      });
+      expectReason(await malformed.adapter.projectAndVerify(runInput(malformed)),
+        'RAW_AXES_BINDING_MISMATCH', `${label} mapping atom`);
+      assert(malformed.calls.axes === 0 && malformedVerdictCalls === 0,
+        `${label} mapping atom 必须在 projector/verdict 前拒绝`);
+    }
   });
 }
 

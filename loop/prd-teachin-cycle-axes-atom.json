@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "task": "teachin-cycle-axes-atom（full）：真机后继修单。把 resolved mapping 的 canonical atom 按 event seq 传播进 raw axes intentEvents，使 createRawAxesAdapter 真穿 canonical projectReplayAxes 与 frozen verdict CLI identity 校验。现役 owner 金牌仍由 loop/prd-teachin-replayability-closure.json 唯一冻结；本 PRD 只冻结后继计划与红证，避免同一金牌双锁。",
+  "specPath": "docs/plans/teachin-cycle-axes-atom/plan.md",
+  "testChecksums": {
+    "docs/plans/teachin-cycle-axes-atom/GRILL.md": "4e0cf56f7ae45cc041a24474a56694aedccd6d9f30716306e9f81f7c19fb1110",
+    "docs/plans/teachin-cycle-axes-atom/plan.md": "5ca483b21584dc0a57cdb8b728547d42181f97e0d7d0004f57e9fa711f8c87ee",
+    "docs/plans/teachin-cycle-axes-atom/accept/red-baseline.txt": "9c8029c9a8e64c2b90aaf7ca037a1da49f253e482b420d6fb9337f31f05ef09d"
+  },
+  "observability": [
+    {
+      "dimension": "owner raw-axes 金牌 checksum amendment 仍须 Steven 明签；机器不得代签。",
+      "route": "human"
+    },
+    {
+      "dimension": "最终主线真机两击 cycle 必须 exit 0 并有同次 capture/sidecar；新拒付继续另立窄修单。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-canonical-atom-verdict-identity",
+      "title": "S1 resolved atom 真穿 canonical axes 与 frozen verdict",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-08-03T03:55:32.654Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-cycle-adjacent-zero-regression",
+      "title": "S2 cycle 与 verdict 相邻接缝零回归",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/teachin-replayability-verdict-cli-adapter.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-adjacent.zero-sut.golden.mjs",
+        "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs"
+      ],
+      "evidence": "gate@2026-08-03T03:55:45.499Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-repo-drift-and-terms",
+      "title": "S3 全仓冻结件零漂移与术语检查",
+      "passes": true,
+      "acceptance": [
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry"
+      ],
+      "evidence": "gate@2026-08-03T03:55:46.140Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "A9 红基线已在 f7c83358 实跑：8 过 / 1 败，exit 1；唯一失败为 canonical verdict 返回 VERDICT_EXECUTION_FAILED。实际 owner 金牌 checksum 只在 replayability owner PRD 维护。",
+  "openIssues": []
+}
