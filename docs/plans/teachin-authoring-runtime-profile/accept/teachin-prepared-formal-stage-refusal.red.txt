@@ -1,9 +1,0 @@
-command: node tests/_golden/teachin-prepared-formal-stage-refusal.zero-sut.golden.mjs
-baseline-production-head: a367b62
-test-parent-head: a367b62
-exit-code: 1
-
-RED  teachin-prepared-formal-stage-refusal: P1 preflight 后导航 abort 必须保留稳定 NAVIGATION_FAILED，且 axes 零调用: 导航 abort 被洗码：{"ok":false,"reason":"RUN_COMPLETION_INVALID"}
-RED  teachin-prepared-formal-stage-refusal: P2 event evidence 成功但 axes projector 抛错必须稳定 RAW_AXES_PROJECTION_FAILED: axes throw 被洗码：{"ok":false,"reason":"RUN_COMPLETION_INVALID"}
-ok   teachin-prepared-formal-stage-refusal: P3 event+axes 成功保持 prepared 五键，role seam 补齐 completion 七键且 authority 同一
-teachin-prepared-formal-stage-refusal: 1 过 / 2 败

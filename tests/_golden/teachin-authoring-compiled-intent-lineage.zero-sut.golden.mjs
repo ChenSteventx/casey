@@ -1,9 +1,10 @@
 #!/usr/bin/env node
-// canonical Array compile 产物使用 compiler-local intentId；发布 formal candidate 前必须按
-// exact stepId lineage 重绑回 authored sourceIntentId。缺失/重复/跨线/未覆盖一律 fail-closed。
-// 纯内存 compile seams；零 SUT/browser/network/credentials/LLM。
+// production compileFlow 必须在仍持有 exact flow step/sourceIntentId 的事实点，把
+// compiler-local intent_N 重绑为 authored identity；下游只按 stepId lineage 对账。
+// 纯内存 compile run；零 SUT/browser/network/credentials/LLM。
 
-import { createCompileRuntimeAdapter } from '../../lib/teachin/compile-runtime-adapter.mjs';
+import { compileFlow } from '../../lib/compile-atoms-flow.mjs';
+import { validateCompileLineage } from '../../lib/teachin-distillation/compile-lineage.mjs';
 
 const TAG = 'teachin-authoring-compiled-intent-lineage';
 const failures = [];
@@ -25,141 +26,112 @@ async function check(name, fn) {
   }
 }
 
-const token = () => Object.freeze(Object.create(null));
-
-async function compile({ tag, lineagePlan, compileLineage, compilerEvents }) {
-  const owner = token();
-  const closure = token();
-  const adapter = createCompileRuntimeAdapter({
-    async runAtomRoundtrip({ compileAdapter }) {
-      const compiled = await compileAdapter({
-        candidateTestCase: {
-          schemaVersion: 1, caseId: `tc_${tag}`,
-          steps: lineagePlan.map((row) => ({
-            intentId: row.sourceIntentId, intent: `authored ${row.sourceIntentId}`,
-          })),
-        },
-        flow: {
-          id: `flow_${tag}`, name: tag, category: 'test',
-          steps: lineagePlan.map((row) => ({
-            atom: 'nav.workflowManagement', params: {}, sourceIntentId: row.sourceIntentId,
-          })),
-        },
-        lineagePlan,
-      });
-      return {
-        ok: true,
-        candidateTestCase: { caseId: `tc_${tag}` }, candidateMapping: [],
-        eventsCandidate: compiled.compiledEvents,
-        compileLineage: compiled.compileLineage,
-        manifest: {},
-      };
+function makeRun() {
+  return {
+    events: [], entityBindingProvenance: [], blockers: [], notes: [],
+    pendingIdentityObservation: null,
+    listRoute: '/synthetic-workflows', agentListRoute: null,
+    intentN: 0, stepN: 0,
+    newIntent() { return `intent_${this.intentN++}`; },
+    async emit(event) {
+      const emitted = { ...event, stepId: `atstep_${this.stepN++}` };
+      this.events.push(emitted);
+      return { resolution: 'unique', candidateCount: 1, acted: true };
     },
-    async openFreshAuthoringRuntime() {
-      return {
-        ok: true, authoringRuntimeAuthority: owner,
-        page: token(), forensics: token(), state: {},
-      };
+    page: {
+      url: () => 'http://casey.invalid/synthetic-workflows',
+      locator: () => ({ first: () => ({ waitFor: async () => {} }) }),
+      getByRole: () => ({ waitFor: async () => {} }),
     },
-    async executeAuthoringPreconditions() { return { ok: true }; },
-    async verifyAuthoringReset() { return { ok: true }; },
-    createCompileRun() {
-      return { events: [], verification: [], blockers: [], notes: [] };
-    },
-    async compileFlow(run) {
-      run.events.push(...compilerEvents.map((event) => ({ ...event })));
-      return compileLineage.map((row) => ({
-        mappingKey: row.mappingKey,
-        sourceIntentId: row.sourceIntentId,
-        stepIds: [...row.stepIds],
-      }));
-    },
-    async closeAuthoringRuntime({ authoringRuntimeAuthority }) {
-      assert(authoringRuntimeAuthority === owner, '必须关闭 exact authoring owner');
-      return { ok: true, authoringClosureAuthority: closure };
-    },
-  });
-  return adapter.compileAuthoringCandidate({
-    atomRoundtripGrant: token(), authoringBaselineGrant: token(),
-    sourceClosureAuthority: token(), runNamespace: `run_${tag}`,
-    executionTargetAuthority: token(),
-  });
+  };
 }
 
 function plan(mappingKey, sourceIntentId) {
   return { mappingKey, sourceIntentId };
 }
 
-function lineage(mappingKey, sourceIntentId, stepIds) {
-  return { mappingKey, sourceIntentId, stepIds };
+async function compile(steps, lineagePlan) {
+  const run = makeRun();
+  const compileLineage = await compileFlow(run, { steps }, { lineagePlan });
+  return { run, compileLineage };
 }
 
-function event(stepId, intentId, atom = 'nav.workflowManagement') {
-  return { stepId, intentId, atom, action: 'nav', url: '{{baseUrl}}/synthetic-path' };
-}
-
-await check('L1 authored intentId 与 compiler-local intent_0 不同时，formal event 必须重绑 authored identity', async () => {
-  const result = await compile({
-    tag: 'lineage_l1',
-    lineagePlan: [plan('map_nav', 'authored_workflow_nav')],
-    compileLineage: [lineage('map_nav', 'authored_workflow_nav', ['atstep_0'])],
-    compilerEvents: [event('atstep_0', 'intent_0')],
-  });
-  assert(result?.ok === true, `合法 lineage 编译应成功：${JSON.stringify(result)}`);
-  const events = result.candidate.eventsCandidate;
-  assert(events?.length === 1 && events[0].intentId === 'authored_workflow_nav',
-    `compiler-local intent 未重绑 sourceIntentId：${JSON.stringify(events)}`);
+await check('L1 compiler-local intent_0 必须在产生点重绑 authored sourceIntentId', async () => {
+  const lineagePlan = [plan('map_nav', 'authored_workflow_nav')];
+  const { run, compileLineage } = await compile([{
+    atom: 'nav.workflowManagement', params: {}, sourceIntentId: 'authored_workflow_nav',
+  }], lineagePlan);
+  assert(run.events.length === 1
+    && run.events[0].intentId === 'authored_workflow_nav',
+  `compiler-local intent 未重绑：${JSON.stringify(run.events)}`);
+  assert(validateCompileLineage({
+    lineagePlan, compileLineage, compiledEvents: run.events,
+  }).ok === true, 'genuine production lineage 应闭合');
 });
 
-await check('L2 multi-step/multi-event 必须逐 stepId 精确投影各自 sourceIntentId', async () => {
-  const result = await compile({
-    tag: 'lineage_l2',
-    lineagePlan: [plan('map_a', 'authored_a'), plan('map_b', 'authored_b')],
-    compileLineage: [
-      lineage('map_a', 'authored_a', ['atstep_0', 'atstep_1']),
-      lineage('map_b', 'authored_b', ['atstep_2']),
-    ],
-    compilerEvents: [
-      event('atstep_0', 'intent_0'), event('atstep_1', 'intent_0', 'workflow.open'),
-      event('atstep_2', 'intent_1'),
-    ],
-  });
-  assert(result?.ok === true, `合法 multi lineage 编译应成功：${JSON.stringify(result)}`);
-  const projected = result.candidate.eventsCandidate.map((row) => [row.stepId, row.intentId]);
-  assert(JSON.stringify(projected) === JSON.stringify([
-    ['atstep_0', 'authored_a'], ['atstep_1', 'authored_a'], ['atstep_2', 'authored_b'],
-  ]), `multi-event source identity 投影失准：${JSON.stringify(projected)}`);
-});
-
-await check('L3 lineage 缺 step/重复/跨线/未覆盖必须在 candidate 发布前统一拒绝', async () => {
+await check('L2 multi-step/multi-event 必须逐物理 stepId 保持各自 authored identity', async () => {
   const lineagePlan = [plan('map_a', 'authored_a'), plan('map_b', 'authored_b')];
-  const compilerEvents = [event('atstep_0', 'intent_0'), event('atstep_1', 'intent_1')];
+  const { run, compileLineage } = await compile([
+    { atom: 'nav.agentManagement', params: {}, sourceIntentId: 'authored_a' },
+    { atom: 'nav.workflowManagement', params: {}, sourceIntentId: 'authored_b' },
+  ], lineagePlan);
+  const projected = run.events.map((row) => [row.stepId, row.intentId]);
+  assert(JSON.stringify(projected) === JSON.stringify([
+    ['atstep_0', 'authored_a'], ['atstep_1', 'authored_a'],
+    ['atstep_2', 'authored_b'],
+  ]), `multi-event source identity 投影失准：${JSON.stringify(projected)}`);
+  assert(JSON.stringify(compileLineage.map((row) => row.stepIds))
+    === JSON.stringify([['atstep_0', 'atstep_1'], ['atstep_2']]),
+  `lineage 未记录 exact event slice：${JSON.stringify(compileLineage)}`);
+  assert(validateCompileLineage({
+    lineagePlan, compileLineage, compiledEvents: run.events,
+  }).ok === true, 'multi-event production lineage 应闭合');
+});
+
+await check('L3 missing/duplicate/cross/uncovered lineage 与 local intent 回注必须统一拒绝', async () => {
+  const lineagePlan = [plan('map_a', 'authored_a'), plan('map_b', 'authored_b')];
+  const { run, compileLineage } = await compile([
+    { atom: 'nav.agentManagement', params: {}, sourceIntentId: 'authored_a' },
+    { atom: 'nav.workflowManagement', params: {}, sourceIntentId: 'authored_b' },
+  ], lineagePlan);
   const attacks = [
-    ['missing-step', [
-      lineage('map_a', 'authored_a', ['ghost']),
-      lineage('map_b', 'authored_b', ['atstep_1']),
-    ]],
-    ['duplicate-step', [
-      lineage('map_a', 'authored_a', ['atstep_0']),
-      lineage('map_b', 'authored_b', ['atstep_0']),
-    ]],
-    ['cross-lineage', [
-      lineage('map_a', 'authored_a', ['atstep_1']),
-      lineage('map_b', 'authored_b', ['atstep_0']),
-    ]],
-    ['uncovered-event', [
-      lineage('map_a', 'authored_a', ['atstep_0']),
-      lineage('map_b', 'authored_b', ['ghost_b']),
-    ]],
+    [
+      [
+        { ...compileLineage[0], stepIds: ['ghost'] },
+        compileLineage[1],
+      ], run.events,
+    ],
+    [
+      [
+        { ...compileLineage[0], stepIds: ['atstep_0'] },
+        { ...compileLineage[1], stepIds: ['atstep_0'] },
+      ], run.events,
+    ],
+    [
+      [
+        { ...compileLineage[0], stepIds: ['atstep_2'] },
+        { ...compileLineage[1], stepIds: ['atstep_0', 'atstep_1'] },
+      ], run.events,
+    ],
+    [
+      [
+        { ...compileLineage[0], stepIds: ['atstep_0'] },
+        compileLineage[1],
+      ], run.events,
+    ],
+    [
+      compileLineage,
+      run.events.map((event, index) => index === 0
+        ? { ...event, intentId: 'intent_0' }
+        : event),
+    ],
   ];
-  for (const [label, compileLineage] of attacks) {
-    const result = await compile({
-      tag: `lineage_l3_${label.replace('-', '_')}`,
-      lineagePlan, compileLineage, compilerEvents,
+  for (const [tamperedLineage, tamperedEvents] of attacks) {
+    const result = validateCompileLineage({
+      lineagePlan, compileLineage: tamperedLineage, compiledEvents: tamperedEvents,
     });
-    assert(result?.ok === false && result.reason === 'AUTHORING_COMPILE_FAILED'
-      && !result.candidate && !result.authoringClosureAuthority,
-    `${label} 竟发布 candidate/closure：${JSON.stringify(result)}`);
+    assert(result.ok === false && result.reason === 'COMPILE_LINEAGE_MISMATCH',
+      `lineage 攻击竟通过：${JSON.stringify({ tamperedLineage, tamperedEvents })}`);
   }
 });
 

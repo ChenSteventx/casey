@@ -14,6 +14,7 @@
     "docs/plans/teachin-authoring-runtime-profile/accept/teachin-authoring-workflow-list-container.red.txt": "455ba12a7bcd6c52c5f83d4326cea42531fd233eb1c10d1eff35b48725b676df",
     "docs/plans/teachin-authoring-runtime-profile/accept/teachin-authoring-workflow-list-route-scope.red.txt": "39652e11a9290650fa92449197a58a247f628d8750870f2f6d1b12ef6d476eec",
     "docs/plans/teachin-authoring-runtime-profile/accept/teachin-distilled-profile-admission-handle.red.txt": "e2a4500f2bcfb6729e8f48ddbdab2e1efd05dabe8ec6ab051913ac4a242fd9b9",
+    "docs/plans/teachin-authoring-runtime-profile/accept/teachin-authoring-compiled-intent-lineage.red.txt": "6d80e6a35d23a67bb2504faf1521a1f85c8ba7a9c58168e493b6d14c1d4cdeb6",
     "tests/_golden/teachin-authoring-runtime-profile.zero-sut.golden.mjs": "cb67d6218e3f1a9db942504cd8793e885e4f1403d9fd8eccae1145b2b6e799de",
     "tests/_golden/teachin-authoring-list-anchor.zero-sut.golden.mjs": "4423b639757a1d7e7006c25199ac541cbf59bce17f9c20e81c205e08250597db",
     "tests/_golden/teachin-authoring-profile-authority.zero-sut.golden.mjs": "e1b20de110ffa9abe688201184bc8b13d6ad06c98d20ffacb990cd33052d0a13",
@@ -22,7 +23,8 @@
     "tests/_golden/teachin-distilled-events-envelope.zero-sut.golden.mjs": "49f0c87b09969401ca56592b4d831d57304997663d73bcdf5e7b0516bcad30ac",
     "tests/_golden/teachin-authoring-workflow-list-container.zero-sut.golden.mjs": "0ca5659737a67c347782e595420291120b9c7438a7fe461db73883f68424e381",
     "tests/_golden/teachin-authoring-workflow-list-route-scope.zero-sut.golden.mjs": "8cba87603d754d34b7c83f763265e0864299a32275d251d484aacd288861eb0c",
-    "tests/_golden/teachin-distilled-profile-admission-handle.zero-sut.golden.mjs": "edeea58548472a17e3c7aaa16d9b66dc79919bf1e3bb72701aeae69677019eb5"
+    "tests/_golden/teachin-distilled-profile-admission-handle.zero-sut.golden.mjs": "edeea58548472a17e3c7aaa16d9b66dc79919bf1e3bb72701aeae69677019eb5",
+    "tests/_golden/teachin-authoring-compiled-intent-lineage.zero-sut.golden.mjs": "6f11bbcc0f7652367b0b2c307e88a7761d125446bda8c222de02b26190c15ff1"
   },
   "observability": [
     {
@@ -48,9 +50,10 @@
         "node tests/_golden/teachin-distilled-events-envelope.zero-sut.golden.mjs",
         "node tests/_golden/teachin-authoring-workflow-list-container.zero-sut.golden.mjs",
         "node tests/_golden/teachin-authoring-workflow-list-route-scope.zero-sut.golden.mjs",
-        "node tests/_golden/teachin-distilled-profile-admission-handle.zero-sut.golden.mjs"
+        "node tests/_golden/teachin-distilled-profile-admission-handle.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-authoring-compiled-intent-lineage.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-08-03T06:40:44.621Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T07:01:14.880Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-teachin-adjacent-zero-regression",
@@ -63,7 +66,7 @@
         "node tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs",
         "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-08-03T06:41:19.608Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T07:01:50.148Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-repo-drift-and-terms",
@@ -73,9 +76,9 @@
         "node tests/_golden/support/prd-drift-scan.mjs",
         "node loop-kit/bin/term-lint.mjs --registry"
       ],
-      "evidence": "gate@2026-08-03T06:41:36.069Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T07:02:07.226Z 全部 acceptance exit 0"
     }
   ],
-  "notes": "首枚金牌实现前真实 0 过 / 3 败，exit 1；三红分别对应 runtime hydration、profile route 贯穿、same-capture exact profile bytes。A4 独立金牌在基线 62bcf46 真实 0 过 / 2 败，exit 1；分别钉列表后置锚 blocker 与 authoring 发布门。profile authority 独立金牌在同基线真实 1 过 / 1 败，exit 1；正控因 extra profile bytes 未被 source authority 接受而红，负控保持拒绝。R2 审计后新增 source-plan/identity 边界金牌，在同基线真实 0 过 / 4 败、exit 1；钉 identity listApi/malformed pre-open 拒绝、genuine 全链与真实非默认路由、claim 拒后 owner dispose、同标签 distinct source-plan 防换绑。真机后继暴露 workflow 列表现役容器为 .agent-card：container 金牌在生产基线真实 1 过 / 3 败、exit 1；route-scope 金牌真实 0 过 / 3 败、exit 1，联合钉 exact pathname、scoped card、异常 fail-closed 与 legacy 布局兼容。锚修复后的真机后继进一步暴露 distilled events 裸数组根：events-envelope 金牌在生产基线真实 0 过 / 2 败、exit 1；钉 canonical verifier 准入与 pair receipt 绑定 verifier 所见 exact document bytes。信封修复后的真机后继暴露 profile custom route 被 legacy fixed URL gate 转为 ENTITY_LOCK_RUNTIME_AUTHORITY_REQUIRED：profile-route-authority 金牌在生产基线真实 0 过 / 2 败、exit 1；钉 genuine source-plan/profile/compiler-events/closure 私有链正控与 self-report/clone/foreign/mismatch 负控，失败探针不得消费 genuine closure。062600Z 真机后继再暴露 profile-read 准入证明未传播到 distilled preflight：distilled-profile-admission-handle 金牌在生产基线真实 1 过 / 1 败、exit 1；正控精确红在 REPLAY_ENTITY_ADMISSION_INVALID，events 换绑与 clone handle 负控保持拒绝。",
+  "notes": "首枚金牌实现前真实 0 过 / 3 败，exit 1；三红分别对应 runtime hydration、profile route 贯穿、same-capture exact profile bytes。A4 独立金牌在基线 62bcf46 真实 0 过 / 2 败，exit 1；分别钉列表后置锚 blocker 与 authoring 发布门。profile authority 独立金牌在同基线真实 1 过 / 1 败，exit 1；正控因 extra profile bytes 未被 source authority 接受而红，负控保持拒绝。R2 审计后新增 source-plan/identity 边界金牌，在同基线真实 0 过 / 4 败、exit 1；钉 identity listApi/malformed pre-open 拒绝、genuine 全链与真实非默认路由、claim 拒后 owner dispose、同标签 distinct source-plan 防换绑。真机后继暴露 workflow 列表现役容器为 .agent-card：container 金牌在生产基线真实 1 过 / 3 败、exit 1；route-scope 金牌真实 0 过 / 3 败、exit 1，联合钉 exact pathname、scoped card、异常 fail-closed 与 legacy 布局兼容。锚修复后的真机后继进一步暴露 distilled events 裸数组根：events-envelope 金牌在生产基线真实 0 过 / 2 败、exit 1；钉 canonical verifier 准入与 pair receipt 绑定 verifier 所见 exact document bytes。信封修复后的真机后继暴露 profile custom route 被 legacy fixed URL gate 转为 ENTITY_LOCK_RUNTIME_AUTHORITY_REQUIRED：profile-route-authority 金牌在生产基线真实 0 过 / 2 败、exit 1；钉 genuine source-plan/profile/compiler-events/closure 私有链正控与 self-report/clone/foreign/mismatch 负控，失败探针不得消费 genuine closure。062600Z 真机后继再暴露 profile-read 准入证明未传播到 distilled preflight：distilled-profile-admission-handle 金牌在生产基线真实 1 过 / 1 败、exit 1；正控精确红在 REPLAY_ENTITY_ADMISSION_INVALID，events 换绑与 clone handle 负控保持拒绝。064359Z 真机后继的 raw clicks、claim、preflight、event runner、axes 与 frozen judge 均成功，最终 semantic evidence 因 compiler-local intentId 未重绑 authored sourceIntentId 拒付：compiled-intent-lineage 金牌在 a367b62 真实 0 过 / 3 败、exit 1；钉事实点重绑、多事件 exact stepId lineage 与 missing/duplicate/cross/uncovered/local 回注拒绝。",
   "openIssues": []
 }
