@@ -1,0 +1,109 @@
+{
+  "schemaVersion": 1,
+  "slug": "p9-replay-ref-rebuild",
+  "task": "P9 最后一块机器拼图：bin/replay.mjs 旧固定 ID 路径的 destructiveContinuityByStep 写入侧。冻结锁新增 schemaVersion 3 的 destructiveContinuity 段（逐破坏步授权边），回放在身份通道指纹核完之后、破坏性准入门之前、浏览器启动之前，按 I1–I8 逐条校验授权边并由已签观察行铸 ref 入表；任一不变量不成立即具名硬退出 exit 65 不启动浏览器。准入门 admitDestructiveTargetContinuity 一字不改，v1/v2 锁行为逐字不变。acceptance-gate 红基线：destructive-continuity-ref-rebuild.red-acceptance R2-R5 四条红（exit 1），红因均为 FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID——v3 段被闭合面判非法键。",
+  "specPath": "docs/plans/p9-replay-ref-rebuild/plan.md",
+  "testChecksums": {
+    "tests/_golden/destructive-continuity-ref-rebuild.red-acceptance.golden.mjs": "238215d021c4b9ec3ca2f7f2dca52a14cbb517c3cd93df056404a25d8375e88e",
+    "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/destructive-continuity-ref-rebuild.red.txt": "b37dfb15f5f09eaced9abbfb41ea8aa165df94076eec9082e3da70e4a2ccd91e"
+  },
+  "stories": [
+    {
+      "id": "S1-ref-rebuild",
+      "story": "冻结红件 destructive-continuity-ref-rebuild 的 R1-R5 五类全绿：ref 缺失恒拒、错配逐类具名拒、挂错步点名未获授权的破坏步、合法 ref 抵达浏览器前哨兵。",
+      "acceptance": [
+        "node tests/_golden/destructive-continuity-ref-rebuild.red-acceptance.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T01:09:06.571Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "S2-v3-dynamic-no-drift",
+      "story": "已创建工作流连续性 v3 动态 ID 路径零行为漂移：八枚冻结金牌全绿。",
+      "acceptance": [
+        "node tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.created-in-run.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.role-compile-sign.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.stable-absence.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.tier2-cleanup.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T01:09:16.175Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "S3-destructive-guard",
+      "story": "破坏性目标连续性守卫家族里基线已绿的三枚保持绿（纯守卫契约、编译期准入、回放 fail-closed 正反控）。",
+      "acceptance": [
+        "node tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs",
+        "node tests/_golden/entity-destructive-continuity-guard.compile-admission.golden.mjs",
+        "node tests/_golden/entity-destructive-continuity-guard.failclosed-replay.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T01:09:48.645Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "S4-adjacent-admission",
+      "story": "准入与裁定邻接面零漂移：来源读回、准入三面、裁定、报告、Tier2 收尾批、意图折叠、语义锁流溯源、绑定智能体锁链。",
+      "acceptance": [
+        "node tests/_golden/entity-workflow-source-readback.admission.zero-sut.golden.mjs",
+        "node tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs",
+        "node tests/_golden/admission-policy-facets.zero-sut.golden.mjs",
+        "node tests/_golden/p2-verdict.golden.mjs",
+        "node tests/_golden/p0-p2-report-delete.zero-sut.golden.mjs",
+        "node tests/_golden/p9-tier2-final-batch.zero-sut.golden.mjs",
+        "node tests/_golden/intent-event-fold.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-semantic-lock-flow-provenance.zero-sut.golden.mjs",
+        "node tests/_golden/entity-ui-wiring.bindagent-lockchain.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T01:09:56.860Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "S5-replay-consumers",
+      "story": "回放面消费者零漂移：断言可见性、跨平台执行目标、未知动作守卫、节点脚本回归、示教可回放六枚。",
+      "acceptance": [
+        "node tests/_golden/assert-visibility-semantics.zero-sut.golden.mjs",
+        "node tests/_golden/cross-platform-execution-target-hardening.zero-sut.golden.mjs",
+        "node tests/_golden/entity-rename-unknown-action-guard.zero-sut.golden.mjs",
+        "node tests/_golden/regress-wf-node-script.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-boundaries.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-equivalence-production-boundary.static.golden.mjs",
+        "node tests/_golden/teachin-replayability-prepared-run.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-runtime-bootstrap.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-replayability-runtime-cycle-adapter.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T01:10:53.917Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "S6-repo-hygiene",
+      "story": "全仓卫生：冻结件零漂移、术语表完整、链路自检绿。",
+      "acceptance": [
+        "node tests/_golden/support/prd-drift-scan.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T01:11:14.020Z 全部 acceptance exit 0"
+    }
+  ],
+  "observability": [
+    {
+      "dimension": "出站消费链：ref 填进表、准入门放行之后，破坏动作才走到出站拦截。page.route 真拦住出站请求、平台 ID 真被核对、route.abort 真在请求发出前生效——hermetic 证不出，需真浏览器。",
+      "route": "human"
+    },
+    {
+      "dimension": "剖面 mutationUrlPattern 是出站拦截安装器的必需输入且 requirePattern 为真，但编译侧剖面形状门从不校验它。ref 全对之后剖面少这个字段会让破坏步整步判 action_failed（方向安全但白跑一趟真机）。",
+      "route": "human"
+    },
+    {
+      "dimension": "v3 冻结锁的产出侧（编译期攒授权边、随实体绑定草案交签署冻结）本轮不落，故 v3 锁目前只有金牌夹具在造。真机用例升 v3 属另一契约。",
+      "route": "human"
+    }
+  ]
+}
