@@ -1,0 +1,9 @@
+# 红基线（修复前现行代码实跑，25d625e 基线）
+# 命令：node tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs
+RED  wf-crud-sleep-import: S1 crud 行为钉：workflow.create 全程不抛，空页上恰发 6 事件、notes 恰两条既有记账: 不得抛：ReferenceError: sleep is not defined
+RED  wf-crud-sleep-import: S2 drawer 行为钉：workflow.openNode 点后轮询真踩 sleep(100)，超时后 fail-closed 硬阻断: 不得抛：ReferenceError: sleep is not defined
+RED  wf-crud-sleep-import: S3 结构钉：两文件来自 ./compile-atoms-support.mjs 的 import 行均含 sleep: ../../lib/compile-atoms-workflow-crud.mjs：该行须导入 sleep：import { ROUTE_LIST, SEARCH_BOX_NAME, auditDeleteCount } from './compile-atoms-support.mjs';
+RED  wf-crud-sleep-import: S4 缺陷类普查钉：lib/*.mjs 凡裸调 sleep( 的文件必有 sleep 的导入或本地定义: 裸调 sleep( 却无导入/定义的文件（拆文件漏导入缺陷类）：["compile-atoms-workflow-crud.mjs","compile-atoms-workflow-drawer.mjs"]
+
+not ok wf-crud-sleep-import: 0/4 通过，4 条红
+EXIT=1

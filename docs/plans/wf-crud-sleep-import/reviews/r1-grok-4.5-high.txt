@@ -1,0 +1,387 @@
+bash /tmp/claude-1000/-mnt-d-ctx-heren-casey/2347a20e-9dad-4a77-bc72-81781e80e560/scratchpad/run-grok-review.sh
+test@chenstevencoco:/mnt/d/ctx/heren/casey$ bash /tmp/claude-1000/-mnt-d-ctx-heren-casey/2347a20e-9dad-4a77-bc72-81781e80e560/scratchpad/run-grok-review.sh
+Signing in… starting your session.
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                                                                                                      │
+│                                                                                              ⠀⠀⠀⣀⣤⣤⣀⠀⠀⡠                                                                                              │
+│                                                                                              ⠀⢀⡾⠋⠁⠀⢁⢴⡎⠀                                                                                              │
+│                                                                                              ⠀⢸⡇⠀⠀⠐⠁⢀⣿⠀                                                                                              │
+│                                                                                              ⠀⢈⠗⢀⣀⣀⣠⡾⠃⠀                                                                                              │
+│                                                                                              ⠐⠁⠀⠈⠉⠉⠉⠀⠀⠀                                                                                              │
+│                                                                                                                                                                                                      │
+│ Grok Build  v0.2.118                                                                                                                                                                                 │
+│ /mnt/d/ctx/heren/casey-wf-crud-sleep-import                                                                                                                                                          │
+│ Model · Grok 4.5                                                                                                                                                                                     │
+│ /help for commands                                                                                                                                                                                   │
+│                                                                                                                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+◆ session_start
+      ✓ global/settings:session_start[0].hooks[0] (7ms)
+      ✓ global/settings:session_start[1].hooks[0] (1034ms)
+      ✓ project/settings:session_start[0].hooks[0] (95ms)
+
+❯ # 聚 焦 代 码 评 审  · wf-crud-sleep-import（ 单 轮 ， headless）
+
+  你 是 异 构 评 审 方 （ 实 现 家 族  Claude， 你 不 是 实 现 者 ） 。 对 着 **不 可 变 快 照 **审 ：
+  工 作 树  `/mnt/d/ctx/heren/casey-wf-crud-sleep-import`， HEAD `bbde48c`， 基 线  dev `25d625e`。
+  纪 律 ： 工 作 树 只 读 ——你 可 以 读 任 何 文 件 、 可 以 运 行 下 方 验 证 命 令 ； 任 何 变 异 实 验 只 许 在  `/tmp` 下
+  拷 贝 后 做 ， 绝 不 改 工 作 树 任 何 字 节 。 不 读 取  `.auth/`、 `site.json`； 不 外 呼 真 机 。
+
+  ## 变 更 面 （ 全 部 差 异 ， 白 名 单 外 无 改 动 ）
+
+  - `lib/compile-atoms-workflow-crud.mjs` 第  6 行  import 并 入  `sleep`（ 1 行 ）
+  - `lib/compile-atoms-workflow-drawer.mjs` 第  3 行  import 并 入  `sleep`（ 1 行 ）
+  - 新 增  `tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs`（ 金 牌 四 钉 ）
+  - 新 增  `docs/plans/wf-crud-sleep-import/plan.md`、
+    `docs/plans/wf-crud-sleep-import/accept/red-proofs/sleep-import.red.txt`、
+    `loop/prd-wf-crud-sleep-import.json`
+
+  用  `git -C /mnt/d/ctx/heren/casey-wf-crud-sleep-import diff 25d625e..bbde48c` 自 行 核 全 量 差 异 。
+
+  ## 背 景 （ 已 实 证 ， 供 核 对 不 必 重 查 ）
+
+  B4（ tc_catalog_wf_crud 重 编 译 ） 失 败 根 因 ： `6f91125` 拆 单 体  `compile-atoms.mjs` 时
+  `sleep` 导 入 没 跟 着 搬 ， `compileWorkflowCreate` 的  `await sleep(250)`（ crud:136） 抛
+  `ReferenceError: sleep is not defined`， 被  `compileFlow` 密 封 成
+  `COMPILE_ATOM_EXECUTION_FAILED`（ eventsEmitted=2 与 真 机 报 告 同 签 名 ， 真 机 忠 实 复 现 已 抓 到
+  原 始 异 常 ） 。 同 类 普 查 另 逮  `compileWorkflowOpenNode` 点 后 轮 询 的  `sleep(100)`（ drawer:53，
+  潜 伏 未 触 发 ） 。 同 缺 陷 类 第 三 例 （ 前 两 例  `01e965f` 漏  `requestLogPath`、
+  `agent-delete-confirm-import` 漏  `inspectWorkflowDeleteConfirm`， 收 口 形 制 与 本 件 同 款 ） 。
+
+  ## 风 险 清 单 （ 重 点 核 这 些 ， 首 轮 只 报  Critical/High/Medium）
+
+  1. 两 行  import 的 正 确 性 ： `sleep` 在  `compile-atoms-support.mjs:7` 有  export 吗 ？
+     有 无 循 环 依 赖 或 命 名 遮 蔽 （ 两 文 件 内 是 否 已 有 同 名 局 部 定 义 ） ？
+  2. 金 牌 替 身 保 真 （ 反 倒 裁 ） ： 空 页 替 身 是 否 零 命 中 自 洽 ； `emit(spec, customAct)` 是 否 对 齐 生 产
+     签 名 （ `lib/compile-atoms-run.mjs:135-161`） ； S2 塑 形 替 身 （ 画 布 节 点 恰  1、 抽 屉 域 恒 空 ）
+     是 否 只 复 现 真 实 前 置 形 态 、 结 论 （ 超 时 阻 断 ） 是 否 被 测 代 码 自 己 得 出 而 非 夹 具 指 定 。
+  3. S2 的 判 别 力 ： `drawerDomainCalls >= 3` 与  `elapsed >= 5000` 是 否 真 能 证 明  sleep 行 被
+     穿 越 （ 红 代 码 首 拍  sleep 即 抛 ， 到 不 了 这 些 断 言 ） ？ 有 无 「 未 真 调  customAct 默 认  unique」 类 伪 绿 面 。
+  4. S4 普 查 钉 正 则  `(?<![.\w])sleep\s*\(` 的 漏 报 /误 报 面 ： `.sleep(`、 `mySleep(`、 注 释 、
+     本 地 定 义  `const sleep`、 import 行 匹 配  `[{,]\s*sleep\s*[,}]` 的 边 界 （ 如  `import { sleep }`） 。
+  5. 红 证 真 实 性 ： `accept/red-proofs/sleep-import.red.txt` 与 你 在  /tmp 拷 贝 上 回 退 两 行 修 复 后
+     实 跑 的 输 出 是 否 一 致 （ 0/4 全 红 、 exit 1、 红 因 是  ReferenceError 而 非 语 法 错 ） 。
+  6. PRD `testChecksums` 三 条  sha256 与 在 树 文 件 是 否 逐 字 节 相 符 （ 自 跑  sha256sum 核 ） 。
+
+  ## 现 成 证 据 （ 可 复 核 ）
+
+  - 修 复 后 金 牌  exit 0（ 4/4） ； 还 原 →exit 1→复 原  sha256 相 同 →exit 0；
+  - 邻 接  exit 0 全 绿 ： chief-stream-replylog-import / agent-delete-confirm-import /
+    compile-execution-failure-seal 三 金 牌  + `node loop-kit/bin/term-lint.mjs --registry` +
+    `node bin/casey.mjs selftest --tier1`；
+
+  - gate GREEN 2/2（ `loop/prd-wf-crud-sleep-import.json` 的  passes 由  gate 写 入 ） 。
+
+  ## 输 出 格 式 （ 末 尾 必 须 给 ）
+
+  逐 条  finding： `[severity] 文 件 :行  ——问 题 ——建 议 `； 没 有 就 写 「 零  Critical/High/Medium」 。
+  最 后 一 行 单 独 输 出 ： `IMPLEMENTATION_VERDICT: APPROVE` 或  `IMPLEMENTATION_VERDICT: CHANGES_REQUIRED`。
+
+◆ user_prompt_submit
+      ✓ global/settings:user_prompt_submit[0].hooks[0] (9ms)
+      ✓ global/settings:user_prompt_submit[1].hooks[0] (941ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[0] (821ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[1] (114ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[2] (88ms)
+┃◆ Thought for 1.9s
+┃
+┃The user wants me to perform a code review of a specific change in the casey-wf-crud-sleep-import repository. This is a focused headless code review with strict constraints:
+按 不 可 变 快 照 做 异 构 评 审 ： 先 核 全 量  diff、 关 键 源 与 金 牌 /红 证 ， 再 按 风 险 清 单 逐 项 验 证 。
+◆ Run Verify HEAD and full diff vs baseline
+$ git rev-parse HEAD && git log -1 --oneline && git merge-base --is-ancestor 25d625e HEAD; echo exit:$?; git diff --stat 25d625e..bbde48c; echo '---'; git diff 25d625e..bbde48c --name-only;
+  echo '---FULL DIFF---'; git diff 25d625e..bbde48c
+
+bbde48c3fbd5ca6eaee017dc1a651ef6b13358df
+bbde48c fix: wf-crud-sleep-import——补  6f91125 拆 分 丢 失 的  sleep 导 入
+… +418 lines
++  process.exit(1);
++}
++console.log(`ok   ${TAG}: ${passed}/${total} 全 过 `);
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (891ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (734ms)
+◆ Run Check sleep export and imports
+$ rg -n "export.*sleep|function sleep|const sleep|async function sleep" lib/compile-atoms-support.mjs lib/compile-atoms-workflow-crud.mjs lib/compile-atoms-workflow-drawer.mjs 2>/dev/null;
+  echo '---'; head -20 lib/compile-atoms-support.mjs; echo '---'; head -20 lib/compile-atoms-workflow-crud.mjs; echo '---'; head -20 lib/compile-atoms-workflow-drawer.mjs
+
+---
+// Shared deterministic helpers for compile atom modules.
+… +59 lines
+    return;
+  }
+  // 预 检 域 锁 身 份 门 （ emit 的  customAct 通 路 不 走 定 位 核 验 ， 此 处 自 证 ——镜 像  addNode 源 身 份 门 ） ：
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (10ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (833ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (635ms)
+◆ Read wf-crud-sleep-import.zero-sut.golden.mjs  [hooks: 2]
+◆ Read prd-wf-crud-sleep-import.json  [hooks: 2]
+◆ Read sleep-import.red.txt  [hooks: 4]
+┃◆ Thought for 1.0s
+┃
+┃Good progress. I need to dig deeper into:
+继 续 核 对  sleep 调 用 点 、 生 产  emit 签 名 、 S2 轮 询 路 径 ， 并 在  /tmp 做 红 证 复 现 与 校 验 和 核 验 。
+◆ Read compile-atoms-workflow-crud.mjs (101-180 of 368)  [hooks: 2]
+◆ Read compile-atoms-workflow-drawer.mjs (2-121 of 480)  [hooks: 2]
+◆ Read compile-atoms-run.mjs (131-180 of 330)  [hooks: 2]
+◆ Run Checksums and green golden run
+$ sha256sum tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs docs/plans/wf-crud-sleep-import/plan.md docs/plans/wf-crud-sleep-import/accept/red-proofs/sleep-import.red.txt && echo '---' &&
+  node tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs; echo EXIT:$?
+
+d13ffb42fae1f3375a3655278c65023f349f77850913bc5cf4b38f3735a1195f  tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs
+4157b39802a595b47124c79cba294e25e82d4f452cd690a54ed79dae78cc8808  docs/plans/wf-crud-sleep-import/plan.md
+… +5 lines
+ok   wf-crud-sleep-import: S4 缺 陷 类 普 查 钉 ： lib/*.mjs 凡 裸 调  sleep( 的 文 件 必 有  sleep 的 导 入 或 本 地 定 义
+ok   wf-crud-sleep-import: 4/4 全 过
+EXIT:0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (11ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (926ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (621ms)
+◆ Search "\\bsleep\\b" in **/*.{mjs,js} in lib (15 matches in 6 files)  [hooks: 2]
+◆ Search "\\bsleep\\s*\\(" in lib/compile-atoms-workflow-crud.mjs (1 match)  [hooks: 2]
+◆ Search "\\bsleep\\s*\\(" in lib/compile-atoms-workflow-drawer.mjs (1 match)  [hooks: 4]
+┃◆ Thought for 28.6s
+┃
+┃Checksums match. Golden is green. Now I need to:[Critical] lib/compile-atoms-workflow-crud.mjs:6 —— sleep import 未 随 拆 单 体 搬 迁 ， compileWorkflowCreate 的  await sleep(250) 抛  ReferenceError
+┃全  import { sleep } from '../compile-atoms-support.
+◆ Run Red-proof replay in /tmp with imports reverted
+$ # Red proof in /tmp: copy golden + two libs + deps needed to import
+  set -e
+  TMP=$(mktemp -d /tmp/wf-crud-sleep-review.XXXXXX)
+  echo "TMP=$TMP"
+  # Minimal copy: whole repo is heavy; use worktree-style copy of needed files via cp -a of the tree structure for lib + tests
+  # Safer: git worktree or copy just needed paths
+  REPO=/mnt/d/ctx/heren/casey-wf-crud-sleep-import
+  mkdir -p "$TMP/lib" "$TMP/tests/_golden"
+  # Copy support chain - simpler: copy entire lib and golden, strip sleep from two files
+  cp -a "$REPO/lib" "$TMP/"
+  cp -a "$REPO/tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs" "$TMP/tests/_golden/"
+  # Also need package type/module resolution - run from TMP with node, imports are relative within lib
+  # Revert the two import lines
+  sed -i "s/, sleep } from '.\/compile-atoms-support.mjs'/ } from '.\/compile-atoms-support.mjs'/" "$TMP/lib/compile-atoms-workflow-crud.mjs"
+  # drawer has sleep in middle of list: ", sleep,"
+  sed -i 's/, sleep,/, /' "$TMP/lib/compile-atoms-workflow-drawer.mjs"
+  # verify reverts
+  echo '--- crud import ---'
+  head -6 "$TMP/lib/compile-atoms-workflow-crud.mjs" | tail -1
+  echo '--- drawer import ---'
+  head -3 "$TMP/lib/compile-atoms-workflow-drawer.mjs" | tail -1
+  # Fix golden import paths: they use ../../lib/ from tests/_golden - good if we have that structure
+  cd "$TMP"
+  OUT=$(node tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs 2>&1); EC=$?
+  echo "$OUT"
+  echo "EXIT=$EC"
+  # Compare to red proof (strip comments from proof for body compare)
+  PROOF="$REPO/docs/plans/wf-crud-sleep-import/accept/red-proofs/sleep-import.red.txt"
+  # Build expected comparable body: RED lines + not ok + EXIT
+  echo '--- compare to red proof body ---'
+  printf '%s\n' "$OUT" "EXIT=$EC" > "$TMP/actual.red.txt"
+  # red proof has comment headers - compare without them
+  diff -u <(grep -v '^#' "$PROOF" | sed '/^$/d') <(cat "$TMP/actual.red.txt" | sed '/^$/d') || true
+  echo '--- end ---'
+  # Check local sleep defs in two files
+  echo '--- local sleep in two files ---'
+  rg -n 'const sleep|function sleep|let sleep|var sleep' "$TMP/lib/compile-atoms-workflow-crud.mjs" "$TMP/lib/compile-atoms-workflow-drawer.mjs" || echo 'no local sleep'
+  # Check cycle: does support import crud/drawer?
+  rg -n "compile-atoms-workflow-(crud|drawer)" "$REPO/lib/compile-atoms-support.mjs" || echo 'no cycle to crud/drawer from support'
+
+TMP=/tmp/wf-crud-sleep-review.AkEftS
+--- crud import ---
+… +1 lines
+--- drawer import ---
+import { disposeDomain, disposeHandle, exactTextRe, handleInsideRoot, locatorStillBound, nodeDrawerDomain, nodeDrawerLabelInvalid, pinNodeDrawer, readBoundAgentSelectValue,
+verifyPinnedNodeDrawer, workflowNodeBox } from './compile-atoms-support.mjs';
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (824ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (566ms)
+◆ Search "export (async )?function nodeDrawerDomain|function nodeDrawerDomain|export async function nodeDrawerDomain|export function nodeDrawerDomain" in lib/compile-atoms-support.mjs (1 match)  [hook
+◆ Run Probe S4 regex edge cases
+$ # Probe S4 regex edges + import-line regex
+  cd /mnt/d/ctx/heren/casey-wf-crud-sleep-import
+  node --input-type=module <<'EOF'
+  const bare = /(?<![.\w])sleep\s*\(/;
+  const imp = /[{,]\s*sleep\s*[,}]/;
+  const samples = [
+    ['sleep(1)', bare],
+    ['.sleep(1)', bare],
+    ['mysleep(1)', bare],
+    ['mySleep(1)', bare],
+    ['foo.sleep(1)', bare],
+    ['await sleep(100)', bare],
+    ['// sleep(1)', bare],
+    ['const sleep = x', /(?:const|let|var|function)\s+sleep\b/],
+    ['import { sleep } from', imp],
+    ['import { a, sleep } from', imp],
+    ['import { sleep, b } from', imp],
+    ['import { a, sleep, b } from', imp],
+    ['import sleep from', imp], // default import - should NOT match (correct for named only)
+    ['import { sleep as wait }', imp], // sleep as wait - { sleep as - no match for [,}] after
+  ];
+  for (const [s, re] of samples) {
+    console.log(JSON.stringify(s), '=>', re.test(s));
+  }
+  // alias form: import { sleep as wait } — import detection would miss if only bare call was wait(
+  console.log('alias import line:', /[{,]\s*sleep\s*[,}]/.test("import { sleep as wait } from 'x'"));
+  console.log('import type?', /^import/.test("import type { sleep } from 'x'") && /[{,]\s*sleep\s*[,}]/.test("import type { sleep } from 'x'"));
+  EOF
+
+"sleep(1)" => true
+".sleep(1)" => false
+… +11 lines
+"import { sleep as wait }" => false
+alias import line: false
+import type? true
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (18ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (724ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (604ms)
+◆ Task started: Shadowing check and adjacency goldens
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (773ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (575ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (793ms)
+┃◆ Thought for 2.6s
+┃
+┃The red proof command failed with exit 1 - possibly because the sed on drawer left a double space or something broke imports of other modules. Let me check - the drawer import shows double space
+┃after...
+红 证 脚 本 因  set -e 在 预 期  exit 1 处
+◆ Task completed in 5.2s: Shadowing check and adjacency goldens
+◆ Task started: Clean red-proof replay and compare
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (778ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (942ms)
+◆ Task completed in 0.8s: Clean red-proof replay and compare
+┃◆ Thought for 4.0s
+┃
+┃The red proof run is still running - S2 without sleep throws immediately so it should be fast. Unless... the copy of lib might still have sleep and it's running the green path with 5s wait? Or maybe
+┃p...
+┃◆ Thought for 22.8s
+┃
+┃Red proof matches perfectly. Worktree only has untracked node_modules (pre-existing, not our mutation). [Critical] lib/compile-atoms-workflow-crud.mjs:6 —— sleep import 正 确 性 通 过 （ support.mjs:
+┃export const sleep， 无 本 地 遮 蔽 ， 无 循 环 依 赖 ） ——无 建 议
+┃[Critical] lib/compile-atoms-workflow-drawer.mjs:3 —— sleep import 正 确 性 通 过 （ 同 上  1 行 ） ——无 建 议
+┃[High] tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs —— S2 判 别 力 ： drawerDomainCalls >= 3 与  elapsed >= 5000 能 证 明  sleep 被 穿 越 （ 首 轮 调 用 后 即 抛 ， 生 产  emit  customAct
+┃mouseClicks===1 排 除 默 认  unique 伪 绿 ） ——无 建 议
+┃[High] docs/plans/wf-crud-sleep-import/accept/red-proofs/sleep-import.red.txt —— 红 证 真 实 性 ： 与  /tmp 回 退 修 复 后 实  0/4 全 红 、 exit 1、 ReferenceError 一 致 ——无 建 议
+┃[High] docs/plans/wf-crud-sleep-import/plan.
+◆ Search "export async function workflowNodeBox|export function workflowNodeBox" in lib/compile-atoms-support.mjs (1 match)  [hooks: 2]
+◆ Task started: Confirm worktree clean and term-lint
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (810ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (615ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (767ms)
+┃◆ Thought for 9.2s
+┃
+┃Interesting note about workflowNodeBox: the fixture's evaluate returns { x: 10, y: 10, w: 120, h: 48 } directly without walking parent for lf-node. Looking at the real workflowNodeBox: [Medium]
+┃tests/_golden/wf-crud-sleep-import.zero-sut.golden.
+◆ Task completed in 9.3s: Confirm worktree clean and term-lint
+┃◆ Thought for 0.5s
+┃
+┃I have everything I need for the review. Worktree clean except untracked node_modules. HEAD correct.
+异 构 评 审  · wf-crud-sleep-import（ HEAD bbde48c / 基 线  25d625e）
+
+范 围 核 验 ： git diff 25d625e..bbde48c 恰  6 文 件 、 白 名 单 一 致 （ 2 行  import 修 复  + 金 牌  + plan + 红 证  + PRD） 。 工 作 树 只 读 ； 红 证 在  /tmp 回 退 两 行 后 实 跑 。
+
+───
+
+风 险 清 单 核 对
+
+1. 两 行  import 正 确 性  — 通 过
+• lib/compile-atoms-support.mjs:7： export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+• crud:6 / drawer:3 均 并 入 既 有  ./compile-atoms-support.mjs 命 名 导 入 行 ， 与 调 用 点  await sleep(250)（ crud:136） 、 await sleep(100)（ drawer:53） 同 名 绑 定 。
+• 两 文 件 无  const/let/var/function sleep 局 部 遮 蔽 。
+• support 不 回 指  crud/drawer， 无 循 环 依 赖 。
+
+2. 金 牌 替 身 保 真  — 通 过
+• 空 页 ： 定 位 一 律  count=0 / evaluate→undefined， 自 洽 零 命 中 ， 不 针 对 单 条 断 言 倒 裁 。
+• emit： (spec, customAct) 收 参 ； 有  customAct 真  await customAct()， 与 生 产  compile-atoms-run.mjs:153-161 关 键 支 一 致 （ 第 三 参  options 本 两 原 子 未 用 ， 替 身 省 略 可 接 受 ） 。
+• S2 塑 形 ： 画 布 标 题 恰  1、 box 可 证 、 抽 屉  elementHandles 恒  []——只 给 前 置 形 态 ； 超 时  blocker 文 案 与  nodeDrawerLabel===null 由  compileWorkflowOpenNode 自 己 压 出 。
+
+3. S2 判 别 力  — 通 过
+┌───────────────────┬──────────────────────────────────┬─────────────────────────┐
+│ 探 针               │ 红 （ 无  import）                   │ 绿 （ 有  import）          │
+├───────────────────┼──────────────────────────────────┼─────────────────────────┤
+│ 抛 错               │ 首 拍  sleep(100) → ReferenceError │ 不 抛                     │
+├───────────────────┼──────────────────────────────────┼─────────────────────────┤
+│ drawerDomainCalls │ 到 不 了  ≥3（ 基 线 +首 轮 后 即 抛 ）      │ 基 线 +多 轮 轮 询 +后 核 验  ≥3 │
+├───────────────────┼──────────────────────────────────┼─────────────────────────┤
+│ elapsed           │ 远 小 于  5s                        │ ≥5000（ 真 等 满 窗 ）        │
+├───────────────────┼──────────────────────────────────┼─────────────────────────┤
+│ mouseClicks       │ 若 未 调  customAct 则 为  0          │ 恰  1                    │
+└───────────────────┴──────────────────────────────────┴─────────────────────────┘
+
+「 emit 默 认  unique、 不 调  customAct」 会 在  mouseClicks / drawerDomainCalls / elapsed 三 处 同 时 红 ， 非 伪 绿 面 。
+
+4. S4 普 查 正 则  — 可 接 受 （ 无  C/H/M）
+• (?<![.\w])sleep\s*\(： 排 除  .sleep(、 mySleep(； 命 中 裸  sleep(。
+• 导 入 ： [{,]\s*sleep\s*[,}] 覆 盖  import { sleep } / 中 置  / 末 位 。
+• 注 释 不 豁 免 、 宁 可 误 报 ——与 金 牌 注 释 一 致 。
+• 已 知 窄 漏 报 （ 本 缺 陷 类 外 ） ： import { sleep as wait }、 默 认  import sleep from； 当 前  lib 全 量 裸 调 点 （ agent/run/crud/drawer + replay-settle 本 地 定 义 ） 均 被 正 确 覆 盖 ， 绿
+
+5. 红 证 真 实 性  — 通 过
+/tmp 精 确 回 退 两 行  import 后 实 跑 ：
+
+0/4 全 红 ， EXIT=1
+S1/S2： ReferenceError: sleep is not defined（ 非 语 法 错 ）
+S3/S4： 结 构 钉 与 普 查 点 名 两 文 件
+
+与  accept/red-proofs/sleep-import.red.txt 正 文  逐 行  MATCH。
+
+6. PRD testChecksums — 通 过
+
+┌─────────┬────────────────┬──────┐
+│ 文 件     │ PRD sha256     │ 实 算  │
+├─────────┼────────────────┼──────┤
+│ golden  │ d13ffb42…195f  │ 一 致  │
+├─────────┼────────────────┼──────┤
+│ plan.md │ 4157b398…8808  │ 一 致  │
+├─────────┼────────────────┼──────┤
+│ red.txt │ 71668b5d…3928a │ 一 致  │
+└─────────┴────────────────┴──────┘
+
+复 跑 证 据 （ 本 轮 ）
+• 金 牌 ： 4/4 exit 0
+• 邻 接 ： agent-delete-confirm-import / compile-execution-failure-seal / chief-stream-replylog-import 全 绿
+• term-lint --registry 通 过
+• 工 作 树 相 对  HEAD 无 改 动 （ 仅 既 有  ?? node_modules）
+
+───
+
+Findings
+
+零  Critical/High/Medium
+
+（ Low 不 报 ： S4 对  sleep as 别 名 /默 认 导 入 的 理 论 漏 报 面 已 由 注 释 标 明 为 偏 误 报 策 略 ， 且 与 本 件 缺 陷 类 无 关 。 ）
+
+───
+
+IMPLEMENTATION_VERDICT: APPROVE
+Worked for 4m24s                                                                                                                                                                        stop  [hooks: 5]
+      ✓ global/settings:stop[0].hooks[0] (7ms)
+      ✓ global/settings:stop[1].hooks[0] (768ms)
+      ✓ project/settings:stop[0].hooks[0] (670ms)
+      ✓ project/settings:stop[0].hooks[1] (614ms)
+      ✓ project/settings:stop[1].hooks[0] (127ms)
+minimal · /help
+❯
+Grok 4.5 (high) · always-approve · 60K / 500K (12%) · ctrl+o transcript
