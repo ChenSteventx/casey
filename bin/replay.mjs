@@ -20,8 +20,17 @@ import {
   readIdentityAdmissionAuthorityFromPrd,
   checkCredentialAudienceGate,
   readFrozenIdentityObservations,
+  readFrozenDestructiveContinuity,
 } from '../lib/entity-semantic-lock-preflight.mjs';
+// 准入纯函数单列一行导入：round-2 冻结金牌 E1 逐字咬 `import { admitDestructiveTargetContinuity }`，
+// 合并进下方多行导入会让该静态断言失配（收口面未变、断言却转红）。
 import { admitDestructiveTargetContinuity } from '../lib/entity-destructive-continuity.mjs';
+import {
+  destructiveTargetKind,
+  requiresTargetContinuityRef,
+  selectObservationForDestructiveTarget,
+} from '../lib/entity-destructive-continuity.mjs';
+import { mintDestructiveTargetContinuity } from '../lib/entity-destructive-continuity-wiring.mjs';
 import { parseAgentIdentityProfile } from '../lib/agent-identity-profile.mjs';
 import { PROJECT_ROOT } from '../lib/paths.mjs';
 import { playwrightLaunchOptions, resolveCliExecutionTarget } from '../lib/execution-target/wiring.mjs';
@@ -264,10 +273,84 @@ async function main() {
   //     一律 fail-CLOSED 拒（与 C1「v1 实体裁定降级」一脉；v1 永不填 ref 表，故恒拒）。
   //   · round-2 High「per-intent 非 per-step」：授权按【逐破坏步 stepId】而非 per-intent——同 intent 里一步有 ref
   //     绝不放行其它破坏步（委派纯守卫 admitDestructiveTargetContinuity 的 resolvedRefByStep 主路）。
-  // destructiveContinuityByStep = Map<破坏步 stepId, 已认证 ref>；真机破坏链身份采集补齐才非空（route:human），
-  // 当前 hermetic 无采集件即恒空 → 破坏性原子在锁下恒被拒（fail-closed 默认，绝不臆断放行、绝不据锁自报字段放行）。
-  const destructiveContinuityByStep = new Map(); // per-step 已认证 ref；route:human 采集补齐前恒空（v1 锁永空）
+  // destructiveContinuityByStep = Map<破坏步 stepId, 已认证 ref>。v1/v2 锁下恒空 → 破坏性原子恒被拒
+  // （fail-closed 默认，绝不臆断放行、绝不据锁自报字段放行）；v3 锁下由下方重建块按已签授权边逐条铸入，
+  // 权威恒取被签的观察行、边上自报字段只用于对账。
+  const destructiveContinuityByStep = new Map(); // per-step 已认证 ref；v1/v2 锁恒空，v3 锁由下方重建填
   const lockKindLabel = (frozenIdentityRows && frozenIdentityRows.length) ? 'v2 身份锁' : 'v1 锁（无身份通道、结构上不可核实目标连续性）';
+  // ── v3 冻结锁：逐破坏步连续性 ref 重建（写入侧；docs/plans/destructive-continuity-ref/design-replay-rebuild.md）──
+  // 时机三面夹死：在身份通道指纹比对【之后】（指纹没核完就铸 ref＝承认一份与现行剖面不配对的锁）、在下方
+  // 破坏性准入门【之前】（准入门是浏览器前最后一道）、在浏览器启动哨兵【之前】（哨兵在场性才证得了
+  // 破坏动作有没有可能真发生）。填的是「表怎么被填满」，不是「表怎么被检查」——下方准入门一字不改。
+  // 任一不变量不成立即【具名硬退出】，不是「不铸让下游拒」：后者会把拒因压成
+  // DESTRUCTIVE_ADMISSION_NO_SIGNED_CONTINUITY_REF，「锁里压根没写」与「锁里写了但是伪造的」变得不可区分，
+  // 而第二种是攻击信号，必须当场具名（设计纪律一）。
+  const signedContinuityEdges = frozenLockAuthority ? readFrozenDestructiveContinuity(frozenLockAuthority) : null;
+  if (signedContinuityEdges) {
+    const destructiveStepIds = events
+      .filter((event) => requiresTargetContinuityRef(event.atom) && typeof event.stepId === 'string')
+      .map((event) => event.stepId);
+    // 拒绝行同时点名【此刻仍未获授权的破坏步】：硬退出发生在违规边处（该边可能挂在观察步上），
+    // 只报边不足以看出「哪些破坏步还裸着」——逐步可定位是 per-step 授权粒度的验收面。
+    const refuseEdge = (reason, edge) => {
+      const pending = destructiveStepIds.filter((stepId) => !destructiveContinuityByStep.has(stepId));
+      const at = `边=${edge?.destructiveStepId ?? '(未知步)'}/${edge?.destructiveAtom ?? '(未知原子)'}`;
+      console.error(`replay: v3 冻结锁的破坏性目标连续性授权边非法（${reason}，${at}），仍未获授权的破坏步 [${pending.join(', ') || '无'}]，未启动浏览器（fail-closed，护栏 #14）`);
+      process.exit(65);
+    };
+    if (!identityExpectedByStep || !frozenIdentityRows || !frozenIdentityRows.length) {
+      // v3 锁必带非空观察行、且必过上方指纹门；走到这里说明通道剖面未声明身份通道或观察面缺失——
+      // 结构上无从核实「同一目标」，恒拒（与 v1 锁同一律）。
+      console.error('replay: v3 冻结锁的身份通道未经核验，拒重建破坏性目标连续性 ref（DESTRUCTIVE_CONTINUITY_IDENTITY_CHANNEL_UNVERIFIED），未启动浏览器（fail-closed）');
+      process.exit(65);
+    }
+    // 位序权威是 events 的 0 基下标（I6 的定义面），故索引建在完整 events 上。
+    const stepIndex = new Map();
+    events.forEach((event, index) => {
+      if (!stepIndex.has(event.stepId)) stepIndex.set(event.stepId, { event, index });
+    });
+    for (const edge of signedContinuityEdges) {
+      const hit = stepIndex.get(edge.destructiveStepId);
+      // I1：授权边必须对上 events 里真实存在的那一个破坏步（步在、原子逐字相符）。
+      if (!hit) refuseEdge('DESTRUCTIVE_CONTINUITY_STEP_NOT_IN_EVENTS', edge);
+      if (hit.event.atom !== edge.destructiveAtom) refuseEdge('DESTRUCTIVE_CONTINUITY_ATOM_MISMATCH', edge);
+      // I7：授权不得跨意图漂移。
+      if (hit.event.intentId !== edge.destructiveIntentId) refuseEdge('DESTRUCTIVE_CONTINUITY_INTENT_MISMATCH', edge);
+      // I2：给非破坏步发授权即 per-step 粒度失效。
+      if (!requiresTargetContinuityRef(edge.destructiveAtom)) refuseEdge('DESTRUCTIVE_CONTINUITY_ATOM_NOT_TARGETING', edge);
+      // I6：位序不得造假（出站取证对账锚）。
+      if (hit.index !== edge.stepOrder) refuseEdge('DESTRUCTIVE_CONTINUITY_STEP_ORDER_MISMATCH', edge);
+      // I3：跨类别硬闸——codex round-5 Critical 的同款绕过，在【重建】路径上必须同样关死。
+      if (edge.boundKind !== destructiveTargetKind(edge.destructiveAtom)) refuseEdge('DESTRUCTIVE_CONTINUITY_KIND_MISMATCH', edge);
+      // I8：一步一条，重复即拒（后写覆盖前写＝静默取谁未定义）。
+      if (destructiveContinuityByStep.has(edge.destructiveStepId)) refuseEdge('DESTRUCTIVE_CONTINUITY_DUPLICATE_STEP', edge);
+      // I4：按目标名 + 类别唯一命中，绝不取 first（同名毒化面）。
+      const picked = selectObservationForDestructiveTarget({
+        observations: frozenIdentityRows,
+        targetName: hit.event.text,
+        boundKind: edge.boundKind,
+      });
+      if (!picked.ok) refuseEdge(picked.reason, edge);
+      // 外键须真指向被选中那一条，不许「选了甲、引了乙」。
+      if (picked.observation.evidenceStepId !== edge.observationEvidenceStepId) {
+        refuseEdge('DESTRUCTIVE_CONTINUITY_OBSERVATION_REF_MISMATCH', edge);
+      }
+      // I5：边自报 platformId 只用于对账，权威恒取观察行——伪造它即指向别的实体、真删错对象。
+      if (picked.observation.platformId !== edge.platformId) {
+        refuseEdge('DESTRUCTIVE_CONTINUITY_PLATFORM_ID_MISMATCH', edge);
+      }
+      // 复用既有铸造适配器，不另造；指纹取锁顶层唯一事实源——它已在上方与现算 liveDigest 逐字节比对过
+      // （不符早已 exit 65），逐条再存一份只会制造「两处不一致时听谁的」。
+      const minted = mintDestructiveTargetContinuity(picked.observation, {
+        profileFingerprint: identityProfileDigest,
+        scope: edge.scope,
+        requestCorrelationId: edge.requestCorrelationId,
+        stepOrder: edge.stepOrder,
+      });
+      if (!minted.ok) refuseEdge(minted.reason, edge);
+      destructiveContinuityByStep.set(edge.destructiveStepId, minted.ref);
+    }
+  }
   if (frozenLockAuthority) {
     const destructiveEvents = createdWorkflowController
       ? events.filter((event) => !createdWorkflowCovered.has(`${event.intentId}\u0000${event.atom}`))
@@ -331,10 +414,10 @@ async function main() {
     ...(identityLedger ? { identityLedger, identityTokens: new Map() } : {}),
     ...(identityExpectedByStep ? { identityExpectedByStep } : {}),
     // C3 破坏性目标连续性 ref（按破坏步 stepId 关联，非按 searchOpen 的 evidenceStepId——codex Critical-1 ②）：
-    // 与上方准入门同一 per-step Map（codex round-2 High per-step）；破坏链身份采集补齐后由已认证持久化件填充，
-    // 供出站拦截安装器/归零按破坏步真解析 ref。route:human 采集前恒空——空即上方 admission 已在浏览器前拒破坏步，
-    // 出站拦截路径对破坏步不可达；proceed（有合法 ref 放行破坏动作）路径待真机破坏链采集激活（route:human），
-    // 当前生产不可达（诚实挂账，非「非 always-refuse」宣称——codex round-2 Medium 收口）。
+    // 与上方准入门同一 per-step Map（codex round-2 High per-step）；v3 冻结锁下由上方重建块按已签授权边填，
+    // 供出站拦截安装器/归零按破坏步真解析 ref。v1/v2 锁下恒空——空即上方 admission 已在浏览器前拒破坏步。
+    // 【诚实边界】重建让浏览器前的授权链闭合，出站消费半边（真拦住请求、真核平台 ID、真在发出前中止）
+    // hermetic 证不出、需真浏览器，仍挂 route:human；不得据此宣称破坏链已闭。
     destructiveContinuityByStep,
     ...(createdWorkflowController ? { createdWorkflowController } : {}),
     admitReplayActionOrigin: createReplayOriginAdmission(execution.authority),

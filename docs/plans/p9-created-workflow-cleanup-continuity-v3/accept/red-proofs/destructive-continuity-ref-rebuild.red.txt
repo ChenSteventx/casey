@@ -1,0 +1,11 @@
+RED destructive-continuity-ref-rebuild: 逐破坏步连续性 ref 重建验收未满足
+  - [R2 ref 错配·platformId] 拒因未具名 DESTRUCTIVE_CONTINUITY_PLATFORM_ID_MISMATCH（与「缺失」不可区分即不可诊断）：replay: frozen identity locks 未过（FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID），未启动浏览器；下一步 LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY
+
+  - [R3 ref 错配·跨 kind] 拒因未具名 DESTRUCTIVE_CONTINUITY_KIND_MISMATCH：replay: frozen identity locks 未过（FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID），未启动浏览器；下一步 LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY
+
+  - [R4 ref 挂错步] 拒因未点名【未获授权的破坏步】atstep_4，逐步定位不可诊断：replay: frozen identity locks 未过（FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID），未启动浏览器；下一步 LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY
+
+  - [R5 ref 合法] 应抵达浏览器前哨兵（exit 66 + 哨兵在场），实际 exit 65、哨兵 false：replay: frozen identity locks 未过（FROZEN_ENTITY_LOCKS_MISSING_OR_INVALID），未启动浏览器；下一步 LOAD_FIXED_OR_HUMAN_SIGNED_FROZEN_LOCK_AUTHORITY
+
+
+红 4 条。写入侧（bin/replay.mjs 的 destructiveContinuityByStep 填充）落地前，R2-R5 判红属预期。
