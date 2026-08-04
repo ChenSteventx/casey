@@ -81,8 +81,8 @@
         "node tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs",
         "node tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-08-03T23:52:27.092Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-stable-target-id-absence",
@@ -91,8 +91,8 @@
       "acceptance": [
         "node tests/_golden/p9-created-workflow-continuity-v3.stable-absence.zero-sut.golden.mjs"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-08-03T23:52:27.268Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-tier2-cleanup-independent-gate",
@@ -102,8 +102,8 @@
         "node tests/_golden/p9-created-workflow-continuity-v3.tier2-cleanup.zero-sut.golden.mjs",
         "node tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-08-03T23:52:28.191Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-role-authoring-sign-reader-preflight",
@@ -112,8 +112,8 @@
       "acceptance": [
         "node tests/_golden/p9-created-workflow-continuity-v3.role-compile-sign.zero-sut.golden.mjs"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-08-03T23:52:28.510Z 全部 acceptance exit 0"
     },
     {
       "id": "s5-adjacent-regression-and-deep-consumption",
