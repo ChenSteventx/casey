@@ -1,0 +1,21 @@
+# 红先行基线 · p9-replay-authority-split / pure-suite（r4：R3 双路过闸后补钉）
+# 采集：2026-08-04T03:23:56Z　基线 dev@96f6107
+# 命令：node tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs
+# 被测金牌字节 sha256：56b458c4113b98759f4100a593d4f0f6e651a85b62e9c337ddee4fde95679d0d
+# 夹具 sha256：8241717a0031ab119ee3fc3171e9c34d6cdd9a92479d695521d0af0a8638cd67
+# 行数：218（拆二阈值 600）
+# 生产件未动一行。零 SUT：spawn 面全带 CASEY_LAUNCH_SENTINEL。
+# 判据：退出码。exit≠0 即红。
+# r4 补钉：R16 补两成员 status===66（与 R10 对称）；R19 有票无台账负控（双旗标棘轮另半边）。
+
+FAIL R3a 回放票据喂结构面 reader → 拒（既有形状守卫的回归钉，非新增拦截力）: 缺回放票据生产导出 freezeCreatedWorkflowReplayGrant（ERR_MODULE_NOT_FOUND）
+FAIL R4 A 案票据配 B 案结构件 → 摘要链不合而拒；同案配对正控须过: 缺回放票据生产导出 readCreatedWorkflowReplayGrant（ERR_MODULE_NOT_FOUND）
+FAIL R5 批会话纯判定：首成员放行 / 同批次成员放行 / 同成员重跑拒 / 异 token 拒: 缺回放票据生产导出 judgeReplayGrantBatchSession（ERR_MODULE_NOT_FOUND）
+FAIL R6 controller 缺 grant handle → allowLaunch:false（授权闸下沉纯层）: 纯层未强制回放票据：无票也能造出控制器（CLI 单点拦即可被旁路调用方绕开）
+FAIL R7 清单未声明 replayGrantPath 或路径越界 → 结构红；正控须过: 清单缺 replayGrantPath 未红
+FAIL R11 Tier2 无有效票据 → 三例拒跑、要求落拒跑回执；有效票据不得误拦: 缺回放票据生产导出 screenTier2ReplayGrant（ERR_MODULE_NOT_FOUND）
+FAIL R11b 采集编排层已接线：无票时不 spawn 子进程且落拒跑回执: 采集层未导出回放票据拒跑筛：R11 的纯函数绿不代表采集真接线（评审 M-new3）
+FAIL R12 票据 audience 与结构件 audience 不等 → 具名拒（两向都拒）: 缺回放票据生产导出 readCreatedWorkflowReplayGrant（ERR_MODULE_NOT_FOUND）
+p9-replay-authority-split-pure-suite: 0/8
+
+exit=1

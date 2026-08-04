@@ -15,6 +15,33 @@ import {
 import { projectReplayAxes } from '../../lib/replay-axes.mjs';
 import { assembleReportModel } from '../../lib/report-model.mjs';
 
+// ── p9-replay-authority-split amendment ──────────────────────────
+// 回放控制器新增必填的回放授权票据（批级一次性）。本枚断言语义一字未改，
+// 只补上「造控制器」现在必须持有的票据——**只加严**，不放宽任何原有判据。
+import {
+  authorCreatedWorkflowReplayGrantDraft,
+  freezeCreatedWorkflowReplayGrant,
+  readCreatedWorkflowReplayGrant,
+} from '../../lib/entity-created-workflow-replay-grant.mjs';
+
+function replayGrantHandleFor(caseId, authorityBytes, audience = 'test') {
+  const asBytes = (value) => Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
+  const cases = [{ caseId, authorityBytes }];
+  const drafted = authorCreatedWorkflowReplayGrantDraft({
+    batchId: `amend-${caseId}`, audience,
+    notAfter: '2099-01-01T00:00:00.000Z', grantNonce: 'a'.repeat(32), cases,
+  });
+  if (!drafted.ok) throw new Error(`amendment 票据草案失败：${drafted.reason}`);
+  const frozenGrant = freezeCreatedWorkflowReplayGrant({
+    draft: drafted.draft, signerId: 'human', signedAt: '2026-08-04T00:00:00.000Z',
+  });
+  if (!frozenGrant.ok) throw new Error(`amendment 票据冻结失败：${frozenGrant.reason}`);
+  const read = readCreatedWorkflowReplayGrant({ grantBytes: asBytes(frozenGrant.grant), cases });
+  if (!read.ok) throw new Error(`amendment 票据读回失败：${read.reason}`);
+  return read.handle;
+}
+
+
 const ROOT = resolve(import.meta.dirname, '..', '..');
 const failures = [];
 let passed = 0;
@@ -48,7 +75,7 @@ function makeController() {
   const frozen = freezeCreatedWorkflowOwnershipAuthority({ draft: authored.draft, signerId: 'human', signedAt: '2026-08-03T00:00:00.000Z', audience: 'test' });
   const read = readCreatedWorkflowOwnershipAuthority({ caseId, authorityBytes: json(frozen.authority), eventsBytes, flowBytes, testcaseBytes, profileBytes });
   check(read.ok, read.reason);
-  const opened = createCreatedWorkflowReplayContinuityController({ caseId, runId: 'run-1', batchToken: 'batch-1', uniqueNameToken: 'batch-1-case-1', authority: read.handle, profile });
+  const opened = createCreatedWorkflowReplayContinuityController({ caseId, runId: 'run-1', batchToken: 'batch-1', uniqueNameToken: 'batch-1-case-1', authority: read.handle, grant: replayGrantHandleFor(caseId, json(frozen.authority)), profile });
   check(opened.ok, opened.reason);
   return { caseId, controller: opened.controller };
 }

@@ -1,0 +1,26 @@
+# 红先行基线 · p9-replay-authority-split / cli-session（r4：R3 双路过闸后补钉）
+# 采集：2026-08-04T03:23:55Z　基线 dev@96f6107
+# 命令：node tests/_golden/p9-replay-authority-split.cli-session.zero-sut.golden.mjs
+# 被测金牌字节 sha256：3ea262e4477858b9dd3b8a0bf3b92a0c6e7cb4fcb09c56fb4db74e669651d648
+# 夹具 sha256：8241717a0031ab119ee3fc3171e9c34d6cdd9a92479d695521d0af0a8638cd67
+# 行数：304（拆二阈值 600）
+# 生产件未动一行。零 SUT：spawn 面全带 CASEY_LAUNCH_SENTINEL。
+# 判据：退出码。exit≠0 即红。
+# r4 补钉：R16 补两成员 status===66（与 R10 对称）；R19 有票无台账负控（双旗标棘轮另半边）。
+
+FAIL R1 结构件当 --replay-grant 传入 → 具名拒，不得被当票据放行: 越过浏览器前门：结构件被当票据放行到了 chromium.launch
+FAIL R2 有结构件无票据 → exit 64 具名 --replay-grant，且拒因不是 batch-token: 越过浏览器前门：无票也跑到了 chromium.launch
+FAIL R3b 回放票据喂 entity-authority created-workflow-freeze → 具名拒、不落件: 缺回放票据生产导出 freezeCreatedWorkflowReplayGrant（ERR_MODULE_NOT_FOUND）
+FAIL R8 replay-grant-freeze 草案与当前结构件字节不一致 → exit 65、不落件: 缺回放票据生产导出 authorCreatedWorkflowReplayGrantDraft（ERR_MODULE_NOT_FOUND）
+FAIL R9 票据已过 notAfter → 具名拒，哨兵证明未 launch: 缺回放票据生产导出 freezeCreatedWorkflowReplayGrant（ERR_MODULE_NOT_FOUND）
+FAIL R10 首成员到达哨兵点时 session 已落盘（先记再放行的可证伪面）: 缺回放票据生产导出 freezeCreatedWorkflowReplayGrant（ERR_MODULE_NOT_FOUND）
+FAIL R13 台账根不可写 → 具名拒、未 launch，绝不先跑后补记: 缺回放票据生产导出 freezeCreatedWorkflowReplayGrant（ERR_MODULE_NOT_FOUND）
+FAIL R14 同一票据换 batchToken 再跑 → 具名拒（崩溃重跑不得自动复用）: 缺回放票据生产导出 freezeCreatedWorkflowReplayGrant（ERR_MODULE_NOT_FOUND）
+FAIL R15 同批同成员第二次 launch → 具名拒、未 launch: 缺回放票据生产导出 freezeCreatedWorkflowReplayGrant（ERR_MODULE_NOT_FOUND）
+FAIL R16 同批第二成员同 batchToken → 放行到哨兵点（C-new 的正控）: 缺回放票据生产导出 freezeCreatedWorkflowReplayGrant（ERR_MODULE_NOT_FOUND）
+FAIL R17 成员不在票据授权成员集内 → 具名拒、未 launch: 缺回放票据生产导出 freezeCreatedWorkflowReplayGrant（ERR_MODULE_NOT_FOUND）
+FAIL R18 两进程并发抢同一成员 → 恰一个到达哨兵点（wx 原子独占，非串行）: 缺回放票据生产导出 freezeCreatedWorkflowReplayGrant（ERR_MODULE_NOT_FOUND）
+FAIL R19 有 --replay-grant 但无 --replay-grant-ledger → exit 64 具名，未 launch: 缺回放票据生产导出 freezeCreatedWorkflowReplayGrant（ERR_MODULE_NOT_FOUND）
+p9-replay-authority-split-cli-session: 0/13
+
+exit=1

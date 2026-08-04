@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "slug": "p9-replay-authority-split",
+  "task": "回放授权票据：v3 结构授权边只表达结构闭包，正式回放另需一份人签的批级一次性票据。票据双绑结构件（字节 sha256 + 结构件自签名）、带人写 notAfter 与机生 grantNonce、受众逐字等于结构件受众。消费走批会话协议——台账根下每 nonce 一目录，首成员以 wx 原子独占开 session.json 绑定本批 batchToken，每成员 launch 前核 session 同值、caseId 在授权集内、以 wx 落成员消费标记，三条全过才放行 chromium.launch；占用失败即 allowLaunch:false。授权闸下沉纯层（controller 必填 grant handle），采集层强制接拒跑筛并落拒跑回执，两者都做。acceptance-gate 红基线：cli-session 0/13、pure-suite 0/8，均 exit 1；语法检查均 exit 0。",
+  "specPath": "docs/plans/p9-replay-authority-split/plan.md",
+  "observability": [
+    {
+      "dimension": "每批回放授权票据的人签真实性：签署点在签署会话 C 段（清单定稿）之后、D 段（跑批）之前。",
+      "route": "human",
+      "note": "由 Steven 逐批签署；notAfter 由本人写值，机器只在跑单给建议值、绝不代算有效期。E 段跑批已发生，那时再签是追认不是授权。"
+    },
+    {
+      "dimension": "崩溃或失败后的重试须人签新票，半消耗票据一律作废。",
+      "route": "human",
+      "note": "采集层崩溃重跑会生成新 batchToken，撞已存在 session.json 即异值拒；工装无权判定「上次其实没跑成、可以放回去」。与 chat.sendAndWait 判读 INDETERMINATE 同纪律。"
+    },
+    {
+      "dimension": "E 段核销台账复核：本批只烧了一张票，无第二次静默复用。",
+      "route": "human",
+      "note": "按 grantNonce 目录逐件核 session.json 的 batchToken 与各成员消费标记数量，与本批授权成员集对齐。"
+    },
+    {
+      "dimension": "采集层拒跑筛的 call-site 真接线（金牌只钉得住模块导出契约）。",
+      "route": "human",
+      "note": "R11b 钉的是导出契约，死导出逃不掉但真调用逃得掉；成员循环是否在 spawn 前真调该闸并落拒跑回执，由人工核 call-site。"
+    }
+  ],
+  "testChecksums": {
+    "docs/plans/p9-replay-authority-split/plan.md": "9474b294e60f246d7c8f6eab70f97c06dab76d171e52a90ce2021536d96a2c20",
+    "docs/plans/p9-replay-authority-split/GRILL.md": "e946bb841a1907b1486e45717f4cedbbe6a2021249af54f5f7b48a86de23073d",
+    "tests/_golden/p9-replay-authority-split.cli-session.zero-sut.golden.mjs": "3ea262e4477858b9dd3b8a0bf3b92a0c6e7cb4fcb09c56fb4db74e669651d648",
+    "tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs": "56b458c4113b98759f4100a593d4f0f6e651a85b62e9c337ddee4fde95679d0d",
+    "tests/_golden/support/p9-replay-grant-fixtures.mjs": "8241717a0031ab119ee3fc3171e9c34d6cdd9a92479d695521d0af0a8638cd67",
+    "docs/plans/p9-replay-authority-split/accept/red-proofs/replay-authority-split.cli-session.red.txt": "07ef17355b442be9f0ec8030c5788ad6488c26f680edc694461ee61f4edf9605",
+    "docs/plans/p9-replay-authority-split/accept/red-proofs/replay-authority-split.pure-suite.red.txt": "205e480025720034fc50684082f3c2c8d8bad62ece8bb088d02d8e38aa819c94"
+  },
+  "stories": [
+    {
+      "id": "s1-replay-grant-artifact-and-chain",
+      "desc": "实现回放授权票据的起草/冻结/读回：件种 created-workflow-replay-grant、authorizedFor created-workflow-replay，与结构件字面量互斥不可互冒充；逐例双绑结构件字节 sha256 与结构件自签名，跨案配对拒、结构件重签即链断；audience 逐字等于结构件 audience（两向都拒）；notAfter 过期拒；grantNonce 由机器在 draft 以 randomBytes(16) 生成、人签整份草案。freeze 用当前精确字节重建草案再比对，不一致 exit 65 不落件。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs",
+        "node tests/_golden/p9-replay-authority-split.cli-session.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T03:54:56.869Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-batch-session-consume-protocol",
+      "desc": "实现批会话协议：台账根下每 grantNonce 一目录；首成员 launch 前以 wx 原子独占落 session.json={batchToken,occupiedAt} 完成 nonce→batchToken 绑定；每成员 launch 前依次核 session 在场且 batchToken 逐字同值、caseId 在票据授权成员集内、以 wx 落 <caseId>.consumed.json，三条全过才放行 chromium.launch。异 token 拒、同成员二次拒、未授权成员拒、同批第二成员必须放行；两进程并发抢同一标记恰一个胜出；台账不可写即 allowLaunch:false 绝不先跑后补记。judge 为纯函数吃读快照，不碰文件系统。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p9-replay-authority-split.cli-session.zero-sut.golden.mjs",
+        "node tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T03:55:48.164Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s3-pure-layer-enforcement-and-cli-wiring",
+      "desc": "授权闸下沉纯层：createCreatedWorkflowReplayContinuityController 增必填 grant handle，缺票即 allowLaunch:false（防命令行单点假门被旁路调用方绕开）。bin 面 --replay-grant 与 --replay-grant-ledger 在有 --created-workflow-authority 时同为必填、缺任一 exit 64 具名，且新门排在既有 batch-token 门之后；生产 now 取主机墙钟，命令行禁喂时。entity-authority 增 replay-grant-draft/replay-grant-freeze 两个 verb。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p9-replay-authority-split.cli-session.zero-sut.golden.mjs",
+        "node tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T03:56:38.776Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s4-suite-manifest-and-collect-failclosed",
+      "desc": "清单顶层新增 replayGrantPath（照 winProbeResultPath 形状做路径闭合与严格消费），CREATED_WORKFLOW_ARTIFACT_NAMES 与 T9a 断言文字零改。采集层强制接线：成员循环在 spawn 之前必须调用拒跑筛，无有效票据时不启动子进程并落拒跑回执——与浏览器前门执法闸两者都做，不是二选一。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T03:56:39.293Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s5-v3-golden-amendments-no-drift",
+      "desc": "四处冻结面 amendment，逐处附真实红证与「断言只加严」论证：authority-cli A6 夹具补双旗标、A2/replay-evidence/legacy-fixed-id 三处 controller 直调补 grant handle、tier2-production T5 夹具补顶层 replayGrantPath。八枚 v3 金牌零行为漂移是回归面。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p9-created-workflow-continuity-v3.created-in-run.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.stable-absence.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.tier2-cleanup.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.role-compile-sign.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T03:56:48.272Z 全部 acceptance exit 0"
+    }
+  ]
+}
