@@ -4,7 +4,9 @@
   "caseId": "tc_chiefcomplaint_smoke",
   "task": "tc_chiefcomplaint_smoke 人签断言契约 + v2 后继闭环；production compile-execute 前置授权绑定最终 flow/testcase 精确字节，fresh 身份观察与 v2 实体锁按后继阶段闭合。",
   "testChecksums": {
-    "runs/real-uat-attestation/tc_chiefcomplaint_smoke/execute-authority.json": "f093e6a6e438b7b720199b757ced3e5e75f262cbccca58dbca8ab2df50d60cf8"
+    "runs/real-uat-attestation/tc_chiefcomplaint_smoke/execute-authority.json": "f093e6a6e438b7b720199b757ced3e5e75f262cbccca58dbca8ab2df50d60cf8",
+    "cases/tc_chiefcomplaint_smoke/expected.frozen.json": "a92dc368bc79ccb1909a036629b5a9254d78c88869e0bc11e9a455e9893e2160",
+    "cases/tc_chiefcomplaint_smoke/entity-locks.frozen.json": "f2b588122ba4ec8e62ecd25d2db40cb31351aecb49750feec809da0bdc4ff18d"
   },
   "stories": [],
   "expectedFrozenPath": "cases/tc_chiefcomplaint_smoke/expected.frozen.json"
