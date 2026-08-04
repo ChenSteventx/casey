@@ -30,7 +30,7 @@ R1 已绿。存证 `docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/
 | `lib/entity-semantic-lock-preflight.mjs` | `validateFrozenEntityLockArtifact` 认 `schemaVersion 3`（闭合面 = v2 + `destructiveContinuity`；观察行 = v2 + 必填 `kind`），新增授权边逐条结构校验；`readFrozenIdentityObservations` 兼收 v3；新增 `readFrozenDestructiveContinuity` |
 | `bin/replay.mjs` | 建表之后、准入门之前、浏览器启动哨兵之前，按 I1–I8 逐条校验已签授权边并由已签观察行铸 ref 入表；任一不成立即具名硬退出 `exit 65` |
 
-v1/v2 分支逐字未动；`admitDestructiveTargetContinuity` 及其逐破坏步语义一字未动。
+v1/v2 校验语义与闭合面行为零漂移（双路异构评审各自逐项比对字段集/校验序确认等价；源码为共享身份面的行为等价重构，非字节级未动——R1 双审订正措辞）；`admitDestructiveTargetContinuity` 及其逐破坏步语义一字未动（该文件 diff 为空，字面真）。
 
 ## 4. 与金牌断言的逐条对应
 
