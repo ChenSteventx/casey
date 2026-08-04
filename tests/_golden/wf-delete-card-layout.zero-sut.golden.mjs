@@ -268,8 +268,13 @@ function buildFixture(options = {}) {
     moreButtons = 1,
     moreSignal = 'both',
     directDelete = false,
+    directDeleteCount = 1,
+    directClickThrows = false,
     menuAppears = true,
     searchValue = TARGET,
+    preexistingMenu = false,
+    swapCardOnHover = false,
+    swapCardOnMoreClick = false,
   } = options;
 
   const doc = el('body');
@@ -295,9 +300,23 @@ function buildFixture(options = {}) {
     append(record, el('div', { class: layout === 'table' ? 'cell-name' : 'agent-card__title' }, TARGET));
     append(record, el('div', { class: layout === 'table' ? 'cell-code' : 'agent-card__subtitle' }, `CODE_${i}`));
 
+    // 记录容器整体换掉（框架重渲染）：同名等价新容器上场，旧句柄脱离文档。
+    const swapRecord = () => {
+      const fresh = el(layout === 'table' ? 'tr' : 'article', { ...record.__attrs });
+      append(fresh, el('div', { class: layout === 'table' ? 'cell-name' : 'agent-card__title' }, TARGET));
+      const parent = record.parentElement;
+      detach(record);
+      if (parent) append(parent, fresh);
+    };
+
     if (layout === 'table' || directDelete) {
-      const del = append(record, el('button', { class: 'hr-action-delete' }, '删除'));
-      del.__onClick = () => { append(doc, makeConfirmDialog(page, doc, record)); };
+      for (let k = 0; k < (layout === 'table' ? 1 : directDeleteCount); k++) {
+        const del = append(record, el('button', { class: 'hr-action-delete' }, '删除'));
+        del.__onClick = () => {
+          if (directClickThrows) throw new Error('直见删除钮点击抛错（负控）');
+          append(doc, makeConfirmDialog(page, doc, record));
+        };
+      }
     }
     if (layout === 'card') {
       for (let k = 0; k < moreButtons; k++) {
@@ -305,11 +324,28 @@ function buildFixture(options = {}) {
         if (moreSignal !== 'class-only') attrs.title = '更多操作';
         const more = hide(append(record, el('button', attrs)));
         // 真机：更多操作入口悬停才浮现；故只读审计环数不到「可见」的它——存在性计数是设计定案。
-        record.__onHover = () => { for (const node of record.querySelectorAll('button')) show(node); };
-        if (menuAppears) more.__onClick = () => { makeMenu(page, doc, record, options); };
+        record.__onHover = () => {
+          for (const node of record.querySelectorAll('button')) show(node);
+          if (swapCardOnHover) swapRecord();
+        };
+        more.__onClick = () => {
+          if (menuAppears) makeMenu(page, doc, record, options);
+          if (swapCardOnMoreClick) swapRecord();
+        };
       }
     }
     built.push(record);
+  }
+
+  // 因果授权负控：触发【之前】就浮着的旧菜单（可见、含「删除」项）。它绝不是本次点击的因果结果，
+  // 授权前必须被基线快照排除掉；若实现把基线当空集，就会拿这个陈旧菜单去删。
+  if (preexistingMenu) {
+    const stale = append(doc, el('div', { class: 'hr-popup hr-dropdown hr-dropdown--bottom-right' }));
+    const staleMenu = append(stale, el('div', { class: 'hr-dropdown__menu' }));
+    for (const text of ['编辑', '复制', '删除', '停用']) {
+      const item = append(staleMenu, el('div', { class: 'hr-dropdown__item' }, text));
+      if (text === '删除') item.__onClick = () => { append(doc, makeConfirmDialog(page, doc, built[0])); };
+    }
   }
 
   // 真机实采：菜单有隐藏副本多份（2026-07-02 注）——可见性谓词必须把它们滤掉。
@@ -526,6 +562,61 @@ await check('R15 收拾具名记录：Escape 结果留证、成败都不改写�
   const happyAxis = await performWorkflowDeleteTrigger(happy.page, TARGET);
   eq(happyAxis.resolution, 'unique', '成功路径解析态');
   eq(happyAxis.menuCleanup, undefined, '成功路径无收拾记录');
+});
+
+// ---------------------------------------------------------------- 实现审突变加固（grok 2026-08-04）
+// 下面五条钉的都是「删掉/放宽某道防线后金牌仍全绿」的漏钉，逐条对应一个已实证的突变体。
+
+await check('R17 接管点仅吃 none：直见删除钮多命中必须硬停，绝不由卡片路径接管', async () => {
+  // 突变体：把接管判据放宽成 none||ambiguous。本应 ambiguous 硬停的记录会被卡片路径接管并真删（fail-open）。
+  const { page } = buildFixture({ layout: 'card', directDelete: true, directDeleteCount: 2 });
+  const trigger = await performWorkflowDeleteTrigger(page, TARGET);
+  eq(trigger.resolution, 'ambiguous', '直见删除钮多命中须具名拒');
+  eq(trigger.candidateCount, 2, '候选数');
+  eq(page.hovers().length, 0, '多命中时绝不悬停（悬停即已进卡片路径）');
+  eq(page.clicks().length, 0, '多命中时绝不点击');
+  eq(page.requests.length, 0, '多命中时绝不发删除请求');
+  eq(trigger.menuCleanup, undefined, '未进卡片路径就不该有收拾记录');
+});
+
+await check('R18 接管点仅吃 none：直见路径 action_failed 不得二次接管', async () => {
+  // 突变体：接管判据含 action_failed。直见钮已点过一次（可能已生效）还要再走菜单删一次。
+  const { page } = buildFixture({ layout: 'card', directDelete: true, directClickThrows: true });
+  const trigger = await performWorkflowDeleteTrigger(page, TARGET);
+  eq(trigger.resolution, 'action_failed', '直见钮点击抛错须原样返回');
+  eq(page.hovers().length, 0, 'action_failed 时绝不改走卡片路径');
+  eq(page.clicks().length, 1, '只应有直见钮那一击');
+  eq(page.clicks()[0].class, 'hr-action-delete', '唯一一击须是直见删除钮');
+  eq(page.requests.length, 0, '零请求');
+});
+
+await check('R19 第三道锁：菜单浮出后目标卡片被换掉必须具名拒', async () => {
+  // 突变体：删掉 rescanStillUnique。卡片重渲染换根后仍在旧菜单里点删除 → 可能删到邻居。
+  const { page } = buildFixture({ layout: 'card', swapCardOnMoreClick: true });
+  const trigger = await performWorkflowDeleteTrigger(page, TARGET);
+  eq(trigger.resolution, 'action_failed', '目标卡片不再唯一锁定须具名拒');
+  eq(page.clicks().length, 1, '只应点开更多操作入口这一击，绝不点菜单删除项');
+  eq(page.requests.length, 0, '零请求');
+  eq(trigger.menuCleanup, 'closed', '已开过菜单须收拾并留证');
+});
+
+await check('R20 因果授权：触发前就浮着的旧菜单不得被授权', async () => {
+  // 突变体：把因果基线置空。旧菜单会被当成「新浮层」授权，实现就会去点它里面的删除。
+  const { page } = buildFixture({ layout: 'card', preexistingMenu: true, menuAppears: false });
+  const trigger = await performWorkflowDeleteTrigger(page, TARGET);
+  ok(trigger.resolution === 'none' || trigger.resolution === 'action_failed', `无新浮层须具名拒，实得 ${trigger.resolution}`);
+  eq(page.clicks().length, 1, '只应点开更多操作入口这一击，绝不点陈旧菜单里的删除');
+  eq(page.requests.length, 0, '零请求');
+});
+
+await check('R21 收拾边界：入口还没点下去就败的一律不记收拾', async () => {
+  // 突变体：把「点过入口才收拾」放宽成「进过卡片路径就收拾」。没发生的收拾动作会被写成发生过。
+  const { page } = buildFixture({ layout: 'card', swapCardOnHover: true });
+  const trigger = await performWorkflowDeleteTrigger(page, TARGET);
+  eq(trigger.resolution, 'action_failed', '悬停后记录容器被换掉须具名拒');
+  eq(page.hovers().length, 1, '悬停发生过');
+  eq(page.clicks().length, 0, '入口一次都没点下去');
+  eq(trigger.menuCleanup, undefined, '没点过入口就不该有收拾记录');
 });
 
 await check('R16 加法字段只作证据投影：删除域之外零权威消费者', async () => {

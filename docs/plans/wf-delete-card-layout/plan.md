@@ -115,7 +115,8 @@ if (result.resolution === 'none') result = <卡片悬停菜单路径>
 | A13 | 加法字段无下游权威消费者：`lib/` 与 `bin/` 中除删除域自身外，`directDeleteButtons` / `menuDeleteEntries` 零引用 | 同上 |
 | A9 | 既有删除域金牌全绿（零位移） | `node tests/_golden/workflow-delete-causal-binding.static.golden.mjs`；`node tests/_golden/checksum-drift-closure.zero-sut.golden.mjs`；`node tests/_golden/p0-p2-report-delete.zero-sut.golden.mjs`；`node tests/_golden/workflow-delete-spec-preflight.static.golden.mjs`；`node tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs` |
 | A10 | 相邻面零 SUT 金牌全绿 | `node tests/_golden/units/p3-compile-unit.zero-sut.golden.mjs`；`node tests/_golden/agent-delete-zero-window.zero-sut.golden.mjs`；`node tests/_golden/hermetic-golden-sut-census.zero-sut.golden.mjs`；`node tests/_golden/hermetic-golden-prd-reverse-closure.zero-sut.golden.mjs` |
-| A10b | 起夹具 SUT 的浏览器面**必须真跑**（不许只信分层绿），但判据是**失败集与改前逐行相同**——`p3-compile.golden.mjs` 在 `dev`@`6f51aaf` 与主树上**基线即红**（`exit 1`，6 过 8 红，首红 `C4 COMPILE_ATOM_EXECUTION_FAILED atom=workflow.create`），与本契约无关，故不能拿「全绿」当验收；改前改后各跑一次、逐行比失败集，多一条即判红 | `node tests/_golden/p3-compile.golden.mjs`（改前基线存档 + 改后重跑 diff） |
+| A10b | fixture SUT 浏览器面只保留为**历史带外证据 / `route:human`**，当前 agent 按 Casey 执行边界禁止启动、连接或回放 fake/fixture SUT。既有记录显示 `p3-compile.golden.mjs` 在 `dev`@`6f51aaf` 与主树上基线即红（`exit 1`，6 过 8 红，首红 `C4 COMPILE_ATOM_EXECUTION_FAILED atom=workflow.create`），与本契约无关；不得拿它冒充本契约金牌，也不得因本轮无法重跑而放宽零 SUT 判据 | `route:human/forbidden-for-agent`；历史基线仅供人工复核 |
+| A14 | 突变加固（实现审 grok 2026-08-04 攻穿五处漏钉后补）：① 直见删除钮 ≥2 → `ambiguous` 且零悬停零点击零请求（接管点放宽到 `none\|\|ambiguous` 即真 fail-open）；② 直见路径 `action_failed` 不得二次接管；③ 菜单浮出后目标卡片被换掉 → 具名拒、绝不点菜单删除项；④ 触发前就浮着的旧菜单不得被授权；⑤ 入口还没点下去就败的一律不记 `menuCleanup` | `node tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs`（R17–R21）+ 突变验证见 §五之二 |
 | A11 | 语法与卫生 | `node --check lib/workflow-delete-domain.mjs`；`git diff --check` |
 
 ## 五 红基线（`accept` 阶段交付）
@@ -124,9 +125,25 @@ if (result.resolution === 'none') result = <卡片悬停菜单路径>
 替身按**调用链**建模到「被调用的形状」级：`locator()` 的返回值既被 `elementHandles()` 也被 `evaluateAll()` 调；`getByRole().first()` 的返回值还会被 `inputValue()` 调；`handle.evaluate(fn, arg)` 里的 `fn` 真跑，故 `window.getComputedStyle` / `querySelectorAll` / `getBoundingClientRect` / `classList` / `isConnected` / `contains` / `setAttribute` 等逐个兑现。
 红证对最终字节实抓，**按退出码判**（不 grep 失败标记串），落 `accept/red-proofs/`。
 
-## 六 回归面（实现波必跑，不许只跑分层绿）
+## 五之二 突变验证（钉力的判据：不是「金牌绿」，是「防线拆了金牌会红」）
 
-A9 + A10 + A10b 全部命令。特别点名 `p3-compile.golden.mjs`——它起夹具 SUT 且夹具是表格布局带直见「删除」钮（`tests/fixtures/fake-sut/server.mjs:162-168`），是表格路径的端到端证据，**不许跳过**；但它基线即红（见 A10b），故判据是失败集不变而非全绿，且它**不进** `loop/prd-wf-delete-card-layout.json` 的 `acceptance`（把一条与本契约无关的基线红塞进自己的门禁，只会制造永久红或诱人放松判据）。基线红另有两枚：`real-run-trust.zero-sut.golden.mjs`（`exit 1`）与 `hermetic-golden-isolation-pending.zero-sut.golden.mjs`（`exit 65`），同样非本契约引入，同样按失败集不变处理。
+实现审的教训写在这里：金牌 16/16 全绿**不等于**每道防线都被钉住。grok 把接管判据放宽成 `none||ambiguous` 后金牌照样全绿，而那个放宽是真 fail-open——本应 `ambiguous` 硬停的记录会被卡片路径接管并真删。**绿不证明钉住，只有「拆了会红」才证明。**
+
+故每条新钉都做双向验证：对着目标突变体必须红，对着现行实现必须绿，且突变体还原后实现文件 sha256 与验证前逐字节相同。
+
+| 突变体 | 目标钉 | 实测 |
+|---|---|---|
+| 接管点放宽到 `none\|\|ambiguous` | R17 | 恰死 R17 |
+| 接管点放宽到含 `action_failed` | R18 | 恰死 R18 |
+| 删掉第三道锁 `rescanStillUnique` | R19 | 恰死 R19 |
+| 因果基线置空 | R20 | 恰死 R20 |
+| 收拾放宽成「进过卡片路径就收拾」 | R21 | 死 R21 与 R15（R15 本就含同一条边界） |
+
+五个突变体全部 `exit 1`，还原后五次 sha256 全同，还原后金牌 21/21 复绿。验证脚本与实录留在会话 scratchpad（一次性工装，不进仓）。
+
+## 六 回归面（agent 只跑经静态审计的零 SUT 面）
+
+本轮 agent 回归面是 A9 + A10 + A11 + A14，均已静态审计为零 SUT、零浏览器、零网络。`p3-compile.golden.mjs` 会启动 fixture SUT；即使它的表格夹具带直见「删除」钮、历史上可作端到端旁证，当前 Casey 硬边界仍禁止 agent 重跑，故只按 A10b 留作 `route:human/forbidden-for-agent`，且**不进** `loop/prd-wf-delete-card-layout.json` 的 `acceptance`。它在既有历史基线上本就为红，不能冒充本契约通过或失败。另两枚历史基线红 `real-run-trust.zero-sut.golden.mjs`（`exit 1`）与 `hermetic-golden-isolation-pending.zero-sut.golden.mjs`（`exit 65`）同样不由本契约改写，也不纳入本轮 agent 门禁。
 
 ## 七 `observability`（测不到的维度，显式申报 `route:human`）
 

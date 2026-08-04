@@ -4,11 +4,41 @@
   "task": "workflow.deleteByName 支持卡片布局的删除入口：悬停目标卡片 → 点更多操作入口 → 因果浮现的浮层菜单内取「删除」→ 交回既有确认弹层因果授权链；表格布局与容器内直见删除钮的既有行为零位移。",
   "specPath": "docs/plans/wf-delete-card-layout/plan.md",
   "testChecksums": {
-    "tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs": "3e938410bbe11e327a424dfc70e31b6d1526dd86d7adf80ba2d3b9ddde19e20c",
+    "tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs": "cdb38483209814902cb9081cb371d13893988a95259458ae9a0ed468d45affbc",
     "docs/plans/wf-delete-card-layout/GRILL.md": "7ee848b4a9760383318100aee110053c282be1ceabafd4921009cb29cde98342",
-    "docs/plans/wf-delete-card-layout/plan.md": "e7bf42384c626897b2bb947378ad9fb1d079c68e69df4aa1043d68ac2bd372b3",
-    "accept/red-proofs/wf-delete-card-layout.red.txt": "3771bdaa2c5fa71a1104c9c83963a7ffda628d558682ca79c54570c42cb1e906"
+    "docs/plans/wf-delete-card-layout/plan.md": "fca3d3e963c4bcc686492d75494ed8f0a48dc0ea9d9b9a91ca49ab3d02c79cab",
+    "accept/red-proofs/wf-delete-card-layout.red.txt": "f89bfd2674ee5c4ebd591efcb0bdb0b1837fb280281259e61cc6e6db5c0f05e7"
   },
+  "checksumAmendments": [
+    {
+      "file": "tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs",
+      "oldSha": "3e938410bbe11e327a424dfc70e31b6d1526dd86d7adf80ba2d3b9ddde19e20c",
+      "newSha": "cdb38483209814902cb9081cb371d13893988a95259458ae9a0ed468d45affbc",
+      "amendedAt": "2026-08-04",
+      "reason": "实现审（grok，对 408883f）攻穿五处漏钉，加严补钉、只增不减。攻穿实证：把接管判据从「仅 none」放宽成「none||ambiguous」后金牌仍 16/16 全绿，而该放宽是真 fail-open——域内直见删除钮多命中本应 ambiguous 硬停，卡片路径却会接管并 unique 落删。补 R17–R21 五钉：① 直见删除钮 >=2 → ambiguous 且零悬停零点击零请求；② 直见路径 action_failed 不得二次接管（旧钉缺席时会出现「直见钮已点过一次、再走菜单删一次」）；③ 菜单浮出后目标卡片被换掉必须具名拒（删掉第三道锁 rescanStillUnique 后原金牌仍绿）；④ 触发前就浮着的旧菜单不得被授权（因果基线置空后原金牌仍绿）；⑤ 入口还没点下去就败的一律不记 menuCleanup（原实现在「可能未点到入口」的 action_failed 上也记 closed，宽于验收点 A12）。每钉双向验证：目标突变体下必红、现行实现下必绿，五个突变体逐个还原后实现文件 sha256 与验证前逐字节相同，还原后金牌 21/21 复绿。"
+    },
+    {
+      "file": "docs/plans/wf-delete-card-layout/plan.md",
+      "oldSha": "e7bf42384c626897b2bb947378ad9fb1d079c68e69df4aa1043d68ac2bd372b3",
+      "newSha": "6cf4be3170bf8b9b6847b213907d2ca12fc4d0f16f2d8f3e4f1e6273effa3e94",
+      "amendedAt": "2026-08-04",
+      "reason": "随上一条同波：新增验收点 A14（五条突变加固钉）与 §五之二 突变验证一节，把「绿不证明钉住、只有拆了会红才证明」的判据与五个突变体逐条实测结果写进规格。只增不减，原有验收点一条未动。"
+    },
+    {
+      "file": "docs/plans/wf-delete-card-layout/plan.md",
+      "oldSha": "6cf4be3170bf8b9b6847b213907d2ca12fc4d0f16f2d8f3e4f1e6273effa3e94",
+      "newSha": "fca3d3e963c4bcc686492d75494ed8f0a48dc0ea9d9b9a91ca49ab3d02c79cab",
+      "amendedAt": "2026-08-04",
+      "reason": "执行边界对齐：A10b 原文要求 agent 启动 fixture SUT，违反 Casey skill 的 fake/fixture SUT 禁令。现改为历史带外证据与 route:human/forbidden-for-agent；PRD acceptance 本就未包含该命令，零 SUT 验收断言、R17–R21 突变钉与生产实现均未削弱。"
+    },
+    {
+      "file": "accept/red-proofs/wf-delete-card-layout.red.txt",
+      "oldSha": "3771bdaa2c5fa71a1104c9c83963a7ffda628d558682ca79c54570c42cb1e906",
+      "newSha": "f89bfd2674ee5c4ebd591efcb0bdb0b1837fb280281259e61cc6e6db5c0f05e7",
+      "amendedAt": "2026-08-04",
+      "reason": "断言集从 16 条增到 21 条，且 M3 修复改了实现字节，故对最终字节重采红证：把实现文件临时还原成红基线版（7e39f78 的 lib/workflow-delete-domain.mjs，sha256 f13bad5d…）重跑，得 15 红 / 6 过、退出码 1，随后原样还原（sha256 8c7f5878… 与还原前逐字节相同）。R17/R18 在红基线即绿是设计使然——它们钉的是现有行为的回归面，只在目标突变体下才死。"
+    }
+  ],
   "observability": [
     {
       "dimension": "真机上「悬停更多操作 → 菜单浮现 → 点删除 → 确认框」整链的真实时序、菜单浮层的真实父节点与真实 class、删后按名精确计数归零",
@@ -62,7 +92,7 @@
         "git diff --check"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-04T04:34:38.027Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-04T05:45:04.219Z 全部 acceptance exit 0"
     }
   ]
 }
