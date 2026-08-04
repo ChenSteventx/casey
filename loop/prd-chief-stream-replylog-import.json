@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "task": "chief-stream-replylog-import（light）：修复 chief 真机 compile 两轮连败（2026-08-03/08-04，均败于第 5 步 chat.sendAndWait）的根因。lib/compile-atoms-agent.mjs:342 使用 requestLogPath 回填 observed[].replyStreamUrl，但 import 清单漏了它——流取证记录一在场必抛 ReferenceError；hermetic 金牌此前恒绿是因为夹具没有流记录形态。修法为 import 清单增补一词，零行为语义变更；requestLogPath 自带凭据路由打码，落盘面不变。该抛点同时反证两轮真机的流请求都真实发起、消息发送持久证据 CONFIRMED。",
+  "specPath": "docs/plans/chief-stream-replylog-import/plan.md",
+  "testChecksums": {
+    "tests/_golden/chief-stream-replylog-import.zero-sut.golden.mjs": "3609f1e4a13fec6e7162531fa88e0388f3bda1eef33998a2164c8835f008659b",
+    "docs/plans/chief-stream-replylog-import/plan.md": "7e7c0d397a903ec408423d936294e3285e28e93ea557ee9ace726e9d0ddcf5e7",
+    "docs/plans/chief-stream-replylog-import/accept/red-proofs/replylog-import.red.txt": "f91be5fa976adc5565d53f7547c418cfd546110e3ffeda6d4fe0a519c5012616"
+  },
+  "observability": [
+    {
+      "dimension": "真机第三次 chief compile 重跑（每跑一次向 SUT 多发一条真实消息）：hermetic 4/4 只证明抛点已封与回填链路通，replyText 在真机上的实际回填质量（流结束时点、回复稳定窗）须真机证据。重跑须 Steven 另行明示授权。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-import-fix-and-seal",
+      "desc": "import 清单增补 requestLogPath；金牌四钉：S1 流记录在场不抛且 replyStreamUrl 首次落为脱敏 pathname、replyText 按因果纪律回填（相对基线有变才算）；S2 无流记录保持 null（回归钉）；S3 持久动作证据两形态保全；S4 import 清单结构钉。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/chief-stream-replylog-import.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T01:15:10.800Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "邻接零回归：compile-atoms-agent 唯一既有直接消费金牌 + chiefcomplaint 准入面 + 统一语言 + 确定性内核自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/compile-execution-failure-seal.zero-sut.golden.mjs",
+        "node tests/_golden/teachin-admission-side-effect-policy.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T01:15:14.994Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "红基线真实 exit 1（2/4：S1 抛 ReferenceError: requestLogPath is not defined、S4 结构钉红），对最终金牌字节回退单行修复后实抓，证据 accept/red-proofs/replylog-import.red.txt。金牌夹具忠实生产因果纪律：点击后回复数 1→2、末泡文本变化，last() 返回仍是 locator 形（生产等待器对其再调 count()）；不许拿恒定文本冒充有回复。零 SUT 绿只算机器门禁绿；真机重跑另行授权（见 observability）。passes 只由 gate 写入。"
+}
