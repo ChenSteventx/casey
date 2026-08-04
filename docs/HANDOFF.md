@@ -3,7 +3,93 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-04：guard-net 收口合入 + 三轮真机实测 + read-safe 方向已签（最新覆盖层）
+## 2026-08-04 全天：P9 六批次收口入 dev + A 段签署闭合 + B 段开跑即停（最新覆盖层，权威现状）
+
+现役 dev 顶端 `c89b3b8`。本日入 dev 六笔（均本地，**零 push**）：
+
+| 提交 | 内容 | 评审 |
+|---|---|---|
+| `a57366c` | chief `requestLogPath` 漏导入一行修 | grok + `pi` 双路 APPROVE |
+| `6f51aaf` | `p9-replay-ref-rebuild`（回放写入侧重建破坏连续性 ref） | 双路 APPROVE，11 例负探针全 exit 65 |
+| `c66544e` | `agent-delete-confirm-import` 漏导入一行修 | grok APPROVE（`pi` 上游三败挂账） |
+| `57422af` | P9 A 段签署封账 + 形状实采实录 | —— |
+| `3010d86` | `wf-delete-card-layout`（卡片布局悬停菜单删除路径） | R4 grok + `pi` 双双 PLAN/IMPLEMENTATION APPROVE |
+| `158f2ec` + `c89b3b8` | `p9-replay-authority-split`（批级一次性回放票据）+ C2 四处 v3 金牌 amendment 签回 | r5 双路双 APPROVE；签回前三方哈希对账、签后全仓漂移扫 exit 0 |
+
+A 段**已闭合**（`evidence/signing-a-segment-20260804.md`）：A3 第三次真机重编译 exit 0，
+`events.json` 找回，第 5 步首次落 `replyStreamUrl`（脱敏 pathname）与 `replyText`（智能体
+规范化输出，与发送正文不同串，非回显）；A5 签署 exit 0——`expected.frozen.json` 重签
+（sha256 `a92dc368…`）+ `entity-locks.frozen.json` v2 首签（`f2b58812…`）。代签授权**如实在案**：
+Steven 当日原话「同意了，你帮我代签了，这是我的授权」，确认件与 `casey sign` 均由 Claude
+代执行、逐条标注非本人敲入；草稿含 1 条 `assert.bubble` 未映射 pending，按签署门既定出口
+`--force` 强签留痕（断言集与 0703 亲签集同集、零增减零弱化）。
+
+真机**形状实采**（`evidence/shape-probe-20260804.md`）：delete 请求形状实证
+`POST /ai-manager/process/delete`、`bodyKeys ["masProcessId"]`、`idLocations ["body.masProcessId"]`，
+全程零变更抵达被测方；同轮逮到卡片布局缺口（删除入口藏悬停「更多操作」菜单），催生
+`wf-delete-card-layout` 契约。
+
+B 段今日**开跑并按停止条件停住**——接手者从这里续：
+
+1. 相位 0 三关过：隧道回环 200（WSL 侧 `wsl-reverse-listen.mjs` 单实例 + Windows 侧代理，
+   起隧道顺序敏感）、`doctor` 就绪级全 ok。
+2. B4 前置检查单三项**已真机核完**（只读探针）：seam-1 坐实——搜索框按 `Enter`
+   **不过滤**（可见卡片数 6→6），点 `.hr-input__suffix .search-icon` 才过滤（6→1）；
+   `countSelector` 坐实——`.hr-card.hr-card--bordered` 计数为 0、现役卡片是 `.agent-card`
+   （旧 `workflow-delete-real-uat` 金牌的选择器已陈旧，删后归零断言有假绿风险）；
+   F1 坐实——目标卡 `button.agent-card__more` 物理 1 个、可见 1 个（无隐藏克隆，
+   grok 那条 Medium 在现役页面不成立）。
+3. `atl_shape0804a` 残留**已真删清偿**，且是新卡片菜单删除路径的首次真机实战：
+   触发 unique → 确认环 unique → 删除后 3 样本/3.4 秒稳定缺席，退出码 0。
+4. `tc_catalog_wf_crud` 的 B0–B3 已完成（B0 confirm 代签同口径、B1 两件逐字节相同、
+   B2 `execute-freeze` exit 0 落 `runs/p9-v3-20260804/`、B3 sha256 `88c53778…` 已登记
+   进 `loop/prd-tc_catalog_wf_crud.json`，旧 `events`/`observed` 已存
+   `cases/tc_catalog_wf_crud/archive/*.pre-20260804-b4.json`）。
+5. B4 编译失败并已停手（不连跑）：`COMPILE_EXIT=1`，
+   `COMPILE_ATOM_EXECUTION_FAILED stepOrdinal=1 atom=workflow.create`，
+   `eventsEmitted=2`、`blockerCount=0`、`persistentActionStatus=CONFIRMED`
+   （指最后一次记录动作本身成功，非「实体已建成」）。只落 `compile-report.json`，
+   其余成组产物按设计未落。随后只读扫库：`atl_` 前缀残留 **0 条**（库内 5 条工作流
+   全非本轮），即创建未落库、被测方干净、无需清偿。根因**尚未定位**——两个候选：
+   ①新增工作流入口（下拉菜单/抽屉）在现役页面形态变了；②seam-1 的搜索不过滤导致
+   前序定位链偏移。接手者第一件事就是查它，别急着重跑（每跑一次都可能建真实体）。
+
+### 下一步（按依赖排序，接手者从甲起）
+
+- 甲、定位 B4 `workflow.create` 失败根因（不重跑编译、先只读探针）：在真机上核
+  新增工作流入口现役形态（`新增工作流` 钮 → 是否有下拉 `menuitem` / `hr-dropdown__item-text`
+  → 抽屉字段与确认钮），与 `lib/compile-atoms-workflow-crud.mjs` 的 2026-07-02 实采知识对表；
+  同时判 seam-1（`Enter` 不过滤）是否已影响前序步。定位后按缺口大小决定直干还是开契约。
+- 乙、续跑 B 段三例 B4→B9（Steven 已全授权、代签口径同 A5）：一例一跑、失败即停不连跑；
+  每例 B4 会真建一条并真删一条。crud 的 B0–B3 已就位、可直接从 B4 起。
+- 丙、清单重签补 `replayGrantPath`（`p9-tier2-selftest` T9a 计划内红的清偿点，签署会话 C 段）。
+- 丁、`hook-loop-guard` 跨树互锁失效（kernel 级，三个执行者独立实证，机理已查明：
+  `resolveRoot()` 从 cwd 上溯解析到主树、`git diff --cached` 也跑在主树，
+  故工作树里既不会正确拦也不会正确放；首次误拦甚至是拿提交信息正文当 pathspec 判的）。
+  立不立项、走哪条车道待 Steven 裁。
+- 戊、**挂账补审**：`pi` 对 `wf-delete-card-layout` 前提审那一轮（当日上游三败，Steven 裁
+  grok 单路过闸 + `pi` 挂账补审）；其余轮次 `pi` 均已实审覆盖。
+- 己、三枚他家历史基线红（不由上述契约改写）：`real-run-trust`（静态钉与现行
+  `bin/replay.mjs` 参数解析失配，owner `prd-agent-id-readback`）、
+  `hermetic-golden-isolation-pending`、`p3-compile.golden.mjs`（启夹具 SUT，代理禁跑）。
+
+### 契约 / 运维（2026-08-04 收盘）
+
+- 活契约槽：`p9-created-workflow-cleanup-continuity-v3`（`full`，`grill`/`plan`/`accept` done、
+  `loop` 待——B 段跑完才算）。本日四个 worktree 契约（`chief-stream-replylog-import`、
+  `p9-replay-ref-rebuild`、`agent-delete-confirm-import`、`wf-delete-card-layout`、
+  `p9-replay-authority-split`）均六阶段全绿并已合入 dev。
+- 主树未提交现场（**用户资产，勿动**）：`docs/plans/chiefcomplaint-sendandwait-admission/SIGN-AND-AFTER.md`、
+  `docs/plans/p9-uat-close/resign-runbooks.md`、六个 `loop/prd-*.json`（含本轮 B3 登记的
+  `prd-tc_catalog_wf_crud.json`）；未跟踪 `casey-agent-loop-local-first-total.zip`、
+  `follow.mjs`、`docs/plans/gate-contract-preflight/REVIEW-PROMPT-for-codex.md`、
+  `loop/prd-tc_eui_bindagent_lockchain.json.tmp`。
+- 评审供应方现状：`grok-4.5` high 与 `pi.dev` `deepseek-v4-flash` high 双路为常态；
+  `codex` 无额度；当日故障如实分列（`grok` 一次 904 秒超时无终局、一次会话限额中断、
+  `gpt-5.6-luna` Windows runner `CreateProcessWithLogonW` 267/1312 记 HARNESS_ERROR、
+  `pi` 上游 503 三连败）——任何一条都未被冒充成结论。
+
+## 2026-08-04：guard-net 收口合入 + 三轮真机实测 + read-safe 方向已签（历史覆盖层，被上节接续）
 
 1. **guard-net 契约全闭环合入 dev**（merge `4b80013`，分支四提交 `83a8c98`/`d1f83a2`/`24e0508`/
    `e19ccdb` + 收口 `5e72f09`）：边界门目录自动发现 + d3 执行面白名单反转 + `unsupportedScopes`
