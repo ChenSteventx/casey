@@ -1,0 +1,6 @@
+RED  chief-stream-replylog-import: S1 流记录在场：不抛，且 replyStreamUrl 首次落为脱敏路径: 不得抛：ReferenceError: requestLogPath is not defined
+ok   chief-stream-replylog-import: S2 无流记录：不抛，replyStreamUrl 保持 null（既有行为回归钉）
+ok   chief-stream-replylog-import: S3 持久动作证据在两种形态下都保全（不因回填故障丢失）
+RED  chief-stream-replylog-import: S4 结构钉：compile-atoms-agent 的 import 清单包含 requestLogPath: import 清单须含 requestLogPath：import { AGENT_SEARCH_NAME, CHAT_DRAWER_CLOSE, CHAT_REPLY_SELECTOR, CHAT_SEND_ICON, CHAT_STREAM_ROUTE, sleep } from './compile-atoms-support.mjs';
+
+not ok chief-stream-replylog-import: 2/4 通过，2 条红
