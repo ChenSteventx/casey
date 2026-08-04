@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "task": "wf-crud-sleep-import（light）：修复 6f91125 拆单体 compile-atoms.mjs 时丢失的 sleep 导入（同缺陷类第三例；前两例 01e965f 漏 requestLogPath、agent-delete-confirm-import 漏 inspectWorkflowDeleteConfirm）。lib/compile-atoms-workflow-crud.mjs:136 的 await sleep(250)（workflow.create 下拉分支线性化）与 lib/compile-atoms-workflow-drawer.mjs:53 的 sleep(100)（workflow.openNode 点后轮询）命中即抛 ReferenceError: sleep is not defined；前者是 B 段首例 B4（tc_catalog_wf_crud 重编译 COMPILE_EXIT=1 stepOrdinal=1 atom=workflow.create eventsEmitted=2）的实证根因——真机忠实复现（真 createCompileRun + 真登录 + 全域非读请求拦截，零变更抵达被测方）同签名后直调原子抓到原始异常；后者为同类普查逮到的潜伏缺陷、尚未被真机触发。真机排除项（只读探针已证）：新增工作流入口仍是下拉分支、07-02 旧 CSS 锚命中 1，入口形态变化与 seam-1 偏移两个原候选均不成立。修法为两行既有 import 各并入一个 sleep 标识符，零行为语义变更；sleep 是纯定时器，凭据面与落盘面不变。",
+  "specPath": "docs/plans/wf-crud-sleep-import/plan.md",
+  "testChecksums": {
+    "tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs": "d13ffb42fae1f3375a3655278c65023f349f77850913bc5cf4b38f3735a1195f",
+    "docs/plans/wf-crud-sleep-import/plan.md": "4157b39802a595b47124c79cba294e25e82d4f452cd690a54ed79dae78cc8808",
+    "docs/plans/wf-crud-sleep-import/accept/red-proofs/sleep-import.red.txt": "71668b5d5f8e0bbb22f84cf39c735d454f91a8a7871a7aae6c22e56f95b3928a"
+  },
+  "observability": [
+    {
+      "dimension": "S1 空页替身只证 workflow.create 原子序列不抛且事件/记账形状不变；真机 B4 续跑（乙，一例一跑）才是修复的端到端真证，且须现场核只读探针新发现的抽屉字段「工作流编码」是否必填（若必填属编译知识缺口，另立契约、不在本契约内）。",
+      "route": "human"
+    },
+    {
+      "dimension": "S2 塑形替身复现「节点在画布上、点后抽屉不开」形态以真踩 sleep(100) 轮询；抽屉真开成功路（点后恰一、run.nodeDrawerLabel 写回）属既有 drawer 域锁金牌覆盖面，本金牌不重钉。",
+      "route": "machine"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-sleep-import-fix-and-seal",
+      "desc": "两行 import 各补 sleep（crud:6、drawer:3，均并入既有 './compile-atoms-support.mjs' 行）；金牌四钉：S1 crud 行为钉（空页替身 workflow.create 全程不抛、恰发 6 事件、notes 恰两条既有 route:human 记账、identityLedger null 零读回阻断）；S2 drawer 行为钉（塑形替身 workflow.openNode 不抛、点后轮询真踩 sleep(100)（nodeDrawerDomain 调用 ≥3 + 真等满 5s 轮询窗）、超时后压「点后恰一证不出归因」硬阻断 fail-closed、run 态标题保持失效 G13）；S3 两文件 import 行结构钉；S4 缺陷类普查钉（扫 lib/**/*.mjs 凡裸调 sleep( 必有导入或本地定义，整类封死、新增文件自动纳入）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T10:02:39.866Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "邻接零回归：同缺陷类前两例封缝金牌 + 失败密封边界既有消费金牌 + 统一语言 + 确定性内核自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/chief-stream-replylog-import.zero-sut.golden.mjs",
+        "node tests/_golden/agent-delete-confirm-import.zero-sut.golden.mjs",
+        "node tests/_golden/compile-execution-failure-seal.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T10:03:04.806Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "红基线真实 exit 1（0/4 全红：S1/S2 抛 ReferenceError: sleep is not defined、S3 结构钉红、S4 普查钉点名两文件），对最终金牌字节在修复前现行代码实抓，证据 accept/red-proofs/sleep-import.red.txt。突变验证闭环：git checkout 还原两文件 → 金牌 exit 1；复原修复 → sha256 逐字节相同 → 金牌 exit 0；git diff 恒为 2 文件各 1 行（单标识符并入）。金牌替身纪律：空页替身零命中自洽不倒裁（无 DOM 求不出的值如实返 undefined）；S2 塑形替身只复现真实前置形态（画布域内标题恰 1、节点 box 可证、抽屉域恒空），点后轮询与超时阻断是被测代码自己的决定，金牌只观察不预设；emit 按生产签名 (spec, customAct) 收参并在有 customAct 时真调它（对齐 lib/compile-atoms-run.mjs:153-161），S2 的节点点击真穿 workflowNodeBox/nodeDrawerDomain 既有接缝。B4 报告口径澄清（随根因入档）：persistentActionStatus=CONFIRMED / recorded-action-succeeded 是 inferPersistentActionEvidence 的回退推断——扫到首个 persistent 原子事件 acted=true 即判（首个是 nav），不能证明最后一次动作成功。零 SUT 绿只算机器门禁绿；真机 B4 续跑另按既定授权执行（见 observability）。passes 只由 gate 写入。",
+  "worktree": "/mnt/d/ctx/heren/casey-wf-crud-sleep-import"
+}
