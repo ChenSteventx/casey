@@ -275,6 +275,7 @@ function buildFixture(options = {}) {
     preexistingMenu = false,
     swapCardOnHover = false,
     swapCardOnMoreClick = false,
+    moreClickThrows = null,
   } = options;
 
   const doc = el('body');
@@ -329,8 +330,10 @@ function buildFixture(options = {}) {
           if (swapCardOnHover) swapRecord();
         };
         more.__onClick = () => {
+          if (moreClickThrows === 'before-menu') throw new Error('更多操作入口分发前抛错（负控）');
           if (menuAppears) makeMenu(page, doc, record, options);
           if (swapCardOnMoreClick) swapRecord();
+          if (moreClickThrows === 'after-menu') throw new Error('更多操作入口生菜单后抛错（负控）');
         };
       }
     }
@@ -339,8 +342,10 @@ function buildFixture(options = {}) {
 
   // 因果授权负控：触发【之前】就浮着的旧菜单（可见、含「删除」项）。它绝不是本次点击的因果结果，
   // 授权前必须被基线快照排除掉；若实现把基线当空集，就会拿这个陈旧菜单去删。
+  let preexistingPopup = null;
   if (preexistingMenu) {
     const stale = append(doc, el('div', { class: 'hr-popup hr-dropdown hr-dropdown--bottom-right' }));
+    preexistingPopup = stale;
     const staleMenu = append(stale, el('div', { class: 'hr-dropdown__menu' }));
     for (const text of ['编辑', '复制', '删除', '停用']) {
       const item = append(staleMenu, el('div', { class: 'hr-dropdown__item' }, text));
@@ -357,7 +362,7 @@ function buildFixture(options = {}) {
     for (const node of doc.querySelectorAll('.hr-popup')) if (visibleNode(node)) detach(node);
   };
 
-  return { page, doc, records: built };
+  return { page, doc, records: built, preexistingPopup };
 }
 
 // ---------------------------------------------------------------- 断言
@@ -602,11 +607,14 @@ await check('R19 第三道锁：菜单浮出后目标卡片被换掉必须具名
 
 await check('R20 因果授权：触发前就浮着的旧菜单不得被授权', async () => {
   // 突变体：把因果基线置空。旧菜单会被当成「新浮层」授权，实现就会去点它里面的删除。
-  const { page } = buildFixture({ layout: 'card', preexistingMenu: true, menuAppears: false });
+  const { page, preexistingPopup } = buildFixture({ layout: 'card', preexistingMenu: true, menuAppears: false });
   const trigger = await performWorkflowDeleteTrigger(page, TARGET);
   ok(trigger.resolution === 'none' || trigger.resolution === 'action_failed', `无新浮层须具名拒，实得 ${trigger.resolution}`);
   eq(page.clicks().length, 1, '只应点开更多操作入口这一击，绝不点陈旧菜单里的删除');
   eq(page.requests.length, 0, '零请求');
+  eq(page.log.filter((row) => row.kind === 'key').length, 0, '没有因果新菜单就绝不按 Escape');
+  eq(preexistingPopup?.isConnected, true, '预存旧菜单必须仍在，绝不越权收拾');
+  eq(trigger.menuCleanup, undefined, '没有唯一因果新菜单就不得声称 closed');
 });
 
 await check('R21 收拾边界：入口还没点下去就败的一律不记收拾', async () => {
@@ -617,6 +625,35 @@ await check('R21 收拾边界：入口还没点下去就败的一律不记收拾
   eq(page.hovers().length, 1, '悬停发生过');
   eq(page.clicks().length, 0, '入口一次都没点下去');
   eq(trigger.menuCleanup, undefined, '没点过入口就不该有收拾记录');
+});
+
+await check('R22 收拾所有权：更多入口分发前抛错不得关闭预存旧菜单', async () => {
+  const { page, preexistingPopup } = buildFixture({
+    layout: 'card', preexistingMenu: true, moreClickThrows: 'before-menu',
+  });
+  const trigger = await performWorkflowDeleteTrigger(page, TARGET);
+  eq(trigger.resolution, 'action_failed', '入口分发前抛错须具名拒');
+  eq(page.clicks().length, 1, '只发生更多操作入口 click 调用');
+  eq(page.log.filter((row) => row.kind === 'key').length, 0, '未产生因果新菜单就绝不按 Escape');
+  eq(preexistingPopup?.isConnected, true, '预存旧菜单必须仍在');
+  eq(trigger.menuCleanup, undefined, '未取得唯一因果菜单所有权就不得记收拾');
+  eq(page.requests.length, 0, '零请求');
+});
+
+await check('R23 收拾验真：菜单已生成后 click 抛错只收拾因果新菜单，且闭合须实证', async () => {
+  const closed = buildFixture({ layout: 'card', moreClickThrows: 'after-menu' });
+  const closedAxis = await performWorkflowDeleteTrigger(closed.page, TARGET);
+  eq(closedAxis.resolution, 'action_failed', '菜单生成后 click 抛错须具名拒');
+  eq(closedAxis.menuCleanup, 'closed', '因果新菜单真实消失才可记 closed');
+  eq(closed.page.root.querySelectorAll('.hr-popup').filter(visibleNode).length, 0, '因果新菜单须真实消失');
+
+  const sticky = buildFixture({ layout: 'card', moreClickThrows: 'after-menu' });
+  sticky.page.root.__onKey = () => {};
+  const stickyAxis = await performWorkflowDeleteTrigger(sticky.page, TARGET);
+  eq(stickyAxis.resolution, 'action_failed', 'Escape 无效不得改写动作轴');
+  eq(stickyAxis.menuCleanup, 'failed', 'Escape 未抛错但菜单仍在也必须判收拾失败');
+  eq(sticky.page.root.querySelectorAll('.hr-popup').filter(visibleNode).length, 1, '负控须证明菜单确实仍在');
+  eq(sticky.page.requests.length, 0, '零请求');
 });
 
 await check('R16 加法字段只作证据投影：删除域之外零权威消费者', async () => {

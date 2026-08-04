@@ -1,13 +1,13 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 1,
   "slug": "wf-delete-card-layout",
   "task": "workflow.deleteByName 支持卡片布局的删除入口：悬停目标卡片 → 点更多操作入口 → 因果浮现的浮层菜单内取「删除」→ 交回既有确认弹层因果授权链；表格布局与容器内直见删除钮的既有行为零位移。",
   "specPath": "docs/plans/wf-delete-card-layout/plan.md",
   "testChecksums": {
-    "tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs": "cdb38483209814902cb9081cb371d13893988a95259458ae9a0ed468d45affbc",
+    "tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs": "861eb06fc7d7ac7d9b38826834c963984f3471fe68620b63a7f6f23d5d4ca46c",
     "docs/plans/wf-delete-card-layout/GRILL.md": "7ee848b4a9760383318100aee110053c282be1ceabafd4921009cb29cde98342",
-    "docs/plans/wf-delete-card-layout/plan.md": "fca3d3e963c4bcc686492d75494ed8f0a48dc0ea9d9b9a91ca49ab3d02c79cab",
-    "accept/red-proofs/wf-delete-card-layout.red.txt": "f89bfd2674ee5c4ebd591efcb0bdb0b1837fb280281259e61cc6e6db5c0f05e7"
+    "docs/plans/wf-delete-card-layout/plan.md": "e775ee8e1649a9ee8dc0d28a8c75381477e074f4120c5abf83311939075ad989",
+    "accept/red-proofs/wf-delete-card-layout.red.txt": "003e600190cf4bd67af79b9490f8b411967f3db8f376b66f917bf0425b47dd82"
   },
   "checksumAmendments": [
     {
@@ -37,6 +37,27 @@
       "newSha": "f89bfd2674ee5c4ebd591efcb0bdb0b1837fb280281259e61cc6e6db5c0f05e7",
       "amendedAt": "2026-08-04",
       "reason": "断言集从 16 条增到 21 条，且 M3 修复改了实现字节，故对最终字节重采红证：把实现文件临时还原成红基线版（7e39f78 的 lib/workflow-delete-domain.mjs，sha256 f13bad5d…）重跑，得 15 红 / 6 过、退出码 1，随后原样还原（sha256 8c7f5878… 与还原前逐字节相同）。R17/R18 在红基线即绿是设计使然——它们钉的是现有行为的回归面，只在目标突变体下才死。"
+    },
+    {
+      "file": "tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs",
+      "oldSha": "cdb38483209814902cb9081cb371d13893988a95259458ae9a0ed468d45affbc",
+      "newSha": "861eb06fc7d7ac7d9b38826834c963984f3471fe68620b63a7f6f23d5d4ca46c",
+      "amendedAt": "2026-08-04",
+      "reason": "Sol xhigh 修后审攻穿 cleanup 所有权：原实现只凭 beforeClick 的 click attempt 就按 Escape，能关闭预存旧菜单并虚报 closed；且按键未抛错后不复验同一物理菜单。新增 R22（分发前抛错、旧菜单不可被收拾）与 R23（生菜单后抛错可收拾，但须物理缺席验真），并加严 R20 的零 Escape/旧菜单仍连接断言。对 0a1c267 实跑 20/23、exit 1，修复后 23/23、exit 0；只增不减。"
+    },
+    {
+      "file": "docs/plans/wf-delete-card-layout/plan.md",
+      "oldSha": "fca3d3e963c4bcc686492d75494ed8f0a48dc0ea9d9b9a91ca49ab3d02c79cab",
+      "newSha": "e775ee8e1649a9ee8dc0d28a8c75381477e074f4120c5abf83311939075ad989",
+      "amendedAt": "2026-08-04",
+      "reason": "随 cleanup 所有权加严订正规格：收拾前置从「点过入口」收紧为「取得恰一个因果新菜单物理句柄」，closed 从「按键未抛错」收紧为「同一物理菜单已实证缺席」；新增 A15 与 R22/R23 变异账。"
+    },
+    {
+      "file": "accept/red-proofs/wf-delete-card-layout.red.txt",
+      "oldSha": "f89bfd2674ee5c4ebd591efcb0bdb0b1837fb280281259e61cc6e6db5c0f05e7",
+      "newSha": "003e600190cf4bd67af79b9490f8b411967f3db8f376b66f917bf0425b47dd82",
+      "amendedAt": "2026-08-04",
+      "reason": "追加修后审红证：新断言对未修复的 0a1c267 实跑 20/23、exit 1，R20/R22/R23 三条恰红；随后生产修复、同一测试字节 23/23 复绿。"
     }
   ],
   "observability": [

@@ -40,7 +40,7 @@ if (result.resolution === 'none') result = <卡片悬停菜单路径>
 6. 有界等待因果浮层（3000 ms / 50 ms 轮询），用**已冻结**的 `classifyCausalDialog` 纯函数 + `sameNodeStrict` 选「恰一个新物理浮层」；
 7. 重验目标卡片仍唯一锁定（防重渲染换根后误删邻居）；
 8. 在该浮层内取精确文本「删除」的菜单项，恰 1 才点（复用 `performLockedAction`，菜单档开）；
-9. 收拾（裁定 3，见 §3.2b）：点过更多操作入口且最终未 `unique` 时按 `Escape` 关菜单，结果**具名记录**，绝不改写动作轴；
+9. 收拾（裁定 3，见 §3.2b）：只有拿到**恰一个因果新菜单的物理句柄**且最终未 `unique` 时才按 `Escape`，随后按同一物理句柄验缺席；拿不到所有权时零 Escape、零收拾声明；
 10. 成功后交回既有 `waitForCausalDialog(page, baselineDialogs)` 确认弹层因果授权链（零改动）。
 
 ### 3.2b 收拾动作清单与具名记录（协调方裁定 3）
@@ -50,9 +50,9 @@ if (result.resolution === 'none') result = <卡片悬停菜单路径>
 | 交互 | 何时发生 | 性质 |
 |---|---|---|
 | `root.hover()` 悬停目标卡片 | 目标卡片唯一锁定之后、数更多操作入口之前 | 只读，浮现入口 |
-| `Escape` 关菜单 | 点过更多操作入口**且**最终未 `unique` | 取消语义，只收拾自己开的浮层 |
+| `Escape` 关菜单 | 已实证取得恰一个因果新菜单的物理句柄，且最终未 `unique` | 取消语义，只收拾自己开的浮层；无所有权时绝不执行 |
 
-**`Escape` 失败不得吞。** 返回的动作轴上带具名字段 `menuCleanup`：`'closed'`（收拾动作已完成）/ `'failed'`（收拾抛错，已具名留证）；未点过更多操作入口或路径成功时该字段不出现。`menuCleanup` 在任何取值下都**不参与** `resolution` 判定。
+**`Escape` 失败不得吞，也不得把「按键未抛错」冒充「菜单已关闭」。** 返回的动作轴上带具名字段 `menuCleanup`：`'closed'`（按 Escape 后，同一因果菜单物理句柄已实证缺席）/ `'failed'`（按键抛错、重扫异常或同一菜单仍在）；未取得唯一因果菜单所有权、路径成功时该字段不出现。`menuCleanup` 在任何取值下都**不参与** `resolution` 判定。
 
 **边界如实申报**：`menuCleanup` 到删除域返回值为止。编译侧 `lib/compile-atoms-run.mjs:155-158` 只取 `resolution` / `candidateCount` / `identityReadback` 三项，回放侧 `lib/replay/history.mjs` 由 `axis.resolution` 派生 `locatorResolution`——两处都是白名单投影，故该字段既不会漏进冻结的 `run-history.schema.json`（`additionalProperties:false`），也**不会自动出现在回放历史里**。要不要让它上到回放历史，是动冻结接缝的独立决策，本契约不做，记 `observability` 的 `route:human`。
 
@@ -111,12 +111,13 @@ if (result.resolution === 'none') result = <卡片悬停菜单路径>
 | A6 | 计数口径：卡片布局 `inspectWorkflowDeleteTarget` 出 `layout:'card'`、`deleteButtons:1`、`directDeleteButtons:0`、`menuDeleteEntries:1`，且 `summarizeDeleteCountAudit` 判 `equal:true`；表格布局三字段与今天同一 | 同上 |
 | A7 | 浮层不串味：菜单浮层不被 `DIALOG_SELECTOR` 抓；菜单开着时确认弹层因果授权仍唯一 | 同上 |
 | A8 | 隐藏副本与嵌套归一：隐藏菜单副本被滤、根与内层同时命中仍判唯一 | 同上 |
-| A12 | 收拾具名记录：点过更多操作入口且失败时 `menuCleanup` 为 `'closed'`；`Escape` 抛错时为 `'failed'` 且 `resolution` 不被改写；未点过入口或成功时该字段不出现 | `node tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs` |
+| A12 | 收拾具名记录：取得唯一因果新菜单且失败时，按 Escape 后须重扫同一物理菜单；真实缺席才记 `'closed'`，按键抛错/菜单仍在记 `'failed'` 且 `resolution` 不被改写；没有菜单所有权或成功时该字段不出现 | `node tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs` |
 | A13 | 加法字段无下游权威消费者：`lib/` 与 `bin/` 中除删除域自身外，`directDeleteButtons` / `menuDeleteEntries` 零引用 | 同上 |
 | A9 | 既有删除域金牌全绿（零位移） | `node tests/_golden/workflow-delete-causal-binding.static.golden.mjs`；`node tests/_golden/checksum-drift-closure.zero-sut.golden.mjs`；`node tests/_golden/p0-p2-report-delete.zero-sut.golden.mjs`；`node tests/_golden/workflow-delete-spec-preflight.static.golden.mjs`；`node tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs` |
 | A10 | 相邻面零 SUT 金牌全绿 | `node tests/_golden/units/p3-compile-unit.zero-sut.golden.mjs`；`node tests/_golden/agent-delete-zero-window.zero-sut.golden.mjs`；`node tests/_golden/hermetic-golden-sut-census.zero-sut.golden.mjs`；`node tests/_golden/hermetic-golden-prd-reverse-closure.zero-sut.golden.mjs` |
 | A10b | fixture SUT 浏览器面只保留为**历史带外证据 / `route:human`**，当前 agent 按 Casey 执行边界禁止启动、连接或回放 fake/fixture SUT。既有记录显示 `p3-compile.golden.mjs` 在 `dev`@`6f51aaf` 与主树上基线即红（`exit 1`，6 过 8 红，首红 `C4 COMPILE_ATOM_EXECUTION_FAILED atom=workflow.create`），与本契约无关；不得拿它冒充本契约金牌，也不得因本轮无法重跑而放宽零 SUT 判据 | `route:human/forbidden-for-agent`；历史基线仅供人工复核 |
 | A14 | 突变加固（实现审 grok 2026-08-04 攻穿五处漏钉后补）：① 直见删除钮 ≥2 → `ambiguous` 且零悬停零点击零请求（接管点放宽到 `none\|\|ambiguous` 即真 fail-open）；② 直见路径 `action_failed` 不得二次接管；③ 菜单浮出后目标卡片被换掉 → 具名拒、绝不点菜单删除项；④ 触发前就浮着的旧菜单不得被授权；⑤ 入口还没点下去就败的一律不记 `menuCleanup` | `node tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs`（R17–R21）+ 突变验证见 §五之二 |
+| A15 | 收拾所有权加固（Sol xhigh 修后审）：① click 分发前抛错且只有预存旧菜单 → 零 Escape、旧菜单仍连接、无 `menuCleanup`；② click 生出因果新菜单后抛错 → 可收拾，但须重扫同一物理菜单，Escape 无效时必须记 `failed` | 同上（R22–R23） |
 | A11 | 语法与卫生 | `node --check lib/workflow-delete-domain.mjs`；`git diff --check` |
 
 ## 五 红基线（`accept` 阶段交付）
@@ -138,12 +139,14 @@ if (result.resolution === 'none') result = <卡片悬停菜单路径>
 | 删掉第三道锁 `rescanStillUnique` | R19 | 恰死 R19 |
 | 因果基线置空 | R20 | 恰死 R20 |
 | 收拾放宽成「进过卡片路径就收拾」 | R21 | 死 R21 与 R15（R15 本就含同一条边界） |
+| 收拾所有权只看 click attempt、不看因果菜单句柄 | R20 / R22 | 两钉同时红 |
+| 删除 Escape 后同一物理菜单缺席复验 | R23 | sticky-menu 负控红 |
 
-五个突变体全部 `exit 1`，还原后五次 sha256 全同，还原后金牌 21/21 复绿。验证脚本与实录留在会话 scratchpad（一次性工装，不进仓）。
+首轮五个突变体全部 `exit 1`，还原后五次 sha256 全同、金牌 21/21 复绿。修后审第二轮对 `0a1c267` 抓到所有权缺口：加 R22–R23 后实跑 20/23、`exit 1`（R20/R22/R23 恰红），修复后 23/23、`exit 0`。一次性突变工装不进仓，真实红输出追加进 `accept/red-proofs/wf-delete-card-layout.red.txt`。
 
 ## 六 回归面（agent 只跑经静态审计的零 SUT 面）
 
-本轮 agent 回归面是 A9 + A10 + A11 + A14，均已静态审计为零 SUT、零浏览器、零网络。`p3-compile.golden.mjs` 会启动 fixture SUT；即使它的表格夹具带直见「删除」钮、历史上可作端到端旁证，当前 Casey 硬边界仍禁止 agent 重跑，故只按 A10b 留作 `route:human/forbidden-for-agent`，且**不进** `loop/prd-wf-delete-card-layout.json` 的 `acceptance`。它在既有历史基线上本就为红，不能冒充本契约通过或失败。另两枚历史基线红 `real-run-trust.zero-sut.golden.mjs`（`exit 1`）与 `hermetic-golden-isolation-pending.zero-sut.golden.mjs`（`exit 65`）同样不由本契约改写，也不纳入本轮 agent 门禁。
+本轮 agent 回归面是 A9 + A10 + A11 + A14 + A15，均已静态审计为零 SUT、零浏览器、零网络。`p3-compile.golden.mjs` 会启动 fixture SUT；即使它的表格夹具带直见「删除」钮、历史上可作端到端旁证，当前 Casey 硬边界仍禁止 agent 重跑，故只按 A10b 留作 `route:human/forbidden-for-agent`，且**不进** `loop/prd-wf-delete-card-layout.json` 的 `acceptance`。它在既有历史基线上本就为红，不能冒充本契约通过或失败。另两枚历史基线红 `real-run-trust.zero-sut.golden.mjs`（`exit 1`）与 `hermetic-golden-isolation-pending.zero-sut.golden.mjs`（`exit 65`）同样不由本契约改写，也不纳入本轮 agent 门禁。
 
 ## 七 `observability`（测不到的维度，显式申报 `route:human`）
 

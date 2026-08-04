@@ -37,3 +37,13 @@ PASS R14 本金牌自身零 SUT 卫生
 - R20 因果授权：触发前就浮着的旧菜单不得被授权: 只应点开更多操作入口这一击，绝不点陈旧菜单里的删除：期望 1，实得 0
 - R21 收拾边界：入口还没点下去就败的一律不记收拾: 悬停后记录容器被换掉须具名拒：期望 "action_failed"，实得 "none"
 RED EXIT=1
+
+--- review-r2 cleanup ownership amendment red proof ---
+BASE IMPLEMENTATION: 0a1c2679d0b708ff275301f8c1efc529c204858b
+COMMAND: node tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs
+PASS: 既有 20 条全部绿
+FAIL R20 因果授权：触发前就浮着的旧菜单不得被授权: 没有因果新菜单就绝不按 Escape：期望 0，实得 1
+FAIL R22 收拾所有权：更多入口分发前抛错不得关闭预存旧菜单: 未产生因果新菜单就绝不按 Escape：期望 0，实得 1
+FAIL R23 收拾验真：菜单已生成后 click 抛错只收拾因果新菜单，且闭合须实证: Escape 未抛错但菜单仍在也必须判收拾失败：期望 "failed"，实得 "closed"
+20/23 checks passed
+RED EXIT=1
