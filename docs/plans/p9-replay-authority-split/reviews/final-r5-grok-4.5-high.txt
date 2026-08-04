@@ -1,0 +1,640 @@
+Signing in… starting your session.
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                                                                                                      │
+│                                                                                              ⠀⠀⠀⣀⣤⣤⣀⠀⠀⡠                                                                                              │
+│                                                                                              ⠀⢀⡾⠋⠁⠀⢁⢴⡎⠀                                                                                              │
+│                                                                                              ⠀⢸⡇⠀⠀⠐⠁⢀⣿⠀                                                                                              │
+│                                                                                              ⠀⢈⠗⢀⣀⣀⣠⡾⠃⠀                                                                                              │
+│                                                                                              ⠐⠁⠀⠈⠉⠉⠉⠀⠀⠀                                                                                              │
+│                                                                                                                                                                                                      │
+│ Grok Build  v0.2.118                                                                                                                                                                                 │
+│ /mnt/d/ctx/heren/casey-p9-replay-authority-split                                                                                                                                                     │
+│ Model · Grok 4.5                                                                                                                                                                                     │
+│ /help for commands                                                                                                                                                                                   │
+│                                                                                                                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+◆ session_start
+      ✓ global/settings:session_start[0].hooks[0] (13ms)
+      ✓ global/settings:session_start[1].hooks[0] (967ms)
+      ✓ project/settings:session_start[0].hooks[0] (107ms)
+❯ # 完 整 终 审 ： p9-replay-authority-split（ 计 划 审  + 实 现 审 ， 同 一 不 可 变 候 选 ）
+  仓 库 （ 只 读 勿 改 ） ： /mnt/d/ctx/heren/casey-p9-replay-authority-split
+  候 选 提 交 ： 9013f42（ 不 可 变 ， git diff HEAD 空 ； 未 跟 踪 仅  node_modules 软 链 ）
+  提 交 链 ： 96f6107（ 基 线 ） → 6d67fc2（ 首 实 现 ） → 46d6533（ H1/H2/M1/M2 修 ） → ab861dc（ gate
+  evidence 收 账 ） → 9013f42（ R11c 调 用 点 重 锚  + 文 案 诚 实 化 ）
+  实 现 家 族 ： Claude。 你 须 完 整 阅 读 相 关 代 码 面 与 文 档 面 后 下 结 论 ； 历 史 评 审 产 物 在
+  docs/plans/p9-replay-authority-split/reviews/（ premise r1-r3 + impl-r1） 。
+  ## 评 审 历 史 （ 如 实 ）
+  三 轮 双 路 前 提 审 后  PREMISE_SOUND； 实 现 审  grok CHANGES_REQUIRED（ H1 采 集 死 导 出 /H2 旗 标
+  断 链 /M1 上 界 拒 因 /M2 说 明 ） → 46d6533 修 ； pi 复 审 对  46d6533 逮  R11c 源 形 态 钉 空 转
+  （ indexOf 首 命 中 函 数 定 义 非 调 用 点 ， 「 删 调 用 留 导 出 」 突 变 恒 绿 ） → 9013f42 重 锚 ； 其 间 一 次
+  grok 复 审  904 秒 超 时 无 终 局 （ 不 冒 充 ） 。 PRD observability 曾 有 不 实 文 案 （ 宣 称  R11c 已 真 跑
+  executeTier2） 已 订 正 并 回 归  route:human。
+  ## 审 点
+  1. R11c 重 锚 是 否 真 钉 调 用 点 ： 自 己 在  /tmp 副 本 做 「 外 科 式 删 调 用 块 留 导 出 」 突 变 （ 语 法 完 好 ） ，
+     R11c 必 须 红 且 红 因 =死 导 出 ； lastIndexOf/独 有 文 本 锚 的 绕 过 面 （ 比 如 再 加 一 处 赋 值 同 名 调 用 ）
+     自 行 推 演 。 R11b 标 题 诚 实 化 （ 不 证 接 线 ） 与  PRD observability 订 正 是 否 到 位 。
+  2. H1/H2/M1 修 复 本 体 （ 46d6533） ： 成 员 循 环 筛 调 用 真 在  spawn 前 、 无 票 零  spawn+回 执 ；
+     顶 层 入 口 双 旗 标 必 填 透 传 、 台 账 根 唯 一 ； 三 态 拒 因 +fsync+有 界 上 界 。
+  3. once 端 到 端 与  fail-safe 全 面 （ 可 抽 查 前 轮 已 证 面 ， 发 现 新 洞 照 报 ） 。
+  4. 账 本 ： PRD testChecksums 七 件 实 算 ； 两 条  amendment（ r4 codex 轮  + r5） 只 加 严 逐  hunk 核 ；
+     四 处  v3 金 牌  amendment 请 签 件 （ accept/checksum-amendment-request.json） new sha256 与
+     实 物 一 致 （ 该 四 件 新 哈 希 待  Steven C2 签 回  v3 PRD， 如 实 挂 账 ） 。
+  5. 回 归 （ 只 信 退 出 码 ， WSL） ： pure-suite 10/10、 cli-session 13/13、 八 枚  v3、 gate GREEN 5/5
+     （ 注 意  gate 会 回 写 本  PRD evidence， 跑 完  git checkout -- loop/prd-p9-replay-authority-split.json） 。
+     已 知 他 家 红 ： p9-tier2-selftest 两 红 （ T7 环 境 性  + T9a 计 划 内  replayGrantPath， 见
+     docs/plans/p9-replay-authority-split/evidence.md） 。
+  纪 律 ： 不 改 仓 库 任 何 文 件 ； 变 异 在  /tmp 副 本 ； 只 信 退 出 码 ； 不 触  SUT/浏 览 器 /网 络 。
+  结 尾 两 行 ： PLAN_VERDICT: APPROVE|CHANGES_REQUIRED 与  IMPLEMENTATION_VERDICT:
+  APPROVE|CHANGES_REQUIRED（ 附  finding 清 单 标 级 别 ） 。
+◆ user_prompt_submit
+      ✓ global/settings:user_prompt_submit[0].hooks[0] (10ms)
+      ✓ global/settings:user_prompt_submit[1].hooks[0] (1273ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[0] (779ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[1] (116ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[2] (118ms)
+┃◆ Thought for 2.2s
+┃
+┃The user wants a comprehensive final review of the p9-replay-authority-split project. This is a plan review + implementation review of an immutable candidate commit. Let me carefully follow the
+┃instru...
+开 始 完 整 终 审 ： 先 读 计 划 /PRD/评 审 历 史 与 实 现 面 ， 再 在  /tmp 副 本 做  R11c 突 变 与 回 归 验 证 。
+◆ Task started: Verify candidate commit and list plan artifacts
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (10ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (879ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (644ms)
+◆ Read docs/plans/p9-replay-authority-split/evidence.md
+Error: /mnt/d/ctx/heren/casey-p9-replay-authority-split/docs/plans/p9-replay-authority-split/evidence.md does not exist.
+Similar entries in parent directory: evidence
+Note: your current working directory is /mnt/d/ctx/heren/casey-p9-replay-authority-split
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (29ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (924ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (845ms)
+┃◆ Thought for 2.8s
+┃
+┃The git command seems slow - possibly WSL filesystem issues. Let me try reading files and waiting for the command.
+◆ Task completed in 4.7s: Verify candidate commit and list plan artifacts
+◆ List docs/plans/p9-replay-authority-split (17 entries)  [hooks: 2]
+◆ List docs/plans/p9-replay-authority-split/evidence (2 entries)  [hooks: 4]
+┃◆ Thought for 3.3s
+┃
+┃Good - candidate is at 9013f42, clean except untracked node_modules. Let me read the key docs and code in parallel.
+◆ Read plan.md (1-300 of 378)  [hooks: 2]
+◆ Read prd-p9-replay-authority-split.json (1-135)  [hooks: 2]
+◆ List docs/plans/p9-replay-authority-split/accept (5 entries)  [hooks: 2]
+◆ Run Show commit stats for review chain
+$ git show --stat 9013f42 && echo '====' && git show --stat 46d6533 && echo '====' && git show --stat ab861dc && echo '====' && git log --oneline 96f6107..9013f42
+commit 9013f42bacfa774c21a2c353313bd86441b76bb0
+Author: Steven <ctxsteven2001@gmail.com>
+… +62 lines
+ab861dc docs(p9): close replay authority loop evidence
+46d6533 fix: 回 放 票 据 闸 接 进 真 调 用 点 （ 堵 死 导 出 假 绿 ）
+6d67fc2 feat: 回 放 授 权 票 据 （ 批 级 一 次 性 ， 与 结 构 授 权 边 分 离 ）
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (737ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (686ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (829ms)
+┃◆ Thought for 4.0s
+┃
+┃Good progress. Let me continue reading the implementation files, the pure-suite tests for R11c, the key lib files, and historical reviews. Also need to compute checksums and run mutations.
+◆ Search "screenTier2CaseReplayGrant|R11c|R11b|R11d|export function screen" in *.{mjs,js,json,md} (29 matches in 9 files)  [hooks: 2]
+◆ Run Inspect R11c re-anchor and call sites
+$ git show 9013f42 -- tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs | head -200 && echo '====FULL R11c region====' &&
+  rg -n "R11c|R11b|R11d|screenTier2CaseReplayGrant|callIdx|lastIndexOf|indexOf" tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs lib/selftest-tier2-collect.mjs
+commit 9013f42bacfa774c21a2c353313bd86441b76bb0
+Author: Steven <ctxsteven2001@gmail.com>
+… +57 lines
+ // ══ R11d　 casey run 面 双 旗 标 必 填 并 透 传 （ 实 现 审  H2） ════════════════
+====FULL R11c region====
+--: line 1: rg: command not found
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (15ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (809ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (712ms)
+◆ Read checksum-amendment-request.json  [hooks: 4]
+┃◆ Thought for 2.4s
+┃
+┃I notice a discrepancy: plan.md still says R11b is "采 集 编 排 层 真 接 线 " but the actual test was honestified. Also PRD testChecksums for pure-suite is 8044a6c5... but the r4 amendment says newSh
+┃`e4646...
+继 续 读 实 现 核 心 与  R11c 测 试 全 文 ， 并 准 备  /tmp 突 变 副 本 。
+◆ Read selftest-tier2-collect.mjs (321-540 of 549)  [hooks: 2]
+◆ Read replay-grant-ledger.mjs  [hooks: 2]
+◆ Read p9-replay-authority-split.pure-suite.zero-sut.golden.mjs (181-284 of 284)  [hooks: 2]
+◆ Search "replay-grant|replayGrant|grantHandle|grantLedger|REPLAY_GRANT|SESSION_NOT_SETTLED|fsync|wx|O_EXCL" in *.mjs in bin (32 matches in 5 files)  [hooks: 2]
+◆ Search "replay-grant|replayGrant|grant\\.|grantLedger|createCreatedWorkflowReplayContinuityController|requireGrant|allowLaunch" in *.mjs in lib (54 matches in 6 files)  [hooks: 4]
+┃◆ Thought for 18.0s
+┃
+┃I have a good picture of the implementation. Now let me:
+◆ Run Verify all PRD and v3 amendment checksums
+$ cd /mnt/d/ctx/heren/casey-p9-replay-authority-split && \
+  # checksums for 7 PRD testChecksums entries
+  python3 - <<'PY'
+  import hashlib, json, pathlib
+  prd = json.loads(pathlib.Path('loop/prd-p9-replay-authority-split.json').read_text())
+  print('=== PRD testChecksums vs actual ===')
+  ok=True
+  for path, expected in prd['testChecksums'].items():
+      p = pathlib.Path(path)
+      if not p.exists():
+          print(f'MISSING {path}'); ok=False; continue
+      h = hashlib.sha256(p.read_bytes()).hexdigest()
+      match = h==expected
+      ok = ok and match
+      print(f'{"OK" if match else "MISMATCH"} {path}')
+      if not match:
+          print(f'  expected {expected}')
+          print(f'  actual   {h}')
+  print('ALL_MATCH' if ok else 'HAS_MISMATCH')
+  # v3 amendment request
+  req = json.loads(pathlib.Path('docs/plans/p9-replay-authority-split/accept/checksum-amendment-request.json').read_text())
+  print('\n=== v3 amendment request newSha256 vs actual ===')
+  ok2=True
+  for a in req['amendments']:
+      p = pathlib.Path(a['path'])
+      h = hashlib.sha256(p.read_bytes()).hexdigest()
+      match = h==a['newSha256']
+      ok2 = ok2 and match
+      print(f'{"OK" if match else "MISMATCH"} {a["path"]}')
+      if not match:
+          print(f'  request {a["newSha256"]}')
+          print(f'  actual  {h}')
+  print('V3_NEW_OK' if ok2 else 'V3_NEW_MISMATCH')
+  # amendment r4 chain intermediate for pure-suite
+  print('\n=== pure-suite history hashes ===')
+  ps = pathlib.Path('tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs')
+  print('current', hashlib.sha256(ps.read_bytes()).hexdigest())
+  for r in prd.get('checksumAmendments',[]):
+      print('amendment', r.get('round') or r.get('amendedAt'), r.get('files') or [a['path'] for a in r.get('amendments',[])])
+      for a in r.get('amendments',[]):
+          print(' ', a['path'][-60:], a.get('oldSha256','')[:12],'->',a.get('newSha256','')[:12])
+  PY
+=== PRD testChecksums vs actual ===
+OK docs/plans/p9-replay-authority-split/plan.md
+… +20 lines
+  den/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs 56b458c4113b -> e4646a5f31da
+  /accept/red-proofs/replay-authority-split.pure-suite.red.txt 205e48002572 -> 25fffdf45d3c
+amendment r5 R11c 调 用 点 重 锚 （ pi.dev deepseek-v4-flash high 复 审 唯 一  Medium， 按 发 现 并 集 修 ）  ['tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs']
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (809ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (815ms)
+◆ Task started: Create /tmp copy and run pure-suite baseline
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (776ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (724ms)
+◆ Read casey.mjs (71-190 of 438)  [hooks: 2]
+◆ Read replay.mjs (71-250 of 705)  [hooks: 2]
+◆ Read entity-created-workflow-replay-grant.mjs (241-336 of 336)  [hooks: 4]
+┃◆ Thought for 3.6s
+┃
+┃Checksums all match. Waiting for the /tmp copy baseline.
+◆ Read entity-created-workflow-continuity-v3.mjs (711-760 of 880)  [hooks: 2]
+◆ Read selftest-tier2-collect.mjs (141-200 of 549)  [hooks: 2]
+◆ Task completed in 12s: Create /tmp copy and run pure-suite baseline
+◆ Read plan.md (297-376 of 378)  [hooks: 4]
+┃◆ Thought for 3.4s
+┃
+┃Interesting finding in plan.md:
+基 线 已 绿 。 开 始 在  /tmp 做 「 删 调 用 留 导 出 」 突 变 ， 并 并 行 跑 回 归 套 件 。
+◆ Run Surgical delete call-site keep export mutation
+$ set -e
+  DST=/tmp/p9-r11c-mut-109849
+  FILE="$DST/lib/selftest-tier2-collect.mjs"
+  # Save original for restore verification
+  cp -a "$FILE" /tmp/selftest-tier2-collect.ORIG.mjs
+  # Surgical mutation: delete call-site block inside member loop, keep export of screenTier2CaseReplayGrant
+  # The block is lines around:
+  #    if (batchContext?.cleanup?.[member.caseId]) {
+  #      const grantScreen = screenTier2CaseReplayGrant({...});
+  #      if (!grantScreen.spawnAllowed) { ... continue; }
+  #    }
+  python3 - <<'PY'
+  from pathlib import Path
+  p = Path('/tmp/p9-r11c-mut-109849/lib/selftest-tier2-collect.mjs')
+  src = p.read_text()
+  needle_start = "    // 只 对 接 了  v3 清 理 生 产 链 的 成 员 要 票 （ 豁 免 面  plan §4.1： 无 结 构 件 的 成 员 不 要 求 ） 。 \n    if (batchContext?.cleanup?.[member.caseId]) {\n      const gra
+  # Find and remove entire if-block for grant screen
+  import re
+  # More robust: find the exact call block
+  start = src.find("    // 只 对 接 了  v3 清 理 生 产 链 的 成 员 要 票 ")
+  if start < 0:
+      raise SystemExit('start comment not found')
+  # Find matching close: from if (batchContext to the closing of that if before screenTier2CaseAuthorization
+  marker = "    const screen = screenTier2CaseAuthorization(entry);"
+  end = src.find(marker, start)
+  if end < 0:
+      raise SystemExit('authorization screen not found after grant block')
+  block = src[start:end]
+  assert 'const grantScreen = screenTier2CaseReplayGrant({' in block, 'call needle missing in block'
+  assert 'export function screenTier2CaseReplayGrant' in src, 'export must remain'
+  new_src = src[:start] + src[end:]
+  # Verify export still present, call gone
+  assert 'export function screenTier2CaseReplayGrant' in new_src
+  assert 'const grantScreen = screenTier2CaseReplayGrant({' not in new_src
+  assert 'entry.replayGrantRefused = true' not in new_src  # removed with block
+  # runOneCase still there
+  assert 'runOneCase({\n      member,' in new_src
+  p.write_text(new_src)
+  print('MUTATION_APPLIED')
+  print('block_bytes_removed', len(block))
+  print('export_present', 'export function screenTier2CaseReplayGrant' in new_src)
+  print('call_present', 'const grantScreen = screenTier2CaseReplayGrant({' in new_src)
+  PY
+  # syntax check
+  node --check "$FILE"; echo "syntax_exit=$?"
+  # Run pure-suite expecting R11c red
+  cd "$DST"
+  node tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs > /tmp/r11c-mut-out.txt 2>&1; echo "mut_suite_exit=$?"
+  # show failures
+  grep -E '^(ok|FAIL|fail|  |p9-)' /tmp/r11c-mut-out.txt | head -40
+  echo '---FULL FAIL CONTEXT---'
+  grep -n -A3 -E 'R11c|R11b|死 导 出 |assert|Error|FAIL|not ok' /tmp/r11c-mut-out.txt | head -60
+MUTATION_APPLIED
+block_bytes_removed 719
+export_present True
+call_present False
+syntax_exit=0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (44ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (988ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (666ms)
+◆ Task started: Run pure-suite and cli-session on original
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (950ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (643ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (911ms)
+┃◆ Thought for 1.5s
+┃
+┃The mutation command exited with 1 - likely because the suite failed (as expected) but I need to see the output. Let me check the mutation output file and wait for the regression.
+◆ Run Capture mutation suite red reason
+$ cat /tmp/r11c-mut-out.txt 2>/dev/null; echo '---'; ls -la /tmp/r11c-mut-out.txt 2>/dev/null; echo '---'; # re-run mut suite to capture if empty
+  DST=/tmp/p9-r11c-mut-109849
+  cd "$DST" && node tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs; echo "mut_exit=$?"
+  # verify export still there and call gone
+  grep -n 'screenTier2CaseReplayGrant\|replayGrantRefused\|runOneCase' "$DST/lib/selftest-tier2-collect.mjs" | head -30
+ok   R3a 回 放 票 据 喂 结 构 面  reader → 拒 （ 既 有 形 状 守 卫 的 回 归 钉 ， 非 新 增 拦 截 力 ）
+ok   R4 A 案 票 据 配  B 案 结 构 件  → 摘 要 链 不 合 而 拒 ； 同 案 配 对 正 控 须 过
+… +25 lines
+335:export function screenTier2CaseReplayGrant({ members, grantRead } = {}) {
+451:  // 实 现 审  H1： 此 前  screenTier2CaseReplayGrant 是 死 导 出 ——成 员 循 环 无 条 件  spawn，
+473:    const outcome = runOneCase({
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (888ms)
+◆ Task completed in 1m6s: Run pure-suite and cli-session on original
+┃◆ Thought for 33.4s
+┃
+┃Perfect mutation result:Verdict: CHANGES_REQUIRED
+┃
+┃IMPLEMENTATION_VERDICT: CHANGES_REQUIRED
+┃
+┃Finding list (severity):
+┃• R11c: FAIL (dead-export) – mutation correctly exposed the call-site anchor; lastIndexOf bypass surface exists but is narrow (decoy assignment before runOneCase would still need to 1) survive
+┃uniqueness check 2) keep refused marker after call 3) not trigger order asserts – residual risk Medium, already flagged as route:human.
+┃• R11b: GREEN – confirms honest title, no wiring proof.
+◆ Run Restore mut copy and verify byte identity
+$ set -e
+  # Restore mutation file and cmp with ORIG
+  DST=/tmp/p9-r11c-mut-109849
+  cp -a /tmp/selftest-tier2-collect.ORIG.mjs "$DST/lib/selftest-tier2-collect.mjs"
+  cmp -s /tmp/selftest-tier2-collect.ORIG.mjs "$DST/lib/selftest-tier2-collect.mjs" && echo 'restore_cmp_ORIG_OK'
+  # Also cmp against live repo
+  cmp -s /mnt/d/ctx/heren/casey-p9-replay-authority-split/lib/selftest-tier2-collect.mjs "$DST/lib/selftest-tier2-collect.mjs" && echo 'restore_cmp_REPO_OK'
+  # restored suite green
+  cd "$DST" && node tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs; echo "restored_exit=$?"
+  # Optional second mutation: add decoy assignment same needle before export (or after runOneCase) to probe uniqueness
+  # And rename-call bypass analysis only in report — optional code probe:
+  python3 - <<'PY'
+  from pathlib import Path
+  # uniqueness: two call needles
+  src = Path('/tmp/selftest-tier2-collect.ORIG.mjs').read_text()
+  needle = 'const grantScreen = screenTier2CaseReplayGrant({'
+  assert src.count(needle)==1
+  # if decoy added with same text, uniqueness fails
+  print('current_call_count', src.count(needle))
+  print('refused_marker_count', src.count('entry.replayGrantRefused = true'))
+  print('runOneCase_marker', 'runOneCase({\n      member,' in src)
+  PY
+restore_cmp_ORIG_OK
+restore_cmp_REPO_OK
+… +12 lines
+current_call_count 1
+refused_marker_count 1
+runOneCase_marker True
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (17ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (865ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (706ms)
+◆ Run eight v3 golden tests
+$ set -e
+  ROOT=/mnt/d/ctx/heren/casey-p9-replay-authority-split
+  cd "$ROOT"
+  echo '=== eight v3 goldens ==='
+  for f in \
+    p9-created-workflow-continuity-v3.created-in-run.zero-sut.golden.mjs \
+    p9-created-workflow-continuity-v3.stable-absence.zero-sut.golden.mjs \
+    p9-created-workflow-continuity-v3.tier2-cleanup.zero-sut.golden.mjs \
+    p9-created-workflow-continuity-v3.role-compile-sign.zero-sut.golden.mjs \
+    p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs \
+    p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs \
+    p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs \
+    p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs
+  do
+    node "tests/_golden/$f"; echo "exit_$f=$?"
+  done
+=== eight v3 goldens ===
+ok   C1 完 整  listApi 唯 一 读 回 铸 当 轮 字 符 串  platformId observation
+… +62 lines
+ok   S4 当 轮  scan ID 与 出 站  ID 不 同 则 零 发 送 ， 相 同 才 放 行
+p9-v3-legacy-supersession: 4/4
+exit_p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs=0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (856ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (615ms)
+◆ Task started: Verify amendment checksum chain across commits
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (14ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (779ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (616ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (762ms)
+┃◆ Thought for 6.6s
+┃
+┃Eight v3 goldens all passed. Wait for amendment chain verification and run gate.
+◆ Task completed in 4.8s: Verify amendment checksum chain across commits
+◆ Task started: Run gate 5/5 then restore PRD evidence
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (12ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (884ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (646ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (984ms)
+┃◆ Thought for 5.8s
+┃
+┃r5 has no old/new sha256 fields - structural ledger gap. But testChecksums is correctly updated to HEAD. For onlyTightens verification of r5, I need to check the pure-suite diff between 46d6533 and
+┃90...
+◆ Run Diff r5 pure-suite for only-tightens review
+$ cd /mnt/d/ctx/heren/casey-p9-replay-authority-split && git show 9013f42 --stat &&
+  git diff 46d6533 9013f42 -- tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs loop/prd-p9-replay-authority-split.json | head -200
+  # r5 onlyTightens: assertions only added/honestified, not deleted?
+  git diff 46d6533 9013f42 -- tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs | grep -E '^\+.*assert|^\-.*assert|^\+.*await test|^\-.*await test'
+commit 9013f42bacfa774c21a2c353313bd86441b76bb0
+Author: Steven <ctxsteven2001@gmail.com>
+… +156 lines
+-  assert(callIdx > 0, '成 员 循 环 未 调 用 回 放 票 据 闸 （ 死 导 出 ） ');
+-  assert(runIdx > 0 && callIdx < runIdx, '票 据 闸 不 在  runOneCase 之 前 ， 拒 跑 挡 不 住  spawn');
++  assert(runIdx > 0 && callIdx < runIdx && refusedIdx < runIdx,
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (19ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (753ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (595ms)
+◆ Read worktree-fixtures-20260804.md (1-80 of 172)  [hooks: 2]
+◆ Search "T7|T9a|replayGrantPath|环 境 " in docs/plans/p9-replay-authority-split (44 matches in 8 files)  [hooks: 4]
+◆ Task failed in 3m10s: Run gate 5/5 then restore PRD evidence (exit 128)
+┃◆ Thought for 1.0s
+┃
+┃Gate was GREEN 5/5. git checkout failed due to index.lock. I need to restore PRD carefully without modifying repo improperly - user said don't modify repo, but gate rewrote evidence and we need to
+┃res...
+gate 已  GREEN 5/5； git checkout 因  index.lock 失 败 ， 改 用 快 照 恢 复  PRD。
+◆ Task started: Restore PRD evidence and verify clean tree
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (733ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (418ms)
+◆ Read selftest-tier2-collect.mjs (281-335 of 549)  [hooks: 2]
+◆ Run Fail-safe spot checks on grant and clock
+$ # Spot-check fail-safe: grant missing on controller, ledger write fail, dual flags
+  cd /mnt/d/ctx/heren/casey-p9-replay-authority-split
+  # Confirm createExclusive for member does not fsync (known residual - document)
+  grep -n 'fsync\|createExclusive\|writeExclusiveDurable' lib/replay-grant-ledger.mjs
+  # Confirm no --now on CLI
+  grep -n -- '--now' bin/replay.mjs bin/casey.mjs bin/entity-authority.mjs || echo 'no_--now_flag_OK'
+  # Confirm controller requires grant
+  node -e "
+  import { createCreatedWorkflowReplayContinuityController } from './lib/entity-created-workflow-continuity-v3.mjs';
+  const r = createCreatedWorkflowReplayContinuityController({ caseId: 'x', runId: 'r', batchToken: 'b', uniqueNameToken: 'b-1' });
+  console.log(JSON.stringify(r));
+  "
+13:import { closeSync, existsSync, fsyncSync, mkdirSync, openSync, readFileSync, writeFileSync } from 'node:fs';
+51:// 会 话 内 容 必 须 先 落 到 盘 上 再 放 行 ： 胜 者 写 完 即  fsync，
+… +4 lines
+124:  const claimed = createExclusive(join(dir, `${caseId}.consumed.json`), {
+no_--now_flag_OK
+{"ok":false,"allowLaunch":false,"reason":"CREATED_WORKFLOW_REPLAY_GRANT_MISSING"}
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (730ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (480ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (852ms)
+◆ Task completed in 0.4s: Restore PRD evidence and verify clean tree
+┃◆ Thought for 7.1s
+┃
+┃Wait for the restore command.
+◆ Run Document R11c residual bypass surfaces
+$ # Additional bypass surface probe on mut copy: decoy assignment same needle + dead real logic
+  # Theoretical only via text analysis + quick second mut if needed
+  python3 - <<'PY'
+  # Analyze residual bypass for R11c morphology
+  print('''BYPASS SURFACE ANALYSIS (source morphology residual):
+  1. lastIndexOf vs indexOf: test uses indexOf + uniqueness (second hit must be -1). Adding a second assignment fails uniqueness. lastIndexOf alone is not used, so "decoy after real" doesn't help with
+  2. Rename call: screenTier2CaseReplayGrant({ without assignment fails needle — good.
+  3. Keep text, gut control flow: retain needle + refused marker + runOneCase order, but remove `continue` or make spawnAllowed always true path fall through — morphology still GREEN. Residual Medium
+  4. Dummy call outside loop: if single call before runOneCase text appears in dead code path still before runOneCase string in file order — GREEN if text order holds even if not on hot path. Source o
+  5. Alias: const screenTier2CaseReplayGrant = () => ({spawnAllowed:true}) shadowing before call — morphology needle still present if assignment text remains; behavior bypassed. Residual Medium (not i
+  ''')
+  PY
+BYPASS SURFACE ANALYSIS (source morphology residual):
+1. lastIndexOf vs indexOf: test uses indexOf + uniqueness (second hit must be -1). Adding a second assignment fails uniqueness. lastIndexOf alone is not used, so "decoy after real" doesn't help
+… +6 lines
+5. Alias: const screenTier2CaseReplayGrant = () => ({spawnAllowed:true}) shadowing before call — morphology needle still present if assignment text remains; behavior bypassed. Residual Medium (not
+in original H1 class of dead export).
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (36ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (944ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (889ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (12ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (895ms)
+┃◆ Thought for 21.0s
+┃
+┃Good - tree is clean (only node_modules untracked). Gate GREEN 5/5. All regressions pass. PLAN_VERDICT: APPROVE
+┃IMPLEMENTATION_VERDICT: APPROVE
+┃
+┃Key findings:
+┃• PLAN: PREMISE_SOUND + residual Low (plan.md stale wording on R11b, nail count, §9 boundary). Intentional freeze + honesty fixes in pure-suite/PRD make it acceptable.
+┃• 实 施 : H1/H2/M1/M2 fixed, R11c mutation red+dead-export, R11b honestified, PRD observability fixed. v3 amendment hashes pending Steven C2. Residual morphology documented as route:human.
+┃• 回 归 : pure-suite 10/10, cli-session 13/13, gate GREEN 5/5.
+◆ Run Verify r4 onlyTightens and final clean state
+$ cd /mnt/d/ctx/heren/casey-p9-replay-authority-split
+  # r4 onlyTightens: pure-suite assertions only added?
+  git diff 6d67fc2 46d6533 -- tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs | grep -E '^\+.*await test|^\-.*await test|^\+.*assert|^\-.*assert' | head -40
+  echo '---plan r4---'
+  git diff 6d67fc2 46d6533 -- docs/plans/p9-replay-authority-split/plan.md | head -80
+  # Confirm ledgerRoot uniqueness path
+  grep -n 'replay-grant-ledger\|replayGrantLedger' lib/selftest-tier2-collect.mjs bin/casey.mjs bin/replay.mjs | head -20
+  # status final
+  git status --short
+  git rev-parse HEAD
++await test('R11c executeTier2 在 无 有 效 票 据 时 对 变 更 型 成 员 零  spawn 且 落 拒 跑 回 执 ', async () => {
++  assert(typeof readBatch === 'function', '采 集 层 未 导 出 整 批 票 据 读 回 （ 成 员 循 环 无 从 取 票 ） ');
+… +54 lines
+bin/replay.mjs:223:      ledgerRoot: args.replayGrantLedger,
+?? node_modules
+9013f42bacfa774c21a2c353313bd86441b76bb0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (683ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (23ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (747ms)
+┃◆ Thought for 9.3s
+┃
+┃I have everything I need for the final review report. Let me write a comprehensive final verdict in Chinese as the user wrote in Chinese.
+完 整 终 审 ： p9-replay-authority-split @ 9013f42
+候 选 状 态 （ 不 可 变 ）
+HEAD=9013f42； git diff HEAD 空 ； 未 跟 踪 仅  node_modules 软 链 。 审 后 跑  gate 会 回 写  PRD evidence， 已 用 预 快 照 还 原 ， 工 作 树  PRD 与  HEAD 字 节 一 致 。
+提 交 链 ： 96f6107 → 6d67fc2 → 46d6533（ H1/H2/M1/M2） → ab861dc → 9013f42（ R11c 重 锚  + 文 案 诚 实 化 ） 。
+───
+1. R11c 重 锚  + R11b / observability 诚 实 化
+本 轮  /tmp 突 变 （ 外 科 式 删 调 用 、 留 导 出 ）
+副 本  /tmp/p9-r11c-mut-109849：
+┌───────────────────────────────────────────────────────────────────────────────────────────┬────────────────────────────────────────────────────────────┐
+│ 步 骤                                                                                       │ 结 果                                                        │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+│ 基 线  pure-suite                                                                           │ 10/10， exit 0                                              │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+│ 删 成 员 循 环 内 闸 调 用 块 （ 含  continue 拒 跑 ） ， 保 留  export function screenTier2CaseReplayGrant │ node --check exit 0                                        │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+│ 突 变 后  pure-suite                                                                         │ 9/10， exit 1                                               │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+│ R11c 红 因                                                                                  │ 成 员 循 环 未 调 用 回 放 票 据 闸 （ 死 导 出 ——只 剩 函 数 定 义 没 有 调 用 点 ）  │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+│ R11b                                                                                      │ 仍  ok（ 实 证 ： 本 就 不 证 接 线 ）                                 │
+├───────────────────────────────────────────────────────────────────────────────────────────┼────────────────────────────────────────────────────────────┤
+│ 还 原  + cmp 对  ORIG/仓 库                                                                    │ 字 节 全 同 ； 复 跑  10/10                                       │
+└───────────────────────────────────────────────────────────────────────────────────────────┴────────────────────────────────────────────────────────────┘
+结 论 ： 现 役  R11c 真 钉 到 调 用 点 独 有 赋 值 文 本 ， pi 抓 的 「 indexOf('screenTier2CaseReplayGrant({') 命 中 定 义 」 空 转 已 堵 住 ； 目 标 突 变 类 （ 删 调 用 留 导 出 ） 恰 红 。
+绕 过 面 推 演 （ 源 形 态 钉 固 有 残 余 ， 非 本 轮 回 归 ）
+• 多 一 处 同 名 赋 值 ： 唯 一 性 断 言  indexOf(needle, callIdx+1)===-1 会 红 ； lastIndexOf 单 独 绕 不 过 这 套 。
+• 改 成 无 赋 值 调 用  / 改 名 ： 针  const grantScreen = screenTier2CaseReplayGrant({ 会 红 ——对 「 死 导 出 」 有 效 。
+• 保 文 本 、 掏 控 制 流 （ 留  needle + replayGrantRefused + 文 件 序 在  runOneCase 前 ， 但 去 掉  continue / 热 路 径 绕 过 ） ： 源 形 态 仍 可 绿 。
+• 死 代 码 里 放 一 处  decoy 赋 值 （ 文 件 序 满 足 次 序 ， 运 行 不 到 ） ： 亦 可 绿 。
+→ 这 是 文 本 锚  vs 控 制 流 的 已 知 上 限 ； PRD observability 已 诚 实 写 ： 真 跑  executeTier2 归  route:human / B4， 不 冒 充 机 器 已 观 察 面 。
+R11b 标 题 与  PRD observability
+• pure-suite R11b 标 题 已 改 为 「 导 出 契 约 …（ 不 证 接 线 ） 」 ——到 位 。
+• PRD 第  4 条  observability 已 订 正 ， 并  回 归  route:human——到 位 。
+• 冻 结  plan 表 仍 写  R11b「 真 接 线 」 、 s4 只 列  R7/R11/R11b、 钉 数 仍 写 「 二 十 一 条 」 ——与  r5 诚 实 化 有 表 滞 后 （ 见 残 差  [L1]） ； 真 值 在  pure-suite + PRD。
+───
+2. H1 / H2 / M1 修 复 本 体 （ 46d6533）
+┌────┬─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┬───────────────────┐
+│ 项  │ 代 码 事 实                                                                                                                                                                     │ 判 定
+├────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┼───────────────────┤
+│ H1 │ executeTier2 成 员 循 环 内 ： readBatchReplayGrant → const grantScreen = screenTier2CaseReplayGrant(...) → 拒 则  writeRefusalReceipt + entry.replayGrantRefused=true + continue   │ 实 接 调 用
+│    │ （ 零  spawn）  → 其 后 才  runOneCase                                                                                                                                            │
+├────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┼───────────────────┤
+│ H2 │ bin/casey.mjs： v3Requested 时  --replay-grant / --replay-grant-ledger 双 必 填 （ exit 64） 并 透 传 ； runOneCase 对  cleanup 成 员 同 传 ； 台 账 根  runs/_tier2/replay-grant-ledger        │
+│    │ 整 批 唯 一                                                                                                                                                                     │ 单 一 台 账 根
+├────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┼───────────────────┤
+│ M1 │ readSessionSettled 三 态  absent/settled/unsettled； 未 落 定  → REPLAY_GRANT_SESSION_NOT_SETTLED（ 不 冒 充  MISMATCH） ； 会 话 写  writeExclusiveDurable + fsync； 重 读 上 界  200 轮 有 界
+│    │ 、 到 期  fail-closed                                                                                                                                                          │
+├────┼─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┼───────────────────┤
+│ M2 │ 消 费 标 记  只 看 在 场 （ existsSync） ， 不 解 析 内 容                                                                                                                                  │ 设
+│    │                                                                                                                                                                             │ closed            │
+└────┴─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┴───────────────────┘
+纯 层 ： createCreatedWorkflowReplayContinuityController 缺  grant → allowLaunch:false / CREATED_WORKFLOW_REPLAY_GRANT_MISSING（ 本 轮 抽 查  exit 路 径 成 立 ） 。
+浏 览 器 前 门 ： bin/replay.mjs 读 票  → occupyReplayGrantMember → 再 开  controller； 生 产  now 主 机 墙 钟 ， CLI 无  --now。
+───
+3. once 端 到 端 与  fail-safe（ 抽 查  + 回 归 ）
+• 批 会 话 ： 开 会 话  wx、 成 员  wx、 异  token / 二 次 消 费  / 未 授 权  / 并 发 单 胜 （ cli R10–R18） 全 绿 。
+• 双 闸 ： 采 集 前 置 筛  + replay 前 门 占 用 ， 非 二 选 一 。
+• 豁 免 面 ： 无  cleanup 成 员 不 强 制 票 ； 有  v3 cleanup 才 闸 。
+• 已 知 邻 接 红 （ 未 当 本 契 约 回 归 债 ） ： p9-tier2-selftest T7 环 境 性  + T9a 计 划 内  replayGrantPath——与  impl-r1 / 用 户 说 明 一 致 ， 本 轮 未 当 新 洞 。
+• 新 洞 ： 未 发 现  fail-open 级 缺 口 。 残 余 仅 源 形 态 钉 控 制 流 绕 过 （ 上 节 ） ， 已 挂  human。
+───
+4. 账 本
+┌─────────────────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 项                                                               │ 结 果
+├─────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ PRD testChecksums 七 件  实 算                                      │ 7/7 与 实 物 一 致
+├─────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ r4（ impl-r1）  old/new                                           │ 对  6d67fc2→46d6533 三 文 件 链  全 真 ； 只 加 严 （ +R11c/R11d 钉 ， 原 断 言 未 删 ）
+├─────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ r5                                                              │ pure-suite e4646a5f…→8044a6c5…； testChecksums 已 跟  HEAD； 条 目 仅 有  narrative + files， 无  old/new sha 字 段 （ 形 态 弱 于
+├─────────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ v3 请 签 件  accept/checksum-amendment-request.json 四 处  newSha256 │ 与 实 物 一 致 ； signed:false——待  Steven C2 签 回  v3 PRD， 如 实 挂 账
+└─────────────────────────────────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+───
+5. 回 归 （ 只 信 退 出 码 ， WSL）
+┌────────────────────────────────────────────────────┬───────────────────────────────────────────────────┐
+│ 套 件                                                │ 结 果                                               │
+├────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+│ pure-suite                                         │ 10/10， exit 0                                     │
+├────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+│ cli-session                                        │ 13/13， exit 0                                     │
+├────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+│ 八 枚  v3                                            │ 逐 枚  exit 0                                       │
+├────────────────────────────────────────────────────┼───────────────────────────────────────────────────┤
+│ gate --prd loop/prd-p9-replay-authority-split.json │ GREEN story 5/5； ratchet 七 件  ok； evidence 已 还 原  │
+└────────────────────────────────────────────────────┴───────────────────────────────────────────────────┘
+───
+Finding 清 单 （ 残 差  / 挂 账 ， 无 阻 断 ）
+┌──────┬─────────────────────────────┬──────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ ID   │ 级 别                         │ 面        │ 说 明
+├──────┼─────────────────────────────┼──────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ L1   │ Low                         │ 计 划 文 书  │ 冻 结  plan.md 用 例 表 仍 称  R11b「 真 接 线 」 、 s4 未 列  R11c/R11d、 钉 数 「 21」 滞 后 ； r5 诚 实 化 落 在  pure-suite + PRD。 不 伤 机
+│      │                             │          │ amendment（ 会 动  plan 校 验 和 ） 。
+├──────┼─────────────────────────────┼──────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ L2   │ Low                         │ 账 本 形 态  │ r5 checksumAmendments 无 逐  path old/new sha（ r4 有 ） ； 语 义 只 加 严 可 从  diff 核 ， 棘 轮 靠  testChecksums 仍 成 立 。
+├──────┼─────────────────────────────┼──────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ M-   │ Medium（ 残 余 ， 已             │ 验 收 钉    │ R11c 源 形 态 钉 挡 不 住 「 保 文 本 掏 控 制 流  / 死 代 码  decoy」 ； 真  executeTier2 行 为 仍  B4 人 工 核 。 非 空 转 回 归 ——死 导 出
+│ res  │ route:human）                │          │
+├──────┼─────────────────────────────┼──────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ HANG │ 挂 账                         │ v3 PRD   │ 四 处 金 牌  amendment 请 签 件 字 节 已 对 ； 待  Steven 签  v3 PRD testChecksums。
+└──────┴─────────────────────────────┴──────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+───
+总 判
+设 计 面 （ 批 会 话 协 议 、 纯 层 必 填  grant、 双 旗 标 、 fail-safe 不  fail-open、 结 构 件 形 状 零 改 ） 与 实 现 面 在  9013f42 对 齐 ； 历 史  H1 假 绿 与  R11c 空 转 均 已 在 本 候 选 上 可
+PLAN_VERDICT: APPROVE
+IMPLEMENTATION_VERDICT: APPROVE
+Worked for 12m19s                                                                                                                                                                       stop  [hooks: 5]
+      ✓ global/settings:stop[0].hooks[0] (18ms)
+      ✓ global/settings:stop[1].hooks[0] (721ms)
+      ✓ project/settings:stop[0].hooks[0] (521ms)
+      ✓ project/settings:stop[0].hooks[1] (400ms)
+      ✓ project/settings:stop[1].hooks[0] (79ms)
+minimal · /help
+❯
+Grok 4.5 (high) · always-approve · 101K / 500K (20%) · ctrl+o transcript
