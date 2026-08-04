@@ -12,7 +12,8 @@
 // 出站请求这一钉的语义边界：删除域自己不发请求，本金牌钉的是「链条走到确认落笔那一击时，
 // 夹具按实采形状发出的请求恰为 POST /ai-manager/process/delete + body.masProcessId」，
 // 即形状是夹具契约、链条能否走到才是被测面。真机时序与真实 class 归 route:human（B4 段）。
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
   inspectWorkflowDeleteTarget,
@@ -184,9 +185,11 @@ class Page {
     this.root = root;
     this.log = [];
     this.requests = [];
+    this.escapeThrows = false;
     this.keyboard = {
       press: async (key) => {
         this.log.push({ kind: 'key', text: key });
+        if (this.escapeThrows) throw new Error('收拾动作抛错（负控）');
         if (this.root.__onKey) this.root.__onKey(key);
       },
     };
@@ -496,6 +499,52 @@ await check('R13 更多操作入口只带 title 无专用 class 时同样识别'
   eq(trigger.resolution, 'unique', '触发解析态');
   eq(confirmed?.resolution, 'unique', '确认落笔解析态');
   eq(page.requests.length, 1, '出站请求条数');
+});
+
+await check('R15 收拾具名记录：Escape 结果留证、成败都不改写动作轴', async () => {
+  // 成功收拾：点过更多操作入口、路径失败 → 具名记为已收拾。
+  const closed = buildFixture({ layout: 'card', menuLabels: ['编辑', '复制', '停用'] });
+  const closedAxis = await performWorkflowDeleteTrigger(closed.page, TARGET);
+  eq(closedAxis.resolution, 'none', '解析态');
+  eq(closedAxis.menuCleanup, 'closed', '收拾结果具名字段');
+
+  // 收拾抛错：绝不吞，具名记为失败；resolution 一寸不动。
+  const failed = buildFixture({ layout: 'card', menuLabels: ['编辑', '复制', '停用'] });
+  failed.page.escapeThrows = true;
+  const failedAxis = await performWorkflowDeleteTrigger(failed.page, TARGET);
+  eq(failedAxis.resolution, 'none', '收拾抛错不得改写解析态');
+  eq(failedAxis.candidateCount, 0, '收拾抛错不得改写候选数');
+  eq(failedAxis.menuCleanup, 'failed', '收拾失败须具名留证，绝不吞');
+
+  // 未点过更多操作入口（入口非唯一，菜单从未打开）→ 无收拾动作、无该字段。
+  const untouched = buildFixture({ layout: 'card', moreButtons: 2 });
+  const untouchedAxis = await performWorkflowDeleteTrigger(untouched.page, TARGET);
+  eq(untouchedAxis.menuCleanup, undefined, '没开过菜单就不该有收拾记录');
+
+  // 成功路径不收拾。
+  const happy = buildFixture({ layout: 'card' });
+  const happyAxis = await performWorkflowDeleteTrigger(happy.page, TARGET);
+  eq(happyAxis.resolution, 'unique', '成功路径解析态');
+  eq(happyAxis.menuCleanup, undefined, '成功路径无收拾记录');
+});
+
+await check('R16 加法字段只作证据投影：删除域之外零权威消费者', async () => {
+  const ROOT = fileURLToPath(new URL('../..', import.meta.url));
+  const OWNER = join(ROOT, 'lib', 'workflow-delete-domain.mjs');
+  const files = [];
+  const walk = (dir) => {
+    for (const name of readdirSync(dir)) {
+      const full = join(dir, name);
+      if (statSync(full).isDirectory()) walk(full);
+      else if (full.endsWith('.mjs') && full !== OWNER) files.push(full);
+    }
+  };
+  walk(join(ROOT, 'lib'));
+  walk(join(ROOT, 'bin'));
+  for (const field of ['directDeleteButtons', 'menuDeleteEntries']) {
+    const consumers = files.filter((file) => readFileSync(file, 'utf8').includes(field));
+    eq(consumers.length, 0, `${field} 只许当证据读，出现在生产件即判红：${consumers.join(', ')}`);
+  }
 });
 
 await check('R14 本金牌自身零 SUT 卫生', async () => {
