@@ -179,9 +179,11 @@ await test('R11 Tier2 无有效票据 → 三例拒跑、要求落拒跑回执�
   assert(allowed.ran === true, `有效票据被采集闸误拦：${allowed.refusalReason}`);
 });
 
-// ══ R11b　采集层必须真的接线（评审 M-new3）═════════════════════
-// 只钉纯函数会留「R11 绿、采集照跑」的缝：采集编排层必须实际调用该筛并落拒跑回执。
-await test('R11b 采集编排层已接线：无票时不 spawn 子进程且落拒跑回执', async () => {
+// ══ R11b　采集层导出契约与拒跑筛形状（评审 M-new3 的第一半）═════════
+// 本钉只钉「模块导出了闸函数且其 fail-closed 契约成立」——死导出下它照绿（pi R4 突变
+// 实证）。调用点锚定归 R11c；真跑 executeTier2 的行为面归 B4 route:human。标题不再
+// 冒充「已接线」。
+await test('R11b 采集层导出拒跑筛且契约 fail-closed（不证接线）', async () => {
   const collect = await import('../../lib/selftest-tier2-collect.mjs');
   const gate = collect.screenTier2CaseReplayGrant ?? collect.buildTier2ReplayGrantScreen;
   assert(typeof gate === 'function',
@@ -244,12 +246,20 @@ await test('R11c executeTier2 在无有效票据时对变更型成员零 spawn �
   assert(refused.spawnAllowed === false, '无票仍允许 spawn');
   assert(refused.refusals[0]?.receiptRequired === true, '无票拒跑未要求落回执');
 
-  // 源形态钉：成员循环里必须真的调用它，且拒跑分支在 runOneCase 之前
+  // 源形态钉（pi R4 复审重锚）：indexOf('screenTier2CaseReplayGrant({') 首命中是 L335 的
+  // 函数定义、不是调用点——「删调用留导出」突变下旧钉恒绿（定义必在调用前）。重锚到
+  // 调用点独有文本（定义行是 export function 开头，绝不含赋值前缀），并加唯一性与
+  // 拒跑分支次序三道断言。行为级真接线（真跑 executeTier2）仍属 route:human（B4）。
   const src = readFileSync(new URL('../../lib/selftest-tier2-collect.mjs', import.meta.url), 'utf8');
-  const callIdx = src.indexOf('screenTier2CaseReplayGrant({');
+  const callNeedle = 'const grantScreen = screenTier2CaseReplayGrant({';
+  const callIdx = src.indexOf(callNeedle);
+  assert(callIdx > 0, '成员循环未调用回放票据闸（死导出——只剩函数定义没有调用点）');
+  assert(src.indexOf(callNeedle, callIdx + 1) === -1, '闸调用点须唯一（多点会让锚定失去判别力）');
+  const refusedIdx = src.indexOf('entry.replayGrantRefused = true', callIdx);
+  assert(refusedIdx > callIdx, '拒跑分支（replayGrantRefused）未跟在闸调用之后');
   const runIdx = src.indexOf('runOneCase({\n      member,');
-  assert(callIdx > 0, '成员循环未调用回放票据闸（死导出）');
-  assert(runIdx > 0 && callIdx < runIdx, '票据闸不在 runOneCase 之前，拒跑挡不住 spawn');
+  assert(runIdx > 0 && callIdx < runIdx && refusedIdx < runIdx,
+    '票据闸与拒跑分支不在 runOneCase 之前，拒跑挡不住 spawn');
 });
 
 // ══ R11d　casey run 面双旗标必填并透传（实现审 H2）════════════════

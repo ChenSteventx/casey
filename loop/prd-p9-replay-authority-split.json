@@ -20,16 +20,16 @@
       "note": "按 grantNonce 目录逐件核 session.json 的 batchToken 与各成员消费标记数量，与本批授权成员集对齐。"
     },
     {
-      "dimension": "采集层拒跑筛的 call-site 真接线。",
-      "route": "machine",
-      "note": "R11b 只钉模块导出契约；实现审发现死导出假绿后，R11c 已直接执行 executeTier2，证明变更型成员在 spawn 前调用拒跑筛、无有效票据时零 spawn 且落拒跑回执。人工仍可复核，但不再冒充机器不可观察面。"
+      "dimension": "采集层拒跑筛的 call-site 真接线与运行期行为。",
+      "route": "human",
+      "note": "订正（2026-08-04 r5）：此前 note 写「R11c 已直接执行 executeTier2」不实——R11c 从未真跑 executeTier2，且其源形态钉 indexOf 首命中函数定义而非调用点，「删调用留导出」突变下恒绿（pi R4 复审实证）。现役 R11c 已重锚到调用点独有文本（赋值前缀 + 唯一性 + 拒跑分支次序三断言），同突变下恰红、还原字节全同。executeTier2 的真实运行行为（真读清单票据、真拒跑落回执、真零 spawn）hermetic 证不出（该函数耦合 doctor 环境与站点探针），归 B4 真机窗口人工核——本条回归 route:human，不再冒充机器已观察面。"
     }
   ],
   "testChecksums": {
     "docs/plans/p9-replay-authority-split/plan.md": "b3986de8273c2a5552cc01c2ae2f428cd88f1b1330e6c1a20144eb954383610b",
     "docs/plans/p9-replay-authority-split/GRILL.md": "e946bb841a1907b1486e45717f4cedbbe6a2021249af54f5f7b48a86de23073d",
     "tests/_golden/p9-replay-authority-split.cli-session.zero-sut.golden.mjs": "3ea262e4477858b9dd3b8a0bf3b92a0c6e7cb4fcb09c56fb4db74e669651d648",
-    "tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs": "e4646a5f31dab8f0959a0d6e29da05cb66e1046ded8565f81a886718e23a7649",
+    "tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs": "8044a6c50018ca6d2b8ef26055ffe0af963df88161ad4697457f1b88cadaac9f",
     "tests/_golden/support/p9-replay-grant-fixtures.mjs": "8241717a0031ab119ee3fc3171e9c34d6cdd9a92479d695521d0af0a8638cd67",
     "docs/plans/p9-replay-authority-split/accept/red-proofs/replay-authority-split.cli-session.red.txt": "07ef17355b442be9f0ec8030c5788ad6488c26f680edc694461ee61f4edf9605",
     "docs/plans/p9-replay-authority-split/accept/red-proofs/replay-authority-split.pure-suite.red.txt": "25fffdf45d3c5884f46acdb6fae50d1c7dfec0dfe3dbffb80e460b8fb3e1802a"
@@ -44,7 +44,7 @@
         "node tests/_golden/p9-replay-authority-split.cli-session.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-04T05:43:51.635Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-04T08:27:57.913Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-batch-session-consume-protocol",
@@ -55,7 +55,7 @@
         "node tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-04T05:45:12.668Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-04T08:28:58.649Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-pure-layer-enforcement-and-cli-wiring",
@@ -66,7 +66,7 @@
         "node tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-04T05:46:31.334Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-04T08:29:55.976Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-suite-manifest-and-collect-failclosed",
@@ -76,7 +76,7 @@
         "node tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-04T05:46:32.451Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-04T08:29:56.828Z 全部 acceptance exit 0"
     },
     {
       "id": "s5-v3-golden-amendments-no-drift",
@@ -93,7 +93,7 @@
         "node tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-04T05:46:44.941Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-04T08:30:07.974Z 全部 acceptance exit 0"
     }
   ],
   "checksumAmendments": [
@@ -121,6 +121,14 @@
           "newSha256": "25fffdf45d3c5884f46acdb6fae50d1c7dfec0dfe3dbffb80e460b8fb3e1802a"
         }
       ]
+    },
+    {
+      "amendedAt": "2026-08-04",
+      "round": "r5 R11c 调用点重锚（pi.dev deepseek-v4-flash high 复审唯一 Medium，按发现并集修）",
+      "files": [
+        "tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs"
+      ],
+      "reason": "pi 复审实证 R11c 源形态钉空转：indexOf('screenTier2CaseReplayGrant({') 首命中 L335 函数定义（export function 行含同一子串）而非 L465 调用点，定义必在调用前故 callIdx<runIdx 恒真——「删调用留导出」突变下 10/10 仍绿，H1 死导出回归无钉可拦。修法：重锚到调用点独有文本 const grantScreen = screenTier2CaseReplayGrant({（定义行为 export function 前缀绝不含赋值），加唯一调用点断言与拒跑分支（entry.replayGrantRefused = true）次序断言。R11b 标题同轮诚实化：由「已接线」改为「导出契约与形状（不证接线）」——pi 同一突变下 R11b 仍绿实证它本就钉不住接线，标题不再冒充。突变验证：外科式删调用块留导出（语法完好，node --check 过），R11c 恰红（红因=死导出）、R11b 仍绿、还原后 cmp 字节全同、10/10 复绿。PRD observability 第 4 条不实文案（宣称 R11c 已直接执行 executeTier2）同轮订正并回归 route:human。断言零弱化：全部为加严与诚实化。"
     }
   ]
 }
