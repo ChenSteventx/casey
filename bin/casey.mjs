@@ -82,6 +82,7 @@ function runPipeline(pos, opts) {
     flow: safeCaseId ? `cases/${safeCaseId}/flow.confirmed.json` : 'cases/<caseId>/flow.confirmed.json',
     compileProvenance: safeCaseId ? `cases/${safeCaseId}/compile-provenance.json` : 'cases/<caseId>/compile-provenance.json',
     createdWorkflowAuthority: safeCaseId ? `cases/${safeCaseId}/created-workflow-authority.frozen.json` : 'cases/<caseId>/created-workflow-authority.frozen.json',
+    replayGrant: 'runs/_tier2/replay-grant.json',
   };
   const missing = [];
   const warnings = [];
@@ -117,11 +118,16 @@ function runPipeline(pos, opts) {
   if (!sut) missing.push('--sut');
   if (v3Requested && (typeof opts['batch-token'] !== 'string' || !opts['batch-token'])) missing.push('--batch-token');
   if (v3Requested && (typeof opts['unique-name'] !== 'string' || !opts['unique-name'])) missing.push('--unique-name');
+  // 回放授权票据双旗标（实现审 H2）：与 batch-token 同级必填，缺任一即用参错误。
+  if (v3Requested && (typeof opts['replay-grant'] !== 'string' || !opts['replay-grant'])) missing.push('--replay-grant');
+  if (v3Requested && (typeof opts['replay-grant-ledger'] !== 'string' || !opts['replay-grant-ledger'])) missing.push('--replay-grant-ledger');
   // 确定性尾段已实现：缺必填参 = 用参错误 → exit 64（非 notImplemented 的 3）。相0-2 LLM 前段未建、route:human。
   if (!caseId || invalidCaseId || !eventsPath || !expectedPath || !profilePath || !sut
     || (v3Requested && (!flowPath || !caseMetaPath || !compileProvenancePath
       || !createdWorkflowAuthorityPath || typeof opts['batch-token'] !== 'string'
-      || typeof opts['unique-name'] !== 'string'))) {
+      || typeof opts['unique-name'] !== 'string'
+      || typeof opts['replay-grant'] !== 'string' || !opts['replay-grant']
+      || typeof opts['replay-grant-ledger'] !== 'string' || !opts['replay-grant-ledger']))) {
     console.error(col(C.red, '[run] 缺必填参 → 用参错误(64)'));
     if (missing.length) {
       console.error('缺失项：');
@@ -166,6 +172,8 @@ function runPipeline(pos, opts) {
       '--flow', flowPath,
       '--case-meta', caseMetaPath,
       '--compile-provenance', compileProvenancePath,
+      '--replay-grant', opts['replay-grant'],
+      '--replay-grant-ledger', opts['replay-grant-ledger'],
       '--batch-token', opts['batch-token'],
     ] : []),
     '--run-history', path.join(runDir, 'run-history.jsonl'), '--run-metrics', path.join(runDir, 'run-metrics.json'), '--run-id', path.basename(runDir),

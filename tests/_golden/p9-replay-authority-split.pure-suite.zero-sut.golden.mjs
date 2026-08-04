@@ -3,6 +3,7 @@
 // 零 SUT、零浏览器、零网络、零子进程；只调生产纯函数。
 // 拆二理由见 plan §5：命令行边界与批会话协议在 cli-session 那枚。
 
+import { readFileSync } from 'node:fs';
 import {
   CASE_A, CASE_B, BATCH_ID, NONCE,
   json, loadApis, makeBundle, makeGrant,
@@ -212,6 +213,60 @@ await test('R12 票据 audience 与结构件 audience 不等 → 具名拒（两
   });
   assert(mismatch2.ok === false, '测试票配生产边被收下');
   assert(mismatch2.reason === 'REPLAY_GRANT_AUDIENCE_MISMATCH', `反向拒因非预期：${mismatch2.reason}`);
+});
+
+
+// ══ R11c　真调用点：executeTier2 成员循环必须调闸（实现审 H1）════════
+// R11b 只钉住「模块导出了闸函数」——死导出照样绿。实现审逮到的正是这个假绿：
+// 成员循环当时无条件 runOneCase，零读票据、零拒跑回执。本钉钉到**调用点**：
+// 无有效票据时，变更型成员一个子进程都不许起，且拒跑回执必须落。
+await test('R11c executeTier2 在无有效票据时对变更型成员零 spawn 且落拒跑回执', async () => {
+  const collect = await import('../../lib/selftest-tier2-collect.mjs');
+  const readBatch = collect.readBatchReplayGrant;
+  assert(typeof readBatch === 'function', '采集层未导出整批票据读回（成员循环无从取票）');
+
+  // 清单未声明 replayGrantPath → 整批票据读回必须为拒（不是「没配置就放行」）
+  const noPath = readBatch({ json: {}, members: [] }, { cleanup: { tc_catalog_wf_crud: {} } });
+  assert(noPath.grantRead.ok === false, '清单未声明票据路径却放行（fail-open）');
+  assert(noPath.grantRead.reason === 'REPLAY_GRANT_PATH_NOT_DECLARED',
+    `拒因非预期：${noPath.grantRead.reason}`);
+  assert(Array.isArray(noPath.problems) && noPath.problems.length > 0, '未把票据缺席记进消费端问题');
+
+  // 无 v3 成员的批次不受本闸影响（豁免面 plan §4.1，避免钉成「全都拒」）
+  const noCleanup = readBatch({ json: {} }, { cleanup: {} });
+  assert(noCleanup.grantRead.ok === true, '无变更型成员的批次被票据闸误拦');
+
+  // 拒跑判定必须落到「零 spawn + 要回执」
+  const refused = collect.screenTier2CaseReplayGrant({
+    members: [{ caseId: 'tc_catalog_wf_crud', effect: 'mutation', smokeAuthorized: true }],
+    grantRead: noPath.grantRead,
+  });
+  assert(refused.spawnAllowed === false, '无票仍允许 spawn');
+  assert(refused.refusals[0]?.receiptRequired === true, '无票拒跑未要求落回执');
+
+  // 源形态钉：成员循环里必须真的调用它，且拒跑分支在 runOneCase 之前
+  const src = readFileSync(new URL('../../lib/selftest-tier2-collect.mjs', import.meta.url), 'utf8');
+  const callIdx = src.indexOf('screenTier2CaseReplayGrant({');
+  const runIdx = src.indexOf('runOneCase({\n      member,');
+  assert(callIdx > 0, '成员循环未调用回放票据闸（死导出）');
+  assert(runIdx > 0 && callIdx < runIdx, '票据闸不在 runOneCase 之前，拒跑挡不住 spawn');
+});
+
+// ══ R11d　casey run 面双旗标必填并透传（实现审 H2）════════════════
+await test('R11d casey run 在 v3 链上缺票据旗标 → exit 64 具名；透传形状完整', async () => {
+  const { spawnSync } = await import('node:child_process');
+  const { join, resolve } = await import('node:path');
+  const root = resolve(import.meta.dirname, '..', '..');
+  const r = spawnSync(process.execPath, [join(root, 'bin', 'casey.mjs'), 'run', 'tc_catalog_wf_crud',
+    '--sut', 'http://127.0.0.1:1', '--created-workflow-authority', join(root, 'nonexistent-authority.json'),
+    '--batch-token', 'b1', '--unique-name', 'b1-case-1'], { encoding: 'utf8' });
+  const output = `${r.stdout}${r.stderr}`;
+  assert(r.status === 64, `应用参错误 exit 64，实际 ${r.status}`);
+  assert(output.includes('--replay-grant'), `缺件清单未具名 --replay-grant（尾段：${output.slice(-240)}）`);
+  // 透传形状：两个旗标都要真的接到 replay 命令行上，否则子进程照样无票
+  const runSrc = readFileSync(new URL('../../bin/casey.mjs', import.meta.url), 'utf8');
+  assert(runSrc.includes("'--replay-grant', opts['replay-grant']"), 'casey run 未透传 --replay-grant');
+  assert(runSrc.includes("'--replay-grant-ledger', opts['replay-grant-ledger']"), 'casey run 未透传 --replay-grant-ledger');
 });
 
 console.log(`p9-replay-authority-split-pure-suite: ${passed}/${passed + failures.length}`);
