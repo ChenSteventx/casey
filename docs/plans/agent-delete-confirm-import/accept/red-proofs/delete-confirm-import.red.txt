@@ -1,0 +1,6 @@
+RED  agent-delete-confirm-import: S1 agent.delete 走到「确定」步：不抛，且 inspect 返回被 fail-closed 分支消费: 不得抛：ReferenceError: inspectWorkflowDeleteConfirm is not defined
+ok   agent-delete-confirm-import: S2 不命中该分支的形态：agent.openToolPicker 走同一函数零阻断（回归钉）
+RED  agent-delete-confirm-import: S3 结构钉：compile-atoms-agent 从 workflow-delete-domain 导入 inspectWorkflowDeleteConfirm: import 清单须有一行来自 './workflow-delete-domain.mjs'
+ok   agent-delete-confirm-import: S4 消费形状钉（静态）：unique 分支把 inspected.confirmName 回写进配方 text
+
+not ok agent-delete-confirm-import: 2/4 通过，2 条红
