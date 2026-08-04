@@ -9,10 +9,10 @@
     "tests/_golden/p9-created-workflow-continuity-v3.stable-absence.zero-sut.golden.mjs": "b50eff0e6aa5bebf2b9b516976d9f66c773e435841e3b021ea467b16fdc3bbb1",
     "tests/_golden/p9-created-workflow-continuity-v3.tier2-cleanup.zero-sut.golden.mjs": "02c44b44d2e658ca400b5fd82e978c899185b4528643e65a887df31ff6f4ee0c",
     "tests/_golden/p9-created-workflow-continuity-v3.role-compile-sign.zero-sut.golden.mjs": "6a1cc1658144614e537b42f4ecea80aee3bcc53e93af9dc2139e7ca73214dbde",
-    "tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs": "5014bf0047c8447b4a6b0c76a907e911370909bbfae08200d5d9f60e6c123db5",
-    "tests/_golden/p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs": "b81bf6d74a5c783c4284bc71438a4342ebf42818613ddae2cf456014de9924a9",
-    "tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs": "5063fb8dc0a110a6ee4ea68e0fc833c331bdab6e2fbb7907a8a7af3076c61dd8",
-    "tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs": "770878382c7b1dbf14adfce6e1cb1bd779b9aecf1cb925ba547b2f2feb463e10",
+    "tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs": "922597b729509fe9ce8387c72c2f2131f4dd3b886a9e71ed26373963250f9930",
+    "tests/_golden/p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs": "c4e3250540c2d8fe8e3d10afe6b541792e3c35ab2b7de93cddb576a10c6a8333",
+    "tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs": "e9d0f191c85f473ad03e89eb243b667268872eef16eb175bd23e3a9873708715",
+    "tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs": "047d85c0c497008abad47a99687d5e8186327b3cab18b68eace33d1b27290b45",
     "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/created-in-run.red.txt": "b95d3ec54f5b74b6f612343e1469239c146764f7e3cb30deae3375d2be226da3",
     "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/stable-absence.red.txt": "e14fe736716cb5763011eae378cf134d301c274180f2f864697e98a55a574979",
     "docs/plans/p9-created-workflow-cleanup-continuity-v3/accept/red-proofs/tier2-cleanup.red.txt": "0b122fd37a437f7b27a428d847ced3f0fb308ecc0cd88b0ada815c58555641a8",
@@ -139,6 +139,20 @@
       ],
       "passes": false,
       "evidence": ""
+    }
+  ],
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-08-04",
+      "round": "C2 回放授权票据四处金牌 amendment 签回（p9-replay-authority-split 契约产）",
+      "files": [
+        "tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs",
+        "tests/_golden/p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs",
+        "tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs",
+        "tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs"
+      ],
+      "signedBy": "Steven（2026-08-04 会话内批准；沿用同日 A5 代签授权口径由 Claude 代执行，如实标注非本人敲入）",
+      "reason": "回放控制器新增必填批级回放授权票据（授权闸下沉纯层），四处均为夹具补票据/清单顶层字段，原判据全部保留、新增更严前提（没票不许造控制器/不许 launch），onlyTightens 由 grok 与 pi 双路终审各自逐 hunk 独立核实；old/new sha256 与实物三方对账（请签件/盘上实物/PRD 现值）一致后签回。请签件 docs/plans/p9-replay-authority-split/accept/checksum-amendment-request.json 同步标记已签。"
     }
   ]
 }
