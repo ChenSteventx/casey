@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "task": "agent-delete-confirm-import（light）：修复 lib/compile-atoms-agent.mjs 对 ./workflow-delete-domain.mjs 零导入的漏导入缺陷。该文件 :194 在 agent.delete 编译配方的「确定」点击步调用 inspectWorkflowDeleteConfirm（导出在 lib/workflow-delete-domain.mjs:484），命中即抛 ReferenceError: inspectWorkflowDeleteConfirm is not defined。溯源 6f91125 拆单体 compile-atoms.mjs 时代码块搬走、导入没跟着搬（拆前 lib/compile-atoms.mjs:10 本有该导入），与已合入 dev 的 01e965f（同一文件漏 requestLogPath）是同一缺陷类；hermetic 金牌此前恒绿是因为没有夹具造出「走到确认步」的形态。修法为新增一行 import，零行为语义变更；inspectWorkflowDeleteConfirm 是只读 inspect，不点击、不改 SUT，凭据面与落盘面不变。孪生调用点 lib/compile-atoms-workflow-crud.mjs:328（workflow.deleteByName）导入齐全、不受影响。",
+  "specPath": "docs/plans/agent-delete-confirm-import/plan.md",
+  "testChecksums": {
+    "tests/_golden/agent-delete-confirm-import.zero-sut.golden.mjs": "f2ffb7bc304b7da11ec95b52f15c254276fc01978078f9212d479ad37b16c687",
+    "docs/plans/agent-delete-confirm-import/plan.md": "9f53899a68de3840fc25a55237888465ed2ad50e8a60a85d34c59b53527603c4",
+    "docs/plans/agent-delete-confirm-import/accept/red-proofs/delete-confirm-import.red.txt": "255c7daa09aea7d2abf0a8309223b59b0640cb4331b38e9daa0d70cb2100eb41"
+  },
+  "observability": [
+    {
+      "dimension": "inspectWorkflowDeleteConfirm 返 unique 的行为面（真弹层内实采确认文案、回写进配方 text）无 DOM 的 hermetic 覆不到，只由 S4 静态钉守形状；真证须真机 agent.delete 链（每跑一次真删一个实体），须 Steven 另行明示授权。",
+      "route": "human"
+    },
+    {
+      "dimension": "邻接复跑时发现 tests/_golden/real-run-trust.zero-sut.golden.mjs 在 dev 基线上即红（静态钉 'o.uniqueName = argv[++i]' 与现 bin/replay.mjs 的通用参数解析失配，同 98b8d1b 修过的陈旧红一类），owner 为 loop/prd-agent-id-readback.json，与本契约无因果关系（回退本契约唯一改动后仍红，已实证）。本契约不擅改他人 owner 的冻结面，如实挂账。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-import-fix-and-seal",
+      "desc": "import 清单新增 inspectWorkflowDeleteConfirm（来自 ./workflow-delete-domain.mjs）；金牌四钉：S1 agent.delete 走到「确定」步不抛且 inspect 返回被 fail-closed 分支消费（非 unique 即硬阻断、绝不发出未经因果核实的「确定」点击，确认步前 4 事件如实发出、列表路由覆写生效）；S2 不命中该分支的形态（agent.openToolPicker 走同一 compileAgentToolRecipe）零阻断（回归钉）；S3 import 清单结构钉；S4 unique 分支把 inspected.confirmName 回写进配方 text 的消费形状静态钉。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/agent-delete-confirm-import.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T04:16:39.448Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "邻接零回归：compile-atoms-agent 的既有直接消费金牌 + 同文件上一处漏导入的封缝金牌 + 统一语言 + 确定性内核自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/compile-execution-failure-seal.zero-sut.golden.mjs",
+        "node tests/_golden/chief-stream-replylog-import.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T04:17:04.312Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "红基线真实 exit 1（2/4：S1 抛 ReferenceError: inspectWorkflowDeleteConfirm is not defined、S3 结构钉红；S2/S4 绿），对最终金牌字节临时回退单行修复后实抓、随即还原（还原后 git diff --stat 恒为 1 insertion），证据 accept/red-proofs/delete-confirm-import.red.txt。金牌替身纪律：page 是零命中空页替身（无 DOM，一切定位一律零命中，自洽不倒裁；无 DOM 求不出页面闭包的值时如实返 undefined），emit 按生产签名 (spec, customAct) 收参并在有 customAct 时真调它（对齐 lib/compile-atoms-run.mjs:153-161），故「删除」点击真穿 performAgentToolAction → performWorkflowDeleteTrigger 这条已冻接缝，确认步看到的「未武装」是真链路结果而非夹具指定。C3 目标连续性 ref 的必填面（kind/platformId/name/code/role/atom/evidenceStepId/sourceIntentId/candidateId + profileFingerprint/scope/requestCorrelationId/stepOrder）在替身里给全，否则编译在破坏 recipe 之前就硬阻断、根本触不到 :194。零 SUT 绿只算机器门禁绿；真机 agent.delete 链另行授权（见 observability）。passes 只由 gate 写入。"
+}
