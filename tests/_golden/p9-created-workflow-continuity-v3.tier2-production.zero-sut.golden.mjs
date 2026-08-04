@@ -105,6 +105,8 @@ function manifest(includeV3) {
     schemaVersion: 2, artifactKind: 'tier2-suite-manifest', signed: true,
     signerId: 'human', signedAt: '2026-08-03T00:00:00.000Z', caseLimit: 5,
     winProbeResultPath: 'runs/_tier2/win.json', outOfBandReceiptPath: 'runs/_tier2/oob.json',
+    // p9-replay-authority-split amendment：清单顶层新增批级回放票据落点（只加严，成员面未动）
+    replayGrantPath: 'runs/_tier2/replay-grant.json',
     historicalPrecedents: [{ id: 'p', path: 'runs/p.json', sha256: hash, attestedIn: 'docs/p.md' }],
     members,
   };

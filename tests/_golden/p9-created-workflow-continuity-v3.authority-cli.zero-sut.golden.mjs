@@ -15,6 +15,33 @@ import {
 } from '../../lib/entity-created-workflow-continuity-v3.mjs';
 import { parseReplayArgs } from '../../lib/replay/cli-input.mjs';
 
+// ── p9-replay-authority-split amendment ──────────────────────────
+// 回放控制器新增必填的回放授权票据（批级一次性）。本枚金牌的断言语义一字未改，
+// 只把「造控制器」这一步补上它现在必须持有的票据——属**只加严**，不放宽任何原有判据。
+import {
+  authorCreatedWorkflowReplayGrantDraft,
+  freezeCreatedWorkflowReplayGrant,
+  readCreatedWorkflowReplayGrant,
+} from '../../lib/entity-created-workflow-replay-grant.mjs';
+
+function replayGrantHandleFor(caseId, authorityBytes, audience = 'test') {
+  const bytes = (value) => Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
+  const cases = [{ caseId, authorityBytes }];
+  const drafted = authorCreatedWorkflowReplayGrantDraft({
+    batchId: `amend-${caseId}`, audience,
+    notAfter: '2099-01-01T00:00:00.000Z', grantNonce: 'a'.repeat(32), cases,
+  });
+  if (!drafted.ok) throw new Error(`amendment 票据草案失败：${drafted.reason}`);
+  const frozenGrant = freezeCreatedWorkflowReplayGrant({
+    draft: drafted.draft, signerId: 'human', signedAt: '2026-08-04T00:00:00.000Z',
+  });
+  if (!frozenGrant.ok) throw new Error(`amendment 票据冻结失败：${frozenGrant.reason}`);
+  const read = readCreatedWorkflowReplayGrant({ grantBytes: bytes(frozenGrant.grant), cases });
+  if (!read.ok) throw new Error(`amendment 票据读回失败：${read.reason}`);
+  return read.handle;
+}
+
+
 const ROOT = resolve(import.meta.dirname, '..', '..');
 const failures = [];
 let passed = 0;
@@ -74,7 +101,7 @@ test('A2 prepare/freeze/read/controller 精确消费 events/flow/TestCase/profil
   const b = bundle();
   const read = readCreatedWorkflowOwnershipAuthority({ caseId: b.caseId, authorityBytes: b.authorityBytes, eventsBytes: b.eventsBytes, flowBytes: b.flowBytes, testcaseBytes: b.testcaseBytes, profileBytes: b.profileBytes });
   check(read.ok, read.reason);
-  const opened = createCreatedWorkflowReplayContinuityController({ caseId: b.caseId, runId: 'run-1', batchToken: 'batch-1', uniqueNameToken: 'batch-1-case-1', authority: read.handle, profile: b.profile });
+  const opened = createCreatedWorkflowReplayContinuityController({ caseId: b.caseId, runId: 'run-1', batchToken: 'batch-1', uniqueNameToken: 'batch-1-case-1', authority: read.handle, grant: replayGrantHandleFor(b.caseId, b.authorityBytes), profile: b.profile });
   check(opened.ok && opened.controller.entityName === 'atl_batch-1-case-1', opened.reason || 'controller 未派生实体名');
 });
 
@@ -105,13 +132,19 @@ test('A6 混入 bindAgent 时 v3 不绕过旧 entity-lock 门', () => {
   const dir = mkdtempSync(join(tmpdir(), 'casey-p9-v3-'));
   try {
     const files = {};
-    for (const [name, bytes] of Object.entries({ events: b.eventsBytes, flow: b.flowBytes, testcase: b.testcaseBytes, profile: b.profileBytes, provenance: b.compileProvenanceBytes, authority: b.authorityBytes, expected: json({ caseId: b.caseId, channel: 'web', intents: [], globalAssertions: [] }) })) {
+    const grantDraft = authorCreatedWorkflowReplayGrantDraft({
+      batchId: `amend-${b.caseId}`, audience: 'test', notAfter: '2099-01-01T00:00:00.000Z',
+      grantNonce: 'a'.repeat(32), cases: [{ caseId: b.caseId, authorityBytes: b.authorityBytes }],
+    });
+    const grantFrozen = freezeCreatedWorkflowReplayGrant({ draft: grantDraft.draft, signerId: 'human', signedAt: '2026-08-04T00:00:00.000Z' });
+    for (const [name, bytes] of Object.entries({ events: b.eventsBytes, flow: b.flowBytes, testcase: b.testcaseBytes, profile: b.profileBytes, provenance: b.compileProvenanceBytes, authority: b.authorityBytes, grant: json(grantFrozen.grant), expected: json({ caseId: b.caseId, channel: 'web', intents: [], globalAssertions: [] }) })) {
       files[name] = join(dir, `${name}.json`); writeFileSync(files[name], bytes);
     }
     const result = spawnSync(process.execPath, [join(ROOT, 'bin', 'replay.mjs'),
       '--events', files.events, '--flow', files.flow, '--case-meta', files.testcase,
       '--profile', files.profile, '--compile-provenance', files.provenance,
       '--created-workflow-authority', files.authority, '--expected', files.expected,
+      '--replay-grant', files.grant, '--replay-grant-ledger', join(dir, 'ledger'),
       '--batch-token', 'batch-1', '--unique-name', 'batch-1-case-1',
       '--sut', 'http://127.0.0.1:1', '--out', join(dir, 'axes.json'),
     ], { encoding: 'utf8' });

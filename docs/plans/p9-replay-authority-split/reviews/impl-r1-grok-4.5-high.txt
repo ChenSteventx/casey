@@ -1,0 +1,747 @@
+Signing in… starting your session.
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                                                                                                      │
+│                                                                                              ⠀⠀⠀⣀⣤⣤⣀⠀⠀⡠                                                                                              │
+│                                                                                              ⠀⢀⡾⠋⠁⠀⢁⢴⡎⠀                                                                                              │
+│                                                                                              ⠀⢸⡇⠀⠀⠐⠁⢀⣿⠀                                                                                              │
+│                                                                                              ⠀⢈⠗⢀⣀⣀⣠⡾⠃⠀                                                                                              │
+│                                                                                              ⠐⠁⠀⠈⠉⠉⠉⠀⠀⠀                                                                                              │
+│                                                                                                                                                                                                      │
+│ Grok Build  v0.2.118                                                                                                                                                                                 │
+│ /mnt/d/ctx/heren/casey-p9-replay-authority-split                                                                                                                                                     │
+│ Model · Grok 4.5                                                                                                                                                                                     │
+│ /help for commands                                                                                                                                                                                   │
+│                                                                                                                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+◆ session_start
+      ✓ global/settings:session_start[0].hooks[0] (9ms)
+      ✓ global/settings:session_start[1].hooks[0] (889ms)
+      ✓ project/settings:session_start[0].hooks[0] (92ms)
+❯ # 实 现 侧 代 码 审 ： p9-replay-authority-split（ 回 放 专 用 授 权 件 ， 批 级 一 次 性 票 据 ）
+  设 计 已 经 三 轮 双 路 前 提 审 收 口 （ R1 FLAWED→R2 分 歧 退 回 →R3 双 路  PREMISE_SOUND， 产 物 在
+  docs/plans/p9-replay-authority-split/reviews/） 。 本 轮 审 实 现 代 码 。
+  仓 库 （ 只 读 勿 改 ） ： /mnt/d/ctx/heren/casey-p9-replay-authority-split
+  被 审 快 照 ： 6d67fc2e418b69a86c232af1741b58f11a95f2ae（ 不 可 变 ， 27 files +3752/-7， 基 线  96f6107）
+  实 现 家 族 ： Claude（ Opus 5） 。 diff： git diff 96f6107..HEAD
+  gate 实 录 ： GREEN 5/5（ 你 自 己 重 跑 核 ） 。
+  改 动 面 白 名 单 ：
+  - 新 增  lib/entity-created-workflow-replay-grant.mjs（ sha256 8d492abb…） ： 纯 层 ——起 草 /冻 结 /
+    读 回 （ 件 种 /签 名 /过 期 /成 链 /受 众 ） /批 会 话 纯 判 定 /采 集 拒 跑 筛 ； 票 据 句 柄  WeakMap。
+  - 新 增  lib/replay-grant-ledger.mjs（ 17a44da3…） ： 文 件 系 统 面 ， 'wx'(O_EXCL) 原 子 占 用 。
+  - 改  lib/entity-created-workflow-continuity-v3.mjs（ controller 增 必 填  grant） 、 bin/replay.mjs
+    （ 双 旗 标 +launch 前 占 用 ） 、 lib/replay/cli-input.mjs、 bin/entity-authority.mjs（ 两 个  verb+
+    件 种 守 卫 ） 、 lib/selftest-tier2-manifest.mjs（ replayGrantPath） 、 lib/selftest-tier2-collect.mjs
+    （ 拒 跑 筛 接 线 ） 。
+  - 四 处  v3 金 牌  amendment（ authority-cli/legacy-fixed-id/replay-evidence/tier2-production） 。
+  - 本 契 约 两 枚 金 牌 +共 用 夹 具 （ sha256 3ea262e4…/56b458c4…/8241717a…， 与  PRD testChecksums
+    冻 结 值 一 致 ——受 审 的 正 是 被 冻 结 字 节 ） 。
+  重 点 攻 面 （ 实 现 方 自 报 ， 值 得 独 立 攻 ） ：
+  1. 并 发 缺 陷 修 法  lib/replay-grant-ledger.mjs:23-43： 'wx' 独 占 在 建 文 件 刻 、 内 容 随 后 写 ， 中 间
+     窗 口 并 发 进 程 读 到 空 文 件 会 把 败 者 误 判  BATCH_SESSION_MISMATCH——修 法 =readSessionSettled
+     有 界 重 读 （ 40 轮 ×~1ms） + readConsumedCaseIds 只 看 在 场 不 解 析 内 容 。 攻 点 ： ①有 界 重 读 上 界
+     在 慢 盘 /高 负 载 下 会 不 会 退 化 成 误 拒 ； ②「 只 看 在 场 」 会 不 会 反 向 引 入 「 内 容 未 落 盘 就 被 当 已 占 用 」
+     的 问 题 ——注 意 这 个 方 向 是  fail-closed（ 多 拒 不 放 行 ） ， 核 实 方 向 没 反 。
+  2. 四 处  v3 金 牌  amendment 的 「 只 加 严 」 主 张 ： accept/checksum-amendment-request.json 有
+     old/new sha256。 逐  hunk 核 ： 原 判 据 是 否 全 部 保 留 、 新 增 是 否 只 是 更 严 前 提 ； 别 信 自 述 。
+     注 意 这 四 件 的 新  checksum 尚 未 由  Steven 签 回  v3 PRD（ 请 签 件 已 备 ） ——核 对 请 签 件 里 的
+     new sha256 与 实 物 一 致 。
+  3. once 语 义 端 到 端 ： 拿 已 签 未 过 期 票 直 接 跑  bin/replay.mjs 绕 过  Tier2——launch 前 是 否 必 经
+     session 核 验 +成 员 占 用 ？ 崩 溃 在  SUT 动 作 后 台 账 落 盘 前 ——旧  nonce 是 否 确 凿 不 可 复 用 ？
+     生 产 路 径  now 是 否 主 机 墙 钟 、 CLI 无 喂 时 入 口 ？
+  4. fail-safe 全 面 ： 每 条 新 校 验 失 败 是 否 具 名 硬 退 出 ？ grant/ledger 缺 任 一 旗 标  exit 64？
+     有 没 有 「 读 不 出 /解 析 失 败 →当 不 存 在 →放 行 」 的  fail-open 缝 （ 尤 其 台 账 读 回 路 径 ） ？
+  5. WeakMap 票 据 句 柄 ： 调 用 方 能 否 伪 造 /复 用 句 柄 绕 过 验 链 ？
+  6. p9-tier2-selftest 前 后 同 红 对 照 ： 两 态 都  109 passed/2 failed 同 两 个 测 试 （ T7 在 册 旧 红 、
+     T9a 多 一 条  replayGrantPath 未 声 明 属 计 划 内 ） ——自 己 跑 改 动 前 后 核 实 未 引 入 新 红 。
+  7. 邻 接 ： 八 枚  v3 金 牌 、 entity-destructive-continuity-guard、 admission-policy-facets、
+     tier1 全  exit 0（ 自 己 跑 ， 只 信 退 出 码 ） 。
+  纪 律 ： 不 改 仓 库 任 何 文 件 ； 变 异 在  /tmp 副 本 ； 只 信 退 出 码 。 首 轮 只 报  Critical/High/Medium。
+  结 尾 一 行  VERDICT: APPROVE 或  VERDICT: CHANGES_REQUIRED（ 附  finding 清 单 标 级 别 ） 。
+◆ user_prompt_submit
+      ✓ global/settings:user_prompt_submit[0].hooks[0] (9ms)
+      ✓ global/settings:user_prompt_submit[1].hooks[0] (829ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[0] (513ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[1] (98ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[2] (82ms)
+┃◆ Thought for 2.1s
+┃
+┃The user wants me to perform a code review of the p9-replay-authority-split implementation. This is a read-only review of the codebase at a specific commit. Let me carefully understand the
+┃requirement...
+实 现 侧 代 码 审 启 动 ： 先 读 设 计 收 口 与  diff， 再 按 七 个 攻 面 逐 项 核 验 （ 含  gate 重 跑 与 邻 接 自 检 ） 。
+◆ Read HANDOFF.md (1-100 of 1572)  [hooks: 2]
+◆ List docs/plans/p9-replay-authority-split (16 entries)  [hooks: 2]
+◆ Task started: Verify snapshot commit and diff stats
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (767ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (612ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (10ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (795ms)
+◆ Task completed in 1.5s: Verify snapshot commit and diff stats
+┃◆ Thought for 4.7s
+┃
+┃Git command timed out - maybe a slow disk. Let me wait for it and also read key files in parallel.
+◆ Read plan.md (1-200 of 366)  [hooks: 2]
+◆ List loop (168 entries)  [hooks: 2]
+◆ Run Locate p9 grant files and PRD
+$ ls -la /mnt/d/ctx/heren/casey-p9-replay-authority-split/lib/entity-created-workflow-replay-grant.mjs /mnt/d/ctx/heren/casey-p9-replay-authority-split/lib/replay-grant-ledger.mjs 2>&1;
+  ls /mnt/d/ctx/heren/casey-p9-replay-authority-split/loop/prd*p9* 2>/dev/null; ls /mnt/d/ctx/heren/casey-p9-replay-authority-split/docs/plans/p9-replay-authority-split/accept/ 2>/dev/null;
+  find /mnt/d/ctx/heren/casey-p9-replay-authority-split -name '*replay*grant*' -o -name '*p9-replay*' 2>/dev/null | head -50
+-rwxrwxrwx 1 test test 15990 Aug  4 11:52 /mnt/d/ctx/heren/casey-p9-replay-authority-split/lib/entity-created-workflow-replay-grant.mjs
+-rwxrwxrwx 1 test test  5300 Aug  4 11:42 /mnt/d/ctx/heren/casey-p9-replay-authority-split/lib/replay-grant-ledger.mjs
+… +10 lines
+/mnt/d/ctx/heren/casey-p9-replay-authority-split/tests/_golden/p9-replay-authority-split.cli-session.zero-sut.golden.mjs
+/mnt/d/ctx/heren/casey-p9-replay-authority-split/tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs
+/mnt/d/ctx/heren/casey-p9-replay-authority-split/tests/_golden/support/p9-replay-grant-fixtures.mjs
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (969ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (1495ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (12ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (730ms)
+┃◆ Thought for 0.1s
+┃
+┃Good progress. Snapshot matches 6d67fc2. Let me read all the core implementation files and run gates in parallel.
+快 照 与  diff 范 围 已 对 齐 。 接 着 读 核 心 实 现 与  PRD， 并 并 行 重 跑  gate。
+◆ Read entity-created-workflow-replay-grant.mjs  [hooks: 2]
+◆ Read replay-grant-ledger.mjs  [hooks: 2]
+◆ Read prd-p9-replay-authority-split.json  [hooks: 2]
+◆ Task started: Re-run p9-replay-authority-split gate
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (15ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (697ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (624ms)
+◆ Run Verify sha256 of frozen artifacts
+$ sha256sum lib/entity-created-workflow-replay-grant.mjs lib/replay-grant-ledger.mjs tests/_golden/p9-replay-authority-split.cli-session.zero-sut.golden.mjs
+  tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs tests/_golden/support/p9-replay-grant-fixtures.mjs
+8d492abbaf938691a429ebb74c7441be447320e4395df67553b5f36be28ebd43  lib/entity-created-workflow-replay-grant.mjs
+17a44da37e3c9d7456e175a64dde20ec1fe26138b4057b29bd38de9ed95260db  lib/replay-grant-ledger.mjs
+3ea262e4477858b9dd3b8a0bf3b92a0c6e7cb4fcb09c56fb4db74e669651d648  tests/_golden/p9-replay-authority-split.cli-session.zero-sut.golden.mjs
+56b458c4113b98759f4100a593d4f0f6e651a85b62e9c337ddee4fde95679d0d  tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs
+8241717a0031ab119ee3fc3171e9c34d6cdd9a92479d695521d0af0a8638cd67  tests/_golden/support/p9-replay-grant-fixtures.mjs
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (751ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (634ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (687ms)
+┃◆ Thought for 5.2s
+┃
+┃Good - sha256 matches PRD. Gate is still running. Let me read the wiring code (bin/replay.mjs, controller, entity-authority, tier2, amendments) while waiting.
+◆ Run Get wiring diffs for review
+$ git diff 96f6107..HEAD -- lib/entity-created-workflow-continuity-v3.mjs bin/replay.mjs lib/replay/cli-input.mjs bin/entity-authority.mjs lib/selftest-tier2-manifest.mjs
+  lib/selftest-tier2-collect.mjs
+diff --git a/bin/entity-authority.mjs b/bin/entity-authority.mjs
+index b04c8c9..520c72f 100644
+… +296 lines
+     if (!isRepoRelativePath(m[key], [prefix])) problems.push(`manifest 的  ${key} 非 法 （ 须 仓 内 相 对 路 径 、 无 上 跳 段 、 落 在  ${prefix} 下 ） `);
+   }
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (716ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (588ms)
+◆ Read checksum-amendment-request.json  [hooks: 2]
+◆ Run Get v3 golden amendment diffs
+$ git diff 96f6107..HEAD -- tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs
+  tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs tests/_golden/p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs
+  tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs
+diff --git a/tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs b/tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs
+index ab73d0a..a98d1cd 100644
+… +194 lines
+     historicalPrecedents: [{ id: 'p', path: 'runs/p.json', sha256: hash, attestedIn: 'docs/p.md' }],
+     members,
+   };
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (737ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (868ms)
+┃◆ Thought for 1.1s
+┃
+┃Gate is still running - v3 goldens take time. Let me dig deeper into:
+Gate 仍 在 跑 。 继 续 深 挖 接 线  call-site、 fail-safe 缝 与 邻 接 路 径 。
+◆ Search "screenTier2CaseReplayGrant|replayGrantPath|occupyReplayGrantMember|readCreatedWorkflowReplayGrant|replayGrant" in *.{mjs,js,json,md} (60 matches in 16 files)  [hooks: 2]
+◆ Run Verify amendment old/new sha256 match
+$ sha256sum tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs tests/_golden/p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs
+  tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs &&
+  git show 96f6107:tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs | sha256sum &&
+  git show 96f6107:tests/_golden/p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs | sha256sum &&
+  git show 96f6107:tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs | sha256sum &&
+  git show 96f6107:tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs | sha256sum
+922597b729509fe9ce8387c72c2f2131f4dd3b886a9e71ed26373963250f9930  tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs
+c4e3250540c2d8fe8e3d10afe6b541792e3c35ab2b7de93cddb576a10c6a8333  tests/_golden/p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs
+… +3 lines
+b81bf6d74a5c783c4284bc71438a4342ebf42818613ddae2cf456014de9924a9  -
+5063fb8dc0a110a6ee4ea68e0fc833c331bdab6e2fbb7907a8a7af3076c61dd8  -
+770878382c7b1dbf14adfce6e1cb1bd779b9aecf1cb925ba547b2f2feb463e10  -
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (19ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (1023ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (711ms)
+◆ Search "screenTier2|executeTier2|replay-grant|replayGrant" in lib/selftest-tier2-collect.mjs (7 matches)  [hooks: 2]
+◆ Search "replay-grant|replayGrant|created-workflow-authority|batch-token" in bin/casey.mjs (8 matches)  [hooks: 2]
+◆ Read entity-created-workflow-continuity-v3.mjs (711-760 of 880)  [hooks: 4]
+┃◆ Thought for 2.0s
+┃
+┃CRITICAL FINDING emerging:
+发 现 两 个 高 风 险 接 线 点 ： screenTier2CaseReplayGrant 可 能 未 真 接 入  executeTier2， casey.mjs 可 能 未 透 传 票 据 。 正 在 逐 段 核 验 。
+◆ Read selftest-tier2-collect.mjs (351-486 of 486)  [hooks: 2]
+◆ Read casey.mjs (81-200 of 430)  [hooks: 2]
+◆ Read p9-replay-authority-split.pure-suite.zero-sut.golden.mjs  [hooks: 2]
+◆ Read p9-replay-authority-split.cli-session.zero-sut.golden.mjs  [hooks: 4]
+┃◆ Thought for 9.6s
+┃
+┃This is a critical finding. Let me analyze carefully: I see the critical finding on screenTier2CaseReplayGrant not being called in executeTier2, which breaks the dual-layer enforcement from the plan.
+┃That's a High issue. Also, `bin/casey.
+◆ Search "runOneCase|created-workflow-authority|batch-token|replay-grant|spawnSync|casey" in lib/selftest-tier2-collect.mjs (11 matches)  [hooks: 2]
+◆ Read selftest-tier2-collect.mjs (151-290 of 486)  [hooks: 2]
+◆ Run Confirm casey.mjs not in diff and no grant wiring
+$ git diff 96f6107..HEAD --name-only | sort; echo '---'; git show 96f6107:bin/casey.mjs | rg -n 'replay-grant|replayGrant' || echo 'baseline casey: no grant';
+  rg -n 'replay-grant|replayGrant' bin/casey.mjs || echo 'head casey: no grant'
+bin/entity-authority.mjs
+bin/replay.mjs
+… +27 lines
+baseline casey: no grant
+--: line 1: rg: command not found
+head casey: no grant
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (674ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (438ms)
+◆ Read plan.md (168-217 of 366)  [hooks: 4]
+◆ Task completed in 4m20s: Re-run p9-replay-authority-split gate
+┃◆ Thought for 34.0s
+┃
+┃Confirmed Critical/High findings: Finding 1 (HIGH/CRITICAL): collect layer dead wiring
+┃screenTier2CaseReplayGrant is exported but never called from executeTier2. Plan §4 and s4 require spawn-before screening + refusal receipts. Goldens R11/R11b only test pure function + export shape,
+┃NOT call-site ( PRD observability admits this). Without collect screening, mutation cases still spawn, get rejected at replay with exit 64 (missing grant flags) or if grant were somehow passed...
+┃currently no grant is passed at all through casey path.
+┃
+┃Finding 2 (HIGH): casey.mjs + collect do not wire grant path/ledger
+┃Plan explicitly lists bin/casey.mjs | run 面 透 传 票 据 路 径 . lib/selftest-tier2-collect.mjs should "读 票 据 、 传 给  casey run". Neither is implemented beyond: manifest field validation for rep
+┃exported but unused screen function, import of screenTier2ReplayGrant that's only used by the exported wrapper.
+┃
+┃This is fail-closed for the mutation path currently (replay exits 64 without grant flags), so it's not a security fail-open for "infinite replay without ticket". But:
+┃1. Once someone manually adds flags to casey 面 透 传 票 据 路 径 , the collect refusal path still doesn't work
+┃2. The contract acceptance s4 claims pass but the wiring is incomplete - tests don't cover call-site
+┃3.
+◆ Read entity-created-workflow-continuity-v3.mjs (718-757 of 880)  [hooks: 2]
+◆ Search "grantState|audience|grant" in lib/entity-created-workflow-continuity-v3.mjs (9 matches)  [hooks: 2]
+◆ Run Analyze amendment diffs for only-tighten
+$ cd /mnt/d/ctx/heren/casey-p9-replay-authority-split && git show 96f6107:tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs | wc -l;
+  git diff 96f6107..HEAD -- tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs | head -5; # check only-tighten: no removed assertion lines except controller args
+  python3 - <<'PY'
+  import subprocess, re
+  files = [
+  "tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs",
+  "tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs",
+  "tests/_golden/p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs",
+  "tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs",
+  ]
+  for f in files:
+      diff = subprocess.check_output(["git","diff","96f6107..HEAD","--",f], text=True)
+      removed = [l for l in diff.splitlines() if l.startswith('-') and not l.startswith('---')]
+      added = [l for l in diff.splitlines() if l.startswith('+') and not l.startswith('+++')]
+      print(f"=== {f} ===")
+      print(f"removed {len(removed)} added {len(added)}")
+      for l in removed:
+          print(l)
+      print('--- non-grant-helper added lines sample ---')
+      for l in added:
+          if 'replayGrant' in l or 'grant' in l.lower() or 'p9-replay' in l or l.strip() in ('+','+ '):
+              continue
+          if l.startswith('+//') or l.startswith('+import') or l.startswith('+function') or l.startswith('+  ') and ('author' in l or 'freeze' in l or 'read' in l or 'draft' in l or 'handle' in l or '
+              continue
+          print(l)
+  PY
+125
+diff --git a/tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs b/tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs
+… +32 lines
+=== tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs ===
+removed 0 added 2
+--- non-grant-helper added lines sample ---
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (5ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (658ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (402ms)
+◆ Run Check gate process; run pure-suite golden
+$ # Wait for gate or check status; also start adjacency tests in parallel
+  cd /mnt/d/ctx/heren/casey-p9-replay-authority-split
+  # check if gate still running
+  ps aux | grep -E 'gate.mjs|p9-replay' | grep -v grep | head -5
+  # run pure-suite quickly
+  node tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs; echo PURE_EXIT=$?
+test      621614  3.0  0.8 465312 142680 pts/9   Sl+  12:12   0:14 grok --cwd /mnt/d/ctx/heren/casey-p9-replay-authority-split --no-alt-screen --minimal --permission-mode dontAsk --reasoning-
+effort high -m grok-4.5 --max-turns 60 # 实 现 侧 代 码 审 ： p9-replay-authority-split（ 回 放 专 用 授 权 件 ， 批 级 一 次 性 票 据 ）   设 计 已 经 三 轮 双 路 前 提 审 收 口 （ R1 FLAWED→R2 分 歧
+… +22 lines
+ok   R12 票 据  audience 与 结 构 件  audience 不 等  → 具 名 拒 （ 两 向 都 拒 ）
+p9-replay-authority-split-pure-suite: 8/8
+PURE_EXIT=0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (598ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (437ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (703ms)
+┃◆ Thought for 33.9s
+┃
+┃I've confirmed several High findings. Let me also verify:I see the concern about potential cross-audience handle misuse, but the controller's check is limited to caseIds.includes() which doesn't
+┃validate the audience match. The readCreatedWorkflowReplayGrant does enforce audience match when authorityBytes are provided, but if the handle is created with test authority and then used with
+┃production authority for the same caseId, the controller won't catch it.
+┃
+┃The production path does re-verify at read time, but pure-layer bypass is possible. This is a Medium residual risk.
+┃
+┃Let me check the code to confirm:
+┃
+┃Looking at lib/entity-created-workflow-replay-grant.mjs, the handle creation is after audience validation, and controller only checks caseIds.
+┃
+┃For the High findings you mentioned, let's address them:
+┃
+┃1. Gate still running - yes, GREEN 5/5
+┃2. Run adjacency tests - I'll verify the tier2 tests
+┃3. Check grant handle validation - Medium residual as noted
+┃4. Variant mutation tests - need 96f6107 vs HEAD comparison
+┃
+┃The Tier2 orchestration issue is indeed High - the collect screenTier2CaseReplayGrant is never called from executeTier2, and casey.mjs doesn't pass the grant flags. This means even with a valid grant
+┃on disk, the production path through tier2 collect cannot succeed.
+┃
+┃This 3-in-1 systemic issue is High because:
+┃• Security gate fails closed (exit 64 on missing flags)
+┃• Once semantics work via direct bin/replay.
+◆ Task started: Run cli-session golden suite
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (808ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (580ms)
+◆ Run Static proof of dead collect wiring
+$ # Verify dead wiring: screenTier2CaseReplayGrant not referenced from executeTier2 body
+  cd /mnt/d/ctx/heren/casey-p9-replay-authority-split
+  python3 - <<'PY'
+  from pathlib import Path
+  text = Path('lib/selftest-tier2-collect.mjs').read_text()
+  # find executeTier2 function body roughly
+  start = text.find('export async function executeTier2')
+  end = text.find('export function renderTier2Result')
+  body = text[start:end]
+  print('executeTier2 length', len(body))
+  for needle in ['screenTier2CaseReplayGrant','screenTier2ReplayGrant','replayGrantPath','readCreatedWorkflowReplayGrant','occupyReplayGrant','replay-grant']:
+      print(f'  {needle}: {body.count(needle)}')
+  # whole file call sites
+  print('whole file screenTier2CaseReplayGrant defs/refs:')
+  for i,l in enumerate(text.splitlines(),1):
+      if 'screenTier2' in l or 'replayGrant' in l:
+          print(f'{i}:{l}')
+  # casey
+  c = Path('bin/casey.mjs').read_text()
+  print('casey replay-grant mentions:', c.count('replay-grant')+c.count('replayGrant'))
+  PY
+executeTier2 length 4569
+  screenTier2CaseReplayGrant: 0
+… +9 lines
+300:    const screen = screenTier2ReplayGrant({ member, grantRead });
+420:    const screen = screenTier2CaseAuthorization(entry);
+casey replay-grant mentions: 0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (743ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (843ms)
+┃◆ Thought for 2.0s
+┃
+┃Gate is GREEN 5/5 - confirmed. But we found dead wiring that goldens don't catch. Now run adjacency tests and tier2 selftest comparison.
+Gate 已 核  GREEN 5/5。 继 续 跑 邻 接 与  tier2 同 红 对 照 ， 并 在  /tmp 做 死 接 线 变 异 核 验 。
+◆ Task started: Run adjacency gates and tier1 selftest
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (892ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (677ms)
+◆ Run Locate p9-tier2-selftest golden
+$ # p9-tier2-selftest same-red: HEAD first (may need cases fixtures). Capture pass/fail counts only.
+  cd /mnt/d/ctx/heren/casey-p9-replay-authority-split
+  # Find the golden
+  ls tests/_golden/*tier2*selftest* 2>/dev/null; ls tests/_golden/*p9-tier2* 2>/dev/null; ls tests/_golden/*tier2* 2>/dev/null | head -20
+  grep -l 'T9a\|109\|p9-tier2-selftest' tests/_golden/*.mjs 2>/dev/null | head
+tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs
+tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs.pre-review-amendment.archive.gz
+… +12 lines
+tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs
+tests/_golden/entity-workflow-source-readback.completeness.zero-sut.golden.mjs
+tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (853ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (12ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (902ms)
+◆ Task completed in 1m4s: Run cli-session golden suite
+┃◆ Thought for 7.8s
+┃
+┃CLI session 13/13 pass. Continue with tier2 selftest and wait for adjacency.
+◆ Task started: Run p9-tier2-selftest at HEAD
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (728ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (566ms)
+◆ Run Runtime/static proof of incomplete wiring
+$ # /tmp mutation: prove executeTier2 does not call screen even if we wrap/spy
+  # and prove casey run without grant flags exits 64 with v3 authority present
+  cd /mnt/d/ctx/heren/casey-p9-replay-authority-split
+  python3 - <<'PY'
+  # Static mutation proof in /tmp: strip the dead export and show pure-suite R11b would still
+  # ... actually R11b would fail if we remove export. The real bug is executeTier2 never calls it.
+  # Dynamic proof: import executeTier2 source and confirm zero references.
+  from pathlib import Path
+  src = Path('lib/selftest-tier2-collect.mjs').read_text()
+  # Count: screenTier2CaseReplayGrant appears only as export definition
+  import re
+  refs = [(m.start(), src[max(0,m.start()-40):m.start()+60].replace('\n',' ')) for m in re.finditer('screenTier2CaseReplayGrant', src)]
+  print('refs', len(refs))
+  for _,ctx in refs: print(' ', ctx)
+  # grant path reading from manifest
+  for needle in ['replayGrantPath','manifest.json.replayGrant','grantBytes','screenTier2ReplayGrant']:
+      print(needle, src.count(needle))
+  PY
+  # Minimal runtime: if grant missing flags, replay exits 64 — already covered by R2
+  # Prove casey has no grant options by grepping parse/help if any
+  grep -n 'batch-token\|unique-name\|created-workflow' bin/casey.mjs | head -30
+refs 1
+  由  executeTier2 按 它 的 结 果 执 行 。  export function screenTier2CaseReplayGrant({ members, grantRead } = {}) {
+… +19 lines
+297:                                          相 1 编 译 闸 段 （ 落  flow 待 人  confirm） ； 执 行 段 加  --execute --sut <本 地 基 址 > --profile <f> [--entity-authority <f>]（ 变 更 链 必 填 、 纯
+login]（ 带 =测 试 凭 据 上 下 文 不 载 凭 据 、 匹 配 受 众  test； 不 带 =生 产 意 图 、 浏 览 器 前 加 载 凭 据 ， 缺 则  fail-closed）  [--unique-name <tok>]； 核 验 写 链 用  --verify --entity-lo
+304:  casey entity-authority <execute-draft|execute-freeze|created-workflow-draft|created-workflow-freeze> <caseId> ...
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (782ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (831ms)
+◆ Task completed in 56s: Run adjacency gates and tier1 selftest
+┃◆ Thought for 7.9s
+┃
+┃Interesting - entity-destructive-continuity-guard gate is RED on this worktree. Need to check if baseline 96f6107 also has this red - it might be pre-existing because this worktree is a split branch
+┃t...
+◆ Task completed in 5.8s: Run p9-tier2-selftest at HEAD
+◆ Search "entity-destructive|installOutbound|guardTeardown|partitionGuardAbort|wiring" in bin/replay.mjs (2 matches)  [hooks: 2]
+◆ Run Check if destructive wiring pre-existing red
+$ # Compare baseline vs HEAD for destructive wiring imports in replay.mjs
+  cd /mnt/d/ctx/heren/casey-p9-replay-authority-split
+  echo '=== HEAD imports ==='
+  grep -n 'destructive\|installOutbound\|wiring\|guardAbort' bin/replay.mjs | head -30
+  echo '=== BASELINE imports ==='
+  git show 96f6107:bin/replay.mjs | grep -n 'destructive\|installOutbound\|wiring\|guardAbort' | head -30
+  echo '=== diff only touches grant? ==='
+  git diff 96f6107..HEAD -- bin/replay.mjs | grep -E '^[+-].*destructive|^[+-].*wiring|^[+-].*Outbound|^[+-].*guard' | head
+  # Check if this worktree is missing unrelated code vs main dev
+  # Run wiring golden alone for clearer signal
+  node tests/_golden/entity-destructive-continuity-guard.wiring.golden.mjs 2>&1 | tail -15; echo WIRING_EXIT=$?
+=== HEAD imports ===
+24:import { admitDestructiveTargetContinuity } from '../lib/entity-destructive-continuity.mjs';
+… +40 lines
+RED  entity-destructive-continuity-guard-wiring: static lib/compile-atoms.mjs 破 坏 性 编 译 处  import 并 调 用 铸  ref 适 配 器 （ 咬 两 处 调 用 面 ， 非 仅  helper 定 义 ） : compile-atoms 未  imp
+RED  entity-destructive-continuity-guard-wiring/all: 10 过  / 2 红
+WIRING_EXIT=0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (852ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (850ms)
+┃◆ Thought for 13.5s
+┃
+┃Interesting - wiring golden says WIRING_EXIT=0 but showed RED lines. Looking at the output - process.exitCode might be set to 1 but shell showed 0? Actually it says WIRING_EXIT=$? and exit of the
+┃wh...
+◆ Task started: Run tier2 selftest at baseline 96f6107
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (786ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (663ms)
+◆ Run Baseline destructive wiring exit check
+$ # Confirm destructive gate red on baseline too (not regression)
+  TMPWT=/tmp/casey-p9-baseline-96f6107
+  # if worktree not ready yet wait; else run wiring golden from baseline after worktree exists
+  # Parallel-safe: check if path exists
+  if [ -d /tmp/casey-p9-baseline-96f6107/tests ]; then
+    cd /tmp/casey-p9-baseline-96f6107
+    node tests/_golden/entity-destructive-continuity-guard.wiring.golden.mjs >/tmp/dest-base.out 2>&1
+    echo BASE_WIRING_EXIT=$?
+    tail -8 /tmp/dest-base.out
+  else
+    echo 'worktree not ready yet'
+  fi
+worktree not ready yet
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (789ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (680ms)
+◆ Read replay.mjs (71-120 of 705)  [hooks: 2]
+◆ Read replay.mjs (196-255 of 705)  [hooks: 4]
+◆ Task completed in 0.6s: Run tier2 selftest at baseline 96f6107
+┃◆ Thought for 14.3s
+┃
+┃Wait for baseline tier2. Also note: gate for destructive is RED on this branch pre-existing - not caused by this PR's replay.mjs grant additions (same missing wiring imports at baseline). I reviewed
+┃the implementation changes for p9-replay-authority-split. The core concurrency fix in replay-grant-ledger.mjs looks solid—bounded retry with readSessionSettled prevents false positives from partial
+┃writes, and the fail-closed approach for content checks is appropriate.
+◆ Run Clock feed paths + v3 PRD checksum status
+$ # Grep CLI feed-time and any fail-open patterns
+  cd /mnt/d/ctx/heren/casey-p9-replay-authority-split
+  grep -n "now\|--now\|REPLAY_GRANT" bin/replay.mjs lib/replay/cli-input.mjs | head -40
+  # Check v3 PRD still has old checksums (unsigned amendment)
+  python3 - <<'PY'
+  import json
+  from pathlib import Path
+  prd = json.loads(Path('loop/prd-p9-created-workflow-cleanup-continuity-v3.json').read_text())
+  req = json.loads(Path('docs/plans/p9-replay-authority-split/accept/checksum-amendment-request.json').read_text())
+  tc = prd.get('testChecksums', {})
+  for a in req['amendments']:
+      p = a['path']
+      cur = tc.get(p)
+      print(p.split('/')[-1])
+      print('  prd frozen:', (cur or '')[:16]+'...' if cur else None)
+      print('  old matches prd?', cur == a['oldSha256'])
+      print('  new not in prd yet?', cur != a['newSha256'])
+  PY
+bin/replay.mjs:107:  const T0 = Date.now();
+bin/replay.mjs:108:  const log = (m) => { if (DBG) console.error('[replay +' + (Date.now() - T0) + 'ms] ' + m); };
+… +18 lines
+  prd frozen: 770878382c7b1dbf...
+  old matches prd? True
+  new not in prd yet? True
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (743ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (676ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (757ms)
+┃◆ Thought for 16.0s
+┃
+┃Baseline worktree had issues because cases symlink might not have worked correctly for manifest - T7 says missing signed manifest. HEAD had 109/2 with T7 artifact missing and T9a replayGrantPath.
+┃Base...
+◆ Run Fair T9a HEAD vs baseline on same manifest
+$ # Fairer baseline: ensure cases/ exists with real files from main tree
+  MAIN=/mnt/d/ctx/heren/casey-p9-replay-authority-split
+  BASE=/tmp/casey-p9-baseline-96f6107
+  ls -la "$MAIN/cases/tier2-suite.manifest.json" 2>&1 | head -3
+  ls -la "$BASE/cases" 2>&1 | head -5
+  # If main has cases, rsync needed files into base for fair T9a
+  if [ -f "$MAIN/cases/tier2-suite.manifest.json" ]; then
+    mkdir -p "$BASE/cases"
+    # copy manifest only for T9a structure test - or full cases if small
+    cp -a "$MAIN/cases/tier2-suite.manifest.json" "$BASE/cases/" 2>/dev/null
+    # Also need artifacts referenced? T9a may only need structure of manifest
+    cd "$BASE"
+    # Run only the T9a portion by grepping output of full selftest is expensive
+    # Compare: HEAD T9a failure reasons vs BASE with same manifest file
+    node -e "
+  import { readFileSync } from 'fs';
+  import { createRequire } from 'module';
+  // dynamic import of each tree's validateSuiteManifestDoc
+  const head = await import('$MAIN/lib/selftest-tier2-manifest.mjs');
+  const base = await import('$BASE/lib/selftest-tier2-manifest.mjs');
+  const doc = JSON.parse(readFileSync('$MAIN/cases/tier2-suite.manifest.json','utf8'));
+  console.log('HEAD validate:', JSON.stringify(head.validateSuiteManifestDoc(doc).problems?.slice(0,5)));
+  console.log('BASE validate:', JSON.stringify(base.validateSuiteManifestDoc(doc).problems?.slice(0,5)));
+  console.log('HEAD ok', head.validateSuiteManifestDoc(doc).ok, 'BASE ok', base.validateSuiteManifestDoc(doc).ok);
+  " 2>&1
+  else
+    echo 'no main cases manifest - skip fair compare'
+  fi
+  # cleanup worktree
+  cd "$MAIN"
+  git worktree remove --force /tmp/casey-p9-baseline-96f6107 2>&1 | tail -3
+-rwxrwxrwx 1 test test 20435 Aug  4 08:53 /mnt/d/ctx/heren/casey-p9-replay-authority-split/cases/tier2-suite.manifest.json
+total 12
+… +6 lines
+BASE validate: ["成 员  tc_catalog_wf_crud 未 接  created-workflow v3 动 态  ID/清 理 生 产 链 ","成 员  tc_wf_publish_states 未 接  created-workflow v3 动 态  ID/清 理 生 产 链 ","成 员  tc_wf_histor
+created-workflow v3 动 态  ID/清 理 生 产 链 "]
+HEAD ok false BASE ok false
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (887ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (753ms)
+◆ Run /tmp mutation proofs of dead wiring
+$ # /tmp mutation: prove dead wiring — if we delete screenTier2CaseReplayGrant export body, R11b fails, but if we leave export and empty executeTier2 still "passes"
+  # Better mutation: inject a throw into screenTier2CaseReplayGrant and call executeTier2 path via a mini harness
+  cd /mnt/d/ctx/heren/casey-p9-replay-authority-split
+  mkdir -p /tmp/p9-review-mut
+  # Copy only collect module and patch executeTier2 would be huge. Simpler:
+  # Prove with node that executeTier2 source string has zero call sites (already done).
+  # Runtime: monkeypatch screenTier2CaseReplayGrant after import and invoke a thin recreation of the loop.
+  python3 - <<'PY'
+  from pathlib import Path
+  src = Path('lib/selftest-tier2-collect.mjs').read_text()
+  # Extract executeTier2 body and assert no screenTier2CaseReplayGrant call
+  i = src.index('export async function executeTier2')
+  j = src.index('export function renderTier2Result')
+  body = src[i:j]
+  assert 'screenTier2CaseReplayGrant' not in body
+  assert 'screenTier2ReplayGrant' not in body
+  assert 'replayGrantPath' not in body
+  assert 'replay-grant' not in body
+  print('MUTATION_PROOF: executeTier2 body has zero grant screening/ledger/path wiring')
+  # casey
+  c = Path('bin/casey.mjs').read_text()
+  assert 'replay-grant' not in c and 'replayGrant' not in c
+  print('MUTATION_PROOF: casey.mjs has zero grant flags')
+  # runOneCase
+  k = src.index('export function runOneCase')
+  # next export after runOneCase
+  import re
+  m = re.search(r'\nexport function ', src[k+10:])
+  runbody = src[k:k+10+m.start()]
+  assert 'replay-grant' not in runbody and 'replayGrant' not in runbody
+  print('MUTATION_PROOF: runOneCase has zero grant passthrough')
+  print('ALL_PROOFS_OK')
+  PY
+MUTATION_PROOF: executeTier2 body has zero grant screening/ledger/path wiring
+MUTATION_PROOF: casey.mjs has zero grant flags
+MUTATION_PROOF: runOneCase has zero grant passthrough
+ALL_PROOFS_OK
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (9ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (847ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (710ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (11ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (883ms)
+┃◆ Thought for 16.8s
+┃
+┃Worktree remove might have failed silently or succeeded. HEAD adds one planned red (replayGrantPath). T7 on HEAD was artifact missing - env specific. Findings Summary
+┃
+┃High-1: Collect layer dead wiring (plan s4 / M-new3)
+┃screenTier2CaseReplayGrant exported but never called from executeTier2. No replayGrantPath read, no grant bytes load, no refusal receipt path for missing grant. R11 b only tests export+shape (PRD
+┃observability admits call-site is human route). Gate s4 greened falsely.
+┃
+┃High-2: Production orchestration incomplete
+┃bin/casey.mjs does not pass --replay-grant / --replay-grant-ledger (plan table requires).
+┃◆ Thought for 0.0s
+┃
+┃I'll produce a clean, rigorous code review report.
+实 现 侧 代 码 审  · p9-replay-authority-split
+快 照  6d67fc2 · 基 线  96f6107 · 27 files +3752/-7 · 只 读 未 改 仓
+gate 自 跑  node loop-kit/bin/gate.mjs --prd loop/prd-p9-replay-authority-split.json → GREEN 5/5， exit 0
+冻 结 字 节  grant/ledger/两 枚 金 牌 /夹 具  sha256 与  PRD testChecksums 一 致 （ 8d492abb… / 17a44da3… / 3ea262e4… / 56b458c4… / 8241717a…）
+───
+攻 面 结 论 （ 简 表 ）
+┌──────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 攻 面                  │ 结 论                                                                                                                                                      │
+├──────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 1 并 发  wx + 有 界 重 读  │ 方 向 正 确 、 fail-closed。 40×~1ms 上 界 在 极 慢 盘 可 能 误 拒 ， 不 放 行 。
+├──────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 2 v3 四 处  amendment  │ 只 加 严 成 立 ； 请 签 件  new sha256 与 实 物 一 致 ； v3 PRD 仍 钉  old（ 未 签 回 ， 符 合 说 明 ） 。
+├──────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 3 once / 崩 溃  / 墙 钟  │ bin/replay.mjs 路 径 成 立 （ launch 前  occupy； 同  nonce 异  token 拒 ； CLI 无 喂 时 ） 。                                                                           │
+├──────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 4 fail-safe          │ 纯 层  + replay 前 门 具 名 硬 退 成 立 ； 台 账 读 失 败 不 放 行 。                                                                                                        │
+├──────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 5 WeakMap 句 柄        │ 不 可 伪 造 ； 非 本 模 块  set 的 对 象  get 为  null。                                                                                                               │
+├──────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 6 tier2 同 红          │ HEAD 109 passed / 2 failed（ T7 夹 具 环 境 红  + T9a 含 计 划 内  replayGrantPath） ； 相 对 基 线  T9a 多 一 条  replayGrantPath 拒 因 。
+├──────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 7 邻 接                │ 八 枚  v3 金 牌 （ gate s5） exit 0； admission-policy-facets 4/4； tier1 exit 0； entity-destructive 本 枝 预 存  wiring 静 态 红 （ 基 线 同 缺  import， 非 本  diff 引 入
+└──────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+───
+Findings（ 仅  Critical / High / Medium）
+H1 · 采 集 层 「 拒 跑 筛 」 是 死 导 出 ， 未 进  executeTier2 真 路 径
+级 别 ： High · 违 反  plan §4 / s4 / 评 审  M-new3
+事 实 （ 自 证 ） ：
+• lib/selftest-tier2-collect.mjs 导 出  screenTier2CaseReplayGrant， 但  executeTier2 函 数 体 对  screenTier2CaseReplayGrant / screenTier2ReplayGrant / replayGrantPath / replay-grant 的 出 现 次 数
+• 成 员 循 环 仍 只 调  screenTier2CaseAuthorization， 随 后 无 条 件  runOneCase → spawnSync(casey run …)。
+• 全 文 件  零  读 取  manifest.replayGrantPath、 零  readCreatedWorkflowReplayGrant、 零 按 拒 跑 筛 落 「 票 据 缺 席 」 回 执 。
+• 金 牌  R11b 只 钉 「 导 出  + 直 接 调 用 形 状 」 ； PRD observability 自 己 写 明  call-site 是  human route——而  human 核  call-site 即 断 。
+后 果 ：  变 更 型 仍 会 先 起 子 进 程 ， 靠 下 游  replay 拒 ； 无 有 效 票 据 时  拒 跑 回 执 缺 位 （ 恰 是  M-new3 要 堵 的 缝 ） 。 s4 在  gate 上  GREEN 属  验 收 假 绿 。
+修 法 方 向 ：  在  executeTier2 成 员 循 环 、 runOneCase 之 前 ： 读  replayGrantPath → 读 回  grant → 调  screenTier2CaseReplayGrant → spawnAllowed===false 则  writeRefusalReceipt 且 不  spawn。
+───
+H2 · casey run / runOneCase 未 透 传 双 旗 标 ， 编 排 面 未 闭 环
+级 别 ： High · 违 反  plan §4 落 点 表 （ bin/casey.mjs 透 传 ； collect「 读 票 据 、 传 给  casey run」 ）
+事 实 ：
+• 本  diff 不 含  bin/casey.mjs； 全 文 零  replay-grant / replayGrant。
+• v3 时  casey run 只 透 传  --created-workflow-authority / --batch-token / --unique-name 等 ， 不 传  --replay-grant / --replay-grant-ledger。
+• runOneCase 同 样 不 传 。
+→ 只 要 结 构 件 在 场 ， 正 式  casey run / Tier2 子 进 程 必 在  bin/replay.mjs exit 64（ 缺 旗 标 ） 。
+方 向 ：  这 是  fail-closed 未 完 工 ， 不 是 「 无 票 可 无 限 回 放 」 的  fail-open。
+但 契 约 承 诺 的 生 产 编 排 路 径  无 法 带 着 有 效 票 跑 通 ； 「 清 单 有  replayGrantPath」 与 「 采 集 真 消 费 」 之 间 断 链 。 与  H1 叠 加 ： 既 不 前 置 拒 跑 ， 也 不 传 票 进 前 门 。
+修 法 方 向 ：
+1. casey.mjs： v3Requested 时 双 旗 标 与  batch-token 同 级 必 填 并 透 传 ；
+2. runOneCase： 从 清 单 路 径  + 批 级  ledger 根 传 入 ；
+3. 台 账 根 与  bin/replay 共 用 单 一 根 （ plan §4） 。
+───
+M1 · readSessionSettled 硬 顶 约  40ms， 慢 盘 可 操 作 误 拒
+级 别 ： Medium · 攻 面  1①
+lib/replay-grant-ledger.mjs： attempts=40、 每 轮 忙 等  ~1ms。 并 发 窗 口 内 写 者 未 完 成 时 败 者 会 落 到  REPLAY_GRANT_BATCH_SESSION_MISMATCH。
+• 安 全 方 向 正 确 （ 多 拒 不 放 行 ） 。
+• 操 作 风 险 ： NFS/高 负 载 /杀 软 下 可 能 把 「 仍 在 写 的 同 批 胜 者 」 误 判 成 批 会 话 冲 突 ， 逼 人 签 新 票 。
+可 选 收 紧 ： fsync 后 再 放 行 胜 者 、 或 对 「 文 件 在 场 但 未  settle」 使 用 可 区 分 拒 因  + 略 放 宽 上 界 （ 仍 须 有 界 、 仍  fail-closed） 。
+───
+M2 · 台 账 「 只 看 在 场 」 = 刻 意  fail-closed（ 攻 面  1② 方 向 未 反 ）
+级 别 ： Medium（ 残 留 说 明 ， 非 缺 陷 翻 转 ）
+readConsumedCaseIds 仅  existsSync： 内 容 未 落 盘 也 算 已 占 用  → 多 拒 不 放 行 ， 与 「 解 析 失 败 当 未 占 用 」 的  fail-open 相 反 。 符 合 设 计 。 记  Medium 仅 作 残 余 ： 空 /半 写 文 件
+在  wx 建 文 件 后 、 内 容 写 完 前 与 「 已 核 销 」 同 效 ——与  plan「 半 消 耗 作 废 」 一 致 。
+───
+攻 面  2–5 / 6–7 核 验 摘 要 （ 无 新 增  C/H， 除 非 上 列 ）
+Amendment 只 加 严 （ 逐  hunk） ：
+四 处 仅 补  replayGrantHandleFor / 双 旗 标  / replayGrantPath； 原  check(...) 断 言 未 删 未 放 宽 。 请 签 件  old=当 前  v3 PRD 冻 结 值 ， new=实 物  sha256， 一 致 ； v3 PRD 尚 未  签 入  new。
+once（ bin/replay.mjs） ：
+结 构 件 在 场  → 双 旗 标 缺 一  exit 64 → 读  grant → 墙 钟  now → occupyReplayGrantMember（ session + member wx） → 才 建  controller。 cli-session 13/13（ R10/R14/R15/R18 等 ） exit 0。 CLI 无  --
+崩 溃 在  SUT 后 、 占 用 已 落 盘  → 旧  nonce 不 可 复 用 （ R14/R15） 。
+fail-safe：  校 验 失 败 具 名  exit 64/65； 台 账 写 失 败  allowLaunch:false； 会 话 不 可 解 析 不 放 行 。 未 见 「 读 不 出  → 当 不 存 在  → 放 行 」 。
+WeakMap：  GRANT_STATE 仅  readCreatedWorkflowReplayGrant 写 入 ； readReplayGrantHandle / controller 只 认 该 句 柄 。
+gate / 邻 接  / tier2：  见 文 首 表 。 entity-destructive 红 与  grant diff 无 关 （ 基 线  bin/replay.mjs 同 样 未  import destructive wiring 模 块 ） 。
+───
+实 现 质 量 （ 非  finding 主 文 ）
+纯 层 件 种 /签 名 /成 链 /受 众 /过 期 、 controller 必 填  grant、 entity-authority 件 种 守 卫 、 ledger wx 批 会 话 、 R18 真 并 发 单 胜 者 ——内 核 与  bin/replay 前 门 质 量 高 ， 与  R3 前 提
+R11b 假 钉 。
+───
+Finding 清 单
+┌────┬────────┬────────────────────────────────────────────────────────────────────────────────────┐
+│ ID │ 级 别    │ 摘 要                                                                                │
+├────┼────────┼────────────────────────────────────────────────────────────────────────────────────┤
+│ H1 │ High   │ executeTier2 未 调 用 拒 跑 筛 ； 无 票 仍  spawn； s4/R11b 验 收 假 绿                           │
+├────┼────────┼────────────────────────────────────────────────────────────────────────────────────┤
+│ H2 │ High   │ casey.mjs + runOneCase 未 透 传  --replay-grant/--replay-grant-ledger； 生 产 编 排 未 闭 环  │
+├────┼────────┼────────────────────────────────────────────────────────────────────────────────────┤
+│ M1 │ Medium │ session 有 界 重 读  ~40ms， 慢 盘 可 误 拒 （ fail-closed）                                   │
+├────┼────────┼────────────────────────────────────────────────────────────────────────────────────┤
+│ M2 │ Medium │ 消 费 标 记 「 只 看 在 场 」 为 故 意 加 严  fail-closed（ 方 向 未 反 ， 残 留 操 作 语 义 ）                │
+└────┴────────┴────────────────────────────────────────────────────────────────────────────────────┘
+无  Critical（ 浏 览 器 前 门 与  once 在  bin/replay.mjs 上 未 发 现  fail-open） 。
+───
+VERDICT: CHANGES_REQUIRED — H1, H2, M1, M2
+Worked for 12m40s                                                                                                                                                                       stop  [hooks: 5]
+      ✓ global/settings:stop[0].hooks[0] (9ms)
+      ✓ global/settings:stop[1].hooks[0] (761ms)
+      ✓ project/settings:stop[0].hooks[0] (730ms)
+      ✓ project/settings:stop[0].hooks[1] (696ms)
+      ✓ project/settings:stop[1].hooks[0] (97ms)
+minimal · /help
+❯
+Grok 4.5 (high) · always-approve · 114K / 500K (23%) · ctrl+o transcript

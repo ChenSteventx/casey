@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "artifactKind": "checksum-amendment-request",
+  "signed": false,
+  "signerId": null,
+  "signedAt": null,
+  "targetPrd": "loop/prd-p9-created-workflow-cleanup-continuity-v3.json",
+  "requestedBy": "p9-replay-authority-split（实现侧代理备字节，未自签）",
+  "reason": "回放控制器新增必填的批级回放授权票据（fable 裁 Q2 授权闸下沉纯层）。四处均为夹具补票据/补清单顶层字段，断言语义一字未改，属只加严：原判据全部保留，新增的是「没票不许造控制器/不许 launch」这一条更严的前提。",
+  "onlyTightens": true,
+  "amendments": [
+    {
+      "path": "tests/_golden/p9-created-workflow-continuity-v3.authority-cli.zero-sut.golden.mjs",
+      "oldSha256": "5014bf0047c8447b4a6b0c76a907e911370909bbfae08200d5d9f60e6c123db5",
+      "newSha256": "922597b729509fe9ce8387c72c2f2131f4dd3b886a9e71ed26373963250f9930"
+    },
+    {
+      "path": "tests/_golden/p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs",
+      "oldSha256": "b81bf6d74a5c783c4284bc71438a4342ebf42818613ddae2cf456014de9924a9",
+      "newSha256": "c4e3250540c2d8fe8e3d10afe6b541792e3c35ab2b7de93cddb576a10c6a8333"
+    },
+    {
+      "path": "tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs",
+      "oldSha256": "5063fb8dc0a110a6ee4ea68e0fc833c331bdab6e2fbb7907a8a7af3076c61dd8",
+      "newSha256": "e9d0f191c85f473ad03e89eb243b667268872eef16eb175bd23e3a9873708715"
+    },
+    {
+      "path": "tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs",
+      "oldSha256": "770878382c7b1dbf14adfce6e1cb1bd779b9aecf1cb925ba547b2f2feb463e10",
+      "newSha256": "047d85c0c497008abad47a99687d5e8186327b3cab18b68eace33d1b27290b45"
+    }
+  ],
+  "note": "代理只备字节、不自签（照 SIGNING-SESSION.md C2 的 checksumAmendment 形态）。需 Steven 过目签署后才写回目标 PRD 的 testChecksums。"
+}

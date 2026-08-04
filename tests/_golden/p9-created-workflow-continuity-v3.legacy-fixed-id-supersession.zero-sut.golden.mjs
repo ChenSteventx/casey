@@ -9,6 +9,33 @@ import {
   createCreatedWorkflowReplayContinuityController,
 } from '../../lib/entity-created-workflow-continuity-v3.mjs';
 
+// ── p9-replay-authority-split amendment ──────────────────────────
+// 回放控制器新增必填的回放授权票据（批级一次性）。本枚断言语义一字未改，
+// 只补上「造控制器」现在必须持有的票据——**只加严**，不放宽任何原有判据。
+import {
+  authorCreatedWorkflowReplayGrantDraft,
+  freezeCreatedWorkflowReplayGrant,
+  readCreatedWorkflowReplayGrant,
+} from '../../lib/entity-created-workflow-replay-grant.mjs';
+
+function replayGrantHandleFor(caseId, authorityBytes, audience = 'test') {
+  const asBytes = (value) => Buffer.from(`${JSON.stringify(value, null, 2)}\n`);
+  const cases = [{ caseId, authorityBytes }];
+  const drafted = authorCreatedWorkflowReplayGrantDraft({
+    batchId: `amend-${caseId}`, audience,
+    notAfter: '2099-01-01T00:00:00.000Z', grantNonce: 'a'.repeat(32), cases,
+  });
+  if (!drafted.ok) throw new Error(`amendment 票据草案失败：${drafted.reason}`);
+  const frozenGrant = freezeCreatedWorkflowReplayGrant({
+    draft: drafted.draft, signerId: 'human', signedAt: '2026-08-04T00:00:00.000Z',
+  });
+  if (!frozenGrant.ok) throw new Error(`amendment 票据冻结失败：${frozenGrant.reason}`);
+  const read = readCreatedWorkflowReplayGrant({ grantBytes: asBytes(frozenGrant.grant), cases });
+  if (!read.ok) throw new Error(`amendment 票据读回失败：${read.reason}`);
+  return read.handle;
+}
+
+
 const failures = [];
 let passed = 0;
 const check = (condition, message) => { if (!condition) throw new Error(message); };
@@ -53,7 +80,7 @@ await test('S2 v3 结构 authority 自身不携 runtime platformId', () => {
 await test('S3 没有当轮完整 list scan 时 deletion ref 不存在', async () => {
   const f = fixture();
   const read = readCreatedWorkflowOwnershipAuthority({ caseId: f.caseId, authorityBytes: json(f.authority), eventsBytes: f.eventsBytes, flowBytes: f.flowBytes, testcaseBytes: f.testcaseBytes, profileBytes: f.profileBytes });
-  const opened = createCreatedWorkflowReplayContinuityController({ caseId: f.caseId, runId: 'run-current', batchToken: 'batch-current', uniqueNameToken: 'batch-current-case-1', authority: read.handle, profile: f.profile });
+  const opened = createCreatedWorkflowReplayContinuityController({ caseId: f.caseId, runId: 'run-current', batchToken: 'batch-current', uniqueNameToken: 'batch-current-case-1', authority: read.handle, grant: replayGrantHandleFor(f.caseId, json(f.authority)), profile: f.profile });
   let sends = 0;
   const attempted = await opened.controller.runGuardedDeletion({ stepId: f.deletion.stepId, request: { method: 'POST', url: '/api/workflows/delete', body: { id: 'stale-id' } }, send: () => { sends += 1; } });
   check(!attempted.ok && sends === 0, '无当轮读回仍放行删除');
@@ -62,7 +89,7 @@ await test('S3 没有当轮完整 list scan 时 deletion ref 不存在', async (
 await test('S4 当轮 scan ID 与出站 ID 不同则零发送，相同才放行', async () => {
   const f = fixture();
   const read = readCreatedWorkflowOwnershipAuthority({ caseId: f.caseId, authorityBytes: json(f.authority), eventsBytes: f.eventsBytes, flowBytes: f.flowBytes, testcaseBytes: f.testcaseBytes, profileBytes: f.profileBytes });
-  const opened = createCreatedWorkflowReplayContinuityController({ caseId: f.caseId, runId: 'run-current', batchToken: 'batch-current', uniqueNameToken: 'batch-current-case-1', authority: read.handle, profile: f.profile });
+  const opened = createCreatedWorkflowReplayContinuityController({ caseId: f.caseId, runId: 'run-current', batchToken: 'batch-current', uniqueNameToken: 'batch-current-case-1', authority: read.handle, grant: replayGrantHandleFor(f.caseId, json(f.authority)), profile: f.profile });
   const captured = opened.controller.captureCreatedScan({ complete: true, correlatable: true, total: 1, hasNext: false, cursor: null, records: [{ id: 'runtime-current', code: 'WF-1', name: opened.controller.entityName }] });
   check(captured.ok, captured.reason);
   let sends = 0;

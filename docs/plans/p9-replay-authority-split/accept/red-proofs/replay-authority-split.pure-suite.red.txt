@@ -1,0 +1,27 @@
+# 红先行基线 · p9-replay-authority-split / pure-suite（r5：实现审 H1/H2 补钉后重采）
+# 采集：2026-08-04T04:34:08Z　基线 dev@96f6107
+# 命令：node tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs
+# 被测金牌字节 sha256：e4646a5f31dab8f0959a0d6e29da05cb66e1046ded8565f81a886718e23a7649
+# 夹具 sha256：8241717a0031ab119ee3fc3171e9c34d6cdd9a92479d695521d0af0a8638cd67
+# 采法：git stash 撤下**本轮**H1/H2 修复后实跑（6d67fc2 已提交的实现仍在场）。
+# 故这是**增量红证**：8/10 而非 0/10——上一轮 8 钉本就绿，红的正是本轮新增的两钉。
+# 首轮 0/8 的全红基线见 git history（6d67fc2 所含的同名件）。
+# 判据：退出码。exit≠0 即红。
+# r5 补钉：R11c 采集真调用点（堵 H1 死导出假绿）／R11d casey run 双旗标必填与透传（H2）。
+
+ok   R3a 回放票据喂结构面 reader → 拒（既有形状守卫的回归钉，非新增拦截力）
+ok   R4 A 案票据配 B 案结构件 → 摘要链不合而拒；同案配对正控须过
+ok   R5 批会话纯判定：首成员放行 / 同批次成员放行 / 同成员重跑拒 / 异 token 拒
+ok   R6 controller 缺 grant handle → allowLaunch:false（授权闸下沉纯层）
+ok   R7 清单未声明 replayGrantPath 或路径越界 → 结构红；正控须过
+ok   R11 Tier2 无有效票据 → 三例拒跑、要求落拒跑回执；有效票据不得误拦
+ok   R11b 采集编排层已接线：无票时不 spawn 子进程且落拒跑回执
+ok   R12 票据 audience 与结构件 audience 不等 → 具名拒（两向都拒）
+FAIL R11c executeTier2 在无有效票据时对变更型成员零 spawn 且落拒跑回执: 采集层未导出整批票据读回（成员循环无从取票）
+FAIL R11d casey run 在 v3 链上缺票据旗标 → exit 64 具名；透传形状完整: 缺件清单未具名 --replay-grant（尾段： <token>] [--login-bootstrap] [--no-video]
+  缺文件旗标时按 cases/<caseId>/events.json、expected.frozen.json、entity-locks.frozen.json、profile.json、observed-<caseId>.json、testcase.json 约定解析。
+  串 相3回放 → 相4裁定 → 报表模型装配 → 相6报告，落 runs/<caseId>/<runId>/。
+）
+p9-replay-authority-split-pure-suite: 8/10
+
+exit=1

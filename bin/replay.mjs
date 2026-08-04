@@ -51,6 +51,8 @@ import {
   installReplaySessionSeedBeforeNavigation,
   openReplayTopology,
 } from '../lib/page-topology/replay-session.mjs';
+import { readCreatedWorkflowReplayGrant } from '../lib/entity-created-workflow-replay-grant.mjs';
+import { occupyReplayGrantMember } from '../lib/replay-grant-ledger.mjs';
 import {
   createCreatedWorkflowReplayContinuityController,
   issueCreatedWorkflowCompileProvenance,
@@ -79,6 +81,18 @@ async function main() {
   if (args.createdWorkflowAuthority && (args.uniqueName == null || args.batchToken == null)) {
     console.error('replay: v3 created-workflow 回放须显式提供 --batch-token 与 --unique-name，禁止默认 r1');
     process.exit(64);
+  }
+  // 回放授权票据双旗标（p9-replay-authority-split plan §4）：有结构件即同为必填、缺任一即拒。
+  // 次序必须排在上面的 batch-token 门之后，否则拒因会被旧门吃掉（金牌 R2 钉这条次序）。
+  if (args.createdWorkflowAuthority) {
+    if (typeof args.replayGrant !== 'string' || !args.replayGrant) {
+      console.error('replay: v3 created-workflow 回放须提供 --replay-grant（批级一次性回放授权票据）');
+      process.exit(64);
+    }
+    if (typeof args.replayGrantLedger !== 'string' || !args.replayGrantLedger) {
+      console.error('replay: v3 created-workflow 回放须提供 --replay-grant-ledger（核销台账根，launch 前原子占用）');
+      process.exit(64);
+    }
   }
   const uniqueName = args.uniqueName == null ? 'r1' : String(args.uniqueName);
   if (!/^[a-z0-9][a-z0-9_-]{0,63}$/i.test(uniqueName)) {
@@ -197,12 +211,41 @@ async function main() {
       console.error(`replay: v3 created-workflow 授权未过（${authorityRead.reason}），未启动浏览器`);
       process.exit(65);
     }
+    // 回放授权票据：读回 → 批会话判定 → launch 前原子占用。三步全过才有 controller。
+    let grantBytes;
+    try { grantBytes = readFileSync(args.replayGrant); }
+    catch {
+      console.error('replay: 回放授权票据不可读（内容不回显）');
+      process.exit(65);
+    }
+    const grantRead = readCreatedWorkflowReplayGrant({
+      grantBytes,
+      cases: [{ caseId, authorityBytes }],
+      // 生产路径的时钟一律主机墙钟：不接受任何调用方喂时（plan §3.5）。
+      now: new Date().toISOString(),
+    });
+    if (!grantRead.ok) {
+      console.error(`replay: 回放授权票据未过（${grantRead.reason}），未启动浏览器`);
+      process.exit(65);
+    }
+    const occupied = occupyReplayGrantMember({
+      ledgerRoot: args.replayGrantLedger,
+      grantNonce: grantRead.grantNonce,
+      batchToken: String(args.batchToken),
+      caseId,
+      grantCaseIds: grantRead.caseIds,
+    });
+    if (!occupied.allowLaunch) {
+      console.error(`replay: 回放授权票据核销未过（${occupied.reason}），未启动浏览器`);
+      process.exit(65);
+    }
     const opened = createCreatedWorkflowReplayContinuityController({
       caseId,
       runId: typeof args.runId === 'string' && args.runId ? args.runId : `${caseId}-${args.batchToken}`,
       batchToken: String(args.batchToken),
       uniqueNameToken: uniqueName,
       authority: authorityRead.handle,
+      grant: grantRead.handle,
       profile,
     });
     if (!opened.ok) {

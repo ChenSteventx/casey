@@ -1,0 +1,359 @@
+Signing in… starting your session.
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                                                                                                      │
+│                                                                                              ⠀⠀⠀⣀⣤⣤⣀⠀⠀⡠                                                                                              │
+│                                                                                              ⠀⢀⡾⠋⠁⠀⢁⢴⡎⠀                                                                                              │
+│                                                                                              ⠀⢸⡇⠀⠀⠐⠁⢀⣿⠀                                                                                              │
+│                                                                                              ⠀⢈⠗⢀⣀⣀⣠⡾⠃⠀                                                                                              │
+│                                                                                              ⠐⠁⠀⠈⠉⠉⠉⠀⠀⠀                                                                                              │
+│                                                                                                                                                                                                      │
+│ Grok Build  v0.2.118                                                                                                                                                                                 │
+│ /mnt/d/ctx/heren/casey-p9-replay-authority-split                                                                                                                                                     │
+│ Model · Grok 4.5                                                                                                                                                                                     │
+│ /help for commands                                                                                                                                                                                   │
+│                                                                                                                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+◆ session_start
+      ✓ global/settings:session_start[0].hooks[0] (6ms)
+      ✓ global/settings:session_start[1].hooks[0] (682ms)
+      ✓ project/settings:session_start[0].hooks[0] (57ms)
+❯ # 前 提 审 ： p9-replay-authority-split（ 回 放 专 用 授 权 件 ， run-scoped grant）
+  这 是 **前 提 与 设 计 审 **， 不 是 代 码 审 ——实 现 尚 未 动 工 ， 审 的 是  GRILL、 plan 与 红 金 牌 草 稿 的
+  方 法 前 提 。 你 的 任 务 ： 在 实 现 开 始 前 逮 住 错 误 前 提 、 安 全 属 性 洞 、 与 已 签 硬 规 则 的 冲 突 。
+  背 景 ： P9 v3 结 构 授 权 件 （ cases/<case>/execute-authority.json， 人 签 冻 结 ） 目 前 只 表 达
+  结 构 边 （ authority edges） ， 不 含 运 行 期 平 台  ID。 Steven 已 裁 ： 正 式 回 放 须 另 立 **回 放 专 用
+  授 权 件 **（ run-scoped grant） ——grantNonce 一 次 性 消 耗 账 本 、 notAfter 人 写 失 效 时 刻 、
+  sha256 链 到 结 构 授 权 件 ； 签 署 点 在 签 署 会 话  C 之 后  D 之 前 。 编 译 面 从 不 读  v3 结 构 授 权 件
+  （ 已 由  grep 独 立 核 实 ） ； 缺 口 在 回 放 侧 ， 纯 增 量 。
+  仓 库 （ 只 读 勿 改 ） ： /mnt/d/ctx/heren/casey-p9-replay-authority-split（ 基 线  96f6107， 草 稿 全 部 未 跟 踪 ）
+  审 阅 对 象 （ 仅 此 三 件 ） ：
+  - docs/plans/p9-replay-authority-split/GRILL.md
+  - docs/plans/p9-replay-authority-split/plan.md
+  - tests/_golden/p9-replay-authority-split.zero-sut.golden.mjs（ 红 草 稿 ， 0/9 红 ，
+    用  CASEY_LAUNCH_SENTINEL 接 缝 证 明 今 天 拿  audience:test 结 构 件 就 能 一 路 跑 到
+    chromium.launch——洞 是 真 的 ； 红 证 在  docs/plans/p9-replay-authority-split/accept/red-proofs/）
+  风 险 清 单 （ 按 此 审 ） ：
+  1. 安 全 属 性 完 备 性 ： grant 的 五 元 组 （ grantNonce 一 次 性  / notAfter / sha256 链  /
+     run 绑 定  / 人 签 ） 有 没 有 漏 的 攻 击 面 ？ 重 放 同 一  grant、 复 制  grant 到 另 一  case、
+     结 构 件 重 签 后 旧  grant 是 否 自 动 失 效 （ 链 断 ） 、 时 钟 依 赖 （ notAfter 用 什 么 时 钟 、
+     回 放 器 能 否 被 喂 假 时 间 ） 。
+  2. fail-safe 方 向 ： 每 条 校 验 失 败 是 否 都 硬 退 出 （ fail-closed） ？ 有 没 有 「 缺  grant 走
+     兼 容 旧 路 」 的  fail-open 后 门 ？ 向 后 兼 容 窗 口 （ 既 有 已 签  v2 用 例 无  grant） 如 何 处 置
+     ——豁 免 面 是 否 显 式 、 有 界 、 可 枚 举 ？
+  3. 与 硬 规 则 冲 突 ： 模 型 不 得 改  expected/晋 升 /签 署 ； 裁 判 零  LLM； gate 独 写  passes；
+     冻 结 件 只 读 。 grant 的 产 生 与 消 耗 路 径 有 没 有 绕 过 人 签 的 缝 ？ consume-once 账 本 写 在 哪 、
+     谁 有 权 写 、 回 放 崩 溃 重 启 后 账 本 状 态 如 何 （ 半 消 耗 ） ？
+  4. 红 金 牌 草 稿 质 量 ： 9 钉 是 否 钉 住 上 述 属 性 的 可 证 伪 面 ？ CASEY_LAUNCH_SENTINEL 接 缝
+     是 否 只 在 测 试 域 生 效 、 不 会 泄 进 生 产 路 径 ？ 红 因 是 否 为 「 目 标 实 现 缺 席 」 而 非  marker 假 红 ？
+  5. 范 围 纪 律 ： plan 是 否 真 的 纯 增 量 （ 不 动 准 入 门 、 不 动  v3 结 构 件 格 式 、 不 碰 冻 结 金 牌 ） ？
+     4 处 修 订 点 位 是 否 最 小 ？
+  纪 律 ： 不 改 仓 库 任 何 文 件 。 可 自 己 跑 红 金 牌 草 稿 （ node tests/_golden/p9-replay-authority-split.zero-sut.golden.mjs，
+  预 期  exit 1） 与  grep 验 证 「 编 译 面 不 读 结 构 授 权 件 」 的 前 提 。 只 信 退 出 码 。
+  结 尾 一 行  VERDICT: PREMISE_SOUND 或  VERDICT: PREMISE_FLAWED（ 附  finding 清 单 ， 标 级 别 ） 。
+◆ user_prompt_submit
+      ✓ global/settings:user_prompt_submit[0].hooks[0] (7ms)
+      ✓ global/settings:user_prompt_submit[1].hooks[0] (674ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[0] (351ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[1] (66ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[2] (53ms)
+┃◆ Thought for 1.1s
+┃
+┃The user wants me to perform a premise and design review of the P9 replay authority split work. This is NOT a code review - implementation hasn't started yet. I need to review:
+这 是 前 提 与 设 计 审 ， 先 只 读 三 件 审 阅 对 象 和 相 关 硬 规 则 ， 再 跑 红 金 牌 与  grep 核 实 前 提 。
+◆ Read GRILL.md  [hooks: 2]
+◆ Read plan.md  [hooks: 2]
+◆ Read p9-replay-authority-split.zero-sut.golden.mjs  [hooks: 2]
+◆ List docs/plans/p9-replay-authority-split (8 entries)  [hooks: 4]
+┃◆ Thought for 0.8s
+┃
+┃I have the three main documents. Now I need to dig deeper into:
+接 下 来 核 实 关 键 代 码 路 径 、 红 证 与 既 有 先 例 ， 并 跑 红 金 牌 草 稿 。
+◆ Task started: Run red golden draft, capture exit
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (13ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (855ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (576ms)
+◆ Task started: Confirm baseline commit and untracked drafts
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (434ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (1198ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (647ms)
+◆ Search "readCreatedWorkflowOwnershipAuthority|checkCreatedWorkflowOwnershipPreflight|freezeCreatedWorkflowOwnershipAuthority|createCreatedWorkflowReplayContinuityController" in *.mjs  [hooks: 2]
+◆ Search "authority|Authority" in bin/compile.mjs (18 matches)  [hooks: 2]
+◆ Search "CASEY_LAUNCH_SENTINEL" in *.{mjs,js,md} (48 matches in 28 files)  [hooks: 2]
+◆ Read replay-authority-split.red.txt  [hooks: 4]
+◆ Task completed in 3.3s: Run red golden draft, capture exit
+◆ Task completed in 3.8s: Confirm baseline commit and untracked drafts
+┃◆ Thought for 32.4s
+┃
+┃The golden test is taking a while - probably because R1 and R2 actually launch replay which may take time even with sentinel. Let me wait for outputs and dig deeper into security gaps while waiting.
+┃
+┃...VERDICT: PREMISE_FLAWED
+┃
+┃Findings (critical first):
+┃
+┃1. run-scoped vs batch-scoped mismatch – query title says “run-scoped grant” but plan.md explicitly says one grantNonce per batchToken, consumed once after the whole batch finishes. That is batch 1-
+┃of-N, not per-run. If the intention is run-scoped, the design must be rewritten; if batch-scoped is correct, the title is misleading.
+┃
+┃2. consume-after-launch = fail-open window – GRILL D3 “跑 完 写 核 销 ” and plan “跑 完 把  grant 写 进  runs/ 下 的 核 销 台 账 ” means ledger write happens after successful run. Crash mid-run → non
+┃unconsumed → attacker can re-launch with same grant. Classic capability-ticket anti-pattern. No atomic check-and-set before launch.
+┃
+┃3. maxRuns field dead – GRILL includes 1, plan includes it, but consumption is purely by grantNonce ledger. Either maxRuns is vestigial or the once-consume rule is incomplete.
+┃
+┃4. clock source for notAfter – golden test hard-codes now: '2026-...', but production path likely uses Date.now().
+红 金 牌 还 在 跑 ； 并 行 核 对 消 费 时 机 、 时 钟 源 与 既 有 授 权 先 例 。
+◆ Read replay.mjs (61-220 of 662)  [hooks: 2]
+◆ Read replay.mjs (431-470 of 662)  [hooks: 2]
+◆ Read selftest-tier2-manifest.mjs (231-330 of 381)  [hooks: 2]
+◆ Read entity-created-workflow-continuity-v3.mjs (2-51 of 869)  [hooks: 2]
+◆ Read entity-created-workflow-continuity-v3.mjs (701-780 of 869)  [hooks: 2]
+◆ Search "consumeWinProbeChallenge|ensureWinProbeChallenge|consumedAt|ledger" in *.{mjs,md} (39 matches in 11 files)  [hooks: 4]
+┃◆ Thought for 35.8s
+┃
+┃Interesting - the golden test command reported exit code 0 from the shell wait, but the output shows EXIT:1 and failures. Looking more carefully: The golden test ran cleanly (node exited 1 as
+┃expected), confirming the premise draft is still red at 0/9. I reviewed the three artifacts line-by-line and the red-proofs folder. Here are the concrete flaws I found:
+┃
+┃1. Consume timing is inverted
+┃   plan.md says “跑  完 写 核 销 ” but consumeWinProbeChallenge marks consumed after the probe result is used. That’s a classic fail-open: an attacker can replay the same grant nonce multiple times b
+┃the ledger write. The once-semantics guarantee is broken.
+┃
+┃2. maxRuns is declared but never enforced
+┃   R7 only checks manifest structure; nothing in the golden or GRILL.md nails the per-grant run-count cap. If maxRuns=1, the system can still launch unlimited times until the ledger write path is
+┃hit.
+┃
+┃3. Ledger write path is not wired into the critical replay path
+┃    bin/re play.mjs and the controller only require a grant handle (readCreatedWorkflowReplayGrant). The consumption logic (judgeReplayGrantConsumption + ledger append) lives only in selftest-tier2-
+┃collect.mjs. Direct node bin/replay.mjs --replay-grant … can therefore reuse an unconsumed grant indefinitely as long as signature and notAfter are valid. That is a hard fail-open.
+┃
+┃4. notAfter expiry is untested
+┃    R1-R8 contain no scenario where a grant with past notAfter is rejected. The red-proofs folder has no “expired grant” nail.
+┃
+┃5.
+◆ Read entity-created-workflow-continuity-v3.mjs (401-480 of 869)  [hooks: 2]
+◆ Search "signature|signerId|credentialGate|signArtifact|computeSignature" in lib/entity-created-workflow-continuity-v3.mjs (8 matches)  [hooks: 2]
+◆ Read entity-authority.mjs (2-164 of 164)  [hooks: 2]
+◆ Search "createdWorkflowAuthority|created-workflow-authority|authorize-mutation|perRunApproval" in *.{mjs,md} in lib (8 matches in 5 files)  [hooks: 2]
+◆ Read selftest-tier2-collect.mjs (141-190 of 461)  [hooks: 2]
+◆ Read selftest-tier2-collect.mjs (361-410 of 461)  [hooks: 2]
+◆ Search "fail-open|fail-closed|NEEDS_HUMAN|HARNESS_ERROR|passes" in loop/GUARDRAILS.md (6 matches)  [hooks: 4]
+┃◆ Thought for 28.0s
+┃
+┃I found a critical issue with signature verification on structural authority: VERDICT: PREMISE_FLAWED
+┃
+┃Findings (critical → medium):
+┃
+┃1. Critical – consume-before-run vs. “run-after” wording
+┃   Plan §3.3 and §4 explicitly say “跑 完 把  grantNonce → batchToken 写 进  runs/ 下 的  核 销 台 账 ” and “selftest-tier2-collect 跑 后 写 核 销 台 账 ”, yet the cited win-probe precedent consumes
+┃before any case runs (readiness.ok → consumeWinProbeChallenge). The plan therefore mis-describes its own precedent. This is not a wording nit — it directly contradicts the “once” guarantee the grant
+┃is supposed to provide.
+┃
+┃2. Critical – ledger path not on replay critical path
+┃   R5 only tests the pure judge function; the consume ledger write lives in orchestration (replay.mjs / controller) which the plan never places under the same gate. Once is therefore orchestration-
+┃optional, not enforced.
+┃
+┃3.
+◆ Run Reconfirm golden exit 1 and compile grep
+$ node tests/_golden/p9-replay-authority-split.zero-sut.golden.mjs >/tmp/p9-red.out 2>&1; echo EXIT:$?; tail -15 /tmp/p9-red.out;
+  sha256sum tests/_golden/p9-replay-authority-split.zero-sut.golden.mjs docs/plans/p9-replay-authority-split/accept/red-proofs/replay-authority-split.red.txt 2>/dev/null;
+  rg -n "created-workflow-authority|readCreatedWorkflowOwnershipAuthority|createCreatedWorkflowReplayContinuityController" bin/compile.mjs || echo "compile.mjs: zero v3 authority hits"
+EXIT:1
+FAIL R1 结 构 件 当  --replay-grant 传 入  → 具 名 拒 ， 不 得 被 当 票 据 放 行 : 越 过 浏 览 器 前 门 ： 哨 兵 已 落 盘 （ 结 构 件 被 当 票 据 放 行 到 了  chromium.launch）
+… +10 lines
+40dc2945b630cd9452fda08a64f41cf8e41daea988fb45bea712ba0df0e7a6ab  docs/plans/p9-replay-authority-split/accept/red-proofs/replay-authority-split.red.txt
+--: line 1: rg: command not found
+compile.mjs: zero v3 authority hits
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (132ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (998ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (2895ms)
+◆ Search "maxRuns|notAfter|grantNonce|跑 完 |核 销 |consume" in docs/plans/p9-replay-authority-split (32 matches in 4 files)  [hooks: 2]
+◆ Read entity-created-workflow-continuity-v3.mjs (351-380 of 869)  [hooks: 2]
+◆ Search "screenTier2CaseAuthorization|perRunApproval|authorize" in lib/selftest-tier2-collect.mjs (13 matches)  [hooks: 2]
+◆ Read worktree-fixtures-20260804.md (1-80 of 115)  [hooks: 4]
+┃◆ Thought for 2.7s
+┃
+┃I have enough for a thorough premise review. Let me also quickly check if audience is verified on structural authority read path and credential gate for production.
+◆ Search "createdWorkflowAuthorityAudience|CREDENTIAL_AUDIENCE|checkCredentialAudienceGate" in bin/replay.mjs (7 matches)  [hooks: 2]
+◆ Search "calculateIdentityAdmissionSignature|digestValue" in **/entity-*.mjs (13 matches in 4 files)  [hooks: 2]
+◆ Read entity-created-workflow-continuity-v3.mjs (141-170 of 869)  [hooks: 4]
+┃◆ Thought for 5.9s
+┃
+┃I have a solid review. Let me structure the verdict. PREMISE_FLAWED
+┃
+┃Critical findings:
+┃1. Consume-after-run + ledger only on tier2 orchestration breaks once property - Critical
+┃2.
+前 提 审 ： p9-replay-authority-split
+范 围 ： 仅  GRILL / plan / 红 金 牌 草 稿 （ 基 线  96f6107， 生 产 件 未 动 ） 。
+核 实 ： 本 机 实 跑 金 牌  exit 1、 0/9； bin/compile.mjs 对  v3 结 构 件  / readCreatedWorkflowOwnershipAuthority 零 引 用 ； CASEY_LAUNCH_SENTINEL 在  bin/replay.mjs:450（ chromium.launch 前 短 路
+───
+已 采 信 的 前 提 （ 方 法 对 ）
+┌──────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────┐
+│ 前 提                              │ 证 据                                                                                    │
+├──────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────┤
+│ 编 译 面 不 读  v3 结 构 授 权 件          │ compile.mjs 仅  entity-pre-execution-authority； v3 reader 生 产 调 用 点 只 有  bin/replay.mjs │
+├──────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────┤
+│ 缺 口 在 回 放 运 行 期 ， 结 构 件 可 纯 加 法  │ AUTHORITY_KEYS 无 批 次 /失 效 /nonce； consume:'once' 只 在 进 程 内  WeakMap                    │
+├──────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────┤
+│ 洞 是 真 的 ， 不 是  marker 假 红        │ R1/R2： 哨 兵 已 落 盘 （ 无 票  / 结 构 件 冒 充 票 据 都 能 到  launch 前 ）                              │
+├──────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────┤
+│ 强 制 点 取 纯 层                      │ 对 齐 既 有 「 CLI 单 点 假 门 」 教 训 ； R6 与  R2 成 对 正 确                                         │
+├──────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────┤
+│ 签 署 点  C 后  D 前                  │ 避 免  E 段 追 认                                                                           │
+├──────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────┤
+│ R3a 诚 实 标 注                      │ 结 构 面 异 种 件 今 日 已 拒 ； 红 因 是 造 不 出  grant 夹 具 ， 属 回 归 守 钉                               │
+└──────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────┘
+───
+Findings
+Critical
+C1 — grantNonce 一 次 性 核 销 的 时 序 写 反 ， 且 与 所 引 先 例 不 一 致
+• plan/GRILL 写 ： **「 跑 完 」 **再 写  grantNonce → batchToken 台 账 。
+• 所 引 先 例  consumeWinProbeChallenge 实 际 是 ： 前 置 门 通 过 后 、 跑 成 员 前 作 废 （ selftest-tier2-collect.mjs:371-372） ， 不 是 成 功 后 核 销 。
+• 安 全 后 果 ：
+  1. 并 发 两 次  replay 共 用 未 核 销  grant → 两 次 都 过 闸 ；
+  2. 崩 溃 /杀 进 程 发 生 在  SUT 动 作 之 后 、 台 账 落 盘 之 前  → 票 据 可 复 用 （ 半 消 耗 ） ；
+  3. 「 一 次 性 」 在 时 间 窗 内 退 化 为  notAfter 内 可 多 次 。
+须 先 裁 ： 核 销  = launch 前 原 子  check-and-set（ 先 记 再 放 行 ） ； 失 败 /崩 溃 是 否 允 许 人 签 新 票 重 试 ， 另 开 人 签 路 径 ， 绝 不 能 默 认 可 复 用 旧  nonce。
+───
+C2 — 「 一 次 」 未 钉 在 唯 一 执 行 临 界 路 径 上
+┌─────────────────────────────────────────────────┬────────────────────────────────────┬────────────────┐
+│ 层                                               │ plan 接 线                           │ 对  once 的 含 义  │
+├─────────────────────────────────────────────────┼────────────────────────────────────┼────────────────┤
+│ judgeReplayGrantConsumption                     │ 纯 函 数                              │ R5 只 测 它       │
+├─────────────────────────────────────────────────┼────────────────────────────────────┼────────────────┤
+│ createCreatedWorkflowReplayContinuityController │ 必 填  grant handle（ 验 链 /形 状 ）      │ 未 要 求 台 账      │
+├─────────────────────────────────────────────────┼────────────────────────────────────┼────────────────┤
+│ bin/replay.mjs                                  │ --replay-grant 有  authority 时 必 填  │ 未 写 读 /写 台 账   │
+├─────────────────────────────────────────────────┼────────────────────────────────────┼────────────────┤
+│ selftest-tier2-collect                          │ 跑 后 写 台 账                          │ 编 排 层 可 选      │
+└─────────────────────────────────────────────────┴────────────────────────────────────┴────────────────┘
+任 何 人 拿 已 签 、 未 过 期  grant 直 接  casey run / replay.mjs， 可 在  notAfter 内 无 限 重 放 ； once 变 成  Tier2 礼 仪 ， 不 是 授 权 属 性 。
+须 先 裁 ：
+1. 台 账 路 径 /字 节 如 何 进 入  controller 或  replay 浏 览 器 前 门 （ 与  grant handle 同 级 ） ；
+2. 谁 有 权  append（ 单 一 写 者  + 原 子 落 盘 ） ；
+3. 直 接  replay 与  Tier2 共 用 同 一 台 账 根 ， 禁 止 双 路 径 语 义 。
+无 此 三 条 ， 五 元 组 里 的 「 一 次 性 」 不 成 立 。
+───
+High
+H1 — notAfter 时 钟 与 可 喂 假 时 间 未 定 义 ， 红 钉 缺 失
+• 人 写  notAfter 正 确 （ Q4） 。
+• 金 牌  read(..., now: '...') 可 注 入 时 间 ； plan 未 规 定 生 产 路 径 必 须 用 主 机 墙 钟 、 禁 止  CLI/now 覆 盖 。
+• 九 钉 中  无 「 已 过 期  notAfter → 具 名 拒 、 未  launch」 。
+过 期 上 界 目 前 是 字 段 草 案 ， 不 是 可 证 伪 属 性 。
+───
+H2 — maxRuns:1 与  grantNonce once 双 轨 ， 语 义 未 闭 合
+字 段 闭 包 含  maxRuns， 消 费 叙 述 只 讲  nonce 台 账 。 风 险 ：
+• 死 字 段 日 后 被 理 解 成 「 可  >1」 → 拆  once；
+• 或 两 套 计 数 漂 移 。
+建 议 ： 要 么 删  maxRuns（ once 仅  nonce） ， 要 么 定 义 且 钉 死  maxRuns≡1 且 与 台 账 一 致 （ 多 计 拒 绝 ） 。
+───
+H3 — 「 run 绑 定 」 名 实 不 符
+标 题 /派 活 口 径 像  run-scoped； 模 型 是  批 级 一 份  grant + 事 后  batchToken 映 射 。 batchId 签 署 时 可 任 意 ， 与 运 行 期  batchToken 无 预 绑 定 。
+这 不 必 然 错 （ 批 级 决 策 对 齐  D 段 ） ， 但 须 在  plan 改 口 ： 批 级 一 次 性 票 据 ， 不 是  run-scoped； 「 run 绑 定 」 = 核 销 后 审 计 映 射 ， 不 是 签 前 能 力 约 束 。 否 则 评 审 按
+───
+Medium
+M1 — R7 弱 于  GRILL R7
+• GRILL： 缺 /坏  grant → 三 例 拒 跑 并 落 拒 跑 回 执 。
+• 金 牌  R7： 只 验  validateSuiteManifestDoc 缺 路 径 /越 界 。
+清 单 结 构 红  ≠ 采 集 层  fail-closed。 缺  spawn/采 集 面 「 无 有 效  grant → 子 进 程 未 起  + receipt」 。
+───
+M2 — 台 账 并 发 与 半 消 耗 协 议 空 白
+除  C1 时 序 外 ： append-only？ 同  nonce 竞 态 谁 赢 ？ 写 失 败 是 否  allowLaunch:false？ plan 无 协 议  → 实 现 易  fail-open。
+───
+M3 — grant ↔ 结 构 件  audience 一 致 性 未 写
+结 构 件 有  audience 门 （ replay.mjs:365-374） ； grant 也 有  audience。 未 规 定 ：
+• grant.audience 是 否 必 须 覆 盖 /等 于  cases 内 结 构 件  audience；
+• production 票 配  test 结 构 件 是 否 具 名 拒 。
+可 导 致 「 票 是  production、 边 是  test」 或 反 向 的 门 缝 。
+───
+M4 — grantNonce 熵 与 生 成 方 未 定
+金 牌 固 定  a*32。 机 器 在  draft 生 成 （ 类  win-probe） 还 是 人 填 ？ 低 熵 /可 预 测 会 削 弱  once（ 在  C1/C2 修 好 后 仍 相 关 ） 。
+───
+Low（ 非 否 决 ， 实 现 前 应 写 清 ）
+L1 — 兼 容 豁 免 面 宜 显 式 枚 举
+「 仅 当 存 在  --created-workflow-authority 时 必 填  --replay-grant」 = 无 结 构 件 路 径 不 要 求  grant。 对  v1/v2 合 理 ， 但 须 写 成 有 界 豁 免 ， 并 确 认 变 更 型  cleanup 不 能 在 无 结 构
+大 豁 免 ） 。
+L2 — 签 名 是 内 容 摘 要 不 是 非 对 称 密 码
+与 现 役  v3 digestValue 同 族 ： 防 的 是 误 用 /拼 错 件 ， 不 是 抗 恶 意 写 盘 伪 造 。 人 签 边 界 仍 是  CLI freeze + 流 程 ， 与 硬 规 则 一 致 ； 勿 在 文 书 里 暗 示 更 强 密 码 学 。
+L3 — CASEY_LAUNCH_SENTINEL
+既 有 测 试 接 缝 ； 设  env 会  短 路 退 出 ， 不 会 放 行 未 授 权 删 除 。 生 产 勿 设 即 可 。 R1/R2 用 法 正 确 。
+L4 — 范 围 纪 律 大 体 成 立 ， 但 不 是 「 零 碰 冻 结 面 」
+不 动  v3 字 节 形 状  / 准 入 门  / 编 译 面 ： 是 。
+会 改 ： controller 签 名 、 4 处  v3 金 牌  amendment、 清 单 顶 层 字 段 ——plan 已 坦 白 ， 属 纯 层 强 制 的 必 要 代 价 ， 不 是 偷 扩  scope。
+L5 — 红 钉 覆 盖 面 （ 相 对 五 元 组 ）
+┌──────────────────────┬─────────────┬─────────────────────────┐
+│ 属 性                  │ 钉           │ 评 价                     │
+├──────────────────────┼─────────────┼─────────────────────────┤
+│ 件 种 互 不 可 冒 充        │ R1/R3       │ 好                       │
+├──────────────────────┼─────────────┼─────────────────────────┤
+│ 无 票 不  launch        │ R2/R6       │ 好 （ 真 洞 ）               │
+├──────────────────────┼─────────────┼─────────────────────────┤
+│ 跨 案 链                │ R4          │ 好                       │
+├──────────────────────┼─────────────┼─────────────────────────┤
+│ once                 │ R5          │ 仅 纯  judge， 缺 路 径 /时 序  │
+├──────────────────────┼─────────────┼─────────────────────────┤
+│ 人 签  freeze 精 确 字 节  │ R8          │ 好                       │
+├──────────────────────┼─────────────┼─────────────────────────┤
+│ 结 构 重 签 断 链          │ （ 含 于  R4）  │ 可 接 受                   │
+├──────────────────────┼─────────────┼─────────────────────────┤
+│ notAfter/时 钟         │ —           │ 缺                       │
+├──────────────────────┼─────────────┼─────────────────────────┤
+│ 台 账 写 在  launch 前    │ —           │ 缺                       │
+├──────────────────────┼─────────────┼─────────────────────────┤
+│ 采 集 拒 跑 回 执          │ —           │ 缺 （ 相 对  GRILL）         │
+└──────────────────────┴─────────────┴─────────────────────────┘
+R3b 要 求  REPLAY_GRANT_ARTIFACT_KIND_INVALID： 今 日  freeze 更 可 能 走 通 用  draft 不 一 致 ； 实 现 须 具 名 件 种 ， 否 则 钉 会 逼 出 与 现 役 不 一 致 的 错 误 码 ——属 实 现 约 束 ， 前 提 上
+───
+与 硬 规 则
+┌───────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────┐
+│ 规 则                           │ 结 论                                                                                │
+├───────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────┤
+│ 裁 判 零  LLM / gate 独 写  passes │ 无 冲 突 ； 新  PRD 由  gate 写  passes                                                   │
+├───────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────┤
+│ 模 型 不 改  expected/晋 升         │ grant 不 碰  expected                                                                │
+├───────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────┤
+│ 人 签 不 可 代                     │ freeze 重 建 草 案  + signer/signedAt； notAfter 人 写 正 确                                │
+├───────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────┤
+│ fail-safe 不  fail-open        │ C1/C2 在  once 上 构 成 设 计 级  fail-open 风 险 ； 「 无  authority 不 要 求  grant」 需 显 式 有 界  │
+├───────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────┤
+│ 冻 结 件 只 读                     │ 台 账 在  runs/ 正 确 ； 勿 写 回 已 签  grant                                                │
+└───────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────┘
+───
+范 围 四 修 订 点 （ plan §4） 是 否 最 小
+1. 新  replay-grant 模 块  — 必 要
+2. controller 必 填  grant — 必 要 （ Q2）
+3. CLI verb + replay/casey 接 线  — 必 要
+4. 清 单  replayGrantPath + collect — 必 要
+额 外 隐 含 ： 台 账 读 写 与  launch 前 消 耗 （ C1/C2） 必 须 写 进 同 一 最 小 集 ， 否 则  once 交 付 不 完 整 。 这 不 是 扩  scope， 是 补 缺 口 。
+───
+红 金 牌 草 稿 总 评
+• 真 红 ： R1/R2/R6/R7 指 向 真 实 缺 席 ； exit 1 可 复 现 。
+• 模 块 缺 席 红 ： R3–R5/R8 因  ERR_MODULE_NOT_FOUND——对 「 生 产 面 未 动 工 」 合 格 ； 实 现 后 应 变 为 行 为 断 言 。
+• 诚 实 ： R3a 不 冒 充 新 拦 截 力 。
+• 不 够 钉  once/notAfter/消 耗 时 序 ——与 本 契 约 立 命 属 性 不 对 齐 ， 须 在 冻 结 前 补 钉 （ 或 先 改  plan 再 冻 ） 。
+───
+过 审 前 必 须 闭 合 的 最 小 清 单
+1. 核 销 时 序 ： launch 前 原 子 占 用 ； 与  win-probe 先 例 对 齐 ， 删 掉 「 跑 完 再 写 」 为 主 路 径 。
+2. 临 界 路 径 ： replay/controller 与  Tier2 共 用 台 账 校 验 ； 禁 止 「 仅  collect 写 台 账 」 。
+3. 时 钟 ： 生 产  now = 主 机 时 间 ； 禁 止 调 用 方 喂 时 ； 补 过 期 红 钉 。
+4. maxRuns： 删 除 或 钉 死  ≡1。
+5. 文 书 ： 批 级 票 据 ， 不 写  run-scoped； 兼 容 豁 免 显 式 枚 举 。
+6. 补 钉 （ 建 议 ） ： 过 期 拒 ； launch 前 已 占 用  nonce 第 二 进 程 拒 ； 缺  grant 的  Tier2 拒 跑 +receipt（ 对 齐  GRILL R7） 。
+───
+VERDICT: PREMISE_FLAWED
+• Critical: C1 核 销 时 序 （ 跑 完 写  / 半 消 耗  / 并 发 复 用 ） ； C2 once 未 绑 定  replay/controller 临 界 路 径
+• High: H1 notAfter 时 钟 与 红 钉 缺 席 ； H2 maxRuns 双 轨 ； H3 run vs 批 级 名 实
+• Medium: M1 R7 弱 于  GRILL； M2 台 账 并 发 协 议 ； M3 audience 一 致 性 ； M4 nonce 熵
+• Low: L1–L5（ 豁 免 枚 举 、 摘 要 签 名 边 界 、 sentinel、 范 围 坦 白 、 钉 覆 盖 缺 口 ）
+Worked for 8m2s                                                                                                                                                                         stop  [hooks: 5]
+      ✓ global/settings:stop[0].hooks[0] (94ms)
+      ✓ global/settings:stop[1].hooks[0] (1204ms)
+      ✓ project/settings:stop[0].hooks[0] (2398ms)
+      ✓ project/settings:stop[0].hooks[1] (490ms)
+      ✓ project/settings:stop[1].hooks[0] (139ms)
+minimal · /help
+❯
+Grok 4.5 (high) · always-approve · 84K / 500K (17%) · ctrl+o transcript
