@@ -4,10 +4,11 @@
   "task": "workflow.deleteByName 支持卡片布局的删除入口：悬停目标卡片 → 点更多操作入口 → 因果浮现的浮层菜单内取「删除」→ 交回既有确认弹层因果授权链；表格布局与容器内直见删除钮的既有行为零位移。",
   "specPath": "docs/plans/wf-delete-card-layout/plan.md",
   "testChecksums": {
-    "tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs": "861eb06fc7d7ac7d9b38826834c963984f3471fe68620b63a7f6f23d5d4ca46c",
+    "tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs": "a95a4b25e094b332a55d07b605e05db2da88e795759b34a0fc5a669777adcca0",
     "docs/plans/wf-delete-card-layout/GRILL.md": "7ee848b4a9760383318100aee110053c282be1ceabafd4921009cb29cde98342",
-    "docs/plans/wf-delete-card-layout/plan.md": "e775ee8e1649a9ee8dc0d28a8c75381477e074f4120c5abf83311939075ad989",
-    "accept/red-proofs/wf-delete-card-layout.red.txt": "003e600190cf4bd67af79b9490f8b411967f3db8f376b66f917bf0425b47dd82"
+    "docs/plans/wf-delete-card-layout/plan.md": "24ea59fc0b8284dc45292e968a3155648afe90d890478aee0aadc20f8580cf06",
+    "accept/red-proofs/wf-delete-card-layout.red.txt": "003e600190cf4bd67af79b9490f8b411967f3db8f376b66f917bf0425b47dd82",
+    "accept/red-proofs/wf-delete-card-layout.r4-cleanup-residual.red.txt": "43adbbc99600f926e58f75ccaea5ab090b30ab8fe30e868b76aa4b724ace1bf7"
   },
   "checksumAmendments": [
     {
@@ -58,6 +59,16 @@
       "newSha": "003e600190cf4bd67af79b9490f8b411967f3db8f376b66f917bf0425b47dd82",
       "amendedAt": "2026-08-04",
       "reason": "追加修后审红证：新断言对未修复的 0a1c267 实跑 20/23、exit 1，R20/R22/R23 三条恰红；随后生产修复、同一测试字节 23/23 复绿。"
+    },
+    {
+      "amendedAt": "2026-08-04",
+      "round": "r4 重渲染洗绿加固（pi.dev deepseek-v4-flash high R3 复审唯一 Medium，Steven 指示按发现并集修）",
+      "files": [
+        "tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs",
+        "docs/plans/wf-delete-card-layout/plan.md",
+        "accept/red-proofs/wf-delete-card-layout.r4-cleanup-residual.red.txt"
+      ],
+      "reason": "pi R3 最小反例坐实：settle 只按原因果菜单物理句柄验缺席，SUT 在 Escape 同拍移除旧节点并重渲染同形、可见、仍含「删除」项的新菜单时，原句柄缺席使 menuCleanup 误记 closed——页面上删除菜单明明还在（重渲染换节点洗绿）。修法：闭合充分条件收紧为「原句柄缺席 且 无可见、菜单域形状、含可见精确删除项的残留」（lib/workflow-delete-domain.mjs 新增只读判据 visibleDeleteMenuResidual，绝不给残留菜单打 pin、绝不追加 Escape、绝不收拾无所有权菜单；证不出闭合一律 failed）。新钉 R24（同形重渲染必须 failed）与 R25（基线旧菜单合法保留时保守 failed 而非假 closed、预存菜单原样保留、恰一次 Escape）。红先行：两钉对未修候选 ced9fcf 实跑 23/25 exit 1（期望 failed 实得 closed），红证另立 accept/red-proofs/wf-delete-card-layout.r4-cleanup-residual.red.txt（含金牌 sha256 头）；修复后 25/25 exit 0。突变验证：删掉形状兜底退回只验原句柄，R24/R25 恰双红，还原后实现文件 sha256 逐字节全同。plan §3.2b 收拾语义、A15 第三项、突变表同轮只加严更新。断言零弱化零删除。"
     }
   ],
   "observability": [

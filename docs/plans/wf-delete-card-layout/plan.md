@@ -52,7 +52,7 @@ if (result.resolution === 'none') result = <卡片悬停菜单路径>
 | `root.hover()` 悬停目标卡片 | 目标卡片唯一锁定之后、数更多操作入口之前 | 只读，浮现入口 |
 | `Escape` 关菜单 | 已实证取得恰一个因果新菜单的物理句柄，且最终未 `unique` | 取消语义，只收拾自己开的浮层；无所有权时绝不执行 |
 
-**`Escape` 失败不得吞，也不得把「按键未抛错」冒充「菜单已关闭」。** 返回的动作轴上带具名字段 `menuCleanup`：`'closed'`（按 Escape 后，同一因果菜单物理句柄已实证缺席）/ `'failed'`（按键抛错、重扫异常或同一菜单仍在）；未取得唯一因果菜单所有权、路径成功时该字段不出现。`menuCleanup` 在任何取值下都**不参与** `resolution` 判定。
+**`Escape` 失败不得吞，也不得把「按键未抛错」冒充「菜单已关闭」。** 返回的动作轴上带具名字段 `menuCleanup`：`'closed'`（按 Escape 后，同一因果菜单物理句柄已实证缺席，**且**页面不存在「可见、菜单域形状、含可见精确「删除」项」的残留——pi R3 反例坐实原句柄缺席不足以证闭合：SUT 可在同一拍移除旧节点并重渲染同形可见菜单洗绿）/ `'failed'`（按键抛错、重扫异常、同一菜单仍在，或形状兜底探到可见删除菜单残留——证不出闭合一律 `failed`）；未取得唯一因果菜单所有权、路径成功时该字段不出现。`menuCleanup` 在任何取值下都**不参与** `resolution` 判定。形状兜底判据只读（绝不给残留菜单打 pin 属性），也绝不为此追加 `Escape` 或收拾无所有权菜单。**既定代价（边界语义）**：`Escape` 后合法保留的基线旧菜单（含可见「删除」项）会让闭合证不出来、保守判 `failed`——是保守失败而非假 `closed`，由金牌 R25 钉住。
 
 **边界如实申报**：`menuCleanup` 到删除域返回值为止。编译侧 `lib/compile-atoms-run.mjs:155-158` 只取 `resolution` / `candidateCount` / `identityReadback` 三项，回放侧 `lib/replay/history.mjs` 由 `axis.resolution` 派生 `locatorResolution`——两处都是白名单投影，故该字段既不会漏进冻结的 `run-history.schema.json`（`additionalProperties:false`），也**不会自动出现在回放历史里**。要不要让它上到回放历史，是动冻结接缝的独立决策，本契约不做，记 `observability` 的 `route:human`。
 
@@ -117,7 +117,7 @@ if (result.resolution === 'none') result = <卡片悬停菜单路径>
 | A10 | 相邻面零 SUT 金牌全绿 | `node tests/_golden/units/p3-compile-unit.zero-sut.golden.mjs`；`node tests/_golden/agent-delete-zero-window.zero-sut.golden.mjs`；`node tests/_golden/hermetic-golden-sut-census.zero-sut.golden.mjs`；`node tests/_golden/hermetic-golden-prd-reverse-closure.zero-sut.golden.mjs` |
 | A10b | fixture SUT 浏览器面只保留为**历史带外证据 / `route:human`**，当前 agent 按 Casey 执行边界禁止启动、连接或回放 fake/fixture SUT。既有记录显示 `p3-compile.golden.mjs` 在 `dev`@`6f51aaf` 与主树上基线即红（`exit 1`，6 过 8 红，首红 `C4 COMPILE_ATOM_EXECUTION_FAILED atom=workflow.create`），与本契约无关；不得拿它冒充本契约金牌，也不得因本轮无法重跑而放宽零 SUT 判据 | `route:human/forbidden-for-agent`；历史基线仅供人工复核 |
 | A14 | 突变加固（实现审 grok 2026-08-04 攻穿五处漏钉后补）：① 直见删除钮 ≥2 → `ambiguous` 且零悬停零点击零请求（接管点放宽到 `none\|\|ambiguous` 即真 fail-open）；② 直见路径 `action_failed` 不得二次接管；③ 菜单浮出后目标卡片被换掉 → 具名拒、绝不点菜单删除项；④ 触发前就浮着的旧菜单不得被授权；⑤ 入口还没点下去就败的一律不记 `menuCleanup` | `node tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs`（R17–R21）+ 突变验证见 §五之二 |
-| A15 | 收拾所有权加固（Sol xhigh 修后审）：① click 分发前抛错且只有预存旧菜单 → 零 Escape、旧菜单仍连接、无 `menuCleanup`；② click 生出因果新菜单后抛错 → 可收拾，但须重扫同一物理菜单，Escape 无效时必须记 `failed` | 同上（R22–R23） |
+| A15 | 收拾所有权加固（Sol xhigh 修后审 + pi R3 复审）：① click 分发前抛错且只有预存旧菜单 → 零 Escape、旧菜单仍连接、无 `menuCleanup`；② click 生出因果新菜单后抛错 → 可收拾，但须重扫同一物理菜单，Escape 无效时必须记 `failed`；③ 原句柄缺席不足以证闭合——Escape 同拍重渲染的同形可见删除菜单必须判 `failed`（重渲染换节点洗绿反例），基线旧菜单合法保留时同样保守 `failed` 且绝不越权收拾 | 同上（R22–R25） |
 | A11 | 语法与卫生 | `node --check lib/workflow-delete-domain.mjs`；`git diff --check` |
 
 ## 五 红基线（`accept` 阶段交付）
@@ -141,6 +141,7 @@ if (result.resolution === 'none') result = <卡片悬停菜单路径>
 | 收拾放宽成「进过卡片路径就收拾」 | R21 | 死 R21 与 R15（R15 本就含同一条边界） |
 | 收拾所有权只看 click attempt、不看因果菜单句柄 | R20 / R22 | 两钉同时红 |
 | 删除 Escape 后同一物理菜单缺席复验 | R23 | sticky-menu 负控红 |
+| 删掉形状兜底 `visibleDeleteMenuResidual`（退回只验原句柄缺席） | R24 / R25 | 两钉同时红（`期望 failed 实得 closed`），还原后实现文件 sha256 逐字节同 |
 
 首轮五个突变体全部 `exit 1`，还原后五次 sha256 全同、金牌 21/21 复绿。修后审第二轮对 `0a1c267` 抓到所有权缺口：加 R22–R23 后实跑 20/23、`exit 1`（R20/R22/R23 恰红），修复后 23/23、`exit 0`。一次性突变工装不进仓，真实红输出追加进 `accept/red-proofs/wf-delete-card-layout.red.txt`。
 

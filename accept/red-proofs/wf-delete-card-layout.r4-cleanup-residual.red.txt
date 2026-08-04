@@ -1,0 +1,8 @@
+# 红证 r4：重渲染洗绿负控（pi R3 Medium 反例），对候选实现 ced9fcf + 本轮最终金牌字节实抓
+# 金牌 sha256: a95a4b25e094b332a55d07b605e05db2da88e795759b34a0fc5a669777adcca0
+# 判据：退出码（实得 1）；R24/R25 红、其余 23 钉绿
+
+23/25 checks passed
+- R24 收拾验真：Escape 同拍重渲染的同形菜单不得把 failed 洗成 closed: 原句柄缺席但页面仍有可见删除菜单——证不出闭合必须 failed：期望 "failed"，实得 "closed"
+- R25 收拾边界：基线旧菜单合法保留时保守判 failed 而非假 closed，且不越权收拾: 基线旧菜单仍可见含删除项——闭合证不出，保守 failed：期望 "failed"，实得 "closed"
+EXIT=1

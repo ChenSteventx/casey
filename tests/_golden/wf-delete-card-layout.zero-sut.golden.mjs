@@ -656,6 +656,43 @@ await check('R23 收拾验真：菜单已生成后 click 抛错只收拾因果�
   eq(sticky.page.requests.length, 0, '零请求');
 });
 
+await check('R24 收拾验真：Escape 同拍重渲染的同形菜单不得把 failed 洗成 closed', async () => {
+  // pi R3 反例（重渲染换节点洗绿）：SUT 在 Escape 那一拍移除原因果菜单节点、立即重渲染一个
+  // 同形、可见、仍含「删除」项的新菜单。只按原物理句柄验缺席会误记 closed——页面上删除菜单明明还在。
+  const swap = buildFixture({ layout: 'card', moreClickThrows: 'after-menu' });
+  swap.page.root.__onKey = (key) => {
+    if (key !== 'Escape') return;
+    for (const node of swap.page.root.querySelectorAll('.hr-popup')) if (visibleNode(node)) detach(node);
+    const reborn = append(swap.page.root, el('div', { class: 'hr-popup hr-dropdown hr-dropdown--bottom-right' }));
+    const rebornMenu = append(reborn, el('div', { class: 'hr-dropdown__menu' }));
+    for (const text of ['编辑', '复制', '删除', '停用']) append(rebornMenu, el('div', { class: 'hr-dropdown__item' }, text));
+  };
+  const swapAxis = await performWorkflowDeleteTrigger(swap.page, TARGET);
+  eq(swapAxis.resolution, 'action_failed', '菜单生成后 click 抛错须具名拒');
+  eq(swapAxis.menuCleanup, 'failed', '原句柄缺席但页面仍有可见删除菜单——证不出闭合必须 failed');
+  eq(swap.page.root.querySelectorAll('.hr-popup').filter(visibleNode).length, 1, '负控须证明同形菜单确实可见');
+  eq(swap.page.log.filter((row) => row.kind === 'key').length, 1, '证不出闭合也绝不追加 Escape');
+  eq(swap.page.requests.length, 0, '零请求');
+});
+
+await check('R25 收拾边界：基线旧菜单合法保留时保守判 failed 而非假 closed，且不越权收拾', async () => {
+  // 形状兜底的既定代价（plan §3.2b 语义）：Escape 后合法保留的基线旧菜单（含可见「删除」项）
+  // 会让闭合证不出来——一律保守 failed，绝不为把它「洗成 closed」而追加 Escape 或收拾无所有权菜单。
+  const base = buildFixture({ layout: 'card', preexistingMenu: true, moreClickThrows: 'after-menu' });
+  base.page.root.__onKey = (key) => {
+    if (key !== 'Escape') return;
+    for (const node of base.page.root.querySelectorAll('.hr-popup')) {
+      if (node !== base.preexistingPopup && visibleNode(node)) detach(node);
+    }
+  };
+  const baseAxis = await performWorkflowDeleteTrigger(base.page, TARGET);
+  eq(baseAxis.resolution, 'action_failed', '菜单生成后 click 抛错须具名拒');
+  eq(baseAxis.menuCleanup, 'failed', '基线旧菜单仍可见含删除项——闭合证不出，保守 failed');
+  eq(base.preexistingPopup?.isConnected, true, '预存旧菜单必须原样保留，绝不越权收拾');
+  eq(base.page.log.filter((row) => row.kind === 'key').length, 1, '只按过所有权内那一次 Escape');
+  eq(base.page.requests.length, 0, '零请求');
+});
+
 await check('R16 加法字段只作证据投影：删除域之外零权威消费者', async () => {
   const ROOT = fileURLToPath(new URL('../..', import.meta.url));
   const OWNER = join(ROOT, 'lib', 'workflow-delete-domain.mjs');
