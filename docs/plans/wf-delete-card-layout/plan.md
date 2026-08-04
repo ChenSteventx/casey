@@ -79,6 +79,8 @@ if (result.resolution === 'none') result = <卡片悬停菜单路径>
 
 **加法字段只作证据投影，不得被下游当权威消费（协调方裁定 2）**：`directDeleteButtons` / `menuDeleteEntries` 只许被人和探针当证据读，任何生产判断（对账、准入、阻断、裁定）一律只认 `deleteButtons` 与 `summarizeDeleteCountAudit` 的结论。这条不靠自觉——验收点 A13 静态扫 `lib/` 与 `bin/`，除删除域自身外出现这两个标识符即判红。
 
+**扫描面为什么只到 `lib` 与 `bin`、不含 `scripts`（grok F3 Low 采信，写明边界理由）**：① 扫描面与阶段互锁的实现面定义同源（`hook-loop-guard` 的实现面正则即 `lib`/`bin`/`web`），禁令要禁的是**生产判断路径**依赖加法字段；② `scripts/` 是一次性真机探针与诊断件，按设计就是证据消费者——`scripts/p9-workflow-adapter-probe.mjs` 整份序列化 `inspectWorkflowDeleteTarget` 结果进 artifact，把它纳入等于把「证据投影」本身判红，与本禁令要禁的事正好相反；③ `scripts/` 不参与编译、回放、裁定的任何生产判断，读了加法字段也影响不到破坏性动作准入。若将来有 `scripts/` 件被提升成生产判断路径，扫描面须同步扩。
+
 ### 3.6 硬约束（实现时逐条自查，全部来自现役冻结金牌）
 
 | 约束 | 来源 |
@@ -112,7 +114,8 @@ if (result.resolution === 'none') result = <卡片悬停菜单路径>
 | A12 | 收拾具名记录：点过更多操作入口且失败时 `menuCleanup` 为 `'closed'`；`Escape` 抛错时为 `'failed'` 且 `resolution` 不被改写；未点过入口或成功时该字段不出现 | `node tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs` |
 | A13 | 加法字段无下游权威消费者：`lib/` 与 `bin/` 中除删除域自身外，`directDeleteButtons` / `menuDeleteEntries` 零引用 | 同上 |
 | A9 | 既有删除域金牌全绿（零位移） | `node tests/_golden/workflow-delete-causal-binding.static.golden.mjs`；`node tests/_golden/checksum-drift-closure.zero-sut.golden.mjs`；`node tests/_golden/p0-p2-report-delete.zero-sut.golden.mjs`；`node tests/_golden/workflow-delete-spec-preflight.static.golden.mjs`；`node tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs` |
-| A10 | 相邻面金牌全绿（含起夹具 SUT 的浏览器面，不许只信分层绿） | `node tests/_golden/p3-compile.golden.mjs`；`node tests/_golden/units/p3-compile-unit.zero-sut.golden.mjs`；`node tests/_golden/agent-delete-zero-window.zero-sut.golden.mjs`；`node tests/_golden/hermetic-golden-sut-census.zero-sut.golden.mjs`；`node tests/_golden/hermetic-golden-prd-reverse-closure.zero-sut.golden.mjs` |
+| A10 | 相邻面零 SUT 金牌全绿 | `node tests/_golden/units/p3-compile-unit.zero-sut.golden.mjs`；`node tests/_golden/agent-delete-zero-window.zero-sut.golden.mjs`；`node tests/_golden/hermetic-golden-sut-census.zero-sut.golden.mjs`；`node tests/_golden/hermetic-golden-prd-reverse-closure.zero-sut.golden.mjs` |
+| A10b | 起夹具 SUT 的浏览器面**必须真跑**（不许只信分层绿），但判据是**失败集与改前逐行相同**——`p3-compile.golden.mjs` 在 `dev`@`6f51aaf` 与主树上**基线即红**（`exit 1`，6 过 8 红，首红 `C4 COMPILE_ATOM_EXECUTION_FAILED atom=workflow.create`），与本契约无关，故不能拿「全绿」当验收；改前改后各跑一次、逐行比失败集，多一条即判红 | `node tests/_golden/p3-compile.golden.mjs`（改前基线存档 + 改后重跑 diff） |
 | A11 | 语法与卫生 | `node --check lib/workflow-delete-domain.mjs`；`git diff --check` |
 
 ## 五 红基线（`accept` 阶段交付）
@@ -123,7 +126,7 @@ if (result.resolution === 'none') result = <卡片悬停菜单路径>
 
 ## 六 回归面（实现波必跑，不许只跑分层绿）
 
-A9 + A10 全部命令。特别点名 `p3-compile.golden.mjs`——它起夹具 SUT 且夹具是表格布局带直见「删除」钮（`tests/fixtures/fake-sut/server.mjs:162-168`），是表格路径的端到端证据，不许跳过。
+A9 + A10 + A10b 全部命令。特别点名 `p3-compile.golden.mjs`——它起夹具 SUT 且夹具是表格布局带直见「删除」钮（`tests/fixtures/fake-sut/server.mjs:162-168`），是表格路径的端到端证据，**不许跳过**；但它基线即红（见 A10b），故判据是失败集不变而非全绿，且它**不进** `loop/prd-wf-delete-card-layout.json` 的 `acceptance`（把一条与本契约无关的基线红塞进自己的门禁，只会制造永久红或诱人放松判据）。基线红另有两枚：`real-run-trust.zero-sut.golden.mjs`（`exit 1`）与 `hermetic-golden-isolation-pending.zero-sut.golden.mjs`（`exit 65`），同样非本契约引入，同样按失败集不变处理。
 
 ## 七 `observability`（测不到的维度，显式申报 `route:human`）
 
@@ -138,6 +141,7 @@ A9 + A10 全部命令。特别点名 `p3-compile.golden.mjs`——它起夹具 S
 | # | 待核事项 | 已知证据 | 不核的后果 |
 |---|---|---|---|
 | B4-1 | 工作流列表搜索框按 `Enter` 是否过滤 | 2026-07-31 seam-1：填名后按 `Enter`，`.agent-card` 计数逐秒采样 15 秒恒定不动；正确触发是 `.hr-input__suffix .search-icon`（点后 8 秒内收敛到 1 并保持，同轮 34 次搜索无一失手） | 冻结流的 `press Enter` 步不产生过滤，删除后的重搜复验落在未过滤全量列表上 |
+| B4-0 | **每张卡片内更多操作入口的物理个数**（grok F1 Medium）：真机若在卡内藏隐藏克隆模板，存在性计数会数出 >1 → `deleteButtons` > 记录容器数 → 编译期硬阻断 | 本契约按存在性数（审计环绝不悬停、绝不开菜单，见 §3.5）；2026-08-04 实采只确认「卡片内唯一动作控件为 `button.agent-card__more`」，未逐卡数物理个数 | 方向是 fail-closed（功能不通，不是误删），但会在 B4 表现为删除链无声截断；先核一眼免得当成别的坑排查 |
 | B4-2 | `countSelector` 与真实卡片类是否同源 | `workflow-delete-real-uat` 金牌钉 `'.hr-card.hr-card--bordered:has-text("atl_r1")'`；2026-08-04 实采的卡片根是 `.agent-card` | 若不同源，删后归零断言从 0 数到 0，出假绿（删没删成都判过） |
 
 两条都属冻结件与真机取证面，本契约零触碰。删除域本身不依赖搜索过滤（`recordDomains` 是全页按精确名扫记录容器），故 B4-1 不使本契约的改动失效——它是同一条链上的**独立**第二个坑。

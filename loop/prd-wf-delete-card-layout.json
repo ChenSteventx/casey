@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 2,
+  "slug": "wf-delete-card-layout",
+  "task": "workflow.deleteByName 支持卡片布局的删除入口：悬停目标卡片 → 点更多操作入口 → 因果浮现的浮层菜单内取「删除」→ 交回既有确认弹层因果授权链；表格布局与容器内直见删除钮的既有行为零位移。",
+  "specPath": "docs/plans/wf-delete-card-layout/plan.md",
+  "testChecksums": {
+    "tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs": "3e938410bbe11e327a424dfc70e31b6d1526dd86d7adf80ba2d3b9ddde19e20c",
+    "docs/plans/wf-delete-card-layout/GRILL.md": "7ee848b4a9760383318100aee110053c282be1ceabafd4921009cb29cde98342",
+    "docs/plans/wf-delete-card-layout/plan.md": "e7bf42384c626897b2bb947378ad9fb1d079c68e69df4aa1043d68ac2bd372b3",
+    "accept/red-proofs/wf-delete-card-layout.red.txt": "3771bdaa2c5fa71a1104c9c83963a7ffda628d558682ca79c54570c42cb1e906"
+  },
+  "observability": [
+    {
+      "dimension": "真机上「悬停更多操作 → 菜单浮现 → 点删除 → 确认框」整链的真实时序、菜单浮层的真实父节点与真实 class、删后按名精确计数归零",
+      "route": "human",
+      "reason": "本契约禁止连接任何 SUT；零 SUT 金牌只能证形状与判据，真实时序与真实 class 须 B4 段真机 UAT 同次录屏复核。"
+    },
+    {
+      "dimension": "因果绑定的残留风险：卡片布局给的是因果归属而非结构归属",
+      "route": "human",
+      "reason": "若 SUT 在同一拍为别的卡片弹菜单且旧菜单同时消失，理论上可构造「恰一个新浮层但不属于目标卡片」。机器证不出，须真机删前删后精确计数 + 录屏复核。"
+    },
+    {
+      "dimension": "菜单项真实 class 未逐字实采",
+      "route": "human",
+      "reason": "`.hr-dropdown__item` 系从同族菜单实采注推得；故实现按「可见 + 精确文本 + 在菜单域内」定位，class 只做控件识别补充白名单，真机复核确认。"
+    },
+    {
+      "dimension": "每张卡片内更多操作入口的物理个数（grok F1 Medium）",
+      "route": "human",
+      "reason": "审计环按存在性数；真机若卡内藏隐藏克隆模板会数出 >1 → 编译期硬阻断（fail-closed，功能不通非误删）。列为 B4 前置检查单 B4-0 逐条真机核。"
+    },
+    {
+      "dimension": "menuCleanup 收拾证据是否上到回放历史",
+      "route": "human",
+      "reason": "编译侧与回放侧两处投影都是白名单，该字段止于删除域返回值。要让它上到回放历史须动冻结的 run-history.schema.json（additionalProperties:false），是独立决策，本契约不做（协调方 2026-08-04 裁定确认）。"
+    },
+    {
+      "dimension": "异构冗余实现审（评审家族 ≠ 实现家族）",
+      "route": "human",
+      "reason": "前提审 grok 单路已过（PREMISE_SOUND，零 Critical/High），pi 路 deepseek 上游连败三次按纪律挂账、服务恢复后补审（Steven 2026-08-04 亲裁）。实现侧代码审 grok 必审。"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-card-layout-delete-path",
+      "desc": "卡片布局下经悬停更多操作入口与因果菜单授权取「删除」，表格布局零位移，计数口径改「可达删除面」且加法字段只作证据投影。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs",
+        "node tests/_golden/workflow-delete-causal-binding.static.golden.mjs",
+        "node tests/_golden/checksum-drift-closure.zero-sut.golden.mjs",
+        "node tests/_golden/p0-p2-report-delete.zero-sut.golden.mjs",
+        "node tests/_golden/workflow-delete-spec-preflight.static.golden.mjs",
+        "node tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs",
+        "node tests/_golden/units/p3-compile-unit.zero-sut.golden.mjs",
+        "node tests/_golden/agent-delete-zero-window.zero-sut.golden.mjs",
+        "node tests/_golden/hermetic-golden-sut-census.zero-sut.golden.mjs",
+        "node tests/_golden/hermetic-golden-prd-reverse-closure.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node --check lib/workflow-delete-domain.mjs",
+        "git diff --check"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-04T04:34:38.027Z 全部 acceptance exit 0"
+    }
+  ]
+}
