@@ -74,9 +74,11 @@ CLI `bin/casey.mjs`、skill `.claude/skills/casey`、MCP `mcp/casey-server.mjs`�
   P10 可信闭环自进化未开始。
 - 并行硬规则：碰 `lib`/`bin` 的落地走 worktree 隔离 + git-native 合并，绝不 cp 进 `lib`/`bin`。
 
-【当前状态（2026-08-04 收盘）】
-- dev 顶端 `c89b3b8`，本地零 push。活契约槽 `p9-created-workflow-cleanup-continuity-v3`
-  （`full`，`grill`/`plan`/`accept` done、`loop` 待）。
+【当前状态（2026-08-04 晚）】
+- dev 顶端 `8d0b0bc`（merge `wf-crud-sleep-import`），本地零 push。活契约槽
+  `p9-created-workflow-cleanup-continuity-v3`（`full`，`grill`/`plan`/`accept` done、`loop` 待）。
+- B4 根因已定位收口：`6f91125` 拆分丢 `sleep` 导入（crud:136 + drawer:53 两处已修、
+  金牌封类、双路 APPROVE 合入）；两个原候选（入口形态变化 / seam-1 偏移）均已排除。
 - A 段已闭合：A3 真机重编译 exit 0 找回 `events.json`、首份真机流回复证据；
   A5 代签（Steven 会话内显式授权，代执行如实标注）冻结 `expected.frozen.json` 与
   v2 `entity-locks.frozen.json`；`--force` 的 1 条 pending 已留痕披露。
@@ -89,9 +91,9 @@ CLI `bin/casey.mjs`、skill `.claude/skills/casey`、MCP `mcp/casey-server.mjs`�
 - 主树有用户未提交资产（六个 `prd`、两个 md、四个未跟踪件）——一律勿动、勿 `git add -A`。
 
 【下一步（任选其一，先对齐再动手）】
-A. 定位 B4 `workflow.create` 失败根因（只读探针核新增入口现役形态，与
-   `lib/compile-atoms-workflow-crud.mjs` 的 07-02 实采知识对表）——不重跑编译。
+A. （已完成 2026-08-04 晚）B4 根因定位——工装漏导入，已修已合。
 B. 续跑 B 段三例 B4-B9（Steven 已全授权、代签口径同 A5；一例一跑、失败即停）。
+   B4 重跑用新唯一名令牌；现场核抽屉新字段「工作流编码」是否必填（route:human 在案）。
 C. 清单重签补 `replayGrantPath`（`p9-tier2-selftest` T9a 计划内红的清偿点）。
 D. `hook-loop-guard` 跨树互锁失效立项（kernel 级，机理已查明，车道待裁）。
 E. 挂账补审：`pi` 对 `wf-delete-card-layout` 前提审那一轮。

@@ -3,7 +3,37 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-04 全天：P9 六批次收口入 dev + A 段签署闭合 + B 段开跑即停（最新覆盖层，权威现状）
+## 2026-08-04 晚：B4 根因定位收口——wf-crud-sleep-import 合入（最新覆盖层，权威现状）
+
+现役 dev 顶端 `8d0b0bc`（merge wf-crud-sleep-import，本地零 push）。
+
+1. **B4 根因已定位并封缝，两个原候选全排除**：不是页面形态变化、不是 seam-1 偏移，
+   是 `6f91125` 拆单体 `compile-atoms.mjs` 时丢了 `sleep` 导入——
+   `compile-atoms-workflow-crud.mjs:136`（`workflow.create` 的 `sleep(250)`，B4 实证根因）
+   与 `compile-atoms-workflow-drawer.mjs:53`（`openNode` 轮询 `sleep(100)`，普查逮到的
+   潜伏件）。同缺陷类**第三例**（前两例 `01e965f`、`c66544e`）。定位链：只读探针（全域
+   非读拦截）→ 真组件忠实复现同签名 → 绕过密封边界直调原子抓到 `ReferenceError`。
+2. **契约 wf-crud-sleep-import（light，工作树）六阶段全绿**：2 行 import 修 + 金牌四钉
+   （S4 是整类普查钉：lib 全树裸调 `sleep(` 必有导入/定义）+ 红基线 0/4 实抓 + 突变验证
+   闭环 + 邻接五项绿 + gate GREEN 2/2；grok-4.5 high 与 `pi` deepseek-v4-flash high
+   双路 `APPROVE` 零 C/H/M（快照 `bbde48c`）；合并后主树六项复跑全 exit 0。
+   审计已入 `loop/audit.jsonl`（工作树与主树两账本）。
+3. **交接口径更正**（learn.md 在案）：B4 报告 `persistentActionStatus=CONFIRMED /
+   recorded-action-succeeded` 是回退推断（首个 persistent 原子事件 acted=true 即判，
+   首个是 nav），**不能**读成「最后一次动作成功」；`eventsEmitted` 才是硬结构线索。
+   另：07-22 三链全 PASS 在拆分（07-27）之前，拆分后 `workflow.create` 真机首触即炸。
+4. **环境事件**：drvfs 整盘 I/O 故障当日第二次发生，Steven 执行 `wsl --shutdown` 恢复；
+   重启后真机隧道已按顺序重建（WSL 侧监听器 → Windows 侧代理），15519 端到端 200。
+   根因证据抢救件在 `~/casey-b4-rootcause-20260804/`（含 ROOTCAUSE.md，注意其中
+   probe-out.json 含 SUT 账户资料残影、不得入仓）。
+5. **只读探针新发现（B4 重跑时现场核）**：创建抽屉现役含新字段「工作流编码」、确认钮
+   文本「确认」（原子探测序含「确认」兜底，两处均可能无碍——若「工作流编码」必填则
+   create 原子缺一个 fill，属编译知识缺口另立契约）；页面**点击前**预挂离屏抽屉 DOM
+   （`nameInputCount` 点击前即 1），emit 的定位唯一性面未受影响但值得知道。
+6. **下一步即乙**：B4 重跑（`tc_catalog_wf_crud`，新唯一名令牌、一例一跑、失败即停），
+   命令面见 `SIGNING-SESSION.md` B4 节；B0–B3 就位不必重来。其后 B5–B9、再下两例。
+
+## 2026-08-04 全天：P9 六批次收口入 dev + A 段签署闭合 + B 段开跑即停（历史覆盖层，被上节接续）
 
 现役 dev 顶端 `c89b3b8`。本日入 dev 六笔（均本地，**零 push**）：
 
