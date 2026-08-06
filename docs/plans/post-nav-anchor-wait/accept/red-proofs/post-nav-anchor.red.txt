@@ -1,0 +1,10 @@
+# 红基线（修复前现行代码实跑，04803c1 基线）
+# 命令：node tests/_golden/post-nav-anchor-wait.zero-sut.golden.mjs
+RED  post-nav-anchor-wait: S1 open 迟挂载行为钉：点击 emit 必须发生在目标文本可定位之后（真轮询过、容器闸照走）: open 点击 emit 时目标文本必须已可定位（迟挂载 1.2s 内须等待）：false
+RED  post-nav-anchor-wait: S2 delete 搜索框迟挂载行为钉：不误落 CASE_DEFECT、fill/press 照发: 搜索框迟挂载不得误判入口缺席（CASE_DEFECT 候选应为空）：[{"atom":"workflow.deleteByName","params":{"name":"atl_{{uniqueName}}"},"evidence":{"target":"role=textbox name=输入工作流名称或编码进行搜索","count":0},"note":"入口可证缺席：目标 role/text 全 DOM count===0；候选仅编译期/人签前有效（design §4.3）"}]
+ok   post-nav-anchor-wait: S3 open 预算耗尽零行为差钉：目标永不挂载照发 absent 路径 emit、总耗时有界
+ok   post-nav-anchor-wait: S4 delete 预算耗尽零行为差钉：搜索框永不挂载照落 CASE_DEFECT 候选、事件只有 nav
+RED  post-nav-anchor-wait: S5 结构钉：两处就绪锚在各自判定点之前 + nav 模块导入 sleep: compileWorkflowOpen 容器归属闸前须有就绪锚（注释 + 15000 + count() 轮询）
+
+not ok post-nav-anchor-wait: 2/5 通过，3 条红
+EXIT=1

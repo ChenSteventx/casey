@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "task": "post-nav-anchor-wait（light）：列表页 SPA 渲染尾巴竞态第三处封缝——workflow.open 的 text-exact 锚（B4 五跑 atstep_9 absent count=0，级联 source 读回 envelope-empty 硬阻断，残留已按纪律真删清偿 exit 0）与 workflow.deleteByName 的搜索框锚（B4 四跑 count=0 误落 CASE_DEFECT 候选——入口并非真缺席、是没等到渲染）各加 250ms 步长、15s 预算的有界就绪轮询。真机定量在案：列表页 load 后约 +3.5s 控件才可定位 vs 编译 nav 后锚定窗约 4s。修法与 create 入口锚（158829d）同款模式：等待只改变判定时机、判定不动——open 耗尽照发 emit 走 absent 身份门、deleteByName 耗尽照落 CASE_DEFECT 候选（真缺席仍如实记，零行为差）。nav 模块随修并入 sleep 导入（wf-crud-sleep-import 的 S4 普查钉自动覆盖此新增消费点）。",
+  "specPath": "docs/plans/post-nav-anchor-wait/plan.md",
+  "testChecksums": {
+    "tests/_golden/post-nav-anchor-wait.zero-sut.golden.mjs": "b4fb3a78f65696067bf743e82d0e72bb43354ad938d3bc3bcfa1f8cd55a962d7",
+    "docs/plans/post-nav-anchor-wait/plan.md": "38f50d24d552696e279674e3d138c21fff40ffb2914233a8679806586817a193",
+    "docs/plans/post-nav-anchor-wait/accept/red-proofs/post-nav-anchor.red.txt": "c82fc0f41e458a41fb6b63266989dde0438d80bab297768dfec9e6f8c256cdb9"
+  },
+  "observability": [
+    {
+      "dimension": "hermetic 只证「等到可定位才判 + 预算有界 + 耗尽零行为差」；端到端真证是 B4 重表达链第六跑（乙授权、一例一跑）。若再冒第四处同类锚点，按 plan 非目标升级「nav 后首锚统一就绪协议」另立契约、不再逐点补。失败路径最坏时长随锚数累加（本契约 +15s×2），与 login-nav-budget 的 pi Medium 同一观察面——B4 六跑记录总耗时。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-post-nav-anchors-and-seal",
+      "desc": "两处就绪锚实现（open：容器归属闸探针前对 instantiate 后的 text-exact 锚轮询；delete：nav emit 后搜索框判定前轮询；均 250ms 步长 15s 预算耗尽不改判）；金牌五钉：S1 open 迟挂载行为钉（emit 时目标已可定位 + 采样 ≥2 + 容器闸零阻断）；S2 delete 搜索框迟挂载行为钉（不误落 CASE_DEFECT + fill/press 照发 + 采样 ≥2）；S3 open 耗尽零行为差（照发 absent emit、<20s 有界）；S4 delete 耗尽零行为差（照落 CASE_DEFECT 候选、rollback 后零事件、<20s 有界）；S5 结构钉（两处就绪锚位序 + nav 模块 sleep 导入）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/post-nav-anchor-wait.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-06T03:15:03.846Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "邻接零回归：同类前三契约金牌（含 sleep 普查钉对 nav 模块新增消费点的自动覆盖）+ 统一语言 + 确定性内核自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-create-entry-anchor-wait.zero-sut.golden.mjs",
+        "node tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs",
+        "node tests/_golden/login-nav-budget.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-06T03:16:08.418Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "红基线真实 exit 1（2/5：S1 红 targetMountedAtEmit=false、S2 红误落 CASE_DEFECT 候选（红证含其 evidence 全文）、S5 结构钉红；S3/S4 绿是回归钉本意），对最终金牌字节在修复前实抓，证据 accept/red-proofs/post-nav-anchor.red.txt。突变闭环：git checkout 还原两文件 → exit 1；复原 → sha256 逐字节相同 → exit 0。替身纪律：迟挂载塑形替身忠实复现渲染尾巴（前 0 后 1）；S1 容器归属探针 evaluate 返 true 忠实于真实卡片在 .agent-card 容器内这一形态；S4 同时钉 rollback 后零事件（既有语义）。实现注释措辞避开「容器归属闸」词组以免撞 S5 切片边界（结构钉以真实闸注释为界）。passes 只由 gate 写入。",
+  "worktree": "/mnt/d/ctx/heren/casey-post-nav-anchor-wait"
+}
