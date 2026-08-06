@@ -11,8 +11,10 @@ SPA 停在列表路由，`nav.workflowManagement` 同址跳转不触发列表重
 ## 修法（最小，与 deleteByName 搜索知识同源）
 
 `lib/compile-atoms-workflow-nav.mjs` `compileWorkflowOpen`：在既有就绪锚之前加**搜索先行**
-前奏，采**双目标轮询**——同一 15s 截止内轮询「目标文本 或 搜索框」：目标已在 DOM
-（列表已新鲜）→ 跳过搜索直入锚定（零开销）；搜索框先就位 → `fill` 搜索框（值
+前奏，采**三候选轮询**——同一 15s 截止内轮询「容器内目标文本 / 裸目标文本 / 搜索框」：
+容器内命中（列表已新鲜，标准与归属判定同刻）→ 跳过搜索直入锚定（零开销）；裸文本命中
+（瞬态回显如创建成功 toast 会假阳——B4 七跑实证）→ 不跳过搜索、只授后续锚定预算；
+搜索框先就位 → `fill` 搜索框（值
 `params.openName` 模板原样入 events、编译期由 emit 按 ctx 实例化）→ `click` 放大镜
 （纯 fallbackCss `.hr-input__suffix .search-icon`，照 `chat.sendAndWait` 送出图标先例、
 不带 fieldLabel 防同名 label 抢锚——评审 r1 grok Medium 采纳）。既有就绪锚改
