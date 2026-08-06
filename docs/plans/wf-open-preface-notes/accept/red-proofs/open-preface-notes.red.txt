@@ -2,7 +2,8 @@
 # 命令：node tests/_golden/wf-open-preface-notes.zero-sut.golden.mjs
 RED  wf-open-preface-notes: S1 搜索路径诊断钉：前奏与锚定 notes 齐全、字段如实、事件序不变: 须有前奏诊断 note：[]
 RED  wf-open-preface-notes: S2 全缺席诊断钉：notes 如实记全缺席、行为零差（1 absent 点击、零阻断、有界）: 前奏诊断须如实记全缺席：undefined
+RED  wf-open-preface-notes: S4 采样异常钉：evaluate 拒/挂起均如实记「采样异常」、不抛、行为零差、竞速有界: 拒绝面须如实记采样异常：undefined
 RED  wf-open-preface-notes: S3 结构钉：前奏诊断在就绪锚之前、锚定诊断在锚定循环之后: 前奏诊断须在就绪锚之前
 
-not ok wf-open-preface-notes: 0/3 通过，3 条红
+not ok wf-open-preface-notes: 0/4 通过，4 条红
 EXIT=1

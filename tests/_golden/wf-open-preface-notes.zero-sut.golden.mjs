@@ -167,6 +167,42 @@ await check('S2 全缺席诊断钉：notes 如实记全缺席、行为零差（1
   assert(run.blockers.length === 0, `零阻断：${JSON.stringify(run.blockers)}`);
 });
 
+await check('S4 采样异常钉：evaluate 拒/挂起均如实记「采样异常」、不抛、行为零差、竞速有界', async () => {
+  // 拒绝面
+  const stateA = { searchIssued: false };
+  const pageA = makePage({ searchPresent: true, targetFromStart: false }, 'atl_u1', stateA);
+  pageA.evaluate = async () => { throw new Error('boom'); };
+  const runA = makeRun(pageA, stateA);
+  let threwA = null;
+  try {
+    await compileWorkflowOpen(runA, { openName: 'atl_{{uniqueName}}' });
+  } catch (error) {
+    threwA = error;
+  }
+  assert(threwA === null, `拒绝面不得抛：${String(threwA?.message).slice(0, 100)}`);
+  const noteA = runA.notes.find((n) => n.includes('workflow.open 前奏诊断'));
+  assert(noteA && noteA.includes('页面态=采样异常'), `拒绝面须如实记采样异常：${noteA}`);
+  assert(runA.emitted.length === 3 && runA.blockers.length === 0, '拒绝面行为零差（3 事件零阻断）');
+  // 挂起面（竞速 3s 让行）
+  const stateB = { searchIssued: false };
+  const pageB = makePage({ searchPresent: true, targetFromStart: false }, 'atl_u1', stateB);
+  pageB.evaluate = () => new Promise(() => {});
+  const runB = makeRun(pageB, stateB);
+  const t0 = Date.now();
+  let threwB = null;
+  try {
+    await compileWorkflowOpen(runB, { openName: 'atl_{{uniqueName}}' });
+  } catch (error) {
+    threwB = error;
+  }
+  const elapsed = Date.now() - t0;
+  assert(threwB === null, `挂起面不得抛：${String(threwB?.message).slice(0, 100)}`);
+  const noteB = runB.notes.find((n) => n.includes('workflow.open 前奏诊断'));
+  assert(noteB && noteB.includes('页面态=采样异常'), `挂起面须如实记采样异常：${noteB}`);
+  assert(elapsed < 8000, `竞速须 3s 让行（总耗时 <8s）：${elapsed}ms`);
+  assert(runB.emitted.length === 3 && runB.blockers.length === 0, '挂起面行为零差（3 事件零阻断）');
+});
+
 await check('S3 结构钉：前奏诊断在就绪锚之前、锚定诊断在锚定循环之后', async () => {
   const { readFileSync } = await import('node:fs');
   const src = readFileSync(new URL('../../lib/compile-atoms-workflow-nav.mjs', import.meta.url), 'utf8');
