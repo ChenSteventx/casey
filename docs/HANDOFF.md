@@ -3,7 +3,48 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-04 晚：B4 根因定位收口——wf-crud-sleep-import 合入（最新覆盖层，权威现状）
+## 2026-08-06 上午：三修连环收口 + B4 突破到知识断层 + 残留已清（最新覆盖层，权威现状）
+
+现役 dev 顶端 `9bb2300`（本地零 push）。本日两契约合入 + B4 四跑 + 残留清偿：
+
+1. **又两块骑线预算契约六阶段全绿合入**（双路 grok+pi APPROVE，与 08-04 晚的
+   sleep 导入修同族——「页面变重后旧预算压线」缺陷类共三例）：
+   `wf-create-entry-anchor-wait`（`158829d`，create 入口点击前 15s 有界就绪锚，
+   真机定量 load 后按钮 +3.5s vs 锚定窗 4s）；`login-nav-budget`（`9bb2300`，
+   loginBootstrap 默认导航预算 15s→30s 天花板，登录页 load 实测 13.8-14.9s vs 15s）。
+   挂账：pi 各留一条非阻断 Medium（失败路径耗时收窄看门狗余量 / 三段被吞等待与预算
+   解耦加固候选），见各自 reviews/README。
+2. **B4 第四跑重大突破**（45.7s，watchdog 余量充足）：`workflow.create` 八步全
+   unique+acted（含下拉菜单项点击）、身份读回 unique——三修全部生效；
+   「工作流编码」字段**非必填**实证（未填也建成，昨日 route:human 项就地清偿）。
+   失败推进到**知识断层**：`atstep_8 workflow.save/click absent`（建后页面不进编辑器）
+   + `workflow.deleteByName 入口可证缺席 → CASE_DEFECT 候选`。这不是工装 bug——
+   07-02 流程预期（create→编辑器→保存→发布）与现役页面语义（create→留在列表页）不符。
+   按一例一跑失败即停，**岔口待 Steven 裁**：flow 重表达（真机重表达配方）vs 判 CASE_DEFECT。
+3. **残留已真删清偿**（`atl_b4r40806b`，exit 0）：列表读回恰 1 → 搜索图标筛到 1 卡 →
+   触发 unique + identityReadback ok → 确认环 unique（「确认」）→ 出站守卫恰放行
+   1 条精确 `masProcessId` delete、零其他变更 → 3 样本稳定缺席。
+4. **环境实证两条**（进 learn 级）：①隧道池老化——池连接跑 ~1 小时后浏览器复用报
+   `net::ERR_EMPTY_RESPONSE`（同一 JS chunk 稳定复现、curl 新建连接恒好），重启隧道
+   两端换新池即愈；长间隔后跑真机前先重启隧道。②`performWorkflowDeleteTrigger` 返回
+   axis 形状（`resolution/candidateCount/identityReadback`），**无 `acted` 字段**——
+   拿 emit 语义硬套会误拦（本日实踩）。③`ss -tn` 对回环连接两端各计一行，
+   连接数要除 2 再判（差点误判双代理污染）。
+5. B4 前三跑失败链（全部零残留、fail-closed 干净）：跑 1/3 登录冷启超时、
+   跑 2 入口按钮 absent（引出入口锚契约）——诊断报告归档
+   `cases/tc_catalog_wf_crud/archive/compile-report.b4-fail-20260804.json` 与本层记录。
+
+### 下一步（待裁后续行）
+
+- **甲、岔口（Steven 裁）**：tc_catalog_wf_crud 的 flow 语义与现役页面不符——
+  ①按真机重表达配方走（扩 flow 绑定→铸权→哨兵→重编译→补缝→确认→签→跑，
+  B0-B3 重来、触 G3 人签）；②判 SUT/用例侧 CASE_DEFECT 走缺陷路径；③先只读探针核
+  「create 后如何进编辑器 / 保存发布入口现役形态」再定。推荐③先探针再裁。
+- 乙、后两例（publish_states / history_version）大概率同断层，等甲裁定后统一处置。
+- 丙、挂账：两条 pi Medium 加固候选；`pi` 对 `wf-delete-card-layout` 前提审补审；
+  丁（hook-loop-guard 跨树互锁）、清单重签补 `replayGrantPath` 等 08-04 层原有项不变。
+
+## 2026-08-04 晚：B4 根因定位收口——wf-crud-sleep-import 合入（历史覆盖层，被上节接续）
 
 现役 dev 顶端 `8d0b0bc`（merge wf-crud-sleep-import，本地零 push）。
 

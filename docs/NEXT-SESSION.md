@@ -74,11 +74,16 @@ CLI `bin/casey.mjs`、skill `.claude/skills/casey`、MCP `mcp/casey-server.mjs`�
   P10 可信闭环自进化未开始。
 - 并行硬规则：碰 `lib`/`bin` 的落地走 worktree 隔离 + git-native 合并，绝不 cp 进 `lib`/`bin`。
 
-【当前状态（2026-08-04 晚）】
-- dev 顶端 `8d0b0bc`（merge `wf-crud-sleep-import`），本地零 push。活契约槽
-  `p9-created-workflow-cleanup-continuity-v3`（`full`，`grill`/`plan`/`accept` done、`loop` 待）。
-- B4 根因已定位收口：`6f91125` 拆分丢 `sleep` 导入（crud:136 + drawer:53 两处已修、
-  金牌封类、双路 APPROVE 合入）；两个原候选（入口形态变化 / seam-1 偏移）均已排除。
+【当前状态（2026-08-06 上午）】
+- dev 顶端 `9bb2300`，本地零 push。活契约槽 `p9-created-workflow-cleanup-continuity-v3`
+  （`full`，`loop` 待）。骑线预算缺陷类三契约已全部合入（sleep 导入 `8d0b0bc` /
+  入口锚 `158829d` / 登录预算 `9bb2300`），各双路 APPROVE。
+- B4 第四跑：`workflow.create` 八步全 unique+acted + 读回 unique（三修生效、
+  「工作流编码」非必填实证）；停在知识断层——建后页面不进编辑器，`workflow.save`
+  absent + `deleteByName` 入口缺席（CASE_DEFECT 候选）。残留 `atl_b4r40806b` 已真删
+  清偿 exit 0。岔口待 Steven 裁：flow 重表达 vs CASE_DEFECT vs 先探针（推荐先探针）。
+- 环境坑新增：隧道池老化（~1 小时后浏览器复用连接报空响应、curl 恒好）——
+  长间隔后跑真机前先重启隧道两端。
 - A 段已闭合：A3 真机重编译 exit 0 找回 `events.json`、首份真机流回复证据；
   A5 代签（Steven 会话内显式授权，代执行如实标注）冻结 `expected.frozen.json` 与
   v2 `entity-locks.frozen.json`；`--force` 的 1 条 pending 已留痕披露。
