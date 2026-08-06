@@ -108,6 +108,20 @@ await check('S4 结构对称钉：两侧定位入口均先过投影，且既有�
   const rProj = replaySrc.indexOf('ev = instantiateEventSemantic(ev, ctx)');
   const rUse = replaySrc.indexOf('const cand = await resolveCandidate(page, ev)');
   assert(rProj >= 0 && rUse >= 0 && rProj < rUse, 'replay 侧投影须在 resolveCandidate 之前');
+  // 覆盖面自钉（评审 r1 pi Medium 采纳）：专用身份门里凡消费 semantic.name 者（doOpenNode /
+  // doDragTo / doSetNodeField placeholder / doSelectNodeDropdown 等）也必须在投影之后分发，
+  // 否则「定位前必须回填」不变式名不副实（未来配方给节点标题传模板即复现 B4 同类恒 0 命中）。
+  for (const branch of [
+    "if (ev.action === 'selectOption') return await doSelect(page, ev, ctx);",
+    "if (ev.action === 'dragTo') return await doDragTo(page, ev);",
+    "if (ev.action === 'click' && ev.atom === 'workflow.openNode') return await doOpenNode(page, ev);",
+    "if (ev.action === 'click' && ev.atom === 'workflow.selectNodeDropdown') return await doSelectNodeDropdown(page, ev);",
+    "if (ev.action === 'fill' && ev.atom === 'workflow.setNodeField') {",
+  ]) {
+    const at = replaySrc.indexOf(branch);
+    assert(at >= 0, `专用门分支未找到（源码已变，钉需重校）：${branch.slice(0, 48)}`);
+    assert(rProj < at, `投影须在专用门之前：${branch.slice(0, 48)}`);
+  }
   // 既有冻结金牌以字面匹配判接线顺序（page-topology B6、regress-agent-tool-actions B2）——
   // 本契约不得改这两处调用点与签名字面，否则那些冻结钉误红（本轮全仓扫描实证）。
   assert(replaySrc.includes('const cand = await resolveCandidate(page, ev);'), 'resolveCandidate 调用点字面须保持');
