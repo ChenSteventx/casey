@@ -61,7 +61,21 @@ function makePage({ searchPresent, targetFromStart }, targetText, state) {
       return zeroLocator();
     },
     getByLabel: () => zeroLocator(),
-    locator: () => zeroLocator(),
+    // 容器限定探针面（B4 七跑修正）：容器内 getByText 只在目标真在记录容器里时命中——
+    // 瞬态回显（toast 等）不在容器内，忠实于「已见目标=列表已新鲜」的判定标准。
+    locator: (css) => {
+      if (typeof css === 'string' && css.includes('.agent-card')) {
+        return {
+          getByText: (text, opts) => {
+            if (text === targetText && opts?.exact === true && (targetFromStart || state.searchIssued)) {
+              return { count: async () => 1, evaluate: async () => true, first: () => zeroLocator() };
+            }
+            return zeroLocator();
+          },
+        };
+      }
+      return zeroLocator();
+    },
     evaluate: async () => undefined,
     waitForTimeout: async () => {},
     waitForURL: async () => {},
