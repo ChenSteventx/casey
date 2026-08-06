@@ -3,7 +3,52 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-06 全天：重表达落地 + 五契约收口 + B4 八跑停在「二次加载空壳」谜面（最新覆盖层，权威现状）
+## 2026-08-06 收盘：诊断买观测 + 九跑一次定谜底 + 语义名回填根因修（最新覆盖层，权威现状）
+
+现役 dev 顶端 `8d0e6e3`（本地零 push）。接上一层，本日再收两契约、B4 推进到第九跑：
+
+1. **诊断契约 `wf-open-preface-notes` 合入**（`97c0d83`，grok `APPROVE` + pi
+   `CHANGES_REQUIRED` → 并集修 → pi delta `APPROVE`）：`compileWorkflowOpen` 前奏与
+   锚定各加一条诊断 notes（三候选结局 + 采样数 + 耗时 + 页面态计数），纯诊断零行为差，
+   notes 已证进 exit-65 报告。pi 两条 Medium 均采纳：`page.evaluate` 加 3 秒竞速上界
+   （其建议的 `evaluate(fn, { timeout })` API 形在 Playwright 不存在，改照
+   `replay-settle` 的 EVAL_RACE 先例）、金牌补「采样异常」拒/挂双面钉。
+2. 九跑一次拿到谜底，推翻此前全部环境类假说：诊断 notes 显示
+   `container=true 采样=1 耗时=5ms 页面态=text346/卡5/框16`、锚定 `命中=true 4ms`
+   ——页面完全正常、真名探针即时命中，而 emit 仍 `absent count=0`。差别只可能在定位串：
+   `workflow.open` 的 emit 把**未实例化模板** `atl_{{uniqueName}}` 塞进 `semantic.name`，
+   两侧定位（compile `locatorFor`、replay `semanticLocator`）都拿字面串 `getByText`。
+   即该原子在带模板目标名下**从未走通过**（2026-07-02 采知识时用的是固定既有名）。
+3. **根因契约 `semantic-name-instantiate` 合入**（`8d0e6e3`，grok `APPROVE` 零 C/H/M +
+   pi 1 Medium → 并集修 → pi delta `APPROVE`）：新增纯函数 `instantiateEventSemantic`
+   （仅真含占位且回填有变化时产浅拷贝，否则返回同一引用——落盘字节与上游对象永不被改），
+   两侧定位入口各调一次；pi 的 Medium 促成投影上移到全部动作分支之前，覆盖
+   `doOpenNode`/`doDragTo`/`doSetNodeField` 等专用身份门，并补五处覆盖面自钉。
+   pi 另发现本修复**一并治愈** `agent.searchOpen` 携模板 `openName` 的同类恒 0 命中。
+4. **首版设计被全仓扫描逮回**（护栏 #19 的又一实证，值得记住的方法论）：首版给
+   `locatorFor`/`semanticLocator`/`resolveCandidate` 加 `ctx` 参数，邻接金牌全绿，
+   但全仓 205 金牌里有两个（`page-topology-auth-continuity-boundaries` B6、
+   `regress-agent-tool-actions` B2）用 `indexOf('resolveCandidate(page, ev)')` 这样的
+   **字面文本**判接线顺序，当场打红。实现随即让路成零字面变更的纯投影，并把
+   「这三处字面不许动」写进金牌 S4 自钉。全仓三批重扫 + 逐个基线双态对比：
+   非零项**全部基线同码**，零回归（其中 124 是 `timeout` 命令超时假象，
+   `p6-heal-breaker`/`loop-kit-extract` 已用 600 秒单跑复核为 0/1 同基线）。
+5. **九跑残留已清、工具已持久化**：`atl_b4r90806g` 出站精确 ID 守卫真删、3 样本稳定
+   缺席 exit 0；九跑累计建六删六，被测方零残留。清偿脚本曾随会话重启从 `/tmp`
+   scratchpad 蒸发，已重建到 `~/casey-tools/cleanup-workflow.mjs <工作流名>`（常备工具）。
+
+### 下一步（接手者从甲起）
+
+- 甲、**B4 十跑取真证**：跑前先重启隧道两端；预期 `workflow.open` 首次真机走通、
+  链路推进到 `assert.onPage` 与删除步。失败即停不连跑；跑完记全链路总耗时
+  （三轮 pi Medium 同面账本的兑现点）。
+- 乙、后两例（`publish_states` / `history_version`）等 crud 通了统一处置。
+- 丙、挂账不变：`wf-open-smoke` 既存陈旧红（owner 待查，连带 open 容器归属闸
+  fail-closed 面当前无活金牌）；`pi` 对 `wf-delete-card-layout` 补审；
+  `hook-loop-guard` 跨树互锁失效立项；清单重签补 `replayGrantPath`。
+- 丁、工作树清理：29 棵树全持活 baton、远超护栏 #18 建议的 5 棵，已 6/6 收口的可摘。
+
+## 2026-08-06 全天：重表达落地 + 五契约收口 + B4 八跑停在「二次加载空壳」谜面（历史覆盖层，被上节接续）
 
 现役 dev 顶端 `7f38606`（本地零 push）。接上午层继续：
 
@@ -28,7 +73,9 @@
    治愈）；跑 4 create 八步全通、停 `workflow.save` 断层（引出重表达）；跑 5-8（重表达后）
    create 全通 + 读回 unique，停 `workflow.open` absent。**八跑残留全清**（五个实体
    b4r4/5/6/7/8 各以出站精确 ID 守卫真删、3 样本稳定缺席 exit 0；r2/r3 未建）。
-5. **open absent 谜面现状**（下一步的主对象）：三候选轮询后仍 absent 且前奏未走搜索分支
+5. **open absent 谜面现状**（本段 2026-08-06 上午快照，只溯源、勿据其判现状——谜底已由
+   当日收盘层的九跑诊断给出：真因是 `semantic.name` 模板未回填，与下述空壳推断无关）：
+   三候选轮询后仍 absent 且前奏未走搜索分支
    （atstep_9 是 click 非 fill）→ 时间账指向「nav 后 15s 内容器文本/裸文本/搜索框三者
    皆不可定位」= **create 后第二次整页加载偶发长时间空壳**（与晨间隧道池老化的
    `net::ERR_EMPTY_RESPONSE` 空壳同族）。反证据：只读复现驱动（真 nav+open 对既有名）
@@ -39,8 +86,9 @@
 
 ### 下一步（接手者从甲起）
 
-- 甲、**open 现场取证小契约**：给 `compileWorkflowOpen` 前奏加诊断 notes（三候选各自
-  采样计数/耗时/页面 bodyTextLen），notes 已证会进 exit-65 报告——一跑 B4 即得谜底
+- 甲、**（已完成，见收盘层）open 现场取证小契约**：给 `compileWorkflowOpen` 前奏加诊断
+  notes（三候选各自采样计数/耗时/页面 bodyTextLen），notes 已证会进 exit-65 报告——
+  九跑一次即得谜底（真因是模板未回填，非空壳）
   （料想坐实二次加载空壳）。若坐实：修向 = nav 后加「页面就绪判据」（如列表 API 响应
   已达 + 卡片容器非空）或隧道池按跑重启纪律机制化。
 - 乙、后两例（publish_states / history_version）等 crud 通了统一处置（同断层大概率）。

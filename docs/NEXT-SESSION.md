@@ -14,108 +14,115 @@
 【一句话定位 + 血缘】
 Casey 是 autotester（人录·机回放·零 LLM）的「翻面」：输入端改 LLM 读懂文本用例，
 但「确定性是默认、LLM 是手术刀、完成是退出码、裁判零 LLM」的内核一字不让。
-复用 autotester 的 loop-kit 作第二消费者（ADR-0001）。三处统一标识符 `casey`：
-CLI `bin/casey.mjs`、skill `.claude/skills/casey`、MCP `mcp/casey-server.mjs`。
+复用 autotester 的 loop-kit 作第二消费者（ADR-0001，现已是兄弟目录独立包 ADR-0008）。
+三处统一标识符 `casey`：CLI `bin/casey.mjs`、skill `.claude/skills/casey`、
+MCP `mcp/casey-server.mjs`。
 
 【先读，别现编已决的事】（必读顺序）
 1. `CLAUDE.md` + `CONTEXT.md`（统一语言注册表，命名以它为准；弃用别名是黑名单、繁体禁用）
-2. `docs/HANDOFF.md`（最新覆盖层即权威现状，顶节是 2026-08-04 全天收盘）
-3. `loop/GUARDRAILS.md`（19 条，逐条有效）
+2. `docs/HANDOFF.md`（最新覆盖层即权威现状，顶节是 2026-08-06 收盘）
+3. `loop/GUARDRAILS.md`（19 条，逐条有效；表头仍写「13–16 新增」是陈旧措辞）
 4. `.claude/skills/casey/SKILL.md`、`README.md`
-5. 追溯「为何这么定」：`docs/adr/`（0001-0010）、`docs/design/txt2testreport-design.md`
-6. 本轮真机证据：`docs/plans/p9-created-workflow-cleanup-continuity-v3/evidence/`
-   下 `signing-a-segment-20260804.md`、`shape-probe-20260804.md`
+5. 追溯「为何这么定」：`docs/adr/`（0001–0010）、`docs/design/txt2testreport-design.md`
+6. 本轮真机证据链：`docs/plans/wf-open-preface-notes/`（诊断契约）与
+   `docs/plans/semantic-name-instantiate/`（根因契约）的 plan/learn/reviews
 
 不要读取、搜索、推断或回显 `.auth/`、`site.json`、账号、密码、token、真实目标地址。
 
 【项目历史 / 决策档案】
-- ADR-0001 Casey 作 loop-kit 第二消费者；ADR-0002 多态裁定四态 + fail-safe + 自愈准入门；
-  ADR-0003 编译再回放、自愈非就地；ADR-0004 断言草拟→冻结→人签、改版重签；
-  ADR-0005 `CONTEXT.md` 统一语言由 hook 与 gate 强制；ADR-0006 原子结果重表达三轴；
+- ADR-0001 loop-kit 第二消费者；ADR-0002 多态裁定四态 + fail-safe + 自愈准入门；
+  ADR-0003 编译再回放、自愈非就地；ADR-0004 断言冻结→人签→改版重签；
+  ADR-0005 统一语言由 hook 与 gate 强制；ADR-0006 Casey = autotester ⊕ regress 分层融合；
   ADR-0007 Playwright 回放基座、取证按发起方归因；ADR-0008 loop-kit 独立提取；
   ADR-0009 hermetic 绿只是必要条件、真机 UAT 与人签才是完成；ADR-0010 准入受众与凭据严格匹配。
-- 2026-08-04 六批次入 dev（本地零 push）：chief 漏导入修 `a57366c`、
-  ref-rebuild `6f51aaf`、agent-delete 漏导入修 `c66544e`、A 段签署封账 `57422af`、
-  卡片布局删除路径 `3010d86`、回放票据 `158f2ec` + C2 签回 `c89b3b8`（现役顶端）。
+- 2026-08-06 全天八契约入 dev（本地零 push）：sleep 导入修 `8d0b0bc`、create 入口锚
+  `158829d`、登录预算 `9bb2300`、post-nav 双锚 `db80a17`、open 搜索先行 `7f38606`、
+  open 诊断 notes `97c0d83`、语义名回填 `8d0e6e3`（现役顶端）。每个契约固定
+  「实现 → 双路评审 → 并集修 → 收据 + learn → merge」，全部双路 APPROVE 才合。
 
 【DDD / 统一语言】
 - 七相（LLM 只在相 0/1/2/5；相 3/4/6 零 LLM）：相0 归一 → 相1 编译 → 相2 冻结人签 →
   相3 回放 → 相4 裁定 → 相5 自愈 → 相6 报告。
 - `TestCase` 是聚合根；`intentId` 是语义步、`stepId` 是回放事件位置；三轴 `StepAxes` =
   动作轴 + typed 断言轴 + 取证轴；四态 = `PASS` / 有本步证据的 `SUT_DEFECT` /
-  正向确证漂移的 `HARNESS_ERROR` / 证不出的 `NEEDS_HUMAN`。
-- 点击身份门（多匹配、坐标兜底、身份不明都不算 unique）；网络取证按 `attributedStepId`
-  不按时间窗；裁判与自愈分进程、`verdict.mjs` 对断言种类不可知。
-- 本轮新登记：因果菜单授权（卡片布局删除入口只接受点击更多操作入口后恰一浮现的新浮层菜单）。
+  正向确证漂移的 `HARNESS_ERROR` / 证不出的 `NEEDS_HUMAN`（五个子类见 CONTEXT.md）。
+- 点击身份门（多匹配、坐标兜底、身份不明都不算 unique）；容器归属闸（命中还须落在
+  记录容器内）；因果菜单授权（只认点入口后恰一浮现的新浮层）；网络取证按
+  `attributedStepId` 不按时间窗；裁判与自愈分进程、`verdict.mjs` 对断言种类不可知。
+- 本轮新知识（未登记新词，只是事实）：`semantic.name` 落盘留模板、定位那一刻回填——
+  两侧定位入口各过一次纯投影 `instantiateEventSemantic`。
 
 【开发准则（机制强制）】
 - 阶段互锁：改实现或提交前必先 `contract init` 声明入口分流（`direct` | `light` | `full`）。
-  已知缺陷：`hook-loop-guard` 在 git worktree 里解析主树 baton 与主树暂存区，
-  既不会正确拦也不会正确放——工作树里的合规靠执行者自律走完流程，别当机制已验证。
+  已知缺陷：`hook-loop-guard` 在 git worktree 里解析主树 baton 与主树暂存区，既不会正确拦
+  也不会正确放——工作树里的合规靠执行者自律走完流程（本日第四次实证；分步 add/commit 可绕）。
 - `passes` 只由 `loop-kit/bin/gate.mjs` 写；`testChecksums` 冻结件只读，改动走
-  checksumAmendment + 人签。注意 gate 会回写 PRD 的 evidence 时间戳弄脏已冻快照，
+  checksumAmendment + 人签。gate 会回写 PRD 的 evidence 时间戳弄脏已冻快照，
   验完 `git checkout -- loop/prd-<slug>.json` 还原。
 - 双 hook 术语拦截：回合输出与写入 md/json 都被扫，违例、繁体、未登记的加粗英文拦红。
 - 评审纪律：任一评审方 `CHANGES_REQUIRED` 即按发现并集修，不宣称完成；评审必须对着
-  不可变快照（先 commit、`git diff HEAD` 为空再派审），执行者持树期间收到「已派审」要喊停；
-  运行故障（超时/限额/上游 503）如实记 HARNESS_ERROR，绝不改写成供应方或额度不可用。
-- 突变验证是钉力的判据：目标突变下必红、现行实现下必绿、还原后 sha256 逐字节相同；
-  突变必须外科式（保持 `node --check` 过），红因必须是目标断言文案而非语法错。
+  不可变快照（先 commit、`git diff HEAD` 为空再派审）；评审后提交前必核
+  `git diff --cached`（评审方用 `git checkout <rev> -- <file>` 复现会写暂存区，
+  本日已有把回退带进提交的事故）；红证复现改用 `git show <rev>:<file> >` 姿势。
+- 突变验证是钉力判据：目标突变下必红、现行实现下必绿、还原后 sha256 逐字节相同。
+- 碰定位核心、强制层、共享冻结面的改动必跑全仓金牌扫描（护栏 #19）：抽样邻接会漏
+  ——本日实证首版设计邻接全绿却打红两个用字面匹配判接线顺序的冻结金牌。
 
 【兜底 / fail-safe】
 - 证不出一律 `NEEDS_HUMAN`，绝不静默 `PASS`；`SUT_DEFECT` 须取证背书；
   自愈只对正向确证 `HARNESS_ERROR` 开闸且非就地、人签后应用。
-- 入参畸形 fail-closed（`verdict` exit 65）；回放看门狗；熔断越阈写 inbox + exit 2；
-  凭据兜底门落盘前深扫、命中拒写。
+- 入参畸形 fail-closed（`verdict` exit 65；缺参 64）；回放看门狗 120 秒强退；
+  熔断器越阈写 inbox + exit 2；凭据兜底门落盘前深扫、命中拒写。
 
 【排期】
-- P0-P7 已建；P8 web 已有、CEF 与 arbitrary 未完成；P9 tier-1 已建、
-  tier-2 机器面已建而真机 UAT 收口中（本轮 A 段已闭、B 段停在首例 B4）；
+- P0–P7 已建；P8 web 已有、cef 与 arbitrary 未开始；P9 tier-1 已建、tier-2 机器面已建
+  而真机 UAT 收口中（A 段已闭，B 段首例 `tc_catalog_wf_crud` 推进到 open 步）；
   P10 可信闭环自进化未开始。
-- 并行硬规则：碰 `lib`/`bin` 的落地走 worktree 隔离 + git-native 合并，绝不 cp 进 `lib`/`bin`。
+- 并行硬规则：碰 `lib`/`bin` 的落地走 worktree 隔离 + git-native 合并，绝不 cp 进
+  `lib`/`bin`；每树一独立 baton（护栏 #18 建议 ≤5 树，当前 29 树全持活 baton、已超，
+  多数是已 6/6 收口的历史树，可择机清理）。
 
 【当前状态（2026-08-06 收盘）】
-- dev 顶端 `7f38606`，本地零 push。活契约槽 `p9-created-workflow-cleanup-continuity-v3`
-  （`full`，`loop` 待）。本日五契约全绿合入：sleep 导入 `8d0b0bc` / 入口锚 `158829d` /
-  登录预算 `9bb2300` / post-nav 双锚（`db80a17` 含评审期误暂存事故修复）/
-  open 搜索先行三候选 `7f38606`，各双路 APPROVE。
-- 重表达已落地（Steven 裁）：被测方版本化模型实证（详情页无保存/发布钮）；
-  TestCase v2（intent_save→intent_open）+ flow 重排 + B0-B3 重走完毕（代签 A5 口径）。
-- B4 八跑：create 链稳定全通 + 读回 unique；停在 `workflow.open` absent 谜面——
-  时间账指向「create 后第二次整页加载偶发长时间空壳」（隧道池老化同族）；
-  只读复现（既有名）一切正常。八跑残留全清（五删两未建，出站精确守卫 exit 0）。
-  下一步甲=open 前奏诊断 notes 小契约 + 一跑 B4 取谜底（见 HANDOFF）。
-- 纪律新增：评审后提交前必核 `git diff --cached`（评审方 checkout 写暂存事故实证）；
-  红证复现用 `git show <rev>:<file> >` 不碰暂存区；跑真机前先重启隧道两端。
-- A 段已闭合：A3 真机重编译 exit 0 找回 `events.json`、首份真机流回复证据；
-  A5 代签（Steven 会话内显式授权，代执行如实标注）冻结 `expected.frozen.json` 与
-  v2 `entity-locks.frozen.json`；`--force` 的 1 条 pending 已留痕披露。
-- B 段停在首例：`tc_catalog_wf_crud` 的 B0-B3 就位，B4 `COMPILE_EXIT=1` 停在
-  `stepOrdinal=1 atom=workflow.create`，只落 `compile-report.json`；只读扫库确认
-  `atl_` 残留 0 条（创建未落库、被测方干净）。根因未定位，**先查再跑**。
-- 真机检查单已核：搜索框 `Enter` 不过滤（要点 `.hr-input__suffix .search-icon`）；
-  现役卡片是 `.agent-card`（`.hr-card.hr-card--bordered` 计数为 0，旧金牌选择器陈旧）；
-  目标卡 `button.agent-card__more` 物理 1 个（无隐藏克隆）。
-- 主树有用户未提交资产（六个 `prd`、两个 md、四个未跟踪件）——一律勿动、勿 `git add -A`。
+- dev 顶端 `8d0e6e3`，本地零 push。活契约槽 `p9-created-workflow-cleanup-continuity-v3`
+  （`full`，3/6：`grill`/`plan`/`accept` done、`loop` 待）。
+- B4 九跑账：跑 1–3 登录/预算骑线（已治愈）；跑 4 停 `workflow.save` 断层（引出重表达）；
+  跑 5–9 create 链稳定全通 + 读回 unique，停 `workflow.open` absent。九跑诊断一次定谜底：
+  不是页面、不是隧道、不是渲染时序——`workflow.open` 的 emit 把未实例化模板
+  `atl_{{uniqueName}}` 塞进 `semantic.name`，两侧定位拿字面串找元素恒 0 命中；
+  同刻诊断证明容器内真名 5ms 命中、页面 `text346/卡5/框16` 完全正常。
+  即该原子在带模板目标名下从未走通过（07-02 采知识时用的是固定既有名）。
+- 修复已合入（`8d0e6e3`）：两侧定位入口各过一次纯投影，落盘字节与上游对象不被改；
+  全仓 205 金牌扫描零回归（非零项逐个基线双态对比同码）。`B4` 十跑尚未跑——
+  这是下一步甲，预期 open 首次真机走通、链路推进到 `assert.onPage` 与删除步。
+- 九跑残留 `atl_b4r90806g` 已真删清偿 exit 0；九跑累计建六删六，被测方零残留。
+  常备清偿工具已落持久位置 `~/casey-tools/cleanup-workflow.mjs <工作流名>`
+  （`/tmp` scratchpad 会随会话重启清空，别再放那里）。
+- 主树有用户未提交资产（七个 `prd`、两个 md、四个未跟踪件）——一律勿动、勿 `git add -A`。
 
 【下一步（任选其一，先对齐再动手）】
-A. （已完成 2026-08-04 晚）B4 根因定位——工装漏导入，已修已合。
-B. 续跑 B 段三例 B4-B9（Steven 已全授权、代签口径同 A5；一例一跑、失败即停）。
-   B4 重跑用新唯一名令牌；现场核抽屉新字段「工作流编码」是否必填（route:human 在案）。
-C. 清单重签补 `replayGrantPath`（`p9-tier2-selftest` T9a 计划内红的清偿点）。
-D. `hook-loop-guard` 跨树互锁失效立项（kernel 级，机理已查明，车道待裁）。
-E. 挂账补审：`pi` 对 `wf-delete-card-layout` 前提审那一轮。
+甲. 跑 `B4` 十跑取真证（推荐）：跑前先重启隧道两端（见环境坑），令牌用新的
+   `atl_` 长名；预期 `workflow.open` 首次走通。失败即停不连跑，成功则续 B5–B9。
+   跑完记全链路总耗时（三轮 pi Medium 的同面账本兑现点）。
+乙. 后两例 `tc_wf_publish_states` / `tc_wf_history_version`：等 crud 通了统一处置
+   （大概率同断层，重表达口径可复用）。
+丙. 挂账清偿（可并行 fan-out）：`wf-open-smoke` 既存陈旧红（owner 待查，连带 open
+   容器归属闸 fail-closed 面当前无活金牌）；`pi` 对 `wf-delete-card-layout` 补审；
+   `hook-loop-guard` 跨树互锁失效立项；清单重签补 `replayGrantPath`。
+丁. 工作树清理：29 棵树全持活 baton、远超建议的 5 棵，已 6/6 收口的可摘。
 
 【环境坑（WSL）】
-- 优先在 WSL 交互 shell 跑（`wsl.exe -e bash -ic '<cmd>'` 载 NVM Node）：工作树
-  `.git` 指针与 `node_modules` 软链都是 WSL 形态，Windows 下会产生假红；
-  曾出现 `.git` 指针被写成 `D:/` 形态导致 WSL git 直接 fatal，改回 `/mnt/d` 即可。
+- 跑真机前先重启隧道两端（本日成纪律）：池老化约一小时或高请求量后，浏览器复用
+  连接报 `net::ERR_EMPTY_RESPONSE` 而 `curl` 恒好；重启即愈。顺序敏感：先 WSL 侧
+  `node scripts/wsl-reverse-listen.mjs`，后 Windows 侧 `scripts/win-forward-start.cmd`
+  （或直接 `cmd.exe /c "cd /d D:\ctx\heren\casey\scripts && node win-reverse-agent.mjs"`），
+  然后 `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:15519/` 核 200。
+- 会话重启后隧道必断，需按上面顺序重建；`--sut` 只喂隧道回环基址。
 - `/mnt/d` 的 git 慢，给足 300 秒；短超时的空输出别误判成干净工作树。
-- 真机链路：`--sut` 只喂隧道回环基址；起隧道顺序敏感（先 WSL 侧
-  `scripts/wsl-reverse-listen.mjs`、后 Windows 侧代理），核 `doctor` 与单实例。
-- `/mnt/d` 挂载偶发 drvfs 整体 I/O 故障（本日发生一次），WSL 内无法自愈，
-  须 Windows 侧 `wsl --shutdown` 重启；`/tmp` 的 scratchpad 重启即清，重要产物存 `~`。
+- `/mnt/d` 挂载偶发 drvfs 整体 I/O 故障，WSL 内无法自愈，须 Windows 侧 `wsl --shutdown`
+  重启；`/tmp` 的 scratchpad 重启即清，重要产物存 `~`。
+- 全仓 `grep`/`find` 会命中 `.claude/worktrees/` 与兄弟工作树里的副本，检索需过滤。
 - 禁止启动 fake-SUT 或夹具 SUT；金牌只跑 zero-SUT / static / 纯内存。
+- 金牌扫描用 `timeout N node <golden>` 时注意 124 是超时码不是红，需给足时间复核。
 
 【硬约束】
 裁判零 LLM；fail-safe 不 fail-open；冻结测试只读；凭据与真实目标地址不外泄；中文标准简体；
