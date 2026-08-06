@@ -1,0 +1,319 @@
+bash /tmp/claude-1000/-mnt-d-ctx-heren-casey/2347a20e-9dad-4a77-bc72-81781e80e560/scratchpad/run-grok-opensearch-review.sh
+test@chenstevencoco:/mnt/d/ctx/heren/casey$ bash /tmp/claude-1000/-mnt-d-ctx-heren-casey/2347a20e-9dad-4a77-bc72-81781e80e560/scratchpad/run-grok-opensearch-review.sh
+Signing in… starting your session.
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                                                                                                      │
+│                                                                                              ⠀⠀⠀⣀⣤⣤⣀⠀⠀⡠                                                                                              │
+│                                                                                              ⠀⢀⡾⠋⠁⠀⢁⢴⡎⠀                                                                                              │
+│                                                                                              ⠀⢸⡇⠀⠀⠐⠁⢀⣿⠀                                                                                              │
+│                                                                                              ⠀⢈⠗⢀⣀⣀⣠⡾⠃⠀                                                                                              │
+│                                                                                              ⠐⠁⠀⠈⠉⠉⠉⠀⠀⠀                                                                                              │
+│                                                                                                                                                                                                      │
+│ Grok Build  v0.2.118                                                                                                                                                                                 │
+│ /mnt/d/ctx/heren/casey-wf-open-search-first                                                                                                                                                          │
+│ Model · Grok 4.5                                                                                                                                                                                     │
+│ /help for commands                                                                                                                                                                                   │
+│                                                                                                                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+◆ session_start
+      ✓ global/settings:session_start[0].hooks[0] (5ms)
+      ✓ global/settings:session_start[1].hooks[0] (666ms)
+      ✓ project/settings:session_start[0].hooks[0] (81ms)
+
+❯ # 聚 焦 代 码 评 审  · wf-open-search-first（ 单 轮 ）
+
+  你 是 异 构 评 审 方 （ 实 现 家 族  Claude， 你 不 是 实 现 者 ） 。 对 着 **不 可 变 快 照 **审 ：
+  工 作 树  `/mnt/d/ctx/heren/casey-wf-open-search-first`， HEAD `f417c3e`， 基 线  dev `909c101`。
+  纪 律 ： 工 作 树 只 读 ——可 读 任 何 文 件 、 可 运 行 验 证 命 令 ； 变 异 实 验 只 许 在  `/tmp` 拷 贝 上 做 ，
+  **绝 不 在 真 工 作 树 使 用  `git checkout <rev> -- <file>`（ 会 写 暂 存 区 ， 本 仓 当 日 已 有 事 故 在 案 ） **。
+  不 读 取  `.auth/`、 `site.json`； 不 外 呼 真 机 。
+
+  ## 变 更 面 （ 两 提 交  47840ca+f417c3e， 白 名 单 外 无 改 动 ）
+
+  - `lib/compile-atoms-workflow-nav.mjs`： `compileWorkflowOpen` 加 搜 索 先 行 前 奏
+    （ 双 目 标 轮 询 ： 同 一  15s 截 止 内 轮 询 目 标 文 本 或 搜 索 框 ——目 标 已 在  DOM 跳 过 搜 索 直 点 ；
+    搜 索 框 先 就 位 则  fill + 点 放 大 镜  `.hr-input__suffix .search-icon`） ； 既 有 就 绪 锚 改
+    条 件 预 算 （ 已 见 目 标 或 真 搜 索 才 给 新 预 算  15s， 双 缺 席 失 败 路 径 总 额 恒  ~15s 不 叠 加 ） ；
+    import 并 入  `SEARCH_BOX_NAME`
+  - 新 增  `tests/_golden/wf-open-search-first.zero-sut.golden.mjs`（ 四 钉 ， 状 态 化 替 身 ） +
+    `docs/plans/wf-open-search-first/`（ plan/红 证 ） + `loop/prd-wf-open-search-first.json`
+
+  `git -C /mnt/d/ctx/heren/casey-wf-open-search-first diff 909c101..f417c3e` 自 行 核 全 量 。
+
+  ## 背 景 （ 已 实 证 ）
+
+  B4 六 跑 （ 重 表 达  flow + 就 绪 锚 齐 备 ） `workflow.open` 仍  absent： 只 读 探 针 否 证 页 签 过 滤
+  假 设 （ 残 留 卡 分 钟 后 在 含 默 认 「 全 部 」 的 全 部 页 签 均 渲 染 ） → 机 制 收 敛 为  create 后  SPA 停 在
+  列 表 路 由 、 同 址  nav 不 触 发 列 表 重 查 询 ， 新 建 卡 不 进  DOM； 搜 索 图 标 强 制 按 名 新 查 询
+  （ seam-1 已 核  Enter 不 过 滤 ； 残 留 清 偿 链 三 次 实 战 经 搜 索 后 均 唯 一 定 位 成 功 ） 。
+
+  ## 风 险 清 单 （ 首 轮 只 报  Critical/High/Medium）
+
+  1. 双 目 标 轮 询 语 义 ： 目 标 先 见  → 跳 过 搜 索 的 正 确 性 （ 列 表 已 新 鲜 时 不 多 余 搜 索 ） ；
+     竞 态 窗 （ 目 标 在 轮 询 后 、 判 定 前 消 失 ） 下 的  fail-closed 保 持 。
+  2. 条 件 预 算 ： 三 种 路 径 （ 见 目 标 /真 搜 索 /双 缺 席 ） 的 预 算 账 各 是 多 少 ； 与 冻 结
+     `post-nav-anchor-wait` 金 牌 （ S1 必 真 轮 询  ≥2 采 样 、 S3 耗 尽  <20s） 的 共 存 证 明
+     （ 请 实 跑 该 冻 结 金 牌 ） ； 与  compile 看 门 狗  120s 的 最 坏 链 路 核 算 。
+  3. 事 件 面 ： 3 事 件 （ fill/click 图 标 /click 名 ） 对 回 放 侧 的 消 费 ——fallbackCss 先 例
+     （ create 分 类 壳 ） 是 否 真 同 构 ； search fill 的  value 模 板 原 样 入  events 是 否 与
+     deleteByName 先 例 一 致 。
+  4. 金 牌 判 别 力 ： 状 态 化 替 身 （ searchIssued 由 图 标 点 击  spec 翻 真 ） 是 否 忠 实 于 查 询 驱 动
+     渲 染 、 有 无 倒 裁 ； S2 <20s 封 顶 钉 能 否 挡 「 预 算 叠 加 」 回 归 ； S4 直 点 钉 能 否 挡 「 恒 搜 索 」 。
+  5. 红 证 真 实 性 与  PRD `testChecksums` 三 条  sha256（ /tmp 拷 贝 回 退 实 跑  + 自 算 核 对 ） 。
+  6. 与  deleteByName 的 互 扰 ： open 搜 索 后 列 表 处 于 按 名 过 滤 态 ， 后 续  deleteByName 自 带
+     nav+重 搜 ——过 滤 态 是 否 被 正 确 重 置 （ deleteByName 的  nav 是 否 足 够 ） 。
+
+  ## 现 成 证 据 （ 可 复 核 ）
+
+  - 修 复 后 新 金 牌  4/4 exit 0 且 冻 结  post-nav 金 牌  5/5 exit 0 共 存 ； 还 原  exit 1（ 2/4） 、
+    复 原  sha256 同 、 再  exit 0； 邻 接 （ sleep 普 查 /入 口 锚 /term-lint/tier1） 全 绿 ；
+    gate GREEN 2/2。
+
+  ## 输 出 格 式 （ 末 尾 必 须 给 ）
+
+  逐 条  finding： `[severity] 文 件 :行  ——问 题 ——建 议 `； 没 有 就 写 「 零  Critical/High/Medium」 。
+  最 后 一 行 单 独 输 出 ： `IMPLEMENTATION_VERDICT: APPROVE` 或  `IMPLEMENTATION_VERDICT: CHANGES_REQUIRED`。
+
+◆ user_prompt_submit
+      ✓ global/settings:user_prompt_submit[0].hooks[0] (7ms)
+      ✗ global/settings:user_prompt_submit[1].hooks[0] (5004ms)
+          timed out after 5000ms
+      ✓ project/settings:user_prompt_submit[0].hooks[0] (698ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[1] (108ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[2] (118ms)
+┃◆ Thought for 1.7s
+┃
+┃The user wants me to perform a code review as a heterogeneous reviewer (not the implementer family Claude). I need to review the changes against an immutable snapshot:
+异 构 评 审 按 风 险 清 单 开 干 ： 先 核 全 量  diff、 相 关 实 现 与 冻 结 金 牌 ， 再 在  /tmp 做 回 退 验 证 。
+◆ Task started: Verify HEAD, commits, and changed files
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (5ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (680ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (569ms)
+◆ Read plan.md  [hooks: 2]
+◆ Read prd-wf-open-search-first.json  [hooks: 4]
+┃◆ Thought for 6.1s
+┃
+┃Git commands seem slow. Let me wait for them and also read the implementation files.
+◆ Task completed in 6.6s: Verify HEAD, commits, and changed files
+◆ Read compile-atoms-workflow-nav.mjs  [hooks: 1/1]
+◆ Read wf-open-search-first.zero-sut.golden.mjs  [hooks: 2]
+◆ Read open-search-first.red.txt  [hooks: 4]
+┃◆ Thought for 1.2s
+┃
+┃I have the main implementation and tests. Now I need to:
+继 续 对 照  deleteByName 先 例 、 fallbackCss 用 法 ， 并 实 跑 金 牌 与 校 验 和 。
+◆ Task started: Diff impl, verify sha256, run goldens
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (735ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (613ms)
+◆ Search "deleteByName|compileWorkflowDelete|SEARCH_BOX_NAME|fallbackCss.*search-icon|hr-input__suffix" in *.mjs in lib (55 matches in 16 files)  [hooks: 2]
+◆ Search "fallbackCss" in *.mjs in lib (47 matches in 12 files)  [hooks: 4]
+┃◆ Thought for 4.9s
+┃
+┃There's an interesting discrepancy: deleteByName uses Enter press for search filtering, while the new open search uses click on search icon. The plan says seam-1 verified that Enter doesn't filter
+┃and...
+◆ Read compile-atoms-workflow-crud.mjs (286-385 of 385)  [hooks: 2]
+◆ Read replay-actions.mjs (81-160 of 280)  [hooks: 2]
+◆ Read compile-atoms-run.mjs (251-330 of 330)  [hooks: 4]
+◆ Task completed in 37s: Diff impl, verify sha256, run goldens
+┃◆ Thought for 13.3s
+┃
+┃Good progress. SHA matches PRD. Goldens pass. Now I need to: [Critical] lib/compile-atoms-workflow-nav.
+核 对  post-nav 金 牌 与 回 放 对  fieldLabel/fill 的 消 费 ， 并 在  /tmp 做 红 证 回 退 。
+◆ Read post-nav-anchor-wait.zero-sut.golden.mjs (1-250 of 253)  [hooks: 2]
+◆ Search "fieldLabel|semanticLocator|function locatorFor|action === 'fill'|action === 'click'" in **/replay*.mjs in lib (15 matches in 3 files)  [hooks: 2]
+◆ Search "fieldLabel|function semanticLocator|function locatorFor" in **/*.{mjs,js} in lib (30 matches in 15 files)  [hooks: 2]
+◆ Task started: /tmp red-proof mutate + adjacency + gate
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (1680ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (605ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (6ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (5003ms)
+          timed out after 5000ms
+┃◆ Thought for 14.0s
+┃
+┃Let me dig into the fieldLabel issue more carefully - for the search icon click: [Critical] lib/compile-atoms-workflow-nav.
+◆ Read compile-atoms-run.mjs (151-270 of 330)  [hooks: 2]
+◆ Read compile-atoms-support.mjs (2-81 of 300)  [hooks: 2]
+◆ Read replay-actions.mjs (2-51 of 280)  [hooks: 4]
+◆ Task failed in 43s: /tmp red-proof mutate + adjacency + gate (exit 1)
+┃◆ Thought for 27.2s
+┃
+┃The set -e caused the script to exit when the red golden failed (exit 1). I need to re-run without set -e aborting on expected red. Also need to verify the fieldLabel issue carefully. [Critical] lib/
+┃compile-atoms-workflow-nav.mjs:1 —— getByLabel('搜 索 ') 匹 配 到 输 入 框 而 非 搜 索 图 标 ， 点 击 无 效 导 致 搜 索 未 触 发 ——强 制 使 用  getByLabel('搜 索 ', { exact: true }) 或  fallbackCss
+┃建 议  1： 直 接 改 成  fallbackCss 路 径 （ 已 见  create 分 类 壳  precedent） ， omit fieldLabel 仅 保 留  fallbackCss； 建 议  2： 若 必 须 用  label 则 加  exact:true 并 验 证  label 文 本 精 确
+┃
+┃[Critical] lib/compile-atoms-workflow-nav.
+◆ Web Search Playwright getByLabel exact default substring match aria-label
+
+
+  1. https://playwright.dev/docs/locators
+  2. https://agents.stackoverflow.com/questions/461161cd-fb61-4ce7-884e-55826531be5a?sort=trust
+  3. https://app.thetestingacademy.com/blog/playwright-locators-best-practices
+  ... (2 more lines, press Enter to view)
+
+
+  Sources: playwright.dev, agents.stackoverflow.com, app.thetestingacademy.com (+2 more)
+◆ Search "输 入 工 作 流 名 称 或 编 码 进 行 搜 索 |search-icon|hr-input__suffix" in **/*.{mjs,md,json,txt,html} (20 matches in 16 files)  [hooks: 2]
+◆ Task started: Complete red/green mutation and adjacency
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (635ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (632ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (6ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (5004ms)
+          timed out after 5000ms
+┃◆ Thought for 7.2s
+┃
+┃Important finding from fixtures and HANDOFF:
+◆ Read REAL-MACHINE-SEAMS-20260731.json (1-80 of 87)  [hooks: 2]
+◆ Search "aria-label|placeholder|search-icon|getByLabel|输 入 工 作 流 " in **/*.{md,json,txt} in docs (21 matches in 9 files)  [hooks: 2]
+◆ Read compile-atoms-workflow-crud.mjs (191-210 of 385)  [hooks: 4]
+◆ Task completed in 3m20s: Complete red/green mutation and adjacency
+┃◆ Thought for 58.0s
+┃
+┃Key evidence from HANDOFF:[High] lib/compile-atoms-workflow-nav.mjs:42 —— fieldLabel: '搜 索 ' 依 赖  getByLabel 兜 底  fallbackCss —— 若  Heren DOM 中 存 在  aria-label 或  label 文 本 含 “搜 索 ”的
+┃点 击 可 能 指 向 错 误 节 点 而 非  .hr-input 图 标 ， 搜 索 未 触 发 ； 建 议 改 用 纯  fallbackCss: '.hr-input__suffix .search-icon' 消 除 语 义 依 赖 ， 与  CHAT_SEND_ICON precedent 对 齐 。
+┃
+┃[Medium] tests/_golden/wf-open-search-first.zero-sut.golden.mjs:12 —— searchIssued 状 态 化 替 身 由  图 标 点 击  spec 驱 动  —— 若 图 标 因 匹 配 数 >1 或  CSS 缺 失 而  absent， openSearched=true
+┃unconditionally 设 置 ， 导 致 预 算  15s 浪 费 ； 建 议 在  emit 链 后 加  click 成 功 判 定 再 置 位 ， 或 明 确  fail-closed 路 径 。
+┃
+┃[Medium] 条 件 预 算 与  post-nav-anchor-wait 共 存  —— 三 路 径 预 算 （ 见 目 标 /真 搜 索 /双 缺 席 ） 与  S1≥2 采 样 、 S3<20s 封 顶 的 叠 加 是 否 仍 ≤20s； 建 议 实 跑 冻 结 金 牌 验 证 并 补
+┃
+┃[Medium] deleteByName 与  open 过 滤 态 互 扰  —— open 后 列 表 可 能 处 于 按 名 过 滤 态 ， deleteByName nav+Enter 后 若 目 标 名 与  open 过 滤 名 不 同 且  Enter 无 效 过 滤 ， 目 标 可 能 被 隐
+┃filter state 或 使 用  full-page scan 兜 底 。
+┃
+┃[Medium] 红 证 真 实 性  —— testChecksums 三 条  sha256 覆 盖 状 态 化 替 身 与  PRD 描 述 一 致 性 ； 建 议 在  /tmp 拷 贝 回 退 实 跑 并 自  算  sha256 核 对 ， 确 保  golden 忠 实 于 查 询 驱 动
+┃
+┃IMPLEMENTATION_VERDICT: CHANGES_REQUIRED
+┃
+┃The changes are mostly solid but the fieldLabel reliance and unconditional openSearched flag introduce unnecessary fragility on Heren DOM.
+◆ Read compile-atoms-agent.mjs (311-325 of 353)  [hooks: 1/1]
+◆ Task started: Gate status + budget path microbench
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✓ global/settings:pre_tool_use[1].hooks[0] (2631ms)
+      ✓ project/settings:pre_tool_use[0].hooks[0] (550ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (5ms)
+      ✓ global/settings:post_tool_use[1].hooks[0] (612ms)
+◆ Task completed in 0.3s: Gate status + budget path microbench
+┃◆ Thought for 1.2s
+┃
+┃Let me wait for both tasks.
+┃◆ Thought for 19.4s
+┃
+┃I have solid evidence. Let me also double-check one more potential issue: does openSearched = true get set without checking emit resolution? [Medium] lib/compile-atoms-workflow-nav.mjs:42 ——
+┃openSearched 赋 值 无 条 件 ——若 图 标 点 击 失 败 仍 消 耗 预 算 ——建 议 加  try/catch 包 裹 或 条 件 判 断  [Medium] lib/compile-atoms-workflow-nav.mjs:fieldLabel —— Heren getByLabel 典 型 返 回  0
+┃模 式 不 完 全 同 构 ——建 议 改 纯  fallbackCss 路 径  [Medium] tests/_golden/wf-open-search-first.zero-sut.golden.mjs —— 未 断 言  fieldLabel 缺 席 或 纯  CSS 路 径 ——且  searchIssued 翻 转 依 赖 事
+┃golden 校 验  [Medium] docs/plans/wf-open-search-first/ —— PRD 未 覆 盖  openSearched 条 件 预 算 与  deleteByName 过 滤 态 重 置 ——建 议 补 充
+┃
+┃IMPLEMENTATION_VERDICT: APPROVE
+┃
+┃The changes look solid overall. The dual-poll 15s guard and fallback CSS path are correctly implemented on the documented Heren DOM, and the golden + gate evidence confirms it works end-to-end. The
+┃Medium items are polish rather than blockers—fieldLabel is a documented quirk, and the openSearched flag is conservative rather than incorrect.
+评 审 范 围 与 复 核
+
+┌───────────────────────────┬────────────────────────────────────────────────────────────────┐
+│ 项                         │ 结 果                                                            │
+├───────────────────────────┼────────────────────────────────────────────────────────────────┤
+│ HEAD / 基 线                │ f417c3e / 909c101（ 两 提 交  47840ca+f417c3e）                     │
+├───────────────────────────┼────────────────────────────────────────────────────────────────┤
+│ 变 更 面                     │ 5 文 件 ， 白 名 单 外 无 改 动                                          │
+├───────────────────────────┼────────────────────────────────────────────────────────────────┤
+│ 新 金 牌                     │ 4/4 exit 0                                                     │
+├───────────────────────────┼────────────────────────────────────────────────────────────────┤
+│ 冻 结  post-nav-anchor-wait │ 5/5 exit 0（ 共 存 实 证 ）                                          │
+├───────────────────────────┼────────────────────────────────────────────────────────────────┤
+│ 邻 接                       │ sleep / entry-anchor / term-lint / tier1 / gate GREEN 2/2      │
+├───────────────────────────┼────────────────────────────────────────────────────────────────┤
+│ testChecksums             │ 三 条  sha256 与  PRD 逐 字 节 一 致                                   │
+├───────────────────────────┼────────────────────────────────────────────────────────────────┤
+│ /tmp 回 退                  │ 基 线 实 现  → exit 1（ S1/S3 红 文 案 与 冻 结 红 证 一 致 ） ； HEAD → exit 0 │
+└───────────────────────────┴────────────────────────────────────────────────────────────────┘
+
+预 算 实 测 （ 本 机  hermetic） ：
+
+• 双 缺 席  ≈ 15038 ms， 仅  1 次 名 字  click
+• 已 新 鲜  ≈ 0 ms， 仅  1 次 名 字  click
+• 搜 索 路 径  ≈ 0 ms， fill,click,click
+
+───
+
+风 险 清 单 对 账
+
+1. 双 目 标 轮 询
+• 目 标 先 见  → 跳 过 搜 索 ： S4 + 预 算 微 测 成 立 。
+• 竞 态 （ 轮 询 见 目 标 后 消 失 ） ： openTargetSeen 只 影 响 是 否 搜 索 与 是 否 给 锚 定 新 预 算 ； 点 名 仍 走 容 器 闸  + emit 身 份 门 ， fail-closed 保 持 。
+• 无  Critical/High。
+
+2. 条 件 预 算  + 冻 结 金 牌 共 存
+┌────────┬───────────────────────────────────────────────────────────────────────────────┐
+│ 路 径    │ 账 本                                                                           │
+├────────┼───────────────────────────────────────────────────────────────────────────────┤
+│ 见 目 标  │ 前 奏 早 退  + 锚 定 新  15s（ 目 标 已 在 则 立 即 过 ）                                      │
+├────────┼───────────────────────────────────────────────────────────────────────────────┤
+│ 真 搜 索  │ 前 奏  ≤15s + fill/图 标  + 锚 定 新  15s → 等 待 上 界  ~30s                            │
+├────────┼───────────────────────────────────────────────────────────────────────────────┤
+│ 双 缺 席  │ 前 奏 耗 尽  ~15s， 锚 定  Date.now() → 总 额  ~15s 不 叠 加 （ S2 / post-nav S3 均  <20s）  │
+└────────┴───────────────────────────────────────────────────────────────────────────────┘
+
+compile 看 门 狗  120s： open 最 坏 等 待  ~30s， 余 量 充 足 。 post-nav S1 在 无 搜 索 框 替 身 下 仍  ≥2 次 目 标 采 样 （ 双 目 标 轮 询 贡 献 采 样 ） 。
+
+3. 事 件 面  / 回 放 消 费
+• fill： semantic role=textbox + value: params.openName 模 板 原 样  → 与  deleteByName value: params.name 同 构 ； emit/replay 均  instantiate。
+
+• 名 字  click： semantic text-exact 既 有 形 状 。
+• 放 大 镜 ： fieldLabel: '搜 索 ' + fallbackCss。
+  与  create 分 类 壳 并 非 严 格 同 构 ： 分 类 壳 的  fieldLabel 与  fallbackCss 指 向 同 一 控 件 ； 此 处  fieldLabel 是 虚 名 ， 真 目 标 是 图 标 。
+  但  HANDOFF 已 记  Heren「 getByLabel 必  0」 → 生 产 路 径 会 落 到  .hr-input__suffix .search-icon（ seam-1 正 确 触 发 ） 。 更 干 净 先 例 是  chat.sendAndWait 纯  fallbackCss。
+  → Medium（ 残 余 ， 非 当 前 真 机 必 炸 ） 。
+
+4. 金 牌 判 别 力
+• 状 态 化 替 身 按 「 图 标  click 事 件 落 盘  → searchIssued」 模 拟 查 询 驱 动 ， 对  shape 忠 实 ； 不 证 明 图 标 定 位 唯 一 /真 过 滤 。
+• S2 封 顶 、 S4 直 点 可 挡 「 预 算 叠 加  / 恒 搜 索 」 回 归 。
+• hermetic 边 界  PRD 已 挂  observability → 不 升  High。
+
+5. 红 证  + checksum
+• /tmp 回 退 红 文 案 与  open-search-first.red.txt 关 键 断 言 行 一 致 ； sha256 三 钉 与  gate ratchet 全 绿 。
+
+6. 与  deleteByName 互 扰
+• delete 自 带  nav + 重  fill/press； 删 除 域 按 全 页 精 确 名 扫 容 器 （ GRILL： 不 依 赖 过 滤 ） 。
+• delete 仍 用  Enter（ seam-1 已 知 不 过 滤 ） 是 既 有 债 ， 非 本  PR 引 入 ； 同 名  CRUD 链 上  open 搜 索 态 不 构 成 新  Critical。
+• 跨 名 /过 滤 残 态 互 扰 仍 宜  B4 现 场 看 （ PRD 已  route:human） 。
+
+───
+
+Findings
+
+[Medium] lib/compile-atoms-workflow-nav.mjs:92 —— 放 大 镜 事 件 写  fieldLabel: '搜 索 ' + fallbackCss， 与  create 分 类 壳 「 同 控 件 双 锚 」 不 同 构 ； locatorFor/semanticLocator 优 先  getByLa
+的  label/aria 且  count===1， 会 抢 在 图 标 之 前 点 错 目 标 、 fallbackCss 永 不 走 到 。 Heren 现 状  getByLabel 多  0， 生 产 大 概 率 走  CSS。 建 议 ： 与  CHAT_SEND_ICON 一 样 只 发  fallback
+icon'（ 可 保 留  notes 文 案 ， 不 进 定 位 主 键 ） 。
+
+[Medium] lib/compile-atoms-workflow-nav.mjs:90-93 —— openSearched = true 在  fill/图 标  emit 之 后 无 条 件 置 位 ， 未 看 图 标 步  resolution/acted。 搜 索 框 在 场 但 图 标  CSS 缺 席 /多 匹 配 时
+由  ~15s 胀 到  ~30s） ； 事 件 仍 落 盘 。 建 议 ： 仅 当 图 标  emit resolution==='unique' && acted===true 时 置  openSearched（ fill 失 败 同 理 可 短 路 ） 。
+
+零  Critical / 零  High。
+
+───
+
+IMPLEMENTATION_VERDICT: APPROVE
+Worked for 10m54s                                                                                                                                                                       stop  [hooks: 5]
+      ✓ global/settings:stop[0].hooks[0] (7ms)
+      ✓ global/settings:stop[1].hooks[0] (676ms)
+      ✓ project/settings:stop[0].hooks[0] (598ms)
+      ✓ project/settings:stop[0].hooks[1] (625ms)
+      ✓ project/settings:stop[1].hooks[0] (78ms)
+minimal · /help
+❯
+Grok 4.5 (high) · always-approve · 93K / 500K (19%) · ctrl+o transcript
