@@ -74,16 +74,19 @@ CLI `bin/casey.mjs`、skill `.claude/skills/casey`、MCP `mcp/casey-server.mjs`�
   P10 可信闭环自进化未开始。
 - 并行硬规则：碰 `lib`/`bin` 的落地走 worktree 隔离 + git-native 合并，绝不 cp 进 `lib`/`bin`。
 
-【当前状态（2026-08-06 上午）】
-- dev 顶端 `9bb2300`，本地零 push。活契约槽 `p9-created-workflow-cleanup-continuity-v3`
-  （`full`，`loop` 待）。骑线预算缺陷类三契约已全部合入（sleep 导入 `8d0b0bc` /
-  入口锚 `158829d` / 登录预算 `9bb2300`），各双路 APPROVE。
-- B4 第四跑：`workflow.create` 八步全 unique+acted + 读回 unique（三修生效、
-  「工作流编码」非必填实证）；停在知识断层——建后页面不进编辑器，`workflow.save`
-  absent + `deleteByName` 入口缺席（CASE_DEFECT 候选）。残留 `atl_b4r40806b` 已真删
-  清偿 exit 0。岔口待 Steven 裁：flow 重表达 vs CASE_DEFECT vs 先探针（推荐先探针）。
-- 环境坑新增：隧道池老化（~1 小时后浏览器复用连接报空响应、curl 恒好）——
-  长间隔后跑真机前先重启隧道两端。
+【当前状态（2026-08-06 收盘）】
+- dev 顶端 `7f38606`，本地零 push。活契约槽 `p9-created-workflow-cleanup-continuity-v3`
+  （`full`，`loop` 待）。本日五契约全绿合入：sleep 导入 `8d0b0bc` / 入口锚 `158829d` /
+  登录预算 `9bb2300` / post-nav 双锚（`db80a17` 含评审期误暂存事故修复）/
+  open 搜索先行三候选 `7f38606`，各双路 APPROVE。
+- 重表达已落地（Steven 裁）：被测方版本化模型实证（详情页无保存/发布钮）；
+  TestCase v2（intent_save→intent_open）+ flow 重排 + B0-B3 重走完毕（代签 A5 口径）。
+- B4 八跑：create 链稳定全通 + 读回 unique；停在 `workflow.open` absent 谜面——
+  时间账指向「create 后第二次整页加载偶发长时间空壳」（隧道池老化同族）；
+  只读复现（既有名）一切正常。八跑残留全清（五删两未建，出站精确守卫 exit 0）。
+  下一步甲=open 前奏诊断 notes 小契约 + 一跑 B4 取谜底（见 HANDOFF）。
+- 纪律新增：评审后提交前必核 `git diff --cached`（评审方 checkout 写暂存事故实证）；
+  红证复现用 `git show <rev>:<file> >` 不碰暂存区；跑真机前先重启隧道两端。
 - A 段已闭合：A3 真机重编译 exit 0 找回 `events.json`、首份真机流回复证据；
   A5 代签（Steven 会话内显式授权，代执行如实标注）冻结 `expected.frozen.json` 与
   v2 `entity-locks.frozen.json`；`--force` 的 1 条 pending 已留痕披露。

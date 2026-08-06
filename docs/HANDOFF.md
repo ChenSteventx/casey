@@ -3,7 +3,56 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-06 上午：三修连环收口 + B4 突破到知识断层 + 残留已清（最新覆盖层，权威现状）
+## 2026-08-06 全天：重表达落地 + 五契约收口 + B4 八跑停在「二次加载空壳」谜面（最新覆盖层，权威现状）
+
+现役 dev 顶端 `7f38606`（本地零 push）。接上午层继续：
+
+1. **重表达已落地（Steven 两次裁定：先探针→重表达）**：探针实证被测方版本化模型
+   （卡片点入 `/process/detail` 详情画布：导出/分享/预览/测试/新建版本/历史版本/添加节点，
+   全站无「保存/发布」钮；「编辑」菜单=信息抽屉）。`tc_catalog_wf_crud` TestCase v2
+   （`intent_save`→`intent_open`）+ flow 重排（create→noErrorToast→nav→open→onPage(detail)
+   →noErrorToast→deleteByName）+ B0 代签 confirm（A5 口径、如实披露）+ B1 同步 + B2 重铸
+   权威（signer 代签）+ B3 PRD 登记（新哈希 `14b3be7e…`）。旧件归档
+   `cases/tc_catalog_wf_crud/archive/*.pre-20260806-reexpress.json`。
+2. **又两契约六阶段收口合入**（各双路 APPROVE）：`post-nav-anchor-wait`（open 文本锚 +
+   delete 搜索框锚 15s 有界就绪，`d96d833`→恢复提交 `db80a17`）；`wf-open-search-first`
+   （open 搜索先行：三候选轮询——容器内命中才跳搜索、裸文本 toast 假阳只授锚预算、
+   搜索框命中走 fill+放大镜；条件预算失败路径封顶；r1 双路 APPROVE + 并集修 + r3 delta
+   APPROVE + S5 判别钉，`7f38606`）。今日累计**五契约**全绿合入。
+3. **一起真事故与两条纪律**：评审方在真工作树用 `git checkout <rev> -- <file>` 做红证
+   复现（该命令写暂存区），评审收据提交把回退带进了 `a8700a1`、合并后主树金牌逮住——
+   已修复（`db80a17`）并立规：**评审后提交前必核 `git diff --cached`**；红证复现改用
+   `git show <rev>:<file> >` 姿势（不碰暂存区）。另 `hook-loop-guard` 在工作树误拦一次
+   （读主树 baton，HANDOFF 丁项已知缺陷第四次实证；分步 add/commit 可绕）。
+4. **B4 八跑总账**（乙授权内，一例一跑）：跑 1-3 登录冷启/预算骑线（已由 login-nav-budget
+   治愈）；跑 4 create 八步全通、停 `workflow.save` 断层（引出重表达）；跑 5-8（重表达后）
+   create 全通 + 读回 unique，停 `workflow.open` absent。**八跑残留全清**（五个实体
+   b4r4/5/6/7/8 各以出站精确 ID 守卫真删、3 样本稳定缺席 exit 0；r2/r3 未建）。
+5. **open absent 谜面现状**（下一步的主对象）：三候选轮询后仍 absent 且前奏未走搜索分支
+   （atstep_9 是 click 非 fill）→ 时间账指向「nav 后 15s 内容器文本/裸文本/搜索框三者
+   皆不可定位」= **create 后第二次整页加载偶发长时间空壳**（与晨间隧道池老化的
+   `net::ERR_EMPTY_RESPONSE` 空壳同族）。反证据：只读复现驱动（真 nav+open 对既有名）
+   一切正常——nav 完成后列表即时可定位、open 前奏 <900ms 出手（短名命中 3 处判
+   ambiguous 是身份门正确行为）。谜面缺的是 B4 现场页面取证。
+6. **既有名短名 ambiguous 新知识**（只读复现实证）：2 字符工作流名 text-exact 全页 3 命中
+   ——workflow.open 对短名有 ambiguous 面（route:human 正确拦），用例名用 atl_ 长名无碍。
+
+### 下一步（接手者从甲起）
+
+- 甲、**open 现场取证小契约**：给 `compileWorkflowOpen` 前奏加诊断 notes（三候选各自
+  采样计数/耗时/页面 bodyTextLen），notes 已证会进 exit-65 报告——一跑 B4 即得谜底
+  （料想坐实二次加载空壳）。若坐实：修向 = nav 后加「页面就绪判据」（如列表 API 响应
+  已达 + 卡片容器非空）或隧道池按跑重启纪律机制化。
+- 乙、后两例（publish_states / history_version）等 crud 通了统一处置（同断层大概率）。
+- 丙、挂账不变：三轮 pi Medium 同面（失败路径预算账，B4 通跑时记总耗时）；
+  `wf-open-smoke` 既存陈旧红（owner 待查，连带 open 容器归属闸 fail-closed 面无活金牌）；
+  过滤态互扰现场核；`pi` 对 `wf-delete-card-layout` 挂账补审；丁 hook-loop-guard（今日
+  又一实证）；上午层其余项。
+- 环境：隧道两端本日多次重启（池老化 ~1 小时/高请求量后浏览器复用报空响应、curl 恒好；
+  重启即愈）——**跑真机前先重启隧道两端**已成纪律；会话重启后隧道需重建（先 WSL
+  `scripts/wsl-reverse-listen.mjs` 后 Windows `win-forward-start.cmd`）。
+
+## 2026-08-06 上午：三修连环收口 + B4 突破到知识断层 + 残留已清（历史覆盖层，被上节接续）
 
 现役 dev 顶端 `9bb2300`（本地零 push）。本日两契约合入 + B4 四跑 + 残留清偿：
 
