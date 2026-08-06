@@ -1,11 +1,11 @@
 {
   "schemaVersion": 1,
-  "task": "wf-open-search-first（light）：workflow.open 编译知识加搜索先行前奏。根因（B4 六跑实证 + 只读探针否证页签假设）：create 后 SPA 停在列表路由、nav.workflowManagement 同址跳转不触发列表重查询，新建卡片不进 DOM——post-nav 就绪锚轮满 15s 也等不来（残留卡片数分钟后在含默认「全部」的全部页签均正常渲染，证明非过滤问题而是查询时机问题）。反证：搜索图标点击强制发起按名新查询（seam-1 已核 Enter 不过滤、图标才过滤；残留清偿链三次实战均经搜索后成功唯一定位）。修法：搜索框 15s 有界就绪后 fill 搜索框（值=openName 模板原样入 events）+ click 放大镜（fieldLabel + fallbackCss .hr-input__suffix .search-icon，同 create 分类壳 fallbackCss 先例）；搜索框耗尽缺席跳过搜索步不阻断，交后续锚定与 emit 身份门 fail-closed。事件面 open 步 1→3 事件、均既有通用动作 schema，回放零 schema 变更。",
+  "task": "wf-open-search-first（light）：workflow.open 编译知识加搜索先行前奏。根因（B4 六跑实证 + 只读探针否证页签假设）：create 后 SPA 停在列表路由、nav.workflowManagement 同址跳转不触发列表重查询，新建卡片不进 DOM——post-nav 就绪锚轮满 15s 也等不来（残留卡片数分钟后在含默认「全部」的全部页签均正常渲染，证明非过滤问题而是查询时机问题）。反证：搜索图标点击强制发起按名新查询（seam-1 已核 Enter 不过滤、图标才过滤；残留清偿链三次实战均经搜索后成功唯一定位）。修法（双目标轮询 + 条件预算）：同一 15s 截止内轮询目标文本或搜索框——目标已在 DOM 跳过搜索直点（零开销）；搜索框先就位则 fill 搜索框（值=openName 模板原样入 events）+ click 放大镜（fieldLabel + fallbackCss .hr-input__suffix .search-icon，同 create 分类壳 fallbackCss 先例）；搜索框耗尽缺席跳过搜索步不阻断，交后续锚定与 emit 身份门 fail-closed。事件面 open 步 1→3 事件、均既有通用动作 schema，回放零 schema 变更。 既有就绪锚改条件预算：已见目标或真发起搜索才给新预算，双缺席失败路径总额恒 ~15s 不叠加（两轮评审 pi Medium 方向的机制化兑现）。",
   "specPath": "docs/plans/wf-open-search-first/plan.md",
   "testChecksums": {
-    "tests/_golden/wf-open-search-first.zero-sut.golden.mjs": "259e52559bbd3bf993492505e6a74e3d8bca3108969a6041a5e65980ce96c68b",
-    "docs/plans/wf-open-search-first/plan.md": "70211f5b0afe8e9372bb95831d9c10c95377502ae3e4ca554b08becab9a8856d",
-    "docs/plans/wf-open-search-first/accept/red-proofs/open-search-first.red.txt": "8437af70e7fc72dadfc1baab505c2eed5f351acdfe0be9da147ed0406ffa2d37"
+    "tests/_golden/wf-open-search-first.zero-sut.golden.mjs": "ef585c0596400845ed65fa176729b5fc4283ee7eee4fc7ddc403923ab6f082e3",
+    "docs/plans/wf-open-search-first/plan.md": "a09f394532e16ff0aa27d3372bd774d5a7d3ed492d43bb85760172182cf98b8b",
+    "docs/plans/wf-open-search-first/accept/red-proofs/open-search-first.red.txt": "9b9d121f686fd2d36a7d6a808ed095aa2ad287120b1504bee6ac41bf5bbc1aba"
   },
   "observability": [
     {
@@ -16,13 +16,13 @@
   "stories": [
     {
       "id": "s1-open-search-first-and-seal",
-      "desc": "搜索先行实现（搜索框 15s 有界就绪 → fill 搜索框语义锚 + click 放大镜 fallbackCss → 既有锚定链照走；耗尽缺席跳过不阻断）；金牌三钉：S1 形状钉（恰 3 事件序 fill→click 图标→click 名、值为模板原样、零阻断）；S2 缺席跳过钉（零 fill、仍发 absent 名字点击、两段预算 <40s 有界、零阻断）；S3 结构钉（搜索先行在就绪锚之前 + 实采 css + 15s count() 轮询）。",
+      "desc": "搜索先行实现（双目标轮询：目标已在 DOM 直点零开销 / 搜索框就位则 fill+点放大镜；条件预算：已见目标或真搜索才给锚定新预算 15s，双缺席总额恒 ~15s）；金牌四钉：S1 形状钉（目标不在旧 DOM 恰 3 事件序、值为模板原样、零阻断）；S2 双缺席封顶钉（零 fill、仍发 absent 名字点击、总额 <20s、零阻断）；S4 已新鲜直点钉（零搜索事件、恰 1 名字点击）；S3 结构钉（搜索先行在就绪锚之前 + 实采 css + 15s count() 轮询）。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/wf-open-search-first.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-06T03:58:52.252Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-06T04:16:33.172Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-adjacency-zero-regression",
@@ -35,10 +35,10 @@
         "node loop-kit/bin/term-lint.mjs --registry",
         "node bin/casey.mjs selftest --tier1"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-08-06T04:17:51.074Z 全部 acceptance exit 0"
     }
   ],
-  "notes": "红基线真实 exit 1（1/3：S1 红恰 1 事件、S3 红无搜索先行；S2 绿是回归钉本意），对最终金牌字节在修复前实抓，证据 accept/red-proofs/open-search-first.red.txt。突变闭环：git checkout 还原 → exit 1；复原 → sha256 逐字节相同 → exit 0。实现注释措辞避开「就绪锚」词组（S3 以该词为切片下界——注释词汇碰撞纪律第二次实践，本轮先踩后改，learn 在案）。替身纪律：searchPresent/targetPresent 双开关塑形忠实于「搜索框在场/缺席 × 目标在场/缺席」四象限中的两个判别象限；emit 按生产签名收参。passes 只由 gate 写入。",
+  "notes": "红基线真实 exit 1（2/4：S1 红恰 1 事件、S3 红无搜索先行；S2/S4 绿是回归钉本意），对最终金牌字节在修复前实抓，证据 accept/red-proofs/open-search-first.red.txt。突变闭环：git checkout 还原 → exit 1；复原 → sha256 逐字节相同 → exit 0。实现注释措辞避开「就绪锚」词组（S3 以该词为切片下界——注释词汇碰撞纪律第二次实践，本轮先踩后改，learn 在案）。替身纪律：状态化替身（目标可见性=列表本就新鲜或搜索图标点击后新查询返回）忠实于查询驱动渲染机制；与已冻结 post-nav-anchor-wait 金牌（S1 必真轮询、S3 耗尽 <20s）共存实证——双目标轮询让无搜索框页的目标采样仍 ≥2、条件预算让双缺席总额不叠加；emit 按生产签名收参。passes 只由 gate 写入。",
   "worktree": "/mnt/d/ctx/heren/casey-wf-open-search-first"
 }

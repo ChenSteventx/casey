@@ -43,9 +43,10 @@ function zeroLocator() {
   return zero();
 }
 
-// 塑形替身：searchPresent 控制搜索框在场性；targetPresent 控制目标文本在场性（在场即于
-// 列表记录容器内，忠实于真实 .agent-card 形态）。
-function makePage({ searchPresent, targetPresent }, targetText) {
+// 状态化塑形替身：searchPresent 控制搜索框在场性；目标文本可见性 = targetFromStart（列表已
+// 新鲜）或 state.searchIssued（搜索图标点击后新查询返回——忠实于「查询驱动渲染」的真实机制）。
+// 在场即于列表记录容器内（evaluate→true，忠实于真实 .agent-card 形态）。
+function makePage({ searchPresent, targetFromStart }, targetText, state) {
   return {
     getByRole: (role, opts) => {
       if (role === 'textbox' && opts?.name === SEARCH_BOX_NAME && searchPresent) {
@@ -54,7 +55,7 @@ function makePage({ searchPresent, targetPresent }, targetText) {
       return zeroLocator();
     },
     getByText: (text, opts) => {
-      if (text === targetText && opts?.exact === true && targetPresent) {
+      if (text === targetText && opts?.exact === true && (targetFromStart || state.searchIssued)) {
         return { count: async () => 1, evaluate: async () => true, first: () => zeroLocator() };
       }
       return zeroLocator();
@@ -69,10 +70,11 @@ function makePage({ searchPresent, targetPresent }, targetText) {
   };
 }
 
-function makeRun(page) {
+function makeRun(page, state = {}) {
   const emitted = [];
   return {
     emitted,
+    state,
     page,
     ctx: { uniqueName: 'u1', baseUrl: 'https://sut.invalid' },
     site: undefined,
@@ -90,6 +92,8 @@ function makeRun(page) {
       const stepId = `atstep_${this.stepN++}`;
       const ev = { stepId, ...spec };
       this.emitted.push(ev);
+      // 查询驱动渲染的忠实复现：搜索图标点击一经记录，新查询返回、目标可见。
+      if (spec.action === 'click' && spec.fallbackCss === '.hr-input__suffix .search-icon') this.state.searchIssued = true;
       let resolution = 'unique';
       let candidateCount = 1;
       let acted = false;
@@ -112,8 +116,9 @@ function makeRun(page) {
   };
 }
 
-await check('S1 搜索先行形状钉：恰发 fill(搜索) → click(放大镜) → click(目标名) 三事件', async () => {
-  const run = makeRun(makePage({ searchPresent: true, targetPresent: true }, 'atl_u1'));
+await check('S1 搜索先行形状钉：目标不在旧 DOM 时恰发 fill(搜索) → click(放大镜) → click(目标名) 三事件', async () => {
+  const state = { searchIssued: false };
+  const run = makeRun(makePage({ searchPresent: true, targetFromStart: false }, 'atl_u1', state), state);
   let threw = null;
   try {
     await compileWorkflowOpen(run, { openName: 'atl_{{uniqueName}}' });
@@ -135,8 +140,9 @@ await check('S1 搜索先行形状钉：恰发 fill(搜索) → click(放大镜)
   assert(run.blockers.length === 0, `零阻断：${JSON.stringify(run.blockers)}`);
 });
 
-await check('S2 搜索框缺席跳过钉：零 fill、仍发 absent 路径名字点击、有界、零阻断', async () => {
-  const run = makeRun(makePage({ searchPresent: false, targetPresent: false }, 'atl_u1'));
+await check('S2 双缺席封顶钉：零 fill、仍发 absent 路径名字点击、失败路径总额 <20s、零阻断', async () => {
+  const state = { searchIssued: false };
+  const run = makeRun(makePage({ searchPresent: false, targetFromStart: false }, 'atl_u1', state), state);
   const t0 = Date.now();
   let threw = null;
   try {
@@ -146,12 +152,28 @@ await check('S2 搜索框缺席跳过钉：零 fill、仍发 absent 路径名字
   }
   const elapsed = Date.now() - t0;
   assert(threw === null, `不得抛：${threw?.constructor?.name}: ${String(threw?.message).slice(0, 160)}`);
-  assert(elapsed < 40000, `两段预算须有界（搜索框 15s + 目标锚 15s，<40s）：${elapsed}ms`);
+  assert(elapsed < 20000, `条件预算封顶：双缺席失败路径总额恒 ~15s、绝不叠加（<20s）：${elapsed}ms`);
   assert(!run.emitted.some((e) => e.action === 'fill'), `搜索框缺席不得发 fill：${run.emitted.map((e) => e.action).join(',')}`);
   const clicks = run.emitted.filter((e) => e.action === 'click');
   assert(clicks.length === 1 && clicks[0].semantic?.kind === 'text',
     `仍应恰发 1 个名字点击 emit（absent 路径不改判）：${JSON.stringify(clicks.map((c) => c.semantic))}`);
   assert(run.blockers.length === 0, `跳过不阻断（身份门语义不动）：${JSON.stringify(run.blockers)}`);
+});
+
+await check('S4 列表已新鲜直点钉：目标本就在 DOM 时零搜索事件、恰发 1 个名字点击', async () => {
+  const state = { searchIssued: false };
+  const run = makeRun(makePage({ searchPresent: true, targetFromStart: true }, 'atl_u1', state), state);
+  let threw = null;
+  try {
+    await compileWorkflowOpen(run, { openName: 'atl_{{uniqueName}}' });
+  } catch (error) {
+    threw = error;
+  }
+  assert(threw === null, `不得抛：${threw?.constructor?.name}: ${String(threw?.message).slice(0, 160)}`);
+  assert(!run.emitted.some((e) => e.action === 'fill'), `已新鲜列表不得发搜索 fill：${run.emitted.map((e) => e.action).join(',')}`);
+  assert(run.emitted.length === 1 && run.emitted[0].action === 'click' && run.emitted[0].semantic?.kind === 'text',
+    `应恰发 1 个名字点击：${run.emitted.map((e) => e.action).join(',')}`);
+  assert(run.blockers.length === 0, `零阻断：${JSON.stringify(run.blockers)}`);
 });
 
 await check('S3 结构钉：搜索先行在就绪锚之前 + 放大镜 css + 搜索框轮询', async () => {

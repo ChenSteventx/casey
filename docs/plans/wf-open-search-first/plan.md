@@ -11,25 +11,30 @@ SPA 停在列表路由，`nav.workflowManagement` 同址跳转不触发列表重
 ## 修法（最小，与 deleteByName 搜索知识同源）
 
 `lib/compile-atoms-workflow-nav.mjs` `compileWorkflowOpen`：在既有就绪锚之前加**搜索先行**
-前奏——搜索框有界就绪（15s 轮询）后：`fill` 搜索框（值 `params.openName` 模板原样入
-events、编译期由 emit 按 ctx 实例化）→ `click` 放大镜（`fieldLabel` + fallbackCss
-`.hr-input__suffix .search-icon`，与卡片布局删除路径实战同姿势）。搜索框耗尽缺席则
-**跳过搜索步不阻断**，交后续既有就绪锚与 emit 身份门 fail-closed（零新增判定）。
+前奏，采**双目标轮询**——同一 15s 截止内轮询「目标文本 或 搜索框」：目标已在 DOM
+（列表已新鲜）→ 跳过搜索直入锚定（零开销）；搜索框先就位 → `fill` 搜索框（值
+`params.openName` 模板原样入 events、编译期由 emit 按 ctx 实例化）→ `click` 放大镜
+（`fieldLabel` + fallbackCss `.hr-input__suffix .search-icon`，与卡片布局删除路径实战
+同姿势）。既有就绪锚改**条件预算**：已见目标或真发起了搜索才给新预算 15s，否则前奏已为
+同一目标等满、锚定让行——**双缺席失败路径总额恒 ~15s 不叠加**（两轮评审 pi Medium
+方向的机制化兑现）。搜索框耗尽缺席跳过不阻断，交既有 emit 身份门 fail-closed。
 
-事件面：open 步从 1 事件（click 名字）变 3 事件（fill 搜索 + click 图标 + click 名字）；
-均为既有通用动作 schema（fill/click + fallbackCss 先例：create 的分类壳点击），回放侧
-按事件通用回放、零 schema 变更。
+事件面：目标不在旧 DOM 时 open 步 1→3 事件（fill 搜索 + click 图标 + click 名字）、
+已新鲜时保持 1 事件；均为既有通用动作 schema（fallbackCss 先例：create 分类壳点击），
+回放侧按事件通用回放、零 schema 变更。
 
 ## 验收
 
-新金牌 `tests/_golden/wf-open-search-first.zero-sut.golden.mjs` 三钉：
+新金牌 `tests/_golden/wf-open-search-first.zero-sut.golden.mjs` 四钉（状态化替身：目标
+可见性 = 列表本就新鲜 或 搜索图标点击后新查询返回——忠实于查询驱动渲染）：
 
-- S1 搜索先行形状钉：搜索框在场 + 目标文本在场的塑形替身跑 `compileWorkflowOpen`：
-  恰发 3 事件且序为 fill(搜索框语义锚, 值=openName 模板) → click(放大镜 fallbackCss) →
-  click(目标名 text-exact 语义)；不抛、零阻断。红基线：现行代码只发 1 事件。
-- S2 搜索框缺席跳过钉（回归钉，现行同绿）：搜索框与目标均永不挂载：零 fill 事件、
-  仍发 1 个 absent 路径的名字点击 emit、总耗时有界（<40s，含搜索框 15s + 目标锚 15s
-  两段预算）、零阻断（身份门语义不动）。
+- S1 搜索先行形状钉：搜索框在场、目标不在旧 DOM：恰发 3 事件且序为 fill(搜索框语义锚,
+  值=openName 模板) → click(放大镜 fallbackCss) → click(目标名 text-exact)；不抛、零阻断。
+  红基线：现行代码只发 1 事件。
+- S2 双缺席封顶钉（回归钉，现行同绿）：搜索框与目标均永不挂载：零 fill、仍发 1 个
+  absent 路径名字点击 emit、失败路径总额 <20s（条件预算封顶、绝不叠加）、零阻断。
+- S4 列表已新鲜直点钉（回归钉，现行同绿）：目标本就在 DOM：零搜索事件、恰发 1 个
+  名字点击、零阻断。
 - S3 结构钉：`搜索先行` 注释 + `.hr-input__suffix .search-icon` + 搜索框轮询在
   `就绪锚` 之前。
 
