@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "task": "wf-open-search-first（light）：workflow.open 编译知识加搜索先行前奏。根因（B4 六跑实证 + 只读探针否证页签假设）：create 后 SPA 停在列表路由、nav.workflowManagement 同址跳转不触发列表重查询，新建卡片不进 DOM——post-nav 就绪锚轮满 15s 也等不来（残留卡片数分钟后在含默认「全部」的全部页签均正常渲染，证明非过滤问题而是查询时机问题）。反证：搜索图标点击强制发起按名新查询（seam-1 已核 Enter 不过滤、图标才过滤；残留清偿链三次实战均经搜索后成功唯一定位）。修法：搜索框 15s 有界就绪后 fill 搜索框（值=openName 模板原样入 events）+ click 放大镜（fieldLabel + fallbackCss .hr-input__suffix .search-icon，同 create 分类壳 fallbackCss 先例）；搜索框耗尽缺席跳过搜索步不阻断，交后续锚定与 emit 身份门 fail-closed。事件面 open 步 1→3 事件、均既有通用动作 schema，回放零 schema 变更。",
+  "specPath": "docs/plans/wf-open-search-first/plan.md",
+  "testChecksums": {
+    "tests/_golden/wf-open-search-first.zero-sut.golden.mjs": "259e52559bbd3bf993492505e6a74e3d8bca3108969a6041a5e65980ce96c68b",
+    "docs/plans/wf-open-search-first/plan.md": "70211f5b0afe8e9372bb95831d9c10c95377502ae3e4ca554b08becab9a8856d",
+    "docs/plans/wf-open-search-first/accept/red-proofs/open-search-first.red.txt": "8437af70e7fc72dadfc1baab505c2eed5f351acdfe0be9da147ed0406ffa2d37"
+  },
+  "observability": [
+    {
+      "dimension": "hermetic 只证「三事件形状 + 缺席跳过零行为差 + 结构位序」；端到端真证是 B4 七跑（乙授权、一例一跑、记录总耗时——三轮 pi Medium 同面账本）。搜索先行的实网副作用（搜索态下后续 deleteByName 的再搜索是否互扰）由 B4 七跑现场核；nav.workflowManagement 同址不刷新属 SUT 行为、不在编译知识里二次补偿。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-open-search-first-and-seal",
+      "desc": "搜索先行实现（搜索框 15s 有界就绪 → fill 搜索框语义锚 + click 放大镜 fallbackCss → 既有锚定链照走；耗尽缺席跳过不阻断）；金牌三钉：S1 形状钉（恰 3 事件序 fill→click 图标→click 名、值为模板原样、零阻断）；S2 缺席跳过钉（零 fill、仍发 absent 名字点击、两段预算 <40s 有界、零阻断）；S3 结构钉（搜索先行在就绪锚之前 + 实采 css + 15s count() 轮询）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-open-search-first.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-06T03:58:52.252Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "邻接零回归：同函数上一契约金牌（post-nav，其对 open 的断言为 find 式、前奏零破坏实证）+ sleep 普查钉 + create 入口锚金牌 + 统一语言 + 确定性内核自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/post-nav-anchor-wait.zero-sut.golden.mjs",
+        "node tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs",
+        "node tests/_golden/wf-create-entry-anchor-wait.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": false,
+      "evidence": ""
+    }
+  ],
+  "notes": "红基线真实 exit 1（1/3：S1 红恰 1 事件、S3 红无搜索先行；S2 绿是回归钉本意），对最终金牌字节在修复前实抓，证据 accept/red-proofs/open-search-first.red.txt。突变闭环：git checkout 还原 → exit 1；复原 → sha256 逐字节相同 → exit 0。实现注释措辞避开「就绪锚」词组（S3 以该词为切片下界——注释词汇碰撞纪律第二次实践，本轮先踩后改，learn 在案）。替身纪律：searchPresent/targetPresent 双开关塑形忠实于「搜索框在场/缺席 × 目标在场/缺席」四象限中的两个判别象限；emit 按生产签名收参。passes 只由 gate 写入。",
+  "worktree": "/mnt/d/ctx/heren/casey-wf-open-search-first"
+}
