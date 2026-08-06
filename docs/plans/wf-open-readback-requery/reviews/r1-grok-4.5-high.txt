@@ -1,0 +1,81 @@
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (453ms)
+◆ Read entity-observation-registry.mjs (46-75 of 418)  [hooks: 2/2]
+┃◆ Thought for 3.3s
+┃
+┃I have comprehensive evidence. Let me write the final review report.
+异 构 只 读 评 审  · wf-open-readback-requery R1
+取 证 前 提
+• HEAD 85642ad， 分 支  wf-open-readback-requery； 相 对  HEAD 的  tracked 白 名 单  diff 为 空
+• 基 线  8d0e6e3 为 祖 先 ； 实 现  diff 与 提 交 说 明 一 致 （ lib/compile-atoms-workflow-nav.mjs 唯 一 实 现 变 更 ）
+• 全 程 未 改 工 作 树 、 未 起  SUT/浏 览 器 、 未 触 凭 据
+───
+Findings（ Critical / High / Medium）
+本 轮 无  C/H/M finding。
+（ 说 明 ： 未 把 「 S2 未 单 独 钉  incomplete/scan-failed 投 影 」 升 格 为  finding——resolveDualIdentity 对 非  ok 信 封 的  fail-closed 已 有 冻 结 判 定 表 金 牌 ； 本 变 更 投 影 为 三 行 直 译 ， 结 构 上 无 旁 路
+───
+风 险 清 单 （ 逐 条 结 论 ）
+1. 未 声 明 身 份 通 道 路 径 零 漂 移  —— 过
+• 门 闩 与 基 线 同 形 ： identityLedger && profile.workflows.listApi 才 进 声 明 分 支
+• 未 声 明 回 落 块 与 基 线  emit(click)+waitForURL 空 白 规 范 化 后 字 节 等 价 （ 自 比  git show 8d0e6e3:... 与  HEAD）
+• S4 金 牌 ： 恰 一  workflow.open/click、 零  blockers、 零 观 察 、 零 扫 描  journal —— 自 跑  20/20 内 绿
+2. 扫 描 证 据  fail-safe —— 过
+• fetched.ok 失 败  → scan-failed 续 试 ； complete !== true → incomplete 续 试 ， 从 不 把 不 完 整 行 集 标  ok
+• complete 判 据 沿 用  fetchCreatedWorkflowListScan（ hasNext===false && cursor===null && total===records.length）
+• 零 命 中 ： some(name) 假  → 0/500/1500 续 试 ； 终 态 完 整 零 命 中  → 判 定 表  absent（ envelope-name-zero-hit） → blockers、 不 点 （ S2）
+• 同 名 多 行 ： some 真 即  break（ 不 重 试 自 愈 ） → ambiguous（ S3a）
+• 证 不 出 路 径 一 律 非  unique → 硬 阻 断 不 点 ； 未 见 「 证 不 出 当 证 得 出 」 缝
+3. resolveDualIdentity 输 入 投 影  —— 过
+• container-out → failed 与  agent 同 款 （ 防 御 性 ； resolveAgentCardTarget 当 前 不 产 该  resolution）
+• 扫 描 行 已 是  {id,code,name}， 投 影  {status:'ok', rows, total} 与 判 定 表 字 段 对 齐
+• expected.openName 实 例 化 名 ； code 条 件 实 例 化 与 基 线 /agent 同
+• S3a envelope-same-name-multi / S3b dom-anchor-mismatch 证 明 未 走 「 matches!==1 一 律  action_failed」 捷 径
+4. TOCTOU / 句 柄 生 命 周 期  —— 过
+• 过 门 后  clickAgentCardWithin(gate.card, …) 句 柄 内 重 验 （ connected/可 见 /name[/code]）
+• 双 证 拒 ： 在  resolveWorkflowOpenSourceIdentity 内  dispose 后  null
+• 成 功 /点 击 重 验 失 败 /emit 异 常 ： 调 用 方  try/finally 单 次  dispose； 无 双 释 放 路 径
+• 点 击 重 验 失 败 ： identityGateOutcome=action_failed + blockers + 不 设  pending —— fail-closed
+5. 观 察 归 档 链  / sign 面  —— 过
+• pending = { matched, evidenceStepId: r.stepId, kind:'workflow', sourcePath }； evidenceStepId 来 自 终 端  click emit
+• compileFlow 按  registry workflow.open → boundKind:'workflow'、 requiredRoles:['source'] 归 档 ； S1e 钉 三 元 组  + provenance join + sourcePath + pending 清 空
+• 基 数 /issuer 邻 接 ： cardinality-reverse 18/18、 wiring 18/18 自 跑 绿 ； 未 破 坏  sign 对 账 形 状
+6. 提 前  return 对 其 余 原 子  —— 过
+• 声 明 分 支  return 仅 结 束  compileWorkflowOpen； addNode/connectNodes/openNode（ drawer 模 块 ） 等 独 立 导 出 与 分 派 表 未 动
+• 未 声 明 路 径 仍 落 到 原  emit 块 ； 无 跨 原 子 控 制 流 改 写
+7. 金 牌  / 红 证  / PRD sha256 —— 过
+┌─────────────────┬───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 项               │ 自 证 结 果                                                                                                                       │
+├─────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 验 收 金 牌         │ 20/20 exit 0                                                                                                                  │
+├─────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 红 证             │ /tmp 全 量 拷 贝  lib + git show 8d0e6e3:…nav.mjs 覆 盖 后 重 跑 ， 与  accept/red-proofs/…red.txt 32 行 分 类 输 出 逐 字 相 等 （ 9 过  / 11 红 ）  │
+├─────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ PRD 三 条  sha256 │ 自 算 与  testChecksums 全  OK                                                                                                    │
+├─────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ S1–S4           │ 时 序  journal、 毒 账 本 、 fail-closed 零  click、 判 定 表 两 例 、 未 声 明 零 漂 移 均 实 钉                                                     │
+└─────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+8. 邻 接 面  —— 过 （ 陈 旧 红 未 更 红 ）
+┌───────────────────────────────────────────────────────────────────────────────────────┬───────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 金 牌                                                                                   │ 结 果                                                                                           │
+├───────────────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+│ wiring / cardinality-reverse / search-first / preface-notes / post-nav / sleep-import │ 全 绿                                                                                           │
+├───────────────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+│ bindagent-replay                                                                      │ 清 掉 现 场 未 跟 踪  loop/prd-tc_bindagent_*.json 残 件 后  7/0 绿 （ 初 跑  EEXIST 为 环 境 残 件 ， 非 本 变 更 ）  │
+├───────────────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+│ arming.static                                                                         │ 0/7（ 门 面 拆 分 族 ， 基 线 同 码 ； 读  compile-atoms.mjs 抽 函 数 体 ， 与 本 重 构 无 关 ）                       │
+├───────────────────────────────────────────────────────────────────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────┤
+│ searchopen                                                                            │ 10 过  / 1 红 （ A3 门 面  import， 与  PRD 基 线  10/11 同 码 ）                                         │
+└───────────────────────────────────────────────────────────────────────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────┘
+───
+实 现 要 点 （ 复 核 摘 要 ， 非  finding）
+丙 路 线 与  plan/GRILL 一 致 ： 列 表 页 扫 描  → 物 理 双 锚  → 冻 结 双 证  → 过 门 才 点  → evidenceStepId=click； armWorkflowSourceReadback 信 封 路 线 退 役 且 仓 内 无 其 它 调 用 方 ； 比 旧 序 更 严 （ 未 证 对
+───
+VERDICT: APPROVE
+Worked for 14m31s                                                                                                                                                                                         stop  [hooks: 4/1]
+      ✓ global/settings:stop[0].hooks[0] (5ms)
+      ✗ global/settings:stop[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
