@@ -3,7 +3,8 @@
 RED  wf-open-search-first: S1 搜索先行形状钉：目标不在旧 DOM 时恰发 fill(搜索) → click(放大镜) → click(目标名) 三事件: 应恰发 3 事件：1（click）
 ok   wf-open-search-first: S2 双缺席封顶钉：零 fill、仍发 absent 路径名字点击、失败路径总额 <20s、零阻断
 ok   wf-open-search-first: S4 列表已新鲜直点钉：目标本就在 DOM 时零搜索事件、恰发 1 个名字点击
+RED  wf-open-search-first: S5 toast 假阳判别钉：裸文本命中但容器零命中时必须仍走搜索（不可信不跳过）: 裸命中（toast 假阳）绝不得跳过搜索：click
 RED  wf-open-search-first: S3 结构钉：搜索先行在就绪锚之前 + 放大镜 css + 搜索框轮询: 须有「搜索先行」实现（含同名注释）
 
-not ok wf-open-search-first: 2/4 通过，2 条红
+not ok wf-open-search-first: 2/5 通过，3 条红
 EXIT=1

@@ -46,7 +46,7 @@ function zeroLocator() {
 // 状态化塑形替身：searchPresent 控制搜索框在场性；目标文本可见性 = targetFromStart（列表已
 // 新鲜）或 state.searchIssued（搜索图标点击后新查询返回——忠实于「查询驱动渲染」的真实机制）。
 // 在场即于列表记录容器内（evaluate→true，忠实于真实 .agent-card 形态）。
-function makePage({ searchPresent, targetFromStart }, targetText, state) {
+function makePage({ searchPresent, targetFromStart, looseFromStart = false }, targetText, state) {
   return {
     getByRole: (role, opts) => {
       if (role === 'textbox' && opts?.name === SEARCH_BOX_NAME && searchPresent) {
@@ -54,8 +54,9 @@ function makePage({ searchPresent, targetFromStart }, targetText, state) {
       }
       return zeroLocator();
     },
+    // 裸 getByText 面：looseFromStart 复现瞬态回显（创建成功 toast——文本在页上但不在记录容器内）。
     getByText: (text, opts) => {
-      if (text === targetText && opts?.exact === true && (targetFromStart || state.searchIssued)) {
+      if (text === targetText && opts?.exact === true && (targetFromStart || looseFromStart || state.searchIssued)) {
         return { count: async () => 1, evaluate: async () => true, first: () => zeroLocator() };
       }
       return zeroLocator();
@@ -188,6 +189,22 @@ await check('S4 列表已新鲜直点钉：目标本就在 DOM 时零搜索事�
   assert(run.emitted.length === 1 && run.emitted[0].action === 'click' && run.emitted[0].semantic?.kind === 'text',
     `应恰发 1 个名字点击：${run.emitted.map((e) => e.action).join(',')}`);
   assert(run.blockers.length === 0, `零阻断：${JSON.stringify(run.blockers)}`);
+});
+
+await check('S5 toast 假阳判别钉：裸文本命中但容器零命中时必须仍走搜索（不可信不跳过）', async () => {
+  const state = { searchIssued: false };
+  const run = makeRun(makePage({ searchPresent: true, targetFromStart: false, looseFromStart: true }, 'atl_u1', state), state);
+  let threw = null;
+  try {
+    await compileWorkflowOpen(run, { openName: 'atl_{{uniqueName}}' });
+  } catch (error) {
+    threw = error;
+  }
+  assert(threw === null, `不得抛：${threw?.constructor?.name}: ${String(threw?.message).slice(0, 160)}`);
+  assert(run.emitted.some((e) => e.action === 'fill'),
+    `裸命中（toast 假阳）绝不得跳过搜索：${run.emitted.map((e) => e.action).join(',')}`);
+  assert(run.emitted.length === 3,
+    `应恰发 3 事件（fill/图标/名字）：${run.emitted.length}（${run.emitted.map((e) => e.action).join(',')}）`);
 });
 
 await check('S3 结构钉：搜索先行在就绪锚之前 + 放大镜 css + 搜索框轮询', async () => {

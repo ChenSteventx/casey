@@ -3,9 +3,9 @@
   "task": "wf-open-search-first（light）：workflow.open 编译知识加搜索先行前奏。根因（B4 六跑实证 + 只读探针否证页签假设）：create 后 SPA 停在列表路由、nav.workflowManagement 同址跳转不触发列表重查询，新建卡片不进 DOM——post-nav 就绪锚轮满 15s 也等不来（残留卡片数分钟后在含默认「全部」的全部页签均正常渲染，证明非过滤问题而是查询时机问题）。反证：搜索图标点击强制发起按名新查询（seam-1 已核 Enter 不过滤、图标才过滤；残留清偿链三次实战均经搜索后成功唯一定位）。修法（双目标轮询 + 条件预算）：同一 15s 截止内轮询目标文本或搜索框——目标已在 DOM 跳过搜索直点（零开销）；搜索框先就位则 fill 搜索框（值=openName 模板原样入 events）+ click 放大镜（fieldLabel + fallbackCss .hr-input__suffix .search-icon，同 create 分类壳 fallbackCss 先例）；搜索框耗尽缺席跳过搜索步不阻断，交后续锚定与 emit 身份门 fail-closed。事件面 open 步 1→3 事件、均既有通用动作 schema，回放零 schema 变更。 既有就绪锚改条件预算：已见目标或真发起搜索才给新预算，双缺席失败路径总额恒 ~15s 不叠加（两轮评审 pi Medium 方向的机制化兑现）。",
   "specPath": "docs/plans/wf-open-search-first/plan.md",
   "testChecksums": {
-    "tests/_golden/wf-open-search-first.zero-sut.golden.mjs": "e640f7cf601efd219c66359bee4ac659fc8d7f5dbf6bab8794e8b6dac75b357e",
+    "tests/_golden/wf-open-search-first.zero-sut.golden.mjs": "5ead1ce24fa37a8c64fd96779ec14d679d264e3768fe07483de697f53879095d",
     "docs/plans/wf-open-search-first/plan.md": "7a6e99ff0cd90c8e838fecf177f84923bf225407ad22c4d5fc1e55b404a643b5",
-    "docs/plans/wf-open-search-first/accept/red-proofs/open-search-first.red.txt": "9b9d121f686fd2d36a7d6a808ed095aa2ad287120b1504bee6ac41bf5bbc1aba"
+    "docs/plans/wf-open-search-first/accept/red-proofs/open-search-first.red.txt": "bda35582368363bb557db3dd1d117cbba44dca02f99f6c71e75b5f1f08f8712a"
   },
   "observability": [
     {
@@ -22,7 +22,7 @@
         "node tests/_golden/wf-open-search-first.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-06T05:01:57.936Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-06T05:16:57.822Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-adjacency-zero-regression",
@@ -36,9 +36,9 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-06T05:03:15.874Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-06T05:18:15.145Z 全部 acceptance exit 0"
     }
   ],
-  "notes": "红基线真实 exit 1（2/4：S1 红恰 1 事件、S3 红无搜索先行；S2/S4 绿是回归钉本意），对最终金牌字节在修复前实抓，证据 accept/red-proofs/open-search-first.red.txt。突变闭环：git checkout 还原 → exit 1；复原 → sha256 逐字节相同 → exit 0。实现注释措辞避开「就绪锚」词组（S3 以该词为切片下界——注释词汇碰撞纪律第二次实践，本轮先踩后改，learn 在案）。替身纪律：状态化替身（目标可见性=列表本就新鲜或搜索图标点击后新查询返回）忠实于查询驱动渲染机制；与已冻结 post-nav-anchor-wait 金牌（S1 必真轮询、S3 耗尽 <20s）共存实证——双目标轮询让无搜索框页的目标采样仍 ≥2、条件预算让双缺席总额不叠加；emit 按生产签名收参。passes 只由 gate 写入。 评审修正（r1 并集采纳）：①放大镜纯 fallbackCss 照 chat.sendAndWait 先例去 fieldLabel（grok Medium）；②openSearched 改为图标点击 unique+acted 才置位（pi Medium#2）；均一行级、金牌字节零变、红证仍有效；pi Medium#1（open 过滤态与 deleteByName 互扰）维持挂账 B4 七跑现场核。 B4 七跑实证修正：裸 text 探针被创建成功 toast 类瞬态回显假阳、误判列表已新鲜跳过搜索（前奏 ~1s 即跳、随后真锚 absent）——升级三候选轮询：容器内命中才跳搜索（标准与归属判定同刻）、裸文本命中不可信只授锚预算、金牌替身容器语义同步；冻结 post-nav 金牌（无搜索框页裸文本迟到场景）与 sleep 普查钉共存实证。",
+  "notes": "红基线真实 exit 1（2/4：S1 红恰 1 事件、S3 红无搜索先行；S2/S4 绿是回归钉本意），对最终金牌字节在修复前实抓，证据 accept/red-proofs/open-search-first.red.txt。突变闭环：git checkout 还原 → exit 1；复原 → sha256 逐字节相同 → exit 0。实现注释措辞避开「就绪锚」词组（S3 以该词为切片下界——注释词汇碰撞纪律第二次实践，本轮先踩后改，learn 在案）。替身纪律：状态化替身（目标可见性=列表本就新鲜或搜索图标点击后新查询返回）忠实于查询驱动渲染机制；与已冻结 post-nav-anchor-wait 金牌（S1 必真轮询、S3 耗尽 <20s）共存实证——双目标轮询让无搜索框页的目标采样仍 ≥2、条件预算让双缺席总额不叠加；emit 按生产签名收参。passes 只由 gate 写入。 评审修正（r1 并集采纳）：①放大镜纯 fallbackCss 照 chat.sendAndWait 先例去 fieldLabel（grok Medium）；②openSearched 改为图标点击 unique+acted 才置位（pi Medium#2）；均一行级、金牌字节零变、红证仍有效；pi Medium#1（open 过滤态与 deleteByName 互扰）维持挂账 B4 七跑现场核。 B4 七跑实证修正：裸 text 探针被创建成功 toast 类瞬态回显假阳、误判列表已新鲜跳过搜索（前奏 ~1s 即跳、随后真锚 absent）——升级三候选轮询：容器内命中才跳搜索（标准与归属判定同刻）、裸文本命中不可信只授锚预算、金牌替身容器语义同步；冻结 post-nav 金牌（无搜索框页裸文本迟到场景）与 sleep 普查钉共存实证。 r3 pi Medium 采纳：金牌补 S5 toast 假阳判别钉（裸命中+容器零命中必仍搜索），判别力实证=对 25943bb 双轮询旧实现恰红 S5；红基线更新为 3 红（S1/S5/S3）。",
   "worktree": "/mnt/d/ctx/heren/casey-wf-open-search-first"
 }
