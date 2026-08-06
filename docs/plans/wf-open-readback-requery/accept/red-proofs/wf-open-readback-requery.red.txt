@@ -1,0 +1,32 @@
+FAIL S1a 声明分支全程不抛（毒账本哨兵未被触碰=零账本依赖）；实得 undefined
+ok   S1b 合法路径零 blockers；实得 []
+ok   S1c 恰一 workflow.open click event；实得 1
+FAIL S1d 扫描先于卡内点击（读回+双证在 click 前）；实得 journal=[]
+FAIL S1e 观察行归档全档（三元组 + evidenceStepId=click 步 + provenance join + sourcePath，pending 已清）；实得 []
+FAIL S1f identityGateOutcome=unique；实得 null
+FAIL S2a fail-closed 走 blockers 不抛；实得 undefined
+FAIL S2b 平台零行 → 硬阻断入 blockers；实得 []
+FAIL S2c 读回不齐绝不点（零 workflow.open click event，含第二步被中止）；实得 1
+ok   S2d 不产观察行；实得 null
+ok   S2e 归档面零观察行；实得 []
+FAIL S3a 平台同名双行 → 裁定 ambiguous（判定表语义，非扫描捷径）；实得 null
+FAIL S3a2 ambiguous 不点（零 click event）
+FAIL S3b 平台唯一行 + DOM 卡缺席 → action_failed（网络唯一不豁免 DOM 锚）；实得 null
+FAIL S3b2 action_failed 不点（零 click event）
+ok   S4a 未声明路径不抛；实得 null
+ok   S4b 零 blockers；实得 []
+ok   S4c events 序列逐位同基线（恰一 workflow.open/click）；实得 ["workflow.open/click"]
+ok   S4d 未声明路径零观察行
+ok   S4e 未声明路径零扫描零卡内点击（journal 空）；实得 []
+RED  wf-open-readback-requery: S1a 声明分支全程不抛（毒账本哨兵未被触碰=零账本依赖）；实得 undefined
+RED  wf-open-readback-requery: S1d 扫描先于卡内点击（读回+双证在 click 前）；实得 journal=[]
+RED  wf-open-readback-requery: S1e 观察行归档全档（三元组 + evidenceStepId=click 步 + provenance join + sourcePath，pending 已清）；实得 []
+RED  wf-open-readback-requery: S1f identityGateOutcome=unique；实得 null
+RED  wf-open-readback-requery: S2a fail-closed 走 blockers 不抛；实得 undefined
+RED  wf-open-readback-requery: S2b 平台零行 → 硬阻断入 blockers；实得 []
+RED  wf-open-readback-requery: S2c 读回不齐绝不点（零 workflow.open click event，含第二步被中止）；实得 1
+RED  wf-open-readback-requery: S3a 平台同名双行 → 裁定 ambiguous（判定表语义，非扫描捷径）；实得 null
+RED  wf-open-readback-requery: S3a2 ambiguous 不点（零 click event）
+RED  wf-open-readback-requery: S3b 平台唯一行 + DOM 卡缺席 → action_failed（网络唯一不豁免 DOM 锚）；实得 null
+RED  wf-open-readback-requery: S3b2 action_failed 不点（零 click event）
+RED  wf-open-readback-requery: 9 过 / 11 红

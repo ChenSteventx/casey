@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "task": "wf-open-readback-requery（light）：修复 workflow.open source 读回双证门结构性不可满足（B4 十跑 envelope-empty）。根因三层：①事务时机反了——现序 click → waitForURL 详情页 → 才武装读回，详情页语境既无列表卡片 DOM 也无带回声列表查询；②重查触发缺失——searchBox 全仓无声明，未声明分支依赖的既有回声被账本回声判据排除，必然空；③声明死路径姿势错——fill+Enter 被 seam-1 真机否证（Enter 不过滤、放大镜才过滤）。十跑是该门真机首次执行（一至九跑停更早层）。修法（丙路线，Steven 2026-08-06 grill 定案）：读回+双证上移到点击前列表页语境——fetchCreatedWorkflowListScan 页面语境扫描（镜像 create 真机已通模式，v3 已审）+ resolveAgentCardTarget 物理双锚 + 冻结纯函数 resolveDualIdentity 裁定（扫描行集投影为信封等价输入，裁定语义一字不改）；过门才点（clickAgentCardWithin 句柄内点击，TOCTOU 重验）；观察行 {matched, evidenceStepId=click 步, kind:'workflow', sourcePath} 形状不变。零账本依赖、零新回放事件形状、未声明身份通道路径字节零漂移。",
+  "specPath": "docs/plans/wf-open-readback-requery/plan.md",
+  "testChecksums": {
+    "tests/_golden/wf-open-readback-requery.zero-sut.golden.mjs": "9a6cd0fa080e9176f4e39f8a0397ed5596f92ff6eafa70d67679b6f561c10ede",
+    "docs/plans/wf-open-readback-requery/plan.md": "2997402805a89cf39becb5db0f1aee59fde6ac039345af0433098d09063f2b52",
+    "docs/plans/wf-open-readback-requery/accept/red-proofs/wf-open-readback-requery.red.txt": "4c3dd2b2f5074e459476280100f861d0d5befbf3ed585e9e3d741c26dfffb124"
+  },
+  "observability": [
+    {
+      "dimension": "hermetic 只证时序/裁定/零漂移；端到端真证是 B4 十一跑（乙授权、一例一跑、新 atl_ 长名令牌）——预期 open 步读回三方全等、链路首次推进 assert.onPage(detail) 与删除步。",
+      "route": "human"
+    },
+    {
+      "dimension": "既存陈旧红两例（entity-workflow-source-readback.arming.static 0/7、entity-ui-wiring.searchopen 10/11，均门面拆分族）已录基线，改后须基线同码；其 owner 与清偿另账，不由本契约冒充。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-readback-before-click",
+      "desc": "声明身份通道分支重构：扫描读回+双证上移点击前，过门才点，观察行全档，账本零触碰（毒账本哨兵）；fail-closed 不点未证对象；裁定走 resolveDualIdentity 判定表（同名双行 ambiguous / DOM 卡缺席 action_failed）；未声明路径零漂移。金牌四钉 S1 时序 / S2 fail-closed / S3 裁定同门 / S4 零漂移。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-open-readback-requery.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-06T09:19:09.296Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "邻接零回归：接缝 9 金牌基线绿保持绿（wiring H2 未声明场景域 / cardinality-reverse / search-first / preface-notes / post-nav / sleep-import / bindagent-replay）+ 统一语言 + 确定性内核自检；全仓金牌扫描（护栏 #19）与 8d0e6e3 基线逐个双态对比另证。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs",
+        "node tests/_golden/entity-workflow-source-readback.cardinality-reverse.zero-sut.golden.mjs",
+        "node tests/_golden/wf-open-search-first.zero-sut.golden.mjs",
+        "node tests/_golden/wf-open-preface-notes.zero-sut.golden.mjs",
+        "node tests/_golden/post-nav-anchor-wait.zero-sut.golden.mjs",
+        "node tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs",
+        "node tests/_golden/entity-ui-wiring.bindagent-replay.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-06T09:21:47.789Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "红基线真实 exit 1（11 红：S1/S2/S3 呈现现役缺陷，S4 全绿钉零漂移基线），对最终金牌字节在修复前实抓（git stash 单文件还原原实现重跑，pop 复原），证据 accept/red-proofs/wf-open-readback-requery.red.txt。金牌 v2 修订如实记：首版 S1e 断言读 pending 面，与 flow 层归档契约错位（compileFlow 把 pending 转正进 identityObservations 并清空——create 侧同款）；v2 改钉归档面并连 provenance join 一起钉（更强），另补 S2e 归档面零观察。突变闭环走 git show 姿势（不碰暂存区）。passes 只由 gate 写入。",
+  "worktree": "/mnt/d/ctx/heren/casey-wf-open-readback-requery"
+}
