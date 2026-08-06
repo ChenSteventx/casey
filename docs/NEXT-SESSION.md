@@ -20,12 +20,13 @@ MCP `mcp/casey-server.mjs`。
 
 【先读，别现编已决的事】（必读顺序）
 1. `CLAUDE.md` + `CONTEXT.md`（统一语言注册表，命名以它为准；弃用别名是黑名单、繁体禁用）
-2. `docs/HANDOFF.md`（最新覆盖层即权威现状，顶节是 2026-08-06 收盘）
+2. `docs/HANDOFF.md`（最新覆盖层即权威现状，顶节是 2026-08-06 晚）
 3. `loop/GUARDRAILS.md`（19 条，逐条有效；表头仍写「13–16 新增」是陈旧措辞）
 4. `.claude/skills/casey/SKILL.md`、`README.md`
 5. 追溯「为何这么定」：`docs/adr/`（0001–0010）、`docs/design/txt2testreport-design.md`
-6. 本轮真机证据链：`docs/plans/wf-open-preface-notes/`（诊断契约）与
-   `docs/plans/semantic-name-instantiate/`（根因契约）的 plan/learn/reviews
+6. 本轮真机证据链：`docs/plans/wf-open-preface-notes/`（诊断契约）、
+   `docs/plans/semantic-name-instantiate/`（语义名根因契约）与
+   `docs/plans/wf-open-readback-requery/`（读回门根因契约）的 plan/learn/reviews
 
 不要读取、搜索、推断或回显 `.auth/`、`site.json`、账号、密码、token、真实目标地址。
 
@@ -35,10 +36,10 @@ MCP `mcp/casey-server.mjs`。
   ADR-0005 统一语言由 hook 与 gate 强制；ADR-0006 Casey = autotester ⊕ regress 分层融合；
   ADR-0007 Playwright 回放基座、取证按发起方归因；ADR-0008 loop-kit 独立提取；
   ADR-0009 hermetic 绿只是必要条件、真机 UAT 与人签才是完成；ADR-0010 准入受众与凭据严格匹配。
-- 2026-08-06 全天八契约入 dev（本地零 push）：sleep 导入修 `8d0b0bc`、create 入口锚
+- 2026-08-06 全天九契约入 dev（本地零 push）：sleep 导入修 `8d0b0bc`、create 入口锚
   `158829d`、登录预算 `9bb2300`、post-nav 双锚 `db80a17`、open 搜索先行 `7f38606`、
-  open 诊断 notes `97c0d83`、语义名回填 `8d0e6e3`（现役顶端）。每个契约固定
-  「实现 → 双路评审 → 并集修 → 收据 + learn → merge」，全部双路 APPROVE 才合。
+  open 诊断 notes `97c0d83`、语义名回填 `8d0e6e3`、读回门丙路线 `a507f5c`（现役顶端）。
+  每个契约固定「实现 → 双路评审 → 并集修 → 收据 + learn → merge」，全部双路 APPROVE 才合。
 
 【DDD / 统一语言】
 - 七相（LLM 只在相 0/1/2/5；相 3/4/6 零 LLM）：相0 归一 → 相1 编译 → 相2 冻结人签 →
@@ -82,33 +83,34 @@ MCP `mcp/casey-server.mjs`。
   `lib`/`bin`；每树一独立 baton（护栏 #18 建议 ≤5 树，当前 29 树全持活 baton、已超，
   多数是已 6/6 收口的历史树，可择机清理）。
 
-【当前状态（2026-08-06 收盘）】
-- dev 顶端 `8d0e6e3`，本地零 push。活契约槽 `p9-created-workflow-cleanup-continuity-v3`
+【当前状态（2026-08-06 晚收盘）】
+- dev 顶端 `a507f5c`，本地零 push。活契约槽 `p9-created-workflow-cleanup-continuity-v3`
   （`full`，3/6：`grill`/`plan`/`accept` done、`loop` 待）。
-- B4 九跑账：跑 1–3 登录/预算骑线（已治愈）；跑 4 停 `workflow.save` 断层（引出重表达）；
-  跑 5–9 create 链稳定全通 + 读回 unique，停 `workflow.open` absent。九跑诊断一次定谜底：
-  不是页面、不是隧道、不是渲染时序——`workflow.open` 的 emit 把未实例化模板
-  `atl_{{uniqueName}}` 塞进 `semantic.name`，两侧定位拿字面串找元素恒 0 命中；
-  同刻诊断证明容器内真名 5ms 命中、页面 `text346/卡5/框16` 完全正常。
-  即该原子在带模板目标名下从未走通过（07-02 采知识时用的是固定既有名）。
-- 修复已合入（`8d0e6e3`）：两侧定位入口各过一次纯投影，落盘字节与上游对象不被改；
-  全仓 205 金牌扫描零回归（非零项逐个基线双态对比同码）。`B4` 十跑尚未跑——
-  这是下一步甲，预期 open 首次真机走通、链路推进到 `assert.onPage` 与删除步。
-- 九跑残留 `atl_b4r90806g` 已真删清偿 exit 0；九跑累计建六删六，被测方零残留。
-  常备清偿工具已落持久位置 `~/casey-tools/cleanup-workflow.mjs <工作流名>`
-  （`/tmp` scratchpad 会随会话重启清空，别再放那里）。
+- 十跑（`b4r100806h`，1m17.5s）：语义名修生效（0 步非 unique、容器 4ms/锚 3ms），
+  停 `workflow.open` 读回双证门 `envelope-empty`。根因三层（详 HANDOFF 顶节）：事务在
+  点击导航后才武装（详情页语境结构性不可满足）+ 重查触发从未活过 + Enter 姿势被 seam-1
+  否证——「从未走通过」家族第三例。
+- 契约 `wf-open-readback-requery` 六阶段收口合入（`a507f5c`，Steven grill 定丙路线）：
+  读回+双证上移点击前，`fetchCreatedWorkflowListScan` 扫描 + 物理双锚 + 冻结判定表裁定
+  + 过门才点。金牌 20/20、全仓 295 双态零回归、grok+pi 双路 APPROVE 零 C/H/M。
+- 十一跑（`b4r110806i`，1m6s）：**`workflow.open` 首次真机走通**（读回门 unique、匹配
+  三元组到手），链路推进到 `workflow.deleteByName`，停在计数对账门「布局=unknown」——
+  open 真通后页面停在 `/process/detail` 详情画布，删除步从未在该语境执行过（第四例）。
+- 两跑残留各建一删一（出站守卫真删、3 样本缺席 exit 0），B4 累计建八删八零残留。
+  清偿工具 `~/casey-tools/cleanup-workflow.mjs <工作流名>`。
 - 主树有用户未提交资产（七个 `prd`、两个 md、四个未跟踪件）——一律勿动、勿 `git add -A`。
 
 【下一步（任选其一，先对齐再动手）】
-甲. 跑 `B4` 十跑取真证（推荐）：跑前先重启隧道两端（见环境坑），令牌用新的
-   `atl_` 长名；预期 `workflow.open` 首次走通。失败即停不连跑，成功则续 B5–B9。
-   跑完记全链路总耗时（三轮 pi Medium 的同面账本兑现点）。
-乙. 后两例 `tc_wf_publish_states` / `tc_wf_history_version`：等 crud 通了统一处置
-   （大概率同断层，重表达口径可复用）。
-丙. 挂账清偿（可并行 fan-out）：`wf-open-smoke` 既存陈旧红（owner 待查，连带 open
-   容器归属闸 fail-closed 面当前无活金牌）；`pi` 对 `wf-delete-card-layout` 补审；
-   `hook-loop-guard` 跨树互锁失效立项；清单重签补 `replayGrantPath`。
-丁. 工作树清理：29 棵树全持活 baton、远超建议的 5 棵，已 6/6 收口的可摘。
+甲. delete-after-open 语境修（推荐）：先把岔口报 Steven 裁——atom 级
+   （`deleteByName` 前奏补回列表导航，契约+双审）vs flow 级（重表达补 nav 步，
+   B0-B3 重铸+人签）；裁后按既定工法走契约，修通后十二跑预期全链首过。
+乙. 后两例 `tc_wf_publish_states` / `tc_wf_history_version`：等 crud 通了统一处置。
+丙. 挂账清偿（可并行 fan-out）：工作流身份账本接线拆除（open 退役信封路线后无消费者）；
+   金牌自产残件自清（`loop/prd-tc_*.json`/`.tmp`，是 EEXIST 红与
+   `PUBLICATION_TMP_WITHOUT_JOURNAL` 红同源）；`wf-open-smoke` 既存陈旧红（owner 待查）；
+   门面拆分族两陈旧红；`pi` 对 `wf-delete-card-layout` 补审；`hook-loop-guard` 跨树
+   互锁失效立项；清单重签补 `replayGrantPath`。
+丁. 工作树清理：30 棵树全持活 baton、远超建议的 5 棵，已 6/6 收口的可摘。
 
 【环境坑（WSL）】
 - 跑真机前先重启隧道两端（本日成纪律）：池老化约一小时或高请求量后，浏览器复用

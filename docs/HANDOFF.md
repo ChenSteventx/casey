@@ -3,7 +3,46 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-06 收盘：诊断买观测 + 九跑一次定谜底 + 语义名回填根因修（最新覆盖层，权威现状）
+## 2026-08-06 晚：十跑定读回门根因 + 契约收口合入 + 十一跑 open 首次真机走通（最新覆盖层，权威现状）
+
+现役 dev 顶端 `a507f5c`（本地零 push）。接下节，本晚一契约收口、B4 推进两跑：
+
+1. **十跑**（`b4r100806h`，1m17.5s，exit 65）：语义名回填修真机实证生效（0 步非 unique、
+   容器 4ms/锚定 3ms），新阻断 `workflow.open` source 读回双证门 `envelope-empty`。诊断定
+   根因三层：①事务时机反了（click→详情页→才武装，详情页语境无列表 DOM 无回声查询）；
+   ②重查触发缺失（`searchBox` 全仓无声明、未声明分支被账本回声判据排除）；③声明死路径
+   fill+Enter 被 seam-1 否证。十跑是该门真机首次执行——「从未走通过」家族第三例。
+2. **契约 `wf-open-readback-requery` 六阶段收口合入**（`a507f5c`；grill 真钢一轮、
+   Steven 定丙路线）：读回+双证上移到点击前列表页语境——`fetchCreatedWorkflowListScan`
+   扫描（镜像 create 真机已通模式）+ 物理双锚 + 冻结判定表 `resolveDualIdentity` 裁定 +
+   过门才点（TOCTOU 句柄内点击）。金牌 20/20（红证 11 红实抓）、gate GREEN 2/2、全仓
+   295 金牌双态零回归、grok 4.5 high（实工 14m31s）+ pi deepseek-v4-pro high 双路
+   `APPROVE` 零 C/H/M。工作流身份账本接线失去消费者（拆除挂账）。
+3. **十一跑**（`b4r110806i`，1m6s，exit 65）：**`workflow.open` 首次真机走通**——读回
+   双证门 `unique`（匹配三元组到手）、无 open 阻断；链路推进到 `workflow.deleteByName`，
+   停在计数对账门「布局=unknown、记录容器=null、删除目标=null」截断 route:human。
+   根因语境：open 真通后页面停在 `/process/detail` 详情画布，删除步此前从未在该语境
+   执行过——「从未走通过」第四例。岔口待裁：atom 级修（deleteByName 前奏补回列表导航，
+   契约+双审）vs flow 级修（重表达补 nav 步，B0-B3 重铸+人签）。
+4. **残留清偿**：两跑各建一删一（`atl_b4r100806h`/`atl_b4r110806i` 出站守卫真删、
+   3 样本缺席 exit 0），B4 累计建八删八零残留。
+5. 过程教训已入库：全仓扫描器 `$(basename) $?` 命令替换重置坑（记忆
+   verify-goldens-by-exit-code 更新）；金牌自产残件（`loop/prd-tc_*.json`/`.tmp`）是
+   `bindagent-replay` EEXIST 红与主树 `PUBLICATION_TMP_WITHOUT_JOURNAL` 红的同源（自清
+   挂账）；`loop/audit.jsonl` 是 gitignored 每树各持，权威账在主树（本契约条目已入）。
+
+### 下一步（接手者从甲起）
+
+- 甲、**delete-after-open 语境修**：先把 atom 级 vs flow 级岔口报 Steven 裁，然后按
+  既定工法走契约（预期与本契约同构：诊断已清、语境已明）。修通后十二跑预期全链首过。
+- 乙、后两例（`publish_states` / `history_version`）等 crud 通了统一处置。
+- 丙、挂账：工作流身份账本接线拆除；金牌自产残件自清；`wf-open-smoke` 陈旧红 owner；
+  门面拆分族两陈旧红（`arming.static` 0/7、`searchopen` 10/11）；`pi` 对
+  `wf-delete-card-layout` 补审；`hook-loop-guard` 跨树互锁失效立项；清单重签补
+  `replayGrantPath`。
+- 丁、工作树清理：30 棵树（新增本契约树，已 6/6 可摘）。
+
+## 2026-08-06 收盘：诊断买观测 + 九跑一次定谜底 + 语义名回填根因修（历史覆盖层，被上节接续）
 
 现役 dev 顶端 `8d0e6e3`（本地零 push）。接上一层，本日再收两契约、B4 推进到第九跑：
 
