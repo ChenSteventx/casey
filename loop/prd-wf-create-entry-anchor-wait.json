@@ -1,0 +1,43 @@
+{
+  "schemaVersion": 1,
+  "task": "wf-create-entry-anchor-wait（light）：workflow.create 入口点击前加有界就绪锚，治入口按钮渲染竞态。真机定量（2026-08-06 晨经隧道只读探针）：列表页 load 11.4s、「新增工作流」按钮 +3.5s 才可定位，而编译 nav 后锚定窗约 4s（quietPoint 2.5s + resolveTarget 附着 1.5s）——压线必抖（08-04 傍晚同链路 B4 曾过、08-06 晨 atstep_1 absent count=0，七步全 emit 身份门如实 fail-closed exit 65、readback 证实零残留）。B 段三例各要过一轮 B4 编译，全数受益。修法：入口点击 emit 前对同一语义锚（role=button name=新增工作流 exact）轮询 count()（250ms 步长、预算 15s），可定位即点；预算耗尽不改判、照旧发 emit 走既有 absent fail-closed 路径（失败路径零行为差）。不碰 emit/quietPoint/resolveTarget 全局时序、不碰回放侧、不碰冻结件；等待用的 sleep 是上一契约（wf-crud-sleep-import）补齐的导入。",
+  "specPath": "docs/plans/wf-create-entry-anchor-wait/plan.md",
+  "testChecksums": {
+    "tests/_golden/wf-create-entry-anchor-wait.zero-sut.golden.mjs": "2ec8bc14bff0d3fca4dcd38e5144520a374a17aa74e6399d5e5179051a33b452",
+    "docs/plans/wf-create-entry-anchor-wait/plan.md": "91bb1830ce273aff37cbd5a6fd25ceb6e7f0f3c3cd48cb0fbc2cda2db615053b",
+    "docs/plans/wf-create-entry-anchor-wait/accept/red-proofs/entry-anchor.red.txt": "821370dcebd3b4ac4618d82c955a57a7fe68cf54d312e0da83918ee1eb04f112"
+  },
+  "observability": [
+    {
+      "dimension": "hermetic 只证「等到可定位才点 + 预算有界 + 失败路径零行为差」；真机端到端真证仍是 B4 续跑（乙授权、一例一跑）。同轮已实证但本契约不处置的两项：①页面预挂离屏创建抽屉 DOM 令后续步 count=1 但 action_failed（身份门行为正确，入口锚修复后若仍现另查）；②「工作流编码」新字段是否必填待真机现场核。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-entry-anchor-and-seal",
+      "desc": "入口就绪锚实现（compileWorkflowCreate 入口点击 emit 前，同语义锚 count() 轮询、250ms 步长、15s 预算、耗尽不改判）；金牌三钉：S1 迟挂载行为钉（1.2s 迟挂载替身：emit 时挂载标志必真 + count 采样 ≥2 + 事件序 6 位不变）；S2 预算耗尽零行为差钉（永不挂载替身：事件序与现行 absent 路径逐位一致、总耗时 <20s 有界）；S3 结构钉（入口就绪锚注释 + 15000 预算 + count() 轮询在入口 emit 之前）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-create-entry-anchor-wait.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-06T01:26:44.688Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "邻接零回归：同文件上一契约封缝金牌 + 同缺陷类前例金牌 + 统一语言 + 确定性内核自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs",
+        "node tests/_golden/agent-delete-confirm-import.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-06T01:27:12.599Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "红基线真实 exit 1（1/3：S1 红——现行代码 emit 时挂载标志为假且零采样、S3 结构钉红；S2 绿是回归钉本意），对最终金牌字节在修复前实抓，证据 accept/red-proofs/entry-anchor.red.txt。突变闭环：git checkout 还原 → exit 1；复原 → sha256 逐字节相同 → exit 0。替身纪律：迟挂载替身忠实复现 SPA 渲染尾巴这一真实前置形态（mountAfterMs 前 count=0 后 =1，其余定位零命中自洽），等待与否、何时点击由被测代码自己决定；emit 按生产签名收参，entryMountedAtEmit 只对入口点击记录、不干预动作。S2 的 <20s 上界同时钉住预算有界（不挂死看门狗窗）。passes 只由 gate 写入。",
+  "worktree": "/mnt/d/ctx/heren/casey-wf-create-entry-anchor-wait"
+}

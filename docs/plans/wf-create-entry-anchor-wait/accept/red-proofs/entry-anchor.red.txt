@@ -1,0 +1,8 @@
+# 红基线（修复前现行代码实跑，c977fde 基线）
+# 命令：node tests/_golden/wf-create-entry-anchor-wait.zero-sut.golden.mjs
+RED  wf-create-entry-anchor-wait: S1 迟挂载行为钉：入口点击 emit 必须发生在按钮可定位之后（真轮询过）: 入口点击 emit 时按钮必须已可定位（迟挂载 1.2s 内须等待）：entryMountedAtEmit=false
+ok   wf-create-entry-anchor-wait: S2 预算耗尽零行为差钉：按钮永不挂载时事件序列与现行 absent 路径一致且有界
+RED  wf-create-entry-anchor-wait: S3 结构钉：入口点击 emit 之前有有界就绪锚（注释 + 15s 预算 + count 轮询）: 入口点击 emit 前须有「入口就绪锚」实现（含同名注释）
+
+not ok wf-create-entry-anchor-wait: 1/3 通过，2 条红
+EXIT=1
