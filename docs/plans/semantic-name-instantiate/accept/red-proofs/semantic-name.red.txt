@@ -1,0 +1,9 @@
+# 红基线（修复前现行代码实跑，97c0d83 基线）
+# 命令：node tests/_golden/semantic-name-instantiate.zero-sut.golden.mjs
+RED  semantic-name-instantiate: S1 投影钉：含占位的 semantic.name 按 ctx 回填、原对象与落盘字节不被改: instantiateEventSemantic is not a function
+RED  semantic-name-instantiate: S2 恒等钉：无占位 / 缺 ctx / 非法形状一律原样返回（既有事件零漂移）: instantiateEventSemantic is not a function
+RED  semantic-name-instantiate: S3 replay 侧行为钉：performAction 通用路径用实例化名定位: replay 侧须用实例化名（与 compile 侧对称）：{"kind":"text","name":"atl_{{uniqueName}}","exact":true}
+RED  semantic-name-instantiate: S4 结构对称钉：两侧定位入口均先过投影，且既有调用点字面保持: compile 侧投影须在 locatorFor 之前
+
+not ok semantic-name-instantiate: 0/4 通过，4 条红
+EXIT=1

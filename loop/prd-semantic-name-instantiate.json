@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "task": "semantic-name-instantiate（light）：修复 semantic.name 模板未回填导致的定位恒 0 命中。根因（B4 九跑前奏诊断实证）：workflow.open 的 emit 传 semantic.name = atl_{{uniqueName}}（模板落盘是既定设计，回放才能按各自 ctx 回填），而 compile locatorFor 与 replay semanticLocator 两侧都拿字面串 getByText——同刻诊断证明容器内真名 5ms 命中、页面 text346/卡5/框16 完全正常，emit 却 absent count=0，即该原子在带模板目标名下从未走通过。修法：新增纯函数 instantiateEventSemantic（仅真含占位且回填有变化时产浅拷贝，否则返回同一引用，落盘字节与上游对象永不被改），两侧定位入口各调一次（compile resolveTarget 内 locatorFor 前 / replay performActionOnPage 通用路径 resolveCandidate 前）。刻意不改任何既有签名与调用点字面——首版加 ctx 参数被全仓扫描逮到两个冻结金牌以字面判接线顺序而误红，实现让路。",
+  "specPath": "docs/plans/semantic-name-instantiate/plan.md",
+  "testChecksums": {
+    "tests/_golden/semantic-name-instantiate.zero-sut.golden.mjs": "f0e66128a1079d919b09da3cef3f29b91d61de844e11f9338ca8a0f2ea2799a7",
+    "docs/plans/semantic-name-instantiate/plan.md": "d50c70e48b021c018d355c9a9ad265d9b4fd129d8988820e6ddbc8040923757f",
+    "docs/plans/semantic-name-instantiate/accept/red-proofs/semantic-name.red.txt": "e07537fba1945da2c6dbec47eaf041ab46a7d917bdbb32f808c85af4777e01bc"
+  },
+  "observability": [
+    {
+      "dimension": "hermetic 只证投影正确性与两侧对称；端到端真证是 B4 十跑（乙授权、一例一跑）——预期 open 步首次真机走通并进入 assert/delete 链。回放侧对称修复的真证在后续 P4 回放（届时 events 的 semantic.name 首次带模板消费）。",
+      "route": "human"
+    },
+    {
+      "dimension": "全仓 205 金牌扫描非零项全部基线同码（含 124=timeout 假象两例复核为同码）；这些既存陈旧红的 owner 与清偿另账，不由本契约冒充。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-projection-and-seal",
+      "desc": "instantiateEventSemantic 纯投影 + 两侧定位入口接线；金牌四钉：S1 投影钉（回填正确 + 原对象/落盘不被改 + 其余字段逐位保留）；S2 恒等钉（六态返回同一引用/原样不抛）；S3 replay 行为钉（通用路径实际用实例化名定位、零命中仍 fail-closed）；S4 结构对称钉（两侧投影位序 + 三处既有字面必须保持的自钉）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/semantic-name-instantiate.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-06T07:27:13.909Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "邻接零回归：首版误红的两个冻结金牌 + 同函数近期契约金牌 + 统一语言 + 确定性内核自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/page-topology-auth-continuity-boundaries.static.golden.mjs",
+        "node tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs",
+        "node tests/_golden/wf-open-preface-notes.zero-sut.golden.mjs",
+        "node tests/_golden/wf-open-search-first.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-06T07:27:55.089Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "红基线真实 exit 1（4/4 全红），对最终金牌字节在修复前实抓，证据 accept/red-proofs/semantic-name.red.txt。突变闭环：git show 还原三文件（不碰暂存区）→ exit 1；复原 → sha256 逐字节相同 → exit 0。全仓 205 金牌三批扫描 + 逐个基线双态对比：非零项全部基线同码（p6-heal-breaker 与 loop-kit-extract 的 124 系 timeout 命令超时假象，600s 单跑复核为 0/1 同基线）；setup-runtime-barrier 首扫非零、复扫与基线均绿，判 flake。首版设计（给 locatorFor/semanticLocator/resolveCandidate 加 ctx 参数）被全仓扫描逮到 page-topology B6 与 regress-agent-tool-actions B2 两个冻结金牌以 indexOf 字面判接线顺序而误红——改为投影式零字面变更，并把「三处字面必须保持」写进 S4 自钉防重蹈。passes 只由 gate 写入。",
+  "worktree": "/mnt/d/ctx/heren/casey-semantic-name-instantiate"
+}
