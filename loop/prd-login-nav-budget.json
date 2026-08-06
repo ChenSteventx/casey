@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "task": "login-nav-budget（light）：loginBootstrap 默认 timeoutMs 15000 → 30000，治登录首跳导航骑线竞态。真机定量（2026-08-06 晨）：登录页经隧道 load 实测 13.8–14.9s，15s 预算 4 跑 3 败（LOGIN_BOOTSTRAP_FAILED_BEFORE_FLOW，NAVIGATION_FAILED），与入口锚同类——页面变重后旧预算压线、赢输随环境抖。全仓零调用方覆盖 timeoutMs，compile/replay/探针全吃默认；B 段三例的每一步真机跑都要先过登录门。修法一行：默认上限提 30s——天花板语义，快路径零行为差，失败路径报错时刻 15s→30s 仍远在 compile 看门狗 120s 窗内；不动登录判据/表单锚/凭据面/调用方签名。",
+  "specPath": "docs/plans/login-nav-budget/plan.md",
+  "testChecksums": {
+    "tests/_golden/login-nav-budget.zero-sut.golden.mjs": "beef3e2ad25c7376e0000bb4fe2cc51bfa1697ed0f5b80c6a170e84482a516b0",
+    "docs/plans/login-nav-budget/plan.md": "710265e4da1d86c4b81abae8bf22d63c0e86cac385c282c7a74e9776079c9b74",
+    "docs/plans/login-nav-budget/accept/red-proofs/login-nav-budget.red.txt": "434b1ba8e543cb2378c0b809860b0ef05472b77ae7711a36843b0b4b6a2be95c"
+  },
+  "observability": [
+    {
+      "dimension": "hermetic 只证「预算容纳 20s 慢载 + 天花板不拖快路径」；真机端到端真证是 B4 第三次重跑（登录门 + 入口锚 + create 全链，含失败路径总耗时记录——上一契约 pi Medium 的核验点一并覆盖）。若真机登录页 load 后续逼近 30s，属环境恶化另议，不无限抬预算。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-login-nav-budget-and-seal",
+      "desc": "一行默认参数 15000→30000（lib/login-bootstrap.mjs:85，带天花板语义注释）；金牌三钉：S1 慢载行为钉（goto 替身按 Playwright 超时语义忠实复现，20s 载入落在旧新预算判别区间：新默认 ~20s 导航成功走已登录态判据，旧默认 15s 抛 NAVIGATION_FAILED——红因与真机同款）；S2 天花板零行为差钉（瞬时载入 <6s 完成，预算是上限不是等待）；S3 结构钉（默认 30000）。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/login-nav-budget.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-06T01:54:29.651Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "邻接零回归：login 失败密封边界消费金牌 + 同类前两契约金牌 + 统一语言 + 确定性内核自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/compile-execution-failure-seal.zero-sut.golden.mjs",
+        "node tests/_golden/wf-create-entry-anchor-wait.zero-sut.golden.mjs",
+        "node tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-06T01:55:15.267Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "红基线真实 exit 1（1/3：S1 红且红因 NAVIGATION_FAILED 与真机逐串同款、S3 结构钉红；S2 绿是回归钉本意），对最终金牌字节在修复前实抓，证据 accept/red-proofs/login-nav-budget.red.txt。突变闭环：还原 → exit 1；复原 → sha256 逐字节相同 → exit 0。替身纪律：goto 超时语义按 Playwright 忠实复现（预算内在载入时刻 resolve、预算不足在预算时刻 reject），20s 慢载构成 15/30 判别区间；起始页路径不含 pathMarker、走「表单不在场即已登录态」判据支，哑元凭据永不被触碰；S1 同时断言完成时刻 ~20s+3s 表单窗（非预算满 30s），双向钉住天花板语义。passes 只由 gate 写入。",
+  "worktree": "/mnt/d/ctx/heren/casey-login-nav-budget"
+}
