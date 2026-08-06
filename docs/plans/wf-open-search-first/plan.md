@@ -14,8 +14,10 @@ SPA 停在列表路由，`nav.workflowManagement` 同址跳转不触发列表重
 前奏，采**双目标轮询**——同一 15s 截止内轮询「目标文本 或 搜索框」：目标已在 DOM
 （列表已新鲜）→ 跳过搜索直入锚定（零开销）；搜索框先就位 → `fill` 搜索框（值
 `params.openName` 模板原样入 events、编译期由 emit 按 ctx 实例化）→ `click` 放大镜
-（`fieldLabel` + fallbackCss `.hr-input__suffix .search-icon`，与卡片布局删除路径实战
-同姿势）。既有就绪锚改**条件预算**：已见目标或真发起了搜索才给新预算 15s，否则前奏已为
+（纯 fallbackCss `.hr-input__suffix .search-icon`，照 `chat.sendAndWait` 送出图标先例、
+不带 fieldLabel 防同名 label 抢锚——评审 r1 grok Medium 采纳）。既有就绪锚改
+**条件预算**：已见目标或图标点击真实动作（unique 且 acted，评审 r1 pi Medium 采纳）
+才给新预算 15s，否则前奏已为
 同一目标等满、锚定让行——**双缺席失败路径总额恒 ~15s 不叠加**（两轮评审 pi Medium
 方向的机制化兑现）。搜索框耗尽缺席跳过不阻断，交既有 emit 身份门 fail-closed。
 

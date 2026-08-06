@@ -4,7 +4,7 @@
   "specPath": "docs/plans/wf-open-search-first/plan.md",
   "testChecksums": {
     "tests/_golden/wf-open-search-first.zero-sut.golden.mjs": "ef585c0596400845ed65fa176729b5fc4283ee7eee4fc7ddc403923ab6f082e3",
-    "docs/plans/wf-open-search-first/plan.md": "a09f394532e16ff0aa27d3372bd774d5a7d3ed492d43bb85760172182cf98b8b",
+    "docs/plans/wf-open-search-first/plan.md": "e95bfc3979a56fab3630f6e9b19071c2198d3f980b9d7137e47d130466afec8a",
     "docs/plans/wf-open-search-first/accept/red-proofs/open-search-first.red.txt": "9b9d121f686fd2d36a7d6a808ed095aa2ad287120b1504bee6ac41bf5bbc1aba"
   },
   "observability": [
@@ -22,7 +22,7 @@
         "node tests/_golden/wf-open-search-first.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-06T04:16:33.172Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-06T04:36:55.817Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-adjacency-zero-regression",
@@ -36,9 +36,9 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-06T04:17:51.074Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-06T04:38:13.520Z 全部 acceptance exit 0"
     }
   ],
-  "notes": "红基线真实 exit 1（2/4：S1 红恰 1 事件、S3 红无搜索先行；S2/S4 绿是回归钉本意），对最终金牌字节在修复前实抓，证据 accept/red-proofs/open-search-first.red.txt。突变闭环：git checkout 还原 → exit 1；复原 → sha256 逐字节相同 → exit 0。实现注释措辞避开「就绪锚」词组（S3 以该词为切片下界——注释词汇碰撞纪律第二次实践，本轮先踩后改，learn 在案）。替身纪律：状态化替身（目标可见性=列表本就新鲜或搜索图标点击后新查询返回）忠实于查询驱动渲染机制；与已冻结 post-nav-anchor-wait 金牌（S1 必真轮询、S3 耗尽 <20s）共存实证——双目标轮询让无搜索框页的目标采样仍 ≥2、条件预算让双缺席总额不叠加；emit 按生产签名收参。passes 只由 gate 写入。",
+  "notes": "红基线真实 exit 1（2/4：S1 红恰 1 事件、S3 红无搜索先行；S2/S4 绿是回归钉本意），对最终金牌字节在修复前实抓，证据 accept/red-proofs/open-search-first.red.txt。突变闭环：git checkout 还原 → exit 1；复原 → sha256 逐字节相同 → exit 0。实现注释措辞避开「就绪锚」词组（S3 以该词为切片下界——注释词汇碰撞纪律第二次实践，本轮先踩后改，learn 在案）。替身纪律：状态化替身（目标可见性=列表本就新鲜或搜索图标点击后新查询返回）忠实于查询驱动渲染机制；与已冻结 post-nav-anchor-wait 金牌（S1 必真轮询、S3 耗尽 <20s）共存实证——双目标轮询让无搜索框页的目标采样仍 ≥2、条件预算让双缺席总额不叠加；emit 按生产签名收参。passes 只由 gate 写入。 评审修正（r1 并集采纳）：①放大镜纯 fallbackCss 照 chat.sendAndWait 先例去 fieldLabel（grok Medium）；②openSearched 改为图标点击 unique+acted 才置位（pi Medium#2）；均一行级、金牌字节零变、红证仍有效；pi Medium#1（open 过滤态与 deleteByName 互扰）维持挂账 B4 七跑现场核。",
   "worktree": "/mnt/d/ctx/heren/casey-wf-open-search-first"
 }
