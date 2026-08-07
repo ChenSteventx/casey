@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "task": "admission-envelope-yield（full）：sign 侧观察准入验证器学让位——Steven 已签设计（收窄版 A + platformId 硬桥接）第三消费者接线，方向零新岔口。拦点实证：十五跑真产物首次抵 sign 准入，validateObservationAdmission 4b 反向覆盖拒 OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION（open 义务终端在场而信封整缺=让位形）；修过 4b 后 6) 角色计数必然接拦。修法：终端投影携 yieldedToPlatformId；四条件让位判定（义务恰['source'] ∧ 字段非空 ∧ 全部已验行恰一条同 kind/subject/platformId ∧ 该原子信封整缺——空信封在场=畸形态照拒）；4b 该原子全部终端让位才免信封义务；6) 零行且让位才免角色计数。加法门控：无字段输入行为逐字节同码，前置各闸（0-3/4/5/5b）零接触。非目标：不动 compile 侧基数门、不碰 schema、不改 sign.mjs 调用面、不裁 replay 段。",
+  "specPath": "docs/plans/admission-envelope-yield/plan.md",
+  "testChecksums": {
+    "tests/_golden/admission-envelope-yield.zero-sut.golden.mjs": "585fac2e4d4ed44aa086610eea85a9a95e9cf375451e712326be302ab2767db0",
+    "docs/plans/admission-envelope-yield/plan.md": "fd7c7482b4a2285f159e5f28beadb73c9ee5331c399ce451ae04043660f843fe",
+    "docs/plans/admission-envelope-yield/accept/red-proofs/admission-envelope-yield.red.txt": "2168d0da127c3e8ec97b256529d3bbdd84a86566440c9eee77a41e339fc7f65a"
+  },
+  "observability": [
+    {
+      "dimension": "hermetic 只证豁免判据与遗留等价；端到端真证=merge 后主树重跑同一 sign 命令（Steven 已点签、呈件五断言不变）——预期签署落盘新冻结件；随后 replay 链继续，任何门拒即停如实报。全仓金牌扫描单侧串行终判（护栏 #19）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-admission-envelope-yield",
+      "desc": "sign 侧准入让位八钉：A1 豁免正例 / A2 无字段照拒 / A3 伪造字段照拒 / A4 subject 义务照拒 / A5 匹配多条照拒 / A6 空信封畸形态照拒 / A7 agent 遗留等价 / A8 真产物字节形回归。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/admission-envelope-yield.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-07T13:24:05.061Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "同文件邻接零回归：terminal-coverage-yield / cardinality-reverse / wiring / observation-yield / 意图号重绑 + 统一语言 + 确定性内核自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/terminal-coverage-yield.zero-sut.golden.mjs",
+        "node tests/_golden/entity-workflow-source-readback.cardinality-reverse.zero-sut.golden.mjs",
+        "node tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs",
+        "node tests/_golden/wf-open-observation-yield.zero-sut.golden.mjs",
+        "node tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-07T13:24:28.328Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "红基线真实 exit 1（6 过 / 2 红：A1 豁免缺席、A8 真产物形缺席——红面即契约面），实现前实抓，证据 accept/red-proofs/admission-envelope-yield.red.txt。A2–A7 绿基线为遗留等价与 fail-closed 回归钉（A6 钉「信封整缺才是让位形」的紧条件）。突变闭环走 git show 姿势。passes 只由 gate 写入。",
+  "worktree": "/mnt/d/ctx/heren/casey-admission-envelope-yield"
+}
