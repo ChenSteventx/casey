@@ -3,7 +3,54 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-07 晨：观察让位契约收口 + 十三跑执行链全链首过、停成品段记账双门（最新覆盖层，权威现状）
+## 2026-08-07 晚：意图号重绑契约收口合入 + 记账双门前提修正、M1/schema 挂账、D 盘四挂事故（最新覆盖层，权威现状）
+
+现役 dev 顶端 `b38c679`（本地零 push）。接下节，本段收一契约、修正一个裁定前提、
+记一日四次盘事故：
+
+1. **前提修正（本段最重）**：下节所记「三道冻结门一致表达单流单发行」被代码勘察 +
+   纯函数探针证伪三分之二——出处链闸 `CREATED_WORKFLOW_PROVENANCE_TERMINAL_EVENT_INVALID`
+   的真拒因是**意图号命名空间错配**（生产事件带编译自生 `intent_0..N`，闸按流步
+   `sourceIntentId` 匹配终端事件，永不相等；金牌夹具手工对齐两套号致纯函数假绿，
+   十三跑是史上第一跑抵闸——「从未走通过」家族第五例）。真语义冲突只剩基数双射一道门
+   （open 让位后终端 0 观察 vs 注册表无条件 source 义务）；H1i 与 C3 同名拒在十三跑
+   已被让位机制满足。原 A/B/C 岔口按修正前提重摆，Steven 重裁：**先修接线取真证再裁**。
+2. **契约 `compile-intent-lineage-rebind` 六阶段收口合入**（`b38c679`）：`compileFlow`
+   标准路径在事实产生点把带号步产出事件的 `intentId` 重绑为该步 `sourceIntentId`，
+   events/observed/verification 三通道逐 stepId 同号、`lastIntentId` 同步；裸步保持
+   自生号与折叠行为；teach-in lineage 块字节零漂移。设计经历一次真域反转：混合态
+   初裁「全或无掷错」被 `bindagent-replay` 冻结金牌夹具口径（变异步带号、nav/assert
+   裸步、assert 折锚是既定惯例）证伪，Steven 反转为**逐步存在即绑**——全仓双态扫描
+   （护栏 #19）是唯一逮住它的手段，邻接组当时全绿。验收金牌五钉 16 断言、三段红证
+   （首版/反转 delta/H1 delta）、三轮突变闭环；评审 pi `APPROVE` 零 C/H/M + grok r1
+   `CHANGES_REQUIRED`（H1 High：重绑漏 observed/verification 旁路→draft 存在性闸拒
+   authored 草稿）→ 并集修 `2e4770b` → grok r2 delta `APPROVE`。
+3. **挂账新增（Steven 当轮裁定）**：M1 冻结 `events.schema.json:78` intentId pattern
+   `^intent_[0-9]+$` 与 authored 号张力（teach-in 同形多年、生产无 schema 强制层）——
+   裁挂账，十四跑真证后与基数门修向统一处置、一次人签；teach-in lineage 块同缺
+   observed/verification 重绑（正式产物若过 draft 闸需另开面）；全仓扫描此后单侧
+   串行跑（本日实证双侧并行互染 190 项对称假红，侥幸未误判但基线数值作废）。
+4. **D 盘一日四挂事故与新姿势**：`/mnt/d` 四次整盘 I/O 挂死（C: 恒活、内核日志零痕迹、
+   内存/swap 防线带甲仍死——指向 Windows 侧 D: 卷供给端，与死亡报卡项目独立观测收敛，
+   Steven 待查盘/线材）。固化配方：commit 快照 → ext4 浅克隆 + `loop-kit` 兄弟克隆 →
+   评审在克隆树自跑验证（同哈希即同字节）；重要产物随手落 `~/casey-recovery-20260807/`。
+   跨 session 协作：死亡报卡 session 已备 `~/casey` C 盘逃生副本（gitignored 件不全，
+   十四跑仍从主树发起）；共享收件箱分工=各答己方主题、他方信只转不答；Steven 时间
+   标签用珀斯（UTC+8）。
+5. **十四跑待发**（本段收笔时未跑）：命令照十三跑配方、令牌 `b4r140807l`；预登记预期
+   =出处链闸绿、exit 65 恰剩基数门 `OBSERVATION_TERMINAL_WITHOUT_MATCHING_OBSERVATION`
+   一道，其他红即停不连跑。跑毕以单焦点真证摆 Steven 重裁：C 案例拆分维持，还是改
+   收窄版 A（仅基数门学让位、豁免判据门内重推导）。
+
+### 下一步（接手者从甲起）
+
+- 甲、十四跑取真证（先按环境坑一节重启隧道两端）→ 单焦点证据摆 Steven 重裁基数门
+  修向 → 裁后立契约；修通后十五跑预期 exit 0 全绿产件。
+- 乙、后两例（`publish_states` / `history_version`）等 crud 全绿统一处置。
+- 丙、挂账承前 + 新增（M1 schema pattern、teach-in 三通道、扫描串行纪律，余同下节）。
+- 丁、工作树清理：33 棵树（新增本契约树，6/6 可摘）。
+
+## 2026-08-07 晨：观察让位契约收口 + 十三跑执行链全链首过、停成品段记账双门（历史覆盖层，被上节接续）
 
 现役 dev 顶端 `d5ecbab`（本地零 push）。接下节，本段再收一契约、B4 推进一跑，**执行链
 里程碑达成**：

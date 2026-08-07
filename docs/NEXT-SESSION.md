@@ -20,14 +20,15 @@ MCP `mcp/casey-server.mjs`。
 
 【先读，别现编已决的事】（必读顺序）
 1. `CLAUDE.md` + `CONTEXT.md`（统一语言注册表，命名以它为准；弃用别名是黑名单、繁体禁用）
-2. `docs/HANDOFF.md`（最新覆盖层即权威现状，顶节是 2026-08-07 晨）
+2. `docs/HANDOFF.md`（最新覆盖层即权威现状，顶节是 2026-08-07 晚）
 3. `loop/GUARDRAILS.md`（19 条，逐条有效；表头仍写「13–16 新增」是陈旧措辞）
 4. `.claude/skills/casey/SKILL.md`、`README.md`
 5. 追溯「为何这么定」：`docs/adr/`（0001–0010）、`docs/design/txt2testreport-design.md`
 6. 本轮真机证据链（plan/learn/reviews）：`docs/plans/wf-open-preface-notes/`（诊断）、
    `docs/plans/semantic-name-instantiate/`（语义名）、`docs/plans/wf-open-readback-requery/`
    （读回门）、`docs/plans/wf-delete-search-filter/`（删除搜索）、
-   `docs/plans/wf-open-observation-yield/`（观察让位）
+   `docs/plans/wf-open-observation-yield/`（观察让位）、
+   `docs/plans/compile-intent-lineage-rebind/`（意图号重绑+前提修正）
 
 不要读取、搜索、推断或回显 `.auth/`、`site.json`、账号、密码、token、真实目标地址。
 
@@ -37,10 +38,10 @@ MCP `mcp/casey-server.mjs`。
   ADR-0005 统一语言由 hook 与 gate 强制；ADR-0006 Casey = autotester ⊕ regress 分层融合；
   ADR-0007 Playwright 回放基座、取证按发起方归因；ADR-0008 loop-kit 独立提取；
   ADR-0009 hermetic 绿只是必要条件、真机 UAT 与人签才是完成；ADR-0010 准入受众与凭据严格匹配。
-- 2026-08-06/07 十一契约入 dev（本地零 push）：sleep 导入修 `8d0b0bc`、create 入口锚
+- 2026-08-06/07 十二契约入 dev（本地零 push）：sleep 导入修 `8d0b0bc`、create 入口锚
   `158829d`、登录预算 `9bb2300`、post-nav 双锚 `db80a17`、open 搜索先行 `7f38606`、
   open 诊断 notes `97c0d83`、语义名回填 `8d0e6e3`、读回门丙路线 `a507f5c`、
-  删除搜索修 `b6880e3`、观察让位 `d5ecbab`（现役顶端）。
+  删除搜索修 `b6880e3`、观察让位 `d5ecbab`、意图号重绑 `b38c679`（现役顶端）。
   每个契约固定「实现 → 双路评审 → 并集修 → 收据 + learn → merge」，全部双路 APPROVE 才合。
 
 【DDD / 统一语言】
@@ -54,7 +55,9 @@ MCP `mcp/casey-server.mjs`。
   `attributedStepId` 不按时间窗；裁判与自愈分进程、`verdict.mjs` 对断言种类不可知。
 - 本轮新知识（未登记新词，只是事实）：`semantic.name` 落盘留模板、定位那一刻回填
   （纯投影 `instantiateEventSemantic` 两侧各一次）；open 读回走扫描路线（丙案）；
-  删除搜索隔离靠放大镜非 Enter（seam-1）；open 观察对同 platformId 让位（甲案）。
+  删除搜索隔离靠放大镜非 Enter（seam-1）；open 观察对同 platformId 让位（甲案）；
+  标准编译路径事件意图号逐步重绑（带号步三通道同号、裸步保持自生号——出处链闸拒因
+  实为命名空间错配、非单发行语义，前提修正详 HANDOFF 顶节）。
 
 【开发准则（机制强制）】
 - 阶段互锁：改实现或提交前必先 `contract init` 声明入口分流（`direct` | `light` | `full`）。
@@ -86,27 +89,29 @@ MCP `mcp/casey-server.mjs`。
   `lib`/`bin`；每树一独立 baton（护栏 #18 建议 ≤5 树，当前 32 树全持活 baton、已超，
   多数是已 6/6 收口的历史树，可择机清理）。
 
-【当前状态（2026-08-07 晨收盘）】
-- dev 顶端 `d5ecbab`，本地零 push。活契约槽 `p9-created-workflow-cleanup-continuity-v3`
-  （`full`，3/6 不变）。三晚契约树（readback/delete-filter/observation-yield）均 6/6 可摘。
-- **十三跑执行链全链首过**（`b4r130807k`，25.5s）：create→open→详情断言→删除（计数门
-  真 1/1）→流内真删→删后重搜全程零 blockers；B4 建十删十、第十删由测试链自己完成。
-  exit 65 只剩成品段记账双门（反向基数双射 + create 出处链闭合）——三道冻结门一致表达
-  「单流单发行」而重表达单流 CRUD 天然多发行，让位方案流层通、成品层撞账（详 HANDOFF
-  顶节，A/B/C 三案待 Steven 真裁，建议 grill-with-docs 级对话）。
-- 评审事故范式已立：drvfs 故障中 pi 如实报 HARNESS_ERROR 存证、WSL 重启复原后对同一
-  快照重跑（快照不可变性使重跑有意义）。
+【当前状态（2026-08-07 晚）】
+- dev 顶端 `b38c679`，本地零 push。活契约槽 `p9-created-workflow-cleanup-continuity-v3`
+  （`full`，3/6 不变）。四契约树（readback/delete-filter/observation-yield/
+  compile-intent-lineage-rebind）均 6/6 可摘。
+- **记账双门前提已修正**（详 HANDOFF 顶节）：出处链闸拒因=意图号命名空间错配（接线
+  缺陷，已由 `compile-intent-lineage-rebind` 契约修复合入：逐步存在即绑、三通道同号、
+  双路评审 H1 并集修后全 APPROVE）；真语义冲突只剩基数双射一道门。Steven 已裁
+  「先修接线取真证再裁」，原 C 案裁定暂挂。
+- **十四跑待发**：照十三跑配方、令牌 `b4r140807l`；预登记预期=出处链闸绿、exit 65
+  恰剩基数门 `OBSERVATION_TERMINAL_WITHOUT_MATCHING_OBSERVATION` 一道，其他红即停。
+- D 盘一日四挂（Windows 侧 D: 卷嫌疑，Steven 待查）：评审已固化 ext4 克隆姿势，
+  全仓扫描改单侧串行；重要产物随手落 `~/casey-recovery-20260807/`。
 - 主树有用户未提交资产（七个 `prd`、两个 md、四个未跟踪件）——一律勿动、勿 `git add -A`。
 
 【下一步（任选其一，先对齐再动手）】
-甲. 成品段记账岔口（推荐）：A. 记账门学让位语义（动冻结纯函数+金牌改版+人签）/
-   B. open 在 created-in-run 流降级纯验证步（动 registry 语义）/ C. 案例拆分（动重表达
-   口径+B0-B3 重铸）。摆给 Steven 真裁后立契约；修通后十四跑预期 exit 0 全绿产件。
+甲. 十四跑取真证（推荐；先重启隧道两端）→ 单焦点证据摆 Steven 重裁基数门修向
+   （C 案例拆分维持 vs 收窄版 A 仅基数门学让位、豁免判据门内重推导）→ 裁后立契约；
+   修通后十五跑预期 exit 0 全绿产件。
 乙. 后两例 `tc_wf_publish_states` / `tc_wf_history_version`：等 crud 全绿统一处置。
 丙. 挂账清偿（可并行 fan-out）：承前清单（PRD notes 史迹措辞、新树必红两例、账本接线
    拆除、金牌残件自清、`wf-open-smoke` 陈旧红 owner、门面拆分族两陈旧红、`pi` 对
    `wf-delete-card-layout` 补审、`hook-loop-guard` 立项、清单重签补 `replayGrantPath`）。
-丁. 工作树清理：32 棵树全持活 baton、远超建议的 5 棵，已 6/6 收口的可摘。
+丁. 工作树清理：33 棵树全持活 baton、远超建议的 5 棵，已 6/6 收口的可摘。
 
 【环境坑（WSL）】
 - 跑真机前先重启隧道两端（本日成纪律）：池老化约一小时或高请求量后，浏览器复用
