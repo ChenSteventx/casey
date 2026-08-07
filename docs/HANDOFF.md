@@ -19,16 +19,18 @@
    三件整体还原突变闭环）、邻接八命令 + 归属金牌三家全绿、全仓 299 金牌串行扫描
    零回归、gate GREEN 2/2；评审 grok + pi **首轮双 APPROVE 零 C/H/M**（ext4 克隆树
    姿势，grok 自补对抗探测全拒）。
-2. **十五跑待发**（本段收笔时未跑）：令牌 `b4r150807m`；预登记预期=**exit 0 产全绿
-   成功件**（events/observed/draft），`tc_catalog_wf_crud` 史上首次全链产件；任何红
-   即停不连跑。
+2. **十五跑达阵**（`b4r150807m`，25.2s，**exit 0**）：预登记预期逐字兑现——史上首次
+   全链产出成功件（events 18 步 / observed 18 步 / 候选 0；`compile-provenance.json`
+   出处链产物首次签发；events 实载 authored 意图号 `intent_create/list/open/cleanup`
+   与让位取证字段）；建十二删十二零残留。B4 十五跑收官：从「从未走通过」家族五例到
+   全链产件，三契约（观察让位/意图号重绑/基数门让位）当日闭环。
 3. 挂账更新：M1 已兑现销账；新增 plan.md 冻结字节「三份」笔误（随下次触碰清）；
    teach-in 三通道/draft 闸面承前。
 
 ### 下一步（接手者从甲起）
 
-- 甲、十五跑取真证（先重启隧道两端；预期 exit 0）→ 达阵则 B 段首例完整产件到手，
-  接 sign/replay 链与后两例（`publish_states` / `history_version`）统一处置。
+- 甲、B 段首例完整产件已到手：接 sign/replay 链（滞后冻结件改版重签在此兑现）与
+  后两例（`publish_states` / `history_version`）统一处置。
 - 乙、挂账清偿与工作树清理（34 棵树，新增本契约树 6/6 可摘）。
 
 ## 2026-08-07 晚：意图号重绑契约收口合入 + 记账双门前提修正、M1/schema 挂账、D 盘四挂事故（历史覆盖层，被上节接续）

@@ -104,9 +104,9 @@ MCP `mcp/casey-server.mjs`。
 - 主树有用户未提交资产（七个 `prd`、两个 md、四个未跟踪件）——一律勿动、勿 `git add -A`。
 
 【下一步（任选其一，先对齐再动手）】
-甲. 十五跑取真证（推荐；terminal-coverage-yield 已收口合入，schema 改版已人签）：
-   先重启隧道两端，令牌 `b4r150807m`，预登记预期 exit 0 产全绿成功件（B 段首例
-   史上首次全链产件）；达阵后接 sign/replay 链与后两例统一处置。
+甲. B 段首例完整产件已到手（十五跑 `b4r150807m` exit 0 达阵，史上首次全链产件）：
+   接 sign/replay 链（滞后冻结件 `entity-locks`/`expected.frozen` 改版重签在此兑现）
+   与后两例（`publish_states` / `history_version`）统一处置。
 乙. 后两例 `tc_wf_publish_states` / `tc_wf_history_version`：等 crud 全绿统一处置。
 丙. 挂账清偿（可并行 fan-out）：承前清单（PRD notes 史迹措辞、新树必红两例、账本接线
    拆除、金牌残件自清、`wf-open-smoke` 陈旧红 owner、门面拆分族两陈旧红、`pi` 对
