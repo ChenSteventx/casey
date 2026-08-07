@@ -1,0 +1,51 @@
+{
+  "schemaVersion": 1,
+  "task": "terminal-coverage-yield（full）：基数门学让位（Steven 终裁收窄版 A + platformId 硬桥接 + M1 schema 同车，2026-08-07）。缺陷：让位（wf-open-observation-yield 已裁流层语义）与注册表无条件 source 义务（成品层）打架——十四跑唯一红 OBSERVATION_TERMINAL_WITHOUT_MATCHING_OBSERVATION（open 终端 click 0 观察）。修法：①编译侧让位分支把门内已解析身份如实盖进 open 终端 click 事件字段 yieldedToPlatformId（取证记录非豁免宣告，让位判据本体与 notes 零接触）；②checkIdentityObservationCardinality 反向基数四条件豁免（count恰0 ∧ 义务恰['source'] ∧ 字段非空 ∧ 观察集恰一条 kind===boundKind且role==='subject'且platformId===字段值），缺一照拒、「多」面零松动、加法门控（无字段输入行为逐字节不变）；③events.schema.json 一次改版（M1 兑现）：intentId pattern 放宽 ^intent_[A-Za-z0-9_]+$ + 事件新增可选属性 yieldedToPlatformId，两份实际冻结该件的归属 PRD（page-topology-auth-continuity/seams-freeze）登 checksumAmendments + Steven 一次人签（drawer-lock 仅行文提及不冻该件；plan.md 冻结字节保留「三份」笔误，grok r1 判文档笔误不构成失败面）。非目标：不动 H1i/出处链闸/C3 守卫；不碰让位判据本体；不裁后两例。",
+  "specPath": "docs/plans/terminal-coverage-yield/plan.md",
+  "testChecksums": {
+    "tests/_golden/terminal-coverage-yield.zero-sut.golden.mjs": "0749c8ec7e0211ac08ad559b1bdb6c29f0f3d7f579eb4f4857c7a04bc2910e20",
+    "docs/plans/terminal-coverage-yield/plan.md": "f56170638cbca24a4cdb7936db43edbdade1b46723df7187dd381b5af8faa212",
+    "docs/plans/terminal-coverage-yield/accept/red-proofs/terminal-coverage-yield.red.txt": "c6520978582f5076e548a88c34de7a38f8739dc18e8919aab974685cc0572cc1"
+  },
+  "observability": [
+    {
+      "dimension": "hermetic 只证豁免判据/编译缝盖字段/schema 结构；端到端真证=merge 后主树 B4 十五跑（先重启隧道两端，令牌顺延）——预登记预期：exit 0 产全绿成功件（events/observed/draft），B 段首例史上首次全链产件；任何红即停不连跑。",
+      "route": "human"
+    },
+    {
+      "dimension": "schema 改版人签：三份归属 PRD（drawer-lock-hardening / page-topology-auth-continuity / seams-freeze）checksumAmendments 登记后须 Steven 对新 schema 字节明确签字（AskUserQuestion 或邮件回执），签前不 merge。全仓金牌扫描单侧串行终判（护栏 #19）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-terminal-coverage-yield",
+      "desc": "基数门让位豁免九钉：Y1 豁免正例 / Y2 无字段遗留照拒 / Y3 伪造字段无匹配拒 / Y4 匹配多条拒 / Y5 subject 义务拒 / Y6 多面去重拒 / Y7 agent 遗留等价 / Y8 真实让位编译缝盖字段+端到端喂门 / Y9 schema 改版结构。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/terminal-coverage-yield.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-07T11:25:39.206Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "邻接零回归：基数门族（wiring/cardinality-reverse）+ 让位金牌（观察让位四钉）+ 读回门 + 意图号重绑 + p9 created-in-run + 统一语言 + 确定性内核自检。全仓扫描按 observability 单侧串行执行。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs",
+        "node tests/_golden/entity-workflow-source-readback.cardinality-reverse.zero-sut.golden.mjs",
+        "node tests/_golden/wf-open-observation-yield.zero-sut.golden.mjs",
+        "node tests/_golden/wf-open-readback-requery.zero-sut.golden.mjs",
+        "node tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.created-in-run.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-07T11:26:03.044Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "红基线真实 exit 1（8 过 / 6 红：Y1 豁免缺席、Y8b/d 盖字段与端到端缺席、Y9a/b/c schema 未改——红面即契约面），金牌 Y9 取路修正后对最终字节以三件实现整体还原的突变态重抓（6 红同面），证据 accept/red-proofs/terminal-coverage-yield.red.txt。Y2–Y7 绿基线为遗留等价与 fail-closed 回归钉。Y8 镜像 wf-open-observation-yield harness（种子 create 行 + 合成锚定 click 均为诚实流中态构造）。突变闭环走 git show 姿势。passes 只由 gate 写入。 评审：pi r1 APPROVE 零 C/H/M + grok r1 APPROVE 零 C/H/M（首轮双绿；grok 自补对抗探测全拒、唯一注记为「三份」文案笔误）。",
+  "worktree": "/mnt/d/ctx/heren/casey-terminal-coverage-yield"
+}

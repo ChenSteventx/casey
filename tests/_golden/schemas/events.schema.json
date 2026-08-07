@@ -75,8 +75,13 @@
         },
         "intentId": {
           "type": "string",
-          "pattern": "^intent_[0-9]+$",
-          "description": "回填的用例语义步 id；一条 intent 可裂成 N 个 event，verdict/取证/报告据此卷回"
+          "pattern": "^intent_[A-Za-z0-9_]+$",
+          "description": "回填的用例语义步 id；一条 intent 可裂成 N 个 event，verdict/取证/报告据此卷回。2026-08-07 改版（M1 兑现，Steven 人签）：authored 语义号（intent_create 等）与遗留序数号（intent_0 等）均合法，保 intent_ 前缀机器可查"
+        },
+        "yieldedToPlatformId": {
+          "type": "string",
+          "minLength": 1,
+          "description": "可选取证字段（terminal-coverage-yield 改版，Steven 人签）：观察让位时刻编译门内已解析的让位对象 platformId——非豁免宣告，成品基数门自行重推导恰一匹配 subject 行才豁免"
         },
         "atom": {
           "type": "string",
