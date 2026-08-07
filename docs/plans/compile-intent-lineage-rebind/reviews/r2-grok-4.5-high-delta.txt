@@ -1,0 +1,479 @@
+cd ~/casey-review/casey-compile-intent-lineage-rebind && grok --cwd ~/casey-review/casey-compile-intent-lineage-rebind --no-alt-screen --minimal --permission-mode dontAsk --max-turns 40 "$(cat docs/pl
+ans/compile-intent-lineage-rebind/reviews/DELTA-PROMPT-r2.md)"
+test@chenstevencoco:/mnt/d/ctx/heren/casey$ cd ~/casey-review/casey-compile-intent-lineage-rebind && grok --cwd ~/casey-review/casey-compile-intent-lineage-rebind --no-alt-screen --minimal --permissio
+n-mode dontAsk --max-turns 40 "$(cat docs/plans/compile-intent-lineage-rebind/reviews/DELTA-PROMPT-r2.md)"
+Signing in… starting your session.
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                                                                                                      │
+│                                                                                              ⠀⠀⠀⣀⣤⣤⣀⠀⠀⡠                                                                                              │
+│                                                                                              ⠀⢀⡾⠋⠁⠀⢁⢴⡎⠀                                                                                              │
+│                                                                                              ⠀⢸⡇⠀⠀⠐⠁⢀⣿⠀                                                                                              │
+│                                                                                              ⠀⢈⠗⢀⣀⣀⣠⡾⠃⠀                                                                                              │
+│                                                                                              ⠐⠁⠀⠈⠉⠉⠉⠀⠀⠀                                                                                              │
+│                                                                                                                                                                                                      │
+│ Grok Build  v1.0.0                                                                                                                                                                                   │
+│ /home/test/casey-review/casey-compile-intent-lineage-rebind                                                                                                                                          │
+│ Model · Grok 4.5                                                                                                                                                                                     │
+│ /help for commands                                                                                                                                                                                   │
+│                                                                                                                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+◆ session_start
+      ✓ global/settings:session_start[0].hooks[0] (6ms)
+      ✗ global/settings:session_start[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:session_start[0].hooks[0] (20ms)
+
+❯ # delta 复 审 提 示 词  · compile-intent-lineage-rebind r2（ 只 审  H1 修 复 ）
+
+  你 在  r1 对 快 照  `6082431` 裁  `CHANGES_REQUIRED`（ H1 High + M1 Medium） 。 本 轮 只 复 审
+  H1 的 修 复  hunks 是 否 正 确 收 口 ； M1 属 冻 结  schema 改 版 决 策 ， 已 单 独 摆  Steven 裁 ， 不 在
+  本 轮 范 围 。 结 论 行 格 式  `VERDICT: APPROVE` 或  `VERDICT: CHANGES_REQUIRED`。
+
+  ## 你 的  r1 H1 原 文 （ 要 点 ）
+
+  重 绑 只 改  `events[].intentId` 与  `lastIntentId`； `observed[].intentId` 与
+  `verification[].intentId` 在  emit 时 刻 （ `lib/compile-atoms-run.mjs:277-279`） 已 带 走
+  编 译 器 自 生 号 未 被 重 绑  → `synthesizeSkeleton` 按  assertionAtoms 产  authored 草 稿 、
+  draft 存 在 性 闸 （ `bin/draft.mjs:100-105`） 以  observed 全 集 为 基 准  → authored ∉
+  {intent_N} → exit 65 幽 灵  intent 拒 。
+
+  ## 处 置 说 明
+
+  修 复 提 交  `2e4770b`（ 基 线 =你 审 过 的  `6082431`， 复 审 对 象  = `git diff 6082431..2e4770b`） ：
+
+  1. `lib/compile-atoms-flow.mjs` 重 绑 块 ： 收 集 本 步 事 件  stepId 集 ， 按  stepId 同 步 改 写
+     `run.observed` / `run.verification` 行 的  `intentId`（ 防 御 性  `Array.isArray` 取 值 ，
+     同 函 数 内  blockers 先 例 ——极 简  run 桩 可 缺 字 段 ） 。 三 通 道 逐  stepId 同 号 。
+  2. 金 牌  `tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs` 补 三 钉 ：
+     G1c-1（ observed 逐  stepId 与  events 同 号 ） 、 G1c-2（ verification 同 ） 、 G2-5
+     （ 混 合 流 三 通 道 双 向 一 致 ： 带 号 步 全  authored、 裸 步 全  intent_N） 。
+  3. 红 →绿 证 据 ： 新 钉 对 修 前 实 现 红  exit 1 实 抓
+     （ `accept/red-proofs/compile-intent-lineage-rebind.h1-threechannel.delta-red.txt`，
+     G1c-1/2 与  G2-5 三 红 、 症 状 与 你  r1 所 述 逐 字 吻 合 ） ； 修 后  16/16 绿 ； 第 三 轮 突 变 闭 环
+     （ 还 原  `6082431` 版 实 现 必 红 、 恢 复  sha256 逐 字 节 同 、 必 绿 ） 。
+  4. 邻 接 组  + `bindagent-replay` + term-lint + selftest + gate 全 绿 复 跑 ； PRD notes 已
+     记 账 本 轮 并 集 修 与  M1 待 裁 状 态 ； plan.md 目 标 条 已 对 齐 逐 步 语 义 （ 你  r1 的 文 书 注 记 ） 。
+
+  ## 复 审 要 求
+
+  - 自 行 核  `git diff 6082431..2e4770b` 只 含 上 述 白 名 单 （ lib 一 处 、 金 牌 、 PRD、 docs 文 书 ） 。
+  - 可 自 跑 金 牌 与 突 变 复 现 （ `git show` 姿 势 、 勿  `git checkout -- `） 。
+  - 重 点 证 伪 ： stepId 集 同 步 是 否 覆 盖 你  r1 给 的 失 败 场 景 （ 带 号 步  + 后 继  assert →
+    draft） ； assert 折 叠 路 径 （ 不 产 事 件 、 经  lastIntentId） 是 否 被 误 改 写 ； 裸 步 /遗 留 流
+    两 通 道 是 否 零 漂 移 。
+
+  ## 禁 区
+
+  不 得 读 取 或 回 显  `.auth/`、 `site.json`、 账 号 、 密 码 、 token、 真 实 目 标 地 址 。
+
+◆ user_prompt_submit
+      ✓ global/settings:user_prompt_submit[0].hooks[0] (9ms)
+      ✗ global/settings:user_prompt_submit[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:user_prompt_submit[0].hooks[0] (209ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[1] (33ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[2] (21ms)
+┃◆ Thought for 2.0s
+┃
+┃The user wants me to perform a delta re-review of the H1 fix for compile-intent-lineage-rebind r2. Let me follow the review prompt carefully:
+I'll re-review only the H1 fix: verify the whitelist diff, then check whether the three-channel rebind closes the r1 failure path without breaking assert-fold or bare/legacy flows.
+◆ Read DELTA-PROMPT-r2.md  [hooks: 1/1]
+◆ Run List commits and files in H1 fix range
+$ git log --oneline 6082431..2e4770b && echo '---' && git diff --stat 6082431..2e4770b && echo '---' && git diff --name-only 6082431..2e4770b
+
+2e4770b fix: grok r1 H1 并 集 修 ——重 绑 同 步  observed/verification 三 通 道 （ 逐  stepId 同 号 ）
+---
+… +9 lines
+lib/compile-atoms-flow.mjs
+loop/prd-compile-intent-lineage-rebind.json
+tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (75ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (8ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 1.9s
+┃
+┃Good, the whitelist looks correct. Let me get the full diff and read the relevant code sections carefully.
+◆ Run Show H1 fix diff for lib and golden
+$ git diff 6082431..2e4770b -- lib/compile-atoms-flow.mjs tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs
+
+diff --git a/lib/compile-atoms-flow.mjs b/lib/compile-atoms-flow.mjs
+index 9b7eb39..199ba5f 100644
+… +51 lines
+ }
+
+ // ════════════════ G3 遗 留 零 漂 移 钉 ： 全 不 带  sourceIntentId → intent_N 原 样 （ 绿 基 线 ） ════════════════
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (81ms)
+◆ Run Check HEAD vs review commits
+$ git show 2e4770b:lib/compile-atoms-flow.mjs | wc -l && git log -1 --oneline HEAD && git rev-parse HEAD 2e4770b 6082431
+
+219
+2e4770b fix: grok r1 H1 并 集 修 ——重 绑 同 步  observed/verification 三 通 道 （ 逐  stepId 同 号 ）
+2e4770ba209d3a42b460041aa64afd84dffdfd98
+2e4770ba209d3a42b460041aa64afd84dffdfd98
+6082431eba66fcf3f9db3139fed569df0cdbf86b
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (78ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 0.7s
+┃
+┃Good, HEAD is at 2e4770b. Let me dig deeper into the rebind logic, how events/observed/verification relate, the assert fold path, and emit path. I need to understand if the fix correctly covers the
+┃fa...
+Next I'll inspect the full rebind block and how observed / verification are emitted so we can falsify edge cases.
+◆ Read compile-atoms-flow.mjs (71-150 of 220)  [hooks: 1/1]
+◆ Search "intentId|observed|verification|lastIntentId|sourceIntentId|stepId" in lib/compile-atoms-run.mjs (30 matches)  [hooks: 1/1]
+◆ Search "intentId|observed|synthesizeSkeleton|sourceIntentId" in bin/draft.mjs (19 matches)  [hooks: 2/2]
+┃◆ Thought for 3.0s
+┃
+┃I need to understand how assert folding works - does assert produce events? Looking at the comment:
+◆ Read compile-atoms-run.mjs (101-320 of 334)  [hooks: 1/1]
+◆ Search "assert\\.|lastIntentId|emit\\(|compileAtomStep" in **/compile-atoms*.mjs in lib (68 matches in 6 files)  [hooks: 1/1]
+◆ Read compile-intent-lineage-rebind.zero-sut.golden.mjs  [hooks: 2/2]
+┃◆ Thought for 23.6s
+┃
+┃I understand the architecture better now: The architecture looks solid on the falsification side—stepId matching should handle multi-event steps cleanly via reboundStepIds, and the fact that asserts
+┃skip the event path (so run.events.length > firstEvent stays false and the rebind block is skipped) prevents any accidental rewriting of prior observed/verification rows. That’s a nice safeguard.
+┃
+┃The teach-in concern is worth a quick sanity check. Since the teach-in path is intentionally kept separate (per the comments), it doesn’t go through the standard rebind block at all. That means
+┃observed/verification rows from teach-in lineage plans will keep their original intent_N values — which is exactly what the “byte stability” freeze is trying to protect. So the ghost-intent bug
+┃you’re worried about doesn’t surface on the teach-in side either, because the rebind logic simply isn’t applied there.
+┃
+┃For the delta review: the H1 fix does close the stated issue for the standard compile-intent-lineage-rebind path. The reboundStepIds collection now pulls every stepId emitted by the current step, and
+┃the rewrite loop updates every matching observed/verification row with the authored intentId.
+◆ Read compile-atoms-flow.mjs (201-220 of 220)  [hooks: 1/1]
+◆ Search "lineagePlan|lineage" in **/*.{mjs,js} in lib (27 matches in 6 files)  [hooks: 1/1]
+◆ Read compile-intent-lineage-rebind.h1-threechannel.delta-red.txt  [hooks: 1/1]
+◆ Run Show PRD and plan doc diffs
+$ git diff 6082431..2e4770b -- loop/prd-compile-intent-lineage-rebind.json docs/plans/compile-intent-lineage-rebind/plan.md
+
+diff --git a/docs/plans/compile-intent-lineage-rebind/plan.md b/docs/plans/compile-intent-lineage-rebind/plan.md
+index 33b5cde..813abdc 100644
+… +88 lines
+events.schema intentId pattern 与  authored 号 张 力 ， teach-in 同 形 先 例 ） 待  Steven 裁 ： 放 宽  pattern（ 人 签 改 版 ） 或 显 式 挂 账 。 passes 只 由  gate 写 入 。 ",
+   "worktree": "/mnt/d/ctx/heren/casey-compile-intent-lineage-rebind"
+ }
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (4ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (71ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 13.8s
+┃
+┃Now I have a clear picture. Let me run:I see you're deep into the mutation testing and edge-case validation for the compile-atoms-flow.mjs logic. The golden test passing at 16/16 is a strong
+┃baseline, and restoring the 6082431 version to force a red result before re-green is a smart way to confirm the rebind logic is actually catching 6082431's drift.
+┃
+┃The edge-case analysis looks solid—particularly the fold/assert path not triggering rebind (which prevents incorrect rewriting of observed/verification rows), and the multi-event step handling where
+┃reboundStepIds ensures 1:1 matching between events and observed/verification. The bare-step zero-drift behavior ( G2-5 and G3) and the intentional teach-in freeze (G4) both make sense given the PRD
+┃constraints.
+Running the golden suite and a mutation check (restore pre-fix implementation via git show, no checkout).
+◆ Run golden green and verify PRD checksums
+$ node tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs; echo EXIT=$?; echo '--- checksums ---';
+  sha256sum tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs docs/plans/compile-intent-lineage-rebind/plan.md
+  docs/plans/compile-intent-lineage-rebind/accept/red-proofs/compile-intent-lineage-rebind.h1-threechannel.delta-red.txt;
+  echo '--- prd frozen ---'; node -e "const p=require('./loop/prd-compile-intent-lineage-rebind.json'); for (const [k,v] of Object.entries(p.testChecksums)) console.log(v,k)"
+
+ok   G1a-0 前 提 ： 无 阻 断 双 步  authored 流 两 步 全 跑 （ 沿 用  H2d 正 控 形 ） ； 实 得  blockers=[] clicks=2
+ok   G1a-1 重 绑 后 零  intent_N 残 留 （ compiler-local 序 数 不 得 进 入 正 式 产 物 ） ； 实 得 残 留  []
+… +30 lines
+63b0c8c3f7b7e91af09166ded4c133e4cb5f8910731dc724a686f3b814f072d3 docs/plans/compile-intent-lineage-rebind/accept/red-proofs/compile-intent-lineage-rebind.red.txt
+66cd29628d8316e118c2d831763e7d0098fc8843e5bff01940706e6f3201b1e5 docs/plans/compile-intent-lineage-rebind/accept/red-proofs/compile-intent-lineage-rebind.mixed-perstep.delta-red.txt
+97d9bf3da03bf7b3d6e5d40c7eb5b7eba850849c23f3c29c427370fb69b2e879 docs/plans/compile-intent-lineage-rebind/accept/red-proofs/compile-intent-lineage-rebind.h1-threechannel.delta-red.txt
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (88ms)
+◆ Run Mutation: pre-fix red then restore green
+$ cd /home/test/casey-review/casey-compile-intent-lineage-rebind && # mutation: restore 6082431 rebind block only, keep golden pins
+  cp lib/compile-atoms-flow.mjs /tmp/compile-atoms-flow.mjs.fixed && \
+  git show 6082431:lib/compile-atoms-flow.mjs > lib/compile-atoms-flow.mjs && \
+  echo '=== MUTATION (pre-H1 impl) ===' && \
+  node tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs; echo MUT_EXIT=$?; \
+  echo '=== RESTORE fixed ===' && \
+  cp /tmp/compile-atoms-flow.mjs.fixed lib/compile-atoms-flow.mjs && \
+  sha256sum lib/compile-atoms-flow.mjs /tmp/compile-atoms-flow.mjs.fixed && \
+  node tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs; echo REST_EXIT=$?; \
+  # ensure working tree matches HEAD for this file
+  git diff --stat lib/compile-atoms-flow.mjs
+
+=== MUTATION (pre-H1 impl) ===
+ok   G1a-0 前 提 ： 无 阻 断 双 步  authored 流 两 步 全 跑 （ 沿 用  H2d 正 控 形 ） ； 实 得  blockers=[] clicks=2
+… +44 lines
+ok   G3-2 遗 留 流 事 件  intentId 保 持 编 译 器 自 生  intent_N（ 零 漂 移 ， 重 绑 不 越 界 ） ； 实 得  ["intent_0","intent_1"]
+ok   compile-intent-lineage-rebind: 16/16 全 过 （ 真 实  compileFlow 缝  + 出 处 链 闸 耦 合  + 混 合 态  + 遗 留 零 漂 移 ， 零  SUT）
+REST_EXIT=0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (80ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (4ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 4.5s
+┃
+┃Interesting! The first golden run FAILED with the H1 symptoms, then after mutation restore it PASSED. That means:
+Parallel runs raced on the same file; re-running the golden suite cleanly against the fixed HEAD.
+◆ Run Clean golden + assert-fold path smoke
+$ cd /home/test/casey-review/casey-compile-intent-lineage-rebind && git status --short lib/compile-atoms-flow.mjs && git rev-parse HEAD:lib/compile-atoms-flow.mjs &&
+  sha256sum lib/compile-atoms-flow.mjs && node tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs; echo EXIT=$? &&
+  # assert-fold smoke: authored step then assert → assertionAtoms.intentId + observed same authored
+  node --input-type=module <<'EOF'
+  import { createCompileRun, compileFlow } from './lib/compile-atoms.mjs';
+  import { createMockPage } from './tests/_golden/fixtures/agent-id-readback/mock-page.mjs';
+  const page = {
+    ...createMockPage({
+      dom: { 'text:wfone:exact': { count: 1, inContainer: true } },
+      url: 'http://127.0.0.1:4173/', titles: ['工 作 流 管 理 '],
+    }),
+    waitForURL: async () => {},
+  };
+  const run = createCompileRun({
+    page, forensics: { records: () => [] }, state: { currentStepId: null },
+    sut: 'http://127.0.0.1:4173', uniqueName: 'atl_fixed', site: null,
+    agentListRoute: null, profile: null, identityLedger: null,
+  });
+  await compileFlow(run, {
+    id: 'tc_assert_fold',
+    steps: [
+      { atom: 'workflow.open', params: { openName: 'wfone' }, sourceIntentId: 'intent_open_one',
+        entityBindings: [{ candidateId: 'cand-wfone', role: 'source' }] },
+      { atom: 'assert.visible', params: { text: 'x' } },
+    ],
+  });
+  const obs = run.observed.map(o => ({ stepId: o.stepId, intentId: o.intentId }));
+  const ver = run.verification.map(v => ({ stepId: v.stepId, intentId: v.intentId }));
+  const ev = run.events.map(e => ({ stepId: e.stepId, intentId: e.intentId }));
+  console.log(JSON.stringify({
+    blockers: run.blockers,
+    events: ev,
+    observed: obs,
+    verification: ver,
+    lastIntentId: run.lastIntentId,
+    assertionAtoms: run.assertionAtoms,
+    threeChannel: ev.every(e =>
+      obs.find(o => o.stepId === e.stepId)?.intentId === e.intentId &&
+      ver.find(v => v.stepId === e.stepId)?.intentId === e.intentId),
+    assertFoldedToAuthored: run.assertionAtoms[0]?.intentId === 'intent_open_one',
+    noExtraObsRewrite: obs.length === ev.length, // assert produces no observed row
+  }, null, 2));
+  EOF
+
+199ba5f8f5685d983bb265ac0151eca3969b2e48
+e590d654f338a0955975ac089946759ef4e3872acd544a471ee2385f73096d9a  lib/compile-atoms-flow.mjs
+… +51 lines
+  "assertFoldedToAuthored": true,
+  "noExtraObsRewrite": true
+}
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (75ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (4ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 11.7s
+┃
+┃Everything checks out. Let me also verify multi-event step rebinding quickly - workflow.open might only emit one event in mock. Let me check if multi-event is important...
+◆ Run Confirm clean tree + multi-event rebind isolation
+$ cd /home/test/casey-review/casey-compile-intent-lineage-rebind && git status --short && git diff --stat HEAD -- lib/compile-atoms-flow.mjs &&
+  # multi-event step smoke via direct emit mock of rebind logic shape
+  node --input-type=module <<'EOF'
+  // Simulate multi-event step: two emits under one sourceIntentId rebind, bare next step untouched
+  import { createCompileRun, compileFlow } from './lib/compile-atoms.mjs';
+  import { createMockPage } from './tests/_golden/fixtures/agent-id-readback/mock-page.mjs';
+
+  // Force a step that emits multiple events: workflow.open with search path if available.
+  // Safer: manually exercise rebind contract by inspecting compile-atoms-flow source invariants
+  // via multi-step open already covers 1 event/step; multi-event covered by structure of
+  // reboundStepIds = all events in slice.
+  // Direct unit of the rebind body using a minimal harness:
+  const run = {
+    events: [],
+    observed: [],
+    verification: [],
+    lastIntentId: null,
+    blockers: [],
+  };
+  // pretend step produced 2 events + matching obs/ver with compiler-local ids
+  run.events.push(
+    { stepId: 'atstep_0', intentId: 'intent_0', atom: 'x' },
+    { stepId: 'atstep_1', intentId: 'intent_0', atom: 'x' },
+  );
+  run.observed.push(
+    { stepId: 'atstep_0', intentId: 'intent_0' },
+    { stepId: 'atstep_1', intentId: 'intent_0' },
+    { stepId: 'atstep_2', intentId: 'intent_1' }, // prior/other step must not change
+  );
+  run.verification.push(
+    { stepId: 'atstep_0', intentId: 'intent_0' },
+    { stepId: 'atstep_1', intentId: 'intent_0' },
+    { stepId: 'atstep_2', intentId: 'intent_1' },
+  );
+  const firstEvent = 0;
+  const sourceIntentId = 'intent_authored';
+  const reboundStepIds = new Set();
+  for (const event of run.events.slice(firstEvent)) {
+    event.intentId = sourceIntentId;
+    reboundStepIds.add(event.stepId);
+  }
+  for (const row of Array.isArray(run.observed) ? run.observed : []) {
+    if (reboundStepIds.has(row.stepId)) row.intentId = sourceIntentId;
+  }
+  for (const row of Array.isArray(run.verification) ? run.verification : []) {
+    if (reboundStepIds.has(row.stepId)) row.intentId = sourceIntentId;
+  }
+  run.lastIntentId = sourceIntentId;
+
+  const ok =
+    run.events.every(e => e.intentId === 'intent_authored') &&
+    run.observed[0].intentId === 'intent_authored' &&
+    run.observed[1].intentId === 'intent_authored' &&
+    run.observed[2].intentId === 'intent_1' && // out-of-slice untouched
+    run.verification[2].intentId === 'intent_1';
+  console.log(JSON.stringify({ ok, observed: run.observed, verification: run.verification, lastIntentId: run.lastIntentId }, null, 2));
+  EOF
+
+?? docs/plans/compile-intent-lineage-rebind/reviews/DELTA-PROMPT-r2.md
+?? node_modules
+… +29 lines
+  ],
+  "lastIntentId": "intent_authored"
+}
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (4ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (63ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (4ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 3.7s
+┃
+┃I have enough evidence for APPROVE. Let me write a thorough but concise re-review report.
+Delta 复 审  · compile-intent-lineage-rebind r2（ 只 审  H1）
+
+基 线  6082431 → 对 象  2e4770b
+范 围  H1 三 通 道 重 绑 ； M1 不 在 本 轮 。
+
+───
+
+1. 白 名 单  diff
+
+git diff --name-only 6082431..2e4770b 仅  5 文 件 ：
+
+┌─────────────────────────────────────────────────────────────────┬────────────────────────────────────────────┐
+│ 路 径                                                             │ 角 色                                        │
+├─────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+│ lib/compile-atoms-flow.mjs                                      │ 实 现 ： 按  stepId 同 步  observed/verification │
+├─────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+│ tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs │ G1c-1/2、 G2-5                              │
+├─────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+│ .../h1-threechannel.delta-red.txt                               │ 修 前 红 证                                    │
+├─────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+│ docs/plans/.../plan.md                                          │ 目 标 条 对 齐 逐 步  + 三 通 道                     │
+├─────────────────────────────────────────────────────────────────┼────────────────────────────────────────────┤
+│ loop/prd-compile-intent-lineage-rebind.json                     │ checksums / notes / story 文 案              │
+└─────────────────────────────────────────────────────────────────┴────────────────────────────────────────────┘
+
+无 越 界 改 动 。 PRD 冻 结  sha256 与 工 作 区 三 件 一 致 。
+
+───
+
+2. 修 复 是 否 收 口  r1 H1
+
+根 因 （ r1） ： 标 准 路 径 只 改  events[].intentId + lastIntentId； emit 已 把 自 生 号 写 入  observed/verification → draft 存 在 性 闸 按  observed 全 集 判  authored 为 幽 灵  → exit 65。
+
+修 法 （ compile-atoms-flow.mjs 标 准 重 绑 块 ） ：
+
+1. 本 步  events.slice(firstEvent) 收 集  reboundStepIds
+2. 仅 当  row.stepId ∈ reboundStepIds 时 改 写  run.observed / run.verification 的  intentId
+3. Array.isArray 防 御 （ 与  blockers 同 形 ）
+4. 仍 同 步  lastIntentId
+
+与  r1 失 败 链 一 一 对 应 ： authored 进 入  observed → knownIntents 含  authored → skeleton/assert 草 稿 不 再 被 当 幽 灵 。
+
+───
+
+3. 重 点 证 伪
+
+┌──────────────────────────┬──────┬────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 场 景                      │ 结 论  │ 证 据
+├──────────────────────────┼──────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 带 号 步  + 后 继  assert →   │ 通 过  │ assert 不 产  event（ compileAtomStep 只  assertionAtoms.push({intentId: lastIntentId})） ； 带 号 步 已 把 三 通 道  + lastIntentId 绑 成  authored。 自 跑
+ smoke： threeChannel     │
+│ draft                    │      │ =true， assertFoldedToAuthored=true， assert 不 增  observed 行
+├──────────────────────────┼──────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ assert 折 叠 是 否 被 误 改 写   │ 无    │ 进 入 重 绑 条 件 为  events.length > firstEvent； assert 步 不 进 块 ， 不 会 扫 改 历 史  observed/verification
+├──────────────────────────┼──────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 裸 步  / 遗 留 零 漂 移         │ 通 过  │ 无 非 空  sourceIntentId 则 整 块 不 跑 ； G2-5 裸 步 三 通 道 全  intent_1， G3 全  intent_N
+├──────────────────────────┼──────┼────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ 多  event 步  + 异  step    │ 通 过  │ reboundStepIds 只 含 本  slice； 结 构 推 演 ： slice 外  atstep_2 保 持  intent_1 不 被 带 号 步 改 写
+│ 隔 离                      │      │
+└──────────────────────────┴──────┴────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+───
+
+4. 红 →绿  + 突 变 （ 本 机 复 跑 ）
+
+• 修 后 金 牌 ： 16/16 exit 0（ 含  G1c-1/2、 G2-5）
+• 突 变 （ git show 6082431:lib/compile-atoms-flow.mjs 覆 写 实 现 ， 勿  checkout） ： G1c-1/2 + G2-5 三 红 ， 症 状 与 仓 内  h1-threechannel.delta-red.txt 及  r1 描 述 一 致 （ intent_open_* vs int
+• 恢 复 ： sha256 与 固 定 副 本 一 致  → 再 跑  16/16 绿
+
+混 合 流 修 后 样 例 ： intent_open_a/intent_open_a/intent_open_a + intent_1/intent_1/intent_1。
+
+───
+
+5. 残 留 （ 不 挡  H1 收 口 ）
+
+• teach-in lineagePlan 块 仍 只 改  events + lastIntentId（ 本  PRD G4 冻 结 零 漂 移 ， 标 准 路 径  !plan 才 修 ） 。 若 日 后  teach-in 正 式 产 物 也 过  draft 存 在 性 闸 ， 需 另 开 面 ， 非 本
+• M1（ schema pattern vs authored 号 ） 仍 待  Steven， 本 轮 不 裁 。
+
+───
+
+结 论
+
+H1 修 复 正 确 收 口 ： 三 通 道 按  stepId 同 号 、 assert 折 叠 与 裸 步 /遗 留 不 误 伤 、 金 牌 钉  + 红 证  + 突 变 闭 环 齐 全 、 diff 未 越 白 名 单 。
+
+VERDICT: APPROVE
+Worked for 6m3s                                                                                                                                                                       stop  [hooks: 4/1]
+      ✓ global/settings:stop[0].hooks[0] (10ms)
+      ✗ global/settings:stop[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:stop[0].hooks[0] (123ms)
+      ✓ project/settings:stop[0].hooks[1] (76ms)
+      ✓ project/settings:stop[1].hooks[0] (31ms)
+minimal · /help
+❯
+Grok 4.5 (high) · always-approve · 58K / 500K (12%) · ctrl+o transcript

@@ -1,0 +1,21 @@
+ok   G1a-0 前提：无阻断双步 authored 流两步全跑（沿用 H2d 正控形）；实得 blockers=[] clicks=2
+ok   G1a-1 重绑后零 intent_N 残留（compiler-local 序数不得进入正式产物）；实得残留 []
+ok   G1a-2 逐步归属：step1 事件挂 intent_open_one、step2 事件挂 intent_open_two（authored 语义号，非序数）；实得 ["intent_open_one","intent_open_two"]
+ok   G1a-3 lastIntentId 同步为末步 authored 号（断言折叠锚不让 intent_N 旁路泄回）；实得 "intent_open_two"
+FAIL G1c-1 observed 通道逐 stepId 与 events 同号（authored 号进 observed，draft 存在性闸不拒）；实得 ["atstep_0:intent_open_one/intent_0","atstep_1:intent_open_two/intent_1"]
+FAIL G1c-2 verification 通道逐 stepId 与 events 同号；实得 ["atstep_0:intent_open_one/intent_0","atstep_1:intent_open_two/intent_1"]
+ok   G1b-1 authored 意图号（与流步 sourceIntentId 同名）→ 出处链闸 ok（create/delete 终端各恰 1）；实得 {"ok":true,"provenance":{"schemaVersion":1,"artifactKind":"created-workflow-compile-provenance","caseId":"tc_lineage_gate","eventsSha256":"sha256:1d1c89b5325cc548520081f91539b8cc88cffc10e998380183d392
+ok   G1b-2 生产态 intent_N（十三跑形）→ 拒 CREATED_WORKFLOW_PROVENANCE_TERMINAL_EVENT_INVALID（意图号命名空间错配即闸红——重绑正是为此）；实得 {"ok":false,"reason":"CREATED_WORKFLOW_PROVENANCE_TERMINAL_EVENT_INVALID"}
+ok   G1b-3 同组双终端 → 同码拒（重绑不放松闸的恰一终端判据，fail-closed 原样）；实得 {"ok":false,"reason":"CREATED_WORKFLOW_PROVENANCE_TERMINAL_EVENT_INVALID"}
+ok   G2-1 混合流不掷错、两步全跑（变异步带号+nav/assert 裸步是既定合法惯例，bindagent-replay 夹具口径）；实得 thrown=null blockers=[] clicks=2
+ok   G2-2 带号步事件重绑 authored 号；实得 "intent_open_a"
+ok   G2-3 裸步事件保持编译器自生 intent_N（逐步语义，不越界改写）；实得 "intent_1"
+ok   G2-4 裸步后 lastIntentId 为该步自生号（后继 assert 折叠锚跟随本步，与遗留行为一致）；实得 "intent_1"
+FAIL G2-5 混合流三通道逐 stepId 同号（带号步三通道全 authored、裸步三通道全 intent_N——一致性双向成立）；实得 ["intent_open_a/intent_0/intent_0","intent_1/intent_1/intent_1"]
+ok   G3-1 遗留流（零 sourceIntentId）两步全跑、无阻断；实得 blockers=[] clicks=2
+ok   G3-2 遗留流事件 intentId 保持编译器自生 intent_N（零漂移，重绑不越界）；实得 ["intent_0","intent_1"]
+RED  compile-intent-lineage-rebind: G1c-1 observed 通道逐 stepId 与 events 同号（authored 号进 observed，draft 存在性闸不拒）；实得 ["atstep_0:intent_open_one/intent_0","atstep_1:intent_open_two/intent_1"]
+RED  compile-intent-lineage-rebind: G1c-2 verification 通道逐 stepId 与 events 同号；实得 ["atstep_0:intent_open_one/intent_0","atstep_1:intent_open_two/intent_1"]
+RED  compile-intent-lineage-rebind: G2-5 混合流三通道逐 stepId 同号（带号步三通道全 authored、裸步三通道全 intent_N——一致性双向成立）；实得 ["intent_open_a/intent_0/intent_0","intent_1/intent_1/intent_1"]
+RED  compile-intent-lineage-rebind: 13 过 / 3 红
+EXIT=1
