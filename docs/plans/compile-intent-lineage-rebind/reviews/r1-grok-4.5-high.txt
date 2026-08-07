@@ -1,0 +1,1031 @@
+cd ~/casey-review/casey-compile-intent-lineage-rebind && grok --cwd ~/casey-review/casey-compile-intent-lineage-rebind --no-alt-screen --minimal --permission-mode dontAsk --max-turns 60 "$(cat docs/pl
+ans/compile-intent-lineage-rebind/reviews/REVIEW-PROMPT.md)"
+test@chenstevencoco:/mnt/d/ctx/heren/casey$ cd ~/casey-review/casey-compile-intent-lineage-rebind && grok --cwd ~/casey-review/casey-compile-intent-lineage-rebind --no-alt-screen --minimal --permissio
+n-mode dontAsk --max-turns 60 "$(cat docs/plans/compile-intent-lineage-rebind/reviews/REVIEW-PROMPT.md)"
+Do you trust the contents of this directory?
+/home/test/casey-review/casey-compile-intent-lineage-rebind
+
+Grok Build may run or modify contents in this directory,
+posing security risks.
+
+y  Yes, proceed
+n  No, quit
+
+Enter or y to trust · n or Esc to quit
+╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+│                                                                                                                                                                                                      │
+│                                                                                              ⠀⠀⠀⣀⣤⣤⣀⠀⠀⡠                                                                                              │
+│                                                                                              ⠀⢀⡾⠋⠁⠀⢁⢴⡎⠀                                                                                              │
+│                                                                                              ⠀⢸⡇⠀⠀⠐⠁⢀⣿⠀                                                                                              │
+│                                                                                              ⠀⢈⠗⢀⣀⣀⣠⡾⠃⠀                                                                                              │
+│                                                                                              ⠐⠁⠀⠈⠉⠉⠉⠀⠀⠀                                                                                              │
+│                                                                                                                                                                                                      │
+│ Grok Build  v1.0.0                                                                                                                                                                                   │
+│ /home/test/casey-review/casey-compile-intent-lineage-rebind                                                                                                                                          │
+│ Model · Grok 4.5                                                                                                                                                                                     │
+│ /help for commands                                                                                                                                                                                   │
+│                                                                                                                                                                                                      │
+╰──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╯
+◆ session_start
+      ✓ global/settings:session_start[0].hooks[0] (4ms)
+      ✗ global/settings:session_start[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:session_start[0].hooks[0] (19ms)
+
+❯ # 评 审 提 示 词  · compile-intent-lineage-rebind
+
+  你 是 异 构 评 审 方 ， 对 一 个 已 提 交 的 不 可 变 快 照 做 代 码 评 审 。 只 报  Critical / High / Medium；
+  结 论 行 格 式  `VERDICT: APPROVE` 或  `VERDICT: CHANGES_REQUIRED`， 逐 条  finding 给
+  文 件 :行 号 、 严 重 级 、 失 败 场 景 。
+
+  ## 仓 与 基 线
+
+  - 仓 ： 当 前 工 作 目 录 即 契 约 工 作 树 （ 只 读 评 审 ， 可 自 己 跑 命 令 验 证 ） 。
+  - 基 线 ： dev `05800b4`； 评 审 对 象  = `git diff 05800b4..HEAD`。
+  - 背 景 文 档 （ 按 需 读 ） ： `docs/plans/compile-intent-lineage-rebind/GRILL.md`（ 前 提 修 正 与
+    三 轮 裁 定 ） 、 `docs/plans/compile-intent-lineage-rebind/plan.md`（ 实 现 路 线 ） 。
+
+  ## 改 动 白 名 单 （ 超 出 即 报 ）
+
+  1. `lib/compile-atoms-flow.mjs` —— 唯 一 生 产 码 改 动 ： 步 后 标 准 路 径 重 绑 块 （ 与  teach-in
+     lineage 块 并 列 ； 逐 步 存 在 即 绑 ——带 非 空  `sourceIntentId` 的 步 重 绑 并 同 步
+     `lastIntentId`， 裸 步 保 持 自 生 号 ； 混 合 流 合 法 ， 无 流 级 判 定 、 无 掷 错 。 设 计 经 历 一 次
+     Steven 裁 定 反 转 ， 依 据 与 红 证 见  GRILL 第  6 条 与  accept/red-proofs/） 。
+  2. `tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs` —— 新 验 收 金 牌 。
+  3. `loop/prd-compile-intent-lineage-rebind.json`、 `docs/plans/compile-intent-lineage-rebind/**`
+     —— 契 约 文 书 。
+
+  ## 缺 陷 与 修 法 （ 事 实 ， 不 含 实 现 者 推 理 ）
+
+  - 生 产 编 译 事 件 带 自 生  `intent_0..N`； 出 处 链 成 品 闸
+    `issueCreatedWorkflowCompileProvenance`（ `lib/entity-created-workflow-continuity-v3.mjs:208-236`）
+    按 确 认 流 步  `sourceIntentId` 匹 配 终 端 事 件 ——两 套 命 名 空 间 永 不 相 等 ， B4 十 三 跑
+    `CREATED_WORKFLOW_PROVENANCE_TERMINAL_EVENT_INVALID` 实 证 。
+  - 修 法 ： 标 准 路 径 在 事 实 产 生 点 把 每 步 产 出 事 件  `intentId` 重 绑 为 该 步  `sourceIntentId`
+    （ teach-in 路 径 已 有 同 款 块 与 原 则 注 释 ， 字 节 不 动 ） ； 全 带 才 重 绑 、 全 不 带 零 漂 移 、 混 合 掷 错 。
+
+  ## 风 险 清 单 （ 请 优 先 证 伪 ）
+
+  - R1 重 绑 是 否 破 坏 任 何 以  `intent_N` 为 键 的 既 有 消 费 者 （ 观 察 归 档 用  `step.sourceIntentId`、
+    evidenceStepId 按  stepId join——请 独 立 核 实 ） 。
+  - R2 逐 步 重 绑 下 裸 步 （ nav/assert 惯 例 ） 的 事 件 与 折 叠 锚 行 为 是 否 与 遗 留 逐 字 等 价
+     （ `entity-ui-wiring.bindagent-replay` 夹 具 口 径 是 判 据 ， 可 自 跑 复 核 ） 。
+  - R3 teach-in lineage 路 径 是 否 字 节 零 漂 移 （ 两 块 并 列 的 交 互 ） 。
+  - R4 新 金 牌 是 否 真 钉 在 缝 上 （ mock 驱 真 实  `compileFlow`， 非 源 码 串  grep； 突 变 闭 环
+    已 验 ： 还 原 实 现  exit 1、 恢 复 后  sha256 同 、 exit 0——可 自 行 复 验 ， 姿 势
+    `git show HEAD:lib/compile-atoms-flow.mjs >` 重 定 向 、 勿 用  `git checkout -- `） 。
+  - R5 `rebindToSource` 判 定 的 边 界 ： 空 流 、 `sourceIntentId` 空 白 串 、 步 对 象 非  plain object。
+
+  ## 既 有 证 据 （ 可 自 行 复 跑 ）
+
+  - `node tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs` → 11/11， exit 0。
+  - 红 基 线 （ 实 现 前  6 过 /5 红 ） ： `docs/plans/compile-intent-lineage-rebind/accept/red-proofs/`。
+  - 邻 接 八 命 令 全  exit 0（ wiring / readback-requery / observation-yield / created-in-run /
+
+    teach-in lineage 双 金 牌  / term-lint / selftest --tier1） 。
+  - 全 仓  298 金 牌 与  dev 基 线 双 态 对 比 零 回 归 （ 收 据 随 附 ） 。
+
+  ## 禁 区
+
+  不 得 读 取 或 回 显  `.auth/`、 `site.json`、 账 号 、 密 码 、 token、 真 实 目 标 地 址 。
+
+◆ user_prompt_submit
+      ✓ global/settings:user_prompt_submit[0].hooks[0] (4ms)
+      ✗ global/settings:user_prompt_submit[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:user_prompt_submit[0].hooks[0] (191ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[1] (45ms)
+      ✓ project/settings:user_prompt_submit[0].hooks[2] (22ms)
+┃◆ Thought for 1.7s
+┃
+┃The user wants me to perform a code review as an heterogeneous reviewer on an immutable snapshot. Let me follow the review instructions carefully:
+开 始 对  compile-intent-lineage-rebind 做 异 构 评 审 ： 先 拉  diff、 契 约 文 档 与 实 现 改 动 ， 再 按  R1–R5 与 白 名 单 逐 项 证 伪 。
+◆ Run Inspect commit range and changed files
+$ git log --oneline -5 && echo '---' && git rev-parse HEAD && git rev-parse 05800b4 2>/dev/null; git diff --stat 05800b4..HEAD; echo '---'; echo 'FILES:'; git diff --name-only 05800b4..HEAD
+
+6082431 chore: gate GREEN 2/2 写  passes + PRD s1 描 述 对 齐 逐 步 语 义 改 版
+bdbef7c fix: compile-intent-lineage-rebind——标 准 编 译 路 径 事 件 意 图 号 重 绑 （ 逐 步 存 在 即 绑 ）
+… +22 lines
+lib/compile-atoms-flow.mjs
+loop/prd-compile-intent-lineage-rebind.json
+tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (4ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (79ms)
+◆ Read GRILL.md (1-56)  [hooks: 1/1]
+◆ Read plan.md (1-76)  [hooks: 2/2]
+┃◆ Thought for 0.0s
+┃
+┃Good, I have the file list. Note that plan.md still mentions "全 或 无 ， 混 合 硬 阻 断 " in the goal section but GRILL says it was reversed. Let me dig into the actual production code change, the g
+┃test, and ver...
+白 名 单 内  8 个 文 件 ； 接 着 读 生 产 改 动 、 teach-in 并 列 块 与 新 金 牌 。
+◆ Run Show production code diff
+$ git diff 05800b4..HEAD -- lib/compile-atoms-flow.mjs
+
+diff --git a/lib/compile-atoms-flow.mjs b/lib/compile-atoms-flow.mjs
+index 4388911..9b7eb39 100644
+… +19 lines
+     if (run.events.length > firstEvent) {
+       // projectCompileEntityProvenance 保 留 旧 纯 函 数 契 约 ； 真 实  compile 不 扩  events v2，
+       // sourceIntentId/entityBindings 只 投 影 到 独 立  entity-bindings.draft sidecar。
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (104ms)
+◆ Read compile-atoms-flow.mjs (2-201 of 209)  [hooks: 1/1]
+◆ Read compile-intent-lineage-rebind.zero-sut.golden.mjs  [hooks: 1/1]
+◆ Read prd-compile-intent-lineage-rebind.json  [hooks: 2/2]
+┃◆ Thought for 4.2s
+┃
+┃I need to carefully review this. Let me note:
+对 照  R1–R5： 核 查  intentId/sourceIntentId 消 费 者 ， 并 跑 金 牌 与 邻 接 验 收 。
+◆ Search "intentId|sourceIntentId|lastIntentId|evidenceStepId" in **/*.{mjs,js} in lib (75 matches in 3 files)  [hooks: 1/1]
+◆ Search "event\\.intentId|events.*intentId|\\.intentId\\s*===|intent_\\$\\{|intent_\\d|GENERATED_INTENT|lastIntentId" in **/*.{mjs,js,md} (70 matches in 15 files)  [hooks: 1/1]
+◆ Run new golden acceptance test
+$ node tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs; echo EXIT:$?
+
+ok   G1a-0 前 提 ： 无 阻 断 双 步  authored 流 两 步 全 跑 （ 沿 用  H2d 正 控 形 ） ； 实 得  blockers=[] clicks=2
+ok   G1a-1 重 绑 后 零  intent_N 残 留 （ compiler-local 序 数 不 得 进 入 正 式 产 物 ） ； 实 得 残 留  []
+… +12 lines
+ok   G3-2 遗 留 流 事 件  intentId 保 持 编 译 器 自 生  intent_N（ 零 漂 移 ， 重 绑 不 越 界 ） ； 实 得  ["intent_0","intent_1"]
+ok   compile-intent-lineage-rebind: 13/13 全 过 （ 真 实  compileFlow 缝  + 出 处 链 闸 耦 合  + 混 合 态  + 遗 留 零 漂 移 ， 零  SUT）
+EXIT:0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (87ms)
+◆ Read entity-created-workflow-continuity-v3.mjs (201-250 of 880)  [hooks: 2/2]
+┃◆ Thought for 5.0s
+┃
+┃Interesting - the golden says 13/13 now but the review prompt said 11/11. Looking at the code, there are more asserts. PRD might have frozen an older version. Let me check - the test ran 13
+┃assertions...
+注 意 到  events.schema.json 可 能 把  intentId 钉 成  ^intent_[0-9]+$——这 会 直 接 否 决  authored 重 绑 ， 优 先 核 实 。
+◆ Search "intentId|intent_" in **/*schema* (58 matches in 21 files)  [hooks: 1/1]
+◆ Search "\\^intent_|intentId.*pattern|pattern.*intent" (33 matches in 16 files)  [hooks: 1/1]
+◆ Run Locate events schema files
+$ ls schemas 2>/dev/null; ls **/*events* 2>/dev/null | head -40; find . -name '*events*.json' -not -path './node_modules/*' -not -path './.git/*' 2>/dev/null | head -30
+
+./tests/_golden/fixtures/teachin-semantic-lock-capability-hardening/events.document.json
+./tests/_golden/fixtures/teachin-semantic-lock-v2/events.document.json
+… +7 lines
+./tests/_golden/schemas/events.schema.json
+./docs/plans/seams-freeze/proposed/1-events.fixture.json
+./docs/plans/seams-freeze/proposed/1-events.schema.json
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (4ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (72ms)
+◆ Search "sourceIntentId" in **/*.mjs in lib (37 matches in 12 files)  [hooks: 2/2]
+┃◆ Thought for 1.9s
+┃
+┃This is a critical finding! The frozen events.schema.json has:
+events.schema.json 的  intentId 模 式 可 能 与 重 绑 冲 突 ——继 续 核 实 校 验 是 否 在 编 译 /签 署 链 上 强 制 执 行 。
+◆ Read events.schema.json (61-100 of 429)  [hooks: 1/1]
+◆ Search "events\\.schema|validateEvents|ajv.*events|checkEvents|eventsSchema|schema.*events" in **/*.{mjs,js,json,md} (22 matches in 14 files)  [hooks: 1/1]
+◆ Run Find confirmed flows with sourceIntentId
+$ rg -n 'intent_(create|cleanup|open)|sourceIntentId' cases --glob '*.json' 2>/dev/null | head -40; ls cases 2>/dev/null | head -20;
+  find . -name 'flow.confirmed.json' -not -path './node_modules/*' 2>/dev/null | head -10
+
+tc_wf_list_smoke
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (74ms)
+◆ Search "intentId.*intent_|sourceIntentId" in tests/_golden/teachin-authoring-compiled-intent-lineage.zero-sut.golden.mjs (10 matches)  [hooks: 2/2]
+┃◆ Thought for 4.8s
+┃
+┃I need to understand if events.schema pattern is enforced at compile/sign time. Let me search for where events validation happens in the production pipeline.
+◆ Search "events\\.schema|validateSchema|ajv|pattern.*intent|checkFingerprint|validateEvents|loadSchema" in **/*.{mjs,js} in bin (1 match)  [hooks: 1/1]
+◆ Search "events\\.schema|validateSchema|ajv|intent_\\[0-9\\]|checkFingerprint|validateEvents" in **/*.{mjs,js} in lib (4 matches in 4 files)  [hooks: 1/1]
+◆ Run Find schema validation and catalog intent IDs
+$ rg -n 'events\.schema|Ajv|validate\(|pattern.*intent' bin lib --glob '*.mjs' | head -60; echo '---';
+  rg -n 'sourceIntentId|intent_create|intent_cleanup' tests cases docs/plans --glob '*tc_catalog*' 2>/dev/null | head -30;
+  rg -n 'intent_create|intent_cleanup|sourceIntentId' docs/plans/compile-intent-lineage-rebind tests/_golden -g '*.{mjs,json,txt,md}' | head -40
+
+--: line 1: rg: command not found
+---
+--: line 1: rg: command not found
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (87ms)
+◆ Read testcase.schema.json (81-110 of 140)  [hooks: 2/2]
+┃◆ Thought for 7.9s
+┃
+┃Interesting - the project doesn't use ajv for validation generally. The events.schema has pattern ^intent_[0-9]+$ but it may be documentation/frozen seam rather than runtime-enforced. However,
+┃teach...
+◆ Search "events\\.schema\\.json|schemas/events" in **/*.{mjs,js} (10 matches in 10 files)  [hooks: 1/1]
+◆ Run Find runtime schema/intent pattern usage
+$ grep -rn 'events\.schema' --include='*.mjs' bin lib tests 2>/dev/null | head -40; echo '---'; grep -rn 'intent_\[0-9\]' --include='*.mjs' bin lib 2>/dev/null | head -20; echo '---';
+  grep -rn 'newIntent\|intentId.*intent_' --include='*.mjs' lib/compile*.mjs 2>/dev/null | head -30
+
+lib/replay-actions/workflow-drawer.mjs:125:// → 硬 阻 断 ， 绝 不 回 落 宽 域 锁 （ events.schema 只 约 束  string 类 型 合 法 ， 空 串 /纯 空 白 类 型 合 法 但 语 义 非 法 ） 。
+lib/agent-tool-compile.mjs:2:// 只 产  events.schema 已 允 许 的 事 件 字 段 ； 页 面 动 作 与 后 置 回 读 由  compile-atoms/replay-actions 执 行 。
+… +69 lines
+lib/compile-atoms-workflow-nav.mjs:74:  const i = run.newIntent();
+lib/compile-atoms-workflow-nav.mjs:215:  const i = run.newIntent();
+lib/compile-atoms-workflow-nav.mjs:270:  const i = run.newIntent();
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (4ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (70ms)
+◆ Search "newIntent|lastIntentId|intent_" in lib/compile-atoms.mjs (no matches)  [hooks: 1/1]
+◆ Run Inspect how intent IDs are minted
+$ grep -n 'newIntent\|emit\|intentId' lib/compile-atoms.mjs | head -50; ls lib/compile*.mjs; head -80 lib/compile-atoms.mjs 2>/dev/null | head -100
+
+lib/compile-atoms-agent.mjs
+lib/compile-atoms-flow.mjs
+… +17 lines
+export function navigateCompileTarget(options) {
+  return navigateExecutionTargetPage(options);
+}
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (4ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (65ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 8.9s
+┃
+┃So teach-in already rebinds to non-numeric IDs like authored_workflow_nav. The events.schema pattern is not enforced in production compile path (no ajv). The schema pattern is a known tension that
+┃p...
+◆ Run Trace events write and validation path
+$ grep -rn 'intentId.*pattern\|pattern.*intent\|^intent_' bin lib --include='*.mjs' | head -30; echo '---';
+  grep -rn 'validateEvent\|assertEvent\|eventsSchema\|checkEvent' bin lib --include='*.mjs' | head -30; echo '--- compile write ---';
+  grep -rn 'writeFile.*events\|events\.json\|serializeEvents' bin lib --include='*.mjs' | head -40
+
+---
+lib/teachin-identity-observations.mjs:232:function validateEventSeqReferences(capture, sidecar) {
+… +16 lines
+lib/selftest-tier2-manifest.mjs:21:const REQUIRED_ARTIFACT_NAMES = Object.freeze(['events.json', 'expected.frozen.json', 'profile.json', 'testcase.json']);
+lib/selftest-tier2-collect.mjs:168:    '--events', files.paths['events.json'],
+lib/report-model.mjs:316: * @param {object|null} [p.events]     events.json（ 可 选 增 补 ， 供 动 作 轴 投 影  action.kind 动 作 动 词 ）
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (9ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (89ms)
+◆ Read entity-ui-wiring.bindagent-replay.golden.mjs (91-140 of 303)  [hooks: 1/1]
+◆ Run Check bindagent-replay intent ID patterns
+$ grep -n 'sourceIntentId\|intent_' tests/_golden/entity-ui-wiring.bindagent-replay.golden.mjs | head -40; grep -n 'intentId' tests/_golden/entity-ui-wiring.bindagent-replay.golden.mjs | head -40
+
+98:      { intentId: 'intent_nav', text: '进 入 工 作 流 管 理 列 表 ' },
+99:      { intentId: 'intent_open', text: `点 开 工 作 流  ${OPEN_NAME} 详 情 ` },
+… +11 lines
+100:      { intentId: 'intent_add', text: `往 画 布 拖 入 「 ${NODE}」 节 点 ` },
+101:      { intentId: 'intent_open_node', text: `单 击 「 ${NODE}」 节 点 打 开 配 置 抽 屉 ` },
+102:      { intentId: 'intent_bind', text: `在 节 点 抽 屉 里 把 智 能 体 绑 定 为 「 ${AGENT}」 ` },
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (94ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 8.4s
+┃
+┃Key finding for bindagent-replay: fixture uses intent_open, intent_add, etc. - these DON'T match ^intent_[0-9]+$. The local schema checker in that golden only checks presence of intentId, not th...
+◆ Task started: Run bindagent-replay golden for R2
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (135ms)
+◆ Run teach-in lineage goldens for R3
+$ node tests/_golden/teachin-authoring-compiled-intent-lineage.zero-sut.golden.mjs 2>&1 | tail -20; echo EXIT:$?;
+  node tests/_golden/teachin-authoring-compiled-assertion-intent-lineage.zero-sut.golden.mjs 2>&1 | tail -20; echo EXIT:$?
+
+ok   teachin-authoring-compiled-intent-lineage: L1 compiler-local intent_0 必 须 在 产 生 点 重 绑  authored sourceIntentId
+ok   teachin-authoring-compiled-intent-lineage: L2 multi-step/multi-event 必 须 逐 物 理  stepId 保 持 各 自  authored identity
+… +3 lines
+ok   teachin-authoring-compiled-assertion-intent-lineage: A1 event 重 绑 后  lastIntentId 与 随 后  assert.* 必 须 保 持  authored identity
+teachin-authoring-compiled-assertion-intent-lineage: 1 过  / 0 败
+EXIT:0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (105ms)
+◆ Run R4 mutation closed-loop verification
+$ cd /home/test/casey-review/casey-compile-intent-lineage-rebind && # R4 mutation: restore old implementation, expect red, then restore HEAD
+  cp lib/compile-atoms-flow.mjs /tmp/compile-atoms-flow.HEAD.mjs
+  git show 05800b4:lib/compile-atoms-flow.mjs > lib/compile-atoms-flow.mjs
+  node tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs 2>&1 | tail -25; echo MUTATION_EXIT:$?
+  # restore HEAD
+  git show HEAD:lib/compile-atoms-flow.mjs > lib/compile-atoms-flow.mjs
+  sha256sum lib/compile-atoms-flow.mjs /tmp/compile-atoms-flow.HEAD.mjs
+  node tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs 2>&1 | tail -5; echo RESTORE_EXIT:$?
+  # verify file matches HEAD
+  git diff --stat HEAD -- lib/compile-atoms-flow.mjs
+
+ok   G1a-0 前 提 ： 无 阻 断 双 步  authored 流 两 步 全 跑 （ 沿 用  H2d 正 控 形 ） ； 实 得  blockers=[] clicks=2
+FAIL G1a-1 重 绑 后 零  intent_N 残 留 （ compiler-local 序 数 不 得 进 入 正 式 产 物 ） ； 实 得 残 留  ["atstep_0:intent_0","atstep_1:intent_1"]
+… +24 lines
+ok   G3-2 遗 留 流 事 件  intentId 保 持 编 译 器 自 生  intent_N（ 零 漂 移 ， 重 绑 不 越 界 ） ； 实 得  ["intent_0","intent_1"]
+ok   compile-intent-lineage-rebind: 13/13 全 过 （ 真 实  compileFlow 缝  + 出 处 链 闸 耦 合  + 混 合 态  + 遗 留 零 漂 移 ， 零  SUT）
+RESTORE_EXIT:0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (106ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 44.8s
+┃
+┃Interesting mutation result:VERDICT: CHANGES_REQUIRED
+┃
+┃lib/compile-atoms-flow.mjs:142
+┃High
+┃Failure scenario: rebindToSource is applied to a step that already carries a non-empty sourceIntentId from the teach-in lineage block. The code path that should only touch steps 0..N (per the
+┃whitelist) is also mutating the teach-in path, violating the “two blocks side-by-side, no cross-talk” rule. This breaks the zero-drift guarantee for teach-in lineage.
+┃
+┃lib/compile-atoms-flow.mjs:178
+┃High
+┃Failure scenario: When 0 or 1 step is present, the rebind logic still writes event.intentId = step.sourceIntentId even though the step is a bare nav/assert step that should keep its self-generated
+┃intent_0..N. The golden test expects 13/13 pass, but the mutation 9/4 red shows the seam is already broken for the empty-flow case.
+┃
+┃lib/compile-atoms-flow.mjs:210
+┃Medium
+┃Failure scenario: step.sourceIntentId.trim() is called unconditionally. If sourceIntentId is a whitespace-only string (per R5 boundary), the 4 red cases in the mutation are exactly the whitespace-
+┃only steps that should be treated as bare. The code does not skip rebind for whitespace-only values, violating the documented boundary.
+┃
+┃tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs:47
+┃High
+┃Failure scenario 1: The golden file asserts that every event produced by workflow.create (which internally emits multiple newIntent()) receives the same sourceIntentId. The rebind slice `run.events.
+◆ Task completed in 47s: Run bindagent-replay golden for R2
+◆ Run Verify PRD checksums match files
+$ sha256sum tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs docs/plans/compile-intent-lineage-rebind/plan.md docs/plans/compile-intent-lineage-rebind/accept/red-proofs/*; echo '---';
+  python3 -c "import json; p=json.load(open('loop/prd-compile-intent-lineage-rebind.json')); print(json.dumps(p['testChecksums'], indent=2))"
+
+5fc875bfa2e1218be6fad45a8a8058f1a8262684140bd9e82538065ebf98096a  tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs
+422a52b0b829296075a175faa0d16b178af264e224050b7068a3f17dd79cc833  docs/plans/compile-intent-lineage-rebind/plan.md
+… +6 lines
+  "docs/plans/compile-intent-lineage-rebind/accept/red-proofs/compile-intent-lineage-rebind.red.txt": "63b0c8c3f7b7e91af09166ded4c133e4cb5f8910731dc724a686f3b814f072d3",
+  "docs/plans/compile-intent-lineage-rebind/accept/red-proofs/compile-intent-lineage-rebind.mixed-perstep.delta-red.txt": "66cd29628d8316e118c2d831763e7d0098fc8843e5bff01940706e6f3201b1e5"
+}
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (95ms)
+◆ Run Probe R5 boundaries and binding provenance
+$ cd /home/test/casey-review/casey-compile-intent-lineage-rebind && # R5 boundary probes
+  node --input-type=module <<'EOF'
+  import { createCompileRun, compileFlow } from './lib/compile-atoms.mjs';
+  import { createMockPage } from './tests/_golden/fixtures/agent-id-readback/mock-page.mjs';
+
+  function wfPage(dom) {
+    const base = createMockPage({ dom, url: 'http://127.0.0.1:4173/', titles: ['工 作 流 管 理 '] });
+    return { ...base, waitForURL: async () => {} };
+  }
+  function newRun(page) {
+    return createCompileRun({
+      page, forensics: { records: () => [] }, state: { currentStepId: null },
+      sut: 'http://127.0.0.1:4173', uniqueName: 'atl_fixed', site: null,
+      agentListRoute: null, profile: null, identityLedger: null,
+    });
+  }
+  const open = (name, sid) => ({
+    atom: 'workflow.open', params: { openName: name },
+    ...(sid === undefined ? {} : { sourceIntentId: sid }),
+    entityBindings: [{ candidateId: `cand-${name}`, role: 'source' }],
+  });
+
+  // empty flow
+  {
+    const run = newRun(wfPage({}));
+    await compileFlow(run, { id: 'empty', steps: [] });
+    console.log('empty', { events: run.events.length, last: run.lastIntentId, blockers: run.blockers });
+  }
+  // whitespace sourceIntentId
+  {
+    const page = wfPage({ 'text:wfws:exact': { count: 1, inContainer: true } });
+    const run = newRun(page);
+    await compileFlow(run, { id: 'ws', steps: [open('wfws', '   ')] });
+    const ids = run.events.map(e => e.intentId);
+    console.log('whitespace', { ids, last: run.lastIntentId, residue: ids.every(i => /^intent_\d+$/.test(i)) });
+  }
+  // empty string
+  {
+    const page = wfPage({ 'text:wfes:exact': { count: 1, inContainer: true } });
+    const run = newRun(page);
+    await compileFlow(run, { id: 'es', steps: [open('wfes', '')] });
+    const ids = run.events.map(e => e.intentId);
+    console.log('emptystr', { ids, last: run.lastIntentId, residue: ids.every(i => /^intent_\d+$/.test(i)) });
+  }
+  // non-string sourceIntentId
+  {
+    const page = wfPage({ 'text:wfns:exact': { count: 1, inContainer: true } });
+    const run = newRun(page);
+    await compileFlow(run, { id: 'ns', steps: [open('wfns', 123)] });
+    const ids = run.events.map(e => e.intentId);
+    console.log('number', { ids, last: run.lastIntentId, residue: ids.every(i => /^intent_\d+$/.test(i)) });
+  }
+  // non-object step (string) - should throw unknown atom or similar
+  {
+    const run = newRun(wfPage({}));
+    try {
+      await compileFlow(run, { id: 'bad', steps: ['not-a-step'] });
+      console.log('badstep unexpected ok', run.events);
+    } catch (e) {
+      console.log('badstep threw', String(e.message||e).slice(0,120));
+    }
+  }
+  // null step
+  {
+    const run = newRun(wfPage({}));
+    try {
+      await compileFlow(run, { id: 'nulls', steps: [null] });
+      console.log('nullstep ok', { events: run.events.length, blockers: run.blockers });
+    } catch (e) {
+      console.log('nullstep threw', String(e.message||e).slice(0,120));
+    }
+  }
+  // multi-event atom rebind (workflow.create path needs more mocks - use open is single-event; simulate by checking slice logic with two opens sharing same sourceIntentId)
+  {
+    const page = wfPage({
+      'text:wfa:exact': { count: 1, inContainer: true },
+      'text:wfb:exact': { count: 1, inContainer: true },
+    });
+    const run = newRun(page);
+    await compileFlow(run, { id: 'dup', steps: [open('wfa','intent_shared'), open('wfb','intent_shared')] });
+    console.log('sharedSid', run.events.map(e => e.intentId), 'last', run.lastIntentId);
+  }
+  // entityBindingProvenance after rebind
+  {
+    const page = wfPage({ 'text:wfbp:exact': { count: 1, inContainer: true } });
+    const run = newRun(page);
+    await compileFlow(run, { id: 'bp', steps: [open('wfbp','intent_bp')] });
+    console.log('bindingProv', run.entityBindingProvenance);
+  }
+  EOF
+
+empty { events: 0, last: null, blockers: [] }
+whitespace { ids: [ 'intent_0' ], last: 'intent_0', residue: true }
+… +12 lines
+    role: 'source'
+  }
+]
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 18.8s
+┃
+┃Good progress. Let me dig into R1 more carefully - consumers that key on intent_N specifically. Also check if there's a real issue with: VERDICT: CHANGES_REQUIRED
+┃
+┃lib/compile-atoms-flow.mjs:142-148
+┃High
+┃Failure scenario: rebindToSource does not trim sourceIntentId before comparison and assignment. Non-empty string with leading/trailing whitespace (' intent_create ' vs 'intent _create') will fail
+┃event?.intentId === semanticStep?.sourceIntentId while !nonEmpty(step.sourceIntentId) may still pass, breaking the "全 带 才 重 绑 " rule.
+┃
+┃**lib/compile-atoms-flow.
+◆ Run Find intent_N-keyed consumers in lib
+$ grep -rn 'intent_\$\{|intent_\d|/\^intent_|match.*intent|parseInt.*intent|Number.*intent' lib bin --include='*.mjs' | head -50; echo '---';
+  grep -rn 'sourceIntentId' lib/entity-observation-registry.mjs | head -30; grep -n 'JSON\.stringify.*intentId\|group.*intentId\|intentId,atom' lib/entity-observation-registry.mjs | head -20
+
+grep: Unmatched \{
+---
+… +14 lines
+365:    terminalStepByGroup.set(JSON.stringify([e.intentId, e.atom]), e.stepId);
+367:  // 终 端  stepId 集 ： 每  click 属 唯 一  (intentId,atom) 组 、 stepId 全 仓 唯 一  → 各 组 终 端  stepId 互 异 （ Set values 天 然 不 撞 ） 。
+382:    // 【 必 锚 终 端 】 (codex round-3 High 核 心 )： 锚 定 的  click 须 是 其  (intentId,atom) 组 的 终 端  click——锚 非 终 端 脚 手 架 步
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (4ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (71ms)
+◆ Run PRD adjacency acceptance commands
+$ cd /home/test/casey-review/casey-compile-intent-lineage-rebind && # adjacency suite from PRD s2 (subset can run; skip long selftest if needed)
+  set -e
+  for t in \
+    tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs \
+    tests/_golden/wf-open-readback-requery.zero-sut.golden.mjs \
+    tests/_golden/wf-open-observation-yield.zero-sut.golden.mjs \
+    tests/_golden/p9-created-workflow-continuity-v3.created-in-run.zero-sut.golden.mjs \
+    tests/_golden/teachin-authoring-compiled-intent-lineage.zero-sut.golden.mjs \
+    tests/_golden/teachin-authoring-compiled-assertion-intent-lineage.zero-sut.golden.mjs
+  do
+    node "$t" >/tmp/g-out.txt 2>&1
+    echo "OK $t"
+  done
+  node loop-kit/bin/term-lint.mjs --registry 2>&1 | tail -5; echo term-lint:$?
+
+OK tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs
+OK tests/_golden/wf-open-readback-requery.zero-sut.golden.mjs
+… +3 lines
+OK tests/_golden/teachin-authoring-compiled-assertion-intent-lineage.zero-sut.golden.mjs
+term-lint: 通 过 （ 0 个 提 示 ）
+term-lint:0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (4ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (61ms)
+◆ Read compile-intent-lineage-rebind.red.txt  [hooks: 1/1]
+◆ Read compile-intent-lineage-rebind.mixed-perstep.delta-red.txt  [hooks: 2/2]
+┃◆ Thought for 16.1s
+┃
+┃Let me dig deeper into a few potential real issues: VERDICT: CHANGES_REQUIRED
+┃
+┃lib/compile-atoms-flow.mjs:142-148
+┃Medium
+┃Failure scenario: G1b coverage gap – golden only exercises rebind on open atoms and hand-crafted events; real compileFlow create/delete path (multi-event provenance) is not herm etically exercised
+┃through issueCreatedWorkflowCompileProvenance gate. Plan intends full compileFlow feed but golden splits it, leaving composition unproven.
+┃
+┃**lib/compile-atoms-flow.
+◆ Run Trace intentId through compile/spec assembly
+$ grep -rn 'intentId' lib/build*.mjs lib/spec*.mjs lib/expected*.mjs bin/compile.mjs 2>/dev/null | head -40; ls lib | grep -iE 'spec|expected|assert|intent'; echo '---';
+  grep -n 'intentId\|intents' bin/compile.mjs | head -40; grep -n 'intentId' lib/compile-atoms-run.mjs | head -30
+
+lib/expected-compile.mjs:7://     node bin/check.mjs --case <caseId> --intent <intentId> --kind <kind> --op <op> --value <value>
+lib/expected-compile.mjs:9://   - intents[].expected[]： 逐 条 带  --intent <intentId> 卷 回 意 图 （ design §2 两 层  ID： intentId 语 义 、 stepId 位 置 式 ） 。
+… +20 lines
+277:      await this.capture(stepId, spec.intentId, spec.atom, recStart, quiet);
+279:      this.verification.push({ stepId, intentId: spec.intentId, atom: spec.atom, action: spec.action, resolution, candidateCount, acted });
+318:    stepId: o.stepId, intentId: o.intentId, atom: o.atom,
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (65ms)
+◆ Read compile-atoms-run.mjs (51-130 of 334)  [hooks: 1/1]
+◆ Run Inspect create multi-intent and p9 fixtures
+$ cd /home/test/casey-review/casey-compile-intent-lineage-rebind && # End-to-end: rebind open events through provenance? (create needs heavier mock)
+  # Also verify: after rebind, multi-event single step all share sourceIntentId
+  # Inspect workflow.create intent minting count
+  grep -n 'newIntent\|emit\|intentId' lib/compile-atoms-workflow-crud.mjs | head -60
+  echo '---'
+  # Does p9 fixture hand-align intentId?
+  sed -n '40,55p' tests/_golden/support/p9-replay-grant-fixtures.mjs 2>/dev/null
+
+126:  const iNav = run.newIntent();
+127:  await run.emit({ intentId: iNav, atom: 'workflow.create', action: 'nav', url: `{{baseUrl}}${run.listRoute}` });
+… +60 lines
+  const testcaseBytes = json({ schemaVersion: 1, caseId, channel: 'web', uniquePrefix: 'atl_', preconditions: ['已 登 录 '], intents: [] });
+  const profile = {
+    background: [], successField: 'status', successValue: 200,
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (4ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (69ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (3ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 8.8s
+┃
+┃Important finding about workflow.create: it mints TWO intents within one compile function:VERDICT: CHANGES_REQUIRED
+┃
+┃lib/compile-atoms-flow.mjs:?? (rebind logic) High
+┃rebindToSource mutates only event.intentId and lastIntentId; observed[].intentId and `verification[].
+◆ Run Trace observed/assertionAtoms intentId consumers
+$ grep -n 'observed\|assertionAtoms\|verification\|intentId' bin/compile.mjs | head -80; echo '---'; grep -rn 'run\.observed\|assertionAtoms\|projectObserved' lib bin --include='*.mjs' | head -40
+
+6://   --execute： 以  TestCase 为 锚 重 验 三 闸  → 登 录 预 备 动 作  → 真 机 逐 步 执 行  → events/observed/report。
+215:  rmSync(join(outDir, `observed-${caseId}.json`), { force: true });
+… +31 lines
+bin/compile.mjs:22:import { COMPILE_KNOWN_ATOMS, createCompileRun, compileFlow, projectObserved, ROUTE_LIST } from '../lib/compile-atoms.mjs';
+bin/compile.mjs:375:      handoff: { assertionAtoms: run.assertionAtoms },
+bin/compile.mjs:468:      const observedDoc = projectObserved(run, { caseId, capturedAt: now, capturedAgainstBuild: capturedBuild });
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (4ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (68ms)
+◆ Read compile-atoms-run.mjs (251-334 of 334)  [hooks: 1/1]
+◆ Search "projectObserved|observed\\.|assertionAtoms" in **/*.{mjs,js} (25 matches in 8 files)  [hooks: 2/2]
+┃◆ Thought for 4.4s
+┃
+┃This is important. After rebind:
+◆ Read teachin-authoring-compiled-assertion-intent-lineage.zero-sut.golden.mjs  [hooks: 1/1]
+◆ Read assertion-draft.mjs (71-120 of 314)  [hooks: 1/1]
+◆ Read draft.mjs (91-124 of 124)  [hooks: 2/2]
+┃◆ Thought for 10.3s
+┃
+┃So the draft existence gate:VERDICT: CHANGES_REQUIRED
+┃
+┃File: lib/compile-atoms-flow.mjs, Line: ~280-320 (rebindToSource block)
+┃Critical
+┃Failure scenario:
+┃After rebind, assertionAtoms.intentId == lastIntentId (intent_open) but observed.steps.intentId remains intent 0 (pre-rebind capture).
+核 对 关 键 路 径 ： assertionAtoms 经  lastIntentId 同 步 到  authored 号 ， 但  observed 是 否 仍 留  intent_N， 会 导 致  draft 存 在 性 闸 拒 。
+◆ Run Prove observed vs assertionAtoms intent desync
+$ cd /home/test/casey-review/casey-compile-intent-lineage-rebind && node --input-type=module <<'EOF'
+  import { createCompileRun, compileFlow, projectObserved } from './lib/compile-atoms.mjs';
+  import { createMockPage } from './tests/_golden/fixtures/agent-id-readback/mock-page.mjs';
+  import { synthesizeSkeleton } from './lib/assertion-draft.mjs';
+
+  function wfPage(dom) {
+    const base = createMockPage({ dom, url: 'http://127.0.0.1:4173/', titles: ['工 作 流 管 理 '] });
+    return { ...base, waitForURL: async () => {} };
+  }
+  function newRun(page) {
+    return createCompileRun({
+      page, forensics: { records: () => [] }, state: { currentStepId: null },
+      sut: 'http://127.0.0.1:4173', uniqueName: 'atl_fixed', site: null,
+      agentListRoute: null, profile: null, identityLedger: null,
+    });
+  }
+
+  const page = wfPage({ 'text:wfone:exact': { count: 1, inContainer: true } });
+  const run = newRun(page);
+  await compileFlow(run, {
+    id: 'tc_draft_ghost',
+    steps: [
+      {
+        atom: 'workflow.open', params: { openName: 'wfone' },
+        sourceIntentId: 'intent_open',
+        entityBindings: [{ candidateId: 'cand-wfone', role: 'source' }],
+      },
+      { atom: 'assert.textVisible', params: { text: '工 作 流 管 理 ' } },
+    ],
+  });
+
+  const eventIds = run.events.map(e => e.intentId);
+  const obsIds = run.observed.map(o => o.intentId);
+  const verIds = run.verification.map(v => v.intentId);
+  const atomIds = run.assertionAtoms.map(a => a.intentId);
+  console.log(JSON.stringify({ eventIds, obsIds, verIds, atomIds, last: run.lastIntentId }, null, 2));
+
+  const observedDoc = projectObserved(run, { caseId: 'tc_draft_ghost', capturedAt: new Date().toISOString() });
+  const skeleton = synthesizeSkeleton(observedDoc, run.assertionAtoms);
+  const knownIntents = new Set((observedDoc.steps || []).map((s) => s && s.intentId).filter(Boolean));
+  const ghosts = skeleton.intents.map((it) => it.intentId).filter((id) => !knownIntents.has(id));
+  console.log(JSON.stringify({
+    skeletonIntents: skeleton.intents.map(i => i.intentId),
+    knownFromObserved: [...knownIntents],
+    ghosts,
+    wouldDraftReject: ghosts.length > 0,
+  }, null, 2));
+  EOF
+
+{
+  "eventIds": [
+… +22 lines
+  ],
+  "wouldDraftReject": true
+}
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (82ms)
+◆ Run Check teach-in observed desync if reachable
+$ cd /home/test/casey-review/casey-compile-intent-lineage-rebind && # teach-in path same desync?
+  node --input-type=module <<'EOF'
+  import { compileFlow } from './lib/compile-atoms-flow.mjs';
+
+  // Minimal run with observed capture path - teach-in uses same rebind
+  // Use real createCompileRun if possible with nav only
+  import { createCompileRun } from './lib/compile-atoms.mjs';
+
+  const run = createCompileRun({
+    page: {
+      url: () => 'http://127.0.0.1:4173/workflows',
+      evaluate: async () => [],
+      locator: () => ({ first: () => ({ waitFor: async () => {} }), count: async () => 1, click: async () => {} }),
+      getByRole: () => ({ waitFor: async () => {}, click: async () => {}, count: async () => 1 }),
+      getByText: () => ({ count: async () => 1 }),
+    },
+    forensics: { records: () => [] },
+    state: { currentStepId: null },
+    sut: 'http://127.0.0.1:4173',
+    uniqueName: 'atl_fixed',
+    site: null,
+    agentListRoute: '/agents',
+    profile: null,
+    identityLedger: null,
+  });
+
+  // Force a simple path - may fail without full page; try
+  try {
+    await compileFlow(run, {
+      steps: [
+        { atom: 'nav.workflowManagement', params: {}, sourceIntentId: 'authored_nav' },
+        { atom: 'assert.textVisible', params: { text: 'x' } },
+      ],
+    }, { lineagePlan: [{ mappingKey: 'm1', sourceIntentId: 'authored_nav' }, { mappingKey: 'm2', sourceIntentId: 'authored_nav' }] });
+    console.log(JSON.stringify({
+      events: run.events.map(e => e.intentId),
+      observed: run.observed.map(o => o.intentId),
+      asserts: run.assertionAtoms.map(a => a.intentId),
+    }, null, 2));
+  } catch (e) {
+    console.log('teachin probe err', String(e.message||e).slice(0,200));
+    console.log(JSON.stringify({
+      events: run.events.map(e => ({intentId:e.intentId, action:e.action})),
+      observed: run.observed.map(o => o.intentId),
+      asserts: run.assertionAtoms,
+      last: run.lastIntentId,
+    }, null, 2));
+  }
+  EOF
+
+teachin probe err COMPILE_LINEAGE_PLAN_INVALID
+{
+… +2 lines
+  "asserts": [],
+  "last": null
+}
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (76ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 22.3s
+┃
+┃Confirmed High/Critical finding: VERDICT: CHANGES_REQUIRED
+┃
+┃File: lib/compile-atoms-flow.mjs, Line: ~280-320 (rebindToSource block)
+┃Severity: Critical
+┃Failure scenario:
+┃After standard-path rebind, events.intentId is forced to sourceIntentId (auth intent_open) while assertionAtoms.intentId remains intent_N (via lastIntentId sync). Draft existence gate therefore
+┃rejects the draft intent produced by assertionAtoms, causing exit 65 on any flow that (a) emits events with sourceIntentId and (b) follows with assert atoms that fold into that intent.
+◆ Run Check report join and run selftest tier1
+$ cd /home/test/casey-review/casey-compile-intent-lineage-rebind && grep -n 'intentId\|observed\|verification' lib/report-model.mjs | head -40; echo '---';
+  # Does any golden assert observed.intentId equals event.intentId after compile with sourceIntentId?
+  grep -rn 'observed.*intentId\|intentId.*observed' tests/_golden --include='*.mjs' | grep -i 'sourceIntent\|rebind\|lineage' | head -20
+  # selftest tier1 quick
+  node bin/casey.mjs selftest --tier1 2>&1 | tail -15; echo EXIT:$?
+
+15://   SUT 观 测 /取 证  全 部 自 由 文 本 （ observed.toast/标 题 /回 复 、 pageerror.message） + 标 量 值  + url（ 剥  query/hash + 路 径 逐 段 ） 走  redactScalar 逐  token 脱 敏 ——
+257:// observed 全 部 来 自  SUT 观 测 （ toast/标 题 /回 复 /落 地 路 径 ） ， 是  护 栏  #7 凭 据 外 泄 的 主 战 面 ——每 条 自 由 文 本 逐  token 脱 敏 、 路 径 逐 段 脱 敏 。
+… +27 lines
+
+selftest --tier1: 全 链 路  GREEN —— 确 定 性 内 核  + 统 一 语 言 双 向 有 效 。
+EXIT:0
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (85ms)
+◆ Run Map all intent identity side channels after rebind
+$ cd /home/test/casey-review/casey-compile-intent-lineage-rebind && # whitelist check already done - only 8 files
+  # plan.md goal stale text - confirm
+  sed -n '8,25p' docs/plans/compile-intent-lineage-rebind/plan.md
+  # Does G1b miss compileFlow→gate integration for multi-event? Already noted.
+  # Check if identityObservations/evidence path ok - uses step.sourceIntentId
+  # Any other side channels with intent_N after rebind?
+  node --input-type=module <<'EOF'
+  import { createCompileRun, compileFlow } from './lib/compile-atoms.mjs';
+  import { createMockPage } from './tests/_golden/fixtures/agent-id-readback/mock-page.mjs';
+  function wfPage(dom) {
+    const base = createMockPage({ dom, url: 'http://127.0.0.1:4173/', titles: ['工 作 流 管 理 '] });
+    return { ...base, waitForURL: async () => {} };
+  }
+  const page = wfPage({ 'text:wfone:exact': { count: 1, inContainer: true } });
+  const run = createCompileRun({
+    page, forensics: { records: () => [] }, state: { currentStepId: null },
+    sut: 'http://127.0.0.1:4173', uniqueName: 'atl_fixed', site: null,
+    agentListRoute: null, profile: null, identityLedger: null,
+  });
+  await compileFlow(run, {
+    steps: [{
+      atom: 'workflow.open', params: { openName: 'wfone' },
+      sourceIntentId: 'intent_open',
+      entityBindings: [{ candidateId: 'c', role: 'source' }],
+    }],
+  });
+  console.log('channels', {
+    events: run.events.map(e => e.intentId),
+    observed: run.observed.map(o => o.intentId),
+    verification: run.verification.map(v => v.intentId),
+    bindingProv: run.entityBindingProvenance.map(b => ({ i: b.intentId, s: b.sourceIntentId })),
+  });
+  EOF
+
+- 缺 陷 ： 标 准 编 译 路 径 （ 无  lineagePlan） 事 件 保 留 编 译 器 自 生  `intent_N`， 确 认 流
+  `sourceIntentId` 无 人 消 费  → 出 处 链 成 品 闸 按  `sourceIntentId` 匹 配 终 端 事 件 必 拒
+… +19 lines
+  verification: [ 'intent_0' ],
+  bindingProv: [ { i: 'intent_open', s: 'intent_open' } ]
+}
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (6ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (76ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (4ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 25.3s
+┃
+┃I have a solid High finding: observed/verification not rebound while events and assertionAtoms/lastIntentId are. VERDICT: CHANGES_REQUIRED
+┃
+┃lib/compile-atoms-flow.mjs:1-300
+┃High
+┃Failure scenario: observed/verification not rebound while events and assertionAtoms/lastIntentId are.
+┃teach-in path is same (zero drift) but now expanded to standard path where it hits draft.
+┃
+┃** 1. plan.md goal section stale "全 或 无 ， 混 合 硬 阻 断 "**
+┃Medium
+┃Failure scenario: contract doc contradicts implementation (frozen PRD checksum artifact).
+┃
+┃** 2. G1b doesn't exercise real compileFlow→gate**
+┃Medium
+┃Failure scenario: plan G1 promised full seam; golden 2 only pure function, missing observed/assertionAtoms co-consistency after rebound step.
+┃
+┃** 3. events.schema pattern**
+┃Medium
+┃Failure scenario: production formal events with intent_create fail ^intent_[0-9]+$. Not runtime enforced. Expanding to standard path for catalog case (pre-existing teach-in debt 扩 展 ).
+┃
+┃lib/compile-atoms-flow.mjs:1-300
+┃High
+┃Failure scenario: observed/verification not rebound → draft ghost reject (real-uat R2 intent_open/intent_1 desync).
+┃Authored path blocked for draft phase; compile-report verification uses resolution not intentId matching.
+◆ Run Confirm worktree clean after mutation tests
+$ cd /home/test/casey-review/casey-compile-intent-lineage-rebind && git status --short && git diff --stat HEAD -- lib/compile-atoms-flow.mjs # ensure clean after mutation restore
+  # Confirm HEAD file still has rebind block
+  grep -n '标 准 路 径 意 图 号 重 绑 \|sourceIntentId.trim' lib/compile-atoms-flow.mjs
+
+?? node_modules
+105:    // 标 准 路 径 意 图 号 重 绑 （ compile-intent-lineage-rebind） ： authored `sourceIntentId` 才 是 正 式 产 物 的 意 图
+111:      && typeof step?.sourceIntentId === 'string' && step.sourceIntentId.trim()) {
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (103ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 17.1s
+┃
+┃I have enough for a thorough review. Let me also quickly check if Medium on plan stale goal is worth reporting - the review said only C/H/M. Stale goal in frozen plan that contradicts 改 法  could
+┃confuse...VERDICT: CHANGES_REQUIRED
+┃
+┃File: events.schema.json:1, Severity: Medium, Failure scenario: Production events now carry authored intentId (sourceIntentId) that systematically violate the frozen numeric-only pattern; any schema
+┃validator or hermetic golden pointed at real output will reject formal product.
+┃
+┃File: lib/compile-at oms-flow.mjs:112-115, Severity: High, Failure scenario: Standard-path rebind now emits intent_create / intent_cleanup / intent_open etc. instead of intent_N, breaking the pre-
+┃existing schema contract that the main production path (tc_catalog_wf_crud) relied on. This is a regression introduced by 05800b4..HEAD.
+┃
+┃The rest of the diff (teach-in block, golden, docs) is clean. Please update events.schema.json or document the intentional schema violation before merge. R1-R5 all pass. R4 golden is solid. Ready for
+┃re-review once schema is addressed.
+异 构 评 审  · compile-intent-lineage-rebind
+
+基 线  05800b4 → HEAD 6082431
+白 名 单  8 文 件 ， 无 越 界 改 动 。 生 产  diff 仅  lib/compile-atoms-flow.mjs +13 行 标 准 路 径 重 绑 块 。
+
+已 独 立 验 证
+
+┌───────────────────────────────────────────────────┬────────────────────────────────────────────────────────────────────────────────────────┐
+│ 项                                                 │ 结 果                                                                                    │
+├───────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────┤
+│ 新 金 牌                                             │ 13/13， exit 0（ 提 示 词 写  11/11 已 过 时 ）                                                  │
+├───────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────┤
+│ R4 突 变                                            │ 还 原 实 现  → 9 过 /4 红  exit 1； git show HEAD: 恢 复 后  sha256 同 、 13/13                    │
+├───────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────┤
+│ R2 bindagent-replay                               │ 7/0， exit 0（ 混 合 裸 步 合 法 ）                                                             │
+├───────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────┤
+│ R3 teach-in 双 金 牌                                 │ 全 绿                                                                                    │
+├───────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────┤
+│ PRD s2 邻 接  6 金 牌  + term-lint + selftest --tier1 │ 全 绿                                                                                    │
+├───────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────┤
+│ PRD checksums                                     │ 与 磁 盘 四 文 件  sha256 一 致                                                                │
+├───────────────────────────────────────────────────┼────────────────────────────────────────────────────────────────────────────────────────┤
+│ R5 边 界                                            │ 空 流  / 空 白 串  / '' / 非  string → 不 重 绑 、 保 持  intent_N； 非  plain step → 既 有 未 知 原 子 错  │
+└───────────────────────────────────────────────────┴────────────────────────────────────────────────────────────────────────────────────────┘
+
+───
+
+Findings
+
+H1 · 重 绑 只 改  events/lastIntentId， observed/verification 仍 留  intent_N → draft 存 在 性 闸 必 拒
+
+• 位 置 ： lib/compile-atoms-flow.mjs:110-117（ 重 绑 块 ） ； 对 照  lib/compile-atoms-run.mjs:277-279（ capture/verification 在  emit 时 写 入 ） ； 消 费 方  bin/draft.mjs:100-105
+• 严 重 级 ： High
+• 失 败 场 景 （ hermetic 已 复 现 ） ：
+
+标 准 路 径 步 带 非 空  sourceIntentId 且 后 接  assert.*（ bindagent-replay / 确 认 流 惯 例 ） 时 ：
+
+┌──────────────────────────────────────────┬────────────────────────────┐
+│ 通 道                                      │ 重 绑 后                      │
+├──────────────────────────────────────────┼────────────────────────────┤
+│ events[].intentId                        │ authored（ 如  intent_open）  │
+├──────────────────────────────────────────┼────────────────────────────┤
+│ lastIntentId / assertionAtoms[].intentId │ authored（ 同 步 成 功 ）        │
+├──────────────────────────────────────────┼────────────────────────────┤
+│ observed[].intentId                      │ 仍 为  intent_0              │
+├──────────────────────────────────────────┼────────────────────────────┤
+│ verification[].intentId                  │ 仍 为  intent_0              │
+└──────────────────────────────────────────┴────────────────────────────┘
+
+synthesizeSkeleton 按  assertionAtoms 产 出  intent_open 草 稿 ， draft 存 在 性 闸 以  observed 全 集  为 基 准  → intent_open ∉ {intent_0} → exit 65 幽 灵  intent 拒 （ wouldDraftReject: true 探 针
+已 钉 ） 。
+
+这 与  draft 注 释 所 防 的  real-uat R2「 intent_open/intent_1 错 位 」 同 族 ， 且 是 本 改 动 引 入 的 回 归 ： 重 绑 前 三 通 道 同 为  intent_N 可 对 齐 ； 重 绑 后  events/assert 进  authored、
+
+原 则 注 释 写 「 不 得 进 入  formal 产 物 」 ——observed-*.json 亦 为  compile 正 式 落 盘 ， 却 未 重 绑 。 teach-in 块 （ :88-103） 同 缺 ， 本 契 约 复 制 了 不 完 整 模 式 ； 新 金 牌  G1a-3 只
+检 。
+
+修 法 方 向 （ 评 审 不 改 码 ） ： 在 同 一 切 片 上 按  stepId 同 步  run.observed / run.verification 的  intentId（ 或 与  events 同 一  authored 源 ） ； 金 牌 补 「 event ≡ observed ≡ assertionAt
+
+───
+
+M1 · 标 准 路 径 正 式  events 系 统 违 反 冻 结  events.schema 的  intentId pattern
+
+• 位 置 ： 产 出  lib/compile-atoms-flow.mjs:112-115； 契 约  tests/_golden/schemas/events.schema.json:78（ "pattern": "^intent_[0-9]+$"）
+• 严 重 级 ： Medium
+• 失 败 场 景 ： 确 认 流  authored 号 为  intent_create / intent_cleanup / intent_open 等 非 纯 数 字 后 缀 时 ， compile 落 盘 的  events.json 不 再 满 足 冻 结  schema。 改 前 标 准 路 径 产 出  in
+目 标 案 例 ） 系 统 性 违 规 。 当 前 生 产 无  ajv 强 制 ， 故 邻 接 金 牌 仍 绿 ； 任 一  schema-strict 消 费 方 、 接 缝 棘 轮 或 后 续 强 制 校 验 会 拒 收 正 式 产 物 。 teach-in 早 已 同 形 ，
+CONTEXT「 intentId=用 例 语 义 步  id」 一 致 、 与 冻 结  schema 冲 突 ——非 目 标 未 登 记  schema 改 版 ， 属 已 知 张 力 被 扩 大 ， 需 显 式 记 账 或 跟 人 签 放 宽  pattern（ minLength:1， 与  ru
+
+───
+
+（ 未 升  finding） 文 书
+
+plan.md:11-12 目 标 条 仍 写 「 全 或 无 ， 混 合 硬 阻 断 」 ， 同 文 件 「 改 法 」 与  GRILL 第  6 条 已 是 逐 步 存 在 即 绑 。 实 现 与 验 收 以 改 法 /GRILL 为 准 ， 不 单 独 开  finding； 收 口
+
+───
+
+风 险 清 单 （ 证 伪 结 果 ）
+
+┌────┬───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ ID │ 结 论                                                                                                               │
+├────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ R1 │ 出 处 链 闸  / binding 桥  / evidenceStepId 按  stepId： 重 绑 后 对 齐 ， 无 破 。 但  observed/verification 旁 路 未 重 绑  → 见  H1。  │
+├────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ R2 │ 裸 步 +折 叠 ： bindagent-replay 全 绿 ； G2 钉 带 号 重 绑 、 裸 步  intent_N、 lastIntentId 跟 随 裸 步 。                            │
+├────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ R3 │ teach-in 双 金 牌 绿 ； plan/!plan 互 斥 ， 零 交 叉 。                                                                       │
+├────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ R4 │ 突 变 闭 环 成 立 （ 还 原 红  / 恢 复 绿  / sha256 同 ） 。 金 牌 走 真 实  compileFlow + 闸 纯 函 数 ， 非 源 码  grep。                      │
+├────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ R5 │ 空 流 、 空 白 /''/非  string sourceIntentId、 非 对 象  step： 行 为 合 理 ， 无 掷 错 回 归 。                                        │
+└────┴───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+G1b 用 手 搓  events 钉 闸 语 义 （ 合 理 ） ； create 多  event 切 片 重 绑 与  open 同 机 制 ， 逻 辑 可 外 推 ， 非 独 立  High。
+
+───
+
+结 论
+
+实 现 命 中 「 逐 步 存 在 即 绑 」 、 出 处 链 错 配 主 因 、 混 合 合 法 、 teach-in 零 漂 移 与 突 变 红 绿 均 成 立 ； 邻 接 与 全 量 相 关 金 牌 未 见 回 归 。
+
+阻 断 点 ： H1 使 「 带  sourceIntentId 的 步  + 后 继  assert → draft」 在 标 准 路 径 上 确 定 性 失 败 ， 与 重 绑 要 把  authored 号 送 进 正 式 产 物 的 目 标 自 相 矛 盾 ， 且 金 牌 未 覆 盖 该
+
+VERDICT: CHANGES_REQUIRED
+Worked for 8m51s                                                                                                                                                                      stop  [hooks: 4/1]
+      ✓ global/settings:stop[0].hooks[0] (6ms)
+      ✗ global/settings:stop[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:stop[0].hooks[0] (106ms)
+      ✓ project/settings:stop[0].hooks[1] (88ms)
+      ✓ project/settings:stop[1].hooks[0] (28ms)
+minimal · /help
+❯
+Grok 4.5 (high) · always-approve · 100K / 500K (20%) · ctrl+o transcript
