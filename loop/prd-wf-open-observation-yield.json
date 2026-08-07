@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "task": "wf-open-observation-yield（light）：修复 B4 十二跑「同名观察多条」设计缝。根因：读回门契约引入的 open source 观察与 create subject 观察在重表达单流（create→open→delete）并存——C3 破坏性连续性守卫（同名多条不取 first）与 wiring 金牌 H1i（多身份原子同流 issuer fail-closed）双面钉死，结构性 fail-closed；守卫与 H1i 均无缺陷不动。修法（Steven 2026-08-07 裁甲案）：open 归档让位——click 成功后若 run.identityObservations 已含同 platformId 行（create 侧 created-in-run subject 观察）则跳过设置 pendingIdentityObservation、记让位 notes；点击前双证（扫描+物理双锚+判定表+过门才点+TOCTOU）原样保留；无同 platformId 行（open 独跑/打开既有工作流）照旧归档 source 观察零回归。下游：连续性 ref 由 create 观察唯一铸造、issuer 单原子走 H1b/H1h 已钉通道。冻结面零接触。",
+  "specPath": "docs/plans/wf-open-observation-yield/plan.md",
+  "testChecksums": {
+    "tests/_golden/wf-open-observation-yield.zero-sut.golden.mjs": "df2d8ea11d5f4d9b329df0e39aaf290d304242d2af18d6c213a8f67c7005eaa5",
+    "docs/plans/wf-open-observation-yield/plan.md": "290f4a76ab6b15a6979af9794ab1ceb9f8e6a53aeed805c06b268bdebe3d8991",
+    "docs/plans/wf-open-observation-yield/accept/red-proofs/wf-open-observation-yield.red.txt": "4554b2bba2f98bd8c850f4c1ce509f904636123d5a90e0c015bfa63bc96a226b"
+  },
+  "observability": [
+    {
+      "dimension": "hermetic 只证让位判据/独跑零回归/双证不缩水；端到端真证是 B4 十三跑（乙授权、一例一跑、新 atl_ 长名令牌）——预期 create→open→详情断言→删除→删后归零全链首过，跑完记全链路总耗时。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-observation-yield",
+      "desc": "open 归档让位（同 platformId 判据精确）+ 独跑零回归 + 双证不缩水。金牌四钉 S1 让位 / S2 独跑全档 / S3 异 platformId 不让位 / S4 让位场景 fail-closed 保持。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-open-observation-yield.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-07T02:56:42.927Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "邻接零回归：读回门契约金牌（open 独跑场景 20/20）+ 删除搜索修金牌 + wiring（H1i 面）+ cardinality-reverse + v3 created-in-run + 统一语言 + 确定性内核自检；全仓金牌扫描与 b6880e3 基线双态对比另证。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-open-readback-requery.zero-sut.golden.mjs",
+        "node tests/_golden/wf-delete-search-filter.zero-sut.golden.mjs",
+        "node tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs",
+        "node tests/_golden/entity-workflow-source-readback.cardinality-reverse.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.created-in-run.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-07T02:57:29.356Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "红基线真实 exit 1（10 过 / 2 红：S1e 现实现无条件归档致两行、S1g 让位 notes 缺席——红面即契约面），对最终金牌字节在修复前实抓，证据 accept/red-proofs/wf-open-observation-yield.red.txt。突变闭环走 git show 姿势（不碰暂存区）。passes 只由 gate 写入。",
+  "worktree": "/mnt/d/ctx/heren/casey-wf-open-observation-yield"
+}
