@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "task": "admission-terminal-group（full）：准入验证器终端语义对齐基数门先例（Steven 裁甲 2026-08-08）。缝：validateObservationAdmission 段 1 逐 click 当独立终端索要观察行——create 脚手架 click 各要一行 subject，真产物只有确认 click 一行，sign 二跑 OBSERVATION_ROLE_COUNT_MISMATCH 实证（sign 侧从未接过多 click 真产物）。修法：段 1 改组内末 click 终端（顺序遍历、最后写入即终端，键 JSON([intentId,atom])——基数门 codex round-3 已裁已冻同构判据）；逐 click 字段校验与重复三元组拒原样；终端投影携 yieldedToPlatformId；段 3/5/6 与让位谓词零改动自动继承；附带收紧=行锚脚手架 click 无终端可配即拒。单 click 原子行为逐字节同码。非目标：不动基数门、不动让位豁免判据、不碰 schema、不改 sign.mjs。",
+  "specPath": "docs/plans/admission-terminal-group/plan.md",
+  "testChecksums": {
+    "tests/_golden/admission-terminal-group.zero-sut.golden.mjs": "1f6589bb2938452492fcc6b42a42695a683ac5785c42c925f112c8482a04f828",
+    "docs/plans/admission-terminal-group/plan.md": "96b68524498d28ded6bf4cd1cc8eaa7e8f83dc0375f8306e1ad8261687955876",
+    "docs/plans/admission-terminal-group/accept/red-proofs/admission-terminal-group.red.txt": "2bfed4064c1fbcfe7528fd6b39db2e4bc8709e164046bb0769676cefa8ce5370"
+  },
+  "observability": [
+    {
+      "dimension": "hermetic 只证终端语义与遗留等价；端到端真证=merge 后主树重跑同一 sign 命令（Steven 已签五断言呈件 + 17 行确认件不变）——预期签署落盘新冻结件；随后 replay 链续（权威铸新 + grant），门拒即停如实报。全仓串行扫描终判（护栏 #19）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-admission-terminal-group",
+      "desc": "组内末 click 终端八钉：T1 多 click 末锚 ok / T2 锚脚手架拒 / T3 真产物全形 ok / T4 agent 遗留等价 / T5 重复三元组拒 / T6 组隔离 / T7 让位谓词取组内末 click / T8 两门同判同构。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/admission-terminal-group.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-07T16:10:06.720Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "同文件邻接零回归：admission-envelope-yield / terminal-coverage-yield / cardinality-reverse / wiring / observation-yield + 统一语言 + 确定性内核自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/admission-envelope-yield.zero-sut.golden.mjs",
+        "node tests/_golden/terminal-coverage-yield.zero-sut.golden.mjs",
+        "node tests/_golden/entity-workflow-source-readback.cardinality-reverse.zero-sut.golden.mjs",
+        "node tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs",
+        "node tests/_golden/wf-open-observation-yield.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-07T16:10:24.931Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "红基线真实 exit 1（5 过 / 3 红：T1/T3/T6 多 click 终端面——红面即契约面；T2 今日拒因不同后亦拒、语义收紧钉），T4 夹具 candidateId 笔误当场修正后重抓。突变闭环走 git show 姿势。passes 只由 gate 写入。",
+  "worktree": "/mnt/d/ctx/heren/casey-admission-terminal-group"
+}
