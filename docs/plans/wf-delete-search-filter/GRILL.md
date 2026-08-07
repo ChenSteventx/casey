@@ -16,9 +16,11 @@
 4. **岔口裁定语境**：Steven 已裁 atom 级（契约+双审、不动已签件、不回人签）；本修法
    仍在该封套内且爆炸半径更小——只改删除原子的搜索触发姿势 + 补过滤后有界就绪锚，
    frozen 面零接触（events 每次编译重产，不在 testChecksums）。
-5. **修法**：`:312` 的 press Enter 换成放大镜 click（纯 fallbackCss
-   `.hr-input__suffix .search-icon`，照 chat.sendAndWait 送出图标先例 + wf-open-search-first
-   `:106` 同款 emit 形状）；过滤后对「目标文本落在记录容器内」有界轮询（15s，预算耗尽
-   不改判——审计照跑、既有 fail-closed 路径零行为差）。
+5. **修法（v3 定形，见 plan）**：搜索隔离处 press `Enter` 惰性保留（真机证无副作用；
+   三 PRD 冻结的 post-nav S2 包含式钉 fill/press——实现让路零冻结面变更）+ 放大镜 click
+   真过滤必在其后（纯 fallbackCss `.hr-input__suffix .search-icon`，照 chat.sendAndWait
+   送出图标先例）；过滤后对「目标文本落在记录容器内」有界轮询（15s，预算耗尽不改判——
+   审计照跑、既有 fail-closed 路径零行为差）；删后重搜处 `Enter` 退役只留放大镜（无冻结
+   覆盖）。
 6. **为何十一跑才暴露**：删除链此前从未在「open 真通后往返详情页」的列表态下执行过
    （运行 1-4 停更早层、5-10 停 open）——「从未走通过」家族第四例，与前三例同构。

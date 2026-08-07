@@ -23,18 +23,22 @@
 岔口裁定：Steven 2026-08-06 定 atom 级（契约+双审、不动已签件）；2026-08-07 grill 确认
 修正后根因与本修法（仍在 atom 级封套内、爆炸半径更小）。
 
-## 修法（两处 Enter→放大镜 + 过滤后有界就绪锚；frozen 面零接触）
+## 修法 v3（搜索隔离惰性 Enter 保留 + 放大镜真过滤后置 + 有界就绪锚；frozen 面零接触）
 
-只动 `compileWorkflowDelete`（`lib/compile-atoms-workflow-crud.mjs`）：
+只动 `compileWorkflowDelete`（`lib/compile-atoms-workflow-crud.mjs`）。v2 曾设计「两处
+Enter 全退役」，被三 PRD 冻结的 `post-nav-anchor-wait` 金牌 S2（包含式钉 fill/press
+照发）打红——实现让路（semantic-name 首版教训先例），定形 v3：
 
-1. `:312` press Enter → 放大镜 click emit（纯 fallbackCss `.hr-input__suffix .search-icon`，
-   照 chat.sendAndWait 送出图标先例 + `wf-open-search-first:106` 同款形状）；
+1. 搜索隔离处：fill → **press `Enter` 惰性保留**（真机十一跑证其无副作用；满足冻结面
+   包含式钉，零冻结字节变更）→ 放大镜 click emit **必在其后**（真过滤靠它；纯 fallbackCss
+   `.hr-input__suffix .search-icon`，照 chat.sendAndWait 送出图标先例 +
+   `wf-open-search-first:106` 同款形状）；
 2. 过滤后就绪锚（post-nav-anchor-wait 家族第四处）：仅当放大镜 click `unique && acted`
    才授 15s 预算，对「目标文本落在记录容器内」（`.hr-table-row, .hr-card.hr-card--bordered,
    .agent-card` 容器语义同 open 前奏）有界轮询；预算耗尽**不改判**——审计照跑、
    既有 fail-closed 路径零行为差；
-3. `:383` 删后重搜的 press Enter → 同款放大镜 click（重查触发才能让「删后归零」断言
-   读到新列表；不加锚——下游断言自有采样预算）。
+3. 删后重搜处：press `Enter` 退役 → 放大镜 click（该处无冻结覆盖；重查触发才能让
+   「删后归零」断言读到新列表；不加锚——下游断言自有采样预算）。
 
 事件面：删除链 events 每次编译重产、不在任何 `testChecksums` 冻结面；放大镜 fallbackCss
 click 事件形状在流中已有先例（open 搜索分支、chat.sendAndWait）。CASE_DEFECT 候选分支、
@@ -44,15 +48,18 @@ click 事件形状在流中已有先例（open 搜索分支、chat.sendAndWait�
 
 新金牌 `wf-delete-search-filter.zero-sut.golden.mjs`（mock 页驱真实 `compileFlow`，零 SUT）：
 
-- S1 姿势钉：删除链搜索隔离 emits = fill + 放大镜 click（`.hr-input__suffix .search-icon`）
-  ——非 `Enter`；删后重搜同款（两处各钉）；
-- S2 就绪锚钉：放大镜真 acted 才授预算、目标入容器即提前放行（mock 延迟出卡场景）；
-  未 acted（图标缺席）不授预算、审计照跑 fail-closed（零行为差面）；
-- S3 fail-closed 保持钉：过滤后目标仍缺席 → 计数门 `unknown` 截断、零破坏 click、
-  compileFlow 中止（既有语义逐字保持）；
-- S4 正控钉：过滤命中恰 1 且计数恒等 → 链路继续到触发/确认（emit 序全档）。
+- S1 姿势钉（行为+结构双面）：搜索隔离 emits = fill + press `Enter`（惰性保留）+ 放大镜
+  click 必在 press 之后（S1c 序钉）；结构面恰一处 `key:'Enter'`（删后重搜第二处退役）、
+  恰两处 search-icon（S1d/S1e）；
+- S2 就绪锚钉：放大镜真 acted 才授预算；未 acted（图标缺席）不授预算、审计照跑
+  fail-closed（零行为差面）；
+- S3 fail-closed 保持钉：过滤后目标仍缺席 → 锚满预算后计数门 `unknown` 截断、零破坏
+  click、compileFlow 中止（既有语义逐字保持）；
+- S4 锚提前放行不改判钉：目标一开始就在容器内 → 锚首采放行（不烧满预算）、审计仍按
+  实采裁定（锚只等不判）。计数恒等正控（真实记录域 1/1）在 mock 无 elementHandles 域
+  下不可达，挂 observability、由十二跑真机承载。
 
-红基线实抓（现实现 S1/S2 必红、S3/S4 视断言面）；突变闭环 `git show` 姿势；全仓金牌
+红基线实抓（现实现 S1/S2/S3/S4 的放大镜面必红）；突变闭环 `git show` 姿势；全仓金牌
 双态扫描（基线 `ef81f78`）——两个门面拆分族既存红须基线同码。
 
 真机兑现（完成闸，ADR-0009）：合入 dev 后 B4 十二跑（新 `atl_` 长名令牌）——预期
