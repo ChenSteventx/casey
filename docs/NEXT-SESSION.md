@@ -20,7 +20,7 @@ MCP `mcp/casey-server.mjs`。
 
 【先读，别现编已决的事】（必读顺序）
 1. `CLAUDE.md` + `CONTEXT.md`（统一语言注册表，命名以它为准；弃用别名是黑名单、繁体禁用）
-2. `docs/HANDOFF.md`（最新覆盖层即权威现状，顶节是 2026-08-07 凌晨）
+2. `docs/HANDOFF.md`（最新覆盖层即权威现状，顶节是 2026-08-07 晨）
 3. `loop/GUARDRAILS.md`（19 条，逐条有效；表头仍写「13–16 新增」是陈旧措辞）
 4. `.claude/skills/casey/SKILL.md`、`README.md`
 5. 追溯「为何这么定」：`docs/adr/`（0001–0010）、`docs/design/txt2testreport-design.md`
@@ -36,10 +36,10 @@ MCP `mcp/casey-server.mjs`。
   ADR-0005 统一语言由 hook 与 gate 强制；ADR-0006 Casey = autotester ⊕ regress 分层融合；
   ADR-0007 Playwright 回放基座、取证按发起方归因；ADR-0008 loop-kit 独立提取；
   ADR-0009 hermetic 绿只是必要条件、真机 UAT 与人签才是完成；ADR-0010 准入受众与凭据严格匹配。
-- 2026-08-06/07 十契约入 dev（本地零 push）：sleep 导入修 `8d0b0bc`、create 入口锚
+- 2026-08-06/07 十一契约入 dev（本地零 push）：sleep 导入修 `8d0b0bc`、create 入口锚
   `158829d`、登录预算 `9bb2300`、post-nav 双锚 `db80a17`、open 搜索先行 `7f38606`、
   open 诊断 notes `97c0d83`、语义名回填 `8d0e6e3`、读回门丙路线 `a507f5c`、
-  删除搜索修 `b6880e3`（现役顶端）。
+  删除搜索修 `b6880e3`、观察让位 `d5ecbab`（现役顶端）。
   每个契约固定「实现 → 双路评审 → 并集修 → 收据 + learn → merge」，全部双路 APPROVE 才合。
 
 【DDD / 统一语言】
@@ -84,27 +84,27 @@ MCP `mcp/casey-server.mjs`。
   `lib`/`bin`；每树一独立 baton（护栏 #18 建议 ≤5 树，当前 29 树全持活 baton、已超，
   多数是已 6/6 收口的历史树，可择机清理）。
 
-【当前状态（2026-08-07 凌晨收盘）】
-- dev 顶端 `b6880e3`，本地零 push。活契约槽 `p9-created-workflow-cleanup-continuity-v3`
-  （`full`，3/6 不变）。两晚新契约树 `casey-wf-open-readback-requery`、
-  `casey-wf-delete-search-filter` 均 6/6 收口可摘。
-- B4 十至十二跑账（详 HANDOFF 顶节）：十跑定读回门根因（丙路线契约修，open 首次真机
-  走通于十一跑）；十一跑定删除计数门根因（搜索修契约，计数门通过于十二跑）；十二跑停
-  「同名观察多条」设计缝——create（subject）+ open（source）同 flow 各产一条身份观察，
-  C3 破坏性连续性守卫如实拒绝二选一（wiring 金牌 H1i 早钉的多身份原子同流面）。
-- 三跑残留各建一删一，B4 累计建九删九零残留；全链耗时十跑 1m17.5s/十一跑 1m6s/十二跑 22s。
+【当前状态（2026-08-07 晨收盘）】
+- dev 顶端 `d5ecbab`，本地零 push。活契约槽 `p9-created-workflow-cleanup-continuity-v3`
+  （`full`，3/6 不变）。三晚契约树（readback/delete-filter/observation-yield）均 6/6 可摘。
+- **十三跑执行链全链首过**（`b4r130807k`，25.5s）：create→open→详情断言→删除（计数门
+  真 1/1）→流内真删→删后重搜全程零 blockers；B4 建十删十、第十删由测试链自己完成。
+  exit 65 只剩成品段记账双门（反向基数双射 + create 出处链闭合）——三道冻结门一致表达
+  「单流单发行」而重表达单流 CRUD 天然多发行，让位方案流层通、成品层撞账（详 HANDOFF
+  顶节，A/B/C 三案待 Steven 真裁，建议 grill-with-docs 级对话）。
+- 评审事故范式已立：drvfs 故障中 pi 如实报 HARNESS_ERROR 存证、WSL 重启复原后对同一
+  快照重跑（快照不可变性使重跑有意义）。
 - 主树有用户未提交资产（七个 `prd`、两个 md、四个未跟踪件）——一律勿动、勿 `git add -A`。
 
 【下一步（任选其一，先对齐再动手）】
-甲. 同名观察多条设计缝（推荐，岔口待 Steven 裁）：甲案=open 读回观察去重让位（同 flow
-   已有同 platformId 的 subject 观察时 open 跳过归档 source 行，双证照跑；冻结面零接触）
-   vs 乙案=C3 守卫改值唯一（动破坏性守卫语义，不推荐）。裁后走契约，十三跑预期全链首过。
-乙. 后两例 `tc_wf_publish_states` / `tc_wf_history_version`：等 crud 通了统一处置。
-丙. 挂账清偿（可并行 fan-out）：PRD notes 史迹措辞；真机金牌依赖未跟踪产物（新树必红
-   两例：real-uat-attestation / teachin-nav-expansion-recipe）；工作流身份账本接线拆除；
-   金牌自产残件自清；`wf-open-smoke` 陈旧红 owner；门面拆分族两陈旧红；`pi` 对
-   `wf-delete-card-layout` 补审；`hook-loop-guard` 立项；清单重签补 `replayGrantPath`。
-丁. 工作树清理：31 棵树全持活 baton、远超建议的 5 棵，已 6/6 收口的可摘。
+甲. 成品段记账岔口（推荐）：A. 记账门学让位语义（动冻结纯函数+金牌改版+人签）/
+   B. open 在 created-in-run 流降级纯验证步（动 registry 语义）/ C. 案例拆分（动重表达
+   口径+B0-B3 重铸）。摆给 Steven 真裁后立契约；修通后十四跑预期 exit 0 全绿产件。
+乙. 后两例 `tc_wf_publish_states` / `tc_wf_history_version`：等 crud 全绿统一处置。
+丙. 挂账清偿（可并行 fan-out）：承前清单（PRD notes 史迹措辞、新树必红两例、账本接线
+   拆除、金牌残件自清、`wf-open-smoke` 陈旧红 owner、门面拆分族两陈旧红、`pi` 对
+   `wf-delete-card-layout` 补审、`hook-loop-guard` 立项、清单重签补 `replayGrantPath`）。
+丁. 工作树清理：32 棵树全持活 baton、远超建议的 5 棵，已 6/6 收口的可摘。
 
 【环境坑（WSL）】
 - 跑真机前先重启隧道两端（本日成纪律）：池老化约一小时或高请求量后，浏览器复用

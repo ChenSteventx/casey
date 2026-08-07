@@ -3,7 +3,43 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-07 凌晨：删除搜索修收口合入 + 十二跑计数门通过、停「同名观察多条」设计缝（最新覆盖层，权威现状）
+## 2026-08-07 晨：观察让位契约收口 + 十三跑执行链全链首过、停成品段记账双门（最新覆盖层，权威现状）
+
+现役 dev 顶端 `d5ecbab`（本地零 push）。接下节，本段再收一契约、B4 推进一跑，**执行链
+里程碑达成**：
+
+1. **契约 `wf-open-observation-yield` 六阶段收口合入**（`d5ecbab`，Steven 裁甲案）：
+   open click 成功后若同 flow 已有同 platformId 观察（create subject）则跳过归档 source
+   行、记让位 notes；点击前双证原样。金牌 12/12、全仓 297 双态零回归、grok+pi 双
+   APPROVE 零 C/H/M（评审期间遭 drvfs 整体故障+WSL 重启，pi 首轮如实报 HARNESS_ERROR
+   存证、复原后对同一快照重跑收口——事故处置成范式）。
+2. **十三跑**（`b4r130807k`，25.5s，exit 65）：**执行链全链首过**——create→open（读回
+   unique+让位生效）→详情断言→删除（计数门真 1/1：`layout=card, equal=true`，恒等正控
+   真机兑现）→流内真删→删后重搜，全程 `blockers: 0`。B4 建十删十，第十删由测试链自己
+   完成（流内首删）。exit 65 只来自**成品段记账双门**：
+   `OBSERVATION_TERMINAL_WITHOUT_MATCHING_OBSERVATION`（反向基数双射：登记观察原子
+   `workflow.open` 的终端 click 须恰被 requiredRoles=[source] 覆盖，让位后 0 观察违反）
+   + `CREATED_WORKFLOW_PROVENANCE_TERMINAL_EVENT_INVALID`（create 出处链闭合判据）。
+3. **架构级岔口（下一步甲，需 Steven 真裁）**：三道冻结门（wiring H1i 单发行方、C3
+   同名拒、基数双射 `entity-observation-registry.mjs:389-392`）一致表达「单流单发行」；
+   重表达的单流 CRUD（create+open+delete）天然多发行。让位方案流层通、成品层撞账。
+   候选修向（均动架构面，勿自主定）：A. 基数/出处门学会「让位」语义（登记原子终端可
+   携让位标记豁免——动冻结纯函数+wiring/cardinality 金牌改版+人签）；B. open 在
+   created-in-run 流里整体降级为纯验证步（不进观察登记路径——动 registry 语义）；
+   C. 案例拆分（create 流与 open/delete 流分案——动重表达口径+B0-B3 重铸）。
+4. 残留：十三跑零残留（流内已删，清偿工具确认「目标不在列表」）。耗时账：十跑 1m17.5s、
+   十一跑 1m6s、十二跑 22s、十三跑 25.5s。
+
+### 下一步（接手者从甲起）
+
+- 甲、成品段记账岔口：把 A/B/C 三案摆给 Steven 真裁（建议 grill-with-docs 级别对话，
+  涉冻结面与统一语言）；裁后立契约。修通后十四跑预期 exit 0 全绿产件。
+- 乙、后两例（`publish_states` / `history_version`）等 crud 全绿了统一处置。
+- 丙、挂账承前（PRD notes 史迹措辞、新树必红两例、账本接线拆除、金牌残件自清、
+  陈旧红 owner、hook-loop-guard 立项、清单重签）。
+- 丁、工作树清理：32 棵树（新增三契约树，均 6/6 可摘）。
+
+## 2026-08-07 凌晨：删除搜索修收口合入 + 十二跑计数门通过、停「同名观察多条」设计缝（历史覆盖层，被上节接续）
 
 现役 dev 顶端 `b6880e3`（本地零 push）。接下节，本段再收一契约、B4 推进一跑：
 
