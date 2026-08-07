@@ -1,0 +1,13 @@
+FAIL T1 多 click create 单行锚组内末 click → ok；实得 {"ok":false,"rejectCode":"OBSERVATION_ROLE_COUNT_MISMATCH"}
+ok   T2 行锚脚手架（非末）click → 拒（观察必锚终端）；实得 {"ok":false,"rejectCode":"OBSERVATION_ROLE_COUNT_MISMATCH"}
+FAIL T3 真产物全形（脚手架+让位+未登记 delete 共存）→ ok；实得 {"ok":false,"rejectCode":"OBSERVATION_ROLE_COUNT_MISMATCH"}
+ok   T4 agent 单 click 遗留 → ok 零回归；实得 {"ok":true,"rejectCode":null}
+ok   T5 重复完整三元组照拒；实得 {"ok":false,"rejectCode":"OBSERVATION_DUPLICATE_TERMINAL"}
+FAIL T6 双组各锚各自末 click → ok（组隔离）；实得 {"ok":false,"rejectCode":"OBSERVATION_ROLE_COUNT_MISMATCH"}
+ok   T7 open 组末 click 无字段（字段在脚手架上）→ 不豁免照拒（让位谓词取组内末 click）；实得 {"ok":false,"rejectCode":"OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION"}
+ok   T8 同输入基数门亦 ok（两验证器终端判据同构）；实得 {"ok":true,"reason":null}
+RED  admission-terminal-group: T1 多 click create 单行锚组内末 click → ok；实得 {"ok":false,"rejectCode":"OBSERVATION_ROLE_COUNT_MISMATCH"}
+RED  admission-terminal-group: T3 真产物全形（脚手架+让位+未登记 delete 共存）→ ok；实得 {"ok":false,"rejectCode":"OBSERVATION_ROLE_COUNT_MISMATCH"}
+RED  admission-terminal-group: T6 双组各锚各自末 click → ok（组隔离）；实得 {"ok":false,"rejectCode":"OBSERVATION_ROLE_COUNT_MISMATCH"}
+RED  admission-terminal-group: 5 过 / 3 红
+EXIT=1
