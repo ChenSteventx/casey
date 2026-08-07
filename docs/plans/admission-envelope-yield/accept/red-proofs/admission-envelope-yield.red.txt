@@ -1,0 +1,12 @@
+FAIL A1 让位豁免正例（open 义务信封整缺 + 字段恰一匹配 create subject 行）→ ok；实得 {"ok":false,"rejectCode":"OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION"}
+ok   A2 无字段遗留形照拒（加法门控）；实得 {"ok":false,"rejectCode":"OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION"}
+ok   A3 字段值无匹配 subject 行 → 照拒（取证记录非豁免宣告）；实得 {"ok":false,"rejectCode":"OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION"}
+ok   A4 subject 义务（create）缺信封携伪造字段 → 照拒（义务恰 ['source'] 才可让）；实得 {"ok":false,"rejectCode":"OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION"}
+ok   A5 同 platformId 匹配行两条 → 照拒（恰一才豁免）；实得 {"ok":false,"rejectCode":"OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION"}
+ok   A6 open 空信封在场 + 字段 → 照拒（畸形态非让位形）；实得 {"ok":false,"rejectCode":"OBSERVATION_ROLE_COUNT_MISMATCH"}
+ok   A7 agent 遗留形（无字段）→ ok 零回归；实得 {"ok":true,"rejectCode":null}
+FAIL A8 真产物字节形（多 create 绑定 + 未登记 delete 绑定共存 + open 让位）→ ok；实得 {"ok":false,"rejectCode":"OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION"}
+RED  admission-envelope-yield: A1 让位豁免正例（open 义务信封整缺 + 字段恰一匹配 create subject 行）→ ok；实得 {"ok":false,"rejectCode":"OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION"}
+RED  admission-envelope-yield: A8 真产物字节形（多 create 绑定 + 未登记 delete 绑定共存 + open 让位）→ ok；实得 {"ok":false,"rejectCode":"OBSERVATION_MISSING_ENVELOPE_FOR_OBLIGATION"}
+RED  admission-envelope-yield: 6 过 / 2 红
+EXIT=1
