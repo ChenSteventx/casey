@@ -3,7 +3,43 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-07 夜：基数门让位契约收口合入（首轮双 APPROVE）+ schema 同车改版人签、十五跑待发（最新覆盖层，权威现状）
+## 2026-08-08 凌晨：sign/replay 链推进两契约 + 停在准入终端语义缝（最新覆盖层，权威现状）
+
+现役 dev 顶端 `87d86c1`（本地零 push）。接下节，十五跑达阵后 Steven 令续 sign/replay 链：
+
+1. **链条推进**：draft 过（authored 号过存在性闸，重绑契约生产实证）→ Steven 签五断言
+   呈件（intent_create 无错 toast / intent_open 详情路径+无错 toast / 全局无页错+无错
+   信封，对 build 1.1.2、受众 production）→ sign 首拒暴露准入验证器不识让位。
+2. **契约 `admission-envelope-yield` 六阶段收口合入**（`87d86c1`，首轮双 APPROVE 零
+   C/H/M 二连）：`validateObservationAdmission` 学让位——终端投影携
+   `yieldedToPlatformId`；四条件豁免比基数门多一条紧条件（该原子**信封整缺**才是让位
+   形，空信封在场=畸形态照拒）；4b 全终端让位才免信封义务、6) 零行且让位才免角色计数；
+   加法门控、前置各闸零接触。金牌八钉、突变闭环、全仓 300 金牌串行扫描零回归（唯一
+   非新增差异 124 超时单跑复核绿）。确认件已铸（17 行 created-in-run 真读回收据，
+   identity 逐字取十五跑 `identity-observations.compile.json`，freeze 纯函数预验 ok）。
+3. **当前停点（下一步甲）**：merge 后重跑 sign，4b 豁免生效、新拒
+   `OBSERVATION_ROLE_COUNT_MISMATCH`——露出更深既有缝：准入验证器把已登记原子的
+   **每个 click** 都当独立终端索要观察行（`entity-observation-registry.mjs` 段 1
+   `terminals.push` 逐 click；段 6 逐终端角色计数），create 的新增/分类脚手架 click
+   各要一行 subject 而真产物只有确认 click 一行。基数门同缝早在 codex round-3 进化为
+   「组内末 click 才是终端 + 观察必锚终端」（`:382-384`），准入验证器从未见过多 click
+   真产物故从未暴露——「从未走通过」家族又一例。修向候选（未裁勿自主定）：
+   甲、准入终端语义对齐基数门（组内末 click 才是终端——动同一冻结验证器段 1/6，与
+   基数门判据同构可引先例）；乙、脚手架 click 义务豁免（按锚定观察行反推终端集——
+   语义更绕）。建议甲，立契约走全流程。
+4. 环境与账：sign 重跑产物零落盘（fail-closed 不产半件）；十五跑产物与确认件原样在
+   `cases/tc_catalog_wf_crud/`；`~/casey-recovery-20260807/` 存全部过程账（sign 两轮
+   日志、三轮扫描、评审原件）；主树活契约槽 `p9-created-workflow-cleanup-continuity-v3`
+   3/6 不变（s5 深消费即本链、等 sign 通后收）。
+
+### 下一步（接手者从甲起）
+
+- 甲、立契约修准入终端语义缝（建议对齐基数门「组内末 click 终端」判据；full 六阶段 +
+  worktree；修通后重跑同一 sign 命令——Steven 已签呈件与确认件不变）→ 签成续 replay
+  链（created-workflow 权威铸新绑当前 events 字节 + replay grant，门拒即停）。
+- 乙、后两例与挂账承前（A4 白名单独立钉新增；36 棵树可摘清单加二）。
+
+## 2026-08-07 夜：基数门让位契约收口合入（首轮双 APPROVE）+ schema 同车改版人签、十五跑待发（历史覆盖层，被上节接续）
 
 现役 dev 顶端 `28e02a2`（本地零 push）。接下节，终裁当日落地：
 
