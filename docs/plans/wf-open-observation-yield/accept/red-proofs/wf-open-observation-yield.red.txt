@@ -1,0 +1,15 @@
+ok   S1a 不抛；实得 null
+ok   S1b 零 blockers；实得 []
+ok   S1c click 照发（让位只让归档、不让点击）；实得 1
+ok   S1d 双证照跑（扫描先于卡内点击）；实得 journal=["scan:wfok","card-click"]
+FAIL S1e 归档面仍恰一行（create subject）——open source 行已让位；实得 [{"kind":"workflow","name":"wfok","code":"WF-OK","platformId":"9001","sourceIntentId":"intent_create","candidateId":"cand-create","role":"subject","atom":"workflow.create","evidenceStepId":"w_confirm"
+ok   S1f pending 清空
+FAIL S1g 让位 notes 在场（可审计）；实得 ["workflow.open 前奏诊断：container=false loose=true branch=false searched=false 采样=1 耗时=0ms 页面态=采样异常","workflow.open 锚定诊断：授予=true 命中=true 采样=1 耗时=0ms"]
+ok   S1h 双证裁定仍 unique（验证价值保留）；实得 {"resolution":"unique","reason":null}
+ok   S2a 独跑照旧归档全档（source 观察，readback 契约 S1e 同款）；实得 [{"kind":"workflow","name":"wfok","code":"WF-OK","platformId":"9001","sourceIntentId":"intent_wfok","candidateId":"cand-wfok","role":"source","atom":"workflow.open","evidenceStepId":"atstep_0","source
+ok   S3a 异 platformId 不让位（判据=同 platformId，非有观察就让）；实得 [{"kind":"workflow","name":"wfok","code":"WF-OK","platformId":"8888","sourceIntentId":"intent_create","candidateId":"cand-create","role":"subject","atom":"workflow.create","evidenceStepId":"w_confirm"
+ok   S4a 让位场景平台零行 → 仍硬阻断不点（双证不缩水）；实得 blockers=["workflow.open source 读回双证门裁定 absent（envelope-name-zero-hit）→ 硬阻断 fail-closed 不点（读回不齐绝不点开未证对象，DOM 唯一不豁免）"]
+ok   S4b 归档面不被污染（仍只有预置行）；实得 [{"kind":"workflow","name":"wfok","code":"WF-OK","platformId":"9001","sourceIntentId":"intent_create","candidateId":"cand-create","role":"subject","atom":"workflow.create","evidenceStepId":"w_confirm"
+RED  wf-open-observation-yield: S1e 归档面仍恰一行（create subject）——open source 行已让位；实得 [{"kind":"workflow","name":"wfok","code":"WF-OK","platformId":"9001","sourceIntentId":"intent_create","candidateId":"cand-create","role":"subject","atom":"workflow.create","evidenceStepId":"w_confirm"
+RED  wf-open-observation-yield: S1g 让位 notes 在场（可审计）；实得 ["workflow.open 前奏诊断：container=false loose=true branch=false searched=false 采样=1 耗时=0ms 页面态=采样异常","workflow.open 锚定诊断：授予=true 命中=true 采样=1 耗时=0ms"]
+RED  wf-open-observation-yield: 10 过 / 2 红

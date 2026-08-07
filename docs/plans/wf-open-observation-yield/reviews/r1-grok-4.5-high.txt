@@ -1,0 +1,76 @@
+异 构 评 审  R1 · wf-open-observation-yield
+快 照 ： HEAD 4d05447（ git diff HEAD 空 ， 仅  untracked reviews/、 node_modules）
+基 线 ： b6880e3
+实 现  diff： lib/compile-atoms-workflow-nav.mjs 仅  compileWorkflowOpen 声 明 分 支 归 档 一 处 （ +让 位 判 据 ）
+───
+Findings
+本 轮 无  Critical / High / Medium finding。
+（ 首 轮 只 报  C/H/M； 未 发 现 须 改 实 现 的 缺 陷 。 ）
+───
+风 险 清 单 结 论
+1. 让 位 判 据 正 确 性  — 通 过
+• 判 据 实 码 ： run.identityObservations.some((o) => o && o.platformId === gate.matched.platformId)（ lib/compile-atoms-workflow-nav.mjs:190-191）
+• 精 确 同  platformId， 非 同 名 、 非 「 有 观 察 就 让 」 ； S3 金 牌 （ 预 置  8888 + open 命 中  9001 → 两 行 并 存 ） 钉 死 反 例 。
+• gate.matched.platformId 唯 一 来 源 ： resolveDualIdentity 在  resolution==='unique' 时 取 同 名 唯 一 信 封 行  row.id（ agent-identity-gate.mjs:48） ； resolveWorkflowOpenSourceIdentity 仅  unique 才 返 回  gate（ :3
+段  matches[0].id（ compile-atoms-workflow-crud.mjs:36） 。 列 表 扫 描 要 求  nonEmpty(id) 字 符 串 （ entity-created-workflow-continuity-v3.mjs:696-698） → === 类 型 同 构 可 信 。
+• 注 释 写 「 created-in-run subject」 是 意 图 说 明 ； 实 现 不 滤  role/atom， 只 认  platformId——对 「 同 实 体 」 更 稳 ， 偏  fail-closed 不  fail-open。
+2. 独 跑 零 回 归  — 通 过
+• 零 预 置  → 走  else 原 归 档 支 ： pendingIdentityObservation = { matched, evidenceStepId, kind, sourcePath } 不 变 。
+• 本 契 约  S2a 全 档 断 言 绿 （ atom/name/code/platformId/evidenceStepId=click/provenance/sourcePath） 。
+• readback 契 约 金 牌 自 跑  20/20 绿 （ open 独 跑 场 景  S1e 归 档 全 档 未 被 让 位 污 染 ） 。
+• successor amendment 的  open [source]： 无 同  platformId 先 验 观 察 时 仍 归 档 ， 语 义 保 留 。
+3. 双 证 不 缩 水  — 通 过
+• 让 位 点 在  click 成 功  + waitForURL 之 后 （ :185-197） ； 其 前 ： 前 奏 搜 索 、 锚 定 、 容 器 闸 、 resolveWorkflowOpenSourceIdentity（ 扫 描 +物 理 双 锚 +resolveDualIdentity） 、 句 柄 内  TOCTOU 点 击 ——字 节
+• S1c/d/h： click 照 发 、 journal scan 先 于  card-click、 identityGateOutcome.unique。
+• S4a： 让 位 场 景  + 平 台 零 行  → 仍  absent 硬 阻 断 、 零  click； S4b 归 档 面 不 被 污 染 。
+4. 下 游 效 果 （ 实 码 核 ， 非 注 释 ） — 通 过
+┌───────────────────────┬────────────────────────────────────────┬───────────────────────────────────────────┐
+│ 形 态                   │ selectObservationForDestructiveTarget  │ deriveObservationIssuerAtom               │
+├───────────────────────┼────────────────────────────────────────┼───────────────────────────────────────────┤
+│ 让 位 后 仅  create 一 行   │ ok:true， 铸  create 观 察                 │ ok:true, atom:workflow.create（ H1h 通 道 ）  │
+├───────────────────────┼────────────────────────────────────────┼───────────────────────────────────────────┤
+│ 修 前 双 行 同 名           │ OBSERVATION_SELECT_AMBIGUOUS_SAME_NAME │ OBSERVATION_ISSUER_MULTIPLE_ATOMS（ H1i）   │
+├───────────────────────┼────────────────────────────────────────┼───────────────────────────────────────────┤
+│ S3 异  platformId 两 行  │ 同 上  AMBIGUOUS                         │ 同 上  MULTIPLE_ATOMS                       │
+└───────────────────────┴────────────────────────────────────────┴───────────────────────────────────────────┘
+C3 选 取 按  name + boundKind 唯 一 （ entity-destructive-continuity.mjs:348-358） ； 让 位 去 掉 第 二 条 同 名 观 察 后 唯 一 命 中 。 issuer 要 求 单  atom 集 合 （ entity-observation-registry.mjs:401-417） ； 单 留
+道 。
+5. 边 界 ： 异  platformId 两 行 并 存  — 通 过
+• S3 金 牌 钉 两 行 并 存 。
+• 后 续 ： C3 同 名 歧 义  fail-closed + H1i 多 原 子  fail-closed → 预 期  route:human， 无 静 默 放 行 路 径 （ 上 表 实 码 已 证 ） 。
+6. 金 牌 质 量 与 红 证  / PRD — 通 过
+• S1–S4 强 度 足 够 ： 让 位 面 （ 行 数 /atom/role/pending/notes） + 独 跑 全 档  + 判 据 精 确 反 例  + 双 证 拒 路 径 ； 共  12 assert 全 绿 。
+• 红 证 复 现 （ git worktree @ b6880e3 + HEAD 金 牌 ） ： 10 过  / 2 红  = S1e、 S1g， 与  accept/red-proofs/wf-open-observation-yield.red.txt 一 致 。
+• PRD 三 条  sha256 自 算  MATCH：
+  • golden df2d8ea1…eaa5
+  • plan 290f4a76…8991
+  • red 4554b2bb…226b
+• gate GREEN story 2/2（ ratchet + s1 + s2 邻 接  acceptance 全  exit 0） 。
+7. 邻 接  — 通 过
+自 跑 核 ：
+┌────────────────────────────────────────┬───────────────────────────────────────────┐
+│ 项                                      │ 结 果                                       │
+├────────────────────────────────────────┼───────────────────────────────────────────┤
+│ wf-open-readback-requery               │ 20/20                                     │
+├────────────────────────────────────────┼───────────────────────────────────────────┤
+│ wf-delete-search-filter                │ 16/16                                     │
+├────────────────────────────────────────┼───────────────────────────────────────────┤
+│ entity-workflow-source-readback.wiring │ 18/18（ 含  H1i）                            │
+├────────────────────────────────────────┼───────────────────────────────────────────┤
+│ …cardinality-reverse                   │ 18/18                                     │
+├────────────────────────────────────────┼───────────────────────────────────────────┤
+│ p9-…created-in-run                     │ 8/8                                       │
+├────────────────────────────────────────┼───────────────────────────────────────────┤
+│ term-lint --registry                   │ 通 过                                       │
+├────────────────────────────────────────┼───────────────────────────────────────────┤
+│ selftest --tier1                       │ GREEN                                     │
+├────────────────────────────────────────┼───────────────────────────────────────────┤
+│ p9-replay-authority-split cli/pure     │ 13/13、 10/10（ 相 对 基 线 文 件 本 契 约 零  diff）  │
+└────────────────────────────────────────┴───────────────────────────────────────────┘
+实 现 变 更 白 名 单 内 仅  nav 一 处 ； HANDOFF/NEXT-SESSION 为 交 接 文 档 ， 不 进 运 行 路 径 。
+───
+取 证 摘 要
+• 变 更 主 旨 与 实 码 一 致 ： 同  platformId 先 验 观 察  → 跳 过  pendingIdentityObservation + 让 位  notes； 否 则 原 样 归 档 。
+• 红 →绿 闭 环 成 立 ； 邻 接 与 门 禁 复 核 绿 。
+• 真 机 端 到 端 （ B4 十 三 跑 ） 属  observability route:human， 不 在 本  hermetic 契 约 验 收 内 ——与  PRD 一 致 。
+VERDICT: APPROVE
