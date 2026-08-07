@@ -1,0 +1,144 @@
+增 量 复 核 ： 只 看  5d059a8..41498de 的 三 文 档 修 复  hunks， 核 对 是 否 收 口  Medium、 有 无 新 矛 盾 。
+◆ Task started: Verify delta commit scope and clean state
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (8ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (630ms)
+┃◆ Thought for 0.9s
+┃
+┃Wait for the command.
+◆ Task completed in 17s: Verify delta commit scope and clean state
+┃◆ Thought for 6.9s
+┃
+┃Good - HEAD is 41498de, only 3 docs changed. Let me get the full diff and verify checksums.
+◆ Run Show full three-doc fix diff
+$ git diff 5d059a8..41498de -- docs/plans/wf-delete-search-filter/plan.md docs/plans/wf-delete-search-filter/GRILL.md loop/prd-wf-delete-search-filter.json
+diff --git a/docs/plans/wf-delete-search-filter/GRILL.md b/docs/plans/wf-delete-search-filter/GRILL.md
+index 086f75a..177df4c 100644
+… +139 lines
+矛 盾 ——plan 修 法 /验 收 章 、 GRILL 修 法 条 、 PRD task/s1 全 部 改 写 为  v3 口 径 并 重 签  plan sha； 金 牌 与 红 证 字 节 不 变 。 ",
+   "worktree": "/mnt/d/ctx/heren/casey-wf-delete-search-filter"
+ }
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (673ms)
+◆ Run Verify plan sha re-sign; golden/red bytes unchanged
+$ cd /mnt/d/ctx/heren/casey-wf-delete-search-filter &&
+  sha256sum docs/plans/wf-delete-search-filter/plan.md tests/_golden/wf-delete-search-filter.zero-sut.golden.mjs docs/plans/wf-delete-search-filter/accept/red-proofs/wf-delete-search-filter.red.txt &&
+  echo '---PRD---' && python3 -c "
+  import json
+  from pathlib import Path
+  p=json.loads(Path('loop/prd-wf-delete-search-filter.json').read_text())
+  print(json.dumps(p['testChecksums'], indent=2))
+  print('task snippet:', p['task'][:400])
+  print('s1:', p['stories'][0]['desc'][:400])
+  print('notes has v3:', '惰 性 保 留 ' in p.get('notes',''))
+  "
+  # golden/red unchanged vs 5d059a8
+  echo '---blob identity---'
+  git rev-parse 5d059a8:tests/_golden/wf-delete-search-filter.zero-sut.golden.mjs 41498de:tests/_golden/wf-delete-search-filter.zero-sut.golden.mjs
+  git rev-parse 5d059a8:docs/plans/wf-delete-search-filter/accept/red-proofs/wf-delete-search-filter.red.txt 41498de:docs/plans/wf-delete-search-filter/accept/red-proofs/wf-delete-search-filter.red.txt
+  # plan sha changed
+  git rev-parse 5d059a8:docs/plans/wf-delete-search-filter/plan.md 41498de:docs/plans/wf-delete-search-filter/plan.md
+b21239238a9a3527ba5d5a190892625033fd0baf5d82ef6755b3273196818dcf  docs/plans/wf-delete-search-filter/plan.md
+5b18d7dc77e9b6320fc6f86ffd361ec87ffc4d08ed94efeacc79a64722545738  tests/_golden/wf-delete-search-filter.zero-sut.golden.mjs
+… +18 lines
+6bc405dd81aa9b83477b6b4e04d0293dfdb4f86a
+e8008786d2e6ca3f9315e1504cbb63b7b59ef712
+e900e1c79d8bd9d3bd8e8130bc898911e1fb2b97
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (5ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (632ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (7ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 16.7s
+┃
+┃Let me also check for residual contradictions:
+◆ Run Scan residual v2 wording; align plan vs golden
+$ cd /mnt/d/ctx/heren/casey-wf-delete-search-filter && # residual v2-as-current phrasing in the three docs
+  python3 << 'PY'
+  from pathlib import Path
+  files=[
+   'docs/plans/wf-delete-search-filter/plan.md',
+   'docs/plans/wf-delete-search-filter/GRILL.md',
+   'loop/prd-wf-delete-search-filter.json',
+  ]
+  needles=['非  `Enter`','非  Enter','两 处  Enter→放 大 镜 ','两 处  press Enter →','换 成 放 大 镜 ','Enter 全 退 役 ']
+  for f in files:
+      t=Path(f).read_text()
+      print('===', f)
+      for n in needles:
+          if n in t:
+              # show context lines
+              for i,line in enumerate(t.splitlines(),1):
+                  if n in line or (n.replace('`','') in line):
+                      print(f'  L{i}: {line[:160]}')
+  # positive alignment checks
+  plan=Path('docs/plans/wf-delete-search-filter/plan.md').read_text()
+  gold=Path('tests/_golden/wf-delete-search-filter.zero-sut.golden.mjs').read_text()
+  checks=[
+   ('plan lazy enter', 'press `Enter` 惰 性 保 留 ' in plan or 'press Enter 惰 性 保 留 ' in plan or '惰 性 保 留 ' in plan),
+   ('plan icon after', '必 在 其 后 ' in plan),
+   ('plan re-search retire', '删 后 重 搜 ' in plan and '退 役 ' in plan),
+   ('plan S4 no equal count claim', '计 数 恒 等 正 控 ' in plan and '十 二 跑 ' in plan),
+   ('plan not claim 非  Enter as current S1', '——非 ' not in plan),
+   ('gold S1c', '惰 性 保 留 ' in gold),
+  ]
+  for k,v in checks:
+      print(k, 'OK' if v else 'FAIL')
+  # notes residual
+  prd=Path('loop/prd-wf-delete-search-filter.json').read_text()
+  print('notes still has 零  Enter phrase:', '零  Enter' in prd)
+  print('notes has r1 Medium 采 纳 :', 'r1 grok Medium' in prd)
+  PY
+  # confirm no lib change in delta
+  git diff 5d059a8..41498de --name-only | grep -E 'lib/|tests/' || echo 'no impl/golden in delta'
+=== docs/plans/wf-delete-search-filter/plan.md
+  L29: Enter 全 退 役 」 ， 被 三  PRD 冻 结 的  `post-nav-anchor-wait` 金 牌  S2（ 包 含 式 钉  fill/press
+… +14 lines
+notes still has 零  Enter phrase: True
+notes has r1 Medium 采 纳 : True
+no impl/golden in delta
+    ───
+    pre_tool_use
+      ✓ global/settings:pre_tool_use[0].hooks[0] (7ms)
+      ✗ global/settings:pre_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+      ✓ project/settings:pre_tool_use[0].hooks[0] (608ms)
+    post_tool_use
+      ✓ global/settings:post_tool_use[0].hooks[0] (6ms)
+      ✗ global/settings:post_tool_use[1].hooks[0] (0ms)
+          hook not executed: required env var(s) not set: ${CLAUDE_LIGHT}
+┃◆ Thought for 2.7s
+┃
+┃The residual "零  Enter" in notes is describing the red baseline dimensions from an earlier phrasing - and notes also say S1d 恰 一 处  key:Enter. It's historical red-surface labeling that's slightly imprecis...
+增 量 复 核  · 5d059a8..41498de
+范 围 ： HEAD 41498de； 仅 三 文 档 （ plan.md / GRILL.md / prd-wf-delete-search-filter.json） ； 无  lib/、 无 金 牌 /红 证 字 节 变 更 。 tracked 工 作 树 干 净 。
+原  Medium 收 口 核 对
+┌──────────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+│ 要 求                                                      │ 结 果                                                                                                                                              │
+├──────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ plan 修 法  → v3（ 惰 性  Enter + 放 大 镜 后 置  + 删 后 重 搜 退 役 ）  │ 收 口 。 章 题 改 为 「 修 法  v3」 ； §1 fill→Enter 惰 性 保 留 →icon 必 后 ； §3 第 二 处  Enter 退 役 ； 并 记  v2 全 退 役 被  post-nav 打
+├──────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ plan 验 收  S1–S4 对 齐 金 牌                                  │ 收 口 。 S1 含 序 钉 /恰 一  Enter/恰 两  icon； S4 改 为 「 锚 提 前 放 行 不 改 判 」 ， 恒 等 正 控 挂  observability/十 二 跑 ； 已 删 「 ——非  Enter
+├──────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ GRILL 修 法 条 同 步                                          │ 收 口 。 §5 改 为  v3 定 形 。                                                                                                                           │
+├──────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ PRD task / s1 desc 同 步                                   │ 收 口 。 task 写 「 修 法  v3…惰 性 保 留  + 放 大 镜 后 置 …删 后 重 搜  Enter 退 役 」 ； s1 对 齐  S1c/d/e。
+├──────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+│ plan sha 重 签 ； 金 牌 /红 证 不 变                              │ 收 口 。 plan 自 算  b2123923… = testChecksums； golden/red blob 与  5d059a8 同  id， sha 未 动 。
+└──────────────────────────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+新 矛 盾
+• 无  C/H/M 级 新 矛 盾 。  plan / GRILL / task / s1 / 实 现 注 释  / 金 牌  v3 口 径 一 致 。
+• 残 留 （ 不 升  finding） ： notes 红 面 括 注 仍 写 「 零  Enter」 ——与 同 段 已 写 的 「 S1d 恰 一 处  key:Enter」 及  v3 红 证 实 际 （ 基 线  2 处  Enter） 略 糙 ， 属 史 迹 措 辞 ， 不 构 成 现 行 验 收 规 格 冲
+DELTA_VERDICT: APPROVE

@@ -1,0 +1,24 @@
+ok   S1a 编译不抛（fail-closed 走 blockers）；实得 null
+FAIL S1b 搜索隔离含放大镜 click（纯 fallbackCss，真过滤）；实得 emits=["nav","fill","press:Enter"]
+FAIL S1c press Enter 惰性保留（冻结面让路）且放大镜 click 必在其后（真过滤序钉）；实得 emits=["nav","fill","press:Enter"]
+FAIL S1d 结构面：函数体恰一处 key:Enter（搜索隔离惰性保留、删后重搜第二处退役）；实得 2
+FAIL S1e 结构面：恰两处放大镜 fallbackCss（搜索隔离 + 删后重搜）；实得 0
+FAIL S2a 放大镜 click emit 在场（resolution 走 absent 通道）；实得 emits=["nav","fill","press:Enter"]
+ok   S2b 未真过滤不授锚预算（快速通过，<5s）；实得 361ms
+ok   S2c 审计照跑 fail-closed（计数门 unknown 截断语义保持）；实得 ["计数口径不恒等（布局=unknown，记录容器=null，删除目标=null）→ 删除链路截断、route:human（接缝级）"]
+ok   S2d 零破坏 click
+FAIL S3a 真过滤后目标缺席 → 锚满预算（≥14s 有界轮询）；实得 362ms
+ok   S3b 计数门 unknown 截断保持；实得 ["计数口径不恒等（布局=unknown，记录容器=null，删除目标=null）→ 删除链路截断、route:human（接缝级）"]
+ok   S3c 零破坏 click
+ok   S3d compileFlow 硬阻断后中止（第二步不执行）
+FAIL S4a 放大镜 click emit 在场；实得 ["nav","fill","press:Enter"]
+ok   S4b 目标在容器内 → 锚首采即放行（<5s，不烧满预算）；实得 362ms
+ok   S4c 锚不改判——审计仍按实采裁定（mock 无记录域 → unknown 截断保持）；实得 ["计数口径不恒等（布局=unknown，记录容器=null，删除目标=null）→ 删除链路截断、route:human（接缝级）"]
+RED  wf-delete-search-filter: S1b 搜索隔离含放大镜 click（纯 fallbackCss，真过滤）；实得 emits=["nav","fill","press:Enter"]
+RED  wf-delete-search-filter: S1c press Enter 惰性保留（冻结面让路）且放大镜 click 必在其后（真过滤序钉）；实得 emits=["nav","fill","press:Enter"]
+RED  wf-delete-search-filter: S1d 结构面：函数体恰一处 key:Enter（搜索隔离惰性保留、删后重搜第二处退役）；实得 2
+RED  wf-delete-search-filter: S1e 结构面：恰两处放大镜 fallbackCss（搜索隔离 + 删后重搜）；实得 0
+RED  wf-delete-search-filter: S2a 放大镜 click emit 在场（resolution 走 absent 通道）；实得 emits=["nav","fill","press:Enter"]
+RED  wf-delete-search-filter: S3a 真过滤后目标缺席 → 锚满预算（≥14s 有界轮询）；实得 362ms
+RED  wf-delete-search-filter: S4a 放大镜 click emit 在场；实得 ["nav","fill","press:Enter"]
+RED  wf-delete-search-filter: 9 过 / 7 红

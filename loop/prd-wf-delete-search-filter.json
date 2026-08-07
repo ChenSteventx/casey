@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "task": "wf-delete-search-filter（light）：修复 workflow.deleteByName 搜索隔离姿势（B4 十一跑计数对账门布局=unknown 截断）。根因（侦察修正最初「缺导航」假设）：删除原子已有 nav+搜索框就绪锚且十一跑中搜索框真找到，真根因是搜索隔离走 fill+Enter——seam-1 真机已证当前被测方 Enter 不过滤、放大镜才过滤（旧版被测方知识残留）；未过滤列表缺目标卡，计数门按「含目标名的行/卡计数」如实 unknown 截断（门无缺陷不动门）。删后重搜同 seam 第二处（不修会让「删后归零」断言读陈旧列表）。删除链此前从未在 open 真通后的列表态执行过——「从未走通过」家族第四例。修法 v3（Steven 裁 atom 级封套、grill 确认修正后根因；v2「两处 Enter 全退役」被三 PRD 冻结的 post-nav S2 包含式钉打红、实现让路定形 v3）：搜索隔离处 press Enter 惰性保留（真机证无副作用、满足冻结面）+ 放大镜 click 真过滤必在其后（纯 fallbackCss .hr-input__suffix .search-icon，照 chat.sendAndWait 送出图标先例）+ 过滤后 15s 有界就绪锚（真 acted 才授预算、目标入容器即放行、预算耗尽不改判——审计照跑、fail-closed 路径零行为差）；删后重搜处 Enter 退役只留放大镜（无冻结覆盖）。frozen 面零接触（events 每编译重产，不在任何 testChecksums）。",
+  "specPath": "docs/plans/wf-delete-search-filter/plan.md",
+  "testChecksums": {
+    "tests/_golden/wf-delete-search-filter.zero-sut.golden.mjs": "5b18d7dc77e9b6320fc6f86ffd361ec87ffc4d08ed94efeacc79a64722545738",
+    "docs/plans/wf-delete-search-filter/plan.md": "b21239238a9a3527ba5d5a190892625033fd0baf5d82ef6755b3273196818dcf",
+    "docs/plans/wf-delete-search-filter/accept/red-proofs/wf-delete-search-filter.red.txt": "3d8c23baa6276903bd9d3c8e6cc76fe4e064920e4eede8f924fae3166036a7ea"
+  },
+  "observability": [
+    {
+      "dimension": "hermetic 只证姿势/锚/fail-closed 保持；端到端真证是 B4 十二跑（乙授权、一例一跑、新 atl_ 长名令牌）——预期 create→open→详情断言→删除→删后归零全链首过，跑完记全链路总耗时。",
+      "route": "human"
+    },
+    {
+      "dimension": "S4 只钉「锚提前放行 + 锚不改判」；审计恒等正控（真实记录域 1/1）在 mock 无 elementHandles 域下不可达，由十二跑真机承载。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-search-filter-posture",
+      "desc": "搜索隔离惰性 Enter 保留 + 放大镜真过滤后置（行为+结构双面钉：S1c 序钉、S1d 恰一处 key:Enter、S1e 恰两处 search-icon）+ 过滤后有界就绪锚（真 acted 才授预算、目标入容器即放行、预算耗尽不改判）+ 计数门 fail-closed 语义逐字保持（unknown 截断、零破坏 click、compileFlow 中止）。金牌四钉 S1 姿势 / S2 图标缺席零行为差 / S3 目标缺席满预算 fail-closed / S4 锚提前放行不改判。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-delete-search-filter.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-07T02:33:40.661Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "邻接零回归：删除域与 crud 族金牌基线绿保持绿 + 上一契约金牌 + 统一语言 + 确定性内核自检；全仓金牌扫描（护栏 #19）与 ef81f78 基线双态对比另证。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/wf-crud-sleep-import.zero-sut.golden.mjs",
+        "node tests/_golden/wf-open-search-first.zero-sut.golden.mjs",
+        "node tests/_golden/wf-open-readback-requery.zero-sut.golden.mjs",
+        "node tests/_golden/entity-workflow-source-readback.wiring.zero-sut.golden.mjs",
+        "node tests/_golden/p9-created-workflow-continuity-v3.created-in-run.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-07T02:34:33.838Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "红基线真实 exit 1（9 过 / 7 红：红=新契约面【放大镜 emits/零 Enter/锚预算】、绿=既有 fail-closed 保持面），对最终金牌字节在修复前实抓，证据 accept/red-proofs/wf-delete-search-filter.red.txt。突变闭环走 git show 姿势（不碰暂存区）。passes 只由 gate 写入。 plan.md v2 修订如实记：术语硬拦逮到加粗英文（**Enter**），改代码体重签哈希（纯排版零语义差）。 金牌 v3 修订如实记：首版「两处 Enter 全退役」与三 PRD 冻结的 post-nav-anchor-wait S2（包含式钉 fill/press 照发）冲突——实现让路（semantic-name 首版教训先例）：搜索隔离处 press Enter 惰性保留（真机十一跑证无副作用）+ 放大镜 click 必在其后（S1c 序钉），删后重搜第二处 Enter 退役（无冻结覆盖）；S1d 改钉恰一处 key:Enter。红证对 v3 金牌字节在原实现下重抓（7 红）。 r1 grok Medium 采纳（并集修）：冻结 plan 正文与 PRD task/s1 文案曾停在 v2 规格（两处 Enter 全退役/非 Enter/S4 恒等正控）、与 v3 实现+金牌矛盾——plan 修法/验收章、GRILL 修法条、PRD task/s1 全部改写为 v3 口径并重签 plan sha；金牌与红证字节不变。",
+  "worktree": "/mnt/d/ctx/heren/casey-wf-delete-search-filter"
+}
