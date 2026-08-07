@@ -3,7 +3,43 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-08 凌晨：sign/replay 链推进两契约 + 停在准入终端语义缝（最新覆盖层，权威现状）
+## 2026-08-08 凌晨二：签署史上首次落盘 + 回放前置闸停放大镜形状缝（最新覆盖层，权威现状）
+
+现役 dev 顶端 `b80ee4e`（本地零 push）。接下节，Steven 裁甲后一契约收口、签署达阵、
+回放链首触：
+
+1. **契约 `admission-terminal-group` 六阶段收口合入**（`b80ee4e`，Steven 裁甲）：准入
+   验证器终端语义对齐基数门先例——组内末 click 才是终端（`terminalByGroup` 键
+   JSON([intentId,atom])、最后写入即终端，基数门 codex round-3 同构判据）；脚手架
+   click 不产观察义务、行锚脚手架即拒（收紧）；段 3/5/6 与让位谓词零改动自动继承。
+   金牌八钉（含 T8「两门同判」家族一致性钉）、首轮双 APPROVE 零 C/H/M **三连**、
+   全仓 301 金牌串行扫描零回归。
+2. **sign 三跑 EXIT 0——签署史上首次落盘**：五断言盖签（signer=Steven、build 1.1.2、
+   受众 production）→ `expected.frozen.json`（新 checksum 入 PRD、`expectedFrozenPath`
+   已设）+ `entity-locks.frozen.json`（原 eventsSha256+lockId+receiptHash 人签冻结，
+   17 行 created-in-run 真读回收据）。滞后冻结件改版重签就此兑现，旧件按哈希归档。
+   用户在途 PRD 改动（权威登记行）原样保留。
+3. **回放链首触**：created-workflow 权威草稿/冻结 + 批级回放票据草稿/冻结均落盘
+   （`runs/b4-replay-20260808/`，signer=Steven——授权依据=其签呈件时选项文字明列
+   「铸权威→replay→verdict→report」；票据失效点人写口径按当日窄窗代填已披露）。
+   replay（`b4r160808n`）前置闸 fail-closed 零启动：`workflow.deleteByName` 两步
+   click 文案/目标绑定判非法——precisely `atstep_13`（放大镜过滤）与 `atstep_17`
+   （删后重搜）两个 `fallbackCss` 纯 css click（无文案无语义），来自
+   wf-delete-search-filter 契约的放大镜真过滤形状；replay 的 delete-spec 前置闸
+   早于该形状、从未接过 v3 真事件——「从未走通过」家族第八例。
+4. 当前局面：sign 侧全链绿；replay 侧停在 delete-spec 前置闸。下一契约面明确：
+   回放前置闸学放大镜 click 形状（或事件投影补携定位契约），修向未裁勿自主定。
+
+### 下一步（接手者从甲起）
+
+- 甲、把回放 delete-spec 前置闸的放大镜形状缝摆 Steven 裁修向（闸学新形状 vs 投影
+  补携——先读 `bin/replay.mjs` 该闸判据与 wf-delete-search-filter 契约金牌怎么钉的
+  放大镜 click），裁后立契约走全流程；修通重跑 replay（权威/票据已冻结在
+  `runs/b4-replay-20260808/` 可复用，票据失效点 2026-08-08T23:59:59+08:00 过期须
+  重铸）→ verdict → report。
+- 乙、挂账承前；工作树清理（38 棵）。
+
+## 2026-08-08 凌晨：sign/replay 链推进两契约 + 停在准入终端语义缝（历史覆盖层，被上节接续）
 
 现役 dev 顶端 `87d86c1`（本地零 push）。接下节，十五跑达阵后 Steven 令续 sign/replay 链：
 
