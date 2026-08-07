@@ -24,9 +24,10 @@ MCP `mcp/casey-server.mjs`。
 3. `loop/GUARDRAILS.md`（19 条，逐条有效；表头仍写「13–16 新增」是陈旧措辞）
 4. `.claude/skills/casey/SKILL.md`、`README.md`
 5. 追溯「为何这么定」：`docs/adr/`（0001–0010）、`docs/design/txt2testreport-design.md`
-6. 本轮真机证据链：`docs/plans/wf-open-preface-notes/`（诊断契约）、
-   `docs/plans/semantic-name-instantiate/`（语义名根因契约）与
-   `docs/plans/wf-open-readback-requery/`（读回门根因契约）的 plan/learn/reviews
+6. 本轮真机证据链（plan/learn/reviews）：`docs/plans/wf-open-preface-notes/`（诊断）、
+   `docs/plans/semantic-name-instantiate/`（语义名）、`docs/plans/wf-open-readback-requery/`
+   （读回门）、`docs/plans/wf-delete-search-filter/`（删除搜索）、
+   `docs/plans/wf-open-observation-yield/`（观察让位）
 
 不要读取、搜索、推断或回显 `.auth/`、`site.json`、账号、密码、token、真实目标地址。
 
@@ -51,8 +52,9 @@ MCP `mcp/casey-server.mjs`。
 - 点击身份门（多匹配、坐标兜底、身份不明都不算 unique）；容器归属闸（命中还须落在
   记录容器内）；因果菜单授权（只认点入口后恰一浮现的新浮层）；网络取证按
   `attributedStepId` 不按时间窗；裁判与自愈分进程、`verdict.mjs` 对断言种类不可知。
-- 本轮新知识（未登记新词，只是事实）：`semantic.name` 落盘留模板、定位那一刻回填——
-  两侧定位入口各过一次纯投影 `instantiateEventSemantic`。
+- 本轮新知识（未登记新词，只是事实）：`semantic.name` 落盘留模板、定位那一刻回填
+  （纯投影 `instantiateEventSemantic` 两侧各一次）；open 读回走扫描路线（丙案）；
+  删除搜索隔离靠放大镜非 Enter（seam-1）；open 观察对同 platformId 让位（甲案）。
 
 【开发准则（机制强制）】
 - 阶段互锁：改实现或提交前必先 `contract init` 声明入口分流（`direct` | `light` | `full`）。
@@ -78,10 +80,10 @@ MCP `mcp/casey-server.mjs`。
 
 【排期】
 - P0–P7 已建；P8 web 已有、cef 与 arbitrary 未开始；P9 tier-1 已建、tier-2 机器面已建
-  而真机 UAT 收口中（A 段已闭，B 段首例 `tc_catalog_wf_crud` 推进到 open 步）；
-  P10 可信闭环自进化未开始。
+  而真机 UAT 收口中（A 段已闭，B 段首例 `tc_catalog_wf_crud` **执行链已全链首过**、
+  只剩成品段记账双门待裁）；P10 可信闭环自进化未开始。
 - 并行硬规则：碰 `lib`/`bin` 的落地走 worktree 隔离 + git-native 合并，绝不 cp 进
-  `lib`/`bin`；每树一独立 baton（护栏 #18 建议 ≤5 树，当前 29 树全持活 baton、已超，
+  `lib`/`bin`；每树一独立 baton（护栏 #18 建议 ≤5 树，当前 32 树全持活 baton、已超，
   多数是已 6/6 收口的历史树，可择机清理）。
 
 【当前状态（2026-08-07 晨收盘）】
