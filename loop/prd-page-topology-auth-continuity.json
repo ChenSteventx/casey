@@ -14,7 +14,7 @@
     "tests/_golden/page-topology-auth-continuity-boundaries.static.golden.mjs": "eb3f73a9716ad6d9fb0bae9b5331401f90daaea03b51d61a73ee11c9ab00766b",
     "tests/_golden/page-topology-auth-continuity-adjacent-regression.zero-sut.golden.mjs": "8825909e3a478df050788a782637b638d8f05f9488d3cac62c031053d4594271",
     "tests/_golden/fixtures/page-topology-auth-continuity/context-double.mjs": "8d2bed6d9b6022d5e978de2978d2268f73a04d36493cd3621197320b26492b47",
-    "tests/_golden/schemas/events.schema.json": "097fd45c9e8d43776c03fa1a0be4bf0e329acdae50aef87ca308c720948858d8",
+    "tests/_golden/schemas/events.schema.json": "a7122f8a329890748e4fa1557390cb830450d5cce3689c3b2426ecb9c2ee0a7c",
     "tests/_golden/output-seal-b5-prelaunch.zero-sut.golden.mjs": "f054406747be7bc482c80c55a8c3be8786076f280ea4f2f9aacdae137acbc4be"
   },
   "observability": [
@@ -145,6 +145,16 @@
         "docs/plans/page-topology-auth-continuity/GRILL.md"
       ],
       "reason": "提交前 staged diff-check 发现日期行仅含 Markdown 行尾空格。删除纯格式尾空格，决策、验收语义与测试命令零变化；旧 sha 9a1159ba... → 新 sha 7fff72cf...。以显式 amendment 重冻，禁止静默改 frozen 文档。"
+    },
+    {
+      "file": "tests/_golden/schemas/events.schema.json",
+      "oldSha": "097fd45c9e8d43776c03fa1a0be4bf0e329acdae50aef87ca308c720948858d8",
+      "newSha": "a7122f8a329890748e4fa1557390cb830450d5cce3689c3b2426ecb9c2ee0a7c",
+      "amendedAt": "2026-08-07",
+      "reason": "terminal-coverage-yield 契约同车改版（Steven 2026-08-07 两裁定：M1 挂账兑现=intentId pattern 放宽 ^intent_[A-Za-z0-9_]+$（authored 语义号与遗留序数号均合法，teach-in 同形多年、生产无 schema 强制层）；platformId 硬桥接=事件新增可选取证属性 yieldedToPlatformId（非空 string，观察让位时刻门内已解析身份，非豁免宣告）。改版只放宽不收紧，全部既有合法产物仍合法；人签见本契约 PRD observability 与评审收据。",
+      "signerId": "Steven",
+      "signedAt": "2026-08-07",
+      "signedVia": "AskUserQuestion 当轮点选「签（确认改版）」，见 terminal-coverage-yield 评审收据"
     }
   ],
   "notes": "acceptance-gate 于 2026-07-27 制造。五条新增能力门真实 RED：controller/session 模块缺失；pipeline 0/8（newpage 被 capture 降 click、distill 错建独立 step、topology/replay bridge 缺失）；formal replay action 0/3（当前不委派 controller，普通 locator none）；static 1/7（schema newpage+url 正控绿，其余模块/三管线/forensics 接线红）。邻接合成回归 4/4 GREEN，output-seal prelaunch GREEN。events.schema 作为既有真值字节冻结，实施不得修改。实现复核期追加 delayed-popup timing regression：context page 事件时 about:blank、随后同源导航，要求 listener-first session/forensics、动态 origin handoff 与 session seed；该回归在修复后冻结为 GREEN 保护，不冒充实现前红证。未运行会启动 fixture SUT/browser 的 video-login-carry 或 replay-login-bootstrap；未读真实 site.json/.auth。全部新增文件 <=600 行。"

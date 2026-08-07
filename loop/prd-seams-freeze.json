@@ -4,7 +4,7 @@
   "specPath": "docs/plans/seams-freeze/plan.md",
   "testChecksums": {
     "tests/_golden/seams-freeze.golden.mjs": "51899f6428b5f10e6158e8001eb8ae7d8debf88b0f55a2185b58c5fb8cd9c9c7",
-    "tests/_golden/schemas/events.schema.json": "097fd45c9e8d43776c03fa1a0be4bf0e329acdae50aef87ca308c720948858d8",
+    "tests/_golden/schemas/events.schema.json": "a7122f8a329890748e4fa1557390cb830450d5cce3689c3b2426ecb9c2ee0a7c",
     "tests/_golden/schemas/observed-reality.schema.json": "1c85bbeb8513927f0b5c8584530091dade318d53588c389e119debe7be9b5495",
     "tests/_golden/schemas/report-model.schema.json": "4068ff977ccdefc571de28880debdc7975c7cdc525c0a5d2d1787f17f816ed23",
     "tests/_golden/schemas/drift-patch.schema.json": "f6070a6d8e8729cf9841d2e137f5cc055ee5489dc215ee00ca2e45d6e4a956c2",
@@ -32,6 +32,16 @@
       "mutationVerification": "见 loop/prd-p7-report.json 同笔：隔离副本四组变异（两态中文态名、理由子类整段、badge() 查表退化）均使 p7-report 变红 exit 1，主树 lib/report.mjs sha256 前后一致零污染；残留缺口如实挂账——徽章 CSS 类（harness/human）改坏仍绿，未修。",
       "adjacencyRegression": "见 loop/prd-p7-report.json 同笔：11 个消费者改前改后退出码逐条一致；seams-freeze 本身改前改后均 exit 0。既有陈旧红 replay-video / layer3-wiring / casey-demo 三枚为改前即红，非本轮引入。",
       "signedBy": "Steven（2026-07-31 会话内明签。**本字段由 Claude 代填**，凭据即下列会话原话，非 Steven 本人书写；如对措辞或范围有异议以他后续更正为准）：同 prd-p7-report 第一笔（同日同笔换签的共享夹具侧）：先答「甲：补齐夹具」，后答「同意的」+「对，三笔都签」。"
+    },
+    {
+      "file": "tests/_golden/schemas/events.schema.json",
+      "oldSha": "097fd45c9e8d43776c03fa1a0be4bf0e329acdae50aef87ca308c720948858d8",
+      "newSha": "a7122f8a329890748e4fa1557390cb830450d5cce3689c3b2426ecb9c2ee0a7c",
+      "amendedAt": "2026-08-07",
+      "reason": "terminal-coverage-yield 契约同车改版（Steven 2026-08-07 两裁定：M1 挂账兑现=intentId pattern 放宽 ^intent_[A-Za-z0-9_]+$（authored 语义号与遗留序数号均合法，teach-in 同形多年、生产无 schema 强制层）；platformId 硬桥接=事件新增可选取证属性 yieldedToPlatformId（非空 string，观察让位时刻门内已解析身份，非豁免宣告）。改版只放宽不收紧，全部既有合法产物仍合法；人签见本契约 PRD observability 与评审收据。",
+      "signerId": "Steven",
+      "signedAt": "2026-08-07",
+      "signedVia": "AskUserQuestion 当轮点选「签（确认改版）」，见 terminal-coverage-yield 评审收据"
     }
   ],
   "observability": [

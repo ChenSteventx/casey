@@ -1,0 +1,22 @@
+FAIL Y1 让位豁免正例（open 零观察 + yieldedToPlatformId 恰一匹配 create subject 行）→ ok；实得 {"ok":false,"reason":"OBSERVATION_TERMINAL_WITHOUT_MATCHING_OBSERVATION"}
+ok   Y2 无字段遗留形照拒（加法门控——十四跑形态行为不变）；实得 {"ok":false,"reason":"OBSERVATION_TERMINAL_WITHOUT_MATCHING_OBSERVATION"}
+ok   Y3 字段值无匹配 subject 行 → 照拒（伪造字段不豁免）；实得 {"ok":false,"reason":"OBSERVATION_TERMINAL_WITHOUT_MATCHING_OBSERVATION"}
+ok   Y4 匹配行两条 → 拒（恰一才豁免，多条 fail-closed）；实得 {"ok":false,"reason":"OBSERVATION_TERMINAL_WITHOUT_MATCHING_OBSERVATION"}
+ok   Y5 subject 义务终端携伪造字段 → 照拒（义务恰 ['source'] 才可让）；实得 {"ok":false,"reason":"OBSERVATION_TERMINAL_WITHOUT_MATCHING_OBSERVATION"}
+ok   Y6 同终端两行 → 去重钉照拒（多面零松动）；实得 {"ok":false,"reason":"OBSERVATION_EVIDENCE_STEP_DUPLICATE"}
+ok   Y7 agent 遗留形逐字等价 → ok（zero 回归）；实得 {"ok":true,"reason":null}
+ok   Y8a 让位场景照常单击零阻断（既有让位行为不变）；实得 blockers=[] clicks=1
+FAIL Y8b 终端 click 事件盖 yieldedToPlatformId=让位对象 platformId（真实编译缝）；实得 undefined
+ok   Y8c 归档面仍恰一行（create 的）——盖字段不改让位本体；实得 1
+FAIL Y8d 编译产物（盖字段 open 事件 + create 行 + 其锚定 click）直接过基数门 → ok（端到端闭环）；实得 {"ok":false,"reason":"OBSERVATION_TERMINAL_WITHOUT_MATCHING_OBSERVATION"}
+FAIL Y9a intentId pattern 放宽为 ^intent_[A-Za-z0-9_]+$（M1 同车改版）；实得 "^intent_[0-9]+$"
+FAIL Y9b authored 号与遗留序数号均过新 pattern
+FAIL Y9c 事件对象新增可选属性 yieldedToPlatformId（非空 string）；实得 undefined
+RED  terminal-coverage-yield: Y1 让位豁免正例（open 零观察 + yieldedToPlatformId 恰一匹配 create subject 行）→ ok；实得 {"ok":false,"reason":"OBSERVATION_TERMINAL_WITHOUT_MATCHING_OBSERVATION"}
+RED  terminal-coverage-yield: Y8b 终端 click 事件盖 yieldedToPlatformId=让位对象 platformId（真实编译缝）；实得 undefined
+RED  terminal-coverage-yield: Y8d 编译产物（盖字段 open 事件 + create 行 + 其锚定 click）直接过基数门 → ok（端到端闭环）；实得 {"ok":false,"reason":"OBSERVATION_TERMINAL_WITHOUT_MATCHING_OBSERVATION"}
+RED  terminal-coverage-yield: Y9a intentId pattern 放宽为 ^intent_[A-Za-z0-9_]+$（M1 同车改版）；实得 "^intent_[0-9]+$"
+RED  terminal-coverage-yield: Y9b authored 号与遗留序数号均过新 pattern
+RED  terminal-coverage-yield: Y9c 事件对象新增可选属性 yieldedToPlatformId（非空 string）；实得 undefined
+RED  terminal-coverage-yield: 8 过 / 6 红
+EXIT=1
