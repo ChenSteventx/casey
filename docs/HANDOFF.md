@@ -3,7 +3,35 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-07 晚：意图号重绑契约收口合入 + 记账双门前提修正、M1/schema 挂账、D 盘四挂事故（最新覆盖层，权威现状）
+## 2026-08-07 夜：基数门让位契约收口合入（首轮双 APPROVE）+ schema 同车改版人签、十五跑待发（最新覆盖层，权威现状）
+
+现役 dev 顶端 `28e02a2`（本地零 push）。接下节，终裁当日落地：
+
+1. **契约 `terminal-coverage-yield` 六阶段收口合入**（`28e02a2`，Steven 三点裁定：
+   收窄版 A / platformId 硬桥接 / M1 schema 同车一次人签）：①让位分支把门内已解析
+   身份盖进 open 终端 click 事件 `yieldedToPlatformId`（取证记录非豁免宣告，让位
+   判据与 notes 零接触）；②`checkIdentityObservationCardinality` 反向基数四条件
+   豁免（count 恰 0 ∧ 义务恰 `['source']` ∧ 字段非空 ∧ 恰一条同 kind/subject/
+   platformId 行——缺一照拒、多面零松动、加法门控无字段输入逐字节同码）；
+   ③`events.schema.json` 一次改版（M1 兑现）：intentId pattern 放宽
+   `^intent_[A-Za-z0-9_]+$` + 新可选取证属性，两份实际冻结该件的归属 PRD 登
+   `checksumAmendments` + Steven 当轮点选人签。金牌九钉 14 断言（红基线 8 过/6 红、
+   三件整体还原突变闭环）、邻接八命令 + 归属金牌三家全绿、全仓 299 金牌串行扫描
+   零回归、gate GREEN 2/2；评审 grok + pi **首轮双 APPROVE 零 C/H/M**（ext4 克隆树
+   姿势，grok 自补对抗探测全拒）。
+2. **十五跑待发**（本段收笔时未跑）：令牌 `b4r150807m`；预登记预期=**exit 0 产全绿
+   成功件**（events/observed/draft），`tc_catalog_wf_crud` 史上首次全链产件；任何红
+   即停不连跑。
+3. 挂账更新：M1 已兑现销账；新增 plan.md 冻结字节「三份」笔误（随下次触碰清）；
+   teach-in 三通道/draft 闸面承前。
+
+### 下一步（接手者从甲起）
+
+- 甲、十五跑取真证（先重启隧道两端；预期 exit 0）→ 达阵则 B 段首例完整产件到手，
+  接 sign/replay 链与后两例（`publish_states` / `history_version`）统一处置。
+- 乙、挂账清偿与工作树清理（34 棵树，新增本契约树 6/6 可摘）。
+
+## 2026-08-07 晚：意图号重绑契约收口合入 + 记账双门前提修正、M1/schema 挂账、D 盘四挂事故（历史覆盖层，被上节接续）
 
 现役 dev 顶端 `b38c679`（本地零 push）。接下节，本段收一契约、修正一个裁定前提、
 记一日四次盘事故：
