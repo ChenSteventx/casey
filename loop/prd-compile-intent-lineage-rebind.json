@@ -3,10 +3,11 @@
   "task": "compile-intent-lineage-rebind（full）：标准编译路径事件意图号重绑。缺陷：compileFlow 无 lineagePlan 时事件保留编译器自生 intent_N，确认流 sourceIntentId 无人消费——出处链成品闸 issueCreatedWorkflowCompileProvenance 按流步 sourceIntentId 匹配终端事件，两套命名空间永不相等，create 步终端数 0 必拒（十三跑 CREATED_WORKFLOW_PROVENANCE_TERMINAL_EVENT_INVALID，探针双向复现；金牌夹具手工对齐两套号致纯函数假绿，史上第一跑抵闸才暴露）。修法（Steven 2026-08-07 四轮裁定：先修接线取真证再裁基数门修向；full 六阶段；混合态初裁全或无、同日被 bindagent-replay 冻结金牌夹具口径证伪后反转为逐步存在即绑——变异步带号、nav/assert 裸步是既定合法惯例）：compileFlow 标准路径在事实产生点把带非空 sourceIntentId 的步产出事件 intentId 重绑为该步 sourceIntentId、lastIntentId 同步（镜像 teach-in 块原则「compiler-local intent_N 只服务编译运行态，不得进入 formal replay」，与 CONTEXT.md intentId 词条一致）；裸步保持自生号与遗留折叠行为，混合流合法不掷错；teach-in lineage 块字节零漂移（其 PRD 冻结面大，并列不合并）。非目标：不动三道冻结门、不碰滞后冻结件、不裁基数门修向、不动观察让位机制。",
   "specPath": "docs/plans/compile-intent-lineage-rebind/plan.md",
   "testChecksums": {
-    "tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs": "5fc875bfa2e1218be6fad45a8a8058f1a8262684140bd9e82538065ebf98096a",
-    "docs/plans/compile-intent-lineage-rebind/plan.md": "422a52b0b829296075a175faa0d16b178af264e224050b7068a3f17dd79cc833",
+    "tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs": "9964663f9da2f40047b1233e9759893c850f34788b23bbe79cff8e2fc887e8fb",
+    "docs/plans/compile-intent-lineage-rebind/plan.md": "6f5a804b93d395d7e3944c8cd610cc2ff000fbd7075336201ed168468f79c117",
     "docs/plans/compile-intent-lineage-rebind/accept/red-proofs/compile-intent-lineage-rebind.red.txt": "63b0c8c3f7b7e91af09166ded4c133e4cb5f8910731dc724a686f3b814f072d3",
-    "docs/plans/compile-intent-lineage-rebind/accept/red-proofs/compile-intent-lineage-rebind.mixed-perstep.delta-red.txt": "66cd29628d8316e118c2d831763e7d0098fc8843e5bff01940706e6f3201b1e5"
+    "docs/plans/compile-intent-lineage-rebind/accept/red-proofs/compile-intent-lineage-rebind.mixed-perstep.delta-red.txt": "66cd29628d8316e118c2d831763e7d0098fc8843e5bff01940706e6f3201b1e5",
+    "docs/plans/compile-intent-lineage-rebind/accept/red-proofs/compile-intent-lineage-rebind.h1-threechannel.delta-red.txt": "97d9bf3da03bf7b3d6e5d40c7eb5b7eba850849c23f3c29c427370fb69b2e879"
   },
   "observability": [
     {
@@ -21,13 +22,13 @@
   "stories": [
     {
       "id": "s1-intent-lineage-rebind",
-      "desc": "标准路径事件意图号重绑四钉：G1a 真实 compileFlow 缝（authored 号进产物、零 intent_N 残留、逐步归属、lastIntentId 同步）/ G1b 出处链闸耦合（authored ok、intent_N 同码拒、双终端拒）/ G2 混合态逐步语义（不掷错、带号步重绑、裸步保持自生号与折叠锚）/ G3 遗留零漂移。",
+      "desc": "标准路径事件意图号重绑五钉：G1a 真实 compileFlow 缝（authored 号进产物、零 intent_N 残留、逐步归属、lastIntentId 同步）/ G1b 出处链闸耦合（authored ok、intent_N 同码拒、双终端拒）/ G1c 三通道一致性（observed/verification 逐 stepId 与 events 同号，grok r1 H1 并集修）/ G2 混合态逐步语义（不掷错、带号步重绑、裸步保持自生号与折叠锚、G2-5 三通道双向一致）/ G3 遗留零漂移。",
       "lane": "implementation",
       "acceptance": [
         "node tests/_golden/compile-intent-lineage-rebind.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-07T07:24:48.099Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-07T09:47:26.633Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-adjacency-zero-regression",
@@ -44,9 +45,9 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-07T07:25:07.866Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-07T09:47:43.989Z 全部 acceptance exit 0"
     }
   ],
-  "notes": "首版红基线真实 exit 1（6 过 / 5 红，实现前实抓，证据 red.txt）。混合态改版（全或无掷错→逐步存在即绑，Steven 反转裁定）：改版 G2 对掷错实现的 delta 红证 exit 1 实抓（mixed-perstep.delta-red.txt），随后实现改逐步、金牌回绿——红→绿链条两段完整。改版动因：全仓双态扫描唯一真差异 entity-ui-wiring.bindagent-replay（冻结金牌，夹具口径=变异步带号+nav/assert 裸步+assert 折锚），全或无掷错把合法惯例截胡；改版后该金牌复绿。G1b/G3 绿基线为闸语义与遗留行为回归钉。流文档金牌内自构、零 gitignored 依赖（新树必绿可跑）。突变闭环走 git show 姿势（不碰暂存区），首版与改版各验一轮（还原必红/恢复 sha256 同/必绿）。passes 只由 gate 写入。",
+  "notes": "首版红基线真实 exit 1（6 过 / 5 红，实现前实抓，证据 red.txt）。混合态改版（全或无掷错→逐步存在即绑，Steven 反转裁定）：改版 G2 对掷错实现的 delta 红证 exit 1 实抓（mixed-perstep.delta-red.txt），随后实现改逐步、金牌回绿——红→绿链条两段完整。改版动因：全仓双态扫描唯一真差异 entity-ui-wiring.bindagent-replay（冻结金牌，夹具口径=变异步带号+nav/assert 裸步+assert 折锚），全或无掷错把合法惯例截胡；改版后该金牌复绿。G1b/G3 绿基线为闸语义与遗留行为回归钉。流文档金牌内自构、零 gitignored 依赖（新树必绿可跑）。突变闭环走 git show 姿势（不碰暂存区），首版与改版各验一轮（还原必红/恢复 sha256 同/必绿）。评审并集修（grok r1 CHANGES_REQUIRED，H1 High）：重绑漏 observed/verification 两旁路通道（emit 时刻已带走自生号）→ draft 存在性闸按 observed 全集拒 authored 草稿；修法=重绑块内按 stepId 集同步三通道，金牌补 G1c/G2-5 五断言（对修前实现红 exit 1 实抓 h1-threechannel.delta-red.txt→修后 16/16 绿），第三轮突变闭环成立；pi r1 APPROVE 零 C/H/M。grok M1（冻结 events.schema intentId pattern 与 authored 号张力，teach-in 同形先例）待 Steven 裁：放宽 pattern（人签改版）或显式挂账。passes 只由 gate 写入。",
   "worktree": "/mnt/d/ctx/heren/casey-compile-intent-lineage-rebind"
 }

@@ -8,9 +8,11 @@
 - 缺陷：标准编译路径（无 lineagePlan）事件保留编译器自生 `intent_N`，确认流
   `sourceIntentId` 无人消费 → 出处链成品闸按 `sourceIntentId` 匹配终端事件必拒
   （十三跑 `CREATED_WORKFLOW_PROVENANCE_TERMINAL_EVENT_INVALID`，探针双向复现）。
-- 目标：`compileFlow` 标准路径在事实产生点把每步产出事件的 `intentId` 重绑为该步
-  `sourceIntentId`（全或无，混合硬阻断），使 authored 语义号进入正式产物、`intent_N`
-  只服务编译运行态——与 teach-in 原则注释、CONTEXT.md `intentId` 词条一致。
+- 目标：`compileFlow` 标准路径在事实产生点把带号步产出的 `intentId` 重绑为该步
+  `sourceIntentId`（逐步存在即绑，混合流合法），且 events / observed / verification
+  三通道逐 stepId 同号（grok r1 H1 并集修：只改 events 会让 draft 存在性闸按 observed
+  全集拒 authored 草稿），使 authored 语义号进入全部正式产物、`intent_N` 只服务编译
+  运行态——与 teach-in 原则注释、CONTEXT.md `intentId` 词条一致。
 
 ## 改法（主改一个文件）
 
@@ -48,8 +50,10 @@
   `intentId` 全为 authored 号、无 `intent_N` 残留 → 喂真实
   `issueCreatedWorkflowCompileProvenance`（真 `flow.confirmed` 字节形）→ ok；
   突变（重绑还原）→ 同码红。
+- G1c 三通道一致性钉（grok r1 H1 并集修新增）：observed / verification 逐 stepId 与
+  events 同号——authored 号真正进全部正式产物、draft 存在性闸不拒。
 - G2 混合态钉（反转后）：混合流不掷错、两步全跑，带号步重绑、裸步保持 `intent_N`、
-  裸步后 `lastIntentId` 跟随该步自生号（遗留折叠行为）。
+  裸步后 `lastIntentId` 跟随该步自生号（遗留折叠行为）；G2-5 混合流三通道一致性双向成立。
 - G3 遗留零漂移钉：全不带 `sourceIntentId` 的流 → 事件 `intentId` 保持 `intent_N`。
 - G4 teach-in 零漂移：lineagePlan 路径行为一字不差——沿用既有 teach-in 金牌绿 +
   全仓双态扫描背书，不新造重复钉。

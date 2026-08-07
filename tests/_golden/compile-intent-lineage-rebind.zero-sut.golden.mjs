@@ -82,6 +82,15 @@ const wfOpenStep = (openName, sourceIntentId) => ({
     `G1a-2 逐步归属：step1 事件挂 intent_open_one、step2 事件挂 intent_open_two（authored 语义号，非序数）；实得 ${brief(clicks.map((e) => e.intentId))}`);
   assert(run.lastIntentId === 'intent_open_two',
     `G1a-3 lastIntentId 同步为末步 authored 号（断言折叠锚不让 intent_N 旁路泄回）；实得 ${brief(run.lastIntentId)}`);
+  // G1c 三通道一致性（grok r1 H1：observed/verification 在 emit 时写入编译器自生号，重绑若漏改这两条
+  // 旁路，draft 存在性闸按 observed 全集判 authored 草稿为幽灵 intent 必拒 exit 65——event ≡ observed ≡
+  // verification 逐 stepId 同号才算 authored 号真正进了全部正式产物）。
+  const obsById = new Map(run.observed.map((o) => [o.stepId, o.intentId]));
+  const verById = new Map(run.verification.map((v) => [v.stepId, v.intentId]));
+  assert(run.events.every((e) => obsById.get(e.stepId) === e.intentId),
+    `G1c-1 observed 通道逐 stepId 与 events 同号（authored 号进 observed，draft 存在性闸不拒）；实得 ${brief(run.events.map((e) => `${e.stepId}:${e.intentId}/${obsById.get(e.stepId)}`))}`);
+  assert(run.events.every((e) => verById.get(e.stepId) === e.intentId),
+    `G1c-2 verification 通道逐 stepId 与 events 同号；实得 ${brief(run.events.map((e) => `${e.stepId}:${e.intentId}/${verById.get(e.stepId)}`))}`);
 }
 
 // ════════════════ G1b 闸耦合钉：authored 意图号满足出处链闸、intent_N 必拒（绿基线，冻结闸语义）════════════════
@@ -153,6 +162,10 @@ const wfOpenStep = (openName, sourceIntentId) => ({
     `G2-3 裸步事件保持编译器自生 intent_N（逐步语义，不越界改写）；实得 ${brief(clicks[1] && clicks[1].intentId)}`);
   assert(run.lastIntentId === (clicks[1] && clicks[1].intentId),
     `G2-4 裸步后 lastIntentId 为该步自生号（后继 assert 折叠锚跟随本步，与遗留行为一致）；实得 ${brief(run.lastIntentId)}`);
+  const mixObsById = new Map(run.observed.map((o) => [o.stepId, o.intentId]));
+  const mixVerById = new Map(run.verification.map((v) => [v.stepId, v.intentId]));
+  assert(run.events.every((e) => mixObsById.get(e.stepId) === e.intentId && mixVerById.get(e.stepId) === e.intentId),
+    `G2-5 混合流三通道逐 stepId 同号（带号步三通道全 authored、裸步三通道全 intent_N——一致性双向成立）；实得 ${brief(run.events.map((e) => `${e.intentId}/${mixObsById.get(e.stepId)}/${mixVerById.get(e.stepId)}`))}`);
 }
 
 // ════════════════ G3 遗留零漂移钉：全不带 sourceIntentId → intent_N 原样（绿基线）════════════════
