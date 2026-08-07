@@ -37,15 +37,19 @@
    跨 session 协作：死亡报卡 session 已备 `~/casey` C 盘逃生副本（gitignored 件不全，
    十四跑仍从主树发起）；共享收件箱分工=各答己方主题、他方信只转不答；Steven 时间
    标签用珀斯（UTC+8）。
-5. **十四跑待发**（本段收笔时未跑）：命令照十三跑配方、令牌 `b4r140807l`；预登记预期
-   =出处链闸绿、exit 65 恰剩基数门 `OBSERVATION_TERMINAL_WITHOUT_MATCHING_OBSERVATION`
-   一道，其他红即停不连跑。跑毕以单焦点真证摆 Steven 重裁：C 案例拆分维持，还是改
-   收窄版 A（仅基数门学让位、豁免判据门内重推导）。
+5. **十四跑达阵 + 基数门修向终裁**（`b4r140807l`，26.1s，exit 65）：预登记预期逐字
+   兑现——出处链闸真机转绿（全程零 PROVENANCE 拒因）、执行链再次全链通过、建十一删
+   十一零残留；剩余红恰一道=基数双射门（观察 1 条）。Steven 以单焦点真证终裁：
+   **收窄版 A**——基数门学让位，终端 click 零观察时门内重推导让位条件（同流存在同
+   platformId 的 create subject 观察才豁免，不信标记），金牌改版 + 一次人签；原 C
+   案例拆分裁定正式作废。M1 schema 挂账可同车处置。
 
 ### 下一步（接手者从甲起）
 
-- 甲、十四跑取真证（先按环境坑一节重启隧道两端）→ 单焦点证据摆 Steven 重裁基数门
-  修向 → 裁后立契约；修通后十五跑预期 exit 0 全绿产件。
+- 甲、立契约落地收窄版 A（碰冻结纯函数 `validateObservationTerminalCoverage`
+  `entity-observation-registry.mjs:389-392`，full 六阶段 + worktree；豁免判据门内
+  重推导、fail-closed 不松；金牌改版 + Steven 人签，M1 schema pattern 挂账同车）；
+  修通后十五跑预期 exit 0 全绿产件。
 - 乙、后两例（`publish_states` / `history_version`）等 crud 全绿统一处置。
 - 丙、挂账承前 + 新增（M1 schema pattern、teach-in 三通道、扫描串行纪律，余同下节）。
 - 丁、工作树清理：33 棵树（新增本契约树，6/6 可摘）。

@@ -97,16 +97,17 @@ MCP `mcp/casey-server.mjs`。
   缺陷，已由 `compile-intent-lineage-rebind` 契约修复合入：逐步存在即绑、三通道同号、
   双路评审 H1 并集修后全 APPROVE）；真语义冲突只剩基数双射一道门。Steven 已裁
   「先修接线取真证再裁」，原 C 案裁定暂挂。
-- **十四跑待发**：照十三跑配方、令牌 `b4r140807l`；预登记预期=出处链闸绿、exit 65
-  恰剩基数门 `OBSERVATION_TERMINAL_WITHOUT_MATCHING_OBSERVATION` 一道，其他红即停。
+- **十四跑达阵**（`b4r140807l`，26.1s）：出处链闸真机转绿、执行链全链通过、建十一
+  删十一零残留；剩余红恰基数门一道——Steven 已终裁收窄版 A（详 HANDOFF 顶节）。
 - D 盘一日四挂（Windows 侧 D: 卷嫌疑，Steven 待查）：评审已固化 ext4 克隆姿势，
   全仓扫描改单侧串行；重要产物随手落 `~/casey-recovery-20260807/`。
 - 主树有用户未提交资产（七个 `prd`、两个 md、四个未跟踪件）——一律勿动、勿 `git add -A`。
 
 【下一步（任选其一，先对齐再动手）】
-甲. 十四跑取真证（推荐；先重启隧道两端）→ 单焦点证据摆 Steven 重裁基数门修向
-   （C 案例拆分维持 vs 收窄版 A 仅基数门学让位、豁免判据门内重推导）→ 裁后立契约；
-   修通后十五跑预期 exit 0 全绿产件。
+甲. 立契约落地收窄版 A（推荐；Steven 已以十四跑单焦点真证终裁：基数门学让位、
+   豁免判据门内重推导，原 C 案作废）：碰冻结纯函数 `validateObservationTerminalCoverage`
+   （`entity-observation-registry.mjs:389-392`），full 六阶段 + worktree，金牌改版 +
+   人签，M1 schema pattern 挂账同车；修通后十五跑预期 exit 0 全绿产件。
 乙. 后两例 `tc_wf_publish_states` / `tc_wf_history_version`：等 crud 全绿统一处置。
 丙. 挂账清偿（可并行 fan-out）：承前清单（PRD notes 史迹措辞、新树必红两例、账本接线
    拆除、金牌残件自清、`wf-open-smoke` 陈旧红 owner、门面拆分族两陈旧红、`pi` 对
