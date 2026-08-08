@@ -124,7 +124,7 @@
    三件整体还原突变闭环）、邻接八命令 + 归属金牌三家全绿、全仓 299 金牌串行扫描
    零回归、gate GREEN 2/2；评审 grok + pi **首轮双 APPROVE 零 C/H/M**（ext4 克隆树
    姿势，grok 自补对抗探测全拒）。
-2. **十五跑达阵**（`b4r150807m`，25.2s，**exit 0**）：预登记预期逐字兑现——史上首次
+2. **十五跑达阵**（`b4r150807m`，25.2s，`exit 0`）：预登记预期逐字兑现——史上首次
    全链产出成功件（events 18 步 / observed 18 步 / 候选 0；`compile-provenance.json`
    出处链产物首次签发；events 实载 authored 意图号 `intent_create/list/open/cleanup`
    与让位取证字段）；建十二删十二零残留。B4 十五跑收官：从「从未走通过」家族五例到
@@ -674,7 +674,7 @@ B 段今日**开跑并按停止条件停住**——接手者从这里续：
 6. 原 `dev` 工作树在本轮开始就存在的非 Wave 改动仍保留为未提交状态，未被暂存、覆盖、
    删除或代提交。全程未 push、未 merge、未 rebase，远端仍未变化。
 
-## 2026-08-03：raw Playwright 原始定位器唯一性闭环（最新覆盖层）
+## 2026-08-03：raw Playwright 原始定位器唯一性闭环（历史覆盖层，本段 2026-08-03 快照、只溯源）
 
 1. Windows 独立工作树 `casey-p9-waves` 的 canonical raw 驱动已移除
    `locator(...).first().count()`：等待任意候选与权威 locator 分离；resolve 和动作窗口
@@ -693,7 +693,7 @@ B 段今日**开跑并按停止条件停住**——接手者从这里续：
 5. 证据索引：`docs/plans/teachin-raw-locator-uniqueness/evidence/`。未 push、未 merge、
    未 rebase；原 `dev` 脏工作树仍未改写。
 
-## 2026-08-03：P9 created-workflow continuity v3 机器实现就绪（最新覆盖层）
+## 2026-08-03：P9 created-workflow continuity v3 机器实现就绪（历史覆盖层，本段 2026-08-03 快照、只溯源）
 
 1. 在 Windows 独立工作树 `casey-p9-waves`、分支 `codex/p9-waves` 上完成 P9 v3 机器纵向链：结构授权 draft/freeze/read/preflight、当轮完整列表字符串 ID 读回、单次 ref、删除前 method/path/唯一 ID location 守卫、至少 3 样本且至少 3000ms 的同 ID 稳定缺席，以及 replay→三轴→零 LLM 裁定→报告→Tier2 清洁门深消费。
 2. 四枚冻结红基线由 5/4、0/8、0/8、0/6 转为 9/9、8/8、8/8、6/6；四枚 successor 分别 6/6、4/4、5/5、4/4。Windows `tier-1`、术语检查和 PRD ratchet dry gate 均 exit 0。C2 三枚邻接与 bindAgent 双锁在 WSL 同一工作树补充交叉执行全绿，未放宽 relation 原子双锁。
@@ -701,7 +701,7 @@ B 段今日**开跑并按停止条件停住**——接手者从这里续：
 4. 状态口径：只能称 `P9 v3 machine implementation ready`。旧固定 ID ref-rebuild 历史红件、签署版 Tier2 manifest、人签 mutation 授权、三次 fresh compile、三条真实清理、五成员同批 Tier2、录像/报告/残留扫描和最终 UAT signoff 均未闭合；`REAL_SUT_PASSED=false`、`HUMAN_SIGNED=false`。
 5. 证据索引：`docs/plans/p9-created-workflow-cleanup-continuity-v3/evidence/wave1-machine-implementation-20260803.md`。未 push、未 merge、未 rebase；原 `dev` 脏工作树未改写。
 
-## 2026-07-31 凌晨：publish 阻断点定性纠偏 + P9 推到只剩人签（最新覆盖层）
+## 2026-07-31 凌晨：publish 阻断点定性纠偏 + P9 推到只剩人签（历史覆盖层，本段 2026-07-31 快照、只溯源）
 
 > Steven 睡前授权自行判断推进，总目标 P9 完成、顺带起接口交互。本层记的是
 > 无人值守这一段。**凡需人签的一律没签**——D5 口径修订在契约里明写「须
@@ -919,7 +919,7 @@ S0 重大发现：P5 漂移探针热路径生产接线从未可达（证据 `hot
 `docs/plans/p6-heal/review.md`；权威评审账 `loop/audit.jsonl` 尾笔。产物：`lib/heal/` 八模块
 + `bin/heal.mjs`，生产库零改实证。完工邮件累计八封均实发。
 
-## 2026-07-28 晚：真机 UAT 开闸首日 + tunnel-origin-proxy 收口（最新覆盖层）
+## 2026-07-28 晚：真机 UAT 开闸首日 + tunnel-origin-proxy 收口（历史覆盖层，本段 2026-07-28 快照、只溯源）
 
 Steven 当晚确认测试环境稳定，真机 UAT（B 项）开闸；sut-503 收口件裁决为**不单独提交**，等真机验收后与本轮统一整理。当前活契约 `tunnel-origin-proxy`（direct lane，UAT 现场解堵），评审已闭环、账在 `loop/audit.jsonl` 尾笔。
 
