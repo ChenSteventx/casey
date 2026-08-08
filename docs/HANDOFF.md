@@ -3,7 +3,40 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-08 凌晨二：签署史上首次落盘 + 回放前置闸停放大镜形状缝（最新覆盖层，权威现状）
+## 2026-08-08 上午：放大镜缝四连收口 + replay 连破三门、停 v2 身份锁 kind 泛化缝（最新覆盖层，权威现状）
+
+现役 dev 顶端 `c9d453d`（本地零 push）。接下节：
+
+1. **契约 `delete-spec-magnifier` 六阶段收口合入**（`c9d453d`，Steven 裁闸学精确形状）：
+   `validateWorkflowDeleteBindings` 白名单加一精确形（文案 null ∧ value 缺 ∧
+   `fallbackCss` 逐字等于编译器字面 `.hr-input__suffix .search-icon` 才放，矛盾混装
+   照拒）。金牌六钉、冻结金牌零触碰绿、首轮双 APPROVE 零 C/H/M **四连**、全仓 302
+   金牌零回归。
+2. **replay 重跑连破三门后停第四门**：放大镜闸过 → 缺 `--flow`/`--testcase` 补参过 →
+   控制器令牌命名契约（`uniqueNameToken` 须以 `<batchToken>-` 开头）过 → 首张票据被
+   失败尝试烧掉（一次性核销）→ 重铸 `b4replay0808b` 票据（signer=Steven 同授权基础，
+   已披露）→ **现停**：`v2 冻结锁携身份观察但通道剖面未声明 agents.listApi`
+   （`bin/replay.mjs:295`）——replay 的 v2 身份锁闭环硬编码 agent 通道
+   （`profile.agents.listApi` 才置 `identityChannelCfg`），本案锁携 workflow 观察、
+   剖面声明 `workflows.listApi`。C2 已在 compile/sign 侧做过的 kind 泛化，replay 侧
+   从未接线——「从未走通过」第九例。
+3. **下一契约面（涉三小面，未裁勿自主定）**：replay 身份通道 kind 泛化——①通道解析
+   按锁行 kind 取对应剖面段（镜像 `ENTITY_KIND_COMPILE_CHANNELS`）②`identityProfileDigest`
+   对齐（sign 侧按 workflows 通道算、replay 须同源同算）③点击前双证 `identityExpectedByStep`
+   的消费面核查（agent 专用逻辑是否误触 workflow 行）。建议对照 `bin/compile.mjs` C2
+   泛化先例立契约。
+4. 过程账：replay 五次尝试全 fail-closed 零启动零残留（日志 `~/casey-recovery-20260807/
+   replay16*.log`）；票据 b4replay0808 已核销、b4replay0808b 现役未用（失效
+   2026-08-08T23:59:59+08:00）；权威件现役可复用。
+
+### 下一步（接手者从甲起）
+
+- 甲、立契约做 replay 身份通道 kind 泛化（先读 `bin/replay.mjs:140-310` 身份闭环全段 +
+  C2 泛化先例，涉消费面核查建议 grill 一轮再动）；修通重跑 replay（票据 b 现役，过期
+  则重铸）→ 相 3 真机回放首过或停于下一门。
+- 乙、挂账承前；工作树清理（39 棵）。
+
+## 2026-08-08 凌晨二：签署史上首次落盘 + 回放前置闸停放大镜形状缝（历史覆盖层，被上节接续）
 
 现役 dev 顶端 `b80ee4e`（本地零 push）。接下节，Steven 裁甲后一契约收口、签署达阵、
 回放链首触：

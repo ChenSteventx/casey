@@ -20,7 +20,7 @@ MCP `mcp/casey-server.mjs`。
 
 【先读，别现编已决的事】（必读顺序）
 1. `CLAUDE.md` + `CONTEXT.md`（统一语言注册表，命名以它为准；弃用别名是黑名单、繁体禁用）
-2. `docs/HANDOFF.md`（最新覆盖层即权威现状，顶节是 2026-08-08 凌晨二）
+2. `docs/HANDOFF.md`（最新覆盖层即权威现状，顶节是 2026-08-08 上午）
 3. `loop/GUARDRAILS.md`（19 条，逐条有效；表头仍写「13–16 新增」是陈旧措辞）
 4. `.claude/skills/casey/SKILL.md`、`README.md`
 5. 追溯「为何这么定」：`docs/adr/`（0001–0010）、`docs/design/txt2testreport-design.md`
@@ -38,10 +38,10 @@ MCP `mcp/casey-server.mjs`。
   ADR-0005 统一语言由 hook 与 gate 强制；ADR-0006 Casey = autotester ⊕ regress 分层融合；
   ADR-0007 Playwright 回放基座、取证按发起方归因；ADR-0008 loop-kit 独立提取；
   ADR-0009 hermetic 绿只是必要条件、真机 UAT 与人签才是完成；ADR-0010 准入受众与凭据严格匹配。
-- 2026-08-06/08 十五契约入 dev（本地零 push）：sleep 导入修 `8d0b0bc`、create 入口锚
+- 2026-08-06/08 十六契约入 dev（本地零 push）：sleep 导入修 `8d0b0bc`、create 入口锚
   `158829d`、登录预算 `9bb2300`、post-nav 双锚 `db80a17`、open 搜索先行 `7f38606`、
   open 诊断 notes `97c0d83`、语义名回填 `8d0e6e3`、读回门丙路线 `a507f5c`、
-  删除搜索修 `b6880e3`、观察让位 `d5ecbab`、意图号重绑 `b38c679`、基数门让位 `28e02a2`、准入让位 `87d86c1`、准入终端语义 `b80ee4e`（现役顶端）。
+  删除搜索修 `b6880e3`、观察让位 `d5ecbab`、意图号重绑 `b38c679`、基数门让位 `28e02a2`、准入让位 `87d86c1`、准入终端语义 `b80ee4e`、放大镜白名单 `c9d453d`（现役顶端）。
   每个契约固定「实现 → 双路评审 → 并集修 → 收据 + learn → merge」，全部双路 APPROVE 才合。
 
 【DDD / 统一语言】
@@ -104,10 +104,10 @@ MCP `mcp/casey-server.mjs`。
 - 主树有用户未提交资产（七个 `prd`、两个 md、四个未跟踪件）——一律勿动、勿 `git add -A`。
 
 【下一步（任选其一，先对齐再动手）】
-甲. 摆裁回放 delete-spec 前置闸的放大镜形状缝（详 HANDOFF 顶节：sign 已史上首次
-   落盘；replay 前置闸不认 `fallbackCss` 纯 css 的放大镜 click——闸学新形状 vs 投影
-   补携，先读 `bin/replay.mjs` 判据再摆）；裁后立契约，修通重跑 replay（权威/票据
-   在 `runs/b4-replay-20260808/`，票据过期须重铸）→ verdict → report。
+甲. 立契约做 replay 身份通道 kind 泛化（详 HANDOFF 顶节：v2 身份锁闭环硬编码 agent
+   通道，本案 workflow 锁被拒——三小面：通道解析按 kind / 指纹同源同算 / 双证消费面
+   核查；对照 C2 泛化先例，建议 grill 一轮）；修通重跑 replay（票据 b4replay0808b
+   现役，过期重铸）→ verdict → report。
 乙. 后两例 `tc_wf_publish_states` / `tc_wf_history_version`：等 crud 全绿统一处置。
 丙. 挂账清偿（可并行 fan-out）：承前清单（PRD notes 史迹措辞、新树必红两例、账本接线
    拆除、金牌残件自清、`wf-open-smoke` 陈旧红 owner、门面拆分族两陈旧红、`pi` 对
