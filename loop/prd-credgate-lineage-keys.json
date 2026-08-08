@@ -3,7 +3,7 @@
   "task": "credgate-lineage-keys（full）：凭据门对域定义世系键（batchToken/uniqueNameToken）做键感知+严格值形状（null 或 ^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$）的扫描副本键中和（Steven 裁 2026-08-08 门学形状豁免）。缝（第十例从未走通过）：v3 清理取证字段名含 token 子串，credentialGate 全文包含匹配把合法 axes 拒写（AXES_CREDENTIAL_GATE_REJECTED→ReplayFinalizeAbort→REPLAY_INTERNAL_ERROR，票据 c/d 两跑实证——回放执行链全程走通、恒死落盘门）。产物字节零动；敏感字面量分支扫原文；FORBIDDEN_KEYWORDS 表本体、first-hit、大小写无关语义一字不变。非目标：不改取证字段名与 tier2 消费链、不碰 maskCredentialRoute/stripUrlQuery、不动 compile/report 调用面。",
   "specPath": "docs/plans/credgate-lineage-keys/plan.md",
   "testChecksums": {
-    "tests/_golden/credgate-lineage-keys.zero-sut.golden.mjs": "24210e3982a5014b132c7c20d5ac7c74f6717b5fc0534d8772b3c5c5d5b5a112",
+    "tests/_golden/credgate-lineage-keys.zero-sut.golden.mjs": "c5b56dcb6d413ebcf44da24448c7826e1e979695b25802e53d556f9bd4d122e3",
     "docs/plans/credgate-lineage-keys/plan.md": "6681e3e2d7d7d27b9f3c9fbefacb4ec7bac7735b8051f2850874407240016fde",
     "docs/plans/credgate-lineage-keys/accept/red-proofs/credgate-lineage-keys.red.txt": "37a6db3f6e3e9e433d49b8c9b3e2d2bc70d48f9b47257277906e8f3ef2de9f36"
   },
@@ -22,7 +22,7 @@
         "node tests/_golden/credgate-lineage-keys.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-08T09:26:30.920Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-08T09:41:17.783Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-adjacency-zero-regression",
@@ -38,7 +38,15 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-08T09:27:21.009Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-08T09:42:08.201Z 全部 acceptance exit 0"
+    }
+  ],
+  "checksumAmendments": [
+    {
+      "artifact": "tests/_golden/credgate-lineage-keys.zero-sut.golden.mjs",
+      "reason": "grok r1-M1 并集修补钉（null 前缀畸形值三例入 G2），随评审轮金牌改版；delta 复审 r2 附收据",
+      "amendedAt": "2026-08-08T09:41:16.444Z",
+      "amendedVia": "review-union-fix"
     }
   ]
 }

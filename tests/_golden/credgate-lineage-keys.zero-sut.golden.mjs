@@ -47,6 +47,11 @@ test('G2 值形状不符照拦（不中和）', () => {
     const r = credentialGate(withLine(`"batchToken": ${bad},`));
     check(r.ok === false && String(r.hit).includes('token'), `非法值 ${bad.slice(0, 12)}… 应仍拦 token，实得 ${JSON.stringify(r)}`);
   }
+  // grok r1-M1 钉（null 前缀畸形值不得吃前缀中和键名）：null 交替须带终止断言。
+  for (const junk of ['nullable,', 'nullish,', 'null-garbage,']) {
+    const r = credentialGate(withLine(`"batchToken": ${junk}`));
+    check(r.ok === false && String(r.hit).includes('token'), `null 前缀畸形值 ${junk} 应仍拦 token，实得 ${JSON.stringify(r)}`);
+  }
 });
 
 test('G3 非闭集键零豁免', () => {
