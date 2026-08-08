@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "task": "delete-spec-magnifier（full）：replay delete-spec 前置闸白名单放大镜 click（Steven 裁闸学精确形状 2026-08-08）。缝：validateWorkflowDeleteBindings 把 workflow.deleteByName 域内 click 钉死为三破坏性文案+value 义务，删除搜索修契约新增的放大镜 click（fallbackCss .hr-input__suffix .search-icon、无文案无 value）被拒 unsupported_click_label——十六跑 replay fail-closed 零启动实证（atstep_13/17）。修法：白名单加一精确形——文案 null ∧ value 缺 ∧ fallbackCss 逐字等于编译器字面才放（非破坏搜索触发器无目标绑定义务）；css 对但携文案/携 value=形状矛盾不混装照拒；既有三拒面逐字等价。非目标：不动放大镜编译配方、不碰 replay.mjs 调用面、不裁 verdict/report 段。",
+  "specPath": "docs/plans/delete-spec-magnifier/plan.md",
+  "testChecksums": {
+    "tests/_golden/delete-spec-magnifier.zero-sut.golden.mjs": "b9dfcd310d2750a1bf273fda81226ccd375bcd45f216135a180124ca877fa82c",
+    "docs/plans/delete-spec-magnifier/plan.md": "9017bc1314aae92735de384c61940c8d806c9ed18c55d3eefea6909c3fcad9d3",
+    "docs/plans/delete-spec-magnifier/accept/red-proofs/delete-spec-magnifier.red.txt": "eb911f0ab89506ccf2758b8b377ff5a203c724ccafad540a696c18535492f3c8"
+  },
+  "observability": [
+    {
+      "dimension": "hermetic 只证白名单精确形与既有拒面等价；端到端真证=merge 后重跑 replay（权威/票据在 runs/b4-replay-20260808/，核销态先查、已占则重铸披露）——预期相 3 真机回放首过或停于下一门如实报。全仓串行扫描终判（护栏 #19）。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-delete-spec-magnifier",
+      "desc": "放大镜精确形状六钉：M1 真产物双击 ok / M2 css 错一字拒 / M3 携 value 矛盾拒 / M4 携文案落回 value 义务 / M5 既有三面逐字等价 / M6 semantic.name 在场拒。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/delete-spec-magnifier.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-08T00:50:06.447Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "邻接零回归：delete-spec 冻结金牌（零触碰）+ 删除搜索修 + 删除卡片布局 + 统一语言 + 确定性内核自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/workflow-delete-spec-preflight.static.golden.mjs",
+        "node tests/_golden/wf-delete-search-filter.zero-sut.golden.mjs",
+        "node tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-08T00:51:02.466Z 全部 acceptance exit 0"
+    }
+  ],
+  "notes": "红基线真实 exit 1（5 过 / 1 红：M1 放大镜真产物形——红面即契约面），实现前实抓。M2–M6 绿基线为 fail-closed 与遗留等价钉。突变闭环走 git show 姿势。passes 只由 gate 写入。",
+  "worktree": "/mnt/d/ctx/heren/casey-delete-spec-magnifier"
+}

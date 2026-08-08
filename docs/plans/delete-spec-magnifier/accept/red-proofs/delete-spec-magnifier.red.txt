@@ -1,0 +1,9 @@
+FAIL M1 放大镜双击真产物形 → ok；实得 {"ok":false,"problems":[{"stepId":"atstep_13","reason":"unsupported_click_label"},{"stepId":"atstep_17","reason":"unsupported_click_label"}]}
+ok   M2 css 错一字 → 照拒 unsupported_click_label；实得 {"ok":false,"problems":[{"stepId":"s1","reason":"unsupported_click_label"}]}
+ok   M3 css 对但携 value → 形状矛盾照拒；实得 {"ok":false,"problems":[{"stepId":"s1","reason":"unsupported_click_label"}]}
+ok   M4 css 对但文案「删除」→ 原 value 义务照常（缺 value 拒）；实得 {"ok":false,"problems":[{"stepId":"s1","reason":"missing_target_binding"}]}
+ok   M5 既有三面逐字等价（ok/缺 value 拒/未知文案拒）；实得 {"ok":{"ok":true,"problems":[]},"stale":{"ok":false,"problems":[{"stepId":"s2","reason":"missing_target_binding"},{"stepId":"s3","reason":"missing_target_bindin
+ok   M6 css 对但 semantic.name 在场 → 照拒；实得 {"ok":false,"problems":[{"stepId":"s1","reason":"unsupported_click_label"}]}
+RED  delete-spec-magnifier: M1 放大镜双击真产物形 → ok；实得 {"ok":false,"problems":[{"stepId":"atstep_13","reason":"unsupported_click_label"},{"stepId":"atstep_17","reason":"unsupported_click_label"}]}
+RED  delete-spec-magnifier: 5 过 / 1 红
+EXIT=1
