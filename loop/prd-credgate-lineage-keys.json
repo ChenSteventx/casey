@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "task": "credgate-lineage-keys（full）：凭据门对域定义世系键（batchToken/uniqueNameToken）做键感知+严格值形状（null 或 ^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$）的扫描副本键中和（Steven 裁 2026-08-08 门学形状豁免）。缝（第十例从未走通过）：v3 清理取证字段名含 token 子串，credentialGate 全文包含匹配把合法 axes 拒写（AXES_CREDENTIAL_GATE_REJECTED→ReplayFinalizeAbort→REPLAY_INTERNAL_ERROR，票据 c/d 两跑实证——回放执行链全程走通、恒死落盘门）。产物字节零动；敏感字面量分支扫原文；FORBIDDEN_KEYWORDS 表本体、first-hit、大小写无关语义一字不变。非目标：不改取证字段名与 tier2 消费链、不碰 maskCredentialRoute/stripUrlQuery、不动 compile/report 调用面。",
+  "specPath": "docs/plans/credgate-lineage-keys/plan.md",
+  "testChecksums": {
+    "tests/_golden/credgate-lineage-keys.zero-sut.golden.mjs": "24210e3982a5014b132c7c20d5ac7c74f6717b5fc0534d8772b3c5c5d5b5a112",
+    "docs/plans/credgate-lineage-keys/plan.md": "6681e3e2d7d7d27b9f3c9fbefacb4ec7bac7735b8051f2850874407240016fde",
+    "docs/plans/credgate-lineage-keys/accept/red-proofs/credgate-lineage-keys.red.txt": "37a6db3f6e3e9e433d49b8c9b3e2d2bc70d48f9b47257277906e8f3ef2de9f36"
+  },
+  "observability": [
+    {
+      "dimension": "hermetic 证门语义（纯函数 + G6 真投影器文本端到端）；真机真证=合入后铸票据 e 重跑 replay（窗口 2026-08-08T23:59:59+08:00 珀斯）——预期 axes 落盘、相 3 首过或停于下一门如实报。p7-credgate 冻结金牌零触碰绿的实证随收据记录，转红即停走改版人签。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-lineage-gate-six",
+      "desc": "世系键中和六钉：G1 合形放行 / G2 值形状不符照拦 / G3 非闭集键零豁免 / G4 关键词表零动 / G5 字面量分支扫原文 / G6 真投影器文本端到端。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/credgate-lineage-keys.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-08T09:26:30.920Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "邻接零回归：p7-credgate 冻结金牌零触碰 + seams-freeze 两件 + 上游两契约金牌 + 统一语言 + tier1。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/p7-credgate-coverage.golden.mjs",
+        "node tests/_golden/seams-freeze.golden.mjs",
+        "node tests/_golden/seams-freeze-v2.golden.mjs",
+        "node tests/_golden/replay-identity-channel-kind.zero-sut.golden.mjs",
+        "node tests/_golden/delete-spec-magnifier.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-08T09:27:21.009Z 全部 acceptance exit 0"
+    }
+  ]
+}
