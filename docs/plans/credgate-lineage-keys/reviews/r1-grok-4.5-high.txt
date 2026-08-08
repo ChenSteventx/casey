@@ -1,0 +1,188 @@
+# r1 · grok-4.5 high · credgate-lineage-keys
+
+- 基线：dev `1a601fa`
+- 候选：`HEAD` = `d27af96`（`git diff 1a601fa..HEAD`）
+- 评审对象文件集（白名单内 7 件，无超白名单改动）：
+  - `lib/cred-gate.mjs`
+  - `tests/_golden/credgate-lineage-keys.zero-sut.golden.mjs`
+  - `loop/prd-credgate-lineage-keys.json`
+  - `docs/plans/credgate-lineage-keys/**`（GRILL/plan/REVIEW-PROMPT/red-proof）
+- 模型：grok-4.5 · thinking high · 只读评审 + 本克隆树自跑验证
+- 范围：Critical / High / Medium only；第一优先级「找绕过」（护栏 #7 凭据兜底门）
+
+---
+
+## 本机复跑证据
+
+| 命令 | 结果 |
+|------|------|
+| `node tests/_golden/credgate-lineage-keys.zero-sut.golden.mjs` | exit 0（G1–G6 全绿；本树无 `.auth/site.json` / `site.json`，G5 字面量分支实跑） |
+| `node tests/_golden/p7-credgate-coverage.golden.mjs` | exit 0（冻结金牌零触碰绿） |
+| `node tests/_golden/seams-freeze.golden.mjs` | exit 0 |
+| `node tests/_golden/seams-freeze-v2.golden.mjs` | exit 0 |
+| `node tests/_golden/replay-identity-channel-kind.zero-sut.golden.mjs` | exit 0 |
+| `node tests/_golden/delete-spec-magnifier.zero-sut.golden.mjs` | exit 0 |
+| `node loop-kit/bin/term-lint.mjs --registry` | exit 0 |
+| `node bin/casey.mjs selftest --tier1` | exit 0 |
+| prd `testChecksums` 三件 sha256 | 与磁盘逐字节一致（golden/plan/red） |
+
+红基线收据（`accept/red-proofs/credgate-lineage-keys.red.txt`）与 plan 一致：实现前 G1/G5/G6 红、G2–G4 绿。
+
+---
+
+## 白名单合规
+
+- `git diff 1a601fa..HEAD --name-only` 恰 7 路径，全部落在 REVIEW-PROMPT 白名单。
+- 核心码仅 `lib/cred-gate.mjs`（+22/−1）：闭集两键 + `neutralizeDomainLineageKeys` + 关键词分支改扫中和副本；字面量分支仍 `String(text).includes(s)` 扫原文。
+- `FORBIDDEN_KEYWORDS` 表本体、`maskCredentialRoute` / `stripUrlQuery` / `collectSecretLiterals` 未改；compile/report 调用面未改。
+
+---
+
+## 风险清单 R1–R6 证伪记录
+
+### R1 走私面 — 关键词/形状/大小写/转义：PASS；null 终止：见 M1
+
+构造并推门（`credentialGate` 直接调用）：
+
+| 对抗输入 | 结果 |
+|----------|------|
+| 合形 `"batchToken"/"uniqueNameToken"` + 合法值 / `null` | 放行（预期） |
+| 值含 password/token/secret/cookie/apikey/x-api-key/authorization/credential/set-cookie | 仍拦（值在中和副本原样在场） |
+| `"accessToken": "abc123"` | 仍拦（非闭集零豁免） |
+| `BatchToken` / `batchtoken` / `BATCHTOKEN` | 仍拦（键匹配大小写敏感，fail-closed） |
+| JSON 转义值 `"ab\"cd"`、`\\u0061…`、嵌套引号 junk | 不中和，键名 token 仍拦 |
+| 空串 / 65 位 / 含空格 / 前导 `-` / number / bool / array | 不中和，仍拦 |
+| 前缀/后缀键 `xxbatchToken` / `batchTokenxx` | 仍拦 |
+| 非 JSON 裸串 `"batchToken": "okval"` | 放行（与生产 axes 文本同形；值仍全额扫） |
+| 旁邻 `password "batchToken": "okval"` | password 仍拦 |
+| 合形不透明串作值（无关键词子串） | 放行——与任意非禁字段键下同值基线行为一致；**不构成新走私面**（字面量分支仍扫原文） |
+
+结论：不能借两豁免键把「含禁关键词的值」或「凭据文件敏感字面量」带出门。值形状字符集无引号/反斜杠，转义逃逸面不成立。
+
+### R2 中性标记拼接 — PASS
+
+- 标记 `"<nc-lineage-key>"` 小写后不含任一 `FORBIDDEN_KEYWORDS` 子串。
+- 邻接 `bearer "batchToken": "okval"` → 中和后仍命中 `bearer `。
+- 边界拆分 `to"batchToken": "ken"` / `coo"batchToken": "kie"` → 不合成 `token`/`cookie`。
+- 替换只改键名捕获组，不吞相邻文本。
+
+### R3 正则全局/跨行/ReDoS — 基本 PASS；null 无终止见 M1
+
+- `g` 多命中、`\s` 含换行（`"batchToken"\n:\n"okval"`）行为符合预期。
+- 模式线性：`\s*` + 定长键 + 有界 `{0,63}` 字符类 + 二元交替，无嵌套量词；10⁵ 空格/长值中和耗时 ~0–1ms，未见 ReDoS。
+- **缺陷**：`null` 交替无终止边界，见 Finding M1。
+
+### R4 既有语义零回归 — PASS
+
+- G4：authorization/set-cookie/password/secret/credential/bearer 大写注入仍 first-hit 拦，hit 措辞模板未变。
+- 孤立 `TOKEN` / `cookie` 仍拦；`"batchToken": "password"` hit 为 password（关键词表序，token 键已被中和）。
+- `p7-credgate-coverage` 冻结金牌零触碰绿（关键词回路不含 token 注入，与 GRILL §4 预期一致）。
+
+### R5 消费面 — PASS
+
+- `credentialGate` 签名与调用约定不变；行为差仅「合形世系键值对不再因键名误伤」。
+- 全仓：`lib/report-model.mjs` 无 `batchToken`/`uniqueNameToken`；compile 产物路径不发射这两键。
+- 生产文本形状由 G6（`projectReplayAxes` + cleanup 块真投影）钉死放行。
+
+### R6 G5 真凭据跳过分支 — 本树实跑 PASS；假绿面披露
+
+- 本工作树：`NO_AUTH_SITE` / `NO_SITE`；G5 合成 `.auth/site.json` 注入字面量，断言 hit 含「敏感字面量」后清理——**本轮非跳过**。
+- 码路径（golden:66-73）：若 `site.json` 或 `.auth/site.json` 在场则 `return` 且 `test()` 仍计 passed——与 p7 同款、plan §2/§6 ③ 已预登记。
+- 生产码：字面量分支始终扫原文（`cred-gate.mjs:71-72`），与跳过无关。
+- 不升格 finding：预登记 + 本树实跑已闭合 R6 主要问题；真凭据环境依赖 M-c′/人签，不构成本 diff 新增绕过。
+
+---
+
+## 实现对照（计划 → 码）
+
+| 计划项 | 落点 | 判定 |
+|--------|------|------|
+| 闭集恰 `batchToken`/`uniqueNameToken` | `lib/cred-gate.mjs:50` | 合 |
+| 值形状 `^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$` + `null` | `:53-58` | 合形串合；**`null` 缺终止 → M1** |
+| 只改扫描副本键名 → `"<nc-lineage-key>"` | `:55-60` | 合 |
+| 关键词扫中和副本；字面量扫原文 | `:67-72` | 合 |
+| 产物字节零动 / 表本体零动 | 无写回、FORBIDDEN 未改 | 合 |
+| 六钉 G1–G6 | golden + prd s1 | 合（本机 6/6） |
+| p7 零触碰 | 邻接复跑 | 合 |
+
+---
+
+## Findings
+
+### M1 · Medium · `lib/cred-gate.mjs:58`
+
+**严重级**：Medium  
+**位置**：`neutralizeDomainLineageKeys` 内  
+`new RegExp(\`"${key}"(\\s*:\\s*)(null|"${LINEAGE_VALUE_SOURCE}")\`, 'g')`  
+的 `null` 交替无词边界/后继终止。
+
+**失败场景**：  
+对原文 `"batchToken": nullable`（及 `nullish`、`nullfoobar` 等以 `null` 为前缀的非 JSON 垃圾值），正则吃掉前缀 `null` 并中和键名 → 扫描副本变为 `"<nc-lineage-key>": nullable…`。若后缀不含其它禁关键词，门返回 `ok:true`。  
+按 plan §1 / GRILL §2：仅精确 `null` 或合形引号串可中和；值形状不符应**不中和**、因键内 `token` 子串照拦。
+
+**本机实证**：
+
+```
+PASS | nullable            | ok   ← 偏松（契约应 BLOCK）
+PASS | uniqueNameToken nullable | ok
+BLOCK | Null capital       | token（大小写敏感，仍 fail-closed）
+BLOCK | nullpassword       | password（后缀关键词仍拦）
+```
+
+**绕过评估（找绕过优先）**：  
+不能借此把含 password/token/secret/… 的值或凭据字面量带出门（值/后缀仍全额扫；字面量扫原文）。扩大的是「键名 `batchToken`/`uniqueNameToken` 在 null 前缀畸形值下的误放行」，属中和面相对契约偏松一寸，不是「真凭据关键词假阴性」级漏洞。生产 `JSON.stringify` axes 走精确 `null`/引号串，G6 不受影响；门以原始文本扫描，畸形串仍在威胁面内。
+
+**修复方向（评审不改码，仅建议）**：  
+`null` 改为带终止的断言，例如 `null(?![A-Za-z0-9_])` 或 `null(?=\s|[,}\]]|$)`；并补 G2 同类钉（`nullable` 应仍拦 token）。
+
+---
+
+（无 Critical / High）
+
+---
+
+## 已知披露（不计 finding）
+
+1. G5 真凭据在场跳过仍计 passed——plan/p7 先例，本树实跑已覆盖字面量分支。  
+2. 合形不透明值经豁免键放行与「任意非禁字段键 + 同值」基线同权；门本就不是未知秘密通用检测器。
+
+---
+
+VERDICT: APPROVE
+
+---
+
+## r2 · delta 复审（并集修 24acd64）
+
+- 基线确认：`git pull --ff-only` → Already up to date；`HEAD` = `24acd64`（`fix: credgate null 交替带终止断言（grok r1-M1 并集修）`）
+- 只审两 hunk：
+  1. `lib/cred-gate.mjs`：`null` → `null(?![A-Za-z0-9_-])`
+  2. 金牌 G2 补钉：`nullable,` / `nullish,` / `null-garbage,`
+
+### ① 是否闭合 r1-M1
+
+**是，已闭合。**
+
+| 契约点 | r1-M1 | 24acd64 |
+|--------|-------|---------|
+| `null` 交替终止 | 无边界，吃前缀 `null…` | 负向先行 `(?![A-Za-z0-9_-])` |
+| `"batchToken": nullable` 等 | 误放行（实证 PASS） | 不中和，仍拦 token |
+| 精确 `null` / 合形引号串 | 应放行 | G1 仍绿；`null`/`,`/`}`/空白/EOF 终止均放行 |
+| G2 回归钉 | 建议补 | 三 junk 入环，exit 0 |
+
+负向字符类含 `-` 比 r1 建议的 `(?![A-Za-z0-9_])` 更贴契约：直接钉死 `null-garbage`（连字符续缀）不得吃前缀。精确 JSON `null` 后继（空白/`,`/`}`/`]`/EOF）均不在 `[A-Za-z0-9_-]` 内，放行面不缩。
+
+本机探针（`credentialGate` 直调）：exact null / good string / ut exact null → PASS；nullable / nullish / null-garbage / nullfoobar / null_foo / ut nullable → BLOCK token；nullpassword → BLOCK password（后缀关键词仍先命中）。
+
+### ② 有无新引入问题
+
+**无。** 改动仅收紧中和匹配面（fail-closed 方向），不扩豁免、不改表本体、不改字面量扫原文、不改标记/替换捕获。负向先行定长、无嵌套量词，ReDoS 面不增。
+
+| 命令 | 结果 |
+|------|------|
+| `node tests/_golden/credgate-lineage-keys.zero-sut.golden.mjs` | exit 0（G1–G6 全绿，含 G2 三钉） |
+| `node tests/_golden/p7-credgate-coverage.golden.mjs` | exit 0（冻结金牌零触碰绿） |
+
+（无 Critical / High / Medium 新 finding；r1-M1 关闭。）
+
+VERDICT: APPROVE
