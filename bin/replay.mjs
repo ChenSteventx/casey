@@ -32,6 +32,7 @@ import {
 } from '../lib/entity-destructive-continuity.mjs';
 import { mintDestructiveTargetContinuity } from '../lib/entity-destructive-continuity-wiring.mjs';
 import { parseAgentIdentityProfile } from '../lib/agent-identity-profile.mjs';
+import { ENTITY_KIND_COMPILE_CHANNELS, deriveFrozenLockChannelKind } from '../lib/entity-observation-registry.mjs';
 import { PROJECT_ROOT } from '../lib/paths.mjs';
 import { playwrightLaunchOptions, resolveCliExecutionTarget } from '../lib/execution-target/wiring.mjs';
 import { emitExecutionTargetCliFailure } from '../lib/execution-target/cli-boundary.mjs';
@@ -138,19 +139,37 @@ async function main() {
     console.error('replay: profile.loading 形状非法，浏览器启动前拒绝');
     process.exit(65);
   }
-  // 身份通道剖面（agent-id-readback；与 compile 同律：未声明零行为差、声明则形状非法浏览器前拒）。
-  let identityChannelCfg = null;
-  let identityProfileDigest = null;
-  if (profile && profile.agents !== undefined && profile.agents !== null) {
-    const a = profile.agents;
-    if (!a || typeof a !== 'object' || Array.isArray(a)) { console.error('replay: 通道剖面 agents 形状非法，浏览器启动前拒绝'); process.exit(65); }
-    if (a.listApi !== undefined && a.listApi !== null) {
-      const parsed = parseAgentIdentityProfile(a);
-      if (!parsed.ok) { console.error(`replay: 通道剖面 agents 身份模式或物理卡片面非法（${parsed.reason}），浏览器启动前拒绝`); process.exit(65); }
-      identityChannelCfg = parsed.channel;
-      identityProfileDigest = parsed.digest;
+  // 身份通道剖面（agent-id-readback + replay-identity-channel-kind：C2 泛化接线 replay 侧）。
+  // 闭集遍历已登记 kind 的剖面段（agent→agents、workflow→workflows），产 kind→cfg/digest 两映射；
+  // 通道选择由冻结锁行推导的 kind 点名唯一段（锁驱动、非静默择一），选定在下方 v2 门内。
+  // 执法时机分层（全仓扫描实证修正，见 plan-amendment-1）：agents 段保持今日既有「声明即执法」
+  // 字节行为（形状/listApi 非法→浏览器前拒）；非 agent 段（workflows.listApi 兼作 v3 连续性
+  // 适配器素材，最小声明不必是良构身份通道——p9 权威 CLI 金牌两件实证）改「延迟执法」：
+  // 解析失败只记录，锁真点名该 kind 时才在 v2 门内具名拒，v3 专用剖面零行为差。
+  const identityChannelsByKind = new Map();
+  const identityDigestsByKind = new Map();
+  const identityChannelParseFailures = new Map();
+  for (const [kind, channelSpec] of ENTITY_KIND_COMPILE_CHANNELS) {
+    const channelProfile = profile ? profile[channelSpec.profileKey] : undefined;
+    if (channelProfile === undefined || channelProfile === null) continue;
+    if (typeof channelProfile !== 'object' || Array.isArray(channelProfile)) {
+      if (kind === 'agent') { console.error(`replay: 通道剖面 ${channelSpec.profileKey} 形状非法，浏览器启动前拒绝`); process.exit(65); }
+      identityChannelParseFailures.set(kind, 'PROFILE_SECTION_SHAPE_INVALID');
+      continue;
+    }
+    if (channelProfile.listApi !== undefined && channelProfile.listApi !== null) {
+      const parsed = parseAgentIdentityProfile(channelProfile);
+      if (!parsed.ok) {
+        if (kind === 'agent') { console.error(`replay: 通道剖面 ${channelSpec.profileKey} 身份模式或物理卡片面非法（${parsed.reason}），浏览器启动前拒绝`); process.exit(65); }
+        identityChannelParseFailures.set(kind, parsed.reason);
+        continue;
+      }
+      identityChannelsByKind.set(kind, parsed.channel);
+      identityDigestsByKind.set(kind, parsed.digest);
     }
   }
+  let identityChannelCfg = null;
+  let identityProfileDigest = null;
   const events = eventsDoc.events || [];
   // 破坏性删除的陈旧 spec 必须在启动浏览器、接触 SUT 前拒绝。否则前序创建/发布已发生后，
   // 两个无 value 的 click 才 fail-safe，会制造可避免的 atl_ 残留。正确恢复路径是重编译 events，
@@ -286,25 +305,60 @@ async function main() {
     console.error(`replay: frozen identity locks 未过（${identityAdmission.reason}），未启动浏览器；下一步 ${identityAdmission.nextAction}`);
     process.exit(65);
   }
-  // v2 冻结锁期望三元组（agent-id-readback plan §5）：v2 件在场时回放闭环到点击前——
-  // 缺剖面或通道指纹不符=浏览器前拒（plan §3：换旧剖面无法降级新签用例）。
+  // v2 冻结锁期望三元组（agent-id-readback plan §5 + replay-identity-channel-kind 两裁）：
+  // 锁行在场时回放闭环到点击前——通道 kind 由锁行 atom 反查注册表推导（裁①），缺对应段或
+  // 通道指纹不符=浏览器前拒（plan §3：换旧剖面无法降级新签用例）。门序：先锁级两门
+  // （通道解析+数字段），后行级豁免（裁③：已被 created-workflow 权威覆盖的行豁免双证，
+  // 豁免判据=v3 覆盖面命中、绝非锁自报标记）。
   const frozenIdentityRows = frozenLockAuthority ? readFrozenIdentityObservations(frozenLockAuthority) : null;
   let identityExpectedByStep = null;
   if (frozenIdentityRows && frozenIdentityRows.length) {
-    if (!identityChannelCfg) {
-      console.error('replay: v2 冻结锁携身份观察但通道剖面未声明 agents.listApi（剖面只是适配器、不得降级），未启动浏览器');
+    const derived = deriveFrozenLockChannelKind(frozenIdentityRows);
+    if (!derived.ok) {
+      console.error(`replay: v2 冻结锁身份观察行通道 kind 推导失败（${derived.rejectCode}——注册表闭集反查，锁是权威、不回退猜测），未启动浏览器`);
       process.exit(65);
     }
-    const liveDigest = identityProfileDigest;
+    const lockKind = derived.kind;
+    const lockProfileKey = ENTITY_KIND_COMPILE_CHANNELS.get(lockKind)?.profileKey ?? lockKind;
+    if (!identityChannelsByKind.has(lockKind)) {
+      if (identityChannelParseFailures.has(lockKind)) {
+        // 延迟执法的兑现点：段声明了但非良构身份通道，而锁点名了该 kind——此刻才拒，具名带解析拒因。
+        console.error(`replay: v2 冻结锁携 ${lockKind} 身份观察但通道剖面 ${lockProfileKey} 非良构身份通道（${identityChannelParseFailures.get(lockKind)}），未启动浏览器`);
+        process.exit(65);
+      }
+      console.error(`replay: v2 冻结锁携 ${lockKind} 身份观察但通道剖面未声明 ${lockProfileKey}.listApi（剖面只是适配器、不得降级），未启动浏览器`);
+      process.exit(65);
+    }
+    const liveDigest = identityDigestsByKind.get(lockKind) ?? null;
     let lockDigest = null;
     try { lockDigest = JSON.parse(readFileSync(resolve(PROJECT_ROOT, String(args.entityLocks)), 'utf8')).identityProfileDigest ?? null; } catch { lockDigest = null; }
     if (lockDigest !== liveDigest) {
       console.error('replay: 身份通道指纹与 v2 冻结锁不符（identityProfileDigest 错配），未启动浏览器');
       process.exit(65);
     }
-    identityExpectedByStep = new Map();
-    for (const row of frozenIdentityRows) {
-      identityExpectedByStep.set(row.evidenceStepId, { signedName: row.name, signedCode: row.code, signedPlatformId: row.platformId });
+    identityChannelCfg = identityChannelsByKind.get(lockKind);
+    identityProfileDigest = liveDigest;
+    // 裁③ 行级豁免：行 evidenceStepId 所指事件 (intentId, atom) 命中 createdWorkflowCovered
+    // 才排除（该步连续性由 v3 控制器接管，编译轮签的 platformId 对回放重建实体结构上不可比）；
+    // 步不在 events=非覆盖（fail-closed 倾向）。agent 行的覆盖集恒不含 agent 原子，行为零差。
+    const eventByStepId = new Map();
+    for (const event of events) { if (!eventByStepId.has(event.stepId)) eventByStepId.set(event.stepId, event); }
+    const uncoveredRows = frozenIdentityRows.filter((row) => {
+      const anchor = eventByStepId.get(row.evidenceStepId);
+      return !(anchor && createdWorkflowCovered.has(`${anchor.intentId}\u0000${anchor.atom}`));
+    });
+    if (uncoveredRows.length) {
+      if (lockKind !== 'agent') {
+        // 诚实边界（GRILL §5）：点击前双证的唯一消费面是 agent.searchOpen 路径（lib/replay-actions/
+        // agent-search.mjs），其余 kind 的非覆盖签署期望无处兑现——带着它启动浏览器=静默放弃
+        // 已签验证义务，具名拒。
+        console.error(`replay: v2 冻结锁携 ${lockKind} 身份观察且未被 created-workflow 权威覆盖，回放无该 kind 点击前双证消费面（IDENTITY_EXPECTATION_CONSUMER_MISSING），未启动浏览器（fail-closed）`);
+        process.exit(65);
+      }
+      identityExpectedByStep = new Map();
+      for (const row of uncoveredRows) {
+        identityExpectedByStep.set(row.evidenceStepId, { signedName: row.name, signedCode: row.code, signedPlatformId: row.platformId });
+      }
     }
   }
   // C3 破坏性目标连续性准入（fail-closed，浏览器前；codex Critical-1 ③ + round-2 Critical/High 收口）：

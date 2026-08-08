@@ -1,0 +1,16 @@
+# 红基线（accept 阶段，实现前）— 8d7a7f3 @ 2026-08-08
+# 命令：node tests/_golden/replay-identity-channel-kind.zero-sut.golden.mjs；预期实现后六场景全绿
+RED  replay-identity-channel-kind: W1 消费面缺失 拒因缺具名标记「IDENTITY_EXPECTATION_CONSUMER_MISSING」：replay: v2 冻结锁携身份观察但通道剖面未声明 agents.listApi（剖面只是适配器、不得降级），未启动浏览器
+
+RED  replay-identity-channel-kind: W2 剖面段缺失 拒因缺具名标记「workflows.listApi」：replay: v2 冻结锁携身份观察但通道剖面未声明 agents.listApi（剖面只是适配器、不得降级），未启动浏览器
+
+RED  replay-identity-channel-kind: W3 指纹错配 拒因缺具名标记「identityProfileDigest 错配」：replay: v2 冻结锁携身份观察但通道剖面未声明 agents.listApi（剖面只是适配器、不得降级），未启动浏览器
+
+RED  replay-identity-channel-kind: W4 注册表外 atom 拒因缺具名标记「IDENTITY_LOCK_ATOM_UNREGISTERED」：replay: v2 冻结锁携身份观察但通道剖面未声明 agents.listApi（剖面只是适配器、不得降级），未启动浏览器
+
+RED  replay-identity-channel-kind: W5 kind 混装 拒因缺具名标记「IDENTITY_LOCK_KIND_MIXED」：replay: 身份通道指纹与 v2 冻结锁不符（identityProfileDigest 错配），未启动浏览器
+
+RED  replay-identity-channel-kind: W6 覆盖豁免应抵达浏览器前哨兵（exit 66 + 哨兵在场），实际 exit 65、哨兵 false：replay: v2 冻结锁携身份观察但通道剖面未声明 agents.listApi（剖面只是适配器、不得降级），未启动浏览器
+
+RED  replay-identity-channel-kind: 6 红
+exit=1
