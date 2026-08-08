@@ -132,8 +132,13 @@ MCP `mcp/casey-server.mjs`。
   `node scripts/wsl-reverse-listen.mjs`，后 Windows 侧
   `cmd.exe /c "cd /d D:\ctx\heren\casey\scripts && node win-reverse-agent.mjs"`，
   `curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:15519/` 核 200。
-  `--sut` 只喂隧道回环基址。杀旧监听两步走：pgrep 存 pid、再按纯数字 kill——
-  模式串与击杀同行会自匹配自杀（exit 144，一日三踩）。
+  `--sut` 只喂隧道回环基址。**杀隧道绝不模式杀**：death_report 项目同名脚本
+  `wsl-reverse-listen.mjs`/`win-reverse-agent.mjs` 共存，我方进程命令行是相对路径
+  不含 `casey`、模式串区分不开——2026-08-08 两轮 `pgrep -f` 清理把对方隧道团灭两次
+  （已认账道歉）。唯一姿势：起监听时把 pid 记进
+  `~/casey-recovery-20260807/tunnel-casey.pid`，杀时按档案纯数字 kill；档案缺失就
+  `readlink /proc/<pid>/cwd` 核归属（cwd=casey 才许杀）。另：模式串与击杀同行仍会
+  自匹配自杀（exit 144）。
 - `/mnt/d` git 慢给足 300 秒；短超时空输出别误判成干净工作树；全仓检索过滤
   `.claude/worktrees/` 与兄弟树副本。
 - 禁止启动 fake-SUT 或夹具 SUT；金牌只跑 zero-SUT / static / 纯内存。
