@@ -41,9 +41,10 @@
 
 ### 下一步（接手者从甲起）
 
-- 甲、Steven 裁 cleanup `NEEDS_HUMAN`（证据指针：verdict.replay19 + axes cleanup 块
-  三绿 + report-replay19；完工信已附）——签过则 B 段首例完成闸达成（ADR-0009
-  真机 UAT + 人签）。
+- ~~甲、Steven 裁 cleanup `NEEDS_HUMAN`~~ **已裁签过**（2026-08-08 晚会话内点选，
+  签核件 `runs/b4-replay-20260808/tc_catalog_wf_crud/cleanup-human-sign.json`）——
+  **B 段首例完成闸达成**（ADR-0009：hermetic 绿 + 真机 UAT + 人签三件齐）。
+  接续者从乙起，另可顺手收主树 p9 槽（s5 深消费证据已齐）。
 - 乙、后两例 `tc_wf_publish_states`/`tc_wf_history_version` 统一处置（同门同受益）。
 - 丙、挂账：「段非良构∧锁点名」hermetic 钉（checksumAmendment+人签待裁）、
   replay-identity-channel-kind plan W3 表笔误、41 棵工作树清理、承前各层。

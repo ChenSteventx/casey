@@ -113,8 +113,9 @@ MCP `mcp/casey-server.mjs`。
   第二条长中文消息会楔死输入部件——简报写文件 + 纯 ASCII 短令引用（credgate learn §4）。
 
 【下一步（任选其一，先对齐再动手）】
-甲. Steven 裁 cleanup `NEEDS_HUMAN`（证据：verdict.replay19 三绿断言 + report-replay19）
-   ——签过则 B 段首例完成闸达成（ADR-0009 真机 UAT + 人签），顺手收主树 p9 槽。
+甲. ~~裁 cleanup~~ 已签过（2026-08-08 晚，签核件 runs/b4-replay-20260808/
+   tc_catalog_wf_crud/cleanup-human-sign.json）——**B 段首例完成闸已达成**；
+   剩收主树 p9 槽（s5 深消费证据已齐，3/6→6/6）。
 乙. 后两例 `tc_wf_publish_states` / `tc_wf_history_version` 统一处置（凭据门与 kind
    泛化两修同受益）。
 丙. 挂账清偿：「段非良构∧锁点名」hermetic 钉（checksumAmendment+人签待裁）、
