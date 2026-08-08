@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "task": "replay-identity-channel-kind（full）：replay v2 身份锁通道解析按锁行 atom 反查注册表泛化 kind（Steven 两裁 2026-08-08：①锁行 atom→注册表推导、③控制器覆盖步豁免双证）。缝：bin/replay.mjs 只认 profile.agents 置 identityChannelCfg，workflow v2 锁（行 atom=workflow.create、剖面声明 workflows.listApi）被「未声明 agents.listApi」误拒——第九例「从未走通过」，五次尝试 fail-closed 零启动实证。修法：新纯守卫 deriveFrozenLockChannelKind（注册表外 atom / kind 混装拒）+ 剖面闭集遍历（ENTITY_KIND_COMPILE_CHANNELS，段声明即形状律）+ v2 门内锁驱动选段同源比数字段 + 控制器覆盖步豁免（判据=v3 权威覆盖面非标记自报）+ 非覆盖无消费面 kind 具名拒 IDENTITY_EXPECTATION_CONSUMER_MISSING。非目标：不建 workflow 双证消费面、不动 compile/sign、不改锁件模式、不碰 :344 v3 判据与破坏性准入门。",
+  "specPath": "docs/plans/replay-identity-channel-kind/plan.md",
+  "testChecksums": {
+    "tests/_golden/replay-identity-channel-kind.zero-sut.golden.mjs": "45836b75e7d10bd3d50ac85bbd1ad1ad22038d54120ed8ee6acde07b46f89ac0",
+    "docs/plans/replay-identity-channel-kind/plan.md": "4cc485f3db7963079c19b23ce753af54b8146f25dbff1352d2e7f2e751fe417b",
+    "docs/plans/replay-identity-channel-kind/accept/red-proofs/replay-identity-channel-kind.red.txt": "6e668c11d85672923e92a08c186add49334b09b8e74e328b68e598042215fb3f"
+  },
+  "observability": [
+    {
+      "dimension": "hermetic 只证浏览器前门族（六场景 spawn 真 bin/replay.mjs + 哨兵纪律）；端到端真证=merge 后重跑 replay（票据 b4replay0808b 失效 2026-08-08T23:59:59+08:00 珀斯，过期重铸披露）——预期相 3 真机回放首过或停于下一门如实报。全仓串行扫描终判（护栏 #19）。:344 不动的 fail-closed 后果（v3 锁全覆盖组合将具名拒）已在 plan §1c 披露。",
+      "route": "human"
+    }
+  ],
+  "stories": [
+    {
+      "id": "s1-kind-gate-six",
+      "desc": "kind 泛化六钉：W1 非覆盖 workflow 行具名拒 / W2 剖面段缺失点名 workflows.listApi / W3 数字段门先于消费面门 / W4 注册表外 atom 拒 / W5 kind 混装拒 / W6 控制器覆盖豁免全排除抵哨兵。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/replay-identity-channel-kind.zero-sut.golden.mjs"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-08T06:41:11.127Z 全部 acceptance exit 0"
+    },
+    {
+      "id": "s2-adjacency-zero-regression",
+      "desc": "邻接零回归：agent 路径零行为差（C3 failclosed D1/D2）+ 破坏性准入族 + v3 重建红验收 + 注册表脊柱 + 观察契约闭包 + 统一语言 + tier1 自检。",
+      "lane": "implementation",
+      "acceptance": [
+        "node tests/_golden/entity-destructive-continuity-guard.failclosed-replay.golden.mjs",
+        "node tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs",
+        "node tests/_golden/destructive-continuity-ref-rebuild.red-acceptance.golden.mjs",
+        "node tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs",
+        "node tests/_golden/observation-identity-contract-closure.zero-sut.golden.mjs",
+        "node loop-kit/bin/term-lint.mjs --registry",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-08T06:42:28.127Z 全部 acceptance exit 0"
+    }
+  ]
+}
