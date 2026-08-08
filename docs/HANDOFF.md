@@ -3,7 +3,52 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-08 上午：放大镜缝四连收口 + replay 连破三门、停 v2 身份锁 kind 泛化缝（最新覆盖层，权威现状）
+## 2026-08-08 傍晚：两契约收口 + 相 3 真机回放史上首通 + 相 4/6 出件、cleanup 待人裁（最新覆盖层，权威现状）
+
+现役 dev 顶端 `b6443d8`（本地零 push）。接下节，Steven 全程会话内三裁 + 邮件「继续」：
+
+1. **契约 `replay-identity-channel-kind` 六阶段收口合入**（merge `41a09a0`，快照
+   `dd46467`）：v2 身份锁通道 kind 泛化——锁行 atom 反查注册表推导（v2 锁行实测无
+   kind 字段，Steven 裁①）+ 控制器覆盖步豁免双证（created-in-run 的编译轮 platformId
+   回放不可比，Steven 裁③）+ 非覆盖 workflow 行具名拒 `IDENTITY_EXPECTATION_
+   CONSUMER_MISSING`。执法时机分层修正案（plan-amendment-1：非 agent 剖面段延迟
+   执法，全仓扫描逮 p9 两金牌误伤后修正）。金牌六钉红先行、突变三把、304 扫描零
+   新增、首轮双 APPROVE 零 C/H/M **五连**。
+2. **契约 `credgate-lineage-keys` 六阶段收口合入**（merge `b6443d8`，快照
+   `24acd64`）：第十例「从未走通过」——v3 清理取证字段名 batchToken/uniqueNameToken
+   触击凭据门 token 子串匹配、axes 拒写（ReplayFinalizeAbort 被顶层吞成
+   REPLAY_INTERNAL_ERROR；装载器钩子只落 name/reason 标识符定位，学案 learn §3）。
+   Steven 裁门学形状豁免：恰两键闭集+严格值形状只中和扫描副本键名，值受关键词
+   （中和副本在场）与字面量（扫原文）双分支全额扫；p7-credgate 冻结金牌零触碰绿。
+   pi APPROVE + grok r1-M1（null 交替无终止断言）并集修一轮闭合 r2 APPROVE。
+3. **第十九跑达阵（`b4r190808e`，exit 0）——相 3 真机回放史上首通**：登录/18 步
+   全链执行、建删 `atl_b4replay0808e-case-1` + 缺席采样 3/3046ms，axes 52.7KB 落盘
+   过凭据门 → 相 4 零 LLM 裁定 `verdict.replay19.json`：intent_create/intent_list/
+   intent_open 三步 **PASS**、intent_cleanup（workflow.deleteByName）
+   **NEEDS_HUMAN(INDETERMINATE)**——清理取证三绿（noPageError/noErrorEnvelope/
+   stableTargetAbsence 全 ok）但破坏步出站半边按 C3 诚实边界 route:human，裁判
+   不越权 → 相 6 报告三件（html/json/md）落 `runs/b4-replay-20260808/
+   tc_catalog_wf_crud/report-replay19/`。**B 段首例七相链首次贯通**。
+4. **票据账（台账 `runs/_tier2/replay-grant-ledger/` 为权威）**：a/b 前会话两
+   fail-closed 烧毁（上节「b 现役未核销」已被台账证伪）；c/d 本会话凭据门缝两跑
+   烧毁（c 无观测、d 带装载器钩子观测定位拒因）；e 成功跑核销。c/d/e 均 signer=
+   Steven 同授权基础重铸（会话内点选裁定，全程披露）。
+5. 过程账：worktree 两棵新增（casey-replay-identity-channel-kind /
+   casey-credgate-lineage-keys，各 6/6 可摘）；主树活契约槽 `p9-created-workflow-
+   cleanup-continuity-v3` 3/6 不变（其 s5 深消费=本链 cleanup 取证，等 Steven 裁）；
+   评审工艺新知：grok tmux 第二条长中文消息会楔死输入部件，配方=简报写文件+纯
+   ASCII 短令（learn §4）。
+
+### 下一步（接手者从甲起）
+
+- 甲、Steven 裁 cleanup `NEEDS_HUMAN`（证据指针：verdict.replay19 + axes cleanup 块
+  三绿 + report-replay19；完工信已附）——签过则 B 段首例完成闸达成（ADR-0009
+  真机 UAT + 人签）。
+- 乙、后两例 `tc_wf_publish_states`/`tc_wf_history_version` 统一处置（同门同受益）。
+- 丙、挂账：「段非良构∧锁点名」hermetic 钉（checksumAmendment+人签待裁）、
+  replay-identity-channel-kind plan W3 表笔误、41 棵工作树清理、承前各层。
+
+## 2026-08-08 上午：放大镜缝四连收口 + replay 连破三门、停 v2 身份锁 kind 泛化缝（历史覆盖层，被上节接续）
 
 现役 dev 顶端 `c9d453d`（本地零 push）。接下节：
 

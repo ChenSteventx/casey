@@ -20,7 +20,7 @@ MCP `mcp/casey-server.mjs`。
 
 【先读，别现编已决的事】（必读顺序）
 1. `CLAUDE.md` + `CONTEXT.md`（统一语言注册表，命名以它为准；弃用别名是黑名单、繁体禁用）
-2. `docs/HANDOFF.md`（最新覆盖层即权威现状，顶节是 2026-08-08 上午）
+2. `docs/HANDOFF.md`（最新覆盖层即权威现状，顶节是 2026-08-08 傍晚）
 3. `loop/GUARDRAILS.md`（19 条，逐条有效；表头仍写「13–16 新增」是陈旧措辞）
 4. `.claude/skills/casey/SKILL.md`、`README.md`
 5. 追溯「为何这么定」：`docs/adr/`（0001–0010）、`docs/design/txt2testreport-design.md`
@@ -95,33 +95,32 @@ MCP `mcp/casey-server.mjs`。
 - 并行硬规则：碰 `lib`/`bin` 走 worktree 隔离 + git-native 合并；每树一独立 baton；
   39 棵树多数已 6/6 收口可摘（护栏 #18 建议 ≤5 树，已超）。
 
-【当前状态（2026-08-08 上午）】
-- dev 顶端为交接文档提交（其下 `c9d453d` 放大镜白名单 merge），本地零 push。主树活
-  契约槽 `p9-created-workflow-cleanup-continuity-v3`（full，3/6——其 s5 深消费即
-  sign/replay 链，等链通后收）。
-- **replay 现停第九例「从未走通过」缝**：v2 身份锁闭环硬编码 agent 通道
-  （`bin/replay.mjs:295` 一带，仅 `profile.agents.listApi` 才置 `identityChannelCfg`），
-  本案 workflow 锁被拒。五次尝试全 fail-closed 零启动零 SUT 残留（日志
-  `~/casey-recovery-20260807/replay16*.log`）。
-- 现役件：票据 `runs/b4-replay-20260808/replay-grant-b.json`（批 `b4replay0808b`、
-  失效 2026-08-08T23:59:59+08:00 珀斯、未核销）；created-workflow 权威同目录可复用；
-  Steven 已签五断言呈件与 17 行确认件不变。
-- 主树有用户未提交资产（七个 `prd`、两个 md、四个未跟踪件）——一律勿动、勿 `git add -A`。
-- 评审工艺现役配方：commit 快照 → ext4 浅克隆 `~/casey-review/`（loop-kit 兄弟克隆 +
-  node_modules 软链）→ grok tmux 伪终端（信任 y + 权限 Enter + 空闲提示符判完成）+
-  pi 默认配置入口（不带 --model、--exclude-tools edit,write）。
+【当前状态（2026-08-08 傍晚）】
+- dev 顶端 `b6443d8`（credgate-lineage-keys merge），本地零 push。当日两契约收口：
+  `replay-identity-channel-kind`（kind 泛化，五连双 APPROVE）+ `credgate-lineage-keys`
+  （凭据门世系键形状豁免，pi APPROVE + grok M1 并集修一轮闭合）。
+- **第十九跑 `b4r190808e` exit 0——相 3 真机回放史上首通、B 段首例七相链贯通**：
+  axes 52.7KB 过凭据门落盘；相 4 裁定三步 PASS + intent_cleanup
+  `NEEDS_HUMAN(INDETERMINATE)`（清理取证三绿、破坏步出站半边按 C3 诚实边界
+  route:human）；相 6 报告三件落 `runs/b4-replay-20260808/tc_catalog_wf_crud/
+  report-replay19/`。**待 Steven 裁 cleanup 一步**（完工信已附证据指针）。
+- 票据 a-e 五张全核销（台账 `runs/_tier2/replay-grant-ledger/` 为权威；上一版
+  「b 现役未核销」已被台账证伪——occupy 早于 launch，浏览器后段失败也烧票）。
+- 主树活契约槽 `p9-created-workflow-cleanup-continuity-v3`（full，3/6——s5 深消费
+  即本链 cleanup 取证，等 Steven 裁后收）。主树用户未提交资产一律勿动、勿 `git add -A`。
+- 评审工艺现役配方：commit 快照 → ext4 浅克隆 `~/casey-review/`（node_modules 软链）
+  → grok tmux 伪终端 + pi 默认配置入口（--exclude-tools edit,write）。新坑：grok
+  第二条长中文消息会楔死输入部件——简报写文件 + 纯 ASCII 短令引用（credgate learn §4）。
 
 【下一步（任选其一，先对齐再动手）】
-甲. 立契约做 replay 身份通道 kind 泛化（推荐；详 HANDOFF 顶节）：三小面=①通道解析
-   按锁行 kind 取剖面段（镜像 ENTITY_KIND_COMPILE_CHANNELS）②identityProfileDigest
-   与 sign 侧同源同算 ③点击前双证 identityExpectedByStep 消费面核查（agent 专用
-   逻辑勿误触 workflow 行）。对照 `bin/compile.mjs` C2 泛化先例，建议 grill 一轮；
-   修通重跑 replay（票据 b 现役、过期重铸）→ 相 3 真机回放首过 → verdict → report。
-乙. 挂账清偿：M1 已销；余 A4 义务白名单独立钉、teach-in 三通道同缺、承前旧账
-   （`wf-open-smoke` 陈旧红 owner、门面拆分族两陈旧红、`hook-loop-guard` 立项、
-   plan.md「三份」笔误等，见 HANDOFF 各层挂账节）。
-丙. 后两例 `tc_wf_publish_states` / `tc_wf_history_version`：等 crud 全绿统一处置。
-丁. 工作树清理：39 棵树多数 6/6 已收口可摘。
+甲. Steven 裁 cleanup `NEEDS_HUMAN`（证据：verdict.replay19 三绿断言 + report-replay19）
+   ——签过则 B 段首例完成闸达成（ADR-0009 真机 UAT + 人签），顺手收主树 p9 槽。
+乙. 后两例 `tc_wf_publish_states` / `tc_wf_history_version` 统一处置（凭据门与 kind
+   泛化两修同受益）。
+丙. 挂账清偿：「段非良构∧锁点名」hermetic 钉（checksumAmendment+人签待裁）、
+   replay-identity-channel-kind plan W3 表笔误、A4 义务白名单独立钉、teach-in 三通道
+   同缺、承前旧账（`wf-open-smoke` 陈旧红 owner、门面拆分族两陈旧红等）。
+丁. 工作树清理：41 棵树多数 6/6 已收口可摘（本日新增两棵均可摘）。
 
 【环境坑（WSL）】
 - **D 盘（drvfs）不稳**：2026-08-07 一日四挂+（持续 I/O 下 Windows 侧 D: 卷静默停摆、
