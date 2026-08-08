@@ -1,0 +1,126 @@
+# r1 · grok-4.5 high · replay-identity-channel-kind
+
+- 基线：dev `8d7a7f3`
+- 候选：`HEAD` = `dd46467`（`git diff 8d7a7f3..HEAD`）
+- 评审对象文件集（白名单内 9 件，无超白名单改动）：
+  - `lib/entity-observation-registry.mjs`
+  - `bin/replay.mjs`
+  - `tests/_golden/replay-identity-channel-kind.zero-sut.golden.mjs`
+  - `loop/prd-replay-identity-channel-kind.json`
+  - `docs/plans/replay-identity-channel-kind/**`（GRILL/plan/amendment-1/REVIEW-PROMPT/red-proof）
+- 模型：grok-4.5 · thinking high · 只读评审 + 本克隆树自跑验证
+- 范围：Critical / High / Medium only；已知挂账（W3 表笔误、延迟执法 hermetic 钉缺口）不记新 finding
+
+---
+
+## 本机复跑证据
+
+| 命令 | 结果 |
+|------|------|
+| `node tests/_golden/replay-identity-channel-kind.zero-sut.golden.mjs` | exit 0（W1–W6） |
+| `node tests/_golden/entity-destructive-continuity-guard.zero-sut.golden.mjs` | exit 0（25/25） |
+| `node tests/_golden/entity-destructive-continuity-guard.failclosed-replay.golden.mjs` | exit 0（含 agent D2 抵哨兵） |
+| `node tests/_golden/entity-identity-spine.admission-registry.zero-sut.golden.mjs` | exit 0（51/51） |
+| prd `testChecksums` 三件 sha256 | 与磁盘逐字节一致（golden/plan/red） |
+
+---
+
+## 白名单合规
+
+- 仅上述 9 路径；`bin/replay.mjs` + `lib/entity-observation-registry.mjs` 为核心码，其余为金牌/prd/计划。
+- 无 compile/sign/v3 判据（`:398` 一带）/破坏性准入门实质改动。
+
+---
+
+## 风险清单 R1–R6 证伪记录
+
+### R1 agent 家族字节级零行为差 — PASS
+
+逐分支对照旧路径（`8d7a7f3` `bin/replay.mjs:144-153` + `:291-309`）：
+
+1. **agents 段声明但缺 listApi**  
+   新码 `listApi` 缺席不入 `identityChannelsByKind`；v2 锁点名 agent 时走  
+   `bin/replay.mjs:329`「未声明 agents.listApi」exit 65。与旧 `!identityChannelCfg` 同退出码、同语义键。  
+   文案多插入 kind 词「agent 」（参数化副作用）；邻接金牌按子串/退出码断言，D2 仍绿。不构成 C/H/M。
+
+2. **v1 锁 / 无锁**  
+   `frozenIdentityRows` 空 → 整块 v2 门跳过；`identityExpectedByStep`/`identityLedger` 仍 null。  
+   旧码虽在解析期预置 `identityChannelCfg`，消费面本就由 `identityExpectedByStep` 门控（`:464-466`、`:752-759`）——净行为等价。
+
+3. **agent v2 锁 + 良构 agents**  
+   `deriveFrozenLockChannelKind` → `kind==='agent'` → 取 `agents` 段 digest 同源比对 →  
+   `uncoveredRows`：`createdWorkflowCovered` 仅含 `workflow.create`/`workflow.deleteByName`  
+   （`lib/entity-created-workflow-continuity-v3.mjs:749-753`），agent 行永不命中 →  
+   期望 Map 形状仍为 `{signedName,signedCode,signedPlatformId}` 按 `evidenceStepId`，与旧全量建表等价。
+
+### R2 与 compile 有意分歧 — PASS
+
+- compile（`bin/compile.mjs:246-248`）多 kind 声明即拒：编译期无锁可依。  
+- replay：多段可进两映射，**选段唯一源**是 `deriveFrozenLockChannelKind` 单 kind  
+  （`IDENTITY_LOCK_KIND_MIXED`，registry `:92`）+ `identityChannelsByKind.get(lockKind)`。  
+- 非选中 kind 的段静置映射，不参与 digest/账本。无静默择一、无「缺段降级猜 agent」。  
+- 混装锁行与 C2 单通道约束等强。
+
+### R3 裁③豁免判据 — PASS
+
+- 覆盖集来自 `opened.controller.coveredIntentAtoms()`，权威边派生，非锁自报「已覆盖」标记。  
+- `evidenceStepId ∉ events` → `anchor` 空 → 短循环为非覆盖（fail-closed 倾向，plan §1c ④）。  
+- 锚非 covered 原子 → 非覆盖。  
+- 锚 covered 但行是 agent：合法签路径五元 join 要求 `row.atom` 与 binding/终端同原子  
+  （registry 观察校验）；agent 行 evidence 不会合法锚到 workflow.create 终端。  
+  豁免键是「步上事件的 intentId+atom ∈ 权威覆盖面」，与 GRILL 裁③一致。  
+- 伪造整锁（内容哈希受众）超出本门威胁面（ADR-0010 / 人签+checksum）；本 diff 未放宽签核。
+
+### R4 非覆盖 workflow 具名拒绕过 — PASS
+
+- 部分覆盖：余行 `lockKind !== 'agent'` → `:351-356`  
+  `IDENTITY_EXPECTATION_CONSUMER_MISSING` exit 65。  
+- agent+workflow 混装：`IDENTITY_LOCK_KIND_MIXED` 先于消费面。  
+- evidenceStepId→nav / 缺步：非覆盖 → 同上具名拒。  
+- 全覆盖：不建期望映射、不建账本；W6 实证 exit 66 + 哨兵。
+
+### R5 `:398` v3 判据未动 — PASS（方向安全，披露充分）
+
+- 全覆盖 → `identityExpectedByStep === null` → 若另有 `destructiveContinuity` 边，  
+  仍走 `DESTRUCTIVE_CONTINUITY_IDENTITY_CHANNEL_UNVERIFIED`（`:398-402`）exit 65。  
+- fail-closed，不 fail-open。plan §1c / GRILL §5 / 评审提示词 R5 已预登记；  
+  真深消费另约。注：此刻通道指纹可能已比对过，拒因文案偏「未核验」——诊断精度问题，  
+  不改变安全方向，不升格为 Medium。
+
+### R6 执法时机分层 — PASS
+
+- `agents`：形状/listApi 非法仍解析期 exit 65（`:156-163`）——与旧字节同向。  
+- 非 agent：解析失败只记 `identityChannelParseFailures`，锁点名才拒（`:324-327`），  
+  带解析拒因。v3 最小 `workflows`（无 card 面 → `AGENT_IDENTITY_DOM_NAME_INVALID`）  
+  无锁点名时不拦——amendment-1 实证动机（p9 两金牌）成立。  
+- 「段畸形 ∧ 锁点名」无 hermetic 钉 = 提示词已知挂账，非新 finding。  
+- 延迟窗口内其它门（delete-spec / v3 controller / 准入）不依赖「身份通道良构」解析结果；  
+  无新增静默降级到错误 kind。
+
+---
+
+## 实现对照（计划 → 码）
+
+| 计划项 | 落点 | 判定 |
+|--------|------|------|
+| `deriveFrozenLockChannelKind` 空/未登记/混装 | `lib/entity-observation-registry.mjs:84-93` | 合 |
+| 闭集遍历 + 两映射 + 延迟执法 | `bin/replay.mjs:149-170` | 合（amendment-1） |
+| 锁驱动选段 + digest | `:316-340` | 合 |
+| 覆盖豁免 + 非 agent 消费面拒 | `:341-362` | 合 |
+| 不动 v3 重建判据 | `:398` 未改逻辑 | 合 |
+| 六场景金牌 W1–W6 | golden + prd s1 | 合（本机 exit 0） |
+
+---
+
+## Findings
+
+（无 Critical / High / Medium）
+
+已知挂账（披露，不计 finding）：
+
+1. plan.md §2 表 W3「且行被控制器覆盖」与冻结金牌 W3（无控制器、门序孤立）笔误——checksum 冻结不改字节。  
+2. 「段声明非良构 ∧ 锁点名」延迟执法路径暂无 hermetic 钉——待 checksumAmendment + 人签。
+
+---
+
+VERDICT: APPROVE
