@@ -40,11 +40,34 @@
   发现：降级态下 tier1 第 1 项（期望 exit 0）会被降级值蒙成假绿，真正逮住降级的是第 2 项黑名单
   方向（期望 exit 1）——**正向检查与降级值同号时会被蒙蔽，反向检查不会**。
 
-### 下一步（接续上一节的 B 段收口）
+### 修复合入后已跑 history 例真机回放：修法真机确认生效（取证 `evidence/replay-history-20260810.md`）
 
-回放面仍未闭合：`tc_wf_history_version` 的 replay 会撞同一条竞态，须在修复合入后重跑。
-**批级回放票据 `b4replay0810` 于 2026-08-10T23:59:59+08:00 过期**，逾期须重铸人签。
-动真机前先跑 `node scripts/assert-sut-account.mjs autotest`（casey 的真机账户只许 `autotest`）。
+Steven 当场裁「现在就跑」。账户守卫先行（匹配 `autotest`）、隧道回环 15519 返 200 后跑，
+结果 `PASS 6 / SUT_DEFECT 0 / HARNESS_ERROR 0 / NEEDS_HUMAN 1`，**与 catalog 那跑的最好结果
+完全等价**（catalog 同样六步 PASS + 清理步 `NEEDS_HUMAN(INDETERMINATE)`），不是回退。
+
+- **时序竞态修法在真机上直接实证**：动作轴 `atstep_17` 带上加法留痕
+  `menuDismiss: { dismissed: true, waitedMs: 365 }`——菜单实际用 365ms 才离场，修法等到它离场
+  才交棒；随后确认步 `atstep_18` **756ms 成功**（修复前 publish 同一步 1ms 即 `actionError`，
+  catalog 成功时 758ms）。不是夹具推断，是真机动作轴。
+- **拆意图重表达也生效**：两对「开抽屉→断言→关抽屉」四步全 PASS。
+- **残留零**，只读探针实证 `total=0 complete=true hasNext=false`、exit 0（查询成立，不是判不出）。
+- 剩下那条 `NEEDS_HUMAN` 是**清理意图的表达形状问题、不是缺陷**：后置断言全 ok（含
+  `stableTargetAbsence` 实测 3 样本 / 3043ms），判 INDETERMINATE 的是动作轴——清理意图的代表步
+  是「删后复搜确认缺席」那次放大镜点击，删成功之后**必然候选 0**，故这个意图按当前表达
+  **PASS 不可达**（删得越干净末动作步越必然失败）。机器拒签 PASS 是护栏 #14 正确工作。
+- **票据 `b4replay0810` 三格现已全部核销**，再跑任何一例都须新铸批级票据并重新人签。
+
+### 下一步
+
+1. **清理意图重表达**（新欠账，用例表达层、不碰强制层）：把「删后复搜确认缺席」从代表步位置
+   移出——缺席证明本来由 `stableTargetAbsence` 后置断言承担，动作步再搜一遍既重复又自相矛盾。
+   须与 `publish` 拆意图重表达同车考虑。这一条不改，catalog 与 history 两例的清理步永远
+   停在 `NEEDS_HUMAN`、UAT 完成闸拿不到机器 PASS。
+2. **publish 例重跑**：其票据格已烧且当时是真失败，须新铸批级票据人签后重跑。
+3. 三例真机 UAT 人签完成闸 → P9 关账。动真机前一律先跑
+   `node scripts/assert-sut-account.mjs autotest`（casey 只许 `autotest`；死亡报卡侧是 `hxz`，
+   两边共用凭据面）。
 
 ## 2026-08-10 下午：B 段三例 v3 接线链全线收口 + tier2 清单换签，gate 5/5 GREEN（历史覆盖层，被上节接续）
 
