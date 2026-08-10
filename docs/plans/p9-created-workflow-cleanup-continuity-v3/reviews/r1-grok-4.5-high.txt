@@ -1,0 +1,50 @@
+
+   dev ~/casey-review-20260810/casey                                                                                                                                              137K / 500K │ 6/6 ✓
+
+
+     ❯ Now do a delta re-review. Read DELTA-BRIEF.md and the diff at ../DELTA-684be1d-to-a75f219.diff. Only check whether your R1 findings are closed and whether the fixes introduce new   11:35 AM
+       problems. Do not reopen the full review. End with a line: DELTA-DONE followed by APPROVE or CHANGES_REQUIRED.
+
+
+     ◆ user_prompt_submit  [hooks: 4/1]
+     ◆ Thought for 0.0s
+
+     I'll read the delta brief and the commit range diff, then re-check only the R1 findings and any new risks from the fixes.                                                              11:35 AM
+
+     ◆ Read DELTA-BRIEF.md  [hooks: 1/1]
+  ┃  ◆ Run Inspect delta diff size and changed files  [hooks: 3/2]
+     ◆ Thought for 22.6s
+  ┃  ◆ Run Verify catalog PRD hashes and amendment counts  [hooks: 2/1]
+  ┃  ◆ Run Re-run ratchet and prd-drift-scan  [hooks: 2/1]
+  ┃  ◆ Run Check learn residual wording and git catalog PRD  [hooks: 3/2]
+
+  ┃  ◆ Thinking…
+  ┃
+  ┃  …
+  ┃  DELTA-DONE APPROVE
+  ┃
+  ┃  (The working tree now matches the fixed state in the diff, 684be1d HEAD is irrelevant for review purposes, and the remaining FILE_MISSING is expected env behavior.
+
+
+
+
+
+
+
+
+
+
+
+                                                                                                                                                                                                       █
+                                                                                                                                                                                                       █
+                                                                                                                                                                                                       █
+                                                                                                                                                                                                       █
+
+    ⠋ Thinking… 14s                                                                                                                                                                  1m7s ⇣137k [stop]
+
+  ╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+  │ ❯                                                                                                                                                                                                │
+  ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── Grok 4.5 (high) · always-approve ─╯
+
+  Shift+Tab:mode  │  Esc:cancel  │  Ctrl+x:shortcuts
+

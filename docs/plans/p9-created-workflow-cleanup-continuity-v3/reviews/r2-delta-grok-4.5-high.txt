@@ -1,0 +1,50 @@
+
+   dev ~/casey-review-20260810/casey                                                                                                                                              141K / 500K │ 6/6 ✓
+
+
+     ❯ Now do a delta re-review. Read DELTA-BRIEF.md and the diff at ../DELTA-684be1d-to-a75f219.diff. Only check whether your R1 findings are closed and whether the fixes introduce new   11:35 AM
+       problems. Do not reopen the full review. End with a line: DELTA-DONE followed by APPROVE or CHANGES_REQUIRED.
+
+                                                                                                    ▲
+
+     • Mutation claim: corrected to unregistered → UNREGISTERED_ATOM_FACETS (entity-semantic-lock-preflight.mjs:79–102); assert.buttonState / workflow.closeDrawer called out; third debt
+     + co-land with binding cleanup — accurate.
+     • History vs publish: explicitly “不能替 publish 站岗”; publish coverage is lost, held by pending + re-expression debt — accurate; line 56 still “正向覆盖暂缺”.
+
+     Residual (not introduced by this delta, not in the three hunks):
+     cases/tc_wf_publish_states/expected.*.pending.json and the draft still say「正向覆盖改由 tc_wf_history_version…承担」. That contradicts the corrected learn.md. Out of the delta file
+     set; does not re-open R1 High findings. Optional follow-up if you want the freeze trail aligned with learn.
+
+     ───
+
+     R1 finding closure map
+
+     ┌──────────────────────────────────────────────────────┬──────────────────────────────────────────────────────────────────────────────┐
+     │ R1 item                                              │ Status                                                                       │
+     ├──────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────┤
+     │ High: catalog PRD vs disk CHECKSUM_MISMATCH          │ Closed (0 mismatches)                                                        │
+     ├──────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────┤
+     │ High: ratchet “0 问题” / 786 files claim             │ Closed on CHECKSUM class; 786 files confirmed; FILE_MISSING runs-only (env)  │
+     ├──────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────┤
+     │ Medium: amendment 16≠18 / history “三件”             │ Closed                                                                       │
+     ├──────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────┤
+     │ Medium: learn mutation + history-stands-in overclaim │ Closed in learn.md                                                           │
+     ├──────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────────────────────┤
+     │ Gate 5/5 on main tree                                │ Not re-run end-to-end here (env); no longer blocked by catalog content drift │
+     └──────────────────────────────────────────────────────┴──────────────────────────────────────────────────────────────────────────────┘
+
+     Fixes introduce new Critical/High? No.
+
+     ───
+
+     DELTA-DONE APPROVE                                                                                                                                                                                █
+                                                                                                                                                                                                       █
+     Worked for 1m39s                                                                                                                                                             stop  [hooks: 4/1]   █
+                                                                                                                                                                                                       █
+
+  ╭──────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────╮
+  │ ❯                                                                                                                                                                                                │
+  ╰─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────── Grok 4.5 (high) · always-approve ─╯
+
+  Shift+Tab:mode  │  Ctrl+x:shortcuts
+

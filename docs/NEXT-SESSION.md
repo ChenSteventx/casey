@@ -103,11 +103,26 @@ MCP `mcp/casey-server.mjs`。
 - 并行硬规则：碰 `lib`/`bin` 走 worktree 隔离 + git-native 合并；每树一独立 baton；
   41 棵树多数已 6/6 收口可摘（护栏 #18 建议 ≤5 树，已严重超标）。
 
-【当前状态（2026-08-10）】
-- dev 顶端 `7c0aa58`，本地零 push（有 origin 远端但 dev 从未推送、未经授权不推）。
-  B 段首例完成闸已达成：cleanup 的 `NEEDS_HUMAN` 由 Steven 2026-08-08 晚会话内签过
-  （签核件 `runs/b4-replay-20260808/tc_catalog_wf_crud/cleanup-human-sign.json`），
-  ADR-0009 三件齐（hermetic 绿 + 真机 UAT + 人签）。
+【当前状态（2026-08-10 下午）】
+- **B 段三例 v3 接线链全线收口，契约 `p9-created-workflow-cleanup-continuity-v3` 六阶段
+  全 done**。三例（`tc_catalog_wf_crud` / `tc_wf_publish_states` / `tc_wf_history_version`）
+  的 v3 三件齐备，五源字节自检全 ok；tier2 清单换签 + checksumAmendment 完成；
+  `gate GREEN 5/5`、全仓 `ratchet verify GREEN`（184 PRD / 786 冻结件 / 0 问题）；
+  双路异构评审（grok-4.5 + pi.dev）R1 均 CHANGES_REQUIRED → 并集修 → R2 均 APPROVE，
+  收据 `docs/plans/p9-created-workflow-cleanup-continuity-v3/reviews/README.md`。
+  `lib` 与 `bin` 一字未改。
+- **本轮最大发现：意图号重绑会静默移动断言求值点**（learn.md 全文）。断言只在意图代表步
+  （末动作步）求值一次，而重绑把意图粒度并粗成 authored 意图，令「点开弹窗→断言→关闭」
+  同意图形状的用例正向断言必红。表达规则：**一个意图只能有一个求值时刻**。三笔欠账已登记：
+  编译期 lint（碰强制层须另立契约）、publish 拆意图重表达、assert 类原子准入三面登记不全
+  （补登记须与清理本轮所加绑定同车做）。
+- 三例真机 UAT 完成闸只走完 compile/sign 面，**replay 面尚未跑**（票据须重铸，台账
+  `runs/_tier2/replay-grant-ledger/` 为权威）。B 段首例的 cleanup 人签早于本轮已达成。
+- 隧道两端已重启并接管档案（新 pid 见 `~/casey-recovery-20260807/tunnel-casey.pid`）。
+  **Windows 侧另有 herentunnels\engine(15549) 与 herentunnels\kibana(15529) 两个同名
+  `win-reverse-agent.mjs` 属他方**，必须按完整命令行路径区分、不可按进程名。
+- 邮件标题格式已改（Steven 2026-08-10 定）：`[类型前缀]【casey】具体事项`——类型前缀必须
+  最前（看门狗靠它识别），项目标识紧随；死亡报卡侧同日用 `【死亡报卡】`，两边对齐。
 - 未提交现场 14 项已逐项审计（2026-08-10）：全部是登记过的用户资产，勿动、勿
   `git add -A`。分三类：07-31 代执行签署批次（`SIGN-AND-AFTER.md` +255 行、
   `resign-runbooks.md` +49 行、三个 prd 的签署字段）；08-08 签署落盘批次
@@ -135,18 +150,19 @@ MCP `mcp/casey-server.mjs`。
   → grok tmux 伪终端 + pi 默认配置入口（--exclude-tools edit,write）。
 
 【下一步（任选其一，先对齐再动手）】
-A. 后两例 `tc_wf_publish_states` / `tc_wf_history_version` 统一处置——与首例同一条
-   七相链（凭据门+kind 泛化两修同受益）。依赖：真机前重启隧道两端 + 重铸回放票据
-   （台账 `runs/_tier2/replay-grant-ledger/` 为权威，失败尝试也烧票）。目标：P9
-   关账最后的用例账。
-B. 收主树 p9 槽 3/6→6/6。依赖：无（s5 证据已齐）。目标：清空契约槽，让后续契约
-   干净 `contract init`。
-C. 挂账清偿 + 工作树清理。依赖：「段非良构∧锁点名」hermetic 钉需人签，其余
-   （kind 泛化 plan W3 表笔误、A4 义务白名单独立钉、teach-in 三通道同缺、
-   `wf-open-smoke` 陈旧红 owner、41 棵树摘除）无人签依赖。目标：把技术债与树数
-   压回护栏红线内。
-D. 唤醒停泊链（gate-contract-preflight 签核 / chiefcomplaint v2 铸权）。依赖：两条
-   都卡 PENDING_STEVEN，只有 Steven 明示才动。
+A. **三例 replay 面**——本轮只到 compile/sign，回放尚未跑。依赖：重铸批级回放票据
+   （一次性、失败尝试也烧票，台账为权威；票据须绑各例 `created-workflow-authority.frozen.json`
+   的 `structuralAuthoritySha256`，本轮三件已齐故可铸）+ 隧道探活。目标：三例真机
+   UAT 人签完成闸，P9 关账。
+B. 工装欠账立契约：编译期加「意图内断言步之后还有改状态动作步 → blocker」前置检查。
+   碰编译门属强制层、按 ADR-0008 是 kernel 级治理（双设计审 + 异构冗余 + 人签）。
+   **lint 落地前，任何「点开→断言→关闭」同意图形状的用例，下次重编译必踩同坑。**
+C. assert 类原子准入三面登记补齐（`assert.textHidden` / `assert.buttonState` /
+   `workflow.closeDrawer` 均未登记、走保守默认当 mutation）。**须与清理本轮所加
+   `entityBindings` 同车做**，否则补登记会反过来拒掉这些绑定。
+D. 承前挂账：「段非良构∧锁点名」hermetic 钉（需人签）、publish 拆意图重表达（搭车下次
+   真机）、41 棵工作树清理、停泊两链（gate-contract-preflight 签核 / chiefcomplaint
+   v2 铸权，均卡 PENDING_STEVEN）。
 
 【环境坑（WSL）】
 - WSL 本体会整机挂死：2026-08-10 晨挂过一次，Windows 侧重启后新实例即健康。判死活

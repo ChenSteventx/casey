@@ -3,7 +3,77 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-10：交接刷新 + WSL 挂死重启 + 未提交现场全量审计（最新覆盖层，权威现状）
+## 2026-08-10 下午：B 段三例 v3 接线链全线收口 + tier2 清单换签，gate 5/5 GREEN（最新覆盖层，权威现状）
+
+现役 dev 顶端 `684be1d`（本地零 push）。**B 段三例（`tc_catalog_wf_crud` /
+`tc_wf_publish_states` / `tc_wf_history_version`）v3 三件全部齐备**，
+`readCreatedWorkflowOwnershipAuthority` 五源字节自检三例全 `ok`、audience production：
+
+1. `tc_catalog_wf_crud`：v3 结构授权边此前落在 `runs/b4-replay-20260808/` 下且缺 `.frozen` 后缀
+   （落位偏差、非签署缺失）。按 Steven 裁定用原签时点 `2026-08-07T17:32:22Z` 重跑 freeze
+   落到 `cases/` 规范位，与原件逐字节相同（sha `a10efc80…`，正是回放票据绑的
+   `structuralAuthoritySha256`）——是搬位不是新签。
+2. **publish_states**：Steven 认领 08-08 那批文档外产物（flow confirm 14:20:59Z、预执行
+   权威件 14:21:21Z 均他签过，真机 fresh compile 20 步全绿真建真删自清零）。旧件归档后
+   搬位落 `cases/`，走 B8（10 条断言 + 实体锁 20 行 v1→v2 重签，因 pending 非空带
+   `--force` 产留痕旁车）与 B9 结构授权边。
+3. **history_version**：三件全无、走完整一趟。拆意图重表达（见下）→ B0 confirm → B2 铸权
+   → B3 登记 → **真机第二十一跑 `b4r210810h` exit 0**（21 步全 unique 全执行、
+   identityGate unique、blockers 与 caseDefectCandidates 均 0）→ B6/B7 → B8（8 条断言 +
+   实体锁 21 行）→ B9。**残留已按硬证据核销**：删除请求 `POST /ai-manager/process/delete`
+   返回 200，删后 `queryProcess` 响应里目标名与平台标识双双不在。
+4. **tier2 清单换签**：18 处漂移哈希刷新（三例本轮新字节 + chiefcomplaint 08-04 重编译
+   新字节）+ 9 件 v3 新登记 + 新增 `replayGrantPath` 声明，走 `checksumAmendment`
+   （原件 gzip 存档，gunzip 回验 sha 与原冻结值逐字节一致）。换签后 `readSuiteManifest`
+   由 `checksumOk:false`/0 成员闭合为 `true`/5 成员。
+5. **验证**：目标 prd `gate GREEN 5/5`（s5 由红翻绿）；全仓 `ratchet verify GREEN`
+   （184 PRD / 786 冻结件 / 0 问题）；`lib` 与 `bin` 一字未改。
+
+### 本轮最大发现：意图号重绑会静默移动断言求值点（learn.md 全文）
+
+断言只在意图**代表步**（末动作步）求值一次，而 `compile-intent-lineage-rebind` 把意图
+粒度由「每原子一意图」并粗成 authored 意图。于是「点开弹窗→断言→关闭弹窗」挤在一个
+意图里的用例，正向断言被推到弹窗关闭之后求值、**必红**。同意图内同一文本值被
+`textVisible` 与 `textHidden` 两向请求时取可见计数（GRILL D4 定案），两条必然一真一假，
+探针实测 `hits` 取 0/1/3 三例均无解。重绑契约当初解决的是出处链闸命名空间错配，
+**没人意识到它同时移动了断言求值点**——这是静默的表达力回退。
+
+可直接用的表达规则：**一个意图只能有一个求值时刻，故一个意图里不能有两段需分别求值的
+断言。** 处置非对称（Steven 两裁）：publish 两条正向移 `pending[]` 留痕（零额外真机）；
+history 拆意图正确表达（原四意图拆七意图，并把原本无断言覆盖的两次关闭动作补成
+`assert.textHidden`，套件层覆盖净增两条）。
+
+**工装欠账（已登记未做）**：编译期须加「意图内断言步之后还有改状态动作步 → blocker，
+提示拆意图」前置检查。碰编译门属强制层、按 ADR-0008 是 kernel 级治理，须另立契约。
+lint 落地前，**任何仍是「点开→断言→关闭」同意图形状的用例，下次用现管线重编译必踩同坑**。
+
+### 过程账
+
+- 契约槽 `p9-created-workflow-cleanup-continuity-v3` 推进到 **4/6**（loop done，
+  review 阶段双路异构评审在跑：pi 与 grok-4.5，codex 无额度）。
+- 隧道两端已重启并接管档案：前任 WSL 52932 / Windows 38680 按纯数字 pid 精确回收
+  （death_report 会话确认移交），新 pid `118419` / `4716` 已写
+  `~/casey-recovery-20260807/tunnel-casey.pid`。**Windows 侧另有 herentunnels\engine
+  (15549) 与 herentunnels\kibana (15529) 两个同名 `win-reverse-agent.mjs` 属他方**，
+  必须按完整命令行路径区分、不可按进程名——档案注释已写死这条。
+- 本轮真机产物已抢备 ext4 `~/casey-recovery-20260807/b4-hist-20260810/`（D 盘期间抛过
+  一次 EIO 打在 loop-kit 身份锁校验上、重试即复原）。
+- 三条小账（learn.md §3）：`SIGNING-SESSION` 的 B6 命令多写了 `--testcase`（`casey draft`
+  不吃该参数，传了会触发归一闸拒）；`readCreatedWorkflowOwnershipAuthority` 漏传
+  `caseId` 会得到与「件坏了」难分的失败；`CHIEF-EVENTS-MISSING.md` 已被 08-04 09:46
+  一次成功真机编译超车。
+
+### 下一步
+
+- 甲、review 阶段收口（双路评审结论 → 有 finding 按并集修 + delta 复审）→ advance
+  review/learn → 契约 6/6 → **推送 dev**（Steven 2026-08-10 已授权推送，此前被阶段
+  互锁挡住，收槽后即可）。
+- 乙、P9 关账剩余：三例真机 UAT 人签完成闸（本轮只到 compile/sign 面，replay 面尚未跑；
+  票据须重铸，台账 `runs/_tier2/replay-grant-ledger/` 为权威）。
+- 丙、工装 lint 欠账另立契约；publish 拆意图重表达搭车下次真机行程。
+- 丁、承前挂账与 41 棵工作树清理。
+
+## 2026-08-10 上午：交接刷新 + WSL 挂死重启 + 未提交现场全量审计（历史覆盖层，被上节接续）
 
 现役 dev 顶端 `7c0aa58`（本地零 push；有 origin 远端但 dev 从未推送、未经授权不推）。
 本层无代码推进，是一次交接刷新 + 环境事件 + 现场定性：
