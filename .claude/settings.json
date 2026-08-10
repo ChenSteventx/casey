@@ -47,6 +47,17 @@
             "statusMessage": "loop 阶段互锁"
           }
         ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/bin/sut-account-guard-hook.mjs\"",
+            "timeout": 15,
+            "statusMessage": "SUT 账户守卫（真机命令防串账户）"
+          }
+        ]
       }
     ],
     "Stop": [
