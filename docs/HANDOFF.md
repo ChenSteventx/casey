@@ -3,7 +3,50 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-10 下午：B 段三例 v3 接线链全线收口 + tier2 清单换签，gate 5/5 GREEN（最新覆盖层，权威现状）
+## 2026-08-10 傍晚：回放确认步时序竞态契约收口 6/6（最新覆盖层，权威现状）
+
+现役 dev 顶端见 `git log`（本地零 push 状态已变，见下）。**`replay-confirm-menu-dismiss`
+契约走完 6/6 并入 dev**，修掉 B 段三例回放面卡住的那条真机时序竞态。
+
+1. **缝与修法**：卡片布局删除链里 `performCardMenuDeleteTrigger` 点完菜单删除项后直接返回，
+   `finally` 的 `dispose(menu)` 只释放 Playwright 句柄、**不关页面上的菜单**；已发布件的操作
+   菜单比未发布件多一个「停用」项、关闭动画更长，而回放推进到确认步比菜单关完更快，确认点击
+   撞在未关闭的菜单上被 hit-target 拦下（真机录像抽帧实证：publish 例该步 1ms 即
+   `actionError`，对照 catalog 例同一步 758ms 成功）。修法是菜单删除项点击成功后、返回前有界
+   等菜单离场，判据取可见性（复用同文件 `actionStillLocked` 三合一口径）、预算 3000ms 轮询
+   50ms；超时不阻断但以加法字段 `menuDismiss{dismissed,waitedMs}` 留痕（D3 Steven 裁取丙）。
+2. **顺带修一处夹具假绿**：金牌 R12 自称测「菜单点后不关闭」却断言确认成功——旧夹具 `click`
+   只查元素自身可见、不做遮挡判定，复现不了真机 hit-target。给夹具加 `menuBlocksOutsideClick`
+   与 `menuDismissDelayMs`（缺省关、既有 25 项行为一寸不动），新增 R26/R27/R28 三条红先行。
+3. **评审**：R1 双路异构（grok-4.5 + pi.dev）各自独立跑命令与突变探针，均 `APPROVE`、
+   0 Critical / 0 High、共 5 条 Medium；按 4 条改（1 条两路一致建议不改），三份冻结件按
+   ADR-0004 补 `checksumAmendments`（Steven 会话内明示签字）。R2 delta 复审（pi.dev）逐条
+   复现核验，Critical / High / Medium **全 0**。收据在 `docs/plans/replay-confirm-menu-dismiss/reviews/`。
+4. **改正了我自己两处不实记载**（都是评审实测逮出的）：红基线原写「判据反转 → 2 红」实为
+   3 红；提交信息「复跑 32 份、7 份红」两个数都错，按可重跑选集规则重跑实为 **50 份 / 49 绿 /
+   1 红**，逐份退出码落 `accept/affected-goldens.txt`。唯一真红 `real-run-trust` 属既有陈旧红
+   （本刀未碰 `bin/replay.mjs` 与该金牌任一文件），另记欠账。
+
+### 本轮两个要带走的坑
+
+- **掉盘会伪装成回归**：第一次跑受影响金牌时 `/mnt/d` 9p 静默断连，从第 21 份起连续 30 份全
+  `exit 1`，其中包括已被两路评审各自独立跑到 28/28 的 `wf-delete-card-layout`。只看退出码会
+  得出「本刀引入 30 份回归」的彻底错误结论。此后跑批一律同抓 stderr，非零退出里含
+  `EIO`/`ENOENT` 的记作废而非记红；跑批前用读风暴探针确认盘稳。
+- **两路评审同报一条，不等于结论对**：两方都报 `selftest --tier1` 有红，差点被我当成既有陈旧红
+  收下。实测同哈希下实现树全绿、评审克隆树 exit 1——根因是克隆树把 loop-kit 接成**软链**兄弟
+  目录，包定位不接受软链，shim 降级矩阵对 lint 类返 0。取证
+  `docs/plans/replay-confirm-menu-dismiss/evidence/tier1-clone-degrade-artifact.md`。顺带一个正面
+  发现：降级态下 tier1 第 1 项（期望 exit 0）会被降级值蒙成假绿，真正逮住降级的是第 2 项黑名单
+  方向（期望 exit 1）——**正向检查与降级值同号时会被蒙蔽，反向检查不会**。
+
+### 下一步（接续上一节的 B 段收口）
+
+回放面仍未闭合：`tc_wf_history_version` 的 replay 会撞同一条竞态，须在修复合入后重跑。
+**批级回放票据 `b4replay0810` 于 2026-08-10T23:59:59+08:00 过期**，逾期须重铸人签。
+动真机前先跑 `node scripts/assert-sut-account.mjs autotest`（casey 的真机账户只许 `autotest`）。
+
+## 2026-08-10 下午：B 段三例 v3 接线链全线收口 + tier2 清单换签，gate 5/5 GREEN（历史覆盖层，被上节接续）
 
 现役 dev 顶端 `684be1d`（本地零 push）。**B 段三例（`tc_catalog_wf_crud` /
 `tc_wf_publish_states` / `tc_wf_history_version`）v3 三件全部齐备**，

@@ -116,8 +116,17 @@ MCP `mcp/casey-server.mjs`。
   同意图形状的用例正向断言必红。表达规则：**一个意图只能有一个求值时刻**。三笔欠账已登记：
   编译期 lint（碰强制层须另立契约）、publish 拆意图重表达、assert 类原子准入三面登记不全
   （补登记须与清理本轮所加绑定同车做）。
-- 三例真机 UAT 完成闸只走完 compile/sign 面，**replay 面尚未跑**（票据须重铸，台账
-  `runs/_tier2/replay-grant-ledger/` 为权威）。B 段首例的 cleanup 人签早于本轮已达成。
+- 三例真机 UAT 完成闸的 replay 面**跑了两例、未闭合**（台账
+  `runs/_tier2/replay-grant-ledger/cf857c05…` 为权威）：`tc_catalog_wf_crud` 清理成功零残留
+  （稳定缺席 3 样本 / 3043ms）；`tc_wf_publish_states` 清理失败、裁判判
+  `NEEDS_HUMAN(INDETERMINATE)`（**没有假绿，fail-safe 正确工作**），残留 Steven 已处置；
+  `tc_wf_history_version` 未跑。批级票据 `b4replay0810` 三格里 catalog 与 publish **两格已烧**、
+  history 那格未烧——即 history 重跑不需重铸，但 publish 重跑须新铸人签。
+  票据 2026-08-10T23:59:59+08:00 过期。B 段首例的 cleanup 人签早于本轮已达成。
+- **publish 那次失败的根因已定并已修复合入 dev**（`replay-confirm-menu-dismiss` 契约 6/6）：
+  确认步撞未关闭的操作菜单被 hit-target 拦下；已发布件菜单多一个「停用」项、关闭动画更长，
+  故只打 publish 不打 catalog。详见 HANDOFF 最新覆盖层与
+  `docs/plans/replay-confirm-menu-dismiss/`。history 例会撞同一条，故须在修复之后才跑。
 - 隧道两端已重启并接管档案（新 pid 见 `~/casey-recovery-20260807/tunnel-casey.pid`）。
   **Windows 侧另有 herentunnels\engine(15549) 与 herentunnels\kibana(15529) 两个同名
   `win-reverse-agent.mjs` 属他方**，必须按完整命令行路径区分、不可按进程名。
@@ -150,10 +159,12 @@ MCP `mcp/casey-server.mjs`。
   → grok tmux 伪终端 + pi 默认配置入口（--exclude-tools edit,write）。
 
 【下一步（任选其一，先对齐再动手）】
-A. **三例 replay 面**——本轮只到 compile/sign，回放尚未跑。依赖：重铸批级回放票据
-   （一次性、失败尝试也烧票，台账为权威；票据须绑各例 `created-workflow-authority.frozen.json`
-   的 `structuralAuthoritySha256`，本轮三件已齐故可铸）+ 隧道探活。目标：三例真机
-   UAT 人签完成闸，P9 关账。
+A. **回放面闭合**——时序竞态已修并合入，可继续跑。两步：① `tc_wf_history_version` 重跑
+   （票据 `b4replay0810` 那一格未烧、不需重铸，但 2026-08-10T23:59:59+08:00 过期，逾期须重铸
+   人签）；② `tc_wf_publish_states` 重跑（该格已烧，**须新铸批级票据并人签**）。依赖：隧道探活；
+   动真机前必跑 `node scripts/assert-sut-account.mjs autotest`（casey 真机账户只许 `autotest`；
+   死亡报卡侧是 `hxz`，两边共用凭据面，跑错账户会污染对方）。目标：三例真机 UAT 人签完成闸，
+   P9 关账。
 B. 工装欠账立契约：编译期加「意图内断言步之后还有改状态动作步 → blocker」前置检查。
    碰编译门属强制层、按 ADR-0008 是 kernel 级治理（双设计审 + 异构冗余 + 人签）。
    **lint 落地前，任何「点开→断言→关闭」同意图形状的用例，下次重编译必踩同坑。**
