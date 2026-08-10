@@ -26,7 +26,8 @@
 【已完成事实】
 - `checksum-drift-closure` 已完成：两个普通漏签 SHA256 经 Steven 精确人签，三个 owner/closure gate 均 GREEN；全仓 ratchet 只余两个有意安全撤销 mismatch，预期 exit 1。
 - `review-provider-inline-auth-hook` 已完成：hook、settings 与 AGENTS 同义接线；Grok R1 finding 修复后 R2 PASS；golden 6/6、gate 1/1、tier1 GREEN；最终 checksum 已由 Steven 批准；六阶段全 done。
-- 活契约仍指向上述已完成 provider hook。恢复新任务前先核对，不要重复覆盖已完成产物。
+- （2026-08-10 刷新）`dev` 已推进至 `269e121`：08-06/08 十六契约入 dev，B 段首例完成闸已达成、七相链贯通；详见 `docs/codex/HANDOFF.md` 顶部刷新节与根部 `docs/HANDOFF.md` 顶层。
+- （2026-08-10 刷新）活契约现役槽是 `p9-created-workflow-cleanup-continuity-v3`（full，3/6，属 Claude 侧主线），不得占用、覆盖或代为收口；`review-provider-inline-auth-hook` 早已全 done。
 
 【评审供应方纪律】
 - Grok 与 pi.dev 均已配置、可使用；认证由各自调用链内联处理。
@@ -35,20 +36,29 @@
 - 直接使用项目既定已配置入口。只有真实任务调用失败才按实际输出记 `HARNESS_ERROR`；取消、超时、只有过程输出或 exit 0 无终局都不是 PASS。
 - Claude Code 当前无额度：不探测、不调用、不回退。
 
-【必须保护的工作树现场】
-以下文件/目录不属于下一任务完成提交，全部保留，不得修改、覆盖、删除、暂存或提交：
-- `M .gitignore`
-- `M docs/HANDOFF.md`
-- `M docs/NEXT-SESSION.md`
-- `M loop/prd-cli-authority-wiring-fill.json`
-- `M loop/prd-observation-runtime-trust-root.json`
-- `M loop/prd-selftest.json`
-- `M loop/prd-semantic-unit-discrimination.json`
+【必须保护的工作树现场】（2026-08-10 刷新；以实时 `git status --short` 为准）
+以下文件不属于下一任务完成提交，全部保留，不得修改、覆盖、删除、暂存或提交
+（均为登记过的用户资产，定性见根部 `docs/HANDOFF.md` 顶层审计清单）：
+- `M docs/plans/chiefcomplaint-sendandwait-admission/SIGN-AND-AFTER.md`
+- `M docs/plans/p9-uat-close/resign-runbooks.md`
+- `M loop/prd-admission-policy-facets.json`
+- `M loop/prd-agent-network-code-identity.json`
+- `M loop/prd-p9-created-workflow-cleanup-continuity-v3.json`
+- `M loop/prd-p9-tier2-live-smoke.json`
+- `M loop/prd-tc_catalog_wf_crud.json`
+- `M loop/prd-tc_wf_publish_states.json`
+- `M loop/prd-teachin-admission-side-effect-policy.json`
+- `M loop/prd-teachin-cycle-axes-step-set.json`
+- `M loop/prd-teachin-cycle-evidence.json`
 - `?? casey-agent-loop-local-first-total.zip`
-- `?? docs/atom-readiness-assessment-20260715.md`
-- `?? docs/plans/regress-strategy/SCOPE-OPTIONS.md`
-- `?? docs/plans/usability-audit/`
+- `?? docs/plans/gate-contract-preflight/REVIEW-PROMPT-for-codex.md`
 - `?? follow.mjs`
+
+【可选并行任务（先问 Steven 取舍再动）】
+`docs/plans/gate-contract-preflight/REVIEW-PROMPT-for-codex.md` 是一份现成的异构
+评审任务（gate 前置闸，文末带完整调用命令）——Claude 侧发起 codex 三次全败后备
+Steven 亲自发起，2026-07-31 起搁置。若本 session 额度可用且 Steven 点头，可先跑它
+再回 ratchet 主线。
 
 【第一步从这里开始】
 1. 只读执行 `git branch --show-current`、`git status --short`、近期 `git log`，读取 `loop/active-contract.json`。

@@ -2,7 +2,30 @@
 
 > 本文件是 Casey 的 `Codex` 当前状态主文档。根部 `docs/HANDOFF.md` 与 `docs/NEXT-SESSION.md` 属于 Claude Code，只读参考；冲突时按「实际 `git` 与活契约 > 本文件 > `docs/codex/NEXT-SESSION.md` > 根部交接」处理。
 
-最后核对：2026-07-21，工作目录 `/mnt/d/ctx/heren/casey`，分支 `dev`，本轮起点 `1207776`。（2026-07-22 Claude 侧追加当日进展至「当前工作目标」末与 `docs/REQUIREMENTS-STATUS.md`；`dev` 已推进至 `82484ab`，另有当日未提交增量与一条在飞 worktree 契约，见下。）
+最后核对：2026-07-21，工作目录 `/mnt/d/ctx/heren/casey`，分支 `dev`，本轮起点 `1207776`。（2026-07-22 Claude 侧追加当日进展至「当前工作目标」末与 `docs/REQUIREMENTS-STATUS.md`；`dev` 已推进至 `82484ab`，另有当日未提交增量与一条在飞 worktree 契约，见下。2026-08-10 Claude 侧再次增量刷新，见下节。）
+
+## 2026-08-10 Claude 侧增量刷新（追加；本节以下未标注处仍是 2026-07-21/22 快照，勿据其判现状）
+
+- 现状权威：根部 `docs/HANDOFF.md` 顶部「2026-08-10」覆盖层。`dev` 已推进至
+  `269e121`（本地零 push）：2026-08-06/08 十六契约入 dev，B 段首例
+  `tc_catalog_wf_crud` 完成闸已达成（ADR-0009 三件齐：hermetic 绿 + 真机 UAT +
+  Steven 人签），签署史上首次落盘、相 3 真机回放史上首通、七相链贯通。
+- **活契约已换**：现役槽是 `p9-created-workflow-cleanup-continuity-v3`（full，3/6，
+  属 Claude 侧主线），不再是本文下述的 `review-provider-inline-auth-hook`（其六阶段
+  早已全 done）；lcodex 不得占用、覆盖或代为收口。
+- 下文「当前 `git` 与活契约状态」节的保护现场清单已过期（其中 `.gitignore`、四个旧
+  prd 等早已入库或消失）；当前未提交现场（14 项，均为登记过的用户资产、勿动勿提交）
+  以根部 HANDOFF 顶层的审计清单与实时 `git status --short` 为准。
+- codex 相关两笔待办：① `ratchet-security-revocation` R2 设计复审仍是 codex 主线
+  （`docs/REQUIREMENTS-STATUS.md` P0 清单第②条，08-10 为止未动）；②
+  `docs/plans/gate-contract-preflight/REVIEW-PROMPT-for-codex.md` 已备好（文末带
+  完整调用命令）——该轮 Claude 侧发起 codex 三次全败（一次 10 分钟超时、两次
+  HTTP 403），此件备 Steven 亲自发起，2026-07-31 起搁置至今，是异构评审账上的空格。
+- 评审供应方现状：grok-4.5 high + pi.dev 双路常态可用；codex 以当次真实调用结果
+  为准，失败按实际输出记 `HARNESS_ERROR`，不预判不可用。
+- 环境增量：WSL 本体 2026-08-10 晨整机挂死一次，Windows 侧重启后新实例健康；判
+  死活先 `uptime` 看实例新旧。D 盘（drvfs）间歇不稳照旧：commit 早提勤提、评审走
+  ext4 克隆、`/mnt/d` git 给足 300 秒。
 
 ## 当前工作目标
 
@@ -53,7 +76,7 @@
 - fake/fixture SUT 只读；本任务无需也不得启动浏览器、网络或 SUT。
 - Grok/pi.dev 认证内联，不做认证探测；Claude Code 当前无额度，不调用。
 
-## 当前 `git` 与活契约状态
+## 当前 `git` 与活契约状态（本节 2026-07-21 快照、只溯源，现状见顶部 2026-08-10 刷新节）
 
 - 分支：`dev`；本轮起点：`1207776`。接手时以最新 `git log -1` 为准。
 - 活契约：`review-provider-inline-auth-hook`，full，六阶段全 done。
