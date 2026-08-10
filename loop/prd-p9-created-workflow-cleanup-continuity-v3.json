@@ -82,7 +82,7 @@
         "node tests/_golden/p9-created-workflow-continuity-v3.legacy-fixed-id-supersession.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-03T23:52:27.092Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-10T03:03:46.983Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-stable-target-id-absence",
@@ -92,7 +92,7 @@
         "node tests/_golden/p9-created-workflow-continuity-v3.stable-absence.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-03T23:52:27.268Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-10T03:03:47.119Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-tier2-cleanup-independent-gate",
@@ -103,7 +103,7 @@
         "node tests/_golden/p9-created-workflow-continuity-v3.tier2-production.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-03T23:52:28.191Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-10T03:03:48.213Z 全部 acceptance exit 0"
     },
     {
       "id": "s4-role-authoring-sign-reader-preflight",
@@ -113,7 +113,7 @@
         "node tests/_golden/p9-created-workflow-continuity-v3.role-compile-sign.zero-sut.golden.mjs"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-03T23:52:28.510Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-10T03:03:48.594Z 全部 acceptance exit 0"
     },
     {
       "id": "s5-adjacent-regression-and-deep-consumption",
@@ -137,8 +137,8 @@
         "node loop-kit/bin/term-lint.mjs --registry",
         "node bin/casey.mjs selftest --tier1"
       ],
-      "passes": false,
-      "evidence": ""
+      "passes": true,
+      "evidence": "gate@2026-08-10T03:05:39.257Z 全部 acceptance exit 0"
     }
   ],
   "checksumAmendments": [

@@ -4,7 +4,7 @@
   "specPath": "docs/plans/p9-tier2-live-smoke/plan.md",
   "testChecksums": {
     "tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs": "f6e6a5a1ee05d476f17c29b85b070248740a30fbbf98c265db221a9d21ae936c",
-    "cases/tier2-suite.manifest.json": "89dea66de4965a0ab5a5c1e2eca0b8ad61952b50b920027eb1353191a2a7acfb",
+    "cases/tier2-suite.manifest.json": "de915dc8a74e47f6f8d6c7ad733570eb4049711ec794d037b2339a5118d707a7",
     "docs/plans/p9-uat-close/P9-UAT-SIGNOFF.md": "637f4708f9b7687dd1e778f991ea76590af778db384c2296d92c35d1284de88f"
   },
   "observability": [
@@ -33,7 +33,7 @@
       "acceptance": [
         "node tests/_golden/p9-tier2-selftest.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-08-03T02:05:08.014Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T03:27:20.648Z 全部 acceptance exit 0"
     },
     {
       "id": "s2-adjacent-zero-regression",
@@ -49,7 +49,7 @@
         "node tests/_golden/teachin-nav-expansion-recipe.zero-sut.golden.mjs",
         "node tests/_golden/teachin-cycle-evidence.zero-sut.golden.mjs"
       ],
-      "evidence": "gate@2026-08-03T02:07:13.139Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T03:29:25.404Z 全部 acceptance exit 0"
     },
     {
       "id": "s3-repo-drift-and-terms",
@@ -59,7 +59,7 @@
         "node tests/_golden/support/prd-drift-scan.mjs",
         "node loop-kit/bin/term-lint.mjs --registry"
       ],
-      "evidence": "gate@2026-08-03T02:07:32.759Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-03T03:29:42.387Z 全部 acceptance exit 0"
     }
   ],
   "checksumAmendments": [
@@ -86,6 +86,20 @@
       "reason": "为什么改：Steven 2026-07-31 会话内两次明示——先答「把另四例一并授权入集」，随后在 caseLimit 冲突的追问里答「把上限提到 5，全部入集」。改法两项：①caseLimit 由 4 提到 5（安全边界放宽，即一次 live smoke 最多打真实环境的例数上限，已在 manifest 内新增 caseLimitNote 逐字留痕）；②pendingMembers 四例（tc_chiefcomplaint_smoke / tc_catalog_wf_crud / tc_wf_publish_states / tc_wf_history_version）全数补齐现役成员同款字段后移入 members，该数组清空，成员数 1→5。四员的 artifact hash 全部本轮现算，三例变更型的 expected.frozen.json 与 entity-locks.frozen.json 与各自 loop/prd-tc_*.json 的 testChecksums 逐字节同值（对账全过）；tc_chiefcomplaint_smoke 全仓无同名 prd 故无同级对账面，其凭据是件内逐条断言自带的 signerId=Steven / signedAt=2026-07-03T04:40:30.832Z，且该件无 entity-locks（签期早于实体锁机制，采集层列为可选）、无 audience 标记（不猜故不填）。timeoutMs 按各例真机 run-metrics.json 的 totalDurationMs 实测分档（catalog 20.6 秒→600000、chiefcomplaint 11.9 秒+LLM 流式等待→660000、history 21.6 秒→720000、publish 31.3 秒→780000），依据写进 manifest 的 timeoutBasis。cleanupObligation 逐例按 events.json 末步实证重写，纠正了原 pendingMembers 的乐观文案：三例变更型的回放链全部没有删除原子，工装一律不自清，残留清理百分之百是人的义务；publish 每轮留一条不可逆的已发布工作流（2026-07-30 夜五轮即留五条），history 每轮留已发布工作流加不可删的版本记录。lib/ 与金牌一字未改，本笔只动 manifest 数据面。原件 gzip 存档见 archive 字段（gunzip 回验 sha=44f226bb… 与原冻结值一致）。",
       "verification": "改后清单经 lib/selftest-tier2-manifest.mjs 的 validateSuiteManifestDoc 校验：problems 空数组、ok=true、members.length=5、caseLimit=5、signedOk=true、无 draft 标记、pendingMembers 为空数组。五员逐一过 verifyMemberExecutionFiles 的磁盘字节重核（全 ok=true，三例变更型 perRunApproval 均为 true）。readSuiteManifest 全链在本笔换签落签前会如实报「manifest 字节与契约冻结值失配」——那是本 testChecksums 尚未随扩集更新时的正确 fail-closed 行为，本笔更新后即闭合。",
       "signedBy": "Steven（2026-07-31 会话内明示落签：先答「把另四例一并授权入集」，再在 caseLimit 冲突的追问里答「把上限提到 5，全部入集」，最后在残留代价披露后就本笔换签答「你现在签，我写出处落笔」。签的是【清单扩集到五员 + caseLimit 4→5】这件事整体，不含逐条 artifacts 校验和的人工复核。**本字段由 Claude 代填**，凭据即上述三句会话原话，非 Steven 本人书写；如对措辞或范围有异议以他后续更正为准。同时留痕：他在知悉「三例变更型回放链无清理原子、每轮留不可逆残留」之后，另行裁定「先给三例补清理链再跑」——故本次扩集只是清单授权到位，三例变更型在补齐清理链之前不得实跑。"
+    },
+    {
+      "amendedAt": "2026-08-10",
+      "round": "P9 v3 created-in-run 三例接线链收口换签（三例 v3 三件登记 + 全员漂移哈希刷新 + replayGrantPath 声明）",
+      "files": [
+        "cases/tier2-suite.manifest.json"
+      ],
+      "shaBefore": "89dea66de4965a0ab5a5c1e2eca0b8ad61952b50b920027eb1353191a2a7acfb",
+      "shaAfter": "de915dc8a74e47f6f8d6c7ad733570eb4049711ec794d037b2339a5118d707a7",
+      "archive": "cases/tier2-suite.manifest.json.pre-p9v3-three-case-wiring-amendment.archive.gz",
+      "contract": "p9-created-workflow-cleanup-continuity-v3（本轮活契约内的清单数据面换签，未另立契约）",
+      "reason": "为什么改：三例 tc_catalog_wf_crud / tc_wf_publish_states / tc_wf_history_version 本轮走完 P9 v3 created-in-run 接线链，清单登记的 07-31 旧哈希全线过时，且三例的 v3 三件此前零登记会被 lib/selftest-tier2-manifest.mjs 的结构校验器判「未接 created-workflow v3 动态 ID 清理生产链」。改法三项：① 全员 artifact 哈希按磁盘现字节刷新共 18 处——其中 tc_catalog_wf_crud 五件、tc_wf_publish_states 五件、tc_wf_history_version 三件源于本轮真机重编译与改版重签，tc_chiefcomplaint_smoke 三件源于 2026-08-04 09:46 一次成功真机编译（旧档 docs/plans/p9-created-workflow-cleanup-continuity-v3/CHIEF-EVENTS-MISSING.md 记的「件不在场」结论已被该次编译超车，本笔一并认账刷新）；② 三例各新登记 v3 三件 flow.confirmed.json、compile-provenance.json、created-workflow-authority.frozen.json 共 9 件，其中 tc_catalog_wf_crud 的结构授权边是按原签时点 2026-08-07T17:32:22Z 逐字节重现补落到规范位（原件落在 runs/b4-replay-20260808/ 下且缺 .frozen 后缀，属落位偏差非签署缺失，重现件与原件 sha 同为 a10efc80…）；③ 新增 replayGrantPath 声明批级回放票据落点 runs/_tier2/replay-grant.json（清单只声明路径，票据件每批重签）。成员集合、caseLimit 5、各成员授权依据与清理义务文案均未改动；lib 与金牌一字未改，本笔只动清单数据面。原件 gzip 存档见 archive 字段（gunzip 回验 sha=89dea66d… 与原冻结值逐字节一致）。",
+      "verification": "改后清单经 validateSuiteManifestDoc 校验：ok=true、problems 空、members.length=5、caseLimit=5、signedOk=true、无 draft 标记。三例各自经 readCreatedWorkflowOwnershipAuthority 五源字节重核：三例全 ok=true、audience=production。换签前 readSuiteManifest 如实报 checksumOk=false / memberCount=0——那是本 testChecksums 尚未更新时的正确 fail-closed 行为，本笔更新后闭合。tc_wf_history_version 的真机编译（第二十一跑）exit 0：21 步全 unique 全执行、identityGate unique、blockers 与 caseDefectCandidates 均 0；残留已按硬证据核销——删除请求 POST /ai-manager/process/delete 返回 200，删后 queryProcess 响应里目标名与平台标识双双不在。",
+      "signedBy": "Steven（2026-08-10 会话内明示落签：就本笔清单重签答「授权重签」，此前已分别就三例的 B8 断言与实体锁重签、B9 v3 结构授权边逐点授权）。签的是【三例 v3 接线链收口后的清单换签】这件事整体，不含逐条 artifact 校验和的人工复核。**本字段由 Claude 代填**，凭据即上述会话选项原文，非 Steven 本人书写；如对措辞或范围有异议以他后续更正为准。"
     }
   ]
 }
