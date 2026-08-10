@@ -3,7 +3,60 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-08 傍晚：两契约收口 + 相 3 真机回放史上首通 + 相 4/6 出件、cleanup 待人裁（最新覆盖层，权威现状）
+## 2026-08-10：交接刷新 + WSL 挂死重启 + 未提交现场全量审计（最新覆盖层，权威现状）
+
+现役 dev 顶端 `7c0aa58`（本地零 push；有 origin 远端但 dev 从未推送、未经授权不推）。
+本层无代码推进，是一次交接刷新 + 环境事件 + 现场定性：
+
+1. **B 段首例完成闸达成已入史**（承下节甲）：cleanup 人签落档提交 `7c0aa58`，签核件
+   `runs/b4-replay-20260808/tc_catalog_wf_crud/cleanup-human-sign.json`——ADR-0009
+   三件齐（hermetic 绿 + 真机 UAT + 人签），`tc_catalog_wf_crud` 是 B 段首个按新完成
+   定义关账的用例。
+2. **WSL 整机挂死一次（2026-08-10 晨）**：Windows 侧重启后新实例即健康（内存 11Gi
+   空闲、16G swap 零占用、9p 零报错、持续 I/O 压测过）；重启窗口内子代理读 `lib/`
+   报一次 EIO 后复原；`.git/sequencer` 已核无残留。教训：判 WSL 死活先 `uptime` 看
+   实例新旧，别按旧实例的症状开药。
+3. **未提交现场 14 项全量审计定性**（均为登记过的用户资产，勿动纪律不变）：
+   - 07-31 代执行签署批次：`SIGN-AND-AFTER.md`（+255，七件请签 1–4 已按授权代填、
+     开放问题 A/B/C 三裁落档，其中 C 以实测推翻「?v= 指引失效」误判保住
+     `--against-build=1.1.2`）、`resign-runbooks.md`（+49，读版本号必须经代理在活
+     页面读的方法学订正 + v1 下身份字段属装饰性的发现）、三个 prd 的
+     signedBy/task/testChecksums 同批代填；
+   - 08-08 签署落盘批次：`prd-tc_catalog_wf_crud.json`（frozen 件换 sha + authority
+     登记）、`prd-p9-created-workflow-cleanup-continuity-v3.json`（活契约槽跑证）；
+   - 纯噪音 4 个 prd（gate evidence 时间戳 08-03 位移，可弃可提）；
+   - **唯一文档外增量：`loop/prd-tc_wf_publish_states.json` 08-08 22:21 新登记
+     `runs/b4-publish-20260808/execute-authority.json`，此前无任何文档记载，须
+     Steven 确认归属**（正对应下一步 A 那例，疑似 08-08 晚已有人先动过一步）；
+   - 未跟踪三件：`REVIEW-PROMPT-for-codex.md` 应入库（gate-contract-preflight 异构
+     评审账上的空格——本轮 codex 三次发起全败，这份备 Steven 亲自发起用，已搁置
+     8 天）；`casey-agent-loop-local-first-total.zip` 与 `follow.mjs` 是临时物不该
+     入库（zip 三周未动无代码引用；follow.mjs 是一次性隧道探针，按自家 `tmp/` 约定
+     位置错了）。
+4. **文档陈旧盘点（待修，本层只登记不改）**：CLAUDE.md 护栏计数（写 13–16 实为
+   19 条）；GUARDRAILS #16 仍标 prose 但 ADR-0009 已升流程强制；
+   `resign-runbooks.md` B 段 B-1/B-2 两难已被 8 月 B-1 路线实际超车（勿按该文重新
+   决策）；`docs/REQUIREMENTS-STATUS.md` 快照仍是 2026-07-22（P5/P9 两行已被 08-08
+   进展推翻），冲突按其自述判序信实际代码。
+5. 过程账：本层由 session-handoff 流程产出（四路取料子代理：现状+现场 / 排期+下一步 /
+   领域词汇 / 约束准则）；`docs/NEXT-SESSION.md` 开场词整节重写至 2026-08-10；两份
+   交接文档已提交 dev（只提交显式路径，未碰用户资产）。
+
+### 下一步（接手者任选，先对齐再动手）
+
+- A、后两例 `tc_wf_publish_states`/`tc_wf_history_version` 统一处置——与首例同一条
+  七相链（凭据门+kind 泛化两修同受益；真机前重启隧道两端+重铸票据，台账
+  `runs/_tier2/replay-grant-ledger/` 为权威、失败尝试也烧票）。这是 P9 关账最后的
+  用例账（关账规则不走 waiver，每例真机全 PASS + 人签，P9-CLOSE-LEDGER）。
+- B、收主树 p9 槽 `p9-created-workflow-cleanup-continuity-v3` 3/6→6/6（s5 深消费
+  证据已齐即 cleanup 取证已签，无阻塞）。
+- C、挂账清偿 + 41 棵工作树清理（唯「段非良构∧锁点名」hermetic 钉需人签，其余
+  ——kind 泛化 plan W3 表笔误、A4 义务白名单独立钉、teach-in 三通道同缺、
+  `wf-open-smoke` 陈旧红 owner——可直接做）。
+- D、唤醒停泊链（gate-contract-preflight 签核 / chiefcomplaint v2 铸权）——两条均卡
+  PENDING_STEVEN，只有 Steven 明示才动。
+
+## 2026-08-08 傍晚：两契约收口 + 相 3 真机回放史上首通 + 相 4/6 出件、cleanup 待人裁（历史覆盖层，被上节接续）
 
 现役 dev 顶端 `b6443d8`（本地零 push）。接下节，Steven 全程会话内三裁 + 邮件「继续」：
 
