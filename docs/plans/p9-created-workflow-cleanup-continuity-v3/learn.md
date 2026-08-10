@@ -61,8 +61,25 @@ intent_history/intent_cleanup`——这是 `compile-intent-lineage-rebind` 契�
 一个反直觉的细节：拆意图后新增的 `assert.textHidden` **必须带 `entityBindings`**。起初按「断言原子不该
 凭空增加观察义务」的保守直觉没给它加绑定，结果 `requiredFlowEntityBindings` 直接拒
 （`ENTITY_BINDING_REQUIRED_ROLES_INVALID`）。判据在 `inspectOperationBindings`：read 效应原子**不许带**
-非空绑定，mutation 效应原子**必须带**。`assert.textHidden` 属后者。`tc_wf_publish_states` 的 flow 给它
-加绑定不是人工偏好，是硬要求——照先例抄比按直觉推更可靠。
+非空绑定，mutation 效应原子**必须带**。`tc_wf_publish_states` 的 flow 给它加绑定不是人工偏好，
+是当前判据下的硬要求——照先例抄比按直觉推更可靠。
+
+**但「它属 mutation 效应」这个说法不准确**（异构评审逐条打出来的，本节据此订正）：
+`assert.textHidden` 根本**不在** `ATOM_ADMISSION_FACETS` 注册表里（`entity-semantic-lock-preflight.mjs:79`
+起那张表），于是落到 `UNREGISTERED_ATOM_FACETS`（`:102`）= `facetRow('entity', ['subject'], 'unknown')`
+——按「未登记原子一律当 mutation 阻断」的保守默认处理，这才是它要求绑定的真正原因。对照
+`assert.textVisible` 已登记为 `facetRow('none', [], 'none', ['assert'])`（无实体变更、零角色、无副作用）。
+`assert.buttonState` 与 `workflow.closeDrawer` 同样未登记、同样走默认。
+
+这带出**第三笔欠账**：assert 类原子的准入三面登记不全。默认值对 fail-closed 是安全的（保守方向），
+但语义归类是错的——断言原子不该被当成会改实体的操作。后果是延时的：一旦有人把 `assert.textHidden`
+按语义正确地补登记为无绑定读，本轮给它加的 `entityBindings` 就会**反过来触发拒**。所以补登记这件事
+必须与「清理这些绑定」同车做，不能单独改一边。
+
+同一批评审还纠正了本节此前一处过头的说法：**history 拆意图拿到的正向覆盖不能替 publish 站岗**。
+两例是不同用例、不同 flow，只是弹窗同一个；publish 的正向覆盖就是丢了，靠的是那两条 `pending[]`
+诚实留痕加重表达欠账，不是「被别处覆盖顶上了」。原文写「正向覆盖改由 tc_wf_history_version
+拆意图新表达承担」，属于把套件层的覆盖说成了本例的替代，已订正。
 
 ## 二、工装欠账（本轮只登记不做，须另立契约）
 
@@ -77,6 +94,9 @@ intent_history/intent_cleanup`——这是 `compile-intent-lineage-rebind` 契�
 
 第二笔（较轻）：`tc_wf_publish_states` 的拆意图重表达记欠账，待下次该例 anyway 要动真机时搭车做，
 不为它单独付一趟行程。
+
+第三笔见上节末：assert 类原子（`assert.textHidden` / `assert.buttonState` / `workflow.closeDrawer` 等）
+的准入三面登记不全，补登记须与清理本轮所加绑定同车做。
 
 ## 三、几条小账
 
