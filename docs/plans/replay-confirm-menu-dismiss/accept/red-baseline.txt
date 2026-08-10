@@ -1,0 +1,14 @@
+红先行基线（修实现之前跑同一份金牌，三条新检查必红）
+命令：node tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs
+退出码：1
+
+FAIL R26 菜单延迟关闭（预算内）：等其离场后确认应成功: 菜单应在预算内离场：期望 true，实得 undefined
+FAIL R27 菜单始终不关：超时不阻断但留痕，确认失败照实记: 超时须留痕为未离场：期望 false，实得 undefined
+FAIL R28 菜单立即关闭（现行主路径）：留痕在场且不引入额外等待: 立即关闭须判已离场：期望 true，实得 undefined
+25/28 checks passed
+
+突变闭环（还原用 scratchpad 备份文件，绝不用 git checkout——本轮踩过：改动未提交时
+git checkout 会把实现一起抹掉）：
+- 突变一「摘掉 waitForMenuDismissed 调用」→ 3 条红（等于回到修前行为）
+- 突变二「可见性判据反转」→ 2 条红
+- 还原后 sha256 与突变前逐字节相同，金牌 28/28 绿
