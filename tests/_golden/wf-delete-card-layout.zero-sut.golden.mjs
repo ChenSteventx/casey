@@ -180,6 +180,13 @@ class Handle {
     // 于是「菜单没关」这个真机会拦的状态在夹具里判可点，把该红的 R12 钉成了绿（假绿实证：
     // 2026-08-10 真机录像抽帧，菜单开着时点确认 1ms 即 actionError）。
     // 只对显式标了 __blocksOutsideClick 的浮层生效，未标的情景行为一寸不动。
+    //
+    // 模型边界（两路异构评审 2026-08-10 共同指出，记于此以免被后人当成等价物）：本判定是
+    // all-or-nothing——浮层在场就拦一切浮层外点击，不做几何重叠判断；真机 Playwright 的
+    // hit-target 是在元素中心点采样 elementFromPoint，只拦视觉上真被盖住的目标。故本夹具
+    // **严于**真机：菜单与目标在空间上不重叠时真机可能放行，这里照样拦。
+    // 本契约复现的场景里菜单确实盖住确认钮（录像抽帧实证），在该命题内忠实；但**不要**把这个
+    // 能力推广到菜单与目标不重叠的情景，那会把真机本该绿的钉红。要那种情景须先引入点位几何。
     const blocker = descendants(this.page.root)
       .find((node) => node.__blocksOutsideClick && node.isConnected && visibleNode(node));
     if (blocker && !blocker.contains(this.node)) {
@@ -545,13 +552,16 @@ await check('R11 直见删除钮与更多操作入口并存 → 可达删除面 
   }).equal, false, '双入口不得放行破坏性删除');
 });
 
-await check('R12 菜单浮层不串味：菜单点后不关闭时确认弹层因果授权仍唯一', async () => {
+// R12 只钉一件事：菜单还开着时，弹层选择器不得把菜单当成确认弹层（选择器不串味）。
+// 它**故意不建模遮挡**（不开 menuBlocksOutsideClick），所以不得据此断言确认落笔的成败——
+// 真机上菜单开着时确认点击会被 hit-target 拦下，这条事实归 R27 钉。
+// 本条原先还断言 confirmed 为 unique 与出站请求 1 条，那是在「菜单开着还点得动」这个
+// 真机不成立的前提上做断言（假绿），2026-08-10 异构评审逮出后删去；覆盖面由 R26/R27 承接。
+await check('R12 菜单浮层不串味：菜单点后仍开着时弹层选择器不得把菜单当成确认弹层', async () => {
   const { page } = buildFixture({ layout: 'card', keepOpenAfterDelete: true });
-  const { trigger, found, confirmed } = await runWholeChain(page);
+  const { trigger, found } = await runWholeChain(page);
   eq(trigger.resolution, 'unique', '触发解析态（菜单不得被弹层选择器当成新弹层）');
-  eq(found?.resolution, 'unique', '确认弹层发现解析态');
-  eq(confirmed?.resolution, 'unique', '确认落笔解析态');
-  eq(page.requests.length, 1, '出站请求条数');
+  eq(found?.resolution, 'unique', '确认弹层发现解析态（菜单在场也须找得到真弹层）');
 });
 
 // ── R26-R28：确认步撞未关闭菜单的时序竞态（replay-confirm-menu-dismiss 契约，红先行）──
@@ -560,7 +570,8 @@ await check('R12 菜单浮层不串味：菜单点后不关闭时确认弹层因
 // 编译期每步带观察停顿、天然慢一拍，故只在回放期显形。
 //
 // 这三条必须开 menuBlocksOutsideClick——旧夹具的 click 只查元素自身可见、不做遮挡判定，
-// 于是「菜单没关」这个真机会拦的状态在夹具里判可点（R12 因此是假绿）。开了遮挡才复现真机。
+// 于是「菜单没关」这个真机会拦的状态在夹具里判可点（R12 原先因此是假绿，已收窄改正）。
+// 开了遮挡才复现真机。夹具遮挡模型的边界见上面 click() 处的注释。
 
 await check('R26 菜单延迟关闭（预算内）：等其离场后确认应成功', async () => {
   const { page } = buildFixture({

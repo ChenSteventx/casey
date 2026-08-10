@@ -8,7 +8,25 @@ FAIL R28 菜单立即关闭（现行主路径）：留痕在场且不引入额�
 25/28 checks passed
 
 突变闭环（还原用 scratchpad 备份文件，绝不用 git checkout——本轮踩过：改动未提交时
-git checkout 会把实现一起抹掉）：
+git checkout 会把实现一起抹掉）。突变前基准 sha256
+8d25168af2d415701e7fb1e2f10efd3a990910c2030724f0895d8a577671367f：
 - 突变一「摘掉 waitForMenuDismissed 调用」→ 3 条红（等于回到修前行为）
-- 突变二「可见性判据反转」→ 2 条红
+- 突变二「可见性判据反转」→ 3 条红（25/28）
+- 突变三「不真等、只伪造证据 menuDismiss: { dismissed: true, waitedMs: 0 }」→ 2 条红（26/28）
 - 还原后 sha256 与突变前逐字节相同，金牌 28/28 绿
+
+上表第二行原记「2 条红」，系笔误；2026-08-10 异构评审（grok）实测为 3 条红，本方复跑坐实
+后改正。复跑实录（突变二）：
+  FAIL R26 ... 确认落笔解析态：期望 "unique"，实得 "action_failed"
+  FAIL R27 ... 超时须留痕为未离场：期望 false，实得 true
+  FAIL R28 ... 立即关闭须判已离场：期望 true，实得 false
+  25/28 checks passed
+
+功能红签名（回应异构评审「红基线偏字段」一条）：上面第 5-7 行的红先行签名全是「字段
+undefined」，钉的是加法字段在场，不是「确认真的被拦」这条功能事实。突变三补上了功能红——
+它让证据字段齐全且自称已离场，但因为没真等，R26 的确认落笔实测为 action_failed：
+  FAIL R26 ... 确认落笔解析态：期望 "unique"，实得 "action_failed"
+  FAIL R27 ... 超时须留痕为未离场：期望 false，实得 true
+  R28 在该突变下仍绿（立即关闭情景本就 waitedMs 极小，不单独钉「必须真轮询」）
+  26/28 checks passed
+故本契约的功能红签名取突变三的 R26，字段红签名取修前基线，两者并存、不可互相替代。
