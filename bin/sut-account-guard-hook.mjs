@@ -15,14 +15,19 @@
 import { readFileSync } from 'node:fs';
 
 const EXPECTED = process.env.CASEY_EXPECTED_SUT_ACCOUNT || 'autotest';
-// 真机标志：--sut 传的是隧道回环基址，--login-bootstrap 会真登录。两者任一出现即视为真机面。
+// 真机面识别。两类都要认，缺一即有绕过缺口：
+//   1. 命令行标志：--sut 传隧道回环基址、--login-bootstrap 会真登录；
+//   2. 自带真机能力的脚本名：它们内部读 site.json 自己登录，命令行上一个标志都不带。
+//      2026-08-10 实证——残留只读探针连跑三次全部绕过了本守卫，因为它就属这一类。
+//      新增会登录真机的脚本时必须往这张表里加，否则守卫形同虚设。
 const REAL_MACHINE = /(^|\s)--(sut|login-bootstrap)(\s|=|$)/;
+const REAL_MACHINE_SCRIPTS = /(residue-check-readonly|p9-workflow-adapter-probe|visibility-a4-probe|win-probe-target)\.mjs/;
 
 try {
   const input = JSON.parse(readFileSync(0, 'utf8'));
   if (input.tool_name !== 'Bash') process.exit(0);
   const command = String(input.tool_input?.command ?? '');
-  if (!REAL_MACHINE.test(command)) process.exit(0);
+  if (!REAL_MACHINE.test(command) && !REAL_MACHINE_SCRIPTS.test(command)) process.exit(0);
   // 账户守卫脚本本身也带 --sut 之类参数时不自锁（它不碰真机，只读凭据比对）。
   if (/assert-sut-account\.mjs/.test(command)) process.exit(0);
 
