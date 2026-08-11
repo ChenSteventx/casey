@@ -1,6 +1,11 @@
 # learn —— replay-magnifier-dispatch
 
-契约收口留下的、值得带到下一个契约的东西。评审账见文末（收口时补齐）。
+契约收口留下的、值得带到下一个契约的东西。
+
+评审账（收据在 `reviews/`）：R1 双路异构 grok-4.5 与 pi.dev 各自独立跑命令与突变探针，均
+`APPROVE`、0 Critical / 0 High（pi 1 Medium + grok 2 Medium）；按并集修 grok 两条、pi 一条
+记档不收紧（区分经两路 delta 独立验证）；换签经 Steven 明示签字；R2 delta 双路复审均
+`APPROVE` 且 Critical / High / Medium 全 0。
 
 ## 一、同一契约改多层时，每一层都要有自己的钉
 
