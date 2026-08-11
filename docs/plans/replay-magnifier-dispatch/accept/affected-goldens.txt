@@ -1,0 +1,69 @@
+受影响金牌复跑清单 —— replay-magnifier-dispatch
+跑批时间 2026-08-11 珀斯上午；树 /mnt/d/ctx/heren/casey-replay-magnifier-dispatch
+
+选集规则（可重跑，沿用 replay-confirm-menu-dismiss 契约同款）：
+  { ls tests/_golden/*.mjs | grep -E 'replay|delete'; grep -ln 'workflow-delete-domain' tests/_golden/*.mjs; }
+    | sort -u | grep -E 'zero-sut|\.static\.'
+  本契约新金牌 replay-magnifier-dispatch 因文件名含 replay 自动入选。
+
+判法：逐份 timeout 300 node <file>，退出码 0 记 GREEN；非 0 且 stderr 含 EIO/ENOENT 记
+INVALID_IO（作废重跑）；其余记 RED。
+
+判定   退出码 文件
+GREEN    0      tests/_golden/agent-delete-confirm-import.zero-sut.golden.mjs
+GREEN    0      tests/_golden/agent-delete-zero-window.zero-sut.golden.mjs
+GREEN    0      tests/_golden/checksum-drift-closure.zero-sut.golden.mjs
+GREEN    0      tests/_golden/delete-spec-magnifier.zero-sut.golden.mjs
+GREEN    0      tests/_golden/p0-p2-report-delete.zero-sut.golden.mjs
+GREEN    0      tests/_golden/p9-created-workflow-continuity-v3.replay-evidence.zero-sut.golden.mjs
+GREEN    0      tests/_golden/p9-replay-authority-split.cli-session.zero-sut.golden.mjs
+GREEN    0      tests/_golden/p9-replay-authority-split.pure-suite.zero-sut.golden.mjs
+GREEN    0      tests/_golden/page-topology-auth-continuity-replay-action.zero-sut.golden.mjs
+RED      1      tests/_golden/real-run-trust.zero-sut.golden.mjs
+GREEN    0      tests/_golden/regress-agent-tool-actions.zero-sut.golden.mjs
+GREEN    0      tests/_golden/replay-entity-anchor.zero-sut.golden.mjs
+GREEN    0      tests/_golden/replay-identity-channel-kind.zero-sut.golden.mjs
+GREEN    0      tests/_golden/replay-magnifier-dispatch.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-action-authority.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-adjacent.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-atom-roundtrip.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-boundaries.static.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-capture-fresh.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-clean-proof.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-compile-runtime-adapter.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-cycle-entry.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-cycle-plan.static.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-entity-verification.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-equivalence-completion.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-equivalence-core.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-equivalence-evidence.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-equivalence-integrity-authority.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-equivalence-integrity-semantics.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-equivalence-production-boundary.static.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-equivalence-reset.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-equivalence-resolved-completion.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-equivalence-sequence.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-orchestrator-wiring.static.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-orchestrator.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-prepared-run.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-raw-actions.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-raw-axes-adapter.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-raw-event-observation.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-raw-output-seal.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-raw-runner.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-resolved-authority-coverage.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-resolved-projection.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-review-hardening.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-runtime-bootstrap.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-runtime-cycle-adapter.zero-sut.golden.mjs
+GREEN    0      tests/_golden/teachin-replayability-verdict-cli-adapter.zero-sut.golden.mjs
+GREEN    0      tests/_golden/wf-delete-card-layout.zero-sut.golden.mjs
+GREEN    0      tests/_golden/wf-delete-search-filter.zero-sut.golden.mjs
+GREEN    0      tests/_golden/workflow-delete-causal-binding.static.golden.mjs
+GREEN    0      tests/_golden/workflow-delete-spec-preflight.static.golden.mjs
+
+合计 51 份：GREEN 50、RED 1、INVALID_IO 0
+
+唯一红 real-run-trust 属既有陈旧红（金装要求 bin/replay.mjs 含旧式逐参解析、生产件已改对象
+解析；上契约已证），本刀改动仅 lib/replay-actions.mjs 与 lib/workflow-delete-spec.mjs，
+未碰该金装与 bin/replay.mjs 任一。

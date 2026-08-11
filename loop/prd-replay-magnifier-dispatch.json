@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "task": "replay-magnifier-dispatch（full，worktree）：回放分发层接通白名单放大镜 click。缝：同一「放大镜过滤」契约三层落点不一致——编译模板发射两处放大镜 click（wf-delete-search-filter 契约、S1 冻结钉）、回放前置闸白名单放行（delete-spec-magnifier 契约、Steven 2026-08-08 裁精确形状），而回放分发层 performActionOnPage 的 deleteByName-click 分支要求 value（目标名绑定），放大镜形状恰无 value → 运行时无条件拒点、从未执行。2026-08-10 真机三例实证：752ms 恰等于事件跑道 waitForResponse(600ms)+150ms 收尾纯等待、抽帧列表全程未过滤；任一事件 action_failed 即折叠失败（fail-safe 正确），清理意图恒 NEEDS_HUMAN、PASS 不可达。修法（Steven 2026-08-11 裁）：白名单形状谓词收单点（workflow-delete-spec.mjs 导出 isMagnifierSearchClick，前置闸改消费它），分发层入口先判该谓词、命中即走通用锁定门（resolveCandidate + gateAndAct/formalActionGate）真执行，执行语义零特殊化（多候选 ambiguous、零候选 none、点不动照落 action_failed）。非目标：不动编译模板发射面、不动前置闸判据字面、不动折叠语义、三例 cases/ 零字节不动（零重编译零重签）。",
+  "specPath": "docs/plans/replay-magnifier-dispatch/plan.md",
+  "testChecksums": {
+    "tests/_golden/replay-magnifier-dispatch.zero-sut.golden.mjs": "2a81e0005d85413c7ca4498668aa5b9f0a36e8b7249c6b0c67580b55fba54615",
+    "docs/plans/replay-magnifier-dispatch/plan.md": "19cca33bbeae8d962cb236e0035eba1f831dbea5bdc258449fc24d597817fe3f",
+    "docs/plans/replay-magnifier-dispatch/GRILL.md": "64b3d3a0c7f8b7cd7fb43b2fc80bee89b35c02a22bd6ea7cc39de98932eb1f92",
+    "docs/plans/replay-magnifier-dispatch/accept/red-baseline.txt": "6be83d3a73dd034ba1cf73d33fb61a2be96c84bce6084cbb0d1a0a7ebcf5aee3"
+  },
+  "stories": [
+    {
+      "id": "s1-magnifier-dispatch-parity",
+      "acceptance": [
+        "node tests/_golden/replay-magnifier-dispatch.zero-sut.golden.mjs",
+        "node tests/_golden/delete-spec-magnifier.zero-sut.golden.mjs",
+        "node tests/_golden/wf-delete-search-filter.zero-sut.golden.mjs",
+        "node bin/casey.mjs selftest --tier1"
+      ],
+      "passes": true,
+      "evidence": "gate@2026-08-11T01:28:32.182Z 全部 acceptance exit 0"
+    }
+  ]
+}
