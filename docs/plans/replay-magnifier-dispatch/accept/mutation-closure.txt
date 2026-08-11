@@ -1,0 +1,30 @@
+突变闭环实录 —— replay-magnifier-dispatch（还原用 scratchpad 备份 + sha256 核对，绝不 git checkout）
+突变前基准：
+9624b238a67b4010da05fa319bf92674ae297ab96b57a6aab076db3ffd437941  lib/replay-actions.mjs
+02e432fa6268f6df18ddeee37281959fa995b832d84262112d45e43342c916e7  lib/workflow-delete-spec.mjs
+
+突变一「摘分发层谓词调用（回拒点旧态）」→ exit 1，6 红（Ra 全家 + Ra2/Ra0）
+  FAIL replay-magnifier-dispatch: Ra 放大镜形状解析态（修前必红：分发层无条件拒点）：期望 "unique"，实得 "action_failed"
+  FAIL replay-magnifier-dispatch: Ra 动作身份回读（锁定门 perform 成立）：期望 true，实得 false
+  FAIL replay-magnifier-dispatch: Ra 恰一次真实点击：期望 1，实得 0
+  FAIL replay-magnifier-dispatch: Ra 点击落在放大镜选择器上：期望 ".hr-input__suffix .search-icon"，实得 undefined
+  FAIL replay-magnifier-dispatch: Ra2 双图标 → ambiguous（多匹配绝不落笔）：期望 "ambiguous"，实得 "action_failed"
+  FAIL replay-magnifier-dispatch: Ra0 图标缺席 → none（零候选绝不点）：期望 "none"，实得 "action_failed"
+
+突变二「谓词判据反转」→ exit 1，10 红（两层同红：分发 Ra 系 + 前置闸 Re 系——单点共享有牙的直接证据）
+  FAIL replay-magnifier-dispatch: Ra 放大镜形状解析态（修前必红：分发层无条件拒点）：期望 "unique"，实得 "action_failed"
+  FAIL replay-magnifier-dispatch: Ra 动作身份回读（锁定门 perform 成立）：期望 true，实得 false
+  FAIL replay-magnifier-dispatch: Ra 恰一次真实点击：期望 1，实得 0
+  FAIL replay-magnifier-dispatch: Ra 点击落在放大镜选择器上：期望 ".hr-input__suffix .search-icon"，实得 undefined
+  FAIL replay-magnifier-dispatch: Ra2 双图标 → ambiguous（多匹配绝不落笔）：期望 "ambiguous"，实得 "action_failed"
+  FAIL replay-magnifier-dispatch: Ra0 图标缺席 → none（零候选绝不点）：期望 "none"，实得 "action_failed"
+  FAIL replay-magnifier-dispatch: Rb2 css 对但携文案「删除」且缺 value → 拒（绑定义务零放松）：期望 "action_failed"，实得 "unique"
+  FAIL replay-magnifier-dispatch: Rb2 零点击：期望 0，实得 1
+  FAIL replay-magnifier-dispatch: Re1 白名单形状照放：期望 true，实得 false
+  FAIL replay-magnifier-dispatch: Re3 携文案「删除」缺 value → 照拒（missing_target_binding）：期望 "missing_target_binding"，实得 false
+
+突变三「分发层删 import、内联等价字面」→ exit 1，恰 Rd 双红（功能等价仍被结构钉逮住——防两层再分叉）
+  FAIL replay-magnifier-dispatch: Rd 判据字面在 replay-actions.mjs 零出现（只经 import 消费）：期望 0，实得 1
+  FAIL replay-magnifier-dispatch: Rd 分发层经 import 消费同一谓词（修前必红）：期望 true，实得 false
+
+每轮突变后还原并 sha256 -c 核对，三轮均 OK（逐字节一致）；还原后金牌 23/23 绿。
