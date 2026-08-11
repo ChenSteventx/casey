@@ -2,8 +2,20 @@
   "schemaVersion": 1,
   "task": "replay-magnifier-dispatch（full，worktree）：回放分发层接通白名单放大镜 click。缝：同一「放大镜过滤」契约三层落点不一致——编译模板发射两处放大镜 click（wf-delete-search-filter 契约、S1 冻结钉）、回放前置闸白名单放行（delete-spec-magnifier 契约、Steven 2026-08-08 裁精确形状），而回放分发层 performActionOnPage 的 deleteByName-click 分支要求 value（目标名绑定），放大镜形状恰无 value → 运行时无条件拒点、从未执行。2026-08-10 真机三例实证：752ms 恰等于事件跑道 waitForResponse(600ms)+150ms 收尾纯等待、抽帧列表全程未过滤；任一事件 action_failed 即折叠失败（fail-safe 正确），清理意图恒 NEEDS_HUMAN、PASS 不可达。修法（Steven 2026-08-11 裁）：白名单形状谓词收单点（workflow-delete-spec.mjs 导出 isMagnifierSearchClick，前置闸改消费它），分发层入口先判该谓词、命中即走通用锁定门（resolveCandidate + gateAndAct/formalActionGate）真执行，执行语义零特殊化（多候选 ambiguous、零候选 none、点不动照落 action_failed）。非目标：不动编译模板发射面、不动前置闸判据字面、不动折叠语义、三例 cases/ 零字节不动（零重编译零重签）。",
   "specPath": "docs/plans/replay-magnifier-dispatch/plan.md",
+  "checksumAmendments": [
+    {
+      "amendedAt": "2026-08-11",
+      "round": "code-r1 双路异构评审换签（pi.dev deepseek-v4-pro high 与 grok-4.5 各自独立跑命令与突变探针，均判 APPROVE，0 Critical / 0 High；pi 1 条 Medium、grok 2 条 Medium）",
+      "files": [
+        "tests/_golden/replay-magnifier-dispatch.zero-sut.golden.mjs"
+      ],
+      "reason": "只动本契约自己的新金牌一件（23 检扩 34 检），按 grok 两条 Medium 加固：① Medium-1 次级定位字段缺口——白名单形状若再携 fieldLabel / role / 无名 semantic，谓词照放而通用门的语义定位优先于 fallbackCss，点击会落到那些字段解析出的别处元素上；修前这类形状被分发层整体拒点（安全），接通后不钉死就成了新可达面，违背本刀「安全零放松」声明。修法：谓词收紧（ev.semantic / ev.role / ev.fieldLabel 必须缺席），金牌加 Rf 三形状九检（分发拒点 + 零点击 + 前置闸同判具名拒，两层单点同判）。突变实证：摘守卫后带 fieldLabel 的形状被判 unique 并真点 1 次（grok 画的事故逐字复现）、两层共 9 红。零误伤证据：三例六个真件与冻结前置闸金牌 M1 钉的形状均为纯 fallbackCss（stepId/intentId/atom/action/fallbackCss 五字段，无一携次级定位字段）。② Medium-2 结构钉硬度——Rd 只认 import 与单引号字面，死引用（import 在、条件不用）与双引号内联都绕得过。修法：金牌 Rd 加调用点正则（分支条件必须真调 !isMagnifierSearchClick(ev)）与双引号字面零出现钉。突变实证：死 import 突变 7 红（含调用点钉），还原 sha256 逐字节一致。pi 那条 Medium（谓词对 value 空串按「缺」处理）经查系逐字继承前置闸原冻结实现（Steven 2026-08-08 裁「value 缺」的落地形一个字符没改），冻结金牌从未钉过空串、编译器不产此形、注入也只点非破坏图标，收紧反会让前置闸对空串事件从白名单放行变具名拒、越出原裁定语义——取 pi 自己给的记档选项不收紧，理由全文见 learn.md 第五节。换签后金牌 34/34 绿、gate 复绿；换签前字节以提交 f995539 留底（即两路评审所对的不可变快照）。",
+      "signedBy": "Steven（2026-08-11 会话内裁定：AskUserQuestion 呈选后界面卡死，他随即以文字消息明示「刚刚选了1」——即选项一「签这次换签」；选项文本已列明改动内容与代价。**本字段由 Claude 代填**，凭据即该句会话原话，非 Steven 本人书写；如对措辞或范围有异议以他后续更正为准）",
+      "signedAt": "2026-08-11"
+    }
+  ],
   "testChecksums": {
-    "tests/_golden/replay-magnifier-dispatch.zero-sut.golden.mjs": "2a81e0005d85413c7ca4498668aa5b9f0a36e8b7249c6b0c67580b55fba54615",
+    "tests/_golden/replay-magnifier-dispatch.zero-sut.golden.mjs": "ed6a9a5d6e3d6254bdc7959baa272658ae3249eb165f5cc40cc8f2a6fc3a9d03",
     "docs/plans/replay-magnifier-dispatch/plan.md": "19cca33bbeae8d962cb236e0035eba1f831dbea5bdc258449fc24d597817fe3f",
     "docs/plans/replay-magnifier-dispatch/GRILL.md": "64b3d3a0c7f8b7cd7fb43b2fc80bee89b35c02a22bd6ea7cc39de98932eb1f92",
     "docs/plans/replay-magnifier-dispatch/accept/red-baseline.txt": "6be83d3a73dd034ba1cf73d33fb61a2be96c84bce6084cbb0d1a0a7ebcf5aee3"
@@ -18,7 +30,7 @@
         "node bin/casey.mjs selftest --tier1"
       ],
       "passes": true,
-      "evidence": "gate@2026-08-11T01:28:32.182Z 全部 acceptance exit 0"
+      "evidence": "gate@2026-08-11T02:24:25.773Z 全部 acceptance exit 0"
     }
   ]
 }

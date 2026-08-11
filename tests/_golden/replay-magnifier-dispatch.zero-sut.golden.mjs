@@ -114,15 +114,40 @@ const magEvent = (extra = {}) => ({
 }
 
 // ── Rd 谓词单点结构钉（修前必红：分发层无 import）──
+// R1 grok Medium-2 加固：只认 import 不认调用点，死引用（import 在、条件不用）与双引号内联
+// 都绕得过。补两钉：调用点正则（分支条件必须真调谓词）+ 双引号字面同样零出现。
 {
   const specSrc = readFileSync(resolve(ROOT, 'lib', 'workflow-delete-spec.mjs'), 'utf8');
   const dispatchSrc = readFileSync(resolve(ROOT, 'lib', 'replay-actions.mjs'), 'utf8');
   const literal = "'.hr-input__suffix .search-icon'";
+  const literalDq = '".hr-input__suffix .search-icon"';
   eq(specSrc.split(literal).length - 1, 1, 'Rd 判据字面在 workflow-delete-spec.mjs 恰一处定义');
   eq(dispatchSrc.split(literal).length - 1, 0, 'Rd 判据字面在 replay-actions.mjs 零出现（只经 import 消费）');
+  eq(dispatchSrc.split(literalDq).length - 1, 0, 'Rd 双引号字面在 replay-actions.mjs 同样零出现（防换引号内联）');
   ok(/export function isMagnifierSearchClick/.test(specSrc), 'Rd 谓词由 workflow-delete-spec.mjs 导出（修前必红）');
   ok(/import\s*\{[^}]*isMagnifierSearchClick[^}]*\}\s*from\s*'\.\/workflow-delete-spec\.mjs'/.test(dispatchSrc),
     'Rd 分发层经 import 消费同一谓词（修前必红）');
+  ok(/ev\.atom === 'workflow\.deleteByName'\s*&&\s*!isMagnifierSearchClick\(ev\)/.test(dispatchSrc),
+    'Rd 分支条件真调谓词（调用点钉——死 import 绕不过）');
+}
+
+// ── Rf 次级定位字段缺席钉（R1 grok Medium-1）：白名单形状再携 fieldLabel / role / 无名 semantic
+// 时不得入白名单支——通用门的语义定位优先于 fallbackCss，放进来点击会落到别处元素上。
+// 修前这些形状被分发层整体拒点，接通后必须保持拒点（安全零放松的边界钉）。前置闸同判（单点谓词）。
+{
+  const shapes = [
+    ['fieldLabel', { fieldLabel: '搜索' }],
+    ['role+accessibleName', { role: 'button', accessibleName: '查询' }],
+    ['无名 semantic', { semantic: { kind: 'role', role: 'button' } }],
+  ];
+  for (const [name, extra] of shapes) {
+    const { page, clicks } = mockPage({ iconCount: 1 });
+    const axis = await dispatchReplayAction(page, magEvent(extra), {});
+    eq(axis?.resolution, 'action_failed', `Rf 白名单形状+${name} → 分发拒点（不得偏点到次级定位目标）`);
+    eq(clicks.length, 0, `Rf ${name} 零点击`);
+    const r = validateWorkflowDeleteBindings([magEvent(extra)]);
+    eq(r.ok === false && r.problems[0]?.reason, 'unsupported_click_label', `Rf ${name} 前置闸同判具名拒`);
+  }
 }
 
 // ── Re 前置闸回归：谓词收单点后 validateWorkflowDeleteBindings 判定逐字不变 ──

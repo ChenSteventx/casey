@@ -81,3 +81,23 @@ node scripts/residue-check-readonly.mjs cases/tc_wf_history_version/profile.json
 
 `b4replay0810` 三格现已全部核销（catalog 04:29、publish 04:31、history 本跑）。
 **再跑任何一例都须新铸批级票据并重新人签。**
+
+## 更正（2026-08-11，replay-magnifier-dispatch 契约取证推翻本文第三节定性）
+
+第三节写「清理意图按当前表达 PASS 不可达……属用例表达层、不碰强制层」，**两处都错**：
+
+1. flow 里清理只是一个零参原子步（`workflow.deleteByName`），复搜两步长在编译模板的原子
+   展开里（`lib/compile-atoms-workflow-crud.mjs`），不是用例作者写的——「用例表达层」定性不成立。
+2. 失败直因不是「删干净后搜不到（候选 0）」：放大镜 click 在回放分发层被**无条件拒点、从未
+   执行**——分发层对 `workflow.deleteByName` 域的 click 要求 value（目标名绑定），放大镜形状
+   恰无 value。同一形状在删除前那次（目标还在、图标可见、定位 unique）一样拒点；本文表格里
+   atstep_20 的 4314ms 与 atstep_16 的 752ms 都不是点击耗时，是事件跑道的收尾等待。抽帧另证
+   列表全程未过滤（删除链靠首页精确名扫描成功）。
+
+根因是同一「放大镜过滤」契约三层落点不一致：编译模板发射（冻结钉）、前置闸白名单放行
+（冻结钉），分发层无对应执行分支（无钉、洞在此）。修复走 `replay-magnifier-dispatch` 契约
+（分发层接通 + 谓词单点共享），三例 events 零字节不动、零重编译零重签。
+全部证据见 `docs/plans/replay-magnifier-dispatch/GRILL.md`。
+
+本节只更正定性；第三节其余实测数据（后置断言全 ok、`stableTargetAbsence` 3 样本/3043ms、
+残留零）仍有效。
