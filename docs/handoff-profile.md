@@ -7,8 +7,8 @@
 
 Casey（测易）——LLM 驱动「文本用例→测试报告」确定性可回放测试系统；autotester
 （人录·机回放·零 LLM）的「翻面」：输入端改 LLM，但「确定性是默认、LLM 是手术刀、
-完成是退出码、裁判零 LLM」的内核一字不让。交接动作边界：只写 `docs/NEXT-SESSION.md`
-与 `docs/HANDOFF.md` 两个 md + 落库，不碰实现代码、不碰用户未提交资产。
+完成是退出码、裁判零 LLM」的内核一字不让。交接动作边界：只写 `docs/NEXT-SESSION.md`、
+`docs/HANDOFF.md`、`docs/handoff-profile.md` 三个 md + 落库，不碰实现代码、不碰用户未提交资产。
 
 ## 必读顺序
 
@@ -89,9 +89,15 @@ casey 用**项目级** mail-loop skill（`.claude/skills/mail-loop/SKILL.md`，�
 恒定骨架：
 
 - WSL 会整机挂死、D 盘（drvfs）会静默停摆：判死活先 `uptime` 看实例新旧；commit
-  早提勤提；评审走 ext4 克隆；重要产物落 `~/casey-recovery-20260807/`。
+  早提勤提；评审走 ext4 克隆；重要产物落 `~/casey-recovery-20260807/`。30 秒看门狗
+  （`mnt-d-watchdog.timer`）多数能自动重挂、瞬时 EIO 重试即复原；重挂无效才 `wsl --shutdown`。
+- **判「盘挂」先 `timeout 8 ls <路径>` 三分**：正常返回=没事、ENOENT=路径错、超时/EIO=真故障。
+  别把「等一个不存在的文件的死循环」或「探针把 ENOENT 误标 EIO」当掉盘（2026-08-11 假警报实证）；
+  包报 `LOCK_MISMATCH` 先 `diff -rq` 对好副本再判损坏。身份锁在消费方壳 `casey/loop-kit/`、
+  包根 `../loop-kit/` 无 `kit-lock.json`。
 - `/mnt/d` git 慢给足 300 秒；短超时空输出别误判成干净工作树。
 - 真机前重启隧道两端；杀隧道按 pid 档案纯数字 kill，绝不模式杀（同名脚本共存）。
 - 禁止启动 fake-SUT；金牌只跑 zero-SUT / static / 纯内存。
-- grok 评审 tmux 伪终端多轮（第二条长中文消息会楔死输入部件，简报写文件 + 纯
-  ASCII 短令）；pi 用默认配置入口。
+- grok 评审 tmux 伪终端多轮（第二条长中文消息会楔死输入部件——`❯` 与正文不同行=多行态
+  卡死、Escape 清不掉，杀会话重起；全文从 `~/.grok/sessions/*/chat_history.jsonl` 逐字捞）；
+  pi 用默认配置入口。评审克隆接 loop-kit 用真目录副本、绝不软链兄弟目录（会污染共享包）。

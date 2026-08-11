@@ -3,7 +3,51 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-11 上午：回放分发对齐契约收口 6/6——三例清理 PASS 由此可达（最新覆盖层，权威现状）
+## 2026-08-11 午后：三例真机重跑（b4replay0811）——history+catalog 全 PASS，publish 撞第三条缝 + 留残留（最新覆盖层，权威现状）
+
+分发对齐契约合入后，铸新票 `b4replay0811`（Steven 会话内人签，`notAfter 2026-08-11T23:59:59+08:00`，
+三格已全核销）逐例真机重跑（每例跑前 `assert-sut-account autotest` 通过）。结果落
+`runs/b4-replay-20260811/RESULTS.md`（`runs/` gitignore、本地盘，随 P9 台账）。
+
+| 例 | 裁定 | 残留 |
+|---|---|---|
+| `tc_wf_history_version` | **全 PASS 7/7** | 零（探针 total=0） |
+| `tc_catalog_wf_crud` | **全 PASS** | 零 |
+| `tc_wf_publish_states` | PASS 3 / **NEEDS_HUMAN 1** | **残留 1 条**（`atl_b4replay0811-pub`，后四位 8720） |
+
+**分发对齐修法真机坐实**：history/catalog 的放大镜两步（此前从未执行、恒拒点）这次真跑
+（`atstep_15` 751ms ok、删除触发菜单离场 `waitedMs:367`），两例由此从 NEEDS_HUMAN 翻成全 PASS。
+即 `replay-magnifier-dispatch` 把放大镜 click 接通真执行，效果在真机上直接验到，不是夹具推断。
+
+**publish 撞上第三条独立的缝（≠ 已修两缝，不是回归）**：放大镜也接通了（`atstep_16` 删除触发
+ok、`menuDismiss dismissed:true waitedMs:368`——菜单已离场），但**确认步 `atstep_17` 0ms
+`actionError`**。抽帧证确认弹层「是否删除此工作流？」在场且稳定（13.55s 起、13.93s 开火时仍在），
+所以不是遮挡（遮挡会慢速 hit-target 超时，不是 0ms）。根因：**确认弹层句柄未被消费**——触发步
+把弹层 stash 进 `pendingDeleteByPage`（`lib/workflow-delete-domain.mjs:786`，WeakMap 键为 page），
+确认步 `:827` 读 `get(page)` 得空 → `:828` 即 0ms `action_failed`；网络取证证删除请求从未发出。
+leading 假设：两次分发（触发/确认）落在不同 page 对象上致 WeakMap 键错配；为何只打已发布件
+（菜单多「停用」项、四项 vs 三项）待查。这与 `replay-confirm-menu-dismiss`（菜单遮挡确认、慢速
+失败）和 `replay-magnifier-dispatch`（放大镜拒点）机理都不同，须自己的契约与 GRILL 深挖。
+机器判 `NEEDS_HUMAN(INDETERMINATE)` 是护栏 #14 fail-safe 正确工作，没假绿。
+
+### 两件待 Steven 定（已发问、未答即挂着）
+
+1. **残留处置**：SUT 上 `atl_b4replay0811-pub`（后四位 8720）一条真数据没删掉（确认没点成、
+   删除请求未发）。选项：亲自到界面删 / 等第三条缝修好后重跑清。
+2. **第三条缝**：是否现在立契约深挖「确认弹层句柄 page 键错配」（full 道 + worktree）。
+
+### 下一步
+
+1. 上述两件先等 Steven 拍板；未拍板前不擅自开契约、不碰残留。
+2. 立第三条缝契约时：worktree 隔离、红先行复现 0ms 句柄丢失、修 page 键一致或改交接机制、
+   护栏 #19 复跑受影响金牌、双路异构评审。修好后铸新票重跑 publish 冲 PASS。
+3. 三例真机 UAT 人签完成闸 → P9 关账（history/catalog 已到 PASS，只差 publish）。
+4. 沿账：publish 拆意图重表达（真机重编译+重签，另案）；`real-run-trust` 金装陈旧红；
+   编译期拦「断言步后紧跟状态改变动作」（内核道）。
+
+---
+
+## 2026-08-11 上午：回放分发对齐契约收口 6/6——三例清理 PASS 由此可达（历史覆盖层，被上节接续）
 
 **`replay-magnifier-dispatch` 契约 6/6 并入 dev。** 昨日「清理意图重表达（用例表达层）」的
 定性被取证推翻（旧取证文档已追加更正节）：真相是同一「放大镜过滤」契约三层落点不一致——

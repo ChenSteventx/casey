@@ -21,7 +21,7 @@ MCP `mcp/casey-server.mjs`。
 【先读，别现编已决的事】（必读顺序）
 1. `CLAUDE.md` + `CONTEXT.md`（统一语言注册表，命名以它为准；弃用别名列是黑名单、
    命中即红，繁体禁用；同名异义与易踩别名详查注册表，别凭印象用词）
-2. `docs/HANDOFF.md`（最新覆盖层即权威现状，顶节是 2026-08-10）
+2. `docs/HANDOFF.md`（最新覆盖层即权威现状，顶节是 2026-08-11 午后：三例真机重跑）
 3. `loop/GUARDRAILS.md`（19 条逐条有效；CLAUDE.md 仍写「13–16 新增」是计数陈旧）
 4. `.claude/skills/casey/SKILL.md`、`README.md`
 5. 追溯「为何这么定」：`docs/adr/`（0001–0010）、`docs/design/txt2testreport-design.md`
@@ -103,77 +103,56 @@ MCP `mcp/casey-server.mjs`。
 - 并行硬规则：碰 `lib`/`bin` 走 worktree 隔离 + git-native 合并；每树一独立 baton；
   41 棵树多数已 6/6 收口可摘（护栏 #18 建议 ≤5 树，已严重超标）。
 
-【当前状态（2026-08-10 下午）】
-- **B 段三例 v3 接线链全线收口，契约 `p9-created-workflow-cleanup-continuity-v3` 六阶段
-  全 done**。三例（`tc_catalog_wf_crud` / `tc_wf_publish_states` / `tc_wf_history_version`）
-  的 v3 三件齐备，五源字节自检全 ok；tier2 清单换签 + checksumAmendment 完成；
-  `gate GREEN 5/5`、全仓 `ratchet verify GREEN`（184 PRD / 786 冻结件 / 0 问题）；
-  双路异构评审（grok-4.5 + pi.dev）R1 均 CHANGES_REQUIRED → 并集修 → R2 均 APPROVE，
-  收据 `docs/plans/p9-created-workflow-cleanup-continuity-v3/reviews/README.md`。
-  `lib` 与 `bin` 一字未改。
-- **本轮最大发现：意图号重绑会静默移动断言求值点**（learn.md 全文）。断言只在意图代表步
-  （末动作步）求值一次，而重绑把意图粒度并粗成 authored 意图，令「点开弹窗→断言→关闭」
-  同意图形状的用例正向断言必红。表达规则：**一个意图只能有一个求值时刻**。三笔欠账已登记：
-  编译期 lint（碰强制层须另立契约）、publish 拆意图重表达、assert 类原子准入三面登记不全
-  （补登记须与清理本轮所加绑定同车做）。
-- 三例真机 UAT 完成闸的 replay 面**跑了两例、未闭合**（台账
-  `runs/_tier2/replay-grant-ledger/cf857c05…` 为权威）：`tc_catalog_wf_crud` 清理成功零残留
-  （稳定缺席 3 样本 / 3043ms）；`tc_wf_publish_states` 清理失败、裁判判
-  `NEEDS_HUMAN(INDETERMINATE)`（**没有假绿，fail-safe 正确工作**），残留 Steven 已处置；
-  `tc_wf_history_version` 未跑。批级票据 `b4replay0810` 三格里 catalog 与 publish **两格已烧**、
-  history 那格未烧——即 history 重跑不需重铸，但 publish 重跑须新铸人签。
-  票据 2026-08-10T23:59:59+08:00 过期。B 段首例的 cleanup 人签早于本轮已达成。
-- **publish 那次失败的根因已定并已修复合入 dev**（`replay-confirm-menu-dismiss` 契约 6/6）：
-  确认步撞未关闭的操作菜单被 hit-target 拦下；已发布件菜单多一个「停用」项、关闭动画更长，
-  故只打 publish 不打 catalog。详见 HANDOFF 最新覆盖层与
-  `docs/plans/replay-confirm-menu-dismiss/`。history 例会撞同一条，故须在修复之后才跑。
-- 隧道两端已重启并接管档案（新 pid 见 `~/casey-recovery-20260807/tunnel-casey.pid`）。
-  **Windows 侧另有 herentunnels\engine(15549) 与 herentunnels\kibana(15529) 两个同名
-  `win-reverse-agent.mjs` 属他方**，必须按完整命令行路径区分、不可按进程名。
-- 邮件标题格式已改（Steven 2026-08-10 定）：`[类型前缀]【casey】具体事项`——类型前缀必须
-  最前（看门狗靠它识别），项目标识紧随；死亡报卡侧同日用 `【死亡报卡】`，两边对齐。
-- 未提交现场 14 项已逐项审计（2026-08-10）：全部是登记过的用户资产，勿动、勿
-  `git add -A`。分三类：07-31 代执行签署批次（`SIGN-AND-AFTER.md` +255 行、
-  `resign-runbooks.md` +49 行、三个 prd 的签署字段）；08-08 签署落盘批次
-  （`prd-tc_catalog_wf_crud` 换 sha + authority 登记、`prd-p9-…continuity-v3` 跑证
-  时间戳）；4 个 prd 纯 gate 时间戳噪音（08-03，可弃可提）。唯一文档外增量：
-  `loop/prd-tc_wf_publish_states.json`（08-08 22:21）新登记
-  `runs/b4-publish-20260808/execute-authority.json`，此前无任何文档记载，须 Steven
-  确认归属。
-- 未跟踪三件：`REVIEW-PROMPT-for-codex.md` 应入库（gate-contract-preflight 异构评审
-  账上的空格，备 Steven 亲自发起 codex）；`casey-agent-loop-local-first-total.zip`
-  与 `follow.mjs` 是临时物不该入库（建议移 `tmp/` 或补 ignore）。
-- 停泊的两条人签链（勿自主启动）：gate-contract-preflight——实现全绿在兄弟工作树
-  `../loop-kit-gate-preflight`、真包故意未动（包同步须与 kit-lock 重签同车落）、
-  SIGN-REQUEST 状态 PENDING_STEVEN 且有一处实现偏差待他确认（无差别 64 与已冻零字节
-  钉冲突，实做最严一路）；chiefcomplaint v2 后继——plan+红基线已冻（`60f7263`）、
-  loop 未开、不占槽，卡在铸权前（v2 草稿只有真机编译产得出，2026-07-22 的代签明确
-  不重复；解链顺序文档已写死：补 profile agents 段→人签权威件→真机 compile→
-  带观察件签→验证回放）。
-- 主树活契约槽 `p9-created-workflow-cleanup-continuity-v3`（full，3/6）——s5 深消费
-  证据已齐（cleanup 已签），可收 6/6。
-- 文档陈旧三处待修：CLAUDE.md 护栏计数（写 13–16 实为 19 条）；GUARDRAILS #16 仍标
-  prose 但 ADR-0009 已升流程强制；`resign-runbooks.md` B 段 B-1/B-2 两难已被 8 月
-  B-1 路线实际超车。
-- 评审工艺现役配方：commit 快照 → ext4 浅克隆 `~/casey-review/`（node_modules 软链）
-  → grok tmux 伪终端 + pi 默认配置入口（--exclude-tools edit,write）。
+【当前状态（2026-08-11 午后）】
+- **回放侧连修三缝、两缝已合入 dev、第三缝刚暴露**。三例（`tc_catalog_wf_crud` /
+  `tc_wf_publish_states` / `tc_wf_history_version`）的编译/签署/v3 接线早已收口
+  （契约 `p9-created-workflow-cleanup-continuity-v3` 6/6）；本轮攻的是真机 replay 面：
+  - `replay-confirm-menu-dismiss`（6/6 合入）：确认步撞未关闭的操作菜单被 hit-target 拦下，
+    修法是删除触发后有界等菜单离场再交棒，加法字段 `menuDismiss{dismissed,waitedMs}` 留痕。
+  - `replay-magnifier-dispatch`（6/6 合入 `3c50141`）：放大镜过滤 click 在回放分发层无执行
+    分支、被无条件拒点、从未执行（同一「放大镜白名单」契约三层落点不一致——编译模板发射、
+    前置闸放行、分发层拒点）。修法是白名单形状谓词 `isMagnifierSearchClick` 收单点、
+    前置闸与分发层共享，命中走通用锁定门真执行。**昨日「用例表达层重表达」的定性被此推翻**
+    （已在 `docs/plans/p9-…v3/evidence/replay-history-20260810.md` 追加更正节）。
+- **本轮真机重跑（新票 `b4replay0811`，三格已全核销）结果**（`runs/b4-replay-20260811/RESULTS.md`）：
+  `tc_wf_history_version` **全 PASS 7/7**、`tc_catalog_wf_crud` **全 PASS**、两例零残留——
+  两条修法真机坐实（放大镜真跑、菜单离场留痕 `waitedMs≈367`）。`tc_wf_publish_states`
+  **PASS 3 / NEEDS_HUMAN 1**，撞第三条缝、**留残留 1 条**。
+- **第三条缝（未修、待 Steven 定是否立契约）**：publish 确认步 `atstep_17` **0ms `actionError`**，
+  抽帧证确认弹层在场且稳定（不是遮挡）。根因是**确认弹层句柄未被消费**——触发步 stash 进
+  `pendingDeleteByPage`（`lib/workflow-delete-domain.mjs:786`，WeakMap 键为 page），确认步
+  `:827` 读 `get(page)` 得空 → `:828` 即 0ms 失败；删除请求从未发出。leading 假设：两次分发
+  落在不同 page 对象致 WeakMap 键错配；为何只打已发布件（菜单多「停用」项）待查。与前两缝
+  机理都不同，须自己的契约与 GRILL。
+- **两件待 Steven 拍板（本轮已发问、未答挂着）**：① 残留 `atl_b4replay0811-pub`（后四位 8720）
+  亲删 or 修好后重跑清；② 第三条缝现在就立契约深挖 or 先停。未拍板前不擅自开契约、不碰残留。
+- 隧道两端在跑（WSL 侧监听 pid 见 `~/casey-recovery-20260807/tunnel-casey.pid`，回环 15519
+  返 200）。**Windows 侧另有 herentunnels\engine 与 kibana 两个同名 `win-reverse-agent.mjs`
+  属他方**，按完整命令行路径区分、不可按进程名。
+- 未提交现场：主树 M 的多为登记过的用户资产（`SIGN-AND-AFTER.md`、`resign-runbooks.md`、
+  数个 prd 的签署字段/gate 时间戳噪音）勿动、勿 `git add -A`；未跟踪 `casey-agent-loop-local-first-total.zip`、
+  `follow.mjs`、`wf-def-v73.json` 是临时物不该入库，`docs/plans/gate-contract-preflight/REVIEW-PROMPT-for-codex.md`
+  备 Steven 亲发 codex。`loop/prd-replay-magnifier-dispatch.json` 的 M 是 gate 回写时间戳噪音
+  （验完 `git checkout --` 还原即可，别提交）。
+- 停泊的两条人签链（勿自主启动）：gate-contract-preflight（实现全绿在兄弟树
+  `../loop-kit-gate-preflight`、SIGN-REQUEST PENDING_STEVEN，一处实现偏差待确认）；
+  chiefcomplaint v2 后继（plan+红基线已冻 `60f7263`、loop 未开、卡铸权前）。
+- 文档陈旧待修：CLAUDE.md 护栏计数（写 13–16 实为 19 条）；GUARDRAILS #16 仍标 prose 但
+  ADR-0009 已升流程强制；`resign-runbooks.md` B 段 B-1/B-2 两难已被实际 B-1 路线超车。
+- 评审工艺现役配方：commit 快照 → ext4 浅克隆（node_modules 软链 + loop-kit 真目录副本、
+  绝不软链兄弟目录）→ grok tmux 伪终端 + pi 默认配置入口（`--exclude-tools edit,write`）；
+  grok 输入部件楔死后杀会话重起、全文从 `~/.grok/sessions/*/chat_history.jsonl` 逐字捞。
 
 【下一步（任选其一，先对齐再动手）】
-A. **回放面闭合**——时序竞态已修并合入，可继续跑。两步：① `tc_wf_history_version` 重跑
-   （票据 `b4replay0810` 那一格未烧、不需重铸，但 2026-08-10T23:59:59+08:00 过期，逾期须重铸
-   人签）；② `tc_wf_publish_states` 重跑（该格已烧，**须新铸批级票据并人签**）。依赖：隧道探活；
-   动真机前必跑 `node scripts/assert-sut-account.mjs autotest`（casey 真机账户只许 `autotest`；
-   死亡报卡侧是 `hxz`，两边共用凭据面，跑错账户会污染对方）。目标：三例真机 UAT 人签完成闸，
-   P9 关账。
-B. 工装欠账立契约：编译期加「意图内断言步之后还有改状态动作步 → blocker」前置检查。
-   碰编译门属强制层、按 ADR-0008 是 kernel 级治理（双设计审 + 异构冗余 + 人签）。
-   **lint 落地前，任何「点开→断言→关闭」同意图形状的用例，下次重编译必踩同坑。**
-C. assert 类原子准入三面登记补齐（`assert.textHidden` / `assert.buttonState` /
-   `workflow.closeDrawer` 均未登记、走保守默认当 mutation）。**须与清理本轮所加
-   `entityBindings` 同车做**，否则补登记会反过来拒掉这些绑定。
-D. 承前挂账：「段非良构∧锁点名」hermetic 钉（需人签）、publish 拆意图重表达（搭车下次
-   真机）、41 棵工作树清理、停泊两链（gate-contract-preflight 签核 / chiefcomplaint
-   v2 铸权，均卡 PENDING_STEVEN）。
+A. **等 Steven 拍上面两件**（残留处置 + 是否立第三缝契约）。未拍板前不动真机、不开契约。
+B. **立第三条缝契约**（若 Steven 批）：`full` 道 + worktree 隔离；红先行复现 publish 确认步
+   0ms 句柄丢失（`pendingDeleteByPage` 键错配）；修 page 键一致或改触发→确认的句柄交接机制；
+   护栏 #19 复跑受影响 browser-replay 金牌；双路异构评审。修好铸新票重跑 publish 冲 PASS。
+   目标：三例全 PASS + 人签 → P9 关账（history/catalog 已到 PASS，只差 publish）。
+C. 沿账（非阻塞）：publish 拆意图重表达（真机重编译+重签，另案）；`real-run-trust` 金装陈旧红
+   （金装要 `bin/replay.mjs` 含旧式逐参解析、生产件已改对象解析，须单独修金装）；编译期拦
+   「断言步后紧跟状态改变动作」（内核道，双设计审+异构+人签）；assert 类原子准入三面登记
+   （须与清理所加 `entityBindings` 同车）；41 棵工作树清理（护栏 #18 建议 ≤5）。
 
 【环境坑（WSL）】
 - WSL 本体会整机挂死：2026-08-10 晨挂过一次，Windows 侧重启后新实例即健康。判死活
@@ -181,8 +160,16 @@ D. 承前挂账：「段非良构∧锁点名」hermetic 钉（需人签）、pu
   `/tmp` scratchpad 重启即清；`.git/sequencer` 本次已核无残留。
 - D 盘（drvfs）不稳：2026-08-07 一日四挂+（持续 I/O 下 Windows 侧 D: 卷静默停摆、
   C: 恒活、内核零痕迹）。姿势：commit 早提勤提；评审走 ext4 克隆；重要产物随手落
-  `~/casey-recovery-20260807/`；挂死 WSL 内无法自愈，须 Windows 侧 `wsl --shutdown`
-  重启。swap 16G + sysctl 防线已装（内存耗尽压垮 9p 的根因侧）。
+  `~/casey-recovery-20260807/`；30 秒看门狗（`mnt-d-watchdog.timer`）多数能自动重挂、
+  瞬时 EIO 重试即复原；重挂无效的重症才 Windows 侧 `wsl --shutdown`（杀隧道+评审，破坏性、
+  由 Steven 定）。swap 16G + sysctl 防线已装。
+- **别把「盘挂了」喊错**（2026-08-11 实证，一次假警报烧了半天）：判据先 `timeout 8 ls <路径>`
+  三分——正常返回=盘没事、`No such file or directory`(ENOENT)=路径问题、超时/`Input/output error`
+  =真 9p 故障，只有第三种才是掉盘。当日两个自造坑：① 起了个 `until cat .../loop-kit/kit-lock.json`
+  等待循环等一个**永不存在**的文件（身份锁在消费方壳 `casey/loop-kit/`，包根本无此文件）；
+  ② 探针脚本把任何非零退出硬打成 "EIO"、把 ENOENT 误显成 EIO。分不清 EIO/ENOENT 就会把
+  「文件不存在 + 自己的死循环」误判成掉盘。包报 `LOCK_MISMATCH`/文件不可读时也先 `diff -rq`
+  对已知好副本再判损坏（多为瞬时 I/O 抖动、看门狗随后自愈）。
 - 跑真机前先重启隧道两端（池老化约一小时，浏览器复用连接报
   `net::ERR_EMPTY_RESPONSE` 而 `curl` 恒好）：先 WSL 侧
   `node scripts/wsl-reverse-listen.mjs`，后 Windows 侧
@@ -197,8 +184,11 @@ D. 承前挂账：「段非良构∧锁点名」hermetic 钉（需人签）、pu
   `.claude/worktrees/` 与兄弟树副本。
 - 禁止启动 fake-SUT 或夹具 SUT；金牌只跑 zero-SUT / static / 纯内存。
 - grok 评审必须 tmux 伪终端多轮（`--prompt-file` 单轮只吐意图不做事）；第二条长
-  中文消息会楔死输入部件——简报写文件 + 纯 ASCII 短令引用；pi 用默认配置入口
-  （画蛇添足传模型样式会走错供应方报 No API key）。
+  中文消息会楔死输入部件（`❯` 与正文不同行=多行态卡死，Escape 清不掉）——简报写文件 +
+  纯 ASCII 短令引用，楔死就杀会话重起（新会话首条恒可提交）；全文从
+  `~/.grok/sessions/<URL 编码目录>/<会话 id>/chat_history.jsonl` 逐字捞（含总判的 assistant
+  消息或未落地的 write tool_call arguments.content，pane 回滚几十行不足为源）。pi 用默认
+  配置入口（画蛇添足传模型样式会走错供应方报 No API key）。
 - 共享收件箱与同机其他 session 分工：各答己方主题、他方信只转不答；Steven 时间
   标签写珀斯（UTC+8）；碰引擎长流程先问对方 session 健康度。
 
