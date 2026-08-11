@@ -3,7 +3,38 @@
 > 每次推进后更新。新会话先读 `CLAUDE.md` 必读顺序，再读本文件。
 > 最靠前的「最新覆盖层」是权威现状；其余日期快照与「历史层」仅供溯源。
 
-## 2026-08-10 傍晚：回放确认步时序竞态契约收口 6/6（最新覆盖层，权威现状）
+## 2026-08-11 上午：回放分发对齐契约收口 6/6——三例清理 PASS 由此可达（最新覆盖层，权威现状）
+
+**`replay-magnifier-dispatch` 契约 6/6 并入 dev。** 昨日「清理意图重表达（用例表达层）」的
+定性被取证推翻（旧取证文档已追加更正节）：真相是同一「放大镜过滤」契约三层落点不一致——
+编译模板发射放大镜 click（冻结钉）、回放前置闸白名单放行（冻结钉、Steven 2026-08-08 裁），
+而**回放分发层无对应执行分支、运行时无条件拒点**（无钉、洞在此）。放大镜两步「从未被执行」：
+752ms「失败」恰是事件跑道 `waitForResponse(600ms)`+150ms 纯等待，抽帧证列表全程未过滤。
+任一事件 `action_failed` 即折叠失败（fail-safe 正确），清理意图恒 `NEEDS_HUMAN`。
+
+修法（Steven 2026-08-11 裁）：白名单形状谓词收单点（`workflow-delete-spec.mjs` 导出
+`isMagnifierSearchClick`，前置闸与分发层共同消费、判据字面只活一处），分发层命中即走通用
+锁定门真执行；执行语义零特殊化。**三例 events 零字节不动、零重编译零重签。**
+
+评审：R1 双路（grok-4.5 + pi.dev）各自独立跑命令与突变探针，均 `APPROVE`、0 Critical /
+0 High；按 grok 两条 Medium 并集修（谓词钉死次级定位字段缺席——未加固时白名单形状携
+`fieldLabel` 会被通用门偏点到别处，突变实证；Rd 补调用点正则堵死 import 绕法），pi 一条
+Medium（value 空串边界）记档不收紧（判据逐字继承原冻结实现，空串形状点的仍是放大镜本尊，
+区分经两路 delta 独立验证）。金牌 23→34 检换签（Steven 会话内明示签字）。R2 delta 双路复审
+均 `APPROVE` 且 Critical / High / Medium 全 0。受影响金牌 51 份：50 绿、1 既有陈旧红
+（`real-run-trust`）、0 作废。收据 `docs/plans/replay-magnifier-dispatch/reviews/`。
+
+### 下一步
+
+1. **铸新批级回放票据**（三例绑定、Steven 人签；`b4replay0810` 三格已全核销）→ 逐例重跑。
+   预期清理意图八事件全 ok → 折叠 `unique` → PASS（history 口径 7/7）。若放大镜真机仍点不动
+   属新缝，照 fail-safe 出 `NEEDS_HUMAN` 再诊——本契约只还它被执行的资格。
+   动真机前必跑 `node scripts/assert-sut-account.mjs autotest`。
+2. 三例真机 UAT 人签完成闸 → P9 关账。
+3. 沿账：publish 拆意图重表达（恢复两条 pending 正向断言，须真机重编译+重签，另案）；
+   `real-run-trust` 金装陈旧红；编译期拦「断言步后紧跟状态改变动作」（内核道）。
+
+## 2026-08-10 傍晚：回放确认步时序竞态契约收口 6/6（历史覆盖层，被上节接续）
 
 现役 dev 顶端见 `git log`（本地零 push 状态已变，见下）。**`replay-confirm-menu-dismiss`
 契约走完 6/6 并入 dev**，修掉 B 段三例回放面卡住的那条真机时序竞态。
